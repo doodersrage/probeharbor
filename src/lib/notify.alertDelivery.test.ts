@@ -31,7 +31,7 @@ describe("alertSettingsHaveDeliveryTimestamp", () => {
 });
 
 describe("ensureAlertDeliveryEvidence", () => {
-  it("heals last_alert_sent_at from a delivered alert_events row", async () => {
+  it("reports a delivered alert_events row without arming the cooldown", async () => {
     const updateEq = vi.fn().mockReturnValue({
       select: vi.fn().mockResolvedValue({ data: [{ user_id: "user-1" }], error: null }),
     });
@@ -80,7 +80,9 @@ describe("ensureAlertDeliveryEvidence", () => {
     const { ensureAlertDeliveryEvidence } = await import("./notify");
     const result = await ensureAlertDeliveryEvidence("user-1", DEFAULT_ALERT_SETTINGS);
     expect(result.hasDelivery).toBe(true);
-    expect(result.settings.lastAlertSentAt).toBe("2026-09-04T16:00:00.000Z");
+    // Writing last_alert_sent_at here would suppress real freeze alerts.
+    expect(updateEq).not.toHaveBeenCalled();
+    expect(result.settings.lastAlertSentAt).toBeNull();
   });
 
   it("stays false when events were only skipped", async () => {

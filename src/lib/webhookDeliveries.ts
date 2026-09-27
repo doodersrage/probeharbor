@@ -107,7 +107,12 @@ export async function deliverWebhookPost(
     attempt += 1;
     networkError = null;
     try {
-      response = await fetch(url, { method: "POST", headers, body });
+      response = await fetch(url, {
+        method: "POST",
+        headers,
+        body,
+        signal: AbortSignal.timeout(10_000),
+      });
       if (response.ok || !WEBHOOK_RETRYABLE_STATUS.has(response.status)) break;
     } catch (error) {
       networkError = error;

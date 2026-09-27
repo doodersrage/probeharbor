@@ -17,7 +17,7 @@ import {
 } from "../../lib/notify";
 import { getRuntimeEnv } from "../../lib/runtimeEnv";
 import { getUserEntitlements } from "../../lib/entitlements";
-import { hasDeliveredAnyAlert, listRecentAlertEventsFiltered } from "../../lib/alertEvents";
+import { listRecentAlertEventsFiltered } from "../../lib/alertEvents";
 import { formatAlertChannelsCsv } from "../../lib/alertChannelLabels";
 import { formatRelativeAge } from "../../lib/relativeTime";
 import {
@@ -89,7 +89,7 @@ const [alertSettingsLoaded, entitlements, activityPageResult, devicesResult, ten
 const recentEvents = activityPageResult.events;
 const activityHasMore = activityPageResult.hasMore;
 
-const { settings: alertSettings } = await ensureAlertDeliveryEvidence(
+const { settings: alertSettings, hasDelivery } = await ensureAlertDeliveryEvidence(
   user.id,
   alertSettingsLoaded,
 );
@@ -171,7 +171,7 @@ const hasSentAnyAlert =
     alertSettings.lastAlertSentAt ||
       alertSettings.lastOutageAlertAt ||
       alertSettings.lastRateAlertAt,
-  ) || (await hasDeliveredAnyAlert(user.id));
+  ) || hasDelivery;
 
 const analyticsEvents = (() => {
   const events: Array<{

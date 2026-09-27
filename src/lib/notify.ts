@@ -31,12 +31,15 @@ export type NotifyPayload = {
   meta?: AlertEventMeta;
 };
 
+/** Keep a hung channel endpoint from stalling every channel after it. */
+const CHANNEL_TIMEOUT_MS = 10_000;
+
 async function sendEmail(
   to: string,
   subject: string,
   body: string,
   kind?: NotifyKind,
-): Promise<void> {
+): Promise<boolean> {
   try {
     const { sendEmail: send } = await import("./mailer");
     const { brandedEmailParts } = await import("./emailLayout");
@@ -54,8 +57,10 @@ async function sendEmail(
         "You’re receiving this because alerts are enabled for your account.",
     });
     await send(to, subject, parts.text, { html: parts.html });
+    return true;
   } catch (error) {
     console.error("Failed to send alert email:", error);
+    return false;
   }
 }
 
@@ -85,50 +90,57 @@ function alertEmailEyebrow(kind?: NotifyKind): string {
   }
 }
 
-async function sendDiscord(webhookUrl: string, title: string, body: string): Promise<void> {
+async function sendDiscord(webhookUrl: string, title: string, body: string): Promise<boolean> {
   if (!isSafeHttpsUrl(webhookUrl)) {
     console.error("Refusing to send Discord webhook: unsafe URL");
-    return;
+    return false;
   }
   try {
-    await fetch(webhookUrl, {
+    const response = await fetch(webhookUrl, {
       method: "POST",
+      signal: AbortSignal.timeout(CHANNEL_TIMEOUT_MS),
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         content: `**${title}**\n${body}`,
       }),
     });
+    return response.ok;
   } catch (error) {
     console.error("Failed to send Discord webhook:", error);
+    return false;
   }
 }
 
-async function sendSlack(webhookUrl: string, title: string, body: string): Promise<void> {
+async function sendSlack(webhookUrl: string, title: string, body: string): Promise<boolean> {
   if (!isSafeHttpsUrl(webhookUrl)) {
     console.error("Refusing to send Slack webhook: unsafe URL");
-    return;
+    return false;
   }
   try {
-    await fetch(webhookUrl, {
+    const response = await fetch(webhookUrl, {
       method: "POST",
+      signal: AbortSignal.timeout(CHANNEL_TIMEOUT_MS),
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         text: `*${title}*\n${body}`,
       }),
     });
+    return response.ok;
   } catch (error) {
     console.error("Failed to send Slack webhook:", error);
+    return false;
   }
 }
 
-async function sendTeams(webhookUrl: string, title: string, body: string): Promise<void> {
+async function sendTeams(webhookUrl: string, title: string, body: string): Promise<boolean> {
   if (!isSafeHttpsUrl(webhookUrl)) {
     console.error("Refusing to send Teams webhook: unsafe URL");
-    return;
+    return false;
   }
   try {
-    await fetch(webhookUrl, {
+    const response = await fetch(webhookUrl, {
       method: "POST",
+      signal: AbortSignal.timeout(CHANNEL_TIMEOUT_MS),
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         "@type": "MessageCard",
@@ -138,8 +150,10 @@ async function sendTeams(webhookUrl: string, title: string, body: string): Promi
         text: body,
       }),
     });
+    return response.ok;
   } catch (error) {
     console.error("Failed to send Teams webhook:", error);
+    return false;
   }
 }
 
@@ -148,15 +162,16 @@ async function sendNtfy(
   topic: string,
   title: string,
   body: string,
-): Promise<void> {
+): Promise<boolean> {
   const base = server.replace(/\/$/, "");
   if (!isSafeHttpsUrl(base)) {
     console.error("Refusing to send ntfy notification: unsafe URL");
-    return;
+    return false;
   }
   try {
-    await fetch(`${base}/${encodeURIComponent(topic)}`, {
+    const response = await fetch(`${base}/${encodeURIComponent(topic)}`, {
       method: "POST",
+      signal: AbortSignal.timeout(CHANNEL_TIMEOUT_MS),
       headers: {
         Title: title.slice(0, 250),
         Priority: "high",
@@ -164,8 +179,10 @@ async function sendNtfy(
       },
       body: `${title}\n${body}`.slice(0, 4000),
     });
+    return response.ok;
   } catch (error) {
     console.error("Failed to send ntfy notification:", error);
+    return false;
   }
 }
 
@@ -174,7 +191,7 @@ async function sendPushover(
   appToken: string,
   title: string,
   body: string,
-): Promise<void> {
+): Promise<boolean> {
   try {
     const params = new URLSearchParams({
       token: appToken,
@@ -183,13 +200,16 @@ async function sendPushover(
       message: body.slice(0, 1024),
       priority: "1",
     });
-    await fetch("https://api.pushover.net/1/messages.json", {
+    const response = await fetch("https://api.pushover.net/1/messages.json", {
       method: "POST",
+      signal: AbortSignal.timeout(CHANNEL_TIMEOUT_MS),
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: params,
     });
+    return response.ok;
   } catch (error) {
     console.error("Failed to send Pushover notification:", error);
+    return false;
   }
 }
 
@@ -218,6 +238,7 @@ export async function sendTwilioWhatsApp(to: string, body: string): Promise<bool
       `https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`,
       {
         method: "POST",
+        signal: AbortSignal.timeout(CHANNEL_TIMEOUT_MS),
         headers: {
           Authorization: `Basic ${auth}`,
           "Content-Type": "application/x-www-form-urlencoded",
@@ -241,11 +262,12 @@ async function sendTelegram(
   chatId: string,
   title: string,
   body: string,
-): Promise<void> {
+): Promise<boolean> {
   try {
     const url = `https://api.telegram.org/bot${encodeURIComponent(botToken)}/sendMessage`;
     const response = await fetch(url, {
       method: "POST",
+      signal: AbortSignal.timeout(CHANNEL_TIMEOUT_MS),
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         chat_id: chatId,
@@ -255,8 +277,10 @@ async function sendTelegram(
     if (!response.ok) {
       console.error("Telegram send failed:", await response.text());
     }
+    return response.ok;
   } catch (error) {
     console.error("Failed to send Telegram message:", error);
+    return false;
   }
 }
 
@@ -290,6 +314,7 @@ export async function sendTwilioSms(to: string, body: string): Promise<boolean> 
       `https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`,
       {
         method: "POST",
+        signal: AbortSignal.timeout(CHANNEL_TIMEOUT_MS),
         headers: {
           Authorization: `Basic ${auth}`,
           "Content-Type": "application/x-www-form-urlencoded",
@@ -326,7 +351,7 @@ async function sendOutboundWebhook(
   url: string,
   secret: string | null,
   payload: NotifyPayload,
-): Promise<void> {
+): Promise<boolean> {
   const body = JSON.stringify({
     title: payload.title,
     body: payload.body,
@@ -352,6 +377,7 @@ async function sendOutboundWebhook(
   if (response && !response.ok) {
     console.error("Outbound webhook failed:", response.status);
   }
+  return Boolean(response?.ok);
 }
 
 function channelAllowed(
@@ -478,8 +504,8 @@ export function alertSettingsHaveDeliveryTimestamp(settings: AlertSettings): boo
 
 /**
  * Overview / onboarding treat a delivered test (or any real alert) as done.
- * If cooldown columns were never written (silent update miss) but alert_events
- * show a successful send, heal last_alert_sent_at and return true.
+ * Falls back to alert_events when no cooldown timestamp is set. Read-only:
+ * writing last_alert_sent_at here would arm the freeze-alert cooldown.
  */
 export async function ensureAlertDeliveryEvidence(
   userId: string,
@@ -505,16 +531,7 @@ export async function ensureAlertDeliveryEvidence(
   const delivered = (data ?? []).some(
     (row) => Array.isArray(row.channels_sent) && row.channels_sent.length > 0,
   );
-  if (!delivered) {
-    return { hasDelivery: false, settings };
-  }
-
-  await markCooldown(userId, "last_alert_sent_at");
-  const healed = await getAlertSettingsForUser(userId);
-  return {
-    hasDelivery: alertSettingsHaveDeliveryTimestamp(healed),
-    settings: healed,
-  };
+  return { hasDelivery: delivered, settings };
 }
 
 export async function markEscalation(userId: string): Promise<void> {
@@ -626,8 +643,8 @@ export async function notifyUser(
 
   if (settings.channelEmail && allowChannel("email")) {
     if (email) {
-      await sendEmail(email, payloadResolved.title, bodyWithSnooze, kind);
-      sent.push("email");
+      if (await sendEmail(email, payloadResolved.title, bodyWithSnooze, kind)) sent.push("email");
+      else skipped.push("email");
     } else {
       skipped.push("email");
     }
@@ -635,8 +652,11 @@ export async function notifyUser(
 
   if (settings.channelDiscord && allowChannel("discord")) {
     if (settings.discordWebhookUrl) {
-      await sendDiscord(settings.discordWebhookUrl, payloadResolved.title, bodyWithSnooze);
-      sent.push("discord");
+      if (await sendDiscord(settings.discordWebhookUrl, payloadResolved.title, bodyWithSnooze)) {
+        sent.push("discord");
+      } else {
+        skipped.push("discord");
+      }
     } else {
       skipped.push("discord");
     }
@@ -644,8 +664,11 @@ export async function notifyUser(
 
   if (settings.channelSlack && allowChannel("slack")) {
     if (settings.slackWebhookUrl) {
-      await sendSlack(settings.slackWebhookUrl, payloadResolved.title, bodyWithSnooze);
-      sent.push("slack");
+      if (await sendSlack(settings.slackWebhookUrl, payloadResolved.title, bodyWithSnooze)) {
+        sent.push("slack");
+      } else {
+        skipped.push("slack");
+      }
     } else {
       skipped.push("slack");
     }
@@ -653,8 +676,11 @@ export async function notifyUser(
 
   if (settings.channelTeams && allowChannel("teams")) {
     if (settings.teamsWebhookUrl) {
-      await sendTeams(settings.teamsWebhookUrl, payloadResolved.title, bodyWithSnooze);
-      sent.push("teams");
+      if (await sendTeams(settings.teamsWebhookUrl, payloadResolved.title, bodyWithSnooze)) {
+        sent.push("teams");
+      } else {
+        skipped.push("teams");
+      }
     } else {
       skipped.push("teams");
     }
@@ -662,13 +688,14 @@ export async function notifyUser(
 
   if (settings.channelNtfy && allowChannel("ntfy")) {
     if (settings.ntfyTopic) {
-      await sendNtfy(
+      const ok = await sendNtfy(
         settings.ntfyServer,
         settings.ntfyTopic,
         payloadResolved.title,
         bodyWithSnooze,
       );
-      sent.push("ntfy");
+      if (ok) sent.push("ntfy");
+      else skipped.push("ntfy");
     } else {
       skipped.push("ntfy");
     }
@@ -676,13 +703,14 @@ export async function notifyUser(
 
   if (settings.channelPushover && allowChannel("pushover")) {
     if (settings.pushoverUserKey && settings.pushoverAppToken) {
-      await sendPushover(
+      const ok = await sendPushover(
         settings.pushoverUserKey,
         settings.pushoverAppToken,
         payloadResolved.title,
         bodyWithSnooze,
       );
-      sent.push("pushover");
+      if (ok) sent.push("pushover");
+      else skipped.push("pushover");
     } else {
       skipped.push("pushover");
     }
@@ -703,13 +731,14 @@ export async function notifyUser(
 
   if (settings.channelTelegram && allowChannel("telegram")) {
     if (settings.telegramBotToken && settings.telegramChatId) {
-      await sendTelegram(
+      const ok = await sendTelegram(
         settings.telegramBotToken,
         settings.telegramChatId,
         payloadResolved.title,
         bodyWithSnooze,
       );
-      sent.push("telegram");
+      if (ok) sent.push("telegram");
+      else skipped.push("telegram");
     } else {
       skipped.push("telegram");
     }
@@ -750,13 +779,14 @@ export async function notifyUser(
 
   if (settings.channelWebhook && allowChannel("webhook")) {
     if (settings.outboundWebhookUrl && entitlements.canUseOutboundWebhook) {
-      await sendOutboundWebhook(
+      const ok = await sendOutboundWebhook(
         userId,
         settings.outboundWebhookUrl,
         settings.outboundWebhookSecret,
         payload,
       );
-      sent.push("webhook");
+      if (ok) sent.push("webhook");
+      else skipped.push("webhook");
     } else {
       skipped.push("webhook");
     }

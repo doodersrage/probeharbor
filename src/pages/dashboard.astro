@@ -85,7 +85,6 @@ import FreezeMapOptInNudge from "../components/dashboard/FreezeMapOptInNudge.ast
 import RegionalBenchmarkCard from "../components/dashboard/RegionalBenchmarkCard.astro";
 import {
   countUnacknowledgedAlerts,
-  hasDeliveredAnyAlert,
   listAlertEventsInRange,
 } from "../lib/alertEvents";
 import { toChartAlertMarkers } from "../lib/chartAlertMarkers";
@@ -188,7 +187,7 @@ const roleFromShell =
 const evidencePromise = ensureAlertDeliveryEvidence(user.id, alertSettingsLoaded);
 const shellLatest = latestFromShell(shell, household.householdId);
 const [
-  { settings: alertSettings },
+  { settings: alertSettings, hasDelivery },
   members,
   householdDevicesResult,
   householdRole,
@@ -243,7 +242,7 @@ const lastAlertAt =
     .sort((a, b) => Date.parse(b) - Date.parse(a))[0] ?? null;
 // Test sends don't set cooldown timestamps; fall back to the alert log.
 const hasSentAnyAlert =
-  Boolean(lastAlertAt) || (await hasDeliveredAnyAlert(user.id));
+  Boolean(lastAlertAt) || hasDelivery;
 /** Live probes or a configured device, alerts on, and a delivered test/real alert. */
 const essentialDone =
   hasDevices &&

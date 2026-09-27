@@ -175,22 +175,17 @@ describe("ensureAlertDeliveryEvidence", () => {
     expect(result.hasDelivery).toBe(false);
   });
 
-  it("heals the cooldown timestamp when alert_events proves a delivery happened", async () => {
+  it("reports delivery from alert_events without writing a cooldown", async () => {
     const eventsBuilder = mockQuery({ data: [{ channels_sent: ["email"] }], error: null });
-    const updateBuilder = mockQuery({ data: [{ user_id: "user-1" }], error: null });
-    const healedRowBuilder = mockQuery({
-      data: { user_id: "user-1", last_alert_sent_at: "2026-02-01T00:00:00.000Z" },
-    });
-    mockFrom
-      .mockReturnValueOnce(eventsBuilder)
-      .mockReturnValueOnce(updateBuilder)
-      .mockReturnValueOnce(healedRowBuilder);
+    mockFrom.mockReturnValueOnce(eventsBuilder);
     const { ensureAlertDeliveryEvidence } = await import("./notify");
 
     const result = await ensureAlertDeliveryEvidence("user-1", DEFAULT_ALERT_SETTINGS);
 
     expect(result.hasDelivery).toBe(true);
-    expect(result.settings.lastAlertSentAt).toBe("2026-02-01T00:00:00.000Z");
+    expect(result.settings.lastAlertSentAt).toBeNull();
+    // Only the alert_events read; writing last_alert_sent_at would arm the cooldown.
+    expect(mockFrom).toHaveBeenCalledTimes(1);
   });
 });
 
