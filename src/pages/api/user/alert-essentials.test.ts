@@ -145,7 +145,8 @@ describe("POST /api/user/alert-essentials", () => {
     await POST(context);
 
     expect(mockNotifyUser).toHaveBeenCalled();
-    expect(mockMarkCooldown).toHaveBeenCalledWith("user-1", "last_alert_sent_at");
+    // Test sends must not arm the freeze-alert cooldown.
+    expect(mockMarkCooldown).not.toHaveBeenCalled();
     expect(context.redirect).toHaveBeenCalledWith(
       "/dashboard/devices?alert_saved=1&test_sent=1&sent=email",
     );

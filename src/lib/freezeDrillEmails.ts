@@ -8,6 +8,7 @@ import { listAllHouseholdOwnerUserIds } from "./households";
 import { listHouseholdDevices } from "./devices";
 import { fetchLatestSensorValues } from "./sensorReadings";
 import { getUserEntitlements } from "./entitlements";
+import { hasDeliveredAnyAlert } from "./alertEvents";
 import { getUserPreferences, personalWeatherConfigFromPreferences } from "./userPreferences";
 import { isWeatherLocationConfigured } from "./personalWeatherStations";
 import {
@@ -124,7 +125,8 @@ export async function sendFreezeDrillsForAllUsers(): Promise<{
         ),
         canUseForecast: entitlements.canUseForecastAlerts,
         canUseNws: entitlements.canUseNwsAlerts,
-        hasSentAnyAlert: Boolean(settings.lastAlertSentAt),
+        hasSentAnyAlert:
+          Boolean(settings.lastAlertSentAt) || (await hasDeliveredAnyAlert(userId)),
       });
 
       const parts = buildFreezeDrillEmailParts({

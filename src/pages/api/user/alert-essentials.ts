@@ -6,7 +6,6 @@ import {
 } from "../../../lib/householdAuth";
 import {
   getAlertSettingsForUser,
-  markCooldown,
   notifyUser,
   saveAlertSettingsForUser,
 } from "../../../lib/notify";
@@ -83,7 +82,6 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
           withQuery(redirectTo, { alert_saved: "1", test_error: "1", test_reason: reason }),
         );
       }
-      await markCooldown(user.id, "last_alert_sent_at");
       const params: Record<string, string> = {
         alert_saved: "1",
         test_sent: "1",

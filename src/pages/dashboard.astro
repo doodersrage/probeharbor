@@ -83,7 +83,11 @@ import { fetchRegionalBenchmark } from "../lib/regionalBenchmark";
 import TestAlertNudge from "../components/dashboard/TestAlertNudge.astro";
 import FreezeMapOptInNudge from "../components/dashboard/FreezeMapOptInNudge.astro";
 import RegionalBenchmarkCard from "../components/dashboard/RegionalBenchmarkCard.astro";
-import { countUnacknowledgedAlerts, listAlertEventsInRange } from "../lib/alertEvents";
+import {
+  countUnacknowledgedAlerts,
+  hasDeliveredAnyAlert,
+  listAlertEventsInRange,
+} from "../lib/alertEvents";
 import { toChartAlertMarkers } from "../lib/chartAlertMarkers";
 import LowBatteryBanner from "../components/dashboard/LowBatteryBanner.astro";
 import DashboardMultiPropertyNudge from "../components/dashboard/DashboardMultiPropertyNudge.astro";
@@ -237,11 +241,14 @@ const lastAlertAt =
   ]
     .filter((at): at is string => Boolean(at))
     .sort((a, b) => Date.parse(b) - Date.parse(a))[0] ?? null;
+// Test sends don't set cooldown timestamps; fall back to the alert log.
+const hasSentAnyAlert =
+  Boolean(lastAlertAt) || (await hasDeliveredAnyAlert(user.id));
 /** Live probes or a configured device, alerts on, and a delivered test/real alert. */
 const essentialDone =
   hasDevices &&
   hasAlertsEnabled &&
-  Boolean(lastAlertAt) &&
+  hasSentAnyAlert &&
   hasConfiguredAlertChannel(alertSettings, user.email);
 const firstRunFocus = canEdit && !onboardingDismissed && !essentialDone;
 const showInsights = !firstRunFocus && overviewMode === "insights";
@@ -489,7 +496,7 @@ const freezeReadiness = computeFreezeReadiness({
   weatherLocationConfigured: isWeatherLocationConfigured(weatherConfig),
   canUseForecast: entitlements.canUseForecastAlerts,
   canUseNws: entitlements.canUseNwsAlerts,
-  hasSentAnyAlert: Boolean(lastAlertAt),
+  hasSentAnyAlert,
 });
 
 const coldestProbeTempF = (() => {
@@ -615,7 +622,7 @@ const showDemoPullNudge =
 
 const upgradeTarget = nextUpgradeTier(entitlements.tier);
 
-const hasTestAlert = Boolean(lastAlertAt);
+const hasTestAlert = hasSentAnyAlert;
 
 const showProbeSimulatorNudge =
   canEdit &&
@@ -914,7 +921,9 @@ const garageRisk = computeGarageRiskStatus({
           <MetricCard
             label="Alerts"
             value={alertSettings.enabled ? "On" : "Off"}
-            detail={lastAlertAt ? `Last ${lastAlertAge.label}` : "Send a test"}
+            detail={
+              lastAlertAt ? `Last ${lastAlertAge.label}` : hasSentAnyAlert ? "Test sent" : "Send a test"
+            }
             href="/dashboard/alerts"
             tone={alertSettings.enabled ? "success" : "neutral"}
             metricId="alerts"

@@ -17,7 +17,7 @@ import {
 } from "../../lib/notify";
 import { getRuntimeEnv } from "../../lib/runtimeEnv";
 import { getUserEntitlements } from "../../lib/entitlements";
-import { listRecentAlertEventsFiltered } from "../../lib/alertEvents";
+import { hasDeliveredAnyAlert, listRecentAlertEventsFiltered } from "../../lib/alertEvents";
 import { formatAlertChannelsCsv } from "../../lib/alertChannelLabels";
 import { formatRelativeAge } from "../../lib/relativeTime";
 import {
@@ -165,6 +165,13 @@ const lastAlertCandidates = [
 const lastAlertAt =
   lastAlertCandidates.sort((a, b) => Date.parse(b) - Date.parse(a))[0] ?? null;
 const lastAlertAge = formatRelativeAge(lastAlertAt);
+// Test sends don't set cooldown timestamps; fall back to the alert log.
+const hasSentAnyAlert =
+  Boolean(
+    alertSettings.lastAlertSentAt ||
+      alertSettings.lastOutageAlertAt ||
+      alertSettings.lastRateAlertAt,
+  ) || (await hasDeliveredAnyAlert(user.id));
 
 const analyticsEvents = (() => {
   const events: Array<{
@@ -364,11 +371,7 @@ const referralRewardDays = Number(
           twilioConfigured={isTwilioConfigured()}
           redirectTo="/dashboard/alerts?tab=settings"
           canEdit={canEdit}
-          essentialsFirst={!Boolean(
-            alertSettings.lastAlertSentAt ||
-              alertSettings.lastOutageAlertAt ||
-              alertSettings.lastRateAlertAt,
-          )}
+          essentialsFirst={!hasSentAnyAlert}
           deviceSpaces={deviceSpaces}
           thresholdSensors={thresholdSensors}
         />

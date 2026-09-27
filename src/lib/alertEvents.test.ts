@@ -14,6 +14,7 @@ function mockQuery(result: { data?: unknown; error?: unknown; count?: number | n
     "gte",
     "lte",
     "limit",
+    "filter",
   ]) {
     builder[method] = vi.fn(() => builder);
   }
@@ -239,6 +240,26 @@ describe("countUnacknowledgedAlerts", () => {
     const { countUnacknowledgedAlerts } = await import("./alertEvents");
 
     expect(await countUnacknowledgedAlerts("user-1")).toBe(0);
+  });
+});
+
+describe("hasDeliveredAnyAlert", () => {
+  it("is true when an event reached at least one channel", async () => {
+    const query = mockQuery({ data: [{ id: 1 }] });
+    mockFrom.mockReturnValue(query);
+    const { hasDeliveredAnyAlert } = await import("./alertEvents");
+
+    expect(await hasDeliveredAnyAlert("user-1")).toBe(true);
+    expect(query.filter).toHaveBeenCalledWith("channels_sent", "neq", "{}");
+  });
+
+  it("is false when nothing was delivered or the query fails", async () => {
+    mockFrom.mockReturnValueOnce(mockQuery({ data: [] }));
+    mockFrom.mockReturnValueOnce(mockQuery({ data: null, error: { message: "boom" } }));
+    const { hasDeliveredAnyAlert } = await import("./alertEvents");
+
+    expect(await hasDeliveredAnyAlert("user-1")).toBe(false);
+    expect(await hasDeliveredAnyAlert("user-1")).toBe(false);
   });
 });
 

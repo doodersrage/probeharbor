@@ -2,7 +2,6 @@ import type { APIRoute } from "astro";
 import { getAuthFromRequest } from "../../../lib/auth";
 import {
   getAlertSettingsForUser,
-  markCooldown,
   notifyUser,
   saveAlertSettingsForUser,
 } from "../../../lib/notify";
@@ -88,8 +87,6 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
       }
       return redirect(withQuery(redirectTo, { test_error: "1", test_reason: reason }));
     }
-
-    await markCooldown(user.id, "last_alert_sent_at");
 
     if (json) {
       return new Response(JSON.stringify({ ok: true, sent, skipped }), {

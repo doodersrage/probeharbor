@@ -300,6 +300,23 @@ export function buildAlertEventsCsv(events: AlertEventRow[]): string {
   return [headers.join(","), ...rows].join("\n");
 }
 
+/**
+ * True when any alert (test or real) actually reached a channel. Test sends
+ * don't touch the cooldown timestamps, so setup checklists use this as the
+ * fallback "has a test gone out?" signal.
+ */
+export async function hasDeliveredAnyAlert(userId: string): Promise<boolean> {
+  const supabase = createServerClient();
+  const { data, error } = await supabase
+    .from("alert_events")
+    .select("id")
+    .eq("user_id", userId)
+    .filter("channels_sent", "neq", "{}")
+    .limit(1);
+  if (error || !data) return false;
+  return data.length > 0;
+}
+
 export async function countUnacknowledgedAlerts(userId: string): Promise<number> {
   const supabase = createServerClient();
   const { count } = await supabase
