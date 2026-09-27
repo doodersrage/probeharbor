@@ -58,8 +58,8 @@ function sampleMonthlyReport(siteUrl: string) {
     freezeThresholdF: 34,
     nightsAtRisk: 2,
     nights: [
-      { dateLabel: "Mon Jan 5", minTempF: 31, atRisk: true },
-      { dateLabel: "Tue Jan 6", minTempF: 40, atRisk: false },
+      { date: "2026-01-05", dateLabel: "Mon Jan 5", minTempF: 31, atRisk: true },
+      { date: "2026-01-06", dateLabel: "Tue Jan 6", minTempF: 40, atRisk: false },
     ],
     freezeHours: {
       hoursBelow34: 12.5,

@@ -391,6 +391,26 @@ describe("nightsAtRiskFromForecast", () => {
     expect(result[1]).toMatchObject({ minTempF: 40, atRisk: false });
   });
 
+  it("groups by local night using the city's UTC offset", () => {
+    const raw = {
+      city: { timezone: -5 * 3600 },
+      list: [
+        // 7pm and 1am local (Jan 1 → Jan 2) belong to the Jan 2 morning.
+        { dt: Date.parse("2024-01-02T00:00:00Z") / 1000, main: { temp: 30 } },
+        { dt: Date.parse("2024-01-02T06:00:00Z") / 1000, main: { temp: 22 } },
+        // 1pm local on Jan 2 is daytime.
+        { dt: Date.parse("2024-01-02T18:00:00Z") / 1000, main: { temp: 10 } },
+        // 10pm local Jan 2 starts the Jan 3 night.
+        { dt: Date.parse("2024-01-03T03:00:00Z") / 1000, main: { temp: 35 } },
+      ],
+    };
+
+    expect(nightsAtRiskFromForecast(raw, 32, 5)).toEqual([
+      { date: "2024-01-02", dateLabel: "Tue, Jan 2", minTempF: 22, atRisk: true },
+      { date: "2024-01-03", dateLabel: "Wed, Jan 3", minTempF: 35, atRisk: false },
+    ]);
+  });
+
   it("caps the result at the requested number of nights", () => {
     const raw = {
       list: [

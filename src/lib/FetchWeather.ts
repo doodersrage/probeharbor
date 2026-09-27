@@ -235,6 +235,8 @@ export async function fetchWeatherForecastByCoords(
 }
 
 export type NightRisk = {
+  /** Local calendar date (YYYY-MM-DD) of the morning that ends the night. */
+  date: string;
   dateLabel: string;
   minTempF: number;
   atRisk: boolean;
@@ -249,15 +251,29 @@ export function nightsAtRiskFromForecast(
   const list = raw?.list;
   if (!Array.isArray(list)) return [];
 
+  // OpenWeather reports the forecast city's UTC offset in seconds.
+  const tzOffsetSec = Number(raw?.city?.timezone);
+  const offsetMs = Number.isFinite(tzOffsetSec) ? tzOffsetSec * 1000 : null;
+
   const byDay = new Map<string, number>();
   for (const entry of list) {
     const ts = Number(entry?.dt) * 1000;
     if (!Number.isFinite(ts)) continue;
-    const d = new Date(ts);
-    const hour = d.getUTCHours();
-    // Treat 00–09 UTC buckets as overnight-ish for US; still useful as a proxy
-    if (hour > 12) continue;
-    const key = d.toISOString().slice(0, 10);
+    let key: string;
+    if (offsetMs != null) {
+      // Shift into local wall-clock time; overnight is 18:00–08:59 local and
+      // belongs to the following morning's date.
+      const local = new Date(ts + offsetMs);
+      const hour = local.getUTCHours();
+      if (hour >= 9 && hour < 18) continue;
+      if (hour >= 18) local.setUTCDate(local.getUTCDate() + 1);
+      key = local.toISOString().slice(0, 10);
+    } else {
+      const d = new Date(ts);
+      // No offset: treat 00–12 UTC buckets as overnight-ish for US.
+      if (d.getUTCHours() > 12) continue;
+      key = d.toISOString().slice(0, 10);
+    }
     const temp = Number(entry?.main?.temp);
     if (!Number.isFinite(temp)) continue;
     const prev = byDay.get(key);
@@ -267,10 +283,12 @@ export function nightsAtRiskFromForecast(
   return [...byDay.entries()]
     .slice(0, nights)
     .map(([date, minTempF]) => ({
-      dateLabel: new Date(`${date}T12:00:00Z`).toLocaleDateString(undefined, {
+      date,
+      dateLabel: new Date(`${date}T12:00:00Z`).toLocaleDateString("en-US", {
         weekday: "short",
         month: "short",
         day: "numeric",
+        timeZone: "UTC",
       }),
       minTempF,
       atRisk: minTempF <= freezeThresholdF,

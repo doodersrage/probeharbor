@@ -17,8 +17,8 @@ const sampleData = {
   freezeThresholdF: 34,
   nightsAtRisk: 2,
   nights: [
-    { dateLabel: "Mon Aug 28", minTempF: 31, atRisk: true },
-    { dateLabel: "Tue Aug 29", minTempF: 40, atRisk: false },
+    { date: "2023-08-28", dateLabel: "Mon Aug 28", minTempF: 31, atRisk: true },
+    { date: "2023-08-29", dateLabel: "Tue Aug 29", minTempF: 40, atRisk: false },
   ],
   freezeHours: {
     hoursBelow34: 12.5,

@@ -68,7 +68,7 @@ describe("GET /api/ical/outlook", () => {
   });
 
   it("returns the built ical body with calendar headers", async () => {
-    mockFetchNightsAtRisk.mockResolvedValue([{ dateLabel: "Mon", minTempF: 20, atRisk: true }]);
+    mockFetchNightsAtRisk.mockResolvedValue([{ date: "2024-01-01", dateLabel: "Mon", minTempF: 20, atRisk: true }]);
     mockBuildFreezeOutlookIcal.mockReturnValue("BEGIN:VCALENDAR\nSUMMARY:Freeze\nEND:VCALENDAR");
     const { GET } = await import("./outlook");
 
@@ -82,7 +82,7 @@ describe("GET /api/ical/outlook", () => {
     expect(response.headers.get("Cache-Control")).toBe("no-store");
     expect(await response.text()).toBe("BEGIN:VCALENDAR\nSUMMARY:Freeze\nEND:VCALENDAR");
     expect(mockBuildFreezeOutlookIcal).toHaveBeenCalledWith([
-      { dateLabel: "Mon", minTempF: 20, atRisk: true },
+      { date: "2024-01-01", dateLabel: "Mon", minTempF: 20, atRisk: true },
     ]);
   });
 });
