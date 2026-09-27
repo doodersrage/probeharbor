@@ -74,7 +74,8 @@
     if (data.isAdmin) out = out.concat(adminPages);
     (data.households || []).forEach(function (household) {
       if (!household || !household.id || !household.name) return;
-      if (household.id === data.activeHouseholdId && (data.households || []).length < 2) return;
+      // Switching to the property you're already on is a no-op.
+      if (household.id === data.activeHouseholdId) return;
       out.push({
         label: "Switch to " + household.name,
         path: null,
@@ -82,6 +83,41 @@
         keywords: "property household " + household.name,
         householdId: household.id,
       });
+    });
+    // Tell apart different devices that share a name.
+    var idsByName = {};
+    (data.sensors || []).forEach(function (sensor) {
+      if (!sensor || !sensor.deviceId) return;
+      idsByName[sensor.device] = idsByName[sensor.device] || {};
+      idsByName[sensor.device][sensor.deviceId] = true;
+    });
+    function deviceName(sensor) {
+      var shared = Object.keys(idsByName[sensor.device] || {}).length > 1;
+      if (!shared) return sensor.device;
+      return sensor.device + " · " + (sensor.space || "#" + String(sensor.deviceId).slice(0, 4));
+    }
+    var seenDevices = {};
+    (data.sensors || []).forEach(function (sensor) {
+      if (!sensor || !sensor.deviceId) return;
+      var devicePath =
+        "/dashboard/devices?view=ops&focus_device=" + encodeURIComponent(sensor.deviceId);
+      if (!seenDevices[sensor.deviceId]) {
+        seenDevices[sensor.deviceId] = true;
+        out.push({
+          label: "Device: " + deviceName(sensor),
+          path: devicePath,
+          keys: "",
+          keywords: "device " + (sensor.space || ""),
+        });
+      }
+      if (sensor.label) {
+        out.push({
+          label: sensor.label + " (" + deviceName(sensor) + ")",
+          path: devicePath,
+          keys: "",
+          keywords: "sensor probe " + (sensor.kind || "") + " " + (sensor.space || ""),
+        });
+      }
     });
     items = out;
   }
@@ -94,7 +130,7 @@
     dialog.setAttribute("aria-label", "Dashboard search");
     dialog.innerHTML =
       '<div class="tt-command-panel">' +
-      '<input class="tt-command-input" type="search" placeholder="Go to a page or property…" autocomplete="off" aria-label="Search dashboard">' +
+      '<input class="tt-command-input" type="search" placeholder="Go to a page, property, device, or sensor…" autocomplete="off" aria-label="Search dashboard">' +
       '<ul class="tt-command-list" role="listbox"></ul>' +
       '<p class="tt-command-hint"></p>' +
       "</div>";
@@ -149,22 +185,38 @@
         "<li><button type='button' class='tt-command-item' disabled><span>/ or Ctrl+K</span><kbd class='tt-command-kbd'>search</kbd></button></li>" +
         "<li><button type='button' class='tt-command-item' disabled><span>s</span><kbd class='tt-command-kbd'>snooze</kbd></button></li>" +
         "<li><button type='button' class='tt-command-item' disabled><span>Esc</span><kbd class='tt-command-kbd'>close</kbd></button></li>";
-      hint.textContent = "Type to search pages and properties.";
+      hint.textContent = "Type to search pages, properties, devices, and sensors.";
       filtered = [];
       return;
     }
-    filtered = items.filter(function (item) {
-      if (!q) return true;
-      return (
-        item.label.toLowerCase().indexOf(q) !== -1 ||
-        (item.keywords && item.keywords.toLowerCase().indexOf(q) !== -1) ||
-        (item.path && item.path.toLowerCase().indexOf(q) !== -1)
-      );
-    });
+    // Rank label matches (prefix first) above keyword/path-only matches.
+    function score(item) {
+      if (!q) return 1;
+      var label = item.label.toLowerCase();
+      var at = label.indexOf(q);
+      if (at === 0) return 4;
+      if (at !== -1) return 3;
+      if (item.keywords && item.keywords.toLowerCase().indexOf(q) !== -1) return 2;
+      if (item.path && item.path.toLowerCase().indexOf(q) !== -1) return 1;
+      return 0;
+    }
+    filtered = items
+      .map(function (item, index) {
+        return { item: item, score: score(item), index: index };
+      })
+      .filter(function (row) {
+        return row.score > 0;
+      })
+      .sort(function (a, b) {
+        return b.score - a.score || a.index - b.index;
+      })
+      .map(function (row) {
+        return row.item;
+      });
     selected = 0;
     if (filtered.length === 0) {
       list.innerHTML = "<li><p class='tt-command-empty'>No matches.</p></li>";
-      hint.textContent = "Try Overview, Live, Alerts, or a property name.";
+      hint.textContent = "Try Overview, Live, Alerts, or a property, device, or sensor name.";
       return;
     }
     list.innerHTML = filtered

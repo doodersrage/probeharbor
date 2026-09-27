@@ -44,6 +44,15 @@ const paletteHouseholds = shell.households.map((row) => ({
   id: row.household_id,
   name: row.name,
 }));
+// Devices and sensors for command-palette search (from the shell's latest
+// readings, so no extra query). Capped to keep the page payload small.
+const paletteSensors = (shell.latest ?? []).slice(0, 200).map((row) => ({
+  deviceId: row.sensor.device_id,
+  device: row.deviceName,
+  space: row.deviceSpace ?? null,
+  label: row.sensor.label,
+  kind: row.sensor.kind,
+}));
 const householdSwitched = Astro.url.searchParams.get("household_switched") === "1";
 const householdError = Astro.url.searchParams.get("household_error") === "1";
 ---
@@ -114,6 +123,7 @@ const householdError = Astro.url.searchParams.get("household_error") === "1";
       showPortfolio: shell.showPortfolioInMonitor,
       households: paletteHouseholds,
       activeHouseholdId: shell.activeHouseholdId,
+      sensors: paletteSensors,
     })}
   ></div>
   <script src="/remember-dashboard-tabs.js" defer is:inline />
