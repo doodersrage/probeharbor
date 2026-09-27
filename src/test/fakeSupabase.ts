@@ -146,6 +146,10 @@ class QueryBuilder implements PromiseLike<{ data: unknown; error: null; count: n
   }
   not(column: string, operator: string, value: unknown) {
     if (operator === "is") this.filters.push((row) => (value === null ? row[column] != null : row[column] !== value));
+    else if (operator === "in") {
+      const values = String(value).replace(/^\(|\)$/g, "").split(",");
+      this.filters.push((row) => !values.includes(String(row[column])));
+    }
     else this.filters.push((row) => !sameValue(row[column], value));
     return this;
   }

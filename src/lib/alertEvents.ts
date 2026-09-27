@@ -132,6 +132,7 @@ export async function acknowledgeLatestUnackedAlert(
     .eq("user_id", userId)
     .is("acknowledged_at", null)
     .not("channels_sent", "eq", "{}")
+    .not("kind", "in", INFORMATIONAL_KIND_FILTER)
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle();
@@ -156,6 +157,7 @@ export async function acknowledgeAllUnackedAlerts(
     .eq("user_id", userId)
     .is("acknowledged_at", null)
     .not("channels_sent", "eq", "{}")
+    .not("kind", "in", INFORMATIONAL_KIND_FILTER)
     .order("created_at", { ascending: false })
     .limit(limit);
 
@@ -198,7 +200,7 @@ export async function listRecentAlertEventsFiltered(
     query = query.ilike("kind", `%${options.kind.trim()}%`);
   }
   if (options.unackedOnly) {
-    query = query.is("acknowledged_at", null);
+    query = query.is("acknowledged_at", null).not("kind", "in", INFORMATIONAL_KIND_FILTER);
   }
 
   const { data, error } = await query;
@@ -317,6 +319,18 @@ export async function hasDeliveredAnyAlert(userId: string): Promise<boolean> {
   return data.length > 0;
 }
 
+/**
+ * Sends that inform rather than demand action: test alerts, digests and
+ * reports, freeze drills, and playbook follow-ups (the original event is
+ * the one to acknowledge). They never count as "unhandled".
+ */
+export const INFORMATIONAL_ALERT_KINDS = ["generic", "digest"] as const;
+const INFORMATIONAL_KIND_FILTER = `(${INFORMATIONAL_ALERT_KINDS.join(",")})`;
+
+export function isActionableAlertKind(kind: string): boolean {
+  return !(INFORMATIONAL_ALERT_KINDS as readonly string[]).includes(kind);
+}
+
 export async function countUnacknowledgedAlerts(userId: string): Promise<number> {
   const supabase = createServerClient();
   const { count } = await supabase
@@ -324,7 +338,8 @@ export async function countUnacknowledgedAlerts(userId: string): Promise<number>
     .select("id", { count: "exact", head: true })
     .eq("user_id", userId)
     .is("acknowledged_at", null)
-    .not("channels_sent", "eq", "{}");
+    .not("channels_sent", "eq", "{}")
+    .not("kind", "in", INFORMATIONAL_KIND_FILTER);
 
   return count ?? 0;
 }
