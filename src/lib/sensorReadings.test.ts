@@ -4,7 +4,7 @@ import type { TempFeedResult, TempProbeConfig } from "./tempFeedConfig";
 
 function mockQuery(result: { data?: unknown; error?: unknown }) {
   const builder: Record<string, unknown> = {};
-  for (const method of ["select", "eq", "in", "gte", "not", "order", "limit", "insert"]) {
+  for (const method of ["select", "eq", "in", "gte", "lt", "not", "order", "limit", "insert"]) {
     builder[method] = vi.fn(() => builder);
   }
   builder.maybeSingle = vi.fn(() => Promise.resolve(result));
@@ -228,6 +228,26 @@ describe("getRecentNumericReadingSamples", () => {
     const result = await getRecentNumericReadingSamples("sensor-1", "2024-01-01");
 
     expect(result).toEqual([{ at: "2024-01-01T00:00:00Z", tempF: 40 }]);
+  });
+});
+
+describe("getFreezeDwellSamples", () => {
+  it("prepends the latest pre-cutoff reading to the window samples", async () => {
+    mockFrom
+      .mockReturnValueOnce(
+        mockQuery({ data: [{ value_num: 31, recorded_at: "2024-01-01T11:20:00Z" }] }),
+      )
+      .mockReturnValueOnce(
+        mockQuery({ data: [{ value_num: 30, recorded_at: "2024-01-01T11:40:00Z" }] }),
+      );
+    const { getFreezeDwellSamples } = await import("./sensorReadings");
+
+    const result = await getFreezeDwellSamples("sensor-1", "2024-01-01T11:30:00.000Z");
+
+    expect(result).toEqual([
+      { at: "2024-01-01T11:20:00Z", tempF: 31 },
+      { at: "2024-01-01T11:40:00Z", tempF: 30 },
+    ]);
   });
 });
 

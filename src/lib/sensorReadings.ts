@@ -134,6 +134,41 @@ export async function getRecentNumericReadingSamples(
     }));
 }
 
+/** Anchor lookback: how far back to look for the last reading before a dwell window. */
+const DWELL_ANCHOR_LOOKBACK_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * Samples for a freeze-dwell check: every reading since `cutoffIso`, plus the
+ * most recent reading before it. That anchor proves the probe was already cold
+ * when the window opened, however often the device reports.
+ */
+export async function getFreezeDwellSamples(
+  sensorId: string,
+  cutoffIso: string,
+): Promise<Array<{ at: string; tempF: number }>> {
+  const anchorSinceIso = new Date(
+    Date.parse(cutoffIso) - DWELL_ANCHOR_LOOKBACK_MS,
+  ).toISOString();
+  const supabase = createServerClient();
+  const [anchor, window] = await Promise.all([
+    supabase
+      .from("sensor_readings")
+      .select("value_num, recorded_at")
+      .eq("sensor_id", sensorId)
+      .gte("recorded_at", anchorSinceIso)
+      .lt("recorded_at", cutoffIso)
+      .not("value_num", "is", null)
+      .order("recorded_at", { ascending: false })
+      .limit(1),
+    getRecentNumericReadingSamples(sensorId, cutoffIso),
+  ]);
+
+  const anchorSamples = (anchor.data ?? [])
+    .filter((row) => typeof row.value_num === "number" && typeof row.recorded_at === "string")
+    .map((row) => ({ at: row.recorded_at as string, tempF: row.value_num as number }));
+  return [...anchorSamples, ...window];
+}
+
 export async function fetchRecentBoolReadings(
   sensorId: string,
   sinceIso: string,

@@ -25,6 +25,7 @@ import {
   fetchLatestSensorValues,
   fetchRecentBoolReadings,
   getRecentNumericReadings,
+  getFreezeDwellSamples,
   getRecentNumericReadingSamples,
 } from "./sensorReadings";
 import { isBoolSensorKind, isNumericSensorKind } from "./sensorKinds";
@@ -85,8 +86,8 @@ export async function sendThresholdAlertsIfNeeded(
   let dwellSamplesBySensorId: Record<string, Array<{ at: string; tempF: number }>> =
     {};
   if (settings.freezeDwellMinutes > 0) {
-    const sinceIso = new Date(
-      Date.now() - Math.max(settings.freezeDwellMinutes, 1) * 60 * 1000 - 5 * 60 * 1000,
+    const cutoffIso = new Date(
+      Date.now() - settings.freezeDwellMinutes * 60 * 1000,
     ).toISOString();
     const sensorIds = [
       ...new Set(
@@ -97,7 +98,7 @@ export async function sendThresholdAlertsIfNeeded(
     ];
     const pairs = await Promise.all(
       sensorIds.map(async (sensorId) => {
-        const samples = await getRecentNumericReadingSamples(sensorId, sinceIso);
+        const samples = await getFreezeDwellSamples(sensorId, cutoffIso);
         return [sensorId, samples] as const;
       }),
     );

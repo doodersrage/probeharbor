@@ -116,6 +116,44 @@ describe("evaluateAlerts", () => {
       "Garage is 30.0°F (at or below freeze threshold 34°F for 10+ min).",
     ]);
   });
+
+  it("fires for slow reporters when the last pre-window sample was cold", () => {
+    const dwell: AlertSettings = { ...enabled, freezeDwellMinutes: 30 };
+    const now = Date.parse("2026-01-01T12:00:00.000Z");
+    // 20-minute reporting interval: nothing lands near the 11:30 cutoff.
+    const samples = {
+      "sensor-a": [
+        { at: "2026-01-01T11:20:00.000Z", tempF: 31 },
+        { at: "2026-01-01T11:40:00.000Z", tempF: 30 },
+        { at: "2026-01-01T12:00:00.000Z", tempF: 30 },
+      ],
+    };
+    expect(
+      evaluateAlerts(dwell, [reading({ tempf: 30, sensorId: "sensor-a" })], {
+        dwellSamplesBySensorId: samples,
+        nowMs: now,
+      }),
+    ).toHaveLength(1);
+  });
+
+  it("ignores an older cold sample when the probe warmed before the window", () => {
+    const dwell: AlertSettings = { ...enabled, freezeDwellMinutes: 10 };
+    const now = Date.parse("2026-01-01T12:00:00.000Z");
+    const samples = {
+      "sensor-a": [
+        { at: "2026-01-01T11:40:00.000Z", tempF: 30 },
+        { at: "2026-01-01T11:49:00.000Z", tempF: 40 },
+        { at: "2026-01-01T11:55:00.000Z", tempF: 30 },
+        { at: "2026-01-01T12:00:00.000Z", tempF: 30 },
+      ],
+    };
+    expect(
+      evaluateAlerts(dwell, [reading({ tempf: 30, sensorId: "sensor-a" })], {
+        dwellSamplesBySensorId: samples,
+        nowMs: now,
+      }),
+    ).toEqual([]);
+  });
 });
 
 describe("evaluateFloodAlerts", () => {

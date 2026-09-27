@@ -549,12 +549,17 @@ export function meetsFreezeDwell(
     return Number.isFinite(ts) && ts >= cutoffMs && ts <= nowMs;
   });
 
-  // Need evidence spanning the dwell window: at least one sample at/before cutoff.
-  const hasAnchor = samplesOldestToNewest.some((sample) => {
+  // Need evidence spanning the dwell window: the last sample at/before the
+  // cutoff must already be cold (an older cold sample doesn't count if the
+  // probe warmed up after it).
+  let anchor: { ts: number; tempF: number } | null = null;
+  for (const sample of samplesOldestToNewest) {
     const ts = Date.parse(sample.at);
-    return Number.isFinite(ts) && ts <= cutoffMs && sample.tempF <= freezeThresholdF;
-  });
-  if (!hasAnchor) return false;
+    if (Number.isFinite(ts) && ts <= cutoffMs && (!anchor || ts >= anchor.ts)) {
+      anchor = { ts, tempF: sample.tempF };
+    }
+  }
+  if (!anchor || anchor.tempF > freezeThresholdF) return false;
 
   const relevant =
     windowSamples.length > 0
