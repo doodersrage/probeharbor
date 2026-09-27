@@ -1,14 +1,26 @@
 /** Operator notifications for failed background jobs. */
-import { getRuntimeEnv } from "./runtimeEnv";
+
+/**
+ * Worker secrets first (set by `pnpm secrets:push`), then build-time env.
+ * Imported lazily: a static import pulls in `cloudflare:workers`, which
+ * breaks prerendered pages (e.g. /badge/*.svg) that reach this module.
+ */
+async function readOpsEnv(key: string): Promise<string> {
+  try {
+    const { getRuntimeEnv } = await import("./runtimeEnv");
+    return cleanEnv(getRuntimeEnv(key));
+  } catch {
+    return cleanEnv((import.meta.env as Record<string, unknown>)[key]);
+  }
+}
 
 function cleanEnv(value: unknown): string {
   return String(value ?? "").replace(/\r/g, "").trim();
 }
 
 async function sendOpsEmail(subject: string, body: string): Promise<boolean> {
-  // Worker secrets first (set by `pnpm secrets:push`), then build-time env.
-  const to = cleanEnv(getRuntimeEnv("SMTP_MAIL_TO"));
-  const from = cleanEnv(getRuntimeEnv("SMTP_MAIL_FROM"));
+  const to = await readOpsEnv("SMTP_MAIL_TO");
+  const from = await readOpsEnv("SMTP_MAIL_FROM");
   if (!to || !from) return false;
 
   try {
@@ -35,8 +47,8 @@ async function sendOpsEmail(subject: string, body: string): Promise<boolean> {
 async function sendOpsDiscord(title: string, body: string): Promise<boolean> {
   // OPS_DISCORD_WEBHOOK_URL is a Worker runtime secret, not a build-time var.
   const webhook =
-    cleanEnv(getRuntimeEnv("OPS_DISCORD_WEBHOOK_URL")) ||
-    cleanEnv(getRuntimeEnv("DISCORD_OPS_WEBHOOK_URL"));
+    (await readOpsEnv("OPS_DISCORD_WEBHOOK_URL")) ||
+    (await readOpsEnv("DISCORD_OPS_WEBHOOK_URL"));
   if (!webhook) return false;
 
   try {

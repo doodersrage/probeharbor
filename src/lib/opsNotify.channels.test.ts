@@ -1,18 +1,17 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { env } from "cloudflare:workers";
 
-const runtime: Record<string, string> = {};
-vi.mock("./runtimeEnv", () => ({
-  getRuntimeEnv: (key: string) => runtime[key],
-}));
+// cloudflare:workers is aliased to a stub whose `env` stands in for Worker secrets.
+const workerEnv = env as unknown as Record<string, string | undefined>;
 
 afterEach(() => {
   vi.unstubAllGlobals();
-  for (const key of Object.keys(runtime)) delete runtime[key];
+  delete workerEnv.OPS_DISCORD_WEBHOOK_URL;
 });
 
 describe("notifyOps", () => {
   it("posts to the ops Discord webhook set as a Worker runtime secret", async () => {
-    runtime.OPS_DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/ops/xyz";
+    workerEnv.OPS_DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/ops/xyz";
     const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 204 }));
     vi.stubGlobal("fetch", fetchMock);
     const { notifyOps } = await import("./opsNotify");

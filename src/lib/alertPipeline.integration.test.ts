@@ -4,7 +4,7 @@
  * database (in-memory), fetch, and the weather context are faked.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { FakeSupabase } from "../test-utils/fakeSupabase";
+import { FakeSupabase } from "../test/fakeSupabase";
 
 let db: FakeSupabase;
 vi.mock("./supabase", () => ({
