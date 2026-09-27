@@ -101,6 +101,22 @@ describe("POST /api/v1/devices/sensors-batch", () => {
     );
   });
 
+  it("skips malformed rows and keeps the label when it is blank", async () => {
+    const { POST } = await import("./sensors-batch");
+
+    const response = await POST(
+      makeContext({ sensors: [null, { id: 42 }, { id: "s1", label: "   " }] }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(mockUpdateDeviceSensor).toHaveBeenCalledTimes(1);
+    expect(mockUpdateDeviceSensor).toHaveBeenCalledWith(
+      "s1",
+      "d1",
+      expect.objectContaining({ label: "Old" }),
+    );
+  });
+
   it("returns 500 when an update fails", async () => {
     mockUpdateDeviceSensor.mockResolvedValue({ error: "db error" });
     const { POST } = await import("./sensors-batch");

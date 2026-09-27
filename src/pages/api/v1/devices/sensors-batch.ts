@@ -48,11 +48,12 @@ export const POST: APIRoute = async ({ request }) => {
   );
 
   for (const row of body.sensors) {
-    const id = row.id?.trim();
+    if (!row || typeof row !== "object") continue;
+    const id = typeof row.id === "string" ? row.id.trim() : "";
     if (!id) continue;
     const match = sensorById.get(id);
     if (!match) continue;
-    const label = row.label?.trim() ?? match.sensor.label;
+    const label = (typeof row.label === "string" ? row.label.trim() : "") || match.sensor.label;
     const result = await updateDeviceSensor(id, match.deviceId, {
       key: match.sensor.key,
       label,

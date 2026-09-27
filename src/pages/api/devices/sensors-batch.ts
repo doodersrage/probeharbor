@@ -49,8 +49,9 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   );
 
   for (const row of body.sensors) {
-    const id = row.id?.trim();
-    const label = row.label?.trim();
+    if (!row || typeof row !== "object") continue;
+    const id = typeof row.id === "string" ? row.id.trim() : "";
+    const label = typeof row.label === "string" ? row.label.trim() : undefined;
     if (!id || !label) continue;
     const match = sensorById.get(id);
     if (!match) continue;
