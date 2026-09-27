@@ -43,13 +43,24 @@ interface Props {
   intervalMs?: number;
 }
 
-function formatSensorValue(sensor: LiveSensor): { primary: string; detail: string } {
+function formatSensorValue(
+  sensor: LiveSensor,
+  /** Humidity from a paired sensor (same device + key), when there is one. */
+  pairedHumidity: number | null = null,
+): { primary: string; detail: string } {
   switch (sensor.kind) {
     case "temperature":
       if (sensor.temp) {
+        // The API reports 0 when a probe has no humidity sensor; don't show
+        // that as a real 0% reading.
+        const humidity =
+          pairedHumidity ?? (sensor.temp.h > 0 ? sensor.temp.h : null);
         return {
           primary: `${formatLiveTempF(sensor.temp.f)}`,
-          detail: formatLiveTempDetail(sensor.temp.c, sensor.temp.h),
+          detail:
+            humidity != null
+              ? formatLiveTempDetail(sensor.temp.c, humidity)
+              : `${sensor.temp.c.toFixed(2)}°C`,
         };
       }
       if (sensor.value_num != null) {
@@ -293,10 +304,33 @@ export default function LiveTempsPanel({ intervalMs = 30000 }: Props) {
     [sensors],
   );
 
-  // Prefer kind-aware climate cards when present; fall back to feed groups
-  const temperatureCards = useMemo(() => {
-    return sensors.filter((s) => s.kind === "temperature" || s.kind === "humidity");
+  // Prefer kind-aware climate cards when present; fall back to feed groups.
+  // Humidity paired with a temperature probe (same device + key) shows on the
+  // temperature tile instead of its own. Fresh tiles lead; probes with no
+  // reading for 2h+ (or ever) collapse into an "Offline probes" group.
+  const pairKey = (s: LiveSensor) => `${s.deviceId}:${s.key}`;
+  const pairedHumidity = useMemo(() => {
+    const byKey = new Map<string, number>();
+    for (const s of sensors) {
+      if (s.kind === "humidity" && s.value_num != null) byKey.set(pairKey(s), s.value_num);
+    }
+    return byKey;
   }, [sensors]);
+  const temperatureCards = useMemo(() => {
+    const tempKeys = new Set(sensors.filter((s) => s.kind === "temperature").map(pairKey));
+    const rank = (s: LiveSensor) => {
+      const age = formatRelativeAge(s.recorded_at ?? null);
+      return age.stale ? 2 : age.lagging ? 1 : 0;
+    };
+    return sensors
+      .filter(
+        (s) => s.kind === "temperature" || (s.kind === "humidity" && !tempKeys.has(pairKey(s))),
+      )
+      .map((sensor, index) => ({ sensor, index, rank: rank(sensor) }))
+      .sort((a, b) => a.rank - b.rank || a.index - b.index);
+  }, [sensors]);
+  const liveClimateCards = temperatureCards.filter((c) => c.rank < 2).map((c) => c.sensor);
+  const offlineClimateCards = temperatureCards.filter((c) => c.rank === 2).map((c) => c.sensor);
 
   const laggingSensors = useMemo(() => {
     return sensors
@@ -311,6 +345,41 @@ export default function LiveTempsPanel({ intervalMs = 30000 }: Props) {
         Boolean(row),
       );
   }, [sensors]);
+
+  const renderClimateCard = (sensor: LiveSensor) => {
+    const display = formatSensorValue(sensor, pairedHumidity.get(pairKey(sensor)) ?? null);
+    const age = sensor.recorded_at
+      ? formatRelativeAge(sensor.recorded_at)
+      : formatRelativeAge(null);
+    const freshnessClass = age.stale
+      ? " stat-item-stale"
+      : age.lagging
+        ? " stat-item-lagging"
+        : "";
+    return (
+      <article
+        class={`stat-item${freshnessClass}`}
+        key={`${sensor.deviceId}:${sensor.key}:${sensor.kind}`}
+      >
+        <span class="stat-label">{sensor.label}</span>
+        <p class="stat-value">{display.primary}</p>
+        <p class="stat-detail">
+          {display.detail}
+          {sensor.deviceName ? ` · ${sensor.deviceName}` : ""}
+        </p>
+        <p
+          class={`stat-detail m-0${
+            age.lagging ? " text-[var(--color-warning)]" : ""
+          }`}
+        >
+          {freshnessDetailForSource(
+            sensor.recorded_at,
+            sensor.deviceSource ?? null,
+          )}
+        </p>
+      </article>
+    );
+  };
 
   const hasAnySensors =
     temperatureCards.length > 0 || groups.length > 0 || sensors.length > 0;
@@ -391,42 +460,19 @@ export default function LiveTempsPanel({ intervalMs = 30000 }: Props) {
       )}
 
       {temperatureCards.length > 0 ? (
-        <div class="stat-grid mb-6">
-          {temperatureCards.map((sensor) => {
-            const display = formatSensorValue(sensor);
-            const age = sensor.recorded_at
-              ? formatRelativeAge(sensor.recorded_at)
-              : formatRelativeAge(null);
-            const freshnessClass = age.stale
-              ? " stat-item-stale"
-              : age.lagging
-                ? " stat-item-lagging"
-                : "";
-            return (
-              <article
-                class={`stat-item${freshnessClass}`}
-                key={`${sensor.deviceId}:${sensor.key}:temp`}
-              >
-                <span class="stat-label">{sensor.label}</span>
-                <p class="stat-value">{display.primary}</p>
-                <p class="stat-detail">
-                  {display.detail}
-                  {sensor.deviceName ? ` · ${sensor.deviceName}` : ""}
-                </p>
-                <p
-                  class={`stat-detail m-0${
-                    age.lagging ? " text-amber-300" : ""
-                  }`}
-                >
-                  {freshnessDetailForSource(
-                    sensor.recorded_at,
-                    sensor.deviceSource ?? null,
-                  )}
-                </p>
-              </article>
-            );
-          })}
-        </div>
+        <>
+          {liveClimateCards.length > 0 && (
+            <div class="stat-grid mb-6">{liveClimateCards.map(renderClimateCard)}</div>
+          )}
+          {offlineClimateCards.length > 0 && (
+            <details class="live-offline-probes mb-6" open={liveClimateCards.length === 0}>
+              <summary class="text-sm cursor-pointer text-[var(--color-text-muted)]">
+                Offline probes ({offlineClimateCards.length}): no reading in 2+ hours
+              </summary>
+              <div class="stat-grid mt-3">{offlineClimateCards.map(renderClimateCard)}</div>
+            </details>
+          )}
+        </>
       ) : groups.length > 0 ? (
         <div class="feed-groups mb-6">
           {groups.map((group) => (
@@ -516,7 +562,7 @@ export default function LiveTempsPanel({ intervalMs = 30000 }: Props) {
                   </p>
                   <p
                     class={`stat-detail m-0${
-                      age.lagging ? " text-amber-300" : ""
+                      age.lagging ? " text-[var(--color-warning)]" : ""
                     }`}
                   >
                     {freshnessDetailForSource(
