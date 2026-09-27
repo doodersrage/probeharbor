@@ -28,7 +28,7 @@ vi.mock("./alertContext", () => ({
 }));
 
 beforeEach(() => {
-  mockNotifyUser.mockReset().mockResolvedValue(undefined);
+  mockNotifyUser.mockReset().mockResolvedValue({ sent: ["email"], skipped: [] });
   mockMarkCooldown.mockReset().mockResolvedValue(undefined);
   mockMarkEscalation.mockReset().mockResolvedValue(undefined);
   mockBuildFreezeAlertContext.mockReset().mockResolvedValue(null);
@@ -208,5 +208,40 @@ describe("maybeSendRuleAlerts cooldown", () => {
     );
 
     expect(mockNotifyUser).not.toHaveBeenCalled();
+  });
+});
+
+describe("sendThresholdAlertsIfNeeded delivery retry", () => {
+  const enabled = { ...DEFAULT_ALERT_SETTINGS, enabled: true };
+  const minutesAgo = (m: number) => new Date(Date.now() - m * 60 * 1000).toISOString();
+
+  it("leaves the cooldown unarmed when no channel delivered, so it retries", async () => {
+    mockNotifyUser.mockResolvedValue({ sent: [], skipped: ["email"] });
+    const { sendThresholdAlertsIfNeeded } = await import("./alertNotifications");
+
+    await sendThresholdAlertsIfNeeded("user-1", "a@example.com", enabled, freezingReading);
+
+    expect(mockNotifyUser).toHaveBeenCalledTimes(1);
+    expect(mockMarkCooldown).not.toHaveBeenCalled();
+  });
+
+  it("throttles retries to one per 30 minutes after a failed attempt", async () => {
+    mockListRecentAlertEvents.mockResolvedValue([
+      { kind: "threshold", created_at: minutesAgo(10), channels_sent: [], channels_skipped: ["email"] },
+    ]);
+    const { sendThresholdAlertsIfNeeded } = await import("./alertNotifications");
+
+    await sendThresholdAlertsIfNeeded("user-1", "a@example.com", enabled, freezingReading);
+
+    expect(mockNotifyUser).not.toHaveBeenCalled();
+  });
+
+  it("still arms the cooldown when quiet hours held the alert on purpose", async () => {
+    mockNotifyUser.mockResolvedValue({ sent: [], skipped: ["quiet_hours"] });
+    const { sendThresholdAlertsIfNeeded } = await import("./alertNotifications");
+
+    await sendThresholdAlertsIfNeeded("user-1", "a@example.com", enabled, freezingReading);
+
+    expect(mockMarkCooldown).toHaveBeenCalledWith("user-1", "last_alert_sent_at");
   });
 });

@@ -71,6 +71,23 @@ export {
   mergeAlertReadings,
 } from "./alertReadings";
 
+/** Retry a freeze alert that reached no channel at most this often. */
+const FAILED_DELIVERY_RETRY_MS = 30 * 60 * 1000;
+/** Skips that mean "held back on purpose", which should still start the cooldown. */
+const INTENTIONAL_SKIPS = new Set(["quiet_hours", "snooze_or_vacation"]);
+
+/** A threshold attempt in the retry window reached no channel (not intentionally held). */
+async function recentFailedThresholdAttempt(userId: string): Promise<boolean> {
+  const events = await listRecentAlertEvents(userId, 10).catch(() => []);
+  return events.some(
+    (event) =>
+      event.kind === "threshold" &&
+      Date.now() - Date.parse(event.created_at) < FAILED_DELIVERY_RETRY_MS &&
+      event.channels_sent.length === 0 &&
+      !event.channels_skipped.some((reason) => INTENTIONAL_SKIPS.has(reason)),
+  );
+}
+
 /** True when someone has already acknowledged the most recent threshold alert. */
 async function latestThresholdAlertAcknowledged(userId: string): Promise<boolean> {
   const events = await listRecentAlertEvents(userId, 20).catch(() => []);
@@ -147,6 +164,8 @@ export async function sendThresholdAlertsIfNeeded(
 
   if (isAlertCooldownActive(settings.lastAlertSentAt)) return;
   if (messages.length === 0) return;
+  // A failed delivery skips the cooldown so it retries, but not on every reading.
+  if (await recentFailedThresholdAttempt(userId)) return;
 
   const alertSpace = readings.find((r) => r.space)?.space ?? null;
   // Annotate, never suppress: the annotation only adds context to an alert
@@ -176,7 +195,7 @@ export async function sendThresholdAlertsIfNeeded(
         (row.value_bool === true || row.value_text === "open"),
     ),
   );
-  await notifyUser(userId, email, settings, {
+  const delivery = await notifyUser(userId, email, settings, {
     title: "Temperature alert",
     body,
     kind: "threshold",
@@ -188,6 +207,14 @@ export async function sendThresholdAlertsIfNeeded(
       reasonSummary: contextBlock ?? undefined,
     },
   }, { space: alertSpace });
+  const failedEverywhere =
+    delivery.sent.length === 0 &&
+    !delivery.skipped.some((reason) => INTENTIONAL_SKIPS.has(reason));
+  if (failedEverywhere) {
+    // Nothing reached the user: leave the 4h cooldown unarmed so this retries
+    // (throttled to every 30 min by recentFailedThresholdAttempt).
+    return;
+  }
   await markCooldown(userId, "last_alert_sent_at");
 }
 
