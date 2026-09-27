@@ -90,14 +90,3 @@ export async function deleteUserAccount(
   return { error: error?.message ?? null };
 }
 
-export function resolveDataRetentionDays(
-  userRetention: number | null | undefined,
-  tier: "free" | "member" | "pro" | "admin",
-): number {
-  if (userRetention != null && userRetention >= 30) {
-    return Math.min(userRetention, tier === "pro" || tier === "admin" ? 730 : 365);
-  }
-  if (tier === "pro" || tier === "admin") return 365;
-  if (tier === "member") return 180;
-  return 90;
-}
