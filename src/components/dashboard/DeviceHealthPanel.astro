@@ -51,8 +51,8 @@ function formatLatestValue(row: LatestSensorRow): string {
 }
 
 const healthTone: Record<string, string> = {
-  healthy: "text-[var(--color-success,#16a34a)]",
-  watch: "text-amber-600 dark:text-amber-300",
+  healthy: "text-[var(--color-success)]",
+  watch: "text-[var(--color-warning)]",
   at_risk: "text-[var(--color-danger)]",
   offline: "text-[var(--color-text-muted)]",
 };

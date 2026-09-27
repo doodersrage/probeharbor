@@ -182,63 +182,73 @@ const roleFromShell =
   shell?.households.find((row) => row.household_id === activeHouseholdId)?.role ?? null;
 
 const evidencePromise = ensureAlertDeliveryEvidence(user.id, alertSettingsLoaded);
-const [{ settings: alertSettings }, members, householdDevicesResult, householdRole] =
-  await Promise.all([
-    evidencePromise,
-    household.householdId && !onboardingDismissed
-      ? listHouseholdMembers(household.householdId)
-      : Promise.resolve({ members: [] as Awaited<ReturnType<typeof listHouseholdMembers>>["members"] }),
-    household.householdId
-      ? listHouseholdDevices(household.householdId)
-      : Promise.resolve({ devices: [] as Awaited<ReturnType<typeof listHouseholdDevices>>["devices"] }),
-    roleFromShell
-      ? Promise.resolve(roleFromShell as HouseholdRole)
-      : activeHouseholdId
-        ? getUserHouseholdRole(user.id, activeHouseholdId)
-        : Promise.resolve(null),
-  ]);
-
 const shellLatest = latestFromShell(shell, household.householdId);
-const latest = shellLatest
-  ? shellLatest
-  : household.householdId
-    ? await fetchLatestSensorValues(household.householdId)
-    : [];
+const [
+  { settings: alertSettings },
+  members,
+  householdDevicesResult,
+  householdRole,
+  latest,
+] = await Promise.all([
+  evidencePromise,
+  household.householdId && !onboardingDismissed
+    ? listHouseholdMembers(household.householdId)
+    : Promise.resolve({ members: [] as Awaited<ReturnType<typeof listHouseholdMembers>>["members"] }),
+  household.householdId
+    ? listHouseholdDevices(household.householdId)
+    : Promise.resolve({ devices: [] as Awaited<ReturnType<typeof listHouseholdDevices>>["devices"] }),
+  roleFromShell
+    ? Promise.resolve(roleFromShell as HouseholdRole)
+    : activeHouseholdId
+      ? getUserHouseholdRole(user.id, activeHouseholdId)
+      : Promise.resolve(null),
+  shellLatest
+    ? Promise.resolve(shellLatest)
+    : household.householdId
+      ? fetchLatestSensorValues(household.householdId)
+      : Promise.resolve([] as Awaited<ReturnType<typeof fetchLatestSensorValues>>),
+]);
 
-const devicesEarly = householdDevicesResult.devices;
-const canEditEarly = canEditHousehold(householdRole);
-const forceSimpleEarly = shouldForceSimpleOverview(householdRole);
-const onboardingDismissedEarly = onboardingDismissed;
-const hasDevicesEarly =
-  devicesEarly.some((d) => d.source === "push" || d.source === "pull_url");
-const hasAlertsEnabledEarly = alertSettings.enabled;
-const hasEmailAlertsEarly =
-  alertSettings.enabled && hasConfiguredAlertChannel(alertSettings, user.email);
-const lastAlertCandidatesEarlyGate = [
-  alertSettings.lastAlertSentAt,
-  alertSettings.lastOutageAlertAt,
-  alertSettings.lastRateAlertAt,
-  alertSettings.lastForecastAlertAt,
-  alertSettings.lastRunwayAlertAt,
-  alertSettings.lastFloodAlertAt,
-  alertSettings.lastNwsAlertAt,
-].filter(Boolean) as string[];
-const hasTestAlertEarly = lastAlertCandidatesEarlyGate.length > 0;
-const essentialDoneEarly =
-  (hasDevicesEarly || latest.length > 0) &&
-  hasAlertsEnabledEarly &&
-  hasTestAlertEarly &&
-  (hasEmailAlertsEarly || hasConfiguredAlertChannel(alertSettings, user.email));
-const firstRunFocusEarly =
-  canEditEarly && !onboardingDismissedEarly && !essentialDoneEarly;
-const showInsightsEarly =
-  !forceSimpleEarly &&
-  getDashboardOverviewMode(user) === "insights" &&
-  !firstRunFocusEarly;
+const devices = householdDevicesResult.devices;
+const canEdit = canEditHousehold(householdRole);
+const forceSimple = shouldForceSimpleOverview(householdRole);
+if (forceSimple) {
+  overviewMode = "simple";
+}
 
-const loadHeavyWeather = showInsightsEarly;
+/** Device + freeze email + at least one alert (test counts). Insights wait until this. */
+const hasDevices =
+  devices.some((d) => d.source === "push" || d.source === "pull_url") ||
+  latest.length > 0;
+const hasAlertsEnabled = alertSettings.enabled;
+const hasEmailAlerts =
+  alertSettings.enabled &&
+  alertSettings.channelEmail &&
+  Boolean(resolveAlertEmail(alertSettings, user.email));
+const lastAlertAt =
+  [
+    alertSettings.lastAlertSentAt,
+    alertSettings.lastOutageAlertAt,
+    alertSettings.lastRateAlertAt,
+    alertSettings.lastForecastAlertAt,
+    alertSettings.lastRunwayAlertAt,
+    alertSettings.lastFloodAlertAt,
+    alertSettings.lastNwsAlertAt,
+  ]
+    .filter((at): at is string => Boolean(at))
+    .sort((a, b) => Date.parse(b) - Date.parse(a))[0] ?? null;
+/** Live probes or a configured device, alerts on, and a delivered test/real alert. */
+const essentialDone =
+  hasDevices &&
+  hasAlertsEnabled &&
+  Boolean(lastAlertAt) &&
+  hasConfiguredAlertChannel(alertSettings, user.email);
+const firstRunFocus = canEdit && !onboardingDismissed && !essentialDone;
+const showInsights = !firstRunFocus && overviewMode === "insights";
+
+const loadHeavyWeather = showInsights;
 // Probe curves render on Simple and Insights; only skip during first-run focus.
-const loadChart = !firstRunFocusEarly;
+const loadChart = !firstRunFocus;
 
 const weatherPromise = loadHeavyWeather
   ? fetchWeatherSnapshotForConfig(weatherConfig)
@@ -249,7 +259,7 @@ const chartPromise = loadChart
       points: [] as Awaited<ReturnType<typeof fetchGarageTempChartData>>["points"],
       error: null as string | null,
     });
-const nightsPromise = showInsightsEarly
+const nightsPromise = showInsights
   ? weatherPromise.then((snap) =>
       fetchNightsAtRiskForConfig(
         weatherConfig,
@@ -265,12 +275,6 @@ const [weatherSnapshot, nightsAtRisk, chartWeek] = await Promise.all([
   chartPromise,
 ]);
 
-const devices = householdDevicesResult.devices;
-const canEdit = canEditHousehold(householdRole);
-const forceSimple = shouldForceSimpleOverview(householdRole);
-if (forceSimple) {
-  overviewMode = "simple";
-}
 const canExportCsv = entitlements.canDownloadCsv;
 const hasHistory = loadChart ? chartWeek.points.length > 0 : latest.length > 0;
 
@@ -278,35 +282,6 @@ const chartMarkerTimes = chartWeek.points
   .map((p) => Date.parse(p.timestamp))
   .filter((ts) => Number.isFinite(ts));
 const loadChartAlertMarkers = chartMarkerTimes.length > 0;
-
-/** Device + freeze email + at least one alert (test counts). Insights wait until this. */
-const hasDevices =
-  devices.some((d) => d.source === "push" || d.source === "pull_url") ||
-  latest.length > 0;
-const hasAlertsEnabled = alertSettings.enabled;
-const hasEmailAlerts =
-  alertSettings.enabled &&
-  alertSettings.channelEmail &&
-  Boolean(resolveAlertEmail(alertSettings, user.email));
-const lastAlertCandidatesEarly = [
-  alertSettings.lastAlertSentAt,
-  alertSettings.lastOutageAlertAt,
-  alertSettings.lastRateAlertAt,
-  alertSettings.lastForecastAlertAt,
-  alertSettings.lastRunwayAlertAt,
-  alertSettings.lastFloodAlertAt,
-  alertSettings.lastNwsAlertAt,
-].filter(Boolean) as string[];
-const lastAlertAt =
-  lastAlertCandidatesEarly.sort((a, b) => Date.parse(b) - Date.parse(a))[0] ?? null;
-/** Live probes or a configured device, alerts on, and a delivered test/real alert. */
-const essentialDone =
-  (hasDevices || latest.length > 0) &&
-  hasAlertsEnabled &&
-  Boolean(lastAlertAt) &&
-  (hasEmailAlerts || hasConfiguredAlertChannel(alertSettings, user.email));
-const firstRunFocus = canEdit && !onboardingDismissed && !essentialDone;
-const showInsights = !firstRunFocus && overviewMode === "insights";
 
 const weatherHasCoords =
   weatherSnapshot?.lat != null &&

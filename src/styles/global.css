@@ -51,6 +51,7 @@
   --color-info-border: rgb(59 130 246 / 0.35);
   --color-info-text: #93c5fd;
   /* Warning / freeze urgency — deeper orange-red than accent */
+  --color-warning: #ff9a4d;
   --color-warning-bg: rgb(232 85 0 / 0.14);
   --color-warning-border: rgb(232 85 0 / 0.45);
   --color-warning-text: #ffb366;
@@ -104,6 +105,7 @@
     --color-success-bg: rgb(61 139 98 / 0.12);
     --color-success-text: #2f6e4c;
     --color-success-soft: rgb(61 139 98 / 0.12);
+    --color-warning: #a8650c;
     --color-warning-bg: rgb(217 139 24 / 0.12);
     --color-warning-border: rgb(217 139 24 / 0.45);
     --color-warning-text: #8f5a0e;
@@ -3543,12 +3545,12 @@
     width: 0.45rem;
     height: 0.45rem;
     border-radius: 999px;
-    background: var(--color-warning, #d97706);
+    background: var(--color-warning);
     margin-left: auto;
   }
 
   .dashboard-nav-link--warn {
-    color: var(--color-warning-text, var(--color-warning));
+    color: var(--color-warning-text);
   }
 
   .dashboard-mobile-monitor {
@@ -3593,7 +3595,7 @@
     }
 
     .dashboard-mobile-monitor-link--warn {
-      color: var(--color-warning-text, var(--color-warning));
+      color: var(--color-warning-text);
     }
 
     .dashboard-mobile-monitor-icon {
