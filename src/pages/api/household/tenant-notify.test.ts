@@ -21,7 +21,8 @@ vi.mock("../../../lib/tenantRelay", () => ({
 }));
 
 const mockFormRedirectPath = vi.fn();
-vi.mock("../../../lib/siteUrl", () => ({
+vi.mock("../../../lib/siteUrl", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../../../lib/siteUrl")>()),
   formRedirectPath: (...a: unknown[]) => mockFormRedirectPath(...a),
 }));
 
@@ -118,7 +119,7 @@ describe("POST /api/household/tenant-notify", () => {
     await POST(context);
 
     expect(context.redirect).toHaveBeenCalledWith(
-      "/dashboard/settings?tenant_error=invalid%20email",
+      "/dashboard/settings?tenant_error=invalid+email",
     );
   });
 });

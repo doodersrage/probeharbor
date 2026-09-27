@@ -12,7 +12,7 @@ import {
   requireHouseholdManager,
 } from "../../../lib/householdAuth";
 import { recordHouseholdActivity } from "../../../lib/householdActivity";
-import { formRedirectPath } from "../../../lib/siteUrl";
+import { formRedirectPath, withQuery } from "../../../lib/siteUrl";
 import { FLASH_API_KEY, setSecretFlash } from "../../../lib/secretFlash";
 
 export const POST: APIRoute = async ({ request, cookies, redirect }) => {
@@ -30,12 +30,12 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const entitlements = await getUserEntitlements(user.id);
 
   if (!entitlements.canCreateShareLinks) {
-    return redirect(`${redirectTo}?error=pro_required`);
+    return redirect(withQuery(redirectTo, { error: "pro_required" }));
   }
 
   const household = await getOrCreateHouseholdForUser(user.id, user.email);
   if (!household.householdId) {
-    return redirect(`${redirectTo}?error=1`);
+    return redirect(withQuery(redirectTo, { error: "1" }));
   }
 
   if (action === "revoke") {
@@ -43,7 +43,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     if (id) {
       await revokeHouseholdApiKey(household.householdId, id);
     }
-    return redirect(`${redirectTo}?api_key_revoked=1`);
+    return redirect(withQuery(redirectTo, { api_key_revoked: "1" }));
   }
 
   const name = formData.get("name")?.toString() ?? "Metrics key";
@@ -53,7 +53,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     createdBy: user.id,
   });
   if (result.error || !result.plaintext) {
-    return redirect(`${redirectTo}?error=1`);
+    return redirect(withQuery(redirectTo, { error: "1" }));
   }
 
   await recordHouseholdActivity({
@@ -64,5 +64,5 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   });
 
   setSecretFlash(cookies, FLASH_API_KEY, result.plaintext);
-  return redirect(`${redirectTo}?api_key_created=1`);
+  return redirect(withQuery(redirectTo, { api_key_created: "1" }));
 };

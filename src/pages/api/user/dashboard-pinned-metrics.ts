@@ -10,7 +10,7 @@ import {
   updatePinnedOverviewMetrics,
   type PinnableOverviewMetric,
 } from "../../../lib/dashboardComfort";
-import { formRedirectPath } from "../../../lib/siteUrl";
+import { formRedirectPath, withQuery } from "../../../lib/siteUrl";
 
 function wantsJson(request: Request): boolean {
   const accept = request.headers.get("accept") ?? "";
@@ -31,8 +31,8 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     return redirect("/signin");
   }
 
-  const accessToken = cookies.get("sb-access-token")!.value;
-  const refreshToken = cookies.get("sb-refresh-token")!.value;
+  const accessToken = session.access_token;
+  const refreshToken = session.refresh_token;
   const asJson = wantsJson(request);
 
   let metrics: PinnableOverviewMetric[] | null = null;
@@ -109,7 +109,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
         headers: { "Content-Type": "application/json" },
       });
     }
-    return redirect(`${redirectTo}?pinned_error=1`);
+    return redirect(withQuery(redirectTo, { pinned_error: "1" }));
   }
 
   const { error } = await updatePinnedOverviewMetrics(
@@ -125,7 +125,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
         headers: { "Content-Type": "application/json" },
       });
     }
-    return redirect(`${redirectTo}?pinned_error=1`);
+    return redirect(withQuery(redirectTo, { pinned_error: "1" }));
   }
 
   const { data: refreshedSession } = await createAuthClient().auth.refreshSession({

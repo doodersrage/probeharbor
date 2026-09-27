@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
 import { getAuthFromCookies } from "../../../lib/auth";
 import { setActiveHouseholdForUser } from "../../../lib/households";
-import { formRedirectPath } from "../../../lib/siteUrl";
+import { formRedirectPath, withQuery } from "../../../lib/siteUrl";
 
 export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const { session, user } = await getAuthFromCookies(cookies);
@@ -14,13 +14,13 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const redirectTo = formData ? formRedirectPath(formData, "/dashboard") : "/dashboard";
 
   if (!householdId) {
-    return redirect(`${redirectTo}?household_error=1`);
+    return redirect(withQuery(redirectTo, { household_error: "1" }));
   }
 
   const { error } = await setActiveHouseholdForUser(user.id, householdId);
   if (error) {
-    return redirect(`${redirectTo}?household_error=1`);
+    return redirect(withQuery(redirectTo, { household_error: "1" }));
   }
 
-  return redirect(`${redirectTo}?household_switched=1`);
+  return redirect(withQuery(redirectTo, { household_switched: "1" }));
 };

@@ -5,7 +5,7 @@ import {
   getUserHouseholdRole,
   type HouseholdRole,
 } from "./households";
-import { sanitizeNextPath } from "./siteUrl";
+import { sanitizeNextPath, withQuery } from "./siteUrl";
 
 export type HouseholdEditorContext = {
   householdId: string;
@@ -61,9 +61,9 @@ export function redirectUnlessManager(
   const base = safeRedirectBase(redirectTo);
   if (manager.ok) return null;
   if (manager.error === "manager_required") {
-    return redirect(`${base}?error=manager_required`);
+    return redirect(withQuery(base, { error: "manager_required" }));
   }
-  return redirect(`${base}?error=1`);
+  return redirect(withQuery(base, { error: "1" }));
 }
 
 export function householdManagerCtx(
@@ -84,12 +84,12 @@ export function redirectUnlessEditor(
   const base = safeRedirectBase(redirectTo);
   if (editor.ok) return null;
   if (editor.error === "viewer" || editor.error === "alert_only") {
-    return redirect(`${base}?error=viewer`);
+    return redirect(withQuery(base, { error: "viewer" }));
   }
   if (editor.error === "manager_required") {
-    return redirect(`${base}?error=manager_required`);
+    return redirect(withQuery(base, { error: "manager_required" }));
   }
-  return redirect(`${base}?error=1`);
+  return redirect(withQuery(base, { error: "1" }));
 }
 
 /** Narrow after redirectUnlessEditor returns null. */

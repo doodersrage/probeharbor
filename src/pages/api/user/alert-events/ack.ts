@@ -5,7 +5,7 @@ import {
   type AckPlaybookAction,
 } from "../../../../lib/alertAckPlaybook";
 import { acknowledgeLatestUnackedAlert, acknowledgeAllUnackedAlerts } from "../../../../lib/alertEvents";
-import { formRedirectPath } from "../../../../lib/siteUrl";
+import { formRedirectPath, withQuery } from "../../../../lib/siteUrl";
 import { getSiteUrl } from "../../../../lib/stripe";
 
 const VALID_ACTIONS = new Set<AckPlaybookAction>([
@@ -83,7 +83,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
         });
       }
       return redirect(
-        `${redirectTo}?ack_error=1&ack_msg=${encodeURIComponent(ack.error ?? "Nothing to acknowledge")}`,
+        withQuery(redirectTo, { ack_error: "1", ack_msg: ack.error ?? "Nothing to acknowledge" }),
       );
     }
     if (wantsJson(request)) {
@@ -93,7 +93,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
       );
     }
     return redirect(
-      `${redirectTo}?ack_ok=1&ack_msg=${encodeURIComponent(`Handled ${ack.count} alert${ack.count === 1 ? "" : "s"}.`)}`,
+      withQuery(redirectTo, { ack_ok: "1", ack_msg: `Handled ${ack.count} alert${ack.count === 1 ? "" : "s"}.` }),
     );
   }
 
@@ -106,7 +106,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
           headers: { "Content-Type": "application/json" },
         });
       }
-      return redirect(`${redirectTo}?ack_error=1`);
+      return redirect(withQuery(redirectTo, { ack_error: "1" }));
     }
     if (wantsJson(request)) {
       return new Response(
@@ -114,7 +114,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
         { status: 200, headers: { "Content-Type": "application/json" } },
       );
     }
-    return redirect(`${redirectTo}?ack_ok=1`);
+    return redirect(withQuery(redirectTo, { ack_ok: "1" }));
   }
 
   if (!Number.isFinite(eventId)) {
@@ -124,7 +124,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
         headers: { "Content-Type": "application/json" },
       });
     }
-    return redirect(`${redirectTo}?ack_error=1`);
+    return redirect(withQuery(redirectTo, { ack_error: "1" }));
   }
 
   const siteUrl = getSiteUrl(request).replace(/\/$/, "");
@@ -144,7 +144,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
       });
     }
     return redirect(
-      `${redirectTo}?ack_error=1&ack_msg=${encodeURIComponent(result.message)}`,
+      withQuery(redirectTo, { ack_error: "1", ack_msg: result.message }),
     );
   }
 
@@ -158,5 +158,5 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     );
   }
 
-  return redirect(`${redirectTo}?ack_ok=1&ack_msg=${encodeURIComponent(result.message)}`);
+  return redirect(withQuery(redirectTo, { ack_ok: "1", ack_msg: result.message }));
 };

@@ -11,7 +11,7 @@ import {
   revokeInboundWebhook,
 } from "../../../lib/inboundWebhooks";
 import { getUserEntitlements } from "../../../lib/entitlements";
-import { formRedirectPath } from "../../../lib/siteUrl";
+import { formRedirectPath, withQuery } from "../../../lib/siteUrl";
 import {
   FLASH_INBOUND_SIGNING,
   FLASH_INBOUND_TOKEN,
@@ -66,13 +66,13 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     const name = formData.get("name")?.toString() || "Inbound webhook";
     const { token, signingSecret, error } = await createInboundWebhook(householdId, user.id, name);
     if (error || !token) {
-      return redirect(`${redirectTo}?inbound_error=1`);
+      return redirect(withQuery(redirectTo, { inbound_error: "1" }));
     }
     setSecretFlash(cookies, FLASH_INBOUND_TOKEN, token);
     if (signingSecret) {
       setSecretFlash(cookies, FLASH_INBOUND_SIGNING, signingSecret);
     }
-    return redirect(`${redirectTo}?inbound_created=1`);
+    return redirect(withQuery(redirectTo, { inbound_created: "1" }));
   }
 
   if (action === "revoke") {
@@ -80,7 +80,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     if (webhookId) {
       await revokeInboundWebhook(webhookId, householdId);
     }
-    return redirect(`${redirectTo}?inbound_revoked=1`);
+    return redirect(withQuery(redirectTo, { inbound_revoked: "1" }));
   }
 
   return redirect(redirectTo);

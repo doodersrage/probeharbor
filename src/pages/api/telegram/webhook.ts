@@ -65,9 +65,15 @@ export const POST: APIRoute = async ({ request, url, clientAddress }) => {
     return new Response("Unauthorized", { status: 401 });
   }
 
-  const update = (await request.json()) as {
-    message?: { text?: string; chat?: { id?: number } };
-  };
+  let update: { message?: { text?: string; chat?: { id?: number } } } | null;
+  try {
+    update = (await request.json()) as typeof update;
+  } catch {
+    return new Response("Invalid JSON", { status: 400 });
+  }
+  if (!update || typeof update !== "object") {
+    return new Response("Invalid JSON", { status: 400 });
+  }
   const text = update.message?.text?.trim() ?? "";
   const chatId = update.message?.chat?.id;
   if (!text || chatId == null) {

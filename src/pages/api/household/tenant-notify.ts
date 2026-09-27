@@ -6,7 +6,7 @@ import {
   householdEditorCtx,
 } from "../../../lib/householdAuth";
 import { updateTenantNotifySettings } from "../../../lib/tenantRelay";
-import { formRedirectPath } from "../../../lib/siteUrl";
+import { formRedirectPath, withQuery } from "../../../lib/siteUrl";
 
 export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const { user } = await getAuthFromCookies(cookies);
@@ -24,7 +24,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const { householdId: editorHouseholdId } = householdEditorCtx(editor);
 
   if (!householdId || householdId !== editorHouseholdId) {
-    return redirect(`${redirectTo}?tenant_error=1`);
+    return redirect(withQuery(redirectTo, { tenant_error: "1" }));
   }
 
   const result = await updateTenantNotifySettings(householdId, {
@@ -33,8 +33,8 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   });
 
   if (result.error) {
-    return redirect(`${redirectTo}?tenant_error=${encodeURIComponent(result.error)}`);
+    return redirect(withQuery(redirectTo, { tenant_error: result.error }));
   }
 
-  return redirect(`${redirectTo}?tenant_saved=1`);
+  return redirect(withQuery(redirectTo, { tenant_saved: "1" }));
 };

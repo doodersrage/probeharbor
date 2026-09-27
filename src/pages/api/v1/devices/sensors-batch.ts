@@ -19,9 +19,20 @@ export const POST: APIRoute = async ({ request }) => {
     });
   }
 
-  const body = (await request.json()) as {
+  let body: {
     sensors?: Array<{ id?: string; label?: string; visible?: boolean }>;
-  };
+  } | null;
+  try {
+    body = (await request.json()) as typeof body;
+  } catch {
+    body = null;
+  }
+  if (!body || typeof body !== "object") {
+    return new Response(JSON.stringify({ ok: false, error: "Invalid JSON" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
   if (!Array.isArray(body.sensors) || body.sensors.length === 0) {
     return new Response(JSON.stringify({ ok: false, error: "No sensors provided." }), {
       status: 400,

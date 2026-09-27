@@ -2,7 +2,7 @@ import type { APIRoute } from "astro";
 import { getAuthFromCookies } from "../../../lib/auth";
 import { getUserEntitlements } from "../../../lib/entitlements";
 import { getAlertSettingsForUser, saveAlertSettingsForUser } from "../../../lib/notify";
-import { formRedirectPath } from "../../../lib/siteUrl";
+import { formRedirectPath, withQuery } from "../../../lib/siteUrl";
 
 export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const { user } = await getAuthFromCookies(cookies);
@@ -36,8 +36,8 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
 
   const { error } = await saveAlertSettingsForUser(user.id, settings);
   if (error) {
-    return redirect(`${redirectTo}?retention_error=1`);
+    return redirect(withQuery(redirectTo, { retention_error: "1" }));
   }
 
-  return redirect(`${redirectTo}?retention_saved=1`);
+  return redirect(withQuery(redirectTo, { retention_saved: "1" }));
 };

@@ -11,7 +11,7 @@ import {
   clearMfaStepUpCookie,
   hasElevatedAuth,
 } from "../../../../lib/mfaStepUpProof";
-import { formRedirectPath } from "../../../../lib/siteUrl";
+import { formRedirectPath, withQuery } from "../../../../lib/siteUrl";
 
 function userHasPasswordIdentity(user: User): boolean {
   const identities = user.identities ?? [];
@@ -82,5 +82,5 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   clearAuthCookies(cookies);
   clearMfaStepUpCookie(cookies);
 
-  return redirect(`${redirectTo}?account_deleted=1`);
+  return redirect(withQuery(redirectTo, { account_deleted: "1" }));
 };

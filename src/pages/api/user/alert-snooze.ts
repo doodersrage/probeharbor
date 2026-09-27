@@ -13,7 +13,7 @@ import {
   redirectUnlessEditor,
   requireHouseholdEditor,
 } from "../../../lib/householdAuth";
-import { formRedirectPath } from "../../../lib/siteUrl";
+import { formRedirectPath, withQuery } from "../../../lib/siteUrl";
 
 const SNOOZE_MAX_HOURS = 168;
 const VACATION_MAX_DAYS = 30;
@@ -100,7 +100,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
         hours,
       });
     }
-    return redirect(`${redirectTo}?snooze=1&hours=${hours}`);
+    return redirect(withQuery(redirectTo, { snooze: "1", hours: String(hours) }));
   }
 
   if (action === "vacation_7" || action === "vacation" || action === "vacation_until") {
@@ -111,7 +111,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
       vacationUntil = vacationUntilFromDate(untilRaw);
       if (!vacationUntil) {
         if (asJson) return jsonResponse({ error: "Pick a future return date." }, 400);
-        return redirect(`${redirectTo}?vacation_error=1`);
+        return redirect(withQuery(redirectTo, { vacation_error: "1" }));
       }
       message = `Vacation until ${untilRaw}.`;
     } else {
@@ -129,19 +129,19 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     if (asJson) {
       return jsonResponse({ ok: true, kind: "vacation", message, vacationUntil });
     }
-    return redirect(`${redirectTo}?vacation=1`);
+    return redirect(withQuery(redirectTo, { vacation: "1" }));
   }
 
   if (action === "clear_snooze") {
     await saveAlertSettingsForUser(user.id, { ...settings, snoozeUntil: null });
     if (asJson) return jsonResponse({ ok: true, kind: "clear_snooze", message: "Snooze cleared." });
-    return redirect(`${redirectTo}?snooze_cleared=1`);
+    return redirect(withQuery(redirectTo, { snooze_cleared: "1" }));
   }
 
   if (action === "clear_vacation") {
     await saveAlertSettingsForUser(user.id, { ...settings, vacationUntil: null });
     if (asJson) return jsonResponse({ ok: true, kind: "clear_vacation", message: "Vacation cleared." });
-    return redirect(`${redirectTo}?vacation_cleared=1`);
+    return redirect(withQuery(redirectTo, { vacation_cleared: "1" }));
   }
 
   if (asJson) return jsonResponse({ error: "Unknown action" }, 400);

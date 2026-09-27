@@ -30,7 +30,7 @@ import {
   requireHouseholdManager,
 } from "../../../lib/householdAuth";
 import { recordHouseholdActivity } from "../../../lib/householdActivity";
-import { formRedirectPath } from "../../../lib/siteUrl";
+import { formRedirectPath, withQuery } from "../../../lib/siteUrl";
 
 export const GET: APIRoute = async ({ request, cookies }) => {
   const { user } = await getAuthFromRequest(request, cookies);
@@ -99,39 +99,39 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   if (action === "switch") {
     const householdId = formData.get("household_id")?.toString();
     if (!householdId) {
-      return redirect(`${redirectTo}?error=1`);
+      return redirect(withQuery(redirectTo, { error: "1" }));
     }
     const result = await setActiveHouseholdForUser(user.id, householdId);
     if (result.error) {
-      return redirect(`${redirectTo}?error=${encodeURIComponent(result.error)}`);
+      return redirect(withQuery(redirectTo, { error: result.error }));
     }
-    return redirect(`${redirectTo}?switched=1`);
+    return redirect(withQuery(redirectTo, { switched: "1" }));
   }
 
   if (action === "leave") {
     const householdId = formData.get("household_id")?.toString();
     if (!householdId) {
-      return redirect(`${redirectTo}?error=1`);
+      return redirect(withQuery(redirectTo, { error: "1" }));
     }
     const result = await leaveHousehold(user.id, householdId);
     if (result.error) {
       return redirect(
-        `${redirectTo}?error=${encodeURIComponent(result.error === "Cannot remove the household owner" ? "cannot_leave_owner" : result.error)}`,
+        withQuery(redirectTo, { error: result.error === "Cannot remove the household owner" ? "cannot_leave_owner" : result.error }),
       );
     }
-    return redirect(`${redirectTo}?left=1`);
+    return redirect(withQuery(redirectTo, { left: "1" }));
   }
 
   if (action === "create_property") {
     const entitlements = await getUserEntitlements(user.id);
     const ownedCount = await countOwnedHouseholds(user.id);
     if (ownedCount >= entitlements.maxOwnedHouseholds) {
-      return redirect(`${redirectTo}?error=property_limit`);
+      return redirect(withQuery(redirectTo, { error: "property_limit" }));
     }
     const name = formData.get("name")?.toString() ?? "My property";
     const result = await createAdditionalHouseholdForUser(user.id, name);
     if (result.error) {
-      return redirect(`${redirectTo}?error=1`);
+      return redirect(withQuery(redirectTo, { error: "1" }));
     }
     await recordHouseholdActivity({
       householdId: result.householdId,
@@ -139,7 +139,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
       action: "household_created",
       detail: name,
     });
-    return redirect(`${redirectTo}?property_created=1`);
+    return redirect(withQuery(redirectTo, { property_created: "1" }));
   }
 
   const manager = await requireHouseholdManager(user.id);
@@ -151,18 +151,18 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const manageId = ownedId ?? household.householdId;
 
   if (!manageId) {
-    return redirect(`${redirectTo}?error=1`);
+    return redirect(withQuery(redirectTo, { error: "1" }));
   }
 
   if (action === "rename") {
     const name = formData.get("name")?.toString() ?? "";
     await updateHouseholdName(manageId, name);
-    return redirect(`${redirectTo}?saved=1`);
+    return redirect(withQuery(redirectTo, { saved: "1" }));
   }
 
   if (action === "freeze_map") {
     if (!ownedId || ownedId !== manageId) {
-      return redirect(`${redirectTo}?error=1`);
+      return redirect(withQuery(redirectTo, { error: "1" }));
     }
     const optIn = formData.has("freeze_map_opt_in");
     const cityId = formData.get("freeze_map_city_id")?.toString().trim() || null;
@@ -179,51 +179,51 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
       label,
     });
     if (result.error) {
-      return redirect(`${redirectTo}?error=1`);
+      return redirect(withQuery(redirectTo, { error: "1" }));
     }
-    return redirect(`${redirectTo}?saved=1`);
+    return redirect(withQuery(redirectTo, { saved: "1" }));
   }
 
   if (action === "remove") {
     const memberUserId = formData.get("user_id")?.toString();
     if (!memberUserId) {
-      return redirect(`${redirectTo}?error=1`);
+      return redirect(withQuery(redirectTo, { error: "1" }));
     }
     const result = await removeHouseholdMember(manageId, memberUserId);
     if (result.error) {
-      return redirect(`${redirectTo}?error=${encodeURIComponent(result.error)}`);
+      return redirect(withQuery(redirectTo, { error: result.error }));
     }
-    return redirect(`${redirectTo}?removed=1`);
+    return redirect(withQuery(redirectTo, { removed: "1" }));
   }
 
   if (action === "revoke_invite") {
     const inviteId = formData.get("invite_id")?.toString();
     if (!inviteId) {
-      return redirect(`${redirectTo}?error=1`);
+      return redirect(withQuery(redirectTo, { error: "1" }));
     }
     const result = await revokeHouseholdInvite(manageId, inviteId);
     if (result.error) {
-      return redirect(`${redirectTo}?error=1`);
+      return redirect(withQuery(redirectTo, { error: "1" }));
     }
-    return redirect(`${redirectTo}?invite_revoked=1`);
+    return redirect(withQuery(redirectTo, { invite_revoked: "1" }));
   }
 
   // Email invite link (does not require existing account)
   const email = formData.get("email")?.toString().trim().toLowerCase();
   if (!email) {
-    return redirect(`${redirectTo}?error=missing_email`);
+    return redirect(withQuery(redirectTo, { error: "missing_email" }));
   }
 
   const role = parseHouseholdInviteRole(formData.get("role")?.toString()) ?? "member";
   if (role === "property_manager") {
     const entitlements = await getUserEntitlements(user.id);
     if (entitlements.tier !== "portfolio" && entitlements.tier !== "admin") {
-      return redirect(`${redirectTo}?error=portfolio_required`);
+      return redirect(withQuery(redirectTo, { error: "portfolio_required" }));
     }
   }
   const { invite, error } = await createHouseholdInvite(manageId, email, user.id, 7, role);
   if (error || !invite) {
-    return redirect(`${redirectTo}?error=1`);
+    return redirect(withQuery(redirectTo, { error: "1" }));
   }
 
   const supabase = createServerClient();
@@ -241,5 +241,5 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     user.email ?? null,
   );
 
-  return redirect(`${redirectTo}?invited=1`);
+  return redirect(withQuery(redirectTo, { invited: "1" }));
 };

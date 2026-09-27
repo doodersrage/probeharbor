@@ -159,6 +159,13 @@ describe("redirectUnlessEditor", () => {
     expect(redirect).toHaveBeenCalledWith("/dashboard/devices?error=manager_required");
   });
 
+  it("merges the error flag into a redirect that already has a query", async () => {
+    const { redirectUnlessEditor } = await import("./householdAuth");
+    const redirect = makeRedirect();
+    redirectUnlessEditor({ ok: false, error: "viewer" }, "/dashboard/devices?tab=pull#feeds", redirect);
+    expect(redirect).toHaveBeenCalledWith("/dashboard/devices?tab=pull&error=viewer#feeds");
+  });
+
   it("returns null when the check passed", async () => {
     const { redirectUnlessEditor } = await import("./householdAuth");
     const redirect = makeRedirect();

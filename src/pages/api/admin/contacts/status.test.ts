@@ -19,7 +19,8 @@ vi.mock("../../../../lib/supabase", () => ({
 }));
 
 const mockFormRedirectPath = vi.fn();
-vi.mock("../../../../lib/siteUrl", () => ({
+vi.mock("../../../../lib/siteUrl", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../../../../lib/siteUrl")>()),
   formRedirectPath: (...a: unknown[]) => mockFormRedirectPath(...a),
 }));
 

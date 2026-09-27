@@ -5,7 +5,7 @@ import {
   updateDashboardOverviewMode,
   type DashboardOverviewMode,
 } from "../../../lib/dashboardOverviewMode";
-import { formRedirectPath } from "../../../lib/siteUrl";
+import { formRedirectPath, withQuery } from "../../../lib/siteUrl";
 
 export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const { session, user } = await getAuthFromCookies(cookies);
@@ -20,8 +20,8 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const mode: DashboardOverviewMode =
     modeRaw === "insights" ? "insights" : "simple";
 
-  const accessToken = cookies.get("sb-access-token")!.value;
-  const refreshToken = cookies.get("sb-refresh-token")!.value;
+  const accessToken = session.access_token;
+  const refreshToken = session.refresh_token;
 
   const { error } = await updateDashboardOverviewMode(
     accessToken,
@@ -30,7 +30,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   );
 
   if (error) {
-    return redirect(`${redirectTo}?overview_mode_error=1`);
+    return redirect(withQuery(redirectTo, { overview_mode_error: "1" }));
   }
 
   const { data: refreshedSession } = await createAuthClient().auth.refreshSession({

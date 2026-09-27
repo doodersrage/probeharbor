@@ -22,7 +22,8 @@ vi.mock("../../../lib/userPreferences", () => ({
 }));
 
 const mockFormRedirectPath = vi.fn();
-vi.mock("../../../lib/siteUrl", () => ({
+vi.mock("../../../lib/siteUrl", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../../../lib/siteUrl")>()),
   formRedirectPath: (...a: unknown[]) => mockFormRedirectPath(...a),
 }));
 
@@ -65,7 +66,7 @@ const samplePrefs = {
 
 beforeEach(() => {
   mockGetAuthFromRequest.mockReset().mockResolvedValue({
-    session: { access_token: "tok" },
+    session: { access_token: "access-tok", refresh_token: "refresh-tok" },
     user: { id: "user-1" },
   });
   mockSetAuthCookies.mockReset();

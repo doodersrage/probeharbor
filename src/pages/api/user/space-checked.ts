@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
 import { createAuthClient } from "../../../lib/supabase";
 import { getAuthFromCookies, setAuthCookies } from "../../../lib/auth";
-import { formRedirectPath } from "../../../lib/siteUrl";
+import { formRedirectPath, withQuery } from "../../../lib/siteUrl";
 
 type SpaceCheckedMap = Record<string, string>;
 
@@ -77,8 +77,8 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     if (rawSpace) space = rawSpace;
   }
 
-  const accessToken = cookies.get("sb-access-token")!.value;
-  const refreshToken = cookies.get("sb-refresh-token")!.value;
+  const accessToken = session.access_token;
+  const refreshToken = session.refresh_token;
   const client = createAuthClient();
   const { error: sessionError } = await client.auth.setSession({
     access_token: accessToken,
@@ -91,7 +91,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
         headers: { "Content-Type": "application/json" },
       });
     }
-    return redirect(`${redirectTo}?checked_error=1`);
+    return redirect(withQuery(redirectTo, { checked_error: "1" }));
   }
 
   const existingMap = parseCheckedMap(user.user_metadata?.space_checked_by_household);
@@ -118,7 +118,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
         headers: { "Content-Type": "application/json" },
       });
     }
-    return redirect(`${redirectTo}?checked_error=1`);
+    return redirect(withQuery(redirectTo, { checked_error: "1" }));
   }
 
   const { data: refreshed } = await client.auth.refreshSession({
@@ -147,5 +147,5 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     );
   }
 
-  return redirect(`${redirectTo}?checked_saved=1`);
+  return redirect(withQuery(redirectTo, { checked_saved: "1" }));
 };

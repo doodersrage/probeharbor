@@ -2,7 +2,7 @@ import type { APIRoute } from "astro";
 import { getAuthFromRequest } from "../../../lib/auth";
 import { getUserEntitlements } from "../../../lib/entitlements";
 import { getSiteUrl } from "../../../lib/stripe";
-import { formRedirectPath } from "../../../lib/siteUrl";
+import { formRedirectPath, withQuery } from "../../../lib/siteUrl";
 import { generateClaimsPackForUser } from "../../../lib/claimsPackGenerate";
 import { createClaimsPackExport } from "../../../lib/claimsPackExports";
 import { sendEmail, isMailerRecipientNotAllowed } from "../../../lib/mailer";
@@ -60,12 +60,12 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const entitlements = await getUserEntitlements(user.id);
   if (!entitlements.canUseClaimsPack) {
     if (asJson) return jsonResponse({ error: "pro_required" }, 403);
-    return redirect(`${redirectTo}?claims_error=pro_required`);
+    return redirect(withQuery(redirectTo, { claims_error: "pro_required" }));
   }
 
   if (!adjusterEmail || !adjusterEmail.includes("@")) {
     if (asJson) return jsonResponse({ error: "invalid_email" }, 400);
-    return redirect(`${redirectTo}?claims_error=invalid_email`);
+    return redirect(withQuery(redirectTo, { claims_error: "invalid_email" }));
   }
 
   const siteUrl = getSiteUrl(request).replace(/\/$/, "");
@@ -78,7 +78,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
 
   if (!householdId) {
     if (asJson) return jsonResponse({ error: "no_household" }, 400);
-    return redirect(`${redirectTo}?claims_error=no_household`);
+    return redirect(withQuery(redirectTo, { claims_error: "no_household" }));
   }
 
   const { token, contentHash, error } = await createClaimsPackExport(
@@ -89,7 +89,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   if (!token) {
     console.error("Failed to persist claims pack export for email:", error);
     if (asJson) return jsonResponse({ error: "send_failed" }, 500);
-    return redirect(`${redirectTo}?claims_error=send_failed`);
+    return redirect(withQuery(redirectTo, { claims_error: "send_failed" }));
   }
 
   const verifyUrl = `${siteUrl}/api/claims/pack/${token}`;
@@ -119,11 +119,11 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   } catch (err) {
     if (isMailerRecipientNotAllowed(err)) {
       if (asJson) return jsonResponse({ error: "recipient_not_allowed" }, 400);
-      return redirect(`${redirectTo}?claims_error=recipient_not_allowed`);
+      return redirect(withQuery(redirectTo, { claims_error: "recipient_not_allowed" }));
     }
     console.error("Failed to send claims pack email:", err);
     if (asJson) return jsonResponse({ error: "send_failed" }, 500);
-    return redirect(`${redirectTo}?claims_error=send_failed`);
+    return redirect(withQuery(redirectTo, { claims_error: "send_failed" }));
   }
 
   if (asJson) {
@@ -134,5 +134,5 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     });
   }
 
-  return redirect(`${redirectTo}?claims_emailed=1`);
+  return redirect(withQuery(redirectTo, { claims_emailed: "1" }));
 };

@@ -4,20 +4,16 @@ import {
   redirectUnlessEditor,
   requireHouseholdEditor,
 } from "../../../../lib/householdAuth";
-import { formRedirectPath } from "../../../../lib/siteUrl";
+import { formRedirectPath, withQuery } from "../../../../lib/siteUrl";
 import {
   deleteUserTempFeed,
   getUserTempConfig,
   saveUserTempConfig,
 } from "../../../../lib/userTempConfig";
 
-function withQuery(redirectTo: string, params: Record<string, string>): string {
-  const url = new URL(redirectTo, "https://thermaltrace.local");
-  for (const [key, value] of Object.entries(params)) {
-    url.searchParams.set(key, value);
-  }
-  if (!url.searchParams.has("tab")) url.searchParams.set("tab", "pull");
-  return `${url.pathname}?${url.searchParams.toString()}`;
+function withPullQuery(redirectTo: string, params: Record<string, string>): string {
+  const target = new URL(redirectTo, "https://thermaltrace.local");
+  return withQuery(redirectTo, target.searchParams.has("tab") ? params : { tab: "pull", ...params });
 }
 
 export const POST: APIRoute = async ({ request, cookies, redirect }) => {
@@ -37,23 +33,23 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     .filter(Boolean);
 
   if (feedIds.length === 0) {
-    return redirect(withQuery(redirectTo, { bulk_error: "1" }));
+    return redirect(withPullQuery(redirectTo, { bulk_error: "1" }));
   }
 
   if (action === "delete") {
     for (const feedId of feedIds) {
       const result = await deleteUserTempFeed(user.id, feedId);
       if (result.error) {
-        return redirect(withQuery(redirectTo, { bulk_error: "1" }));
+        return redirect(withPullQuery(redirectTo, { bulk_error: "1" }));
       }
     }
-    return redirect(withQuery(redirectTo, { bulk_deleted: String(feedIds.length) }));
+    return redirect(withPullQuery(redirectTo, { bulk_deleted: String(feedIds.length) }));
   }
 
   if (action === "enable" || action === "disable") {
     const current = await getUserTempConfig(user);
     if (current.error) {
-      return redirect(withQuery(redirectTo, { bulk_error: "1" }));
+      return redirect(withPullQuery(redirectTo, { bulk_error: "1" }));
     }
     const enabled = action === "enable";
     const idSet = new Set(feedIds);
@@ -62,9 +58,9 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     );
     const result = await saveUserTempConfig(user.id, feeds, current.probes);
     if (result.error) {
-      return redirect(withQuery(redirectTo, { bulk_error: "1" }));
+      return redirect(withPullQuery(redirectTo, { bulk_error: "1" }));
     }
-    return redirect(withQuery(redirectTo, { bulk_updated: String(feedIds.length) }));
+    return redirect(withPullQuery(redirectTo, { bulk_updated: String(feedIds.length) }));
   }
 
   return redirect(redirectTo);

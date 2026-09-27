@@ -79,7 +79,8 @@ vi.mock("../../../lib/householdActivity", () => ({
 }));
 
 const mockFormRedirectPath = vi.fn();
-vi.mock("../../../lib/siteUrl", () => ({
+vi.mock("../../../lib/siteUrl", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../../../lib/siteUrl")>()),
   formRedirectPath: (...a: unknown[]) => mockFormRedirectPath(...a),
 }));
 
@@ -279,7 +280,7 @@ describe("POST /api/household", () => {
     await POST(context);
 
     expect(context.redirect).toHaveBeenCalledWith(
-      "/dashboard/household?error=not%20allowed",
+      "/dashboard/household?error=not+allowed",
     );
   });
 

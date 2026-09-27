@@ -5,7 +5,7 @@ import {
   quietUntilSevenDaysFromNow,
   updateDashboardQuietUntil,
 } from "../../../lib/dashboardComfort";
-import { formRedirectPath } from "../../../lib/siteUrl";
+import { formRedirectPath, withQuery } from "../../../lib/siteUrl";
 
 export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const { session, user } = await getAuthFromCookies(cookies);
@@ -21,8 +21,8 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const quietUntil =
     action === "clear" ? null : quietUntilSevenDaysFromNow();
 
-  const accessToken = cookies.get("sb-access-token")!.value;
-  const refreshToken = cookies.get("sb-refresh-token")!.value;
+  const accessToken = session.access_token;
+  const refreshToken = session.refresh_token;
 
   const { error } = await updateDashboardQuietUntil(
     accessToken,
@@ -31,7 +31,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   );
 
   if (error) {
-    return redirect(`${redirectTo}?quiet_error=1`);
+    return redirect(withQuery(redirectTo, { quiet_error: "1" }));
   }
 
   const { data: refreshedSession } = await createAuthClient().auth.refreshSession({
@@ -47,8 +47,6 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   }
 
   return redirect(
-    `${redirectTo}${redirectTo.includes("?") ? "&" : "?"}${
-      quietUntil ? "quiet_saved=1" : "quiet_cleared=1"
-    }`,
+    withQuery(redirectTo, quietUntil ? { quiet_saved: "1" } : { quiet_cleared: "1" }),
   );
 };

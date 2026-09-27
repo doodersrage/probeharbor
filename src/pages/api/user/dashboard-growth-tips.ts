@@ -2,7 +2,7 @@ import type { APIRoute } from "astro";
 import { createAuthClient } from "../../../lib/supabase";
 import { getAuthFromCookies, setAuthCookies } from "../../../lib/auth";
 import { updateDashboardGrowthTipsDismissed } from "../../../lib/dashboardComfort";
-import { formRedirectPath } from "../../../lib/siteUrl";
+import { formRedirectPath, withQuery } from "../../../lib/siteUrl";
 
 export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const { session, user } = await getAuthFromCookies(cookies);
@@ -15,8 +15,8 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const action = formData.get("action")?.toString() ?? "dismiss";
   const dismissed = action !== "reset";
 
-  const accessToken = cookies.get("sb-access-token")!.value;
-  const refreshToken = cookies.get("sb-refresh-token")!.value;
+  const accessToken = session.access_token;
+  const refreshToken = session.refresh_token;
 
   const { error } = await updateDashboardGrowthTipsDismissed(
     accessToken,
@@ -25,7 +25,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   );
 
   if (error) {
-    return redirect(`${redirectTo}?tips_error=1`);
+    return redirect(withQuery(redirectTo, { tips_error: "1" }));
   }
 
   const { data: refreshedSession } = await createAuthClient().auth.refreshSession({

@@ -14,7 +14,8 @@ vi.mock("../../../lib/dashboardOverviewMode", () => ({
 }));
 
 const mockFormRedirectPath = vi.fn();
-vi.mock("../../../lib/siteUrl", () => ({
+vi.mock("../../../lib/siteUrl", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../../../lib/siteUrl")>()),
   formRedirectPath: (...a: unknown[]) => mockFormRedirectPath(...a),
 }));
 
@@ -46,7 +47,7 @@ function makeContext(formEntries: Record<string, string> = {}): APIContext {
 
 beforeEach(() => {
   mockGetAuthFromCookies.mockReset().mockResolvedValue({
-    session: { access_token: "tok" },
+    session: { access_token: "access-tok", refresh_token: "refresh-tok" },
     user: { id: "user-1" },
   });
   mockSetAuthCookies.mockReset();

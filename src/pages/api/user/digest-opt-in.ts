@@ -2,7 +2,7 @@ import type { APIRoute } from "astro";
 import { getAuthFromCookies } from "../../../lib/auth";
 import { getOrCreateHouseholdForUser } from "../../../lib/households";
 import { createServerClient } from "../../../lib/supabase";
-import { formRedirectPath } from "../../../lib/siteUrl";
+import { formRedirectPath, withQuery } from "../../../lib/siteUrl";
 
 export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const { session, user } = await getAuthFromCookies(cookies);
@@ -17,7 +17,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
 
   const household = await getOrCreateHouseholdForUser(user.id, user.email);
   if (!household.householdId) {
-    return redirect(`${redirectTo}?digest_error=1`);
+    return redirect(withQuery(redirectTo, { digest_error: "1" }));
   }
 
   const supabase = createServerClient();
@@ -28,7 +28,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     .eq("user_id", user.id);
 
   if (error) {
-    return redirect(`${redirectTo}?digest_error=1`);
+    return redirect(withQuery(redirectTo, { digest_error: "1" }));
   }
 
   return redirect(

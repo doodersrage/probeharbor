@@ -10,7 +10,7 @@ import {
   notifyUser,
   saveAlertSettingsForUser,
 } from "../../../lib/notify";
-import { formRedirectPath } from "../../../lib/siteUrl";
+import { formRedirectPath, withQuery } from "../../../lib/siteUrl";
 import { recordHouseholdActivity } from "../../../lib/householdActivity";
 import { getUserHouseholdId } from "../../../lib/households";
 
@@ -56,7 +56,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
 
   const { error } = await saveAlertSettingsForUser(user.id, settings);
   if (error) {
-    return redirect(`${redirectTo}?alert_error=1`);
+    return redirect(withQuery(redirectTo, { alert_error: "1" }));
   }
 
   const householdId = await getUserHouseholdId(user.id);
@@ -80,22 +80,22 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
       if (sent.length === 0) {
         const reason = skipped.length > 0 ? "incomplete" : "none";
         return redirect(
-          `${redirectTo}?alert_saved=1&test_error=1&test_reason=${reason}`,
+          withQuery(redirectTo, { alert_saved: "1", test_error: "1", test_reason: reason }),
         );
       }
       await markCooldown(user.id, "last_alert_sent_at");
-      const params = new URLSearchParams({
+      const params: Record<string, string> = {
         alert_saved: "1",
         test_sent: "1",
         sent: sent.join(","),
-      });
-      if (skipped.length > 0) params.set("skipped", skipped.join(","));
-      return redirect(`${redirectTo}?${params.toString()}`);
+      };
+      if (skipped.length > 0) params.skipped = skipped.join(",");
+      return redirect(withQuery(redirectTo, params));
     } catch (err) {
       console.error("Essentials test alert failed:", err);
-      return redirect(`${redirectTo}?alert_saved=1&test_error=1`);
+      return redirect(withQuery(redirectTo, { alert_saved: "1", test_error: "1" }));
     }
   }
 
-  return redirect(`${redirectTo}?alert_saved=1`);
+  return redirect(withQuery(redirectTo, { alert_saved: "1" }));
 };

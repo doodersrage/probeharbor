@@ -7,7 +7,7 @@ import {
   redirectUnlessEditor,
   requireHouseholdEditor,
 } from "../../../lib/householdAuth";
-import { formRedirectPath } from "../../../lib/siteUrl";
+import { formRedirectPath, sanitizeNextPath } from "../../../lib/siteUrl";
 
 function parseFeeds(body: unknown): TempFeedConfig[] | null {
   if (!body || typeof body !== "object") return null;
@@ -86,9 +86,17 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
         headers: { "Content-Type": "application/json" },
       });
     }
-    const body = await request.json();
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch {
+      return new Response(JSON.stringify({ ok: false, error: "Invalid JSON" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
     if (typeof body === "object" && body && "redirect" in body && typeof body.redirect === "string") {
-      redirectTo = body.redirect;
+      redirectTo = sanitizeNextPath(body.redirect) ?? redirectTo;
     }
     feeds = parseFeeds(body);
     if (!feeds) {

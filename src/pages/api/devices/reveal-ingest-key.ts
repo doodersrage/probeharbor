@@ -77,8 +77,19 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     });
   }
 
-  const body = (await request.json()) as { device_id?: string };
-  const deviceId = body.device_id?.trim();
+  let body: { device_id?: string } | null;
+  try {
+    body = (await request.json()) as typeof body;
+  } catch {
+    body = null;
+  }
+  if (!body || typeof body !== "object") {
+    return new Response(JSON.stringify({ ok: false, error: "Invalid JSON" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+  const deviceId = typeof body.device_id === "string" ? body.device_id.trim() : "";
   if (!deviceId) {
     return new Response(JSON.stringify({ ok: false, error: "device_id required." }), {
       status: 400,

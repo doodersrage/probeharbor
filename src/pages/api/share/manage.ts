@@ -8,7 +8,7 @@ import {
   requireHouseholdManager,
 } from "../../../lib/householdAuth";
 import { recordHouseholdActivity } from "../../../lib/householdActivity";
-import { formRedirectPath } from "../../../lib/siteUrl";
+import { formRedirectPath, withQuery } from "../../../lib/siteUrl";
 import { FLASH_SHARE_TOKEN, setSecretFlash } from "../../../lib/secretFlash";
 
 const FAMILY_MAX_LIVE_LINKS = 1;
@@ -88,14 +88,14 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
 
   const household = await getOrCreateHouseholdForUser(user.id, user.email);
   if (!household.householdId) {
-    return redirect(`${redirectTo}?error=1`);
+    return redirect(withQuery(redirectTo, { error: "1" }));
   }
 
   const supabase = createServerClient();
 
   if (action === "revoke") {
     if (!entitlements.canCreateShareLinks && !entitlements.canCreateFamilyShareLink) {
-      return redirect(`${redirectTo}?error=pro_required`);
+      return redirect(withQuery(redirectTo, { error: "pro_required" }));
     }
     const id = formData.get("id")?.toString();
     if (id) {
@@ -105,13 +105,13 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
         .eq("id", id)
         .eq("household_id", household.householdId);
     }
-    return redirect(`${redirectTo}?revoked=1`);
+    return redirect(withQuery(redirectTo, { revoked: "1" }));
   }
 
   const familyOnly =
     !entitlements.canCreateShareLinks && entitlements.canCreateFamilyShareLink;
   if (!entitlements.canCreateShareLinks && !entitlements.canCreateFamilyShareLink) {
-    return redirect(`${redirectTo}?error=pro_required`);
+    return redirect(withQuery(redirectTo, { error: "pro_required" }));
   }
 
   const scopeRaw = formData.get("scope")?.toString() ?? "live";
@@ -138,13 +138,13 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
         .eq("household_id", household.householdId)
         .eq("scope", "live");
       if ((count ?? 0) >= FAMILY_MAX_LIVE_LINKS) {
-        return redirect(`${redirectTo}?error=family_limit`);
+        return redirect(withQuery(redirectTo, { error: "family_limit" }));
       }
       // Free/member: never allow never-expire or non-live.
       expiresDays = Math.min(Math.max(expiresDays, 1), 30);
     }
   } else if (!entitlements.canCreateShareLinks) {
-    return redirect(`${redirectTo}?error=pro_required`);
+    return redirect(withQuery(redirectTo, { error: "pro_required" }));
   }
 
   const expires_at =
@@ -163,7 +163,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   });
 
   if (error) {
-    return redirect(`${redirectTo}?error=1`);
+    return redirect(withQuery(redirectTo, { error: "1" }));
   }
 
   await recordHouseholdActivity({
@@ -174,5 +174,5 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   });
 
   setSecretFlash(cookies, FLASH_SHARE_TOKEN, token);
-  return redirect(`${redirectTo}?created=1`);
+  return redirect(withQuery(redirectTo, { created: "1" }));
 };

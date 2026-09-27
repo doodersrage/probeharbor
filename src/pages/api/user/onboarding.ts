@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
 import { getAuthFromCookies, setAuthCookies } from "../../../lib/auth";
 import { createAuthClient } from "../../../lib/supabase";
-import { formRedirectPath } from "../../../lib/siteUrl";
+import { formRedirectPath, withQuery } from "../../../lib/siteUrl";
 
 export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const { session, user } = await getAuthFromCookies(cookies);
@@ -13,8 +13,8 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const redirectTo = formRedirectPath(formData, "/dashboard");
   const action = formData.get("action")?.toString() ?? "dismiss";
 
-  const accessToken = cookies.get("sb-access-token")!.value;
-  const refreshToken = cookies.get("sb-refresh-token")!.value;
+  const accessToken = session.access_token;
+  const refreshToken = session.refresh_token;
 
   // One fresh client for this whole request, never the shared `supabase`
   // singleton. Cloudflare Workers can interleave concurrent requests
@@ -31,7 +31,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   });
 
   if (sessionError) {
-    return redirect(`${redirectTo}?onboarding_error=1`);
+    return redirect(withQuery(redirectTo, { onboarding_error: "1" }));
   }
 
   const existing = (user.user_metadata ?? {}) as Record<string, unknown>;
@@ -45,7 +45,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   });
 
   if (error) {
-    return redirect(`${redirectTo}?onboarding_error=1`);
+    return redirect(withQuery(redirectTo, { onboarding_error: "1" }));
   }
 
   const { data: refreshed } = await client.auth.refreshSession({

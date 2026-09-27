@@ -74,7 +74,14 @@ export const GET: APIRoute = async ({ cookies, request }) => {
         await new Promise((resolve) => setTimeout(resolve, 30000));
       }
 
-      controller.close();
+      try {
+        controller.close();
+      } catch {
+        // Already closed by the client disconnecting.
+      }
+    },
+    cancel() {
+      closed = true;
     },
   });
 

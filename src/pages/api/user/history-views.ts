@@ -8,7 +8,7 @@ import {
   listHistorySavedViews,
   paramsFromSearchParams,
 } from "../../../lib/historySavedViews";
-import { formRedirectPath } from "../../../lib/siteUrl";
+import { formRedirectPath, withQuery } from "../../../lib/siteUrl";
 
 async function updateDefaultHistoryViewId(
   accessToken: string,
@@ -61,14 +61,14 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const formData = await request.formData();
   const redirectTo = formRedirectPath(formData, "/dashboard/history");
   const action = formData.get("action")?.toString() ?? "create";
-  const accessToken = cookies.get("sb-access-token")!.value;
-  const refreshToken = cookies.get("sb-refresh-token")!.value;
+  const accessToken = session.access_token;
+  const refreshToken = session.refresh_token;
 
   if (action === "delete") {
     const id = formData.get("id")?.toString();
-    if (!id) return redirect(`${redirectTo}?view_error=1`);
+    if (!id) return redirect(withQuery(redirectTo, { view_error: "1" }));
     const result = await deleteHistorySavedView(user.id, id);
-    if (!result.ok) return redirect(`${redirectTo}?view_error=1`);
+    if (!result.ok) return redirect(withQuery(redirectTo, { view_error: "1" }));
     const currentDefault =
       typeof user.user_metadata?.default_history_view_id === "string"
         ? user.user_metadata.default_history_view_id
@@ -79,27 +79,27 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
         setAuthCookies(cookies, updated.accessToken, updated.refreshToken);
       }
     }
-    return redirect(`${redirectTo}?view_deleted=1`);
+    return redirect(withQuery(redirectTo, { view_deleted: "1" }));
   }
 
   if (action === "set_default" || action === "clear_default") {
     const id = formData.get("id")?.toString() ?? null;
     const nextId = action === "clear_default" ? null : id;
     if (action === "set_default" && !id) {
-      return redirect(`${redirectTo}?view_error=1`);
+      return redirect(withQuery(redirectTo, { view_error: "1" }));
     }
     if (nextId) {
       const views = await listHistorySavedViews(user.id);
       if (!views.some((view) => view.id === nextId)) {
-        return redirect(`${redirectTo}?view_error=1`);
+        return redirect(withQuery(redirectTo, { view_error: "1" }));
       }
     }
     const updated = await updateDefaultHistoryViewId(accessToken, refreshToken, nextId);
-    if (updated.error) return redirect(`${redirectTo}?view_error=1`);
+    if (updated.error) return redirect(withQuery(redirectTo, { view_error: "1" }));
     if (updated.accessToken && updated.refreshToken) {
       setAuthCookies(cookies, updated.accessToken, updated.refreshToken);
     }
-    return redirect(`${redirectTo}?view_default=1`);
+    return redirect(withQuery(redirectTo, { view_default: "1" }));
   }
 
   const name = formData.get("name")?.toString() ?? "";
@@ -113,7 +113,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     params,
   });
   if (created.error) {
-    return redirect(`${redirectTo}?view_error=1`);
+    return redirect(withQuery(redirectTo, { view_error: "1" }));
   }
-  return redirect(`${redirectTo}?view_saved=1`);
+  return redirect(withQuery(redirectTo, { view_saved: "1" }));
 };

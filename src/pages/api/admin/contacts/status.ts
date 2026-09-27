@@ -2,7 +2,7 @@ import type { APIRoute } from "astro";
 import { getAuthFromCookies } from "../../../../lib/auth";
 import { isUserAdmin } from "../../../../lib/adminAccess";
 import { createServerClient } from "../../../../lib/supabase";
-import { formRedirectPath } from "../../../../lib/siteUrl";
+import { formRedirectPath, withQuery } from "../../../../lib/siteUrl";
 
 const ALLOWED_STATUSES = new Set(["new", "read", "spam"]);
 
@@ -20,7 +20,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const redirectTo = formRedirectPath(formData, "/dashboard/contacts");
 
   if (!Number.isFinite(id)) {
-    return redirect(`${redirectTo}?contact_error=1`);
+    return redirect(withQuery(redirectTo, { contact_error: "1" }));
   }
 
   const updates: {
@@ -35,14 +35,14 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   }
 
   if (Object.keys(updates).length === 0) {
-    return redirect(`${redirectTo}?contact_error=1`);
+    return redirect(withQuery(redirectTo, { contact_error: "1" }));
   }
 
   const supabase = createServerClient();
   const { error } = await supabase.from("contacts").update(updates).eq("id", id);
 
   if (error) {
-    return redirect(`${redirectTo}?contact_error=1`);
+    return redirect(withQuery(redirectTo, { contact_error: "1" }));
   }
 
   return redirect(redirectTo);

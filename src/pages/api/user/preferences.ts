@@ -8,7 +8,7 @@ import {
   updateUserDisplayPreferences,
   parseDisplayPreferencesInput,
 } from "../../../lib/userPreferences";
-import { formRedirectPath } from "../../../lib/siteUrl";
+import { formRedirectPath, withQuery } from "../../../lib/siteUrl";
 
 export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const { session, user } = await getAuthFromRequest(request, cookies);
@@ -32,8 +32,8 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     theme: formData.get("theme")?.toString(),
   });
 
-  const accessToken = cookies.get("sb-access-token")!.value;
-  const refreshToken = cookies.get("sb-refresh-token")!.value;
+  const accessToken = session.access_token;
+  const refreshToken = session.refresh_token;
 
   const { error } = await updateUserDisplayPreferences(
     accessToken,
@@ -42,7 +42,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   );
 
   if (error) {
-    return redirect(`${redirectTo}?prefs_error=1`);
+    return redirect(withQuery(redirectTo, { prefs_error: "1" }));
   }
 
   cookies.set("theme", prefs.theme, {
