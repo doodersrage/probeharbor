@@ -12,6 +12,7 @@ import {
   type AlertSettings,
   type FloodAlertReading,
 } from "./alerts";
+import { listRecentAlertEvents } from "./alertEvents";
 import { evaluateAlertRules, type RuleEvalContext } from "./alertRules";
 import {
   getAlertSettingsForUser,
@@ -70,6 +71,13 @@ export {
   mergeAlertReadings,
 } from "./alertReadings";
 
+/** True when someone has already acknowledged the most recent threshold alert. */
+async function latestThresholdAlertAcknowledged(userId: string): Promise<boolean> {
+  const events = await listRecentAlertEvents(userId, 20).catch(() => []);
+  const latest = events.find((event) => event.kind === "threshold");
+  return Boolean(latest?.acknowledged_at);
+}
+
 export async function sendThresholdAlertsIfNeeded(
   userId: string,
   email: string | null | undefined,
@@ -113,11 +121,15 @@ export async function sendThresholdAlertsIfNeeded(
     const lastEsc = settings.lastEscalationAt
       ? Date.parse(settings.lastEscalationAt)
       : 0;
+    const sinceLastAlert = Date.now() - lastAlert;
+    // Escalate only within the incident the last alert opened: once its
+    // cooldown lapses, a fresh alert goes out below instead.
     const elapsedOk =
       Number.isFinite(lastAlert) &&
-      Date.now() - lastAlert >= settings.escalationMinutes * 60 * 1000;
+      sinceLastAlert >= settings.escalationMinutes * 60 * 1000 &&
+      isAlertCooldownActive(settings.lastAlertSentAt);
     const notEscalatedYet = !Number.isFinite(lastEsc) || lastEsc < lastAlert;
-    if (elapsedOk && notEscalatedYet) {
+    if (elapsedOk && notEscalatedYet && !(await latestThresholdAlertAcknowledged(userId))) {
       await notifyUser(
         userId,
         email,

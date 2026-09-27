@@ -12,6 +12,11 @@ vi.mock("./notify", () => ({
   saveAlertSettingsForUser: vi.fn(),
 }));
 
+const mockListRecentAlertEvents = vi.fn();
+vi.mock("./alertEvents", () => ({
+  listRecentAlertEvents: (...args: unknown[]) => mockListRecentAlertEvents(...args),
+}));
+
 const mockBuildFreezeAlertContext = vi.fn();
 vi.mock("./alertContext", () => ({
   buildFreezeAlertContext: (...args: unknown[]) => mockBuildFreezeAlertContext(...args),
@@ -22,6 +27,64 @@ beforeEach(() => {
   mockMarkCooldown.mockReset().mockResolvedValue(undefined);
   mockMarkEscalation.mockReset().mockResolvedValue(undefined);
   mockBuildFreezeAlertContext.mockReset().mockResolvedValue(null);
+  mockListRecentAlertEvents.mockReset().mockResolvedValue([]);
+});
+
+describe("sendThresholdAlertsIfNeeded escalation", () => {
+  const minutesAgo = (m: number) => new Date(Date.now() - m * 60 * 1000).toISOString();
+  const escalating = {
+    ...DEFAULT_ALERT_SETTINGS,
+    enabled: true,
+    channelSms: true,
+    escalationEnabled: true,
+    escalationMinutes: 30,
+  };
+  const smsOnlyCalls = () =>
+    mockNotifyUser.mock.calls.filter((call) => call[4]?.smsOnly === true);
+
+  it("escalates an unacknowledged alert once escalationMinutes pass", async () => {
+    mockListRecentAlertEvents.mockResolvedValue([{ kind: "threshold", acknowledged_at: null }]);
+    const { sendThresholdAlertsIfNeeded } = await import("./alertNotifications");
+    await sendThresholdAlertsIfNeeded(
+      "user-1",
+      "a@example.com",
+      { ...escalating, lastAlertSentAt: minutesAgo(45) },
+      freezingReading,
+    );
+
+    expect(smsOnlyCalls()).toHaveLength(1);
+    expect(mockMarkEscalation).toHaveBeenCalledWith("user-1");
+  });
+
+  it("does not escalate once the alert is acknowledged", async () => {
+    mockListRecentAlertEvents.mockResolvedValue([
+      { kind: "threshold", acknowledged_at: minutesAgo(10) },
+    ]);
+    const { sendThresholdAlertsIfNeeded } = await import("./alertNotifications");
+    await sendThresholdAlertsIfNeeded(
+      "user-1",
+      "a@example.com",
+      { ...escalating, lastAlertSentAt: minutesAgo(45) },
+      freezingReading,
+    );
+
+    expect(smsOnlyCalls()).toHaveLength(0);
+    expect(mockMarkEscalation).not.toHaveBeenCalled();
+  });
+
+  it("does not escalate a new incident days after the last alert", async () => {
+    const { sendThresholdAlertsIfNeeded } = await import("./alertNotifications");
+    await sendThresholdAlertsIfNeeded(
+      "user-1",
+      "a@example.com",
+      { ...escalating, lastAlertSentAt: minutesAgo(3 * 24 * 60) },
+      freezingReading,
+    );
+
+    expect(smsOnlyCalls()).toHaveLength(0);
+    // The regular alert still goes out.
+    expect(mockNotifyUser).toHaveBeenCalledTimes(1);
+  });
 });
 
 const freezingReading: AlertReading[] = [
