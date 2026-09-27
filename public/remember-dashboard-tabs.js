@@ -9,10 +9,44 @@
     return pathname.replace(/\/+$/, "") || "/";
   }
 
+  // Only view state is worth restoring. One-shot flash flags (view_saved=1,
+  // key_rotated=1, error=1, ...) would otherwise replay on every bare visit.
+  var VIEW_PARAMS = [
+    "days",
+    "feed",
+    "probe",
+    "from",
+    "to",
+    "page",
+    "page_size",
+    "overlay",
+    "yoy",
+    "compare_from",
+    "compare_to",
+    "compare_preset",
+    "tab",
+    "view",
+  ];
+
+  function viewStateQuery(search) {
+    try {
+      var source = new URLSearchParams(search);
+      var kept = new URLSearchParams();
+      source.forEach(function (value, name) {
+        if (VIEW_PARAMS.indexOf(name) !== -1 && value !== "") kept.set(name, value);
+      });
+      var qs = kept.toString();
+      return qs ? "?" + qs : "";
+    } catch (_) {
+      return "";
+    }
+  }
+
   function remember(key, search) {
     try {
-      if (search && search !== "?") {
-        localStorage.setItem(key, search);
+      var qs = viewStateQuery(search || "");
+      if (qs) {
+        localStorage.setItem(key, qs);
       }
     } catch (_) {}
   }
@@ -25,8 +59,9 @@
       return;
     }
     try {
-      var saved = localStorage.getItem(key);
-      if (saved && saved !== "?" && saved.indexOf("=") !== -1) {
+      // Re-filter in case an older version stored flash flags.
+      var saved = viewStateQuery(localStorage.getItem(key) || "");
+      if (saved) {
         location.replace(path + saved);
       }
     } catch (_) {}
@@ -41,11 +76,11 @@
     }
   }
 
-  if (path === "/dashboard/devices" || path === "/dashboard/devices") {
+  if (path === "/dashboard/devices") {
     if (location.search && location.search !== "?") {
       remember(DEVICES_KEY, location.search);
     } else {
-      restore(DEVICES_KEY, ["/dashboard/devices", "/dashboard/devices"]);
+      restore(DEVICES_KEY, ["/dashboard/devices"]);
     }
   }
 

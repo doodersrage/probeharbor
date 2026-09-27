@@ -237,6 +237,12 @@
 
     if (dialogOpen()) return;
     if (isTypingTarget(event.target)) return;
+    // Leave browser/OS shortcuts (Cmd+S, Ctrl+D, ...) alone; "?" is handled
+    // below and may arrive with Shift only.
+    if (event.metaKey || event.ctrlKey || event.altKey) {
+      chord = null;
+      return;
+    }
 
     if (event.key === "?" || (event.shiftKey && event.key === "/")) {
       event.preventDefault();
