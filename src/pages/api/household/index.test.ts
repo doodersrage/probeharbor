@@ -16,7 +16,11 @@ const mockRemoveHouseholdMember = vi.fn();
 const mockSetActiveHouseholdForUser = vi.fn();
 const mockUpdateHouseholdName = vi.fn();
 const mockCreateAdditionalHouseholdForUser = vi.fn();
-vi.mock("../../../lib/households", () => ({
+const mockGetUserHouseholdRole = vi.fn();
+vi.mock("../../../lib/households", async (importOriginal) => ({
+  canManageHousehold: (await importOriginal<typeof import("../../../lib/households")>())
+    .canManageHousehold,
+  getUserHouseholdRole: (...a: unknown[]) => mockGetUserHouseholdRole(...a),
   countOwnedHouseholds: (...a: unknown[]) => mockCountOwnedHouseholds(...a),
   getOwnedHouseholdId: (...a: unknown[]) => mockGetOwnedHouseholdId(...a),
   getOrCreateHouseholdForUser: (...a: unknown[]) => mockGetOrCreateHouseholdForUser(...a),
@@ -67,10 +71,8 @@ vi.mock("../../../lib/indoorReference", () => ({
 }));
 
 const mockRequireHouseholdManager = vi.fn();
-const mockRedirectUnlessManager = vi.fn();
 vi.mock("../../../lib/householdAuth", () => ({
   requireHouseholdManager: (...a: unknown[]) => mockRequireHouseholdManager(...a),
-  redirectUnlessManager: (...a: unknown[]) => mockRedirectUnlessManager(...a),
 }));
 
 const mockRecordHouseholdActivity = vi.fn();
@@ -151,8 +153,8 @@ beforeEach(() => {
     ok: true,
     ctx: { householdId: "house-1", role: "owner" },
   });
-  mockRedirectUnlessManager.mockReset().mockReturnValue(null);
   mockGetOwnedHouseholdId.mockReset().mockResolvedValue("house-1");
+  mockGetUserHouseholdRole.mockReset().mockResolvedValue("owner");
   mockSetActiveHouseholdForUser.mockReset().mockResolvedValue({ error: null });
   mockLeaveHousehold.mockReset().mockResolvedValue({ error: null });
   mockGetUserEntitlements.mockReset().mockResolvedValue({
@@ -333,19 +335,29 @@ describe("POST /api/household", () => {
     expect(context.redirect).toHaveBeenCalledWith("/dashboard/household?error=property_limit");
   });
 
-  it("returns the manager block response for non-managers on manage actions", async () => {
-    const blocked = new Response(null, {
-      status: 302,
-      headers: { Location: "/dashboard/household?error=manager_required" },
-    });
-    mockRedirectUnlessManager.mockReturnValue(blocked);
+  it("blocks manage actions for viewers of the managed household", async () => {
+    mockGetOwnedHouseholdId.mockResolvedValue(null);
+    mockGetUserHouseholdRole.mockResolvedValue("viewer");
     const { POST } = await import("./index");
     const context = makePostContext({ action: "rename", name: "New name" });
 
-    const response = await POST(context);
+    await POST(context);
 
-    expect(response).toBe(blocked);
+    expect(context.redirect).toHaveBeenCalledWith("/dashboard/household?error=manager_required");
     expect(mockUpdateHouseholdName).not.toHaveBeenCalled();
+  });
+
+  it("lets an owner manage their household while viewing someone else's", async () => {
+    // Active household is someone else's (viewer there); they own house-1.
+    mockRequireHouseholdManager.mockResolvedValue({ ok: false, error: "manager_required" });
+    mockGetUserHouseholdRole.mockImplementation(async (_user: string, householdId: string) =>
+      householdId === "house-1" ? "owner" : "viewer",
+    );
+    const { POST } = await import("./index");
+
+    await POST(makePostContext({ action: "rename", name: "Cabin" }));
+
+    expect(mockUpdateHouseholdName).toHaveBeenCalledWith("house-1", "Cabin");
   });
 
   it("renames the household", async () => {

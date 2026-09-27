@@ -2,8 +2,10 @@ import type { APIRoute } from "astro";
 import { getAuthFromRequest } from "../../../lib/auth";
 import { createServerClient } from "../../../lib/supabase";
 import {
+  canManageHousehold,
   countOwnedHouseholds,
   getOwnedHouseholdId,
+  getUserHouseholdRole,
   getOrCreateHouseholdForUser,
   leaveHousehold,
   listHouseholdMembers,
@@ -25,10 +27,7 @@ import { buildSiteUrl } from "../../../lib/stripe";
 import { updateHouseholdFreezeMapSettings } from "../../../lib/freezeMap";
 import { getHouseholdFreezeMapSettings } from "../../../lib/freezeMap";
 import { getIndoorReferenceSensorId } from "../../../lib/indoorReference";
-import {
-  redirectUnlessManager,
-  requireHouseholdManager,
-} from "../../../lib/householdAuth";
+import { requireHouseholdManager } from "../../../lib/householdAuth";
 import { recordHouseholdActivity } from "../../../lib/householdActivity";
 import { formRedirectPath, withQuery } from "../../../lib/siteUrl";
 
@@ -142,16 +141,19 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     return redirect(withQuery(redirectTo, { property_created: "1" }));
   }
 
-  const manager = await requireHouseholdManager(user.id);
-  const blocked = redirectUnlessManager(manager, redirectTo, redirect);
-  if (blocked) return blocked;
-
   const ownedId = await getOwnedHouseholdId(user.id);
   const household = await getOrCreateHouseholdForUser(user.id, user.email);
   const manageId = ownedId ?? household.householdId;
 
   if (!manageId) {
     return redirect(withQuery(redirectTo, { error: "1" }));
+  }
+
+  // Check the role in the household these actions target (the one the
+  // household page shows), not the active one: an owner whose active
+  // household is someone else's, where they only view, still manages theirs.
+  if (!canManageHousehold(await getUserHouseholdRole(user.id, manageId))) {
+    return redirect(withQuery(redirectTo, { error: "manager_required" }));
   }
 
   if (action === "rename") {

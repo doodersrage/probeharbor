@@ -327,8 +327,8 @@ export const server = {
     }),
     handler: async (input, context) => {
       const { user } = await requireAuthed(context.cookies);
-      await requireEditor(user.id);
-
+      // Targets the household the user owns (checked below), so the role in
+      // the active household doesn't matter here.
       const ownedId = await getOwnedHouseholdId(user.id);
       const household = await getOrCreateHouseholdForUser(user.id, user.email);
       const manageId = ownedId ?? household.householdId;
@@ -397,8 +397,8 @@ export const server = {
     }),
     handler: async (input, context) => {
       const { user } = await requireAuthed(context.cookies);
-      await requireEditor(user.id);
-
+      // Targets the household the user owns (checked below), so the role in
+      // the active household doesn't matter here.
       const ownedId = await getOwnedHouseholdId(user.id);
       if (!ownedId) {
         throw new ActionError({
@@ -430,8 +430,8 @@ export const server = {
     }),
     handler: async (input, context) => {
       const { user } = await requireAuthed(context.cookies);
-      await requireEditor(user.id);
-
+      // Targets the household the user owns (checked below), so the role in
+      // the active household doesn't matter here.
       const ownedId = await getOwnedHouseholdId(user.id);
       if (!ownedId) {
         throw new ActionError({
