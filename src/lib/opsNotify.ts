@@ -1,12 +1,14 @@
 /** Operator notifications for failed background jobs. */
+import { getRuntimeEnv } from "./runtimeEnv";
 
 function cleanEnv(value: unknown): string {
   return String(value ?? "").replace(/\r/g, "").trim();
 }
 
 async function sendOpsEmail(subject: string, body: string): Promise<boolean> {
-  const to = cleanEnv(import.meta.env.SMTP_MAIL_TO);
-  const from = cleanEnv(import.meta.env.SMTP_MAIL_FROM);
+  // Worker secrets first (set by `pnpm secrets:push`), then build-time env.
+  const to = cleanEnv(getRuntimeEnv("SMTP_MAIL_TO"));
+  const from = cleanEnv(getRuntimeEnv("SMTP_MAIL_FROM"));
   if (!to || !from) return false;
 
   try {
@@ -31,9 +33,10 @@ async function sendOpsEmail(subject: string, body: string): Promise<boolean> {
 }
 
 async function sendOpsDiscord(title: string, body: string): Promise<boolean> {
+  // OPS_DISCORD_WEBHOOK_URL is a Worker runtime secret, not a build-time var.
   const webhook =
-    cleanEnv(import.meta.env.OPS_DISCORD_WEBHOOK_URL) ||
-    cleanEnv(import.meta.env.DISCORD_OPS_WEBHOOK_URL);
+    cleanEnv(getRuntimeEnv("OPS_DISCORD_WEBHOOK_URL")) ||
+    cleanEnv(getRuntimeEnv("DISCORD_OPS_WEBHOOK_URL"));
   if (!webhook) return false;
 
   try {
