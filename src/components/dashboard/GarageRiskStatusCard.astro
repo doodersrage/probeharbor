@@ -1,11 +1,26 @@
 ---
 import type { GarageRiskStatus } from "../../lib/garageRiskStatus";
+import { formatRelativeAge } from "../../lib/relativeTime";
+import ReadingAgeBadge from "./ReadingAgeBadge.astro";
+
+/** Coldest temperature probe, so the card answers "which one, how cold, how fresh". */
+export type ColdestProbeSummary = {
+  label: string;
+  /** Pre-formatted in the user's unit. */
+  temp: string;
+  /** e.g. "2°F above threshold" / "1°F below threshold". */
+  margin: string;
+  recordedAt: string | null;
+};
 
 interface Props {
   status: GarageRiskStatus;
+  coldestProbe?: ColdestProbeSummary | null;
 }
 
-const { status } = Astro.props;
+const { status, coldestProbe = null } = Astro.props;
+// A stale reading shouldn't look live: grey the value out.
+const probeStale = coldestProbe ? formatRelativeAge(coldestProbe.recordedAt).stale : false;
 ---
 <section
   class:list={[
@@ -26,6 +41,19 @@ const { status } = Astro.props;
     {status.title}
   </h2>
   <p class="card-subtitle mb-4" data-overview-field="riskDetail">{status.detail}</p>
+  {coldestProbe && (
+    <p class="garage-risk-probe" data-coldest-probe>
+      <span class="garage-risk-probe-label">Coldest: {coldestProbe.label}</span>
+      <strong
+        class:list={["garage-risk-probe-temp", probeStale && "is-stale"]}
+        title={probeStale ? "Last reading is old; this may not be current." : undefined}
+      >
+        {coldestProbe.temp}
+      </strong>
+      <span class="garage-risk-probe-margin">{coldestProbe.margin}</span>
+      <ReadingAgeBadge iso={coldestProbe.recordedAt} emptyLabel="No reading" />
+    </p>
+  )}
   <a
     class="btn-primary"
     href={status.actionHref}
@@ -38,6 +66,23 @@ const { status } = Astro.props;
 <style>
   .garage-risk-status {
     border-color: var(--color-border);
+  }
+  .garage-risk-probe {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem 0.6rem;
+    margin: -0.5rem 0 1rem;
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+  }
+  .garage-risk-probe-temp {
+    color: var(--color-text);
+    font-size: 1rem;
+  }
+  .garage-risk-probe-temp.is-stale {
+    color: var(--color-text-muted);
+    opacity: 0.7;
   }
   .garage-risk-status--ok {
     border-color: var(--color-success);

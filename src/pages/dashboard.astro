@@ -137,6 +137,7 @@ import DashboardMetricGrid from "../components/dashboard/DashboardMetricGrid.ast
 import MetricCard from "../components/dashboard/MetricCard.astro";
 import DashboardWeekChart from "../components/dashboard/DashboardWeekChart.astro";
 import NightsAtRiskCard from "../components/dashboard/NightsAtRiskCard.astro";
+import { formatTemperature } from "../lib/temperatureFormat";
 
 const shell = Astro.locals.dashboardShell ?? null;
 const { session, user } = shell
@@ -514,6 +515,13 @@ const coldestProbeMarginF =
     ? coldestProbeTempF - alertSettings.freezeThresholdF
     : null;
 
+const coldestProbeRow =
+  coldestProbeTempF == null
+    ? null
+    : (latest.find(
+        (row) => row.sensor.kind === "temperature" && row.value_num === coldestProbeTempF,
+      ) ?? null);
+
 const freezeHours = computeFreezeHours(
   chartWeek.points,
   alertSettings.freezeThresholdF,
@@ -726,9 +734,6 @@ const tipsCount =
   (showAndroidInDigest ? 1 : 0) +
   (showBayBuddyInDigest ? 1 : 0);
 
-const overviewUrgent =
-  unackedAlertCount > 0 || criticalBanners.length > 0 || firstRunFocus;
-const overviewCalm = !overviewUrgent;
 
 function showPinnedMetric(id: PinnableOverviewMetric): boolean {
   return pinnedMetricSet.has(id);
@@ -749,12 +754,36 @@ const garageRisk = computeGarageRiskStatus({
   hitsAtLabel: timeToFreeze.hitsAtLabel,
   wetFloodCount,
 });
+
+// Keep growth tips out of the way while something needs attention now.
+const showTipsStrip =
+  unackedAlertCount === 0 && criticalBanners.length === 0 && garageRisk.level !== "risk";
+
+const coldestProbeSummary = (() => {
+  if (!coldestProbeRow || coldestProbeTempF == null || coldestProbeMarginF == null) return null;
+  const marginAbsF = Math.abs(coldestProbeMarginF);
+  const marginText = useCelsius
+    ? `${((marginAbsF * 5) / 9).toFixed(1)}°C`
+    : `${marginAbsF.toFixed(1)}°F`;
+  return {
+    label: coldestProbeRow.sensor.label,
+    temp: formatTemperature(coldestProbeTempF, useCelsius, 1),
+    margin:
+      marginAbsF < 0.05
+        ? "at threshold"
+        : `${marginText} ${coldestProbeMarginF > 0 ? "above" : "below"} threshold`,
+    recordedAt: coldestProbeRow.recorded_at,
+  };
+})();
 ---
 <DashboardLayout
   title="Overview"
   subtitle="Space status for this property."
   liveLagging={staleSensorCount > 0 || lastAge.lagging}
 >
+  {!firstRunFocus && !forceSimple && (
+    <DashboardOverviewToggle slot="topbar-actions" mode={overviewMode} />
+  )}
   <ProductAnalyticsTracker events={analyticsEvents} />
   <div class="dashboard-stack">
     <OverviewFlash
@@ -789,7 +818,7 @@ const garageRisk = computeGarageRiskStatus({
       showDemoFeed={showDemoPullNudge}
     />
 
-    <GarageRiskStatusCard status={garageRisk} />
+    <GarageRiskStatusCard status={garageRisk} coldestProbe={coldestProbeSummary} />
     <div id="overview-offline-banner" class="alert-warning mb-0" role="status" hidden>
       Showing last-known dashboard status (offline or stale cache).
     </div>
@@ -833,6 +862,138 @@ const garageRisk = computeGarageRiskStatus({
         View-only access: you can see live data but cannot change devices, alerts, or sharing.
       </p>
     )}
+
+
+    <DemoPullNudge show={showDemoPullNudge} />
+    <ProbeSimulatorNudge show={showProbeSimulatorNudge} />
+
+    {showInsights && (hasDevices || chartWeek.points.length > 0) && (
+      <TimeToFreezeCard
+        projection={timeToFreeze}
+        freezeThresholdF={alertSettings.freezeThresholdF}
+        useCelsius={useCelsius}
+      />
+    )}
+
+    <FloodLevelCard overview={floodLevelOverview} />
+
+    <ColdSnapChecklistCard
+      show={showColdSnapChecklist}
+      coldSnapEnabled={alertSettings.forecastFreezeEnabled}
+      canUseForecast={entitlements.canUseForecastAlerts}
+    />
+
+    <AttentionNeededStrip
+      count={attentionOpsCount}
+      title="Attention needed"
+      storageKey="tt-attention-ops-collapsed"
+      defaultOpen={attentionOpsCount > 0 && prioritizeFirstRun}
+      showQuietControls={false}
+    >
+      <div class="space-y-4">
+          <AlertSetupNudge
+            hasAlertsEnabled={hasAlertsEnabled}
+            hasEmailAlerts={hasEmailAlerts}
+            canEdit={canEdit}
+            show={secondaryBannerIds.has("alertSetup")}
+          />
+          <TestAlertNudge
+            canEdit={canEdit}
+            show={secondaryBannerIds.has("testAlert")}
+          />
+          {secondaryBannerIds.has("freezeReadiness") && (
+            <FreezeReadinessCard readiness={freezeReadiness} />
+          )}
+          {secondaryBannerIds.has("stale") && staleSensorCount > 0 && (
+            <div class="alert-warning mb-0" role="status" data-stale-banner>
+              {staleSummary.bannerMessage}.
+              {" "}
+              <a href="/dashboard/live" class="text-link">Open Live</a>
+              {" · "}
+              <a href={devicesOpsPath()} class="text-link">Devices</a>
+            </div>
+          )}
+          <LowBatteryBanner message={secondaryBannerIds.has("lowBattery") ? lowBatteryMessage : null} />
+      </div>
+    </AttentionNeededStrip>
+
+    <section class="dashboard-section" aria-labelledby="curves-heading">
+      <div class="dashboard-section-head">
+        <div>
+          <h2 id="curves-heading" class="dashboard-section-title">Probe curves</h2>
+          <p class="dashboard-section-desc">
+            {firstRunFocus
+              ? `${chartWindowDays}-day temperature trend. Insights unlock after freeze + email + a test alert.`
+              : forceSimple
+                ? `${chartWindowDays}-day temperature trend (Simple view for viewers).`
+                : showInsights
+                  ? `${chartWindowDays}-day traces, freeze outlook, and week-over-week change.`
+                  : `${chartWindowDays}-day temperature trend. Switch to Insights for freeze outlook and comparisons.`}
+          </p>
+        </div>
+      </div>
+      <div class:list={["dashboard-insights", showInsights && "dashboard-insights--with-side"]}>
+        <div class="dashboard-insights-primary">
+          <DashboardWeekChart
+            points={chartWeek.points}
+            housePoints={houseChartOverlay.points}
+            houseLegend={
+              houseChartOverlay.source === "thermostat"
+                ? "House (thermostat)"
+                : houseContext?.referenceLabel
+                  ? `House (${houseContext.referenceLabel})`
+                  : "House"
+            }
+            freezeThresholdF={alertSettings.freezeThresholdF}
+            canExport={canExportCsv}
+            exportFrom={exportFrom}
+            exportTo={exportTo}
+            days={chartWindowDays}
+            alertMarkers={chartAlertMarkers}
+          />
+          {showInsights && (
+            <NightsAtRiskCard
+              nightsAtRisk={nightsAtRisk}
+              nightsRiskCount={nightsRiskCount}
+              freezeThresholdF={alertSettings.freezeThresholdF}
+              weatherSnapshot={weatherSnapshot}
+              weatherHasCoords={weatherHasCoords}
+              nwsAlerts={nwsAlerts}
+            />
+          )}
+        </div>
+        {showInsights && (
+          <aside class="dashboard-insights-side">
+            <WeekCompareCard compare={weekCompareResult.compare} useCelsius={useCelsius} />
+            {regionalBenchmark && (
+              <RegionalBenchmarkCard benchmark={regionalBenchmark} />
+            )}
+            <HeatingInsightsCard insights={heatingInsights} />
+            <OverviewInsightsExtras
+              doorTempSummary={doorTempSummary}
+              powerTempSummary={powerTempSummary}
+              motionSummary={motionSummary}
+              devices={devices}
+              doorSessions={doorSessions}
+              householdId={household.householdId}
+              batteryOverview={batteryOverview}
+              rssiOverview={rssiOverview}
+              airQualityOverview={airQualityOverview}
+              energyOverview={energyOverview}
+              coolingRateFPerHour={coolingRateFPerHour}
+              canUseClaimsPack={entitlements.canUseClaimsPack}
+              tier={entitlements.tier}
+              showClaimsPackPrompt={showClaimsPackPrompt}
+            />
+          </aside>
+        )}
+      </div>
+      {!showInsights && (
+        <p class="mt-4 mb-0 text-sm text-[var(--color-text-muted)]">
+          <a class="text-link" href="/dashboard/history">Open History</a> for full charts, CSV export, and claims pack.
+        </p>
+      )}
+    </section>
 
     <section class="dashboard-section" id="status" aria-labelledby="status-heading">
       <div class="dashboard-section-head">
@@ -1102,177 +1263,50 @@ const garageRisk = computeGarageRiskStatus({
       )}
     </section>
 
-    <DemoPullNudge show={showDemoPullNudge} />
-    <ProbeSimulatorNudge show={showProbeSimulatorNudge} />
-
-    {showInsights && (hasDevices || chartWeek.points.length > 0) && (
-      <TimeToFreezeCard
-        projection={timeToFreeze}
-        freezeThresholdF={alertSettings.freezeThresholdF}
-        useCelsius={useCelsius}
-      />
+    {showTipsStrip && (
+      <AttentionNeededStrip
+        count={tipsCount}
+        quietActive={quietActive}
+        quietUntil={quietUntil}
+        title="Tips"
+        storageKey="tt-attention-tips-collapsed"
+        defaultOpen={false}
+        showQuietControls={true}
+        showGrowthDismiss={showNestInDigest || showPwaInDigest || showAndroidInDigest || showBayBuddyInDigest}
+      >
+        <div class="space-y-4">
+            <NestConnectNudge
+              show={showNestInDigest}
+              nestEntitled={entitlements.canUseThermostatIntegration}
+            />
+            <OverviewPwaNudge show={showPwaInDigest} />
+            <DashboardAndroidNudge show={showAndroidInDigest} />
+            <DashboardBayBuddyNudge show={showBayBuddyInDigest} />
+            <DashboardYoureLive
+              show={secondaryBannerIds.has("youreLive")}
+              hasAlertsEnabled={hasAlertsEnabled}
+              hasEmailAlerts={hasEmailAlerts}
+              hasTestAlert={hasTestAlert}
+            />
+            <FreezeMapOptInNudge
+              canEdit={canEdit}
+              show={secondaryBannerIds.has("freezeMap") || primaryBannerIds.has("freezeMap")}
+              cityLabel={freezeMapSettings.label}
+            />
+            <DashboardStoryCard show={secondaryBannerIds.has("story") || primaryBannerIds.has("story")} />
+            <DashboardMultiPropertyNudge show={secondaryBannerIds.has("multiProperty") || primaryBannerIds.has("multiProperty")} />
+            {secondaryBannerIds.has("upgrade") && upgradeTarget === "member" && (
+              <UpgradeNudge feature="data_retention" tier={entitlements.tier} compact />
+            )}
+            {secondaryBannerIds.has("upgrade") && upgradeTarget === "pro" && (
+              <UpgradeNudge feature="sms_alerts" tier={entitlements.tier} compact />
+            )}
+        </div>
+      </AttentionNeededStrip>
     )}
 
-    <FloodLevelCard overview={floodLevelOverview} />
 
-    <ColdSnapChecklistCard
-      show={showColdSnapChecklist}
-      coldSnapEnabled={alertSettings.forecastFreezeEnabled}
-      canUseForecast={entitlements.canUseForecastAlerts}
-    />
 
-    <AttentionNeededStrip
-      count={attentionOpsCount}
-      title="Attention needed"
-      storageKey="tt-attention-ops-collapsed"
-      defaultOpen={attentionOpsCount > 0 && !overviewCalm}
-      showQuietControls={false}
-    >
-      <div class="space-y-4">
-          <AlertSetupNudge
-            hasAlertsEnabled={hasAlertsEnabled}
-            hasEmailAlerts={hasEmailAlerts}
-            canEdit={canEdit}
-            show={secondaryBannerIds.has("alertSetup")}
-          />
-          <TestAlertNudge
-            canEdit={canEdit}
-            show={secondaryBannerIds.has("testAlert")}
-          />
-          {secondaryBannerIds.has("freezeReadiness") && (
-            <FreezeReadinessCard readiness={freezeReadiness} />
-          )}
-          {secondaryBannerIds.has("stale") && staleSensorCount > 0 && (
-            <div class="alert-warning mb-0" role="status" data-stale-banner>
-              {staleSummary.bannerMessage}.
-              {" "}
-              <a href="/dashboard/live" class="text-link">Open Live</a>
-              {" · "}
-              <a href={devicesOpsPath()} class="text-link">Devices</a>
-            </div>
-          )}
-          <LowBatteryBanner message={secondaryBannerIds.has("lowBattery") ? lowBatteryMessage : null} />
-      </div>
-    </AttentionNeededStrip>
-
-    <AttentionNeededStrip
-      count={tipsCount}
-      quietActive={quietActive}
-      quietUntil={quietUntil}
-      title="Tips"
-      storageKey="tt-attention-tips-collapsed"
-      defaultOpen={false}
-      showQuietControls={true}
-      showGrowthDismiss={showNestInDigest || showPwaInDigest || showAndroidInDigest || showBayBuddyInDigest}
-    >
-      <div class="space-y-4">
-          <NestConnectNudge
-            show={showNestInDigest}
-            nestEntitled={entitlements.canUseThermostatIntegration}
-          />
-          <OverviewPwaNudge show={showPwaInDigest} />
-          <DashboardAndroidNudge show={showAndroidInDigest} />
-          <DashboardBayBuddyNudge show={showBayBuddyInDigest} />
-          <DashboardYoureLive
-            show={secondaryBannerIds.has("youreLive")}
-            hasAlertsEnabled={hasAlertsEnabled}
-            hasEmailAlerts={hasEmailAlerts}
-            hasTestAlert={hasTestAlert}
-          />
-          <FreezeMapOptInNudge
-            canEdit={canEdit}
-            show={secondaryBannerIds.has("freezeMap") || primaryBannerIds.has("freezeMap")}
-            cityLabel={freezeMapSettings.label}
-          />
-          <DashboardStoryCard show={secondaryBannerIds.has("story") || primaryBannerIds.has("story")} />
-          <DashboardMultiPropertyNudge show={secondaryBannerIds.has("multiProperty") || primaryBannerIds.has("multiProperty")} />
-          {secondaryBannerIds.has("upgrade") && upgradeTarget === "member" && (
-            <UpgradeNudge feature="data_retention" tier={entitlements.tier} compact />
-          )}
-          {secondaryBannerIds.has("upgrade") && upgradeTarget === "pro" && (
-            <UpgradeNudge feature="sms_alerts" tier={entitlements.tier} compact />
-          )}
-      </div>
-    </AttentionNeededStrip>
-
-    <section class="dashboard-section" aria-labelledby="curves-heading">
-      <div class="dashboard-section-head">
-        <div>
-          <h2 id="curves-heading" class="dashboard-section-title">Probe curves</h2>
-          <p class="dashboard-section-desc">
-            {firstRunFocus
-              ? `${chartWindowDays}-day temperature trend. Insights unlock after freeze + email + a test alert.`
-              : forceSimple
-                ? `${chartWindowDays}-day temperature trend (Simple view for viewers).`
-                : showInsights
-                  ? `${chartWindowDays}-day traces, freeze outlook, and week-over-week change.`
-                  : `${chartWindowDays}-day temperature trend. Switch to Insights for freeze outlook and comparisons.`}
-          </p>
-        </div>
-        {!firstRunFocus && !forceSimple && <DashboardOverviewToggle mode={overviewMode} />}
-      </div>
-      <div class="dashboard-insights">
-        <div class="dashboard-insights-primary">
-          <DashboardWeekChart
-            points={chartWeek.points}
-            housePoints={houseChartOverlay.points}
-            houseLegend={
-              houseChartOverlay.source === "thermostat"
-                ? "House (thermostat)"
-                : houseContext?.referenceLabel
-                  ? `House (${houseContext.referenceLabel})`
-                  : "House"
-            }
-            freezeThresholdF={alertSettings.freezeThresholdF}
-            canExport={canExportCsv}
-            exportFrom={exportFrom}
-            exportTo={exportTo}
-            days={chartWindowDays}
-            alertMarkers={chartAlertMarkers}
-          />
-          {showInsights && (
-            <NightsAtRiskCard
-              nightsAtRisk={nightsAtRisk}
-              nightsRiskCount={nightsRiskCount}
-              freezeThresholdF={alertSettings.freezeThresholdF}
-              weatherSnapshot={weatherSnapshot}
-              weatherHasCoords={weatherHasCoords}
-              nwsAlerts={nwsAlerts}
-            />
-          )}
-        </div>
-        {showInsights && (
-          <aside class="dashboard-insights-side">
-            <WeekCompareCard compare={weekCompareResult.compare} useCelsius={useCelsius} />
-            {regionalBenchmark && (
-              <RegionalBenchmarkCard benchmark={regionalBenchmark} />
-            )}
-            <HeatingInsightsCard insights={heatingInsights} />
-            <OverviewInsightsExtras
-              doorTempSummary={doorTempSummary}
-              powerTempSummary={powerTempSummary}
-              motionSummary={motionSummary}
-              devices={devices}
-              doorSessions={doorSessions}
-              householdId={household.householdId}
-              batteryOverview={batteryOverview}
-              rssiOverview={rssiOverview}
-              airQualityOverview={airQualityOverview}
-              energyOverview={energyOverview}
-              coolingRateFPerHour={coolingRateFPerHour}
-              canUseClaimsPack={entitlements.canUseClaimsPack}
-              tier={entitlements.tier}
-              showClaimsPackPrompt={showClaimsPackPrompt}
-            />
-          </aside>
-        )}
-      </div>
-      {!showInsights && (
-        <p class="mt-4 mb-0 text-sm text-[var(--color-text-muted)]">
-          <a class="text-link" href="/dashboard/history">Open History</a> for full charts, CSV export, and claims pack.
-        </p>
-      )}
-    </section>
   </div>
   <script>
     (function () {

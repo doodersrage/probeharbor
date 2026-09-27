@@ -65,6 +65,7 @@ const householdError = Astro.url.searchParams.get("household_error") === "1";
           {subtitle && <p class="dashboard-topbar-meta">{subtitle}</p>}
         </div>
         <div class="dashboard-topbar-actions">
+          <slot name="topbar-actions" />
           <HouseholdSwitcher
             households={shell.households}
             activeHouseholdId={shell.activeHouseholdId}

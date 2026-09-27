@@ -3086,11 +3086,14 @@
 
   .dashboard-insights {
     display: grid;
+    /* minmax(0, …) so the chart can't widen the column past a phone screen. */
+    grid-template-columns: minmax(0, 1fr);
     gap: 1rem;
   }
 
   @media (min-width: 1024px) {
-    .dashboard-insights {
+    /* Only reserve the side column when the Insights aside renders. */
+    .dashboard-insights--with-side {
       grid-template-columns: minmax(0, 1.6fr) minmax(17rem, 0.9fr);
       align-items: start;
     }
@@ -3101,6 +3104,7 @@
     display: flex;
     flex-direction: column;
     gap: 1rem;
+    min-width: 0;
   }
 
   .dashboard-flash {
