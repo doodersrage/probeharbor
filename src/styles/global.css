@@ -79,44 +79,49 @@
     --hover-wash-strong: rgb(255 255 255 / 0.1);
     --inset-highlight: rgb(255 255 255 / 0.03);
 
-    --bg-pattern-dot: rgb(148 163 184 / 0.1);
-    --bg-pattern-line: rgb(255 255 255 / 0.04);
-    --bg-pattern-tick: rgb(232 85 0 / 0.12);
+    --bg-trace: rgb(203 213 225 / 0.2);
+    --bg-trace-accent: rgb(255 122 0 / 0.38);
   }
 
   html[data-theme="light"] {
-    /* Cool slate neutrals — orange brand accent, blue reserved for info */
-    --color-bg: #f1f5f9;
-    --color-bg-elevated: #f8fafc;
+    /* Cold technical field. White cards sit on #F4F7F8; teal is the action color. */
+    --color-bg: #f4f7f8;
+    --color-bg-elevated: #eaf0f2;
     --color-surface: #ffffff;
-    --color-surface-raised: #f1f5f9;
-    --color-surface-muted: #e2e8f0;
-    --color-border: rgb(15 23 42 / 0.09);
-    --color-border-strong: rgb(15 23 42 / 0.15);
-    --color-text: #0f172a;
-    --color-text-secondary: #334155;
-    --color-text-muted: #64748b;
-    --color-accent-soft: rgb(255 122 0 / 0.12);
-    --color-accent-muted: #c45f00;
-    --color-success-bg: rgb(34 197 94 / 0.12);
-    --color-success-text: #166534;
-    --color-success-soft: rgb(34 197 94 / 0.12);
-    --color-warning-bg: rgb(232 85 0 / 0.1);
-    --color-warning-border: rgb(194 65 12 / 0.4);
-    --color-warning-text: #c2410c;
-    --color-info-bg: rgb(59 130 246 / 0.1);
-    --color-info-border: rgb(37 99 235 / 0.3);
-    --color-info-text: #1d4ed8;
-    --color-danger-bg: rgb(239 68 68 / 0.08);
+    --color-surface-raised: #eaf0f2;
+    --color-surface-muted: #eaf0f2;
+    --color-border: #d5e0e4;
+    --color-border-strong: #c3d2d8;
+    --color-text: #17252b;
+    --color-text-secondary: #52636a;
+    --color-text-muted: #52636a;
+    --color-accent: #1596a3;
+    --color-accent-hover: #0d7884;
+    --color-accent-soft: rgb(21 150 163 / 0.12);
+    --color-accent-glow: rgb(21 150 163 / 0.22);
+    --color-accent-muted: #0c7480;
+    --color-success: #3d8b62;
+    --color-success-bg: rgb(61 139 98 / 0.12);
+    --color-success-text: #2f6e4c;
+    --color-success-soft: rgb(61 139 98 / 0.12);
+    --color-warning-bg: rgb(217 139 24 / 0.12);
+    --color-warning-border: rgb(217 139 24 / 0.45);
+    --color-warning-text: #8f5a0e;
+    --color-info-bg: rgb(52 120 199 / 0.1);
+    --color-info-border: rgb(52 120 199 / 0.35);
+    --color-info-text: #2a62a8;
+    --color-danger: #c94a45;
+    --color-danger-bg: rgb(201 74 69 / 0.1);
+    --color-danger-border: rgb(201 74 69 / 0.4);
     --shadow-card:
-      0 0 0 1px rgb(15 23 42 / 0.06),
-      0 4px 16px rgb(15 23 42 / 0.07);
-    --hover-wash: rgb(15 23 42 / 0.05);
-    --hover-wash-strong: rgb(15 23 42 / 0.08);
-    --inset-highlight: rgb(15 23 42 / 0.02);
-    --bg-pattern-dot: rgb(100 116 139 / 0.1);
-    --bg-pattern-line: rgb(15 23 42 / 0.045);
-    --bg-pattern-tick: rgb(232 85 0 / 0.1);
+      0 0 0 1px rgb(23 37 43 / 0.04),
+      0 8px 24px rgb(23 37 43 / 0.06);
+    --hover-wash: rgb(23 37 43 / 0.04);
+    --hover-wash-strong: rgb(23 37 43 / 0.07);
+    --inset-highlight: rgb(255 255 255 / 0.7);
+    --focus-ring-glow: 0 0 0 3px rgb(21 150 163 / 0.28);
+    --bg-trace: rgb(23 37 43 / 0.2);
+    --bg-trace-accent: rgb(21 150 163 / 0.45);
   }
 
   html {
@@ -134,39 +139,44 @@
     isolation: isolate;
   }
 
-  body::before {
+  body::before,
+  body::after {
     content: "";
     position: fixed;
     inset: 0;
-    z-index: -2;
     pointer-events: none;
-    background-color: var(--color-bg);
-    /* Quiet isotherm lines and probe dots. No color washes. */
-    background-image:
-      repeating-linear-gradient(
-        180deg,
-        transparent 0,
-        transparent 47px,
-        var(--bg-pattern-line) 47px,
-        var(--bg-pattern-line) 48px
-      ),
-      repeating-linear-gradient(
-        180deg,
-        transparent 0,
-        transparent 191px,
-        var(--bg-pattern-tick) 191px,
-        var(--bg-pattern-tick) 192px
-      ),
-      radial-gradient(circle, var(--bg-pattern-dot) 1.15px, transparent 1.25px);
-    background-size:
-      100% 48px,
-      100% 192px,
-      56px 48px;
-    background-repeat: repeat;
-    background-position:
-      0 0,
-      0 0,
-      12px 18px;
+    /* Keep the marks in the side margins, outside the centered column. */
+    --trace-gutter: linear-gradient(
+      90deg,
+      #000 0,
+      #000 calc(50% - 40rem),
+      transparent calc(50% - 35rem),
+      transparent calc(50% + 35rem),
+      #000 calc(50% + 40rem),
+      #000 100%
+    );
+    -webkit-mask-size: 720px 480px, 100% 100%;
+    mask-size: 720px 480px, 100% 100%;
+    -webkit-mask-repeat: repeat, no-repeat;
+    mask-repeat: repeat, no-repeat;
+    -webkit-mask-composite: source-in;
+    mask-composite: intersect;
+  }
+
+  body::before {
+    z-index: -2;
+    background-color: var(--bg-trace);
+    -webkit-mask-image: url("/bg-traces.svg"), var(--trace-gutter);
+    mask-image: url("/bg-traces.svg"), var(--trace-gutter);
+  }
+
+  body::after {
+    z-index: -1;
+    background-color: var(--bg-trace-accent);
+    -webkit-mask-image: url("/bg-traces-accent.svg"), var(--trace-gutter);
+    mask-image: url("/bg-traces-accent.svg"), var(--trace-gutter);
+    -webkit-mask-position: 80px 40px, 0 0;
+    mask-position: 80px 40px, 0 0;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -485,6 +495,80 @@
     .home-hero--bleed {
       padding: 4.25rem 1.5rem 3.5rem;
     }
+  }
+
+  html[data-theme="light"] .site-header {
+    background-color: #ffffff;
+  }
+
+  html[data-theme="light"] .home-hero--bleed {
+    background: var(--color-bg);
+    border-bottom-color: var(--color-border);
+    box-shadow: none;
+  }
+
+  html[data-theme="light"] .home-need {
+    background: var(--color-bg-elevated);
+  }
+
+  html[data-theme="light"] .text-link {
+    color: var(--color-accent-muted);
+  }
+
+  html[data-theme="light"] .text-link:hover {
+    color: #095e68;
+  }
+
+  html[data-theme="light"] .btn-primary {
+    box-shadow: 0 1px 2px rgb(23 37 43 / 0.12);
+  }
+
+  html[data-theme="light"] .btn-primary:hover {
+    box-shadow: 0 1px 2px rgb(23 37 43 / 0.16);
+  }
+
+  html[data-theme="light"] .site-footer {
+    background-color: #17252b;
+    border-top-color: transparent;
+    color: #c5d0d4;
+  }
+
+  html[data-theme="light"] .site-footer .brand-mark-thermal,
+  html[data-theme="light"] .site-footer .site-footer-heading {
+    color: #f4f7f8;
+  }
+
+  html[data-theme="light"] .site-footer .brand-mark-trace {
+    color: #1596a3;
+  }
+
+  html[data-theme="light"] .site-footer .brand-mark-tm,
+  html[data-theme="light"] .site-footer .site-footer-copy,
+  html[data-theme="light"] .site-footer .site-footer-legal,
+  html[data-theme="light"] .site-footer .site-footer-hosting {
+    color: #9aadb3;
+  }
+
+  html[data-theme="light"] .site-footer .site-footer-links a,
+  html[data-theme="light"] .site-footer .site-footer-hosting a,
+  html[data-theme="light"] .site-footer .site-footer-legal a {
+    color: #d5e0e4;
+  }
+
+  html[data-theme="light"] .site-footer .site-footer-links a:hover,
+  html[data-theme="light"] .site-footer .site-footer-hosting a:hover,
+  html[data-theme="light"] .site-footer .site-footer-legal a:hover {
+    color: #ffffff;
+  }
+
+  html[data-theme="light"] .site-footer .site-footer-legal {
+    border-top-color: rgb(255 255 255 / 0.12);
+  }
+
+  html[data-theme="light"] .home-step-num {
+    background: var(--color-accent-hover);
+    border-color: var(--color-accent-hover);
+    color: #fff;
   }
 
   .home-hero-inner {
