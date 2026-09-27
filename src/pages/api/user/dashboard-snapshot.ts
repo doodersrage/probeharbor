@@ -4,7 +4,7 @@ import { getOrCreateHouseholdForUser, getUserHouseholdRole } from "../../../lib/
 import { getAlertSettingsForUser } from "../../../lib/notify";
 import { listHouseholdDevices } from "../../../lib/devices";
 import { fetchLatestSensorValues } from "../../../lib/sensorReadings";
-import { formatRelativeAge } from "../../../lib/relativeTime";
+import { formatRelativeAge, STALE_MS } from "../../../lib/relativeTime";
 import { summarizeStaleSensors } from "../../../lib/sensorFreshness";
 import { computeGarageRiskStatus } from "../../../lib/garageRiskStatus";
 import { countUnacknowledgedAlerts } from "../../../lib/alertEvents";
@@ -45,8 +45,14 @@ export const GET: APIRoute = async ({ cookies }) => {
   const lastAge = formatRelativeAge(newestReading);
   const staleSummary = summarizeStaleSensors(latest, devices);
   const coldestProbeTempF = (() => {
+    // Match Overview: skip probes whose last reading is stale.
     const temps = latest
-      .filter((row) => row.sensor.kind === "temperature" && row.value_num != null)
+      .filter(
+        (row) =>
+          row.sensor.kind === "temperature" &&
+          row.value_num != null &&
+          Date.now() - Date.parse(row.recorded_at) < STALE_MS,
+      )
       .map((row) => row.value_num as number);
     return temps.length > 0 ? Math.min(...temps) : null;
   })();

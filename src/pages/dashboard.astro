@@ -38,7 +38,7 @@ import {
 } from "../lib/dashboardInsights";
 import { fetchGarageTempChartData } from "../lib/garageTempsHistory";
 import { fetchLatestSensorValues } from "../lib/sensorReadings";
-import { formatRelativeAge } from "../lib/relativeTime";
+import { formatRelativeAge, STALE_MS } from "../lib/relativeTime";
 import {
   summarizeStaleSensors,
 } from "../lib/sensorFreshness";
@@ -499,10 +499,16 @@ const freezeReadiness = computeFreezeReadiness({
   hasSentAnyAlert,
 });
 
+// A probe that stopped reporting keeps its last value forever; don't let a
+// dead probe stand in for "coldest right now" (the stale banner covers it).
+const freshTemperatureRows = latest.filter(
+  (row) =>
+    row.sensor.kind === "temperature" &&
+    row.value_num != null &&
+    Date.now() - Date.parse(row.recorded_at) < STALE_MS,
+);
 const coldestProbeTempF = (() => {
-  const temps = latest
-    .filter((row) => row.sensor.kind === "temperature" && row.value_num != null)
-    .map((row) => row.value_num as number);
+  const temps = freshTemperatureRows.map((row) => row.value_num as number);
   return temps.length > 0 ? Math.min(...temps) : null;
 })();
 
@@ -518,9 +524,7 @@ const coldestProbeMarginF =
 const coldestProbeRow =
   coldestProbeTempF == null
     ? null
-    : (latest.find(
-        (row) => row.sensor.kind === "temperature" && row.value_num === coldestProbeTempF,
-      ) ?? null);
+    : (freshTemperatureRows.find((row) => row.value_num === coldestProbeTempF) ?? null);
 
 const freezeHours = computeFreezeHours(
   chartWeek.points,
