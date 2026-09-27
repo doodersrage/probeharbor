@@ -163,6 +163,16 @@ describe("POST /api/api-keys", () => {
     expect(response.headers.get("Location")).toBe("/dashboard/share?api_key_revoked=1");
   });
 
+  it("still revokes a key after the plan is downgraded", async () => {
+    mockGetUserEntitlements.mockResolvedValue({ canCreateShareLinks: false });
+    const { POST } = await import("./index");
+
+    const response = await POST(makeContext({ action: "revoke", id: "key-1" }));
+
+    expect(mockRevokeHouseholdApiKey).toHaveBeenCalledWith("house-1", "key-1");
+    expect(response.headers.get("Location")).toBe("/dashboard/share?api_key_revoked=1");
+  });
+
   it("skips revocation when no id is given", async () => {
     const { POST } = await import("./index");
 

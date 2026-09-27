@@ -37,4 +37,8 @@ describe("escapeCsvField", () => {
   it("does not flag a legitimate hyphenated word", () => {
     expect(escapeCsvField("well-known")).toBe("well-known");
   });
+
+  it("quotes a field containing a bare carriage return", () => {
+    expect(escapeCsvField("Garage\rNorth")).toBe('"Garage\rNorth"');
+  });
 });

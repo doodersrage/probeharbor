@@ -26,13 +26,9 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const blocked = redirectUnlessManager(manager, redirectTo, redirect);
   if (blocked) return blocked;
 
-  const entitlements = await getUserEntitlements(user.id);
-  if (!entitlements.canCreateShareLinks) {
-    return redirect(withQuery(redirectTo, { status_error: "pro" }));
-  }
-
   const householdId = householdManagerCtx(manager).householdId;
 
+  // Revoking stays available after a downgrade so old credentials can be shut off.
   if (action === "revoke") {
     const id = formData.get("id")?.toString();
     if (id) {
@@ -45,6 +41,11 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
       });
     }
     return redirect(withQuery(redirectTo, { status_revoked: "1" }));
+  }
+
+  const entitlements = await getUserEntitlements(user.id);
+  if (!entitlements.canCreateShareLinks) {
+    return redirect(withQuery(redirectTo, { status_error: "pro" }));
   }
 
   const label = formData.get("label")?.toString() || "Status page";

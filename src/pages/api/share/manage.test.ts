@@ -265,4 +265,17 @@ describe("POST /api/share/manage", () => {
     expect(mockDeleteEq2).toHaveBeenCalledWith("household_id", "house-1");
     expect(response.headers.get("Location")).toBe("/dashboard/share?revoked=1");
   });
+
+  it("still revokes a share link after the plan is downgraded", async () => {
+    mockGetUserEntitlements.mockResolvedValue({
+      canCreateShareLinks: false,
+      canCreateFamilyShareLink: false,
+    });
+    const { POST } = await import("./manage");
+
+    const response = await POST(makePostContext({ action: "revoke", id: "link-1" }));
+
+    expect(mockDeleteEq1).toHaveBeenCalledWith("id", "link-1");
+    expect(response.headers.get("Location")).toBe("/dashboard/share?revoked=1");
+  });
 });

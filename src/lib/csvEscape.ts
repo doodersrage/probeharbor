@@ -30,7 +30,7 @@ export function escapeCsvField(value: string | number): string {
     str = `'${str}`;
   }
 
-  if (str.includes(",") || str.includes('"') || str.includes("\n")) {
+  if (str.includes(",") || str.includes('"') || str.includes("\n") || str.includes("\r")) {
     return `"${str.replace(/"/g, '""')}"`;
   }
   return str;

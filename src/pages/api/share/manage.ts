@@ -93,10 +93,8 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
 
   const supabase = createServerClient();
 
+  // Revoking stays available after a downgrade so old credentials can be shut off.
   if (action === "revoke") {
-    if (!entitlements.canCreateShareLinks && !entitlements.canCreateFamilyShareLink) {
-      return redirect(withQuery(redirectTo, { error: "pro_required" }));
-    }
     const id = formData.get("id")?.toString();
     if (id) {
       await supabase

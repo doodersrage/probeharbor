@@ -195,6 +195,16 @@ describe("POST /api/inbound-webhooks", () => {
     expect(context.redirect).toHaveBeenCalledWith("/dashboard/share?inbound_revoked=1");
   });
 
+  it("still revokes a webhook after the plan is downgraded", async () => {
+    mockGetUserEntitlements.mockResolvedValue({ canUseOutboundWebhook: false });
+    const { POST } = await import("./index");
+    const context = makePostContext({ action: "revoke", webhook_id: "wh-1" });
+
+    await POST(context);
+
+    expect(mockRevokeInboundWebhook).toHaveBeenCalledWith("wh-1", "house-1");
+  });
+
   it("redirects without revoking when webhook_id is missing", async () => {
     const { POST } = await import("./index");
     const context = makePostContext({ action: "revoke" });

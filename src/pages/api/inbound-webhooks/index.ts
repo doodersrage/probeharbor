@@ -43,11 +43,6 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     return redirect("/signin");
   }
 
-  const entitlements = await getUserEntitlements(user.id);
-  if (!entitlements.canUseOutboundWebhook) {
-    return redirect("/dashboard/share?inbound_error=pro");
-  }
-
   const householdId = await getUserHouseholdId(user.id);
   if (!householdId) {
     return redirect("/dashboard/share?inbound_error=1");
@@ -63,6 +58,10 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const redirectTo = formRedirectPath(formData, "/dashboard/share");
 
   if (action === "create") {
+    const entitlements = await getUserEntitlements(user.id);
+    if (!entitlements.canUseOutboundWebhook) {
+      return redirect("/dashboard/share?inbound_error=pro");
+    }
     const name = formData.get("name")?.toString() || "Inbound webhook";
     const { token, signingSecret, error } = await createInboundWebhook(householdId, user.id, name);
     if (error || !token) {
@@ -75,6 +74,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     return redirect(withQuery(redirectTo, { inbound_created: "1" }));
   }
 
+  // Revoking stays available after a downgrade so old credentials can be shut off.
   if (action === "revoke") {
     const webhookId = formData.get("webhook_id")?.toString();
     if (webhookId) {

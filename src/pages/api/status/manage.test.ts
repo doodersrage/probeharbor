@@ -155,6 +155,16 @@ describe("POST /api/status/manage", () => {
     expect(response.headers.get("Location")).toBe("/dashboard/share?status_revoked=1");
   });
 
+  it("still revokes a token after the plan is downgraded", async () => {
+    mockGetUserEntitlements.mockResolvedValue({ canCreateShareLinks: false });
+    const { POST } = await import("./manage");
+
+    const response = await POST(makeContext({ action: "revoke", id: "tok-1" }));
+
+    expect(mockRevokeStatusPageToken).toHaveBeenCalledWith("house-1", "tok-1");
+    expect(response.headers.get("Location")).toBe("/dashboard/share?status_revoked=1");
+  });
+
   it("skips revocation entirely when no id is given", async () => {
     const { POST } = await import("./manage");
 
