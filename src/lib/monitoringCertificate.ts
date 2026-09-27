@@ -102,7 +102,7 @@ export function buildMonitoringCertificateHtml(data: MonitoringCertificateData):
     .wrap { max-width: 760px; margin: 0 auto; background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 24px rgba(17, 24, 39, 0.06); }
     .hero {
       padding: 28px 28px 24px;
-      background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 45%, #fff 100%);
+      background: #fff;
       border-bottom: 3px solid #ea580c;
     }
     .brand { font-family: system-ui, sans-serif; font-weight: 800; letter-spacing: -0.02em; margin: 0 0 12px; font-size: 13px; }

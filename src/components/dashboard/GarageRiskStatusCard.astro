@@ -37,17 +37,17 @@ const { status } = Astro.props;
 
 <style>
   .garage-risk-status {
-    border-left: 4px solid var(--color-border);
+    border-color: var(--color-border);
   }
   .garage-risk-status--ok {
-    border-left-color: var(--color-success, #2f7d4a);
+    border-color: var(--color-success, #2f7d4a);
   }
   .garage-risk-status--watch {
-    border-left-color: var(--color-warning, #b7791f);
+    border-color: var(--color-warning-border);
   }
   .garage-risk-status--risk,
   .garage-risk-status--offline {
-    border-left-color: var(--color-danger, #c53030);
+    border-color: var(--color-danger, #c53030);
   }
   .garage-risk-eyebrow {
     margin: 0 0 0.35rem;

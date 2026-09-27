@@ -289,9 +289,6 @@ export function buildBrandedEmailHtml(content: BrandedEmailContent): string {
       <td align="center">
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:${COLORS.card};border:1px solid ${COLORS.border};border-radius:16px;overflow:hidden;font-family:${FONT}">
           <tr>
-            <td style="height:4px;background:linear-gradient(90deg, ${COLORS.brandSoft}, ${COLORS.brand});font-size:0;line-height:0">&nbsp;</td>
-          </tr>
-          <tr>
             <td style="padding:28px 28px 8px">
               <p style="margin:0;font-size:22px;font-weight:800;letter-spacing:-0.03em;line-height:1.2">
                 <span style="color:${COLORS.steel}">Thermal</span><span style="color:${COLORS.brand}">Trace</span>
