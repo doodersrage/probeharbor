@@ -67,7 +67,8 @@
     {
       "includes": [
         "**/*.test.ts",
-        "e2e/**"
+        "e2e/**",
+        "src/test-utils/**"
       ],
       "linter": {
         "rules": {
