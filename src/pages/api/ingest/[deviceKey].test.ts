@@ -222,6 +222,35 @@ describe("POST /api/ingest/[deviceKey]", () => {
     expect(body).toEqual({ ok: true, readings: 2, sensors_created: 0 });
   });
 
+  it("ignores null or blank battery/rssi instead of recording 0", async () => {
+    mockReadJsonBodyWithLimit.mockResolvedValue({
+      ok: true,
+      payload: { temp: { "0": { c: 5, f: 41, h: 40 } }, battery: null, rssi: "" },
+    });
+    const { POST } = await import("./[deviceKey]");
+
+    await POST(makeContext({ headerKey: "good-key" }));
+
+    expect(mockUpdateDeviceMeta).not.toHaveBeenCalled();
+    expect(mockTouchDeviceLastSeen).toHaveBeenCalledWith("device-1");
+  });
+
+  it("records numeric-string battery and rssi values", async () => {
+    mockReadJsonBodyWithLimit.mockResolvedValue({
+      ok: true,
+      payload: { temp: { "0": { c: 5, f: 41, h: 40 } }, battery_pct: "87", rssi: -61 },
+    });
+    const { POST } = await import("./[deviceKey]");
+
+    await POST(makeContext({ headerKey: "good-key" }));
+
+    expect(mockEnrichDeviceMetaHistories).toHaveBeenCalledWith(
+      expect.anything(),
+      { battery_pct: 87, rssi: -61 },
+      expect.any(String),
+    );
+  });
+
   it("accepts the device key from the path when the header is absent", async () => {
     const { POST } = await import("./[deviceKey]");
 

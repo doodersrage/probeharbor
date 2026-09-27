@@ -33,6 +33,19 @@ async function sha256Hex(value: string): Promise<string> {
     .join("");
 }
 
+/**
+ * A number, or a numeric string. `Number()` alone would turn `null`, `""`,
+ * and `false` into 0, which reads as a dead battery.
+ */
+function numericField(value: unknown): number | null {
+  if (typeof value === "number") return Number.isFinite(value) ? value : null;
+  if (typeof value === "string" && value.trim() !== "") {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  return null;
+}
+
 export const POST: APIRoute = async ({ params, request }) => {
   const headerKey = request.headers.get("X-Ingest-Key")?.trim() ?? "";
   const pathKey = params.deviceKey?.trim() ?? "";
@@ -206,13 +219,11 @@ export const POST: APIRoute = async ({ params, request }) => {
   }
 
   const metaPatch: Record<string, unknown> = {};
-  const battery = Number(
-    (payload as Record<string, unknown>).battery ??
-      (payload as Record<string, unknown>).battery_pct,
-  );
-  const rssi = Number((payload as Record<string, unknown>).rssi);
-  if (Number.isFinite(battery)) metaPatch.battery_pct = battery;
-  if (Number.isFinite(rssi)) metaPatch.rssi = rssi;
+  const fields = payload as Record<string, unknown>;
+  const battery = numericField(fields.battery ?? fields.battery_pct);
+  const rssi = numericField(fields.rssi);
+  if (battery != null) metaPatch.battery_pct = battery;
+  if (rssi != null) metaPatch.rssi = rssi;
 
   if (Object.keys(metaPatch).length > 0) {
     await updateDeviceMeta(

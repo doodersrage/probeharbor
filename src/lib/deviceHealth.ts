@@ -7,8 +7,13 @@ export function readDeviceMetaNumber(
 ): number | null {
   if (!meta) return null;
   const value = meta[key];
-  const num = Number(value);
-  return Number.isFinite(num) ? num : null;
+  // Number(null) / Number("") are 0, which would read as a dead battery.
+  if (typeof value === "number") return Number.isFinite(value) ? value : null;
+  if (typeof value === "string" && value.trim() !== "") {
+    const num = Number(value);
+    return Number.isFinite(num) ? num : null;
+  }
+  return null;
 }
 
 export function deviceHealthFromDevices(devices: DeviceWithSensors[]): DeviceHealth[] {

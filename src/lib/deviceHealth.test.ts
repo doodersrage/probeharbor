@@ -13,8 +13,10 @@ describe("readDeviceMetaNumber", () => {
     expect(readDeviceMetaNumber({ battery_pct: undefined }, "battery_pct")).toBeNull();
   });
 
-  it("treats a null value as 0 (Number(null) is 0, which is finite)", () => {
-    expect(readDeviceMetaNumber({ battery_pct: null }, "battery_pct")).toBe(0);
+  it("treats null, blank, and boolean values as missing rather than 0", () => {
+    expect(readDeviceMetaNumber({ battery_pct: null }, "battery_pct")).toBeNull();
+    expect(readDeviceMetaNumber({ battery_pct: "" }, "battery_pct")).toBeNull();
+    expect(readDeviceMetaNumber({ battery_pct: false }, "battery_pct")).toBeNull();
   });
 
   it("coerces a numeric-looking string to a number", () => {
