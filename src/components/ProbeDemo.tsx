@@ -150,6 +150,7 @@ export default function ProbeDemo() {
           the change, then read the bars.
         </p>
 
+        {/* biome-ignore lint/a11y/useSemanticElements: button toolbar; <fieldset> would add form semantics and default borders */}
         <div class="probe-demo-presets" role="group" aria-label="Scenario presets">
           {(Object.keys(DEMO_PRESETS) as DemoPresetId[]).map((id) => (
             <button

@@ -492,7 +492,9 @@ export default function AboutProbeActivity() {
       tickReadings(now);
 
       if (sparkHistory[0].length === 0) {
-        probes.forEach((probe, i) => sparkHistory[i].push(probe.reading.f));
+        probes.forEach((probe, i) => {
+          sparkHistory[i].push(probe.reading.f);
+        });
       }
 
       const bg = ctx!.createLinearGradient(0, 0, width, height);

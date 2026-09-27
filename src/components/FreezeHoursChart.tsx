@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import type { DailyFreezeHours } from "../lib/freezeHours";
+import { expandedChartDialogAttrs } from "../lib/chartLightbox";
 
 interface Props {
   days: DailyFreezeHours[];
@@ -147,9 +148,7 @@ export default function FreezeHoursChart({
       <div
         ref={wrapRef}
         class={`history-chart-wrap${expanded ? " is-lightbox" : ""}`}
-        role={expanded ? "dialog" : undefined}
-        aria-modal={expanded ? "true" : undefined}
-        aria-label={expanded ? title : undefined}
+        {...expandedChartDialogAttrs(expanded, title)}
       >
         <div class="history-chart-header">
           <p class="history-chart-title">{title}</p>

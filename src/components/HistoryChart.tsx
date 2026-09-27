@@ -27,6 +27,7 @@ import {
   buildHistoryChartUrl,
   timeWindowToHistoryDates,
 } from "../lib/historyUrls";
+import { expandedChartDialogAttrs } from "../lib/chartLightbox";
 
 type Point = {
   timestamp: string;
@@ -886,12 +887,11 @@ export default function HistoryChart({
       <div
         ref={wrapRef}
         class={`history-chart-wrap${expanded ? " is-lightbox" : ""}`}
-        role={expanded ? "dialog" : undefined}
-        aria-modal={expanded ? "true" : undefined}
-        aria-label={expanded ? title : undefined}
+        {...expandedChartDialogAttrs(expanded, title)}
       >
       <div class="history-chart-header">
         <p class="history-chart-title">{title}</p>
+        {/* biome-ignore lint/a11y/useSemanticElements: button toolbar; <fieldset> would add form semantics and default borders */}
         <div class="history-chart-zoom" role="group" aria-label="Chart controls">
           <button
             type="button"
@@ -988,6 +988,7 @@ export default function HistoryChart({
           )}
         </div>
       </div>
+      {/* biome-ignore lint/a11y/useSemanticElements: button toolbar; <fieldset> would add form semantics and default borders */}
       <div class="history-chart-presets" role="group" aria-label="Time range presets">
         {CHART_VIEW_PRESETS.map((preset) => {
           const domainSpan = domain ? domain.maxTs - domain.minTs : 0;
@@ -1040,6 +1041,7 @@ export default function HistoryChart({
         </p>
       )}
       {(probeLabels.length > 0 || housePoints.length >= 2) && (
+        // biome-ignore lint/a11y/useSemanticElements: button toolbar; <fieldset> would add form semantics and default borders
         <div class="history-chart-legend" role="group" aria-label="Series visibility">
           {probeLabels.map((label, i) => {
             const on = visibleProbes.has(label);

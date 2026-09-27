@@ -58,10 +58,8 @@ export default function RevealIngestKeyButton({ deviceId, deviceName }: Props) {
       </button>
       {key ? (
         <div class="flex flex-wrap items-center gap-2">
-          <p
-            class="m-0 text-xs font-mono break-all text-[var(--color-text-muted)]"
-            aria-label={`Ingest key for ${deviceName}`}
-          >
+          <p class="m-0 text-xs font-mono break-all text-[var(--color-text-muted)]">
+            <span class="sr-only">Ingest key for {deviceName}: </span>
             {key}
           </p>
           <button type="button" class="btn-ghost text-xs" onClick={() => void copyKey()}>

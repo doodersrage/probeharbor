@@ -7,6 +7,7 @@ import {
   xToTimestamp,
   type PlotBounds,
 } from "../lib/historyChartInteraction";
+import { expandedChartDialogAttrs } from "../lib/chartLightbox";
 
 export type MetaTrendSample = { value: number; at: string };
 
@@ -218,9 +219,7 @@ export default function BatteryTrendChart({
       <div
         ref={wrapRef}
         class={`history-chart-wrap${expanded ? " is-lightbox" : ""}`}
-        role={expanded ? "dialog" : undefined}
-        aria-modal={expanded ? "true" : undefined}
-        aria-label={expanded ? title : undefined}
+        {...expandedChartDialogAttrs(expanded, title)}
       >
         <div class="history-chart-header">
           <p class="history-chart-title">{title}</p>

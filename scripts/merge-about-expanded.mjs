@@ -130,8 +130,7 @@ function readBatch1Meta() {
   const objRe =
     /\{\s*slug:\s*"([^"]+)",\s*parentSlug:\s*"([^"]+)",\s*title:\s*"([^"]+)",\s*description:\s*\n?\s*"([^"]*(?:\\.[^"]*)*)",\s*summary:\s*\n?\s*"([^"]*(?:\\.[^"]*)*)",?\s*\}/gs;
 
-  let m;
-  while ((m = objRe.exec(match[1])) !== null) {
+  for (const m of match[1].matchAll(objRe)) {
     entries.push({
       slug: m[1],
       parentSlug: m[2],

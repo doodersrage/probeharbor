@@ -14,6 +14,7 @@ import {
 } from "../lib/chartPrefs";
 import { useHistoryChartInteraction } from "../lib/useHistoryChartInteraction";
 import type { IndoorOutdoorPoint } from "../lib/indoorOutdoorDelta";
+import { expandedChartDialogAttrs } from "../lib/chartLightbox";
 
 interface Props {
   points: IndoorOutdoorPoint[];
@@ -317,12 +318,11 @@ export default function IndoorOutdoorChart({
       <div
         ref={wrapRef}
         class={`history-chart-wrap${expanded ? " is-lightbox" : ""}`}
-        role={expanded ? "dialog" : undefined}
-        aria-modal={expanded ? "true" : undefined}
-        aria-label={expanded ? title : undefined}
+        {...expandedChartDialogAttrs(expanded, title)}
       >
         <div class="history-chart-header">
           <p class="history-chart-title">{title}</p>
+          {/* biome-ignore lint/a11y/useSemanticElements: button toolbar; <fieldset> would add form semantics and default borders */}
           <div class="history-chart-zoom" role="group" aria-label="Chart controls">
             <button
               type="button"
@@ -366,6 +366,7 @@ export default function IndoorOutdoorChart({
           </div>
         </div>
 
+        {/* biome-ignore lint/a11y/useSemanticElements: button toolbar; <fieldset> would add form semantics and default borders */}
         <div class="history-chart-presets" role="group" aria-label="Time range presets">
           {CHART_VIEW_PRESETS.map((preset) => {
             const canNarrow = domain ? presetNarrowsDomain(domain, preset.spanMs) : false;

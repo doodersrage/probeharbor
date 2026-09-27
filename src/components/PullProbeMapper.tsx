@@ -364,18 +364,21 @@ export default function PullProbeMapper({
               <div class="sensor-map-row" key={`${probe.feedId}-${probe.key}-${probe.id}`}>
                 <div class="sensor-map-primary">
                   <div class="form-field mb-0">
-                    <label class="form-label">Feed</label>
+                    <span class="form-label">Feed</span>
                     <div class="form-input bg-[var(--color-bg-muted)]">
                       {feed?.name || probe.feedId}
                     </div>
                   </div>
                   <div class="form-field mb-0">
-                    <label class="form-label">JSON key</label>
+                    <span class="form-label">JSON key</span>
                     <div class="form-input font-mono bg-[var(--color-bg-muted)]">{probe.key}</div>
                   </div>
                   <div class="form-field mb-0">
-                    <label class="form-label">Name on Home</label>
+                    <label class="form-label" for={`probe-label-${index}`}>
+                      Name on Home
+                    </label>
                     <input
+                      id={`probe-label-${index}`}
                       class="form-input"
                       type="text"
                       value={probe.label}
