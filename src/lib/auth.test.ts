@@ -35,9 +35,10 @@ function makeMockCookies(values: Record<string, string>) {
     delete: vi.fn((name: string) => {
       deleted.push(name);
     }),
+    set: vi.fn(),
     _deleted: deleted,
   };
-  return cookies as unknown as AstroCookies & { _deleted: string[] };
+  return cookies as unknown as AstroCookies & { _deleted: string[]; set: ReturnType<typeof vi.fn> };
 }
 
 beforeEach(() => {
@@ -109,6 +110,39 @@ describe("getAuthFromCookies", () => {
     expect(resultB.user).toEqual({ id: "user-b" });
     expect(clientA.auth.setSession).toHaveBeenCalledTimes(1);
     expect(clientB.auth.setSession).toHaveBeenCalledTimes(1);
+  });
+
+  it("persists rotated tokens when setSession refreshed the session", async () => {
+    const session = { access_token: "new-access", refresh_token: "new-refresh" };
+    mockCreateAuthClient.mockReturnValue(
+      makeFakeClient({ data: { session, user: { id: "user-1" } }, error: null }),
+    );
+
+    const { getAuthFromCookies } = await import("./auth");
+    const cookies = makeMockCookies({
+      "sb-access-token": "at-1",
+      "sb-refresh-token": "rt-1",
+    });
+    await getAuthFromCookies(cookies);
+
+    expect(cookies.set).toHaveBeenCalledWith("sb-access-token", "new-access", expect.any(Object));
+    expect(cookies.set).toHaveBeenCalledWith("sb-refresh-token", "new-refresh", expect.any(Object));
+  });
+
+  it("leaves cookies alone when the tokens are unchanged", async () => {
+    const session = { access_token: "at-1", refresh_token: "rt-1" };
+    mockCreateAuthClient.mockReturnValue(
+      makeFakeClient({ data: { session, user: { id: "user-1" } }, error: null }),
+    );
+
+    const { getAuthFromCookies } = await import("./auth");
+    const cookies = makeMockCookies({
+      "sb-access-token": "at-1",
+      "sb-refresh-token": "rt-1",
+    });
+    await getAuthFromCookies(cookies);
+
+    expect(cookies.set).not.toHaveBeenCalled();
   });
 
   it("clears cookies and returns null when the session is invalid", async () => {

@@ -74,6 +74,13 @@ export async function getAuthFromCookies(
   const result = await sessionFromTokens(accessToken.value, refreshToken.value);
   if (!result.session) {
     clearAuthCookies(cookies);
+  } else if (
+    result.session.access_token !== accessToken.value ||
+    result.session.refresh_token !== refreshToken.value
+  ) {
+    // setSession() refreshed an expired access token and rotated the refresh
+    // token; persist the new pair so later requests don't refresh again.
+    setAuthCookies(cookies, result.session.access_token, result.session.refresh_token);
   }
   return result;
 }
