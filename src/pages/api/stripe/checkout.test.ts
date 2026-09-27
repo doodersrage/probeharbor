@@ -11,6 +11,12 @@ const mockBuildSiteUrl = vi.fn();
 vi.mock("../../../lib/stripe", () => ({
   createStripeClient: () => mockCreateStripeClient(),
   buildSiteUrl: (...a: unknown[]) => mockBuildSiteUrl(...a),
+  isActiveSubscriptionStatus: (status: string) => status === "active" || status === "trialing",
+}));
+
+const mockGetUserSubscription = vi.fn();
+vi.mock("../../../lib/stripeSubscriptions", () => ({
+  getUserSubscription: (...a: unknown[]) => mockGetUserSubscription(...a),
 }));
 
 const mockResolveStripePriceId = vi.fn();
@@ -35,6 +41,8 @@ vi.mock("../../../lib/householdActivity", () => ({
 }));
 
 const mockSessionsCreate = vi.fn();
+const mockPortalCreate = vi.fn();
+const mockSubscriptionsRetrieve = vi.fn();
 
 function fakeRedirect(path: string): Response {
   return new Response(null, { status: 302, headers: { Location: path } });
@@ -65,14 +73,82 @@ beforeEach(() => {
   mockSessionsCreate.mockReset().mockResolvedValue({
     url: "https://checkout.stripe.com/session/abc",
   });
+  mockPortalCreate.mockReset().mockResolvedValue({ url: "https://billing.stripe.com/p/xyz" });
+  mockSubscriptionsRetrieve.mockReset().mockResolvedValue({
+    items: { data: [{ id: "si_1" }] },
+  });
   mockCreateStripeClient.mockReset().mockReturnValue({
     checkout: { sessions: { create: mockSessionsCreate } },
+    billingPortal: { sessions: { create: mockPortalCreate } },
+    subscriptions: { retrieve: mockSubscriptionsRetrieve },
   });
+  mockGetUserSubscription.mockReset().mockResolvedValue(null);
   mockGetUserHouseholdId.mockReset().mockResolvedValue("house-1");
   mockRecordHouseholdActivity.mockReset().mockResolvedValue(undefined);
 });
 
 describe("POST /api/stripe/checkout", () => {
+  it("sends an active subscriber to a plan change instead of a second subscription", async () => {
+    mockGetUserSubscription.mockResolvedValue({
+      stripe_customer_id: "cus_1",
+      stripe_subscription_id: "sub_1",
+      stripe_price_id: "price_member_monthly",
+      status: "active",
+    });
+    const { POST } = await import("./checkout");
+
+    const response = await POST(makeContext({ plan: "pro", interval: "monthly" }));
+
+    expect(mockSessionsCreate).not.toHaveBeenCalled();
+    expect(mockPortalCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        customer: "cus_1",
+        flow_data: expect.objectContaining({
+          type: "subscription_update_confirm",
+          subscription_update_confirm: {
+            subscription: "sub_1",
+            items: [{ id: "si_1", price: "price_pro_monthly", quantity: 1 }],
+          },
+        }),
+      }),
+    );
+    expect(response.headers.get("Location")).toBe("https://billing.stripe.com/p/xyz");
+  });
+
+  it("opens the plain portal when the subscriber is already on that price", async () => {
+    mockGetUserSubscription.mockResolvedValue({
+      stripe_customer_id: "cus_1",
+      stripe_subscription_id: "sub_1",
+      stripe_price_id: "price_pro_monthly",
+      status: "trialing",
+    });
+    const { POST } = await import("./checkout");
+
+    await POST(makeContext({ plan: "pro", interval: "monthly" }));
+
+    expect(mockSessionsCreate).not.toHaveBeenCalled();
+    expect(mockPortalCreate).toHaveBeenCalledWith(
+      expect.not.objectContaining({ flow_data: expect.anything() }),
+    );
+  });
+
+  it("reuses the customer and skips the trial for a returning subscriber", async () => {
+    mockGetUserSubscription.mockResolvedValue({
+      stripe_customer_id: "cus_1",
+      stripe_subscription_id: "sub_old",
+      stripe_price_id: "price_pro_monthly",
+      status: "canceled",
+    });
+    const { POST } = await import("./checkout");
+
+    await POST(makeContext({ plan: "pro", interval: "monthly" }));
+
+    const args = mockSessionsCreate.mock.calls[0][0];
+    expect(args.customer).toBe("cus_1");
+    expect(args.customer_email).toBeUndefined();
+    expect(args.subscription_data.trial_period_days).toBeUndefined();
+  });
+
   it("redirects to signin when not authenticated", async () => {
     mockGetAuthFromCookies.mockResolvedValue({ session: null, user: null });
     const { POST } = await import("./checkout");

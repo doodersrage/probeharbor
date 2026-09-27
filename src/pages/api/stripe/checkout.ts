@@ -1,6 +1,11 @@
 import type { APIRoute } from "astro";
 import { getAuthFromCookies } from "../../../lib/auth";
-import { createStripeClient, buildSiteUrl } from "../../../lib/stripe";
+import {
+  buildSiteUrl,
+  createStripeClient,
+  isActiveSubscriptionStatus,
+} from "../../../lib/stripe";
+import { getUserSubscription } from "../../../lib/stripeSubscriptions";
 import { resolveStripePriceId } from "../../../lib/planTier";
 import {
   PRO_TRIAL_DAYS,
@@ -49,8 +54,10 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const appMetadata = user.app_metadata as Record<string, unknown> | undefined;
   const referredBy =
     typeof appMetadata?.referred_by === "string" ? appMetadata.referred_by : null;
+  const existing = await getUserSubscription(user.id);
+  // Trials are for first-time subscribers, not cancel-and-resubscribe loops.
   const proTrialDays =
-    plan === "pro" || plan === "portfolio"
+    !existing && (plan === "pro" || plan === "portfolio")
       ? PRO_TRIAL_DAYS +
         referralBonusTrialDays(referredBy) +
         referralRewardTrialDays(appMetadata)
@@ -59,9 +66,53 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   try {
     const stripe = createStripeClient();
 
+    // A new Checkout would start a second subscription alongside the active
+    // one (double billing, and the two overwrite each other's row). Change
+    // the existing subscription through the billing portal instead.
+    if (
+      existing?.stripe_customer_id &&
+      existing.stripe_subscription_id &&
+      isActiveSubscriptionStatus(existing.status)
+    ) {
+      const returnUrl = buildSiteUrl(request, "/dashboard/plans");
+      if (existing.stripe_price_id === priceId) {
+        const portal = await stripe.billingPortal.sessions.create({
+          customer: existing.stripe_customer_id,
+          return_url: returnUrl,
+        });
+        return redirect(portal.url);
+      }
+      const current = await stripe.subscriptions.retrieve(existing.stripe_subscription_id);
+      const item = current.items.data[0];
+      if (!item) {
+        return new Response("Subscription has no items to change", { status: 500 });
+      }
+      const portal = await stripe.billingPortal.sessions.create({
+        customer: existing.stripe_customer_id,
+        return_url: returnUrl,
+        flow_data: {
+          type: "subscription_update_confirm",
+          subscription_update_confirm: {
+            subscription: existing.stripe_subscription_id,
+            items: [{ id: item.id, price: priceId, quantity: 1 }],
+          },
+          after_completion: {
+            type: "redirect",
+            redirect: {
+              return_url: buildSiteUrl(request, "/dashboard/history?subscription=success"),
+            },
+          },
+        },
+      });
+      return redirect(portal.url);
+    }
+
     const checkoutSession = await stripe.checkout.sessions.create({
       mode: "subscription",
-      customer_email: user.email,
+      // Reuse the Stripe customer for returning subscribers.
+      ...(existing?.stripe_customer_id
+        ? { customer: existing.stripe_customer_id }
+        : { customer_email: user.email }),
       client_reference_id: user.id,
       line_items: [
         {
