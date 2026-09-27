@@ -1,6 +1,6 @@
-import type { APIRoute } from "astro";
+import type { APIContext, APIRoute } from "astro";
 import { readJsonBodyWithLimit } from "../../../lib/ingestLimits";
-import { resolveConfiguredSiteUrl } from "../../../lib/siteConfig";
+import { POST as ingestPost } from "./[deviceKey]";
 
 /**
  * MQTT-over-HTTP bridge: POST JSON shaped like an MQTT webhook relay.
@@ -8,9 +8,9 @@ import { resolveConfiguredSiteUrl } from "../../../lib/siteConfig";
  * or:   { "topic": "...", "message": { "temp1": 42.5 } }
  *
  * Include header `X-Ingest-Key: <device-key>` to route to ingest.
- * The key is never placed in the forwarded URL path.
+ * The payload is handed to the ingest handler in-process (no HTTP hop).
  */
-export const POST: APIRoute = async ({ request, site }) => {
+export const POST: APIRoute = async ({ request }) => {
   const deviceKey = request.headers.get("X-Ingest-Key")?.trim();
   if (!deviceKey) {
     return new Response(JSON.stringify({ error: "Missing X-Ingest-Key header" }), {
@@ -57,10 +57,7 @@ export const POST: APIRoute = async ({ request, site }) => {
     });
   }
 
-  // Use configured site origin (not Host-header-controlled request.url) and
-  // pass the ingest key only as a header.
-  const origin = resolveConfiguredSiteUrl(site).replace(/\/$/, "");
-  const ingestRes = await fetch(`${origin}/api/ingest/_`, {
+  const ingestRequest = new Request(new URL("/api/ingest/_", request.url), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -68,10 +65,8 @@ export const POST: APIRoute = async ({ request, site }) => {
     },
     body: JSON.stringify(payload),
   });
-
-  const text = await ingestRes.text();
-  return new Response(text, {
-    status: ingestRes.status,
-    headers: { "Content-Type": "application/json" },
-  });
+  return ingestPost({
+    params: { deviceKey: "_" },
+    request: ingestRequest,
+  } as unknown as APIContext);
 };

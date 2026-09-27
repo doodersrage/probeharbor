@@ -6,13 +6,15 @@ vi.mock("../../../lib/ingestLimits", () => ({
   readJsonBodyWithLimit: (...a: unknown[]) => mockReadJsonBodyWithLimit(...a),
 }));
 
-const mockResolveConfiguredSiteUrl = vi.fn();
-vi.mock("../../../lib/siteConfig", () => ({
-  resolveConfiguredSiteUrl: (...a: unknown[]) => mockResolveConfiguredSiteUrl(...a),
+const mockIngestPost = vi.fn();
+vi.mock("./[deviceKey]", () => ({
+  POST: (...a: unknown[]) => mockIngestPost(...a),
 }));
 
-const mockFetch = vi.fn();
-vi.stubGlobal("fetch", mockFetch);
+async function forwarded(): Promise<{ params: unknown; request: Request; body: unknown }> {
+  const ctx = mockIngestPost.mock.calls[0][0] as APIContext;
+  return { params: ctx.params, request: ctx.request, body: await ctx.request.json() };
+}
 
 function makeContext(options: {
   key?: string | null;
@@ -28,7 +30,6 @@ function makeContext(options: {
       headers,
       body: JSON.stringify(options.body ?? { message: { temp1: 42 } }),
     }),
-    site: new URL("https://app.example.com"),
   } as unknown as APIContext;
 }
 
@@ -37,8 +38,7 @@ beforeEach(() => {
     ok: true,
     payload: { message: { temp1: 42.5 } },
   });
-  mockResolveConfiguredSiteUrl.mockReset().mockReturnValue("https://app.example.com/");
-  mockFetch.mockReset().mockResolvedValue(
+  mockIngestPost.mockReset().mockResolvedValue(
     new Response(JSON.stringify({ ok: true, readings: 1 }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
@@ -54,7 +54,7 @@ describe("POST /api/ingest/mqtt", () => {
 
     expect(response.status).toBe(400);
     expect(await response.json()).toEqual({ error: "Missing X-Ingest-Key header" });
-    expect(mockFetch).not.toHaveBeenCalled();
+    expect(mockIngestPost).not.toHaveBeenCalled();
   });
 
   it("returns the body-limit error when the envelope is too large", async () => {
@@ -89,17 +89,12 @@ describe("POST /api/ingest/mqtt", () => {
 
     const response = await POST(makeContext());
 
-    expect(mockFetch).toHaveBeenCalledWith(
-      "https://app.example.com/api/ingest/_",
-      expect.objectContaining({
-        method: "POST",
-        headers: expect.objectContaining({
-          "X-Ingest-Key": "device-key",
-          "Content-Type": "application/json",
-        }),
-        body: JSON.stringify({ temp1: 42.5 }),
-      }),
-    );
+    const call = await forwarded();
+    expect(call.params).toEqual({ deviceKey: "_" });
+    expect(call.request.method).toBe("POST");
+    expect(call.request.headers.get("X-Ingest-Key")).toBe("device-key");
+    expect(call.request.headers.get("Content-Type")).toBe("application/json");
+    expect(call.body).toEqual({ temp1: 42.5 });
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({ ok: true, readings: 1 });
   });
@@ -113,9 +108,6 @@ describe("POST /api/ingest/mqtt", () => {
 
     await POST(makeContext());
 
-    expect(mockFetch).toHaveBeenCalledWith(
-      "https://app.example.com/api/ingest/_",
-      expect.objectContaining({ body: JSON.stringify({ temp1: 10 }) }),
-    );
+    expect((await forwarded()).body).toEqual({ temp1: 10 });
   });
 });
