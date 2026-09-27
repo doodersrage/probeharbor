@@ -1,0 +1,66 @@
+---
+import type { AlertChannelName } from "../../lib/alerts";
+import { channelLastAttemptFailed, type ChannelDelivery } from "../../lib/channelDelivery";
+import { formatRelativeAge } from "../../lib/relativeTime";
+
+interface Props {
+  channel: AlertChannelName;
+  delivery?: ChannelDelivery;
+  /** Channel is on in saved settings (tests use saved settings). */
+  enabledSaved: boolean;
+  canEdit: boolean;
+}
+
+const { channel, delivery, enabledSaved, canEdit } = Astro.props;
+const failed = channelLastAttemptFailed(delivery);
+const status = failed
+  ? `Last attempt failed ${formatRelativeAge(delivery?.lastFailedAt).label}`
+  : delivery?.lastSentAt
+    ? `Last delivered ${formatRelativeAge(delivery.lastSentAt).label}`
+    : "No deliveries yet";
+---
+<div class="channel-delivery" data-channel-delivery={channel}>
+  <span
+    class:list={["channel-delivery-status", failed && "is-failed"]}
+    title={delivery?.lastFailedAt && failed ? "Check the destination below, then send a test." : undefined}
+  >
+    {status}
+  </span>
+  {canEdit && (
+    <button
+      type="button"
+      class="btn-ghost btn-sm"
+      data-channel-test={channel}
+      disabled={!enabledSaved}
+      title={enabledSaved ? "Send a test to this channel only" : "Save settings with this channel on first"}
+    >
+      Send test
+    </button>
+  )}
+  <span class="channel-delivery-result" data-channel-test-result={channel} role="status" aria-live="polite"></span>
+</div>
+
+<style>
+  .channel-delivery {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem 0.75rem;
+    margin-top: 0.6rem;
+    font-size: 0.8125rem;
+    color: var(--color-text-muted);
+  }
+  .channel-delivery-status.is-failed {
+    color: var(--color-danger);
+    font-weight: 600;
+  }
+  .channel-delivery-result:empty {
+    display: none;
+  }
+  .channel-delivery-result[data-state="ok"] {
+    color: var(--color-success-text, var(--color-success));
+  }
+  .channel-delivery-result[data-state="error"] {
+    color: var(--color-danger);
+  }
+</style>

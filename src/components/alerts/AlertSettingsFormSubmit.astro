@@ -1,6 +1,7 @@
 <script>
   import { actions } from "astro:actions";
   import { prepareAlertSettingsFormData } from "../../lib/alertSettingsForm";
+  import { ALERT_CHANNEL_LABELS } from "../../lib/alertChannelLabels";
 
   const form = document.querySelector<HTMLFormElement>("[data-alert-settings-form]");
   const statusEl = document.getElementById("alert-action-status");
@@ -79,6 +80,51 @@
       }
       showStatus(data?.message ?? "Updated.");
       window.setTimeout(() => window.location.reload(), 600);
+    });
+  });
+
+  // Per-channel "Send test": uses saved settings, reports the result inline.
+  document.querySelectorAll<HTMLButtonElement>("[data-channel-test]").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const channel = btn.dataset.channelTest;
+      if (!channel) return;
+      const out = document.querySelector<HTMLElement>(`[data-channel-test-result="${channel}"]`);
+      const say = (message: string, state: "pending" | "ok" | "error") => {
+        if (!out) return;
+        out.textContent = message;
+        out.dataset.state = state;
+      };
+      btn.disabled = true;
+      say("Sending…", "pending");
+      try {
+        const res = await fetch(`/api/user/alert-test?channel=${encodeURIComponent(channel)}`, {
+          method: "POST",
+          headers: { Accept: "application/json" },
+          credentials: "same-origin",
+        });
+        const body = (await res.json().catch(() => ({}))) as {
+          ok?: boolean;
+          error?: string;
+          skipped?: string[];
+        };
+        if (res.ok && body.ok) {
+          say(`Sent. Check ${ALERT_CHANNEL_LABELS[channel] ?? channel}.`, "ok");
+          return;
+        }
+        const reasons = (body.skipped ?? [])
+          .filter((reason) => reason !== channel)
+          .map((reason) => ALERT_CHANNEL_LABELS[reason] ?? reason);
+        say(
+          reasons.length > 0
+            ? `Not sent: ${reasons.join(", ")}.`
+            : "Not sent. Check this channel's destination, save, and try again.",
+          "error",
+        );
+      } catch {
+        say("Could not reach the server. Try again.", "error");
+      } finally {
+        btn.disabled = false;
+      }
     });
   });
 </script>

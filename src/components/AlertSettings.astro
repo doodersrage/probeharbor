@@ -1,5 +1,5 @@
 ---
-import type { AlertSettings } from "../lib/alerts";
+import type { AlertChannelName, AlertSettings } from "../lib/alerts";
 import type { Entitlements } from "../lib/entitlements";
 import { CONDITION_OPTIONS } from "../lib/alertRules";
 import AlertSettingsNav from "./alerts/AlertSettingsNav.astro";
@@ -8,6 +8,8 @@ import AlertSettingsFormSubmit from "./alerts/AlertSettingsFormSubmit.astro";
 import AlertSettingsRulesScript from "./alerts/AlertSettingsRulesScript.astro";
 import AlertSettingsPlaybooksScript from "./alerts/AlertSettingsPlaybooksScript.astro";
 import AlertSettingsPushScript from "./alerts/AlertSettingsPushScript.astro";
+import ChannelDeliveryStatus from "./alerts/ChannelDeliveryStatus.astro";
+import type { ChannelDelivery } from "../lib/channelDelivery";
 
 interface Props {
   userEmail: string;
@@ -20,6 +22,8 @@ interface Props {
   /** Collapse advanced sections until a test alert has been sent. */
   essentialsFirst?: boolean;
   deviceSpaces?: string[];
+  /** Last success / failure per channel, from recent alert events. */
+  channelDelivery?: Partial<Record<AlertChannelName, ChannelDelivery>>;
   thresholdSensors?: Array<{
     id: string;
     label: string;
@@ -29,6 +33,7 @@ interface Props {
 }
 
 const {
+  channelDelivery = {},
   userEmail,
   settings,
   entitlements,
@@ -211,6 +216,9 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
       />
       <span>Send alerts by email</span>
     </label>
+    <div class="mb-4 -mt-2">
+      <ChannelDeliveryStatus channel="email" delivery={channelDelivery.email} enabledSaved={settings.channelEmail} canEdit={canEdit} />
+    </div>
 
     <label class="checkbox-row mb-2">
       <input
@@ -552,6 +560,7 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
     <div class="alert-channel-panels">
       <div class="alert-channel-panel" data-channel-panel="discord" hidden={!settings.channelDiscord}>
         <p class="alert-channel-panel-label">Discord</p>
+        <ChannelDeliveryStatus channel="discord" delivery={channelDelivery.discord} enabledSaved={settings.channelDiscord} canEdit={canEdit} />
         <div class="form-field mb-0">
           <label class="form-label" for="discord_webhook_url">Webhook URL</label>
           <input class="form-input" type="url" id="discord_webhook_url" name="discord_webhook_url" value={settings.discordWebhookUrl ?? ""} placeholder="https://discord.com/api/webhooks/..." />
@@ -560,6 +569,7 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
 
       <div class="alert-channel-panel" data-channel-panel="telegram" hidden={!settings.channelTelegram}>
         <p class="alert-channel-panel-label">Telegram</p>
+        <ChannelDeliveryStatus channel="telegram" delivery={channelDelivery.telegram} enabledSaved={settings.channelTelegram} canEdit={canEdit} />
         <div class="form-field">
           <label class="form-label" for="telegram_bot_token">Bot token</label>
           <input class="form-input" type="text" id="telegram_bot_token" name="telegram_bot_token" value={settings.telegramBotToken ?? ""} placeholder="123456:ABC..." autocomplete="off" />
@@ -581,6 +591,7 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
 
       <div class="alert-channel-panel" data-channel-panel="slack" hidden={!settings.channelSlack}>
         <p class="alert-channel-panel-label">Slack</p>
+        <ChannelDeliveryStatus channel="slack" delivery={channelDelivery.slack} enabledSaved={settings.channelSlack} canEdit={canEdit} />
         <div class="form-field mb-0">
           <label class="form-label" for="slack_webhook_url">Incoming webhook URL</label>
           <input class="form-input" type="url" id="slack_webhook_url" name="slack_webhook_url" value={settings.slackWebhookUrl ?? ""} placeholder="https://hooks.slack.com/services/..." />
@@ -589,6 +600,7 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
 
       <div class="alert-channel-panel" data-channel-panel="teams" hidden={!settings.channelTeams}>
         <p class="alert-channel-panel-label">Microsoft Teams</p>
+        <ChannelDeliveryStatus channel="teams" delivery={channelDelivery.teams} enabledSaved={settings.channelTeams} canEdit={canEdit} />
         <div class="form-field mb-0">
           <label class="form-label" for="teams_webhook_url">Webhook URL</label>
           <input class="form-input" type="url" id="teams_webhook_url" name="teams_webhook_url" value={settings.teamsWebhookUrl ?? ""} placeholder="https://outlook.office.com/webhook/..." />
@@ -597,6 +609,7 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
 
       <div class="alert-channel-panel" data-channel-panel="ntfy" hidden={!settings.channelNtfy}>
         <p class="alert-channel-panel-label">ntfy</p>
+        <ChannelDeliveryStatus channel="ntfy" delivery={channelDelivery.ntfy} enabledSaved={settings.channelNtfy} canEdit={canEdit} />
         <div class="form-field">
           <label class="form-label" for="ntfy_topic">Topic</label>
           <input class="form-input" type="text" id="ntfy_topic" name="ntfy_topic" value={settings.ntfyTopic ?? ""} placeholder="space-freeze-alerts" />
@@ -609,6 +622,7 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
 
       <div class="alert-channel-panel" data-channel-panel="pushover" hidden={!settings.channelPushover}>
         <p class="alert-channel-panel-label">Pushover</p>
+        <ChannelDeliveryStatus channel="pushover" delivery={channelDelivery.pushover} enabledSaved={settings.channelPushover} canEdit={canEdit} />
         <div class="form-field">
           <label class="form-label" for="pushover_user_key">User key</label>
           <input class="form-input" type="text" id="pushover_user_key" name="pushover_user_key" value={settings.pushoverUserKey ?? ""} />
@@ -621,6 +635,7 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
 
       <div class="alert-channel-panel" data-channel-panel="whatsapp" hidden={!settings.channelWhatsapp}>
         <p class="alert-channel-panel-label">WhatsApp</p>
+        <ChannelDeliveryStatus channel="whatsapp" delivery={channelDelivery.whatsapp} enabledSaved={settings.channelWhatsapp} canEdit={canEdit} />
         <div class="form-field mb-0">
           <label class="form-label" for="whatsapp_phone">Phone number</label>
           <input class="form-input" type="tel" id="whatsapp_phone" name="whatsapp_phone" value={settings.whatsappPhone ?? ""} placeholder="+15551234567" disabled={!entitlements.canUseSms} />
@@ -629,6 +644,7 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
 
       <div class="alert-channel-panel" data-channel-panel="sms" hidden={!settings.channelSms}>
         <p class="alert-channel-panel-label">SMS</p>
+        <ChannelDeliveryStatus channel="sms" delivery={channelDelivery.sms} enabledSaved={settings.channelSms} canEdit={canEdit} />
         <div class="form-field mb-0">
           <label class="form-label" for="sms_phone">Phone number</label>
           <input class="form-input" type="tel" id="sms_phone" name="sms_phone" value={settings.smsPhone ?? ""} placeholder="+15551234567" disabled={!entitlements.canUseSms} />
@@ -638,6 +654,7 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
 
       <div class="alert-channel-panel" data-channel-panel="webhook" hidden={!settings.channelWebhook}>
         <p class="alert-channel-panel-label">Outbound webhook</p>
+        <ChannelDeliveryStatus channel="webhook" delivery={channelDelivery.webhook} enabledSaved={settings.channelWebhook} canEdit={canEdit} />
         <div class="form-field">
           <label class="form-label" for="outbound_webhook_url">URL</label>
           <input class="form-input" type="url" id="outbound_webhook_url" name="outbound_webhook_url" value={settings.outboundWebhookUrl ?? ""} placeholder="https://hooks.example.com/..." disabled={!entitlements.canUseOutboundWebhook} />
@@ -650,6 +667,7 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
 
       <div class="alert-channel-panel" data-channel-panel="push" hidden={!settings.channelPush}>
         <p class="alert-channel-panel-label">Push (browser + Android)</p>
+        <ChannelDeliveryStatus channel="push" delivery={channelDelivery.push} enabledSaved={settings.channelPush} canEdit={canEdit} />
         <p class="form-hint mb-3">
           One channel covers <strong>this browser</strong> (Web Push) and the
           <strong>ThermalTrace Android app</strong> (FCM). Enable below for this browser; the Android app registers automatically when you sign in on Pro.

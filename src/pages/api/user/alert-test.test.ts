@@ -200,3 +200,31 @@ describe("POST /api/user/alert-test (JSON accept)", () => {
     expect(await response.json()).toEqual({ error: "Test alert failed" });
   });
 });
+
+describe("POST /api/user/alert-test (single channel)", () => {
+  it("limits the test to the requested channel", async () => {
+    const { POST } = await import("./alert-test");
+
+    await POST(makeContext({ body: { channel: "discord" } }));
+
+    expect(mockNotifyUser.mock.calls[0][4]).toEqual({ channelFilter: ["discord"] });
+  });
+
+  it("rejects an unknown channel without sending", async () => {
+    const { POST } = await import("./alert-test");
+    const context = makeContext({ body: { channel: "carrier-pigeon" } });
+
+    await POST(context);
+
+    expect(mockNotifyUser).not.toHaveBeenCalled();
+    expect(context.redirect).toHaveBeenCalledWith("/dashboard/alerts?test_error=1");
+  });
+
+  it("tests every enabled channel when no channel is given", async () => {
+    const { POST } = await import("./alert-test");
+
+    await POST(makeContext());
+
+    expect(mockNotifyUser.mock.calls[0][4]).toBeUndefined();
+  });
+});

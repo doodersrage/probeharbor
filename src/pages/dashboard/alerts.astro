@@ -17,7 +17,8 @@ import {
 } from "../../lib/notify";
 import { getRuntimeEnv } from "../../lib/runtimeEnv";
 import { getUserEntitlements } from "../../lib/entitlements";
-import { listRecentAlertEventsFiltered } from "../../lib/alertEvents";
+import { listRecentAlertEvents, listRecentAlertEventsFiltered } from "../../lib/alertEvents";
+import { summarizeChannelDelivery } from "../../lib/channelDelivery";
 import { formatAlertChannelsCsv } from "../../lib/alertChannelLabels";
 import { formatRelativeAge } from "../../lib/relativeTime";
 import {
@@ -68,7 +69,14 @@ const canEdit = canEditHousehold(householdRole);
 const activityPageSize = 20;
 const activityOffset = (activityPage - 1) * activityPageSize;
 
-const [alertSettingsLoaded, entitlements, activityPageResult, devicesResult, tenantNotify] =
+const [
+  alertSettingsLoaded,
+  entitlements,
+  activityPageResult,
+  devicesResult,
+  tenantNotify,
+  deliveryEvents,
+] =
   await Promise.all([
     getAlertSettingsForUser(user.id, user.user_metadata as Record<string, unknown>),
     shell ? Promise.resolve(shell.entitlements) : getUserEntitlements(user.id),
@@ -84,7 +92,9 @@ const [alertSettingsLoaded, entitlements, activityPageResult, devicesResult, ten
     household.householdId
       ? getTenantNotifySettings(household.householdId)
       : Promise.resolve({ email: null, name: null }),
+    listRecentAlertEvents(user.id, 100),
   ]);
+const channelDelivery = summarizeChannelDelivery(deliveryEvents);
 
 const recentEvents = activityPageResult.events;
 const activityHasMore = activityPageResult.hasMore;
@@ -364,6 +374,7 @@ const referralRewardDays = Number(
         )}
 
         <AlertSettings
+          channelDelivery={channelDelivery}
           userEmail={user.email ?? ""}
           settings={alertSettings}
           entitlements={entitlements}

@@ -11,13 +11,14 @@ import {
   requireHouseholdEditor,
 } from "../../../lib/householdAuth";
 import { formRedirectPath, withQuery } from "../../../lib/siteUrl";
+import { isAlertChannelName } from "../../../lib/channelDelivery";
 
 function wantsJson(request: Request): boolean {
   const accept = request.headers.get("accept") ?? "";
   return accept.includes("application/json");
 }
 
-export const POST: APIRoute = async ({ request, cookies, redirect }) => {
+export const POST: APIRoute = async ({ request, cookies, redirect, url }) => {
   const { session, user } = await getAuthFromRequest(request, cookies);
   const json = wantsJson(request);
 
@@ -32,6 +33,8 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   }
 
   let redirectTo = "/dashboard/alerts";
+  // Optional ?channel=discord (or form field) tests just that channel.
+  let channelRaw = url?.searchParams.get("channel")?.trim() ?? "";
   const contentType = request.headers.get("content-type") ?? "";
   if (
     contentType.includes("multipart/form-data") ||
@@ -39,7 +42,19 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   ) {
     const formData = await request.formData();
     redirectTo = formRedirectPath(formData, redirectTo);
+    channelRaw = formData.get("channel")?.toString().trim() || channelRaw;
   }
+
+  if (channelRaw && !isAlertChannelName(channelRaw)) {
+    if (json) {
+      return new Response(JSON.stringify({ error: "Unknown channel" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+    return redirect(withQuery(redirectTo, { test_error: "1" }));
+  }
+  const channel = channelRaw && isAlertChannelName(channelRaw) ? channelRaw : null;
 
   const editor = await requireHouseholdEditor(user.id);
   if (!editor.ok) {
@@ -71,11 +86,17 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
       await saveAlertSettingsForUser(user.id, settings);
     }
 
-    const { sent, skipped } = await notifyUser(user.id, user.email, settings, {
-      title: "ThermalTrace test alert",
-      body: "This is a test notification from your ThermalTrace dashboard. If you received this, your alert channels are working.",
-      kind: "generic",
-    });
+    const { sent, skipped } = await notifyUser(
+      user.id,
+      user.email,
+      settings,
+      {
+        title: "ThermalTrace test alert",
+        body: "This is a test notification from your ThermalTrace dashboard. If you received this, your alert channels are working.",
+        kind: "generic",
+      },
+      channel ? { channelFilter: [channel] } : undefined,
+    );
 
     if (sent.length === 0) {
       const reason = skipped.length > 0 ? "incomplete" : "none";
