@@ -38,6 +38,24 @@ export async function upsertUserSubscription(
   customerId: string,
 ): Promise<{ error: string | null }> {
   const supabase = createServerClient();
+
+  // One row per user: an event for some other subscription (a stray
+  // duplicate being canceled, an abandoned incomplete checkout) must not
+  // overwrite a different subscription that is still active.
+  const { data: stored } = await supabase
+    .from("stripe_subscriptions")
+    .select("stripe_subscription_id, status")
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (
+    stored?.stripe_subscription_id &&
+    stored.stripe_subscription_id !== subscription.id &&
+    isActiveSubscriptionStatus(stored.status) &&
+    !isActiveSubscriptionStatus(subscription.status)
+  ) {
+    return { error: null };
+  }
+
   const currentPeriodEnd = subscription.items.data[0]?.current_period_end;
   const priceId = subscription.items.data[0]?.price?.id ?? null;
   const planTier = resolvePlanTierFromPriceId(priceId);

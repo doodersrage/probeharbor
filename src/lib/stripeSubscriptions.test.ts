@@ -164,6 +164,42 @@ describe("upsertUserSubscription", () => {
     } as unknown as import("stripe").default.Subscription;
   }
 
+  it("ignores a canceled stray subscription while a different one is active", async () => {
+    const builder = mockQuery({
+      data: { stripe_subscription_id: "sub_active", status: "active" },
+      error: null,
+    });
+    mockFrom.mockReturnValue(builder);
+    const { upsertUserSubscription } = await import("./stripeSubscriptions");
+
+    const result = await upsertUserSubscription(
+      "user-1",
+      makeSubscription({ status: "canceled" }),
+      "cus_1",
+    );
+
+    expect(result).toEqual({ error: null });
+    expect(builder.upsert).not.toHaveBeenCalled();
+    expect(mockRpc).not.toHaveBeenCalled();
+  });
+
+  it("still records a cancellation of the stored subscription itself", async () => {
+    const builder = mockQuery({
+      data: { stripe_subscription_id: "sub_123", status: "active" },
+      error: null,
+    });
+    mockFrom.mockReturnValue(builder);
+    mockRpc.mockResolvedValue({ error: null });
+    const { upsertUserSubscription } = await import("./stripeSubscriptions");
+
+    await upsertUserSubscription("user-1", makeSubscription({ status: "canceled" }), "cus_1");
+
+    expect(builder.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({ stripe_subscription_id: "sub_123", status: "canceled" }),
+      expect.anything(),
+    );
+  });
+
   it("upserts the subscription row and syncs the plan group on success", async () => {
     const upsertBuilder = mockQuery({ error: null });
     mockFrom.mockReturnValue(upsertBuilder);
