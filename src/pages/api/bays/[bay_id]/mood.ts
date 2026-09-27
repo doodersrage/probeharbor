@@ -56,8 +56,11 @@ export const PUT: APIRoute = async ({ params, request, cookies }) => {
   } catch {
     return json(400, { error: "Invalid JSON" });
   }
+  if (!body || typeof body !== "object") {
+    return json(400, { error: "Invalid JSON" });
+  }
 
-  const mood = (body.mood ?? "").toLowerCase();
+  const mood = typeof body.mood === "string" ? body.mood.toLowerCase() : "";
   if (!isBayMood(mood)) {
     return json(400, { error: "bad_mood" });
   }

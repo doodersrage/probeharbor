@@ -7,8 +7,12 @@ vi.mock("../../../lib/auth", () => ({
 }));
 
 const mockGetOrCreateHouseholdForUser = vi.fn();
-vi.mock("../../../lib/households", () => ({
+const mockGetUserHouseholdRole = vi.fn();
+vi.mock("../../../lib/households", async (importOriginal) => ({
+  canEditHousehold: (await importOriginal<typeof import("../../../lib/households")>())
+    .canEditHousehold,
   getOrCreateHouseholdForUser: (...a: unknown[]) => mockGetOrCreateHouseholdForUser(...a),
+  getUserHouseholdRole: (...a: unknown[]) => mockGetUserHouseholdRole(...a),
 }));
 
 const mockRegisterPuck = vi.fn();
@@ -32,6 +36,7 @@ function makeContext(body: unknown | string = {
 }
 
 beforeEach(() => {
+  mockGetUserHouseholdRole.mockReset().mockResolvedValue("owner");
   mockGetAuthFromRequest.mockReset().mockResolvedValue({
     session: { access_token: "tok" },
     user: { id: "user-1", email: "user@example.com" },
@@ -60,6 +65,24 @@ describe("POST /api/pucks/register", () => {
 
     expect(response.status).toBe(400);
     expect(await response.json()).toEqual({ error: "Invalid JSON" });
+  });
+
+  it("rejects view-only members", async () => {
+    mockGetUserHouseholdRole.mockResolvedValue("viewer");
+    const { POST } = await import("./register");
+
+    const response = await POST(makeContext());
+
+    expect(response.status).toBe(403);
+    expect(mockRegisterPuck).not.toHaveBeenCalled();
+  });
+
+  it("returns 400 for a JSON null body", async () => {
+    const { POST } = await import("./register");
+
+    const response = await POST(makeContext("null"));
+
+    expect(response.status).toBe(400);
   });
 
   it("returns the register error when registration fails", async () => {

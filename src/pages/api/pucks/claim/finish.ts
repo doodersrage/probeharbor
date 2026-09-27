@@ -1,6 +1,10 @@
 import type { APIRoute } from "astro";
 import { getAuthFromRequest } from "../../../../lib/auth";
-import { getOrCreateHouseholdForUser } from "../../../../lib/households";
+import {
+  canEditHousehold,
+  getOrCreateHouseholdForUser,
+  getUserHouseholdRole,
+} from "../../../../lib/households";
 import { finishPuckClaim } from "../../../../lib/pucks";
 
 function json(status: number, payload: Record<string, unknown>) {
@@ -28,14 +32,21 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   } catch {
     return json(400, { error: "Invalid JSON" });
   }
+  if (!body || typeof body !== "object") {
+    return json(400, { error: "Invalid JSON" });
+  }
 
   const household = await getOrCreateHouseholdForUser(user.id, user.email);
   if (household.error || !household.householdId) {
     return json(500, { error: household.error ?? "household" });
   }
+  // Pairing hardware adds a device to the household: editors only.
+  if (!canEditHousehold(await getUserHouseholdRole(user.id, household.householdId))) {
+    return json(403, { error: "View-only access." });
+  }
 
   const result = await finishPuckClaim({
-    deviceId: body.device_id ?? "",
+    deviceId: typeof body.device_id === "string" ? body.device_id : "",
     bayId: body.bay_id ?? "",
     nonceHex: body.nonce_hex ?? "",
     responseHex: body.response_hex ?? "",

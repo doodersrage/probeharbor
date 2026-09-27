@@ -7,8 +7,12 @@ vi.mock("../../../../lib/auth", () => ({
 }));
 
 const mockGetOrCreateHouseholdForUser = vi.fn();
-vi.mock("../../../../lib/households", () => ({
+const mockGetUserHouseholdRole = vi.fn();
+vi.mock("../../../../lib/households", async (importOriginal) => ({
+  canEditHousehold: (await importOriginal<typeof import("../../../../lib/households")>())
+    .canEditHousehold,
   getOrCreateHouseholdForUser: (...a: unknown[]) => mockGetOrCreateHouseholdForUser(...a),
+  getUserHouseholdRole: (...a: unknown[]) => mockGetUserHouseholdRole(...a),
 }));
 
 const mockFinishPuckClaim = vi.fn();
@@ -35,6 +39,7 @@ function makeContext(body: unknown | string = {
 }
 
 beforeEach(() => {
+  mockGetUserHouseholdRole.mockReset().mockResolvedValue("owner");
   mockGetAuthFromRequest.mockReset().mockResolvedValue({
     session: { access_token: "tok" },
     user: { id: "user-1", email: "user@example.com" },
