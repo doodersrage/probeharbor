@@ -100,7 +100,9 @@ export const POST: APIRoute = async ({ request }) => {
 
   try {
     const stripe = createStripeClient();
-    event = stripe.webhooks.constructEvent(
+    // Workers bundle Stripe's web build, whose SubtleCrypto provider only
+    // supports async verification; the sync constructEvent always throws.
+    event = await stripe.webhooks.constructEventAsync(
       payload,
       signature,
       import.meta.env.STRIPE_WEBHOOK_SECRET,

@@ -58,7 +58,7 @@ beforeEach(() => {
   mockConstructEvent.mockReset();
   mockSubscriptionsRetrieve.mockReset();
   mockCreateStripeClient.mockReset().mockReturnValue({
-    webhooks: { constructEvent: mockConstructEvent },
+    webhooks: { constructEventAsync: mockConstructEvent },
     subscriptions: { retrieve: mockSubscriptionsRetrieve },
   });
   mockFindUserIdByStripeSubscriptionId.mockReset().mockResolvedValue(null);
