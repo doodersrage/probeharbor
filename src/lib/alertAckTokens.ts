@@ -38,6 +38,20 @@ async function hmacSha256Hex(secret: string, payload: string): Promise<string> {
   return [...new Uint8Array(sig)].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
+/** HMAC a payload with the alert-link secret, or null when it isn't configured. */
+export async function signWithAlertLinkSecret(payload: string): Promise<string | null> {
+  const secret = await getAckSecret();
+  if (!secret) return null;
+  return hmacSha256Hex(secret, payload);
+}
+
+export async function verifyWithAlertLinkSecret(payload: string, sig: string): Promise<boolean> {
+  if (!sig) return false;
+  const expected = await signWithAlertLinkSecret(payload);
+  if (!expected) return false;
+  return timingSafeEqualHex(expected, sig.toLowerCase());
+}
+
 export async function signAckPayload(userId: string, expMs: number): Promise<string> {
   const secret = await getAckSecret();
   if (!secret) throw new Error("Ack signing secret not configured");

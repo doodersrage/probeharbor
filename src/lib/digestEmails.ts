@@ -7,15 +7,17 @@ import { resolveSiteUrl } from "./schemaMarkup";
 import { sendEmail } from "./mailer";
 import { computeFreezeHours } from "./freezeHours";
 import { buildHistoryChartUrl, trailingHistoryWindowDays } from "./historyUrls";
+import { buildUnsubscribeUrl, unsubscribeHeaders } from "./emailUnsubscribe";
 
 async function sendDigestEmail(
   to: string,
   subject: string,
   text: string,
   html: string,
+  unsubscribeUrl: string | null = null,
 ): Promise<void> {
   try {
-    await sendEmail(to, subject, text, { html });
+    await sendEmail(to, subject, text, { html, headers: unsubscribeHeaders(unsubscribeUrl) });
   } catch (error) {
     console.error("Failed to send digest email:", error);
   }
@@ -163,6 +165,7 @@ export function buildWeeklyDigestParts(input: {
   points: ChartPoint[];
   freezeThresholdF: number;
   siteUrl: string;
+  unsubscribeUrl?: string | null;
 }): { subject: string; text: string; html: string; notifyBody: string } {
   const { points, freezeThresholdF, siteUrl } = input;
   const freeze = computeFreezeHours(points, freezeThresholdF);
@@ -242,6 +245,7 @@ export function buildWeeklyDigestParts(input: {
     tone: "brand",
     footerNote:
       "Weekly digests can be turned off under Dashboard → Alerts → Essentials.",
+    unsubscribeUrl: input.unsubscribeUrl,
   });
 
   return {
@@ -328,10 +332,12 @@ export async function sendWeeklyDigestsForAllUsers(): Promise<{
         continue;
       }
 
+      const ownerUnsubscribeUrl = await buildUnsubscribeUrl(siteUrl, userId, "digest");
       const digest = buildWeeklyDigestParts({
         points,
         freezeThresholdF: settings.freezeThresholdF,
         siteUrl,
+        unsubscribeUrl: ownerUnsubscribeUrl,
       });
 
       await sendDigestEmail(
@@ -339,6 +345,7 @@ export async function sendWeeklyDigestsForAllUsers(): Promise<{
         digest.subject,
         digest.text,
         digest.html,
+        ownerUnsubscribeUrl,
       );
 
       await notifyUser(userId, digestEmail, { ...settings, channelEmail: false }, {
@@ -375,7 +382,21 @@ export async function sendWeeklyDigestsForAllUsers(): Promise<{
             const { data: memberData } = await admin.auth.admin.getUserById(memberId);
             const memberEmail = memberData.user?.email;
             if (!memberEmail) continue;
-            await sendDigestEmail(memberEmail, digest.subject, digest.text, digest.html);
+            // Each recipient gets a link that unsubscribes their own account.
+            const memberUnsubscribeUrl = await buildUnsubscribeUrl(siteUrl, memberId, "digest");
+            const memberDigest = buildWeeklyDigestParts({
+              points,
+              freezeThresholdF: settings.freezeThresholdF,
+              siteUrl,
+              unsubscribeUrl: memberUnsubscribeUrl,
+            });
+            await sendDigestEmail(
+              memberEmail,
+              memberDigest.subject,
+              memberDigest.text,
+              memberDigest.html,
+              memberUnsubscribeUrl,
+            );
             sent += 1;
           }
         }

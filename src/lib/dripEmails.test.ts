@@ -119,7 +119,7 @@ describe("sendDripEmailsForAllUsers", () => {
       "user@example.com",
       "Add your first probe to ThermalTrace",
       expect.any(String),
-      { html: expect.any(String) },
+      expect.objectContaining({ html: expect.any(String) }),
     );
     expect(mockUpdate).toHaveBeenCalledWith(
       expect.objectContaining({ drip_email_stage: 1 }),

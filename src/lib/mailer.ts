@@ -34,6 +34,8 @@ export type SendEmailOptions = {
   fromName?: string;
   /** Optional HTML part. When omitted, only plain text is sent. */
   html?: string;
+  /** Extra top-level headers (e.g. List-Unsubscribe). */
+  headers?: Record<string, string>;
 };
 
 /**
@@ -65,6 +67,9 @@ export async function sendEmail(
   });
   msg.setRecipient(to);
   msg.setSubject(subject);
+  for (const [name, value] of Object.entries(options?.headers ?? {})) {
+    msg.setHeader(name, value);
+  }
   msg.addMessage({ contentType: "text/plain", data: text });
   if (options?.html?.trim()) {
     msg.addMessage({ contentType: "text/html", data: options.html });

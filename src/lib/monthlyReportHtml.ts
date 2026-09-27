@@ -30,6 +30,8 @@ export type MonthlyReportData = {
   probes: MonthlyProbeSummary[];
   alertsUrl: string;
   historyUrl: string;
+  /** Signed one-click unsubscribe link for this report kind. */
+  unsubscribeUrl?: string | null;
 };
 
 function escapeHtml(value: string): string {
@@ -108,6 +110,7 @@ export function buildMonthlyReportPlainText(data: MonthlyReportData): string {
   }
 
   lines.push(`Manage alerts: ${data.alertsUrl}`);
+  if (data.unsubscribeUrl) lines.push(`Unsubscribe: ${data.unsubscribeUrl}`);
   lines.push(`View history: ${data.historyUrl}`);
   lines.push("");
   lines.push("A full HTML report is attached — open it in your browser or print to PDF.");
@@ -293,6 +296,7 @@ export function buildMonthlyReportHtmlEmail(data: MonthlyReportData): string {
     sections,
     cta: { label: "View history", url: data.historyUrl },
     secondaryCta: { label: "Manage alerts", url: data.alertsUrl },
+    unsubscribeUrl: data.unsubscribeUrl,
     tone: "brand",
   });
 }

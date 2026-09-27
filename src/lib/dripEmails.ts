@@ -10,6 +10,7 @@ import {
   partitionMailErrors,
   sendEmail,
 } from "./mailer";
+import { buildUnsubscribeUrl, unsubscribeHeaders } from "./emailUnsubscribe";
 
 export type DripStageId = "day1" | "day3" | "day7";
 
@@ -98,9 +99,10 @@ export const DRIP_STAGES: DripStage[] = [
 export function buildDripEmail(
   stageId: DripStageId,
   siteUrl = resolveSiteUrl(null),
+  unsubscribeUrl: string | null = null,
 ): { subject: string; text: string; html: string } {
   const stage = DRIP_STAGES.find((item) => item.id === stageId) ?? DRIP_STAGES[0];
-  const parts = brandedEmailParts(stage.content(siteUrl));
+  const parts = brandedEmailParts({ ...stage.content(siteUrl), unsubscribeUrl });
   return { subject: stage.subject, ...parts };
 }
 
@@ -153,8 +155,12 @@ export async function sendDripEmailsForAllUsers(): Promise<{
         }
       }
 
-      const mail = buildDripEmail(nextStage.id, siteUrl);
-      await sendEmail(user.email, mail.subject, mail.text, { html: mail.html });
+      const unsubscribeUrl = await buildUnsubscribeUrl(siteUrl, row.user_id, "drip");
+      const mail = buildDripEmail(nextStage.id, siteUrl, unsubscribeUrl);
+      await sendEmail(user.email, mail.subject, mail.text, {
+        html: mail.html,
+        headers: unsubscribeHeaders(unsubscribeUrl),
+      });
       await admin
         .from("alert_settings")
         .update({

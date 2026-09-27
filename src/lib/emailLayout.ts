@@ -35,6 +35,8 @@ export type BrandedEmailContent = {
   cta?: EmailCta;
   secondaryCta?: EmailCta;
   footerNote?: string;
+  /** Recurring emails: one-click unsubscribe link shown in the footer. */
+  unsubscribeUrl?: string | null;
   /** Visual tone for the accent bar / CTA. */
   tone?: "brand" | "alert" | "success";
 };
@@ -223,6 +225,10 @@ export function buildBrandedEmailText(content: BrandedEmailContent): string {
   lines.push(content.footerNote ?? "ThermalTrace — live probe curves, freeze and flood/leak alerts, and history.");
   const siteUrl = resolveSiteUrl(null);
   lines.push(`${siteUrl}/dashboard`);
+  if (content.unsubscribeUrl) {
+    lines.push("");
+    lines.push(`Unsubscribe: ${content.unsubscribeUrl}`);
+  }
   return lines.join("\n").trim() + "\n";
 }
 
@@ -315,7 +321,13 @@ export function buildBrandedEmailHtml(content: BrandedEmailContent): string {
                 <span style="color:${COLORS.border}"> · </span>
                 <a href="${escapeEmailHtml(siteUrl)}/dashboard/alerts" style="color:${COLORS.brandSoft};text-decoration:none">Alert settings</a>
                 <span style="color:${COLORS.border}"> · </span>
-                <a href="${escapeEmailHtml(siteUrl)}/about" style="color:${COLORS.brandSoft};text-decoration:none">Guides</a>
+                <a href="${escapeEmailHtml(siteUrl)}/about" style="color:${COLORS.brandSoft};text-decoration:none">Guides</a>${
+                  content.unsubscribeUrl
+                    ? `
+                <span style="color:${COLORS.border}"> · </span>
+                <a href="${escapeEmailHtml(content.unsubscribeUrl)}" style="color:${COLORS.brandSoft};text-decoration:none">Unsubscribe</a>`
+                    : ""
+                }
               </p>
             </td>
           </tr>

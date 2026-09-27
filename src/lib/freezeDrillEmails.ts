@@ -16,6 +16,7 @@ import {
   isPlausibleEmailAddress,
   suppressEmail,
 } from "./emailSuppressions";
+import { buildUnsubscribeUrl, unsubscribeHeaders } from "./emailUnsubscribe";
 
 /** Sep 1 – Nov 15 (Northern Hemisphere pre-season). */
 export function shouldSendFreezeDrill(now = new Date()): boolean {
@@ -30,6 +31,7 @@ export function buildFreezeDrillEmailParts(input: {
   score: number;
   checks: Array<{ ok: boolean; label: string }>;
   siteUrl: string;
+  unsubscribeUrl?: string | null;
 }) {
   const readinessTone =
     input.score >= 80 ? "success" : input.score >= 50 ? "brand" : "alert";
@@ -54,6 +56,7 @@ export function buildFreezeDrillEmailParts(input: {
     },
     tone: "brand",
     footerNote: "Disable pre-season drills in Dashboard → Alerts.",
+    unsubscribeUrl: input.unsubscribeUrl,
   });
 }
 
@@ -129,10 +132,12 @@ export async function sendFreezeDrillsForAllUsers(): Promise<{
           Boolean(settings.lastAlertSentAt) || (await hasDeliveredAnyAlert(userId)),
       });
 
+      const unsubscribeUrl = await buildUnsubscribeUrl(siteUrl, userId, "freeze_drill");
       const parts = buildFreezeDrillEmailParts({
         score: readiness.score,
         checks: readiness.checks,
         siteUrl,
+        unsubscribeUrl,
       });
 
       if (user.email) {
@@ -146,6 +151,7 @@ export async function sendFreezeDrillsForAllUsers(): Promise<{
         try {
           await sendEmail(user.email, `Freeze readiness ${readiness.score}%: pre-season drill`, parts.text, {
             html: parts.html,
+            headers: unsubscribeHeaders(unsubscribeUrl),
           });
         } catch (error) {
           if (isMailDeliveryBounceError(error)) {

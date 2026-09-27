@@ -16,6 +16,7 @@ import {
   summarizeProbesForReport,
   type MonthlyReportData,
 } from "./monthlyReportHtml";
+import { buildUnsubscribeUrl, unsubscribeHeaders } from "./emailUnsubscribe";
 
 export function shouldSendMonthlyReport(now = new Date()): boolean {
   return now.getUTCDate() === 1 && now.getUTCHours() === 8;
@@ -27,6 +28,7 @@ async function sendMonthlyReportEmail(
   plainBody: string,
   htmlBody: string,
   attachmentHtml: string,
+  headers: Record<string, string> = {},
 ): Promise<void> {
   const { EmailMessage } = await import("cloudflare:email");
   const { createMimeMessage } = await import("mimetext");
@@ -40,6 +42,9 @@ async function sendMonthlyReportEmail(
   });
   msg.setRecipient(to);
   msg.setSubject(subject);
+  for (const [name, value] of Object.entries(headers)) {
+    msg.setHeader(name, value);
+  }
   msg.addMessage({ contentType: "text/plain", data: plainBody });
   msg.addMessage({ contentType: "text/html", data: htmlBody });
   msg.addAttachment({
@@ -127,6 +132,7 @@ async function sendMonthlyReportForUser(userId: string): Promise<boolean> {
     freezeHours: computeFreezeHours(points, settings.freezeThresholdF),
     probes: summarizeProbesForReport(points),
     alertsUrl: `${siteUrl}/dashboard/alerts`,
+    unsubscribeUrl: await buildUnsubscribeUrl(siteUrl, userId, "monthly_report"),
     historyUrl: buildHistoryChartUrl(siteUrl, trailingHistoryWindowDays(30)),
   };
 
@@ -141,6 +147,7 @@ async function sendMonthlyReportForUser(userId: string): Promise<boolean> {
     plainBody,
     htmlBody,
     attachmentHtml,
+    unsubscribeHeaders(reportData.unsubscribeUrl ?? null),
   );
 
   await recordAlertEvent({

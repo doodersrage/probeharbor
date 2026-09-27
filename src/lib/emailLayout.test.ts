@@ -123,3 +123,25 @@ describe("product email templates", () => {
     expect(trial.html).toContain("Trial reminder");
   });
 });
+
+describe("unsubscribe footer", () => {
+  it("adds an unsubscribe link to both parts when a URL is given", async () => {
+    const { brandedEmailParts } = await import("./emailLayout");
+    const url = "https://thermaltrace.test/api/email/unsubscribe?uid=u1&kind=digest&sig=abc";
+
+    const parts = brandedEmailParts({ title: "Digest", unsubscribeUrl: url });
+
+    expect(parts.text).toContain(`Unsubscribe: ${url}`);
+    expect(parts.html).toContain(">Unsubscribe</a>");
+    expect(parts.html).toContain("kind=digest&amp;sig=abc");
+  });
+
+  it("omits the link when no URL is given", async () => {
+    const { brandedEmailParts } = await import("./emailLayout");
+
+    const parts = brandedEmailParts({ title: "Alert" });
+
+    expect(parts.text).not.toContain("Unsubscribe:");
+    expect(parts.html).not.toContain(">Unsubscribe</a>");
+  });
+});
