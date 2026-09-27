@@ -7,10 +7,12 @@ vi.mock("../../../lib/auth", () => ({
 }));
 
 const mockGetOrCreateHouseholdForUser = vi.fn();
-const mockIsUserInHousehold = vi.fn();
-vi.mock("../../../lib/households", () => ({
+const mockGetUserHouseholdRole = vi.fn();
+vi.mock("../../../lib/households", async (importOriginal) => ({
+  canEditHousehold: (await importOriginal<typeof import("../../../lib/households")>())
+    .canEditHousehold,
   getOrCreateHouseholdForUser: (...a: unknown[]) => mockGetOrCreateHouseholdForUser(...a),
-  isUserInHousehold: (...a: unknown[]) => mockIsUserInHousehold(...a),
+  getUserHouseholdRole: (...a: unknown[]) => mockGetUserHouseholdRole(...a),
 }));
 
 const mockCreatePushDevice = vi.fn();
@@ -106,7 +108,7 @@ beforeEach(() => {
     user: { id: "user-1", email: "user@example.com" },
   });
   mockGetOrCreateHouseholdForUser.mockReset().mockResolvedValue({ householdId: "house-1" });
-  mockIsUserInHousehold.mockReset().mockResolvedValue(true);
+  mockGetUserHouseholdRole.mockReset().mockResolvedValue("member");
   mockCreatePushDevice.mockReset().mockResolvedValue({
     device: { id: "new-device" },
     error: null,
@@ -211,7 +213,22 @@ describe("POST /api/devices", () => {
   });
 
   it("blocks a transfer to a household the user doesn't belong to", async () => {
-    mockIsUserInHousehold.mockResolvedValue(false);
+    mockGetUserHouseholdRole.mockResolvedValue(null);
+    const { POST } = await import("./index");
+    const context = makeContext({
+      action: "transfer",
+      device_id: "d1",
+      target_household_id: "house-2",
+    });
+
+    await POST(context);
+
+    expect(mockTransferDeviceToHousehold).not.toHaveBeenCalled();
+    expect(context.redirect).toHaveBeenCalledWith("/dashboard/devices?error=1");
+  });
+
+  it("blocks a transfer to a household where the user is only a viewer", async () => {
+    mockGetUserHouseholdRole.mockResolvedValue("viewer");
     const { POST } = await import("./index");
     const context = makeContext({
       action: "transfer",

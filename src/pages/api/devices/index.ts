@@ -2,7 +2,8 @@ import type { APIRoute } from "astro";
 import { getAuthFromRequest } from "../../../lib/auth";
 import {
   getOrCreateHouseholdForUser,
-  isUserInHousehold,
+  canEditHousehold,
+  getUserHouseholdRole,
 } from "../../../lib/households";
 import {
   createPushDevice,
@@ -72,7 +73,9 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     if (!deviceId || !targetId) {
       return redirect(withQuery(redirectTo, { error: "1" }));
     }
-    const canTarget = await isUserInHousehold(user.id, targetId);
+    // Moving a device adds it (and its history) to the target, so require
+    // edit rights there, not just any membership.
+    const canTarget = canEditHousehold(await getUserHouseholdRole(user.id, targetId));
     if (!canTarget) {
       return redirect(withQuery(redirectTo, { error: "1" }));
     }
