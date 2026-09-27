@@ -86,3 +86,21 @@ describe("resolvePageUrl", () => {
     );
   });
 });
+
+describe("shouldRedirectLegacyHost", () => {
+  it("redirects page loads on legacy hosts", async () => {
+    const { shouldRedirectLegacyHost } = await import("./siteConfig");
+    expect(shouldRedirectLegacyHost("garage-temp.robmcd.name", "GET")).toBe(true);
+    expect(shouldRedirectLegacyHost("garage-temp.robmcd.name", "head")).toBe(true);
+  });
+
+  it("serves POSTs in place so webhooks and sensor ingest keep working", async () => {
+    const { shouldRedirectLegacyHost } = await import("./siteConfig");
+    expect(shouldRedirectLegacyHost("garage-temp.robmcd.name", "POST")).toBe(false);
+  });
+
+  it("never redirects the canonical host", async () => {
+    const { shouldRedirectLegacyHost } = await import("./siteConfig");
+    expect(shouldRedirectLegacyHost("thermaltrace.dev", "GET")).toBe(false);
+  });
+});

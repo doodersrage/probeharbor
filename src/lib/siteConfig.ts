@@ -11,6 +11,17 @@ export const LEGACY_HOSTS = new Set([
   "www.thermaltrace.dev",
 ]);
 
+/**
+ * Only redirect safe requests on legacy hosts. A 301 on POST breaks machine
+ * clients: Stripe treats redirects as failed webhooks, and sensors or bridges
+ * still pointed at an old hostname drop (or GET-retry) their readings.
+ */
+export function shouldRedirectLegacyHost(hostname: string, method: string): boolean {
+  if (!LEGACY_HOSTS.has(hostname)) return false;
+  const verb = method.toUpperCase();
+  return verb === "GET" || verb === "HEAD";
+}
+
 export function resolveConfiguredSiteUrl(
   siteUrl?: string | URL | null,
   env?: Pick<ImportMetaEnv, "SITE_URL" | "ORIGIN">,

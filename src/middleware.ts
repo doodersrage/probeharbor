@@ -14,7 +14,7 @@ import {
 } from "./lib/mfa";
 import { hasValidMfaStepUpProof } from "./lib/mfaStepUpProof";
 import { recordServerError } from "./lib/serverErrors";
-import { CANONICAL_HOST, LEGACY_HOSTS } from "./lib/siteConfig";
+import { CANONICAL_HOST, shouldRedirectLegacyHost } from "./lib/siteConfig";
 import {
   HA_BLUEPRINT_LEGACY_URL,
   HA_BLUEPRINT_URL,
@@ -50,7 +50,7 @@ function isMfaRequired(request: Request, cookies: AstroCookies): boolean {
 export const onRequest = defineMiddleware(async (context, next) => {
   const { pathname, hostname, protocol } = context.url;
 
-  if (LEGACY_HOSTS.has(hostname)) {
+  if (shouldRedirectLegacyHost(hostname, context.request.method)) {
     const dest = new URL(context.url);
     dest.hostname = CANONICAL_HOST;
     dest.protocol = "https:";
