@@ -131,6 +131,7 @@ export type Database = {
           last_rate_alert_at: string | null
           last_rssi_alert_at: string | null
           last_runway_alert_at: string | null
+          last_rule_alert_at: string | null
           last_trial_reminder_at: string | null
           monthly_report_enabled: boolean
           ntfy_server: string
@@ -221,6 +222,7 @@ export type Database = {
           last_rate_alert_at?: string | null
           last_rssi_alert_at?: string | null
           last_runway_alert_at?: string | null
+          last_rule_alert_at?: string | null
           last_trial_reminder_at?: string | null
           monthly_report_enabled?: boolean
           ntfy_server?: string
@@ -311,6 +313,7 @@ export type Database = {
           last_rate_alert_at?: string | null
           last_rssi_alert_at?: string | null
           last_runway_alert_at?: string | null
+          last_rule_alert_at?: string | null
           last_trial_reminder_at?: string | null
           monthly_report_enabled?: boolean
           ntfy_server?: string

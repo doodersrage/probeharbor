@@ -17,6 +17,11 @@ vi.mock("./alertEvents", () => ({
   listRecentAlertEvents: (...args: unknown[]) => mockListRecentAlertEvents(...args),
 }));
 
+const mockEvaluateAlertRules = vi.fn();
+vi.mock("./alertRules", () => ({
+  evaluateAlertRules: (...args: unknown[]) => mockEvaluateAlertRules(...args),
+}));
+
 const mockBuildFreezeAlertContext = vi.fn();
 vi.mock("./alertContext", () => ({
   buildFreezeAlertContext: (...args: unknown[]) => mockBuildFreezeAlertContext(...args),
@@ -158,6 +163,50 @@ describe("sendThresholdAlertsIfNeeded context block", () => {
     );
 
     expect(mockBuildFreezeAlertContext).not.toHaveBeenCalled();
+    expect(mockNotifyUser).not.toHaveBeenCalled();
+  });
+});
+
+describe("maybeSendRuleAlerts cooldown", () => {
+  const rule = { id: "r1", name: "Garage humid", conditions: [], channels: [] };
+
+  it("is not blocked by a recent freeze alert and stamps its own cooldown", async () => {
+    mockEvaluateAlertRules.mockReturnValue(["Garage humidity above 80%"]);
+    const { maybeSendRuleAlerts } = await import("./alertNotifications");
+    await maybeSendRuleAlerts(
+      "user-1",
+      "a@example.com",
+      [],
+      {
+        ...DEFAULT_ALERT_SETTINGS,
+        enabled: true,
+        alertRules: [rule] as never,
+        lastAlertSentAt: new Date().toISOString(),
+      },
+      freezingReading,
+    );
+
+    expect(mockNotifyUser).toHaveBeenCalledTimes(1);
+    expect(mockMarkCooldown).toHaveBeenCalledWith("user-1", "last_rule_alert_at");
+    expect(mockMarkCooldown).not.toHaveBeenCalledWith("user-1", "last_alert_sent_at");
+  });
+
+  it("respects its own cooldown", async () => {
+    mockEvaluateAlertRules.mockReturnValue(["Garage humidity above 80%"]);
+    const { maybeSendRuleAlerts } = await import("./alertNotifications");
+    await maybeSendRuleAlerts(
+      "user-1",
+      "a@example.com",
+      [],
+      {
+        ...DEFAULT_ALERT_SETTINGS,
+        enabled: true,
+        alertRules: [rule] as never,
+        lastRuleAlertAt: new Date().toISOString(),
+      },
+      freezingReading,
+    );
+
     expect(mockNotifyUser).not.toHaveBeenCalled();
   });
 });

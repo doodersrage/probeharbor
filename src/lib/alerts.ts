@@ -123,6 +123,8 @@ export type AlertSettings = {
   lastRateAlertAt: string | null;
   lastForecastAlertAt: string | null;
   lastRunwayAlertAt: string | null;
+  /** Cooldown for custom rule alerts (separate from freeze alerts). */
+  lastRuleAlertAt: string | null;
   forecastFreezeEnabled: boolean;
   runwayAlertEnabled: boolean;
   nwsFreezeAlertsEnabled: boolean;
@@ -220,6 +222,7 @@ export const DEFAULT_ALERT_SETTINGS: AlertSettings = {
   lastRateAlertAt: null,
   lastForecastAlertAt: null,
   lastRunwayAlertAt: null,
+  lastRuleAlertAt: null,
   forecastFreezeEnabled: false,
   runwayAlertEnabled: true,
   nwsFreezeAlertsEnabled: false,
@@ -395,6 +398,8 @@ export function rowToAlertSettings(row: Record<string, unknown> | null | undefin
       typeof row.last_forecast_alert_at === "string"
         ? row.last_forecast_alert_at
         : null,
+    lastRuleAlertAt:
+      typeof row.last_rule_alert_at === "string" ? row.last_rule_alert_at : null,
     lastRunwayAlertAt:
       typeof row.last_runway_alert_at === "string"
         ? row.last_runway_alert_at
@@ -771,6 +776,7 @@ export function serializeAlertSettings(settings: AlertSettings): Record<string, 
     last_rate_alert_at: settings.lastRateAlertAt,
     last_forecast_alert_at: settings.lastForecastAlertAt,
     last_runway_alert_at: settings.lastRunwayAlertAt,
+    last_rule_alert_at: settings.lastRuleAlertAt,
     forecast_freeze_enabled: settings.forecastFreezeEnabled,
     runway_alert_enabled: settings.runwayAlertEnabled,
     nws_freeze_alerts_enabled: settings.nwsFreezeAlertsEnabled,

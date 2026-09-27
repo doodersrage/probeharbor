@@ -165,6 +165,7 @@ export function buildAlertSettingsFromFormData(
     lastRateAlertAt: existing.lastRateAlertAt,
     lastForecastAlertAt: existing.lastForecastAlertAt,
     lastRunwayAlertAt: existing.lastRunwayAlertAt,
+    lastRuleAlertAt: existing.lastRuleAlertAt,
     forecastFreezeEnabled:
       formCheckbox(formData, "forecast_freeze_enabled") &&
       entitlements.canUseForecastAlerts,

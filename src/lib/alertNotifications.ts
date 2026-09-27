@@ -549,7 +549,8 @@ export async function maybeSendRuleAlerts(
   householdId?: string | null,
 ): Promise<void> {
   if (!settings.enabled || settings.alertRules.length === 0) return;
-  if (isAlertCooldownActive(settings.lastAlertSentAt)) return;
+  // Rules have their own cooldown so a rule match never silences freeze alerts.
+  if (isAlertCooldownActive(settings.lastRuleAlertAt)) return;
 
   const ctx = await buildRuleContext(settings, devices, readings, householdId);
   const messages = evaluateAlertRules(settings.alertRules, ctx);
@@ -560,7 +561,7 @@ export async function maybeSendRuleAlerts(
     body: messages.join("\n"),
     kind: "rule",
   });
-  await markCooldown(userId, "last_alert_sent_at");
+  await markCooldown(userId, "last_rule_alert_at");
 }
 
 export async function maybeSendRateAndOutageAlerts(
