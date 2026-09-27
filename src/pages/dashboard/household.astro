@@ -100,7 +100,7 @@ const canLeaveActive =
 const siteOrigin = buildSiteUrl(Astro.request, "/").replace(/\/$/, "");
 const householdActivity =
   manageId && canManage
-    ? await listHouseholdActivity(manageId, { limit: 15 })
+    ? await listHouseholdActivity(manageId, 15)
     : [];
 const myMembership = membersWithEmail.find((m) => m.user_id === user.id);
 const digestOptInRow =
