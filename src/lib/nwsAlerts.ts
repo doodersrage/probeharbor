@@ -13,6 +13,16 @@ export type NwsAlertSummary = {
   lon: number;
 };
 
+/**
+ * Word-bounded so "ice" can't match inside "Service" / "Notice" and turn a
+ * heat or storm advisory into a freeze alert.
+ */
+const FREEZE_NWS_RE = /\b(freez\w*|frost\w*|cold|winter|ice|wind chill)\b/i;
+
+export function isFreezeRelatedNwsText(text: string): boolean {
+  return FREEZE_NWS_RE.test(text);
+}
+
 /** Active US weather alerts from weather.gov (no API key). */
 export async function fetchNwsAlerts(
   lat: number,
@@ -23,6 +33,7 @@ export async function fetchNwsAlerts(
   try {
     const url = `https://api.weather.gov/alerts/active?point=${lat.toFixed(4)},${lon.toFixed(4)}`;
     const response = await fetch(url, {
+      signal: AbortSignal.timeout(8_000),
       headers: {
         Accept: "application/geo+json",
         "User-Agent": `ThermalTrace/1.0 (${resolveConfiguredSiteUrl()})`,
@@ -50,9 +61,7 @@ export async function fetchNwsAlerts(
         severity: p!.severity ?? "Unknown",
         expires: p!.expires ?? null,
       }))
-      .filter((a) =>
-        /freeze|frost|cold|winter|ice|wind chill/i.test(`${a.event} ${a.headline}`),
-      );
+      .filter((a) => isFreezeRelatedNwsText(`${a.event} ${a.headline}`));
 
     return { alerts, lat, lon };
   } catch {

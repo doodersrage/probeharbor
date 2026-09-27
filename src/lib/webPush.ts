@@ -96,7 +96,10 @@ export async function sendWebPushToUser(
           },
         );
 
-        const response = await fetch(sub.endpoint, pushPayload);
+        const response = await fetch(sub.endpoint, {
+          ...pushPayload,
+          signal: AbortSignal.timeout(10_000),
+        });
         if (response.ok) {
           delivered += 1;
           continue;

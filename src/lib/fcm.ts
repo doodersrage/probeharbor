@@ -155,6 +155,7 @@ async function getAccessToken(account: ServiceAccount): Promise<string> {
 
   const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
     method: "POST",
+    signal: AbortSignal.timeout(10_000),
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({
       grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer",
@@ -248,6 +249,7 @@ export async function sendFcmToUser(
     try {
       const response = await fetch(url, {
         method: "POST",
+        signal: AbortSignal.timeout(10_000),
         headers: {
           Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json",
