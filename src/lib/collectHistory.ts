@@ -150,37 +150,44 @@ export async function collectHistoryForAllUsers(): Promise<{
 
       const members = await listHouseholdMembers(config.householdId || householdId);
       for (const member of members.members) {
-        const { data: memberData } = await admin.auth.admin.getUserById(member.user_id);
-        const memberUser = memberData.user;
-        await maybeSendThresholdAlerts(
-          member.user_id,
-          memberUser?.email,
-          memberUser?.user_metadata as Record<string, unknown> | undefined,
-          config.feeds,
-          config.probes,
-          results,
-          config.householdId || householdId,
-          config.devices,
-        );
+        // Isolate each member so one failure can't skip the rest of the household.
+        try {
+          const { data: memberData } = await admin.auth.admin.getUserById(member.user_id);
+          const memberUser = memberData.user;
+          await maybeSendThresholdAlerts(
+            member.user_id,
+            memberUser?.email,
+            memberUser?.user_metadata as Record<string, unknown> | undefined,
+            config.feeds,
+            config.probes,
+            results,
+            config.householdId || householdId,
+            config.devices,
+          );
 
-        const settings = await getAlertSettingsForUser(
-          member.user_id,
-          memberUser?.user_metadata as Record<string, unknown> | undefined,
-        );
-        await maybeSendRateAndOutageAlerts(
-          member.user_id,
-          memberUser?.email,
-          config.devices,
-          settings,
-          config.householdId || householdId,
-        );
-        await maybeSendDeviceHealthAlerts(
-          member.user_id,
-          memberUser?.email,
-          config.devices,
-          settings,
-        );
-        usersProcessed += 1;
+          const settings = await getAlertSettingsForUser(
+            member.user_id,
+            memberUser?.user_metadata as Record<string, unknown> | undefined,
+          );
+          await maybeSendRateAndOutageAlerts(
+            member.user_id,
+            memberUser?.email,
+            config.devices,
+            settings,
+            config.householdId || householdId,
+          );
+          await maybeSendDeviceHealthAlerts(
+            member.user_id,
+            memberUser?.email,
+            config.devices,
+            settings,
+          );
+          usersProcessed += 1;
+        } catch (memberError) {
+          errors.push(
+            `${member.user_id}: ${memberError instanceof Error ? memberError.message : "Unknown error"}`,
+          );
+        }
       }
 
       householdsProcessed += 1;

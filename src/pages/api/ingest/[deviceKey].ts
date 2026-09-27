@@ -242,21 +242,25 @@ export const POST: APIRoute = async ({ params, request }) => {
     const members = await listHouseholdMembers(device.household_id);
     const admin = createAdminClient();
     for (const member of members.members) {
-      const { data } = await admin.auth.admin.getUserById(member.user_id);
-      const settings = await getAlertSettingsForUser(
-        member.user_id,
-        data.user?.user_metadata as Record<string, unknown> | undefined,
-      );
-      if (settings.readingWebhookUrl) {
-        await sendReadingWebhook(member.user_id, settings, {
-          device_id: device.id,
-          device_name: device.name,
-          household_id: device.household_id,
-          recorded_at: recordedAt,
-          reading_count: rows.length,
-          battery_pct: metaPatch.battery_pct ?? null,
-          rssi: metaPatch.rssi ?? null,
-        });
+      try {
+        const { data } = await admin.auth.admin.getUserById(member.user_id);
+        const settings = await getAlertSettingsForUser(
+          member.user_id,
+          data.user?.user_metadata as Record<string, unknown> | undefined,
+        );
+        if (settings.readingWebhookUrl) {
+          await sendReadingWebhook(member.user_id, settings, {
+            device_id: device.id,
+            device_name: device.name,
+            household_id: device.household_id,
+            recorded_at: recordedAt,
+            reading_count: rows.length,
+            battery_pct: metaPatch.battery_pct ?? null,
+            rssi: metaPatch.rssi ?? null,
+          });
+        }
+      } catch (memberError) {
+        console.error(`Reading webhook failed for member ${member.user_id}:`, memberError);
       }
     }
   } catch (webhookError) {
@@ -288,32 +292,40 @@ export const POST: APIRoute = async ({ params, request }) => {
     const admin = createAdminClient();
 
     for (const member of members.members) {
-      const { data } = await admin.auth.admin.getUserById(member.user_id);
-      const settings = await getAlertSettingsForUser(
-        member.user_id,
-        data.user?.user_metadata as Record<string, unknown> | undefined,
-      );
-      await sendThresholdAlertsIfNeeded(
-        member.user_id,
-        data.user?.email,
-        settings,
-        readings,
-        device.household_id,
-      );
-      await sendFloodAlertsIfNeeded(
-        member.user_id,
-        data.user?.email,
-        settings,
-        floodReadings,
-      );
-      await maybeSendRuleAlerts(
-        member.user_id,
-        data.user?.email,
-        devices.devices,
-        settings,
-        readings,
-        device.household_id,
-      );
+      // Isolate each member so one failure can't skip everyone after them.
+      try {
+        const { data } = await admin.auth.admin.getUserById(member.user_id);
+        const userMetadata = data.user?.user_metadata as Record<string, unknown> | undefined;
+        const settings = await getAlertSettingsForUser(member.user_id, userMetadata);
+        const weatherCityId =
+          typeof userMetadata?.weather_city_id === "string"
+            ? userMetadata.weather_city_id.trim()
+            : null;
+        await sendThresholdAlertsIfNeeded(
+          member.user_id,
+          data.user?.email,
+          settings,
+          readings,
+          device.household_id,
+          { weatherCityId, latestSensors: latest },
+        );
+        await sendFloodAlertsIfNeeded(
+          member.user_id,
+          data.user?.email,
+          settings,
+          floodReadings,
+        );
+        await maybeSendRuleAlerts(
+          member.user_id,
+          data.user?.email,
+          devices.devices,
+          settings,
+          readings,
+          device.household_id,
+        );
+      } catch (memberError) {
+        console.error(`Ingest alerts failed for member ${member.user_id}:`, memberError);
+      }
     }
   } catch (alertError) {
     console.error("Ingest alert evaluation failed:", alertError);

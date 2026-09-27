@@ -82,8 +82,9 @@ vi.mock("../../../lib/supabase", () => ({
   createAdminClient: () => mockCreateAdminClient(),
 }));
 
+const mockSendThresholdAlertsIfNeeded = vi.fn();
 vi.mock("../../../lib/alertNotifications", () => ({
-  sendThresholdAlertsIfNeeded: vi.fn().mockResolvedValue(undefined),
+  sendThresholdAlertsIfNeeded: (...a: unknown[]) => mockSendThresholdAlertsIfNeeded(...a),
   sendFloodAlertsIfNeeded: vi.fn().mockResolvedValue(undefined),
   maybeSendRuleAlerts: vi.fn().mockResolvedValue(undefined),
   buildAlertReadingsFromLatestSensors: vi.fn().mockReturnValue([]),
@@ -154,6 +155,7 @@ beforeEach(() => {
   mockFetchLatestSensorValues.mockReset().mockResolvedValue([]);
   mockGetAlertSettingsForUser.mockReset().mockResolvedValue({});
   mockSendReadingWebhook.mockReset().mockResolvedValue(undefined);
+  mockSendThresholdAlertsIfNeeded.mockReset().mockResolvedValue(undefined);
   mockCreateAdminClient.mockReset().mockReturnValue({
     auth: { admin: { getUserById: vi.fn().mockResolvedValue({ data: { user: null } }) } },
   });
@@ -248,6 +250,25 @@ describe("POST /api/ingest/[deviceKey]", () => {
       expect.anything(),
       { battery_pct: 87, rssi: -61 },
       expect.any(String),
+    );
+  });
+
+  it("keeps alerting later household members when one member's alerts throw", async () => {
+    mockListHouseholdMembers.mockResolvedValue({
+      members: [{ user_id: "user-a" }, { user_id: "user-b" }],
+    });
+    mockSendThresholdAlertsIfNeeded
+      .mockRejectedValueOnce(new Error("boom"))
+      .mockResolvedValueOnce(undefined);
+    const { POST } = await import("./[deviceKey]");
+
+    const response = await POST(makeContext({ headerKey: "good-key" }));
+
+    expect(response.status).toBe(200);
+    expect(mockSendThresholdAlertsIfNeeded).toHaveBeenCalledTimes(2);
+    expect(mockSendThresholdAlertsIfNeeded.mock.calls[1][0]).toBe("user-b");
+    expect(mockSendThresholdAlertsIfNeeded.mock.calls[1][5]).toEqual(
+      expect.objectContaining({ latestSensors: [] }),
     );
   });
 
