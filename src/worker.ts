@@ -35,6 +35,9 @@ import {
   fetchLastSuccessfulCollectHistory,
   isCollectHistoryStale,
 } from "./lib/cronHealth";
+import { formatWatchdogFindings, runAlertDeliveryWatchdog } from "./lib/alertDeliveryWatchdog";
+import { checkStripeWebhookHealth } from "./lib/stripeWebhookHealth";
+import { createStripeClient } from "./lib/stripe";
 
 type WorkerEnv = Env & {
   SENTRY_DSN?: string;
@@ -348,6 +351,57 @@ async function runHourlyMaintenanceJobs(env: WorkerEnv): Promise<void> {
           await finishJobRun(feedUptimeJobId, "error", {
             message: error instanceof Error ? error.message : "Unknown error",
           });
+        }
+
+        // Silent-failure monitors: alert ops when freeze alerts should have
+        // gone out but didn't, and when Stripe webhooks can't be delivered.
+        if (new Date().getUTCHours() % 6 === 0) {
+          const watchdogJobId = await startJobRun("alert-delivery-watchdog");
+          try {
+            const watchdog = await runAlertDeliveryWatchdog();
+            await finishJobRun(
+              watchdogJobId,
+              watchdog.findings.length || watchdog.errors.length ? "error" : "success",
+              {
+                checked: watchdog.checked,
+                findings: watchdog.findings.slice(0, 20),
+                errors: watchdog.errors.slice(0, 20),
+              },
+            );
+            if (watchdog.findings.length > 0) {
+              await notifyOps(
+                "ThermalTrace: freeze alerts not delivered",
+                `${watchdog.findings.length} member(s) have a probe below their freeze threshold with no delivered alert in the last 6 hours.\n\n${formatWatchdogFindings(watchdog.findings)}`,
+              );
+            }
+          } catch (error) {
+            await finishJobRun(watchdogJobId, "error", {
+              message: error instanceof Error ? error.message : "Unknown error",
+            });
+          }
+        }
+
+        if (shouldRunDailyRetention() && import.meta.env.STRIPE_SECRET_KEY) {
+          const stripeHealthJobId = await startJobRun("stripe-webhook-health");
+          try {
+            const health = await checkStripeWebhookHealth({
+              stripe: createStripeClient(),
+              webhookSecret: import.meta.env.STRIPE_WEBHOOK_SECRET,
+            });
+            await finishJobRun(stripeHealthJobId, health.ok ? "success" : "error", {
+              problems: health.problems,
+            });
+            if (!health.ok) {
+              await notifyOps(
+                "ThermalTrace: Stripe webhooks unhealthy",
+                health.problems.map((problem) => `- ${problem}`).join("\n"),
+              );
+            }
+          } catch (error) {
+            await finishJobRun(stripeHealthJobId, "error", {
+              message: error instanceof Error ? error.message : "Unknown error",
+            });
+          }
         }
 
         if (shouldRunDailyRetention()) {
