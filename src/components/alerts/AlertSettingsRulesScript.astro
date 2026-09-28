@@ -1,5 +1,5 @@
 ---
-import { CONDITION_OPTIONS } from "../../lib/alertRules";
+import { CONDITION_OPTIONS, HEAT_THRESHOLD_F } from "../../lib/alertRules";
 import type { AlertRule } from "../../lib/alertRules";
 
 interface Props {
@@ -8,7 +8,7 @@ interface Props {
 
 const { initialRules = [] } = Astro.props;
 ---
-<script is:inline define:vars={{ conditionOptions: CONDITION_OPTIONS, initialRules }}>
+<script is:inline define:vars={{ conditionOptions: CONDITION_OPTIONS, initialRules, heatThresholdF: HEAT_THRESHOLD_F }}>
   (() => {
     const form = document.getElementById("alert-settings-form");
     if (!(form instanceof HTMLFormElement)) return;
@@ -107,6 +107,16 @@ const { initialRules = [] } = Astro.props;
         enabled: true,
         name: "New rule",
         all: [{ type: "door_open" }, { type: "temp_below" }],
+      });
+      renderRules();
+    });
+
+    document.getElementById("add-heat-rule")?.addEventListener("click", () => {
+      rules.push({
+        id: crypto.randomUUID(),
+        enabled: true,
+        name: "Too hot",
+        all: [{ type: "temp_above", value: heatThresholdF }],
       });
       renderRules();
     });

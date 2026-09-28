@@ -1,7 +1,7 @@
 ---
 import type { AlertChannelName, AlertSettings } from "../lib/alerts";
 import type { Entitlements } from "../lib/entitlements";
-import { CONDITION_OPTIONS } from "../lib/alertRules";
+import { CONDITION_OPTIONS, HEAT_THRESHOLD_F } from "../lib/alertRules";
 import AlertSettingsNav from "./alerts/AlertSettingsNav.astro";
 import AlertSettingsPanel from "./alerts/AlertSettingsPanel.astro";
 import AlertSettingsFormSubmit from "./alerts/AlertSettingsFormSubmit.astro";
@@ -748,7 +748,10 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
     <h3 class="alert-settings-subheading">Composite rules (AND)</h3>
     <p class="form-hint mb-3">Fire when every condition in a rule is true (e.g. door open AND temperature drop). Flood already alerts when wet; add a flood condition here only to combine it with other checks.</p>
     <div id="alert-rules-list" class="space-y-3 mb-3"></div>
-    <button type="button" class="btn-secondary mb-4" id="add-alert-rule">Add rule</button>
+    <div class="flex flex-wrap gap-2 mb-4">
+      <button type="button" class="btn-secondary" id="add-alert-rule">Add rule</button>
+      <button type="button" class="btn-secondary" id="add-heat-rule">Add heat rule ({HEAT_THRESHOLD_F}°F)</button>
+    </div>
 
     <h3 class="alert-settings-subheading">Alert playbooks</h3>
     <p class="form-hint mb-3">Follow-up steps after the initial alert: e.g. SMS 15 minutes later if still unacknowledged.</p>

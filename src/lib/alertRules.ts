@@ -1,5 +1,6 @@
 export type AlertConditionType =
   | "temp_below"
+  | "temp_above"
   | "humidity_above"
   | "door_open"
   | "door_open_duration"
@@ -47,6 +48,9 @@ export type RuleEvalContext = {
   outageHours: number;
 };
 
+/** Default for temp_above: hot enough to cook batteries, paint, and electronics. */
+export const HEAT_THRESHOLD_F = 95;
+
 function matchesLabel(label: string, includes?: string): boolean {
   if (!includes) return true;
   return label.toLowerCase().includes(includes.toLowerCase());
@@ -61,6 +65,12 @@ function evaluateCondition(
       const threshold = condition.value ?? ctx.freezeThresholdF;
       return ctx.readings.some(
         (r) => matchesLabel(r.label, condition.labelIncludes) && r.tempf <= threshold,
+      );
+    }
+    case "temp_above": {
+      const threshold = condition.value ?? HEAT_THRESHOLD_F;
+      return ctx.readings.some(
+        (r) => matchesLabel(r.label, condition.labelIncludes) && r.tempf >= threshold,
       );
     }
     case "humidity_above": {
@@ -232,6 +242,7 @@ export function parseAlertRulesFromForm(raw: string | null | undefined): AlertRu
 
 export const CONDITION_OPTIONS: Array<{ value: AlertConditionType; label: string }> = [
   { value: "temp_below", label: "Temperature below threshold" },
+  { value: "temp_above", label: "Temperature above (°F)" },
   { value: "humidity_above", label: "Humidity above threshold" },
   { value: "door_open", label: "Door open" },
   { value: "door_open_duration", label: "Door open longer than (minutes)" },

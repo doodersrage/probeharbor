@@ -153,6 +153,30 @@ describe("alert rules", () => {
     ).toContain("High CO2");
   });
 
+  it("matches temp_above with a default and a label filter", () => {
+    const ctx = {
+      readings: [
+        { label: "Attic", tempf: 118, humidity: 20 },
+        { label: "Garage", tempf: 90, humidity: 40 },
+      ],
+      boolSensors: [],
+      numericSensors: [],
+      doorOpenSessions: [],
+      rateDrops: [],
+      outages: [],
+      freezeThresholdF: 34,
+      humidityThreshold: 75,
+      rateChangeF: 15,
+      outageHours: 2,
+    };
+    const rule = (all: AlertRule["all"]): AlertRule[] => [{ id: "h", enabled: true, name: "Heat", all }];
+    expect(evaluateAlertRules(rule([{ type: "temp_above" }]), ctx)).toHaveLength(1);
+    expect(evaluateAlertRules(rule([{ type: "temp_above", labelIncludes: "garage" }]), ctx)).toHaveLength(0);
+    expect(
+      evaluateAlertRules(rule([{ type: "temp_above", value: 90, labelIncludes: "garage" }]), ctx),
+    ).toHaveLength(1);
+  });
+
   it("matches workshop numeric and motion rules", () => {
     const rules: AlertRule[] = [
       { id: "aqi", enabled: true, name: "Dusty", all: [{ type: "pm25_above", value: 35 }] },
