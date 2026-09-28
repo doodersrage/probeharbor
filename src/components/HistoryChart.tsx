@@ -28,6 +28,7 @@ import {
   timeWindowToHistoryDates,
 } from "../lib/historyUrls";
 import { expandedChartDialogAttrs } from "../lib/chartLightbox";
+import { temperatureScale } from "../lib/chartScale";
 
 type Point = {
   timestamp: string;
@@ -59,6 +60,8 @@ interface Props {
   canUseClaimsPack?: boolean;
   /** Allow uploading a PNG snapshot to a public share URL. */
   canShareChart?: boolean;
+  /** Signed-out page (demo): hide link/share controls and dashboard links. */
+  guest?: boolean;
 }
 
 const PROBE_COLORS = ["#ff7a00", "#34d399", "#f472b6", "#fbbf24", "#a78bfa", "#fb7185"];
@@ -129,6 +132,7 @@ export default function HistoryChart({
   highlightAlertId = null,
   canUseClaimsPack = false,
   canShareChart = false,
+  guest = false,
 }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -475,7 +479,7 @@ export default function HistoryChart({
             .filter((v): v is number => v != null)
         : [];
 
-      const allTemps = [
+      const dataTemps = [
         ...(scaleSource.length > 0
           ? scaleSource
           : visiblePoints.length > 0
@@ -485,10 +489,8 @@ export default function HistoryChart({
         ...priorInView.map((p) => p.tempf),
         ...houseInView.map((p) => p.tempf),
         ...dewInView,
-        ...guideTemps,
       ];
-      const min = Math.min(...allTemps) - 2;
-      const max = Math.max(...allTemps) + 2;
+      const { min, max, offscale } = temperatureScale(dataTemps, guideTemps);
       const range = max - min || 1;
 
       plotBoundsRef.current = {
@@ -536,6 +538,7 @@ export default function HistoryChart({
         }
       }
 
+      const edgeLabels = { below: 0, above: 0 };
       function drawGuide(
         tempf: number | null,
         color: string,
@@ -543,6 +546,19 @@ export default function HistoryChart({
         dash: number[],
       ) {
         if (tempf == null || !Number.isFinite(tempf)) return;
+        const off = offscale.find((o) => o.value === tempf);
+        if (off) {
+          // Far from the data: note it at the edge instead of squashing the curve.
+          g.save();
+          g.fillStyle = color;
+          g.font = "10px system-ui, sans-serif";
+          g.textAlign = "left";
+          const stack = edgeLabels[off.side]++ * 12;
+          const edgeY = off.side === "below" ? pad.top + innerH - 4 - stack : pad.top + 12 + stack;
+          g.fillText(`${label} ${tempf.toFixed(0)}°F ${off.side === "below" ? "↓" : "↑"}`, pad.left + 4, edgeY);
+          g.restore();
+          return;
+        }
         const y = yFor(tempf);
         g.save();
         g.strokeStyle = color;
@@ -927,6 +943,7 @@ export default function HistoryChart({
           >
             PNG
           </button>
+          {!guest && (
           <button
             type="button"
             class="history-chart-zoom-btn history-chart-expand-btn"
@@ -935,7 +952,8 @@ export default function HistoryChart({
           >
             {linkCopied ? "Copied" : "Link"}
           </button>
-          {canShareChart ? (
+          )}
+          {guest ? null : canShareChart ? (
             <button
               type="button"
               class="history-chart-zoom-btn history-chart-expand-btn"
@@ -1032,7 +1050,7 @@ export default function HistoryChart({
         <p class="m-0 mb-2 text-xs text-[var(--color-text-muted)]">
           Loaded window is about{" "}
           {Math.max(1, Math.round((domain.maxTs - domain.minTs) / 36e5))}h.
-          {domain.maxTs - domain.minTs < 30 * 24 * 60 * 60 * 1000 - 36e5 && (
+          {!guest && domain.maxTs - domain.minTs < 30 * 24 * 60 * 60 * 1000 - 36e5 && (
             <>
               {" "}
               <a class="text-link" href="/dashboard/history">Open History</a> for 30-day views.
