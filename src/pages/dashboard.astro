@@ -86,7 +86,10 @@ import RegionalBenchmarkCard from "../components/dashboard/RegionalBenchmarkCard
 import {
   countUnacknowledgedAlerts,
   listAlertEventsInRange,
+  listRecentAlertEvents,
 } from "../lib/alertEvents";
+import { findAlertMoment } from "../lib/alertMomentNudge";
+import AlertMomentUpgradeCard from "../components/dashboard/AlertMomentUpgradeCard.astro";
 import { toChartAlertMarkers } from "../lib/chartAlertMarkers";
 import LowBatteryBanner from "../components/dashboard/LowBatteryBanner.astro";
 import DashboardMultiPropertyNudge from "../components/dashboard/DashboardMultiPropertyNudge.astro";
@@ -215,6 +218,11 @@ const [
 
 const devices = householdDevicesResult.devices;
 const canEdit = canEditHousehold(householdRole);
+// Only owners/editors can buy, and only accounts without SMS have something to gain.
+const alertMoment =
+  canEdit && !entitlements.canUseSms && !quietActive
+    ? findAlertMoment(await listRecentAlertEvents(user.id, 20))
+    : null;
 const forceSimple = shouldForceSimpleOverview(householdRole);
 if (forceSimple) {
   overviewMode = "simple";
@@ -831,6 +839,13 @@ const coldestProbeSummary = (() => {
       count={unackedAlertCount}
       canEdit={canEdit}
     />
+
+    {alertMoment && (
+      <AlertMomentUpgradeCard
+        moment={alertMoment}
+        timeZone={alertSettings.quietHoursEnabled ? alertSettings.quietHoursTimezone : null}
+      />
+    )}
 
     <OverviewQuickActions
       canEdit={canEdit}

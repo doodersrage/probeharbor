@@ -60,7 +60,7 @@ export function isInQuietHours(
   );
 }
 
-function isCriticalNotifyKind(kind: NotifyKind | undefined): boolean {
+export function isCriticalNotifyKind(kind: NotifyKind | undefined): boolean {
   return (
     kind === "threshold" ||
     kind === "forecast" ||

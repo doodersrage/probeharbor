@@ -1,0 +1,40 @@
+---
+/**
+ * Shown on Overview after a freeze/leak alert reached a Free or Member account
+ * by email only. Dismissal is keyed to the alert, so the next one can ask again.
+ */
+import type { AlertMoment } from "../../lib/alertMomentNudge";
+
+interface Props {
+  moment: AlertMoment;
+  timeZone?: string | null;
+}
+
+const { moment, timeZone = null } = Astro.props;
+// Without a known time zone the server clock (UTC) would print the wrong hour, so show the day only.
+const when = new Date(moment.createdAt).toLocaleString(
+  "en-US",
+  timeZone
+    ? { weekday: "short", hour: "numeric", minute: "2-digit", timeZone }
+    : { weekday: "short", month: "short", day: "numeric", timeZone: "UTC" },
+);
+const dismissKey = `alert-moment-${moment.eventId}`;
+---
+<aside class="upgrade-nudge" data-nudge-key={dismissKey} role="note">
+  <div class="upgrade-nudge-body">
+    <p class="upgrade-nudge-title">Your {moment.label} on {when} went to email only</p>
+    <p class="upgrade-nudge-text">
+      Email is easy to miss overnight. Pro texts the next freeze or leak alert to your phone, and can send it during quiet hours.
+    </p>
+  </div>
+  <div class="upgrade-nudge-actions">
+    <form action="/api/stripe/checkout" method="post">
+      <input type="hidden" name="plan" value="pro" />
+      <input type="hidden" name="interval" value="annual" />
+      <input type="hidden" name="source" value="nudge_alert_moment" />
+      <button class="btn-primary" type="submit">Get SMS alerts with Pro</button>
+    </form>
+    <a class="btn-secondary" href="/pricing#sms-alerts">Compare plans</a>
+    <button type="button" class="btn-ghost" data-dismiss={dismissKey}>Not now</button>
+  </div>
+</aside>
