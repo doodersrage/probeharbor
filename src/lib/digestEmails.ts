@@ -8,6 +8,8 @@ import { sendEmail } from "./mailer";
 import { computeFreezeHours } from "./freezeHours";
 import { buildHistoryChartUrl, trailingHistoryWindowDays } from "./historyUrls";
 import { buildUnsubscribeUrl, unsubscribeHeaders } from "./emailUnsubscribe";
+import { isActionableAlertKind } from "./alertEvents";
+import { isAlertChannelName } from "./channelDelivery";
 
 async function sendDigestEmail(
   to: string,
@@ -161,11 +163,112 @@ function digestHighlightStats(points: ChartPoint[]) {
   ];
 }
 
+type DeliveryEvent = {
+  kind: string;
+  channels_sent: string[] | null;
+  channels_skipped: string[] | null;
+};
+
+export type AlertDeliverySummary = {
+  /** Real alerts (not tests, digests, or reports) in the window. */
+  alerts: number;
+  /** Alerts held back on purpose by snooze, vacation, or quiet hours. */
+  heldBack: number;
+  /** Alerts that reached at least one channel. */
+  reached: number;
+  /** Channels that delivered at least once. */
+  sentChannels: string[];
+  /** Channel → number of alerts it failed to deliver. */
+  failedChannels: Array<{ channel: string; count: number }>;
+};
+
+const HELD_BACK_REASONS = new Set(["snooze_or_vacation", "quiet_hours"]);
+
+/** channels_skipped mixes channel names with reasons like "sms_not_configured" or "fcm_no_token". */
+function skippedChannel(entry: string): string | null {
+  if (isAlertChannelName(entry)) return entry;
+  if (entry.startsWith("sms")) return "sms";
+  if (entry.startsWith("push") || entry.startsWith("fcm") || entry.startsWith("web_push")) return "push";
+  return null;
+}
+
+/** How this week's real alerts fared per channel, for the digest's reassurance line. */
+export function summarizeAlertDelivery(events: DeliveryEvent[]): AlertDeliverySummary {
+  let alerts = 0;
+  let heldBack = 0;
+  let reached = 0;
+  const sent = new Set<string>();
+  const failed = new Map<string, number>();
+  for (const event of events) {
+    if (!isActionableAlertKind(event.kind)) continue;
+    const skippedEntries = event.channels_skipped ?? [];
+    if (skippedEntries.some((entry) => HELD_BACK_REASONS.has(entry))) {
+      heldBack += 1;
+      continue;
+    }
+    alerts += 1;
+    const sentChannels = event.channels_sent ?? [];
+    if (sentChannels.length > 0) reached += 1;
+    for (const channel of sentChannels) sent.add(channel);
+    const failedHere = new Set(skippedEntries.map(skippedChannel).filter((c) => c !== null));
+    for (const channel of failedHere) {
+      failed.set(channel, (failed.get(channel) ?? 0) + 1);
+    }
+  }
+  return {
+    alerts,
+    heldBack,
+    reached,
+    sentChannels: [...sent].sort(),
+    failedChannels: [...failed.entries()]
+      .map(([channel, count]) => ({ channel, count }))
+      .sort((a, b) => b.count - a.count || a.channel.localeCompare(b.channel)),
+  };
+}
+
+function deliverySection(delivery: AlertDeliverySummary): EmailSection {
+  const heldBackNote =
+    delivery.heldBack > 0
+      ? `${delivery.heldBack} held back by snooze, vacation, or quiet hours.`
+      : null;
+  if (delivery.alerts === 0) {
+    return {
+      type: "note",
+      text: [
+        "No alerts went out this week.",
+        heldBackNote,
+        "Send a test from Alerts any time to confirm your channels still reach you.",
+      ]
+        .filter(Boolean)
+        .join(" "),
+    };
+  }
+  const via = delivery.sentChannels.length > 0 ? ` via ${delivery.sentChannels.join(", ")}` : "";
+  const alertWord = delivery.alerts === 1 ? "alert" : "alerts";
+  const lines = [`${delivery.reached} of ${delivery.alerts} ${alertWord} reached you${via}.`];
+  if (delivery.failedChannels.length > 0) {
+    const failures = delivery.failedChannels
+      .map(({ channel, count }) => `${channel} (${count}×)`)
+      .join(", ");
+    lines.push(`Not delivered on: ${failures}. Check those channels under Alerts and send a test.`);
+  }
+  if (heldBackNote) lines.push(heldBackNote);
+  const clean = delivery.reached === delivery.alerts && delivery.failedChannels.length === 0;
+  return {
+    type: "callout",
+    tone: clean ? "success" : "alert",
+    title: "Alert delivery",
+    body: lines.join(" "),
+  };
+}
+
 export function buildWeeklyDigestParts(input: {
   points: ChartPoint[];
   freezeThresholdF: number;
   siteUrl: string;
   unsubscribeUrl?: string | null;
+  /** The recipient's own alert delivery this week; omitted for household members. */
+  delivery?: AlertDeliverySummary | null;
 }): { subject: string; text: string; html: string; notifyBody: string } {
   const { points, freezeThresholdF, siteUrl } = input;
   const freeze = computeFreezeHours(points, freezeThresholdF);
@@ -184,9 +287,12 @@ export function buildWeeklyDigestParts(input: {
       title: "Freeze exposure",
       body: freezeBody.charAt(0).toUpperCase() + freezeBody.slice(1),
     },
+  ];
+  if (input.delivery) sections.push(deliverySection(input.delivery));
+  sections.push(
     { type: "heading", text: "Highlights" },
     { type: "stats", items: digestHighlightStats(points) },
-  ];
+  );
 
   if (probes.length > 0) {
     sections.push(
@@ -333,11 +439,20 @@ export async function sendWeeklyDigestsForAllUsers(): Promise<{
       }
 
       const ownerUnsubscribeUrl = await buildUnsubscribeUrl(siteUrl, userId, "digest");
+      const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      const { data: weekEvents, error: weekEventsError } = await admin
+        .from("alert_events")
+        .select("kind, channels_sent, channels_skipped")
+        .eq("user_id", userId)
+        .gte("created_at", weekAgo)
+        .limit(1000);
       const digest = buildWeeklyDigestParts({
         points,
         freezeThresholdF: settings.freezeThresholdF,
         siteUrl,
         unsubscribeUrl: ownerUnsubscribeUrl,
+        // Leave the section out rather than claim "no alerts" when the lookup failed.
+        delivery: weekEventsError ? null : summarizeAlertDelivery(weekEvents ?? []),
       });
 
       await sendDigestEmail(
