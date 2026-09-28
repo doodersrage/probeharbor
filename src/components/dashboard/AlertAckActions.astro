@@ -1,0 +1,86 @@
+---
+/**
+ * One-click "I'm on it" plus the other acknowledge actions behind "More".
+ * Each button submits its own `action` value to /api/user/alert-events/ack.
+ */
+interface Props {
+  eventId: number;
+  hasTenantRelay: boolean;
+  canPingWebhook: boolean;
+  compact?: boolean;
+}
+
+const { eventId, hasTenantRelay, canPingWebhook, compact = false } = Astro.props;
+
+const moreActions: Array<{ value: string; label: string }> = [
+  { value: "snooze_1h", label: "Handle & snooze 1h" },
+  { value: "snooze_4h", label: "Handle & snooze 4h" },
+  { value: "snooze_24h", label: "Handle & snooze 24h" },
+  { value: "false_alarm", label: "False alarm (snooze 24h)" },
+  { value: "raise_threshold", label: "False alarm + raise threshold +2°F" },
+  ...(hasTenantRelay ? [{ value: "notify_tenant", label: "Handle & email tenant" }] : []),
+  ...(canPingWebhook ? [{ value: "webhook_ping", label: "Handle & ping webhook" }] : []),
+];
+---
+<form
+  action="/api/user/alert-events/ack"
+  method="post"
+  class:list={["alert-ack-actions", compact && "alert-ack-actions--compact"]}
+>
+  <input type="hidden" name="event_id" value={eventId} />
+  <input type="hidden" name="redirect" value="/dashboard/alerts" />
+  <button type="submit" name="action" value="ack" class="btn-secondary btn-sm">
+    I'm on it
+  </button>
+  <details class="alert-ack-more">
+    <summary class="btn-ghost btn-sm">More</summary>
+    <div class="alert-ack-more-menu">
+      {moreActions.map((action) => (
+        <button type="submit" name="action" value={action.value} class="btn-ghost btn-sm">
+          {action.label}
+        </button>
+      ))}
+    </div>
+  </details>
+</form>
+
+<style>
+  .alert-ack-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 0.35rem;
+  }
+  .alert-ack-more {
+    position: relative;
+  }
+  .alert-ack-more > summary {
+    list-style: none;
+    cursor: pointer;
+  }
+  .alert-ack-more > summary::-webkit-details-marker {
+    display: none;
+  }
+  /* Float over the table so opening it doesn't stretch the row. */
+  .alert-ack-more-menu {
+    position: absolute;
+    top: calc(100% + 0.25rem);
+    right: 0;
+    z-index: 20;
+    min-width: max-content;
+    box-shadow: var(--shadow-card);
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.15rem;
+    padding: 0.35rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-elevated);
+  }
+  .alert-ack-more-menu button {
+    justify-content: flex-start;
+    text-align: left;
+    white-space: nowrap;
+  }
+</style>

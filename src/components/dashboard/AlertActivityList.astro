@@ -8,6 +8,7 @@ import {
 } from "../../lib/falseAlarmHints";
 import { formatAlertChannelList } from "../../lib/alertChannelLabels";
 import { isActionableAlertKind, type AlertEventRow } from "../../lib/alertEvents";
+import AlertAckActions from "./AlertAckActions.astro";
 
 interface Props {
   events: AlertEventRow[];
@@ -95,25 +96,11 @@ function tipForEvent(event: AlertEventRow): FalseAlarmHint | null {
               {event.acknowledged_at ? (
                 <span class="text-xs text-[var(--color-text-muted)]">Handled</span>
               ) : event.channels_sent.length > 0 && canEdit && isActionableAlertKind(event.kind) ? (
-                <form action="/api/user/alert-events/ack" method="post" class="flex flex-col gap-2">
-                  <input type="hidden" name="event_id" value={event.id} />
-                  <input type="hidden" name="redirect" value="/dashboard/alerts" />
-                  <select class="form-input text-xs py-1" name="action" aria-label="Acknowledge action">
-                    <option value="ack">I'm on it</option>
-                    <option value="snooze_1h">Handle & snooze 1h</option>
-                    <option value="snooze_4h">Handle & snooze 4h</option>
-                    <option value="snooze_24h">Handle & snooze 24h</option>
-                    <option value="false_alarm">False alarm (snooze 24h)</option>
-                    <option value="raise_threshold">False alarm + raise threshold +2°F</option>
-                    {hasTenantRelay && (
-                      <option value="notify_tenant">Handle & email tenant</option>
-                    )}
-                    {hasOutboundWebhook && canUseOutboundWebhook && (
-                      <option value="webhook_ping">Handle & ping webhook</option>
-                    )}
-                  </select>
-                  <button class="btn-ghost text-xs self-start" type="submit">Apply</button>
-                </form>
+                <AlertAckActions
+                  eventId={event.id}
+                  hasTenantRelay={hasTenantRelay}
+                  canPingWebhook={hasOutboundWebhook && canUseOutboundWebhook}
+                />
               ) : (
                 <span class="text-xs text-[var(--color-text-muted)]">—</span>
               )}
@@ -183,25 +170,12 @@ function tipForEvent(event: AlertEventRow): FalseAlarmHint | null {
                   {event.acknowledged_at ? (
                     <span class="text-[var(--color-text-muted)]">Handled</span>
                   ) : event.channels_sent.length > 0 && canEdit && isActionableAlertKind(event.kind) ? (
-                    <form action="/api/user/alert-events/ack" method="post" class="flex flex-col gap-1">
-                      <input type="hidden" name="event_id" value={event.id} />
-                      <input type="hidden" name="redirect" value="/dashboard/alerts" />
-                      <select class="form-input text-xs py-1" name="action" aria-label="Acknowledge action">
-                        <option value="ack">I'm on it</option>
-                        <option value="snooze_1h">Handle & snooze 1h</option>
-                        <option value="snooze_4h">Handle & snooze 4h</option>
-                        <option value="snooze_24h">Handle & snooze 24h</option>
-                        <option value="false_alarm">False alarm (snooze 24h)</option>
-                        <option value="raise_threshold">False alarm + raise +2°F</option>
-                        {hasTenantRelay && (
-                          <option value="notify_tenant">Handle & email tenant</option>
-                        )}
-                        {hasOutboundWebhook && canUseOutboundWebhook && (
-                          <option value="webhook_ping">Handle & ping webhook</option>
-                        )}
-                      </select>
-                      <button class="btn-ghost text-xs" type="submit">Apply</button>
-                    </form>
+                    <AlertAckActions
+                      eventId={event.id}
+                      hasTenantRelay={hasTenantRelay}
+                      canPingWebhook={hasOutboundWebhook && canUseOutboundWebhook}
+                      compact
+                    />
                   ) : (
                     "—"
                   )}
