@@ -5,7 +5,8 @@
  *
  * Usage: pnpm ops:funnel [--days 90] [--exclude a@x.com,b@y.com] [--list]
  *   --days     only count accounts created in the last N days (default: all)
- *   --exclude  extra emails to leave out (E2E_TEST_EMAIL is always excluded)
+ *   --exclude  extra emails to leave out. E2E_TEST_EMAIL and the comma-separated
+ *              FUNNEL_EXCLUDE_EMAILS in .env (your own test accounts) always are.
  *   --list     print one line per account with the furthest step reached
  */
 import { createClient } from "@supabase/supabase-js";
@@ -25,7 +26,11 @@ const argValue = (name) => {
 const days = Number(argValue("--days")) || null;
 const listAccounts = args.includes("--list");
 const excluded = new Set(
-  [process.env.E2E_TEST_EMAIL, ...(argValue("--exclude")?.split(",") ?? [])]
+  [
+    process.env.E2E_TEST_EMAIL,
+    ...(process.env.FUNNEL_EXCLUDE_EMAILS?.split(",") ?? []),
+    ...(argValue("--exclude")?.split(",") ?? []),
+  ]
     .map((e) => e?.trim().toLowerCase())
     .filter(Boolean),
 );
@@ -65,8 +70,8 @@ const userIds = new Set(users.map((u) => u.id));
 
 const [members, devices, feeds, alertSettings, events, subs] = await Promise.all([
   all("household_members", "user_id, household_id, role"),
-  all("devices", "household_id, source, last_seen_at, enabled"),
-  all("user_temp_feeds", "user_id, enabled"),
+  all("devices", "household_id, name, source, created_at, last_seen_at, enabled"),
+  all("user_temp_feeds", "user_id, name, enabled"),
   all("alert_settings", "*"),
   all("alert_events", "user_id, kind, title", (q) => q.not("channels_sent", "eq", "{}")),
   all("stripe_subscriptions", "user_id, status, plan_tier"),
@@ -146,7 +151,7 @@ for (const u of users) {
 
 console.log(
   `Activation funnel: ${users.length} account(s)${days ? ` created in the last ${days} days` : ""}${
-    excluded.size ? `, excluding ${[...excluded].join(", ")}` : ""
+    excluded.size ? `, excluding ${excluded.size} test account(s)` : ""
   }\n`,
 );
 const width = Math.max(...STEPS.map(([label]) => label.length));
@@ -157,6 +162,31 @@ STEPS.forEach(([label], i) => {
   console.log(`  ${label.padEnd(width)}  ${String(n).padStart(4)}  ${String(pct).padStart(3)}%${prev}`);
 });
 if (listAccounts) console.log(`\nAccounts\n${accountLines.join("\n")}`);
+
+// Which Devices → Setup path people pick, and whether it gets to a reading.
+// The first-run chooser names each device after its path (SETUP_VIA_DEVICE_NAMES);
+// renamed devices drop out, so treat this as a floor.
+const SETUP_PATHS = [
+  ["Home Assistant", "Home Assistant"],
+  ["ESPHome", "ESPHome node"],
+  ["MQTT / Node-RED", "MQTT bridge"],
+  ["Board / sketch", "Workshop probe"],
+];
+const includedHouseholds = new Set(users.flatMap((u) => householdsByUser.get(u.id) ?? []));
+const pathDevices = devices.filter(
+  (d) => d.source === "push" && includedHouseholds.has(d.household_id) && Date.parse(d.created_at) >= since,
+);
+const demoFeedUsers = users.filter((u) =>
+  feeds.some((f) => f.user_id === u.id && /example/i.test(f.name ?? "")),
+).length;
+console.log("\nSetup paths (devices named by the first-run chooser)\n");
+const pathWidth = Math.max(...SETUP_PATHS.map(([label]) => label.length));
+for (const [label, name] of SETUP_PATHS) {
+  const created = pathDevices.filter((d) => d.name === name);
+  const reporting = created.filter((d) => d.last_seen_at).length;
+  console.log(`  ${label.padEnd(pathWidth)}  ${String(created.length).padStart(3)} created  ${String(reporting).padStart(3)} reporting`);
+}
+console.log(`  ${"Demo feed".padEnd(pathWidth)}  ${String(demoFeedUsers).padStart(3)} account(s)`);
 
 // Feature usage across every household, to see what nobody touches.
 const [thermostats, apiKeys, inbound, shares, statusPages, pucks, claims, pushSubs, fcm, savedViews, chartShares, referrals] =
