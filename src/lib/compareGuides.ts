@@ -13,6 +13,8 @@ export type CompareGuide = {
   whenOther: string[];
   rows: Array<{ capability: string; thermaltrace: string; other: string }>;
   faqs: Array<{ question: string; answer: string }>;
+  /** Where competitor facts came from, and when they were last checked. */
+  sources?: { checkedOn: string; links: Array<{ label: string; url: string }> };
 };
 
 export const compareGuides: CompareGuide[] = [
@@ -91,7 +93,8 @@ export const compareGuides: CompareGuide[] = [
       { capability: "Hardware", thermaltrace: "BYO ESP / Pico / Arduino", other: "Govee pods" },
       { capability: "Garage / detached spaces", thermaltrace: "Designed for it", other: "Hit-or-miss range" },
       { capability: "Alert channels", thermaltrace: "Email, SMS, push, chat, webhooks + time-to-freeze clock", other: "Mostly app push" },
-      { capability: "Data export", thermaltrace: "CSV / API (paid tiers)", other: "Limited" },
+      { capability: "Price", thermaltrace: "About $25 in parts per probe; Free plan, Member $4/mo, Pro $10/mo", other: "Roughly $35–50 for a Wi-Fi gateway + sensor; no subscription" },
+      { capability: "Data export", thermaltrace: "CSV (Member+) and API (Pro)", other: "Export from the app; 2 years of stored data on some models" },
       { capability: "Multi-user household", thermaltrace: "Included", other: "Account sharing awkward" },
     ],
     faqs: [
@@ -108,9 +111,16 @@ export const compareGuides: CompareGuide[] = [
       {
         question: "Which has better freeze alert channels?",
         answer:
-          "ThermalTrace: email, SMS (Pro), push, chat, and webhooks plus a time-to-freeze clock. Govee alerts are mostly in-app push.",
+          "ThermalTrace: email and chat apps on every plan, SMS, push, and webhooks on Pro, plus a time-to-freeze clock. Govee alerts are app notifications, and you need the Wi-Fi gateway version to get them away from home.",
       },
     ],
+    sources: {
+      checkedOn: "September 2026",
+      links: [
+        { label: "GoveeLife Smart Thermometer R1 (gateway + sensor)", url: "https://us.govee.com/products/goveelife-smart-thermometer-r1" },
+        { label: "Govee Wi-Fi Thermo-Hygrometer", url: "https://us.govee.com/products/wi-fi-temperature-humidity-sensor" },
+      ],
+    },
   },
   {
     slug: "tempest",
@@ -262,51 +272,68 @@ export const compareGuides: CompareGuide[] = [
     slug: "tempstick",
     path: "/compare/tempstick",
     title: "ThermalTrace vs TempStick",
-    headline: "ThermalTrace vs TempStick Wi‑Fi freeze thermometer",
+    headline: "ThermalTrace vs Temp Stick Wi‑Fi sensors",
     description:
-      "Compare ThermalTrace DIY freeze and flood monitoring to TempStick sealed Wi‑Fi thermometers for empty houses, cabins, and unheated garages.",
-    competitor: "TempStick",
+      "Temp Stick vs ThermalTrace for freeze alerts: one-time $149–209 sensors with free SMS, or $25 DIY probes with multi-zone, leak contacts, and Home Assistant.",
+    competitor: "Temp Stick",
     summary:
-      "TempStick is a sealed battery Wi‑Fi thermometer with an app. ThermalTrace is BYO ESP probes, multi-zone freeze and flood contacts, a time-to-freeze clock, and household alerts you control.",
+      "Temp Stick is the easier choice for one or two spaces: a finished battery sensor, no subscription, and free text, email, and app alerts. ThermalTrace is cheaper per sensor and more flexible (several probes, leak contacts, Home Assistant), but you build the sensor and SMS needs Pro.",
     lede:
-      "TempStick (and similar sealed Wi‑Fi freeze thermometers) win when you want zero soldering and a single battery pod with SMS from a vendor app. They are weaker when you need a DS18B20 on a pipe, a wet-contact pad under a water heater, multiple zones, CSV history, or a household that shares one dashboard. ThermalTrace assumes you bring an ESP32 (or similar), then hosts ingest, freeze runway alerts, and flood auto-notify.",
+      "Temp Stick sells finished Wi‑Fi sensors: $149 for the standard model or about $199 for the PRO with a pipe clamp probe, with free text, email, and app alerts and no subscription. That is hard to beat if you want one sensor with zero setup. ThermalTrace suits people who want several probes, a leak contact under the water heater, or readings inside Home Assistant: an ESP32 and probe cost about $25, email and chat alerts are free, and SMS is on Pro.",
     photoId: "frozen-thermometer",
     whenThermalTrace: [
-      "You want pipe-mounted DS18B20 probes, not only ambient air in a battery pod",
-      "You need wet/dry flood contacts plus freeze on the same account",
-      "Household members need shared alerts, CSV/history, or claims evidence",
-      "Detached garage Wi‑Fi works for ESP HTTPS push but Bluetooth pods fail",
+      "You want probes in several spots (pipes, door side, crawlspace) without buying a $149+ sensor for each",
+      "You want wet/dry leak contacts and freeze alerts on one account",
+      "You already run Home Assistant, ESPHome, or MQTT and want readings to flow both ways",
+      "You want forecast freeze warnings, a time-to-freeze estimate, or open-source software you can inspect",
     ],
     whenOther: [
-      "You refuse DIY hardware and want one sealed pod out of the box",
-      "A single ambient reading and vendor app SMS are enough",
-      "You do not need multi-zone probes, flood pads, or data export",
+      "You want a finished sensor with no soldering, flashing, or setup beyond Wi‑Fi",
+      "You need battery power where there is no outlet",
+      "You want free SMS alerts with no subscription",
+      "One or two sensors cover everything you need",
     ],
     rows: [
-      { capability: "Hardware", thermaltrace: "BYO ESP / Pico / Arduino + probes", other: "Sealed battery Wi‑Fi pod" },
-      { capability: "Probe placement", thermaltrace: "Pipe tip, multi-zone, crawlspace", other: "Ambient air at the pod" },
-      { capability: "Flood / leak contacts", thermaltrace: "Yes (auto wet notify)", other: "Usually temp-only" },
-      { capability: "Time-to-freeze clock", thermaltrace: "Yes (space lag vs outdoor)", other: "Threshold / app push" },
-      { capability: "Alert channels", thermaltrace: "Email, SMS, push, chat, webhooks", other: "Vendor app + SMS options" },
-      { capability: "Household / export", thermaltrace: "Invites, share links, CSV (paid)", other: "Account sharing varies" },
+      { capability: "Hardware", thermaltrace: "DIY: ESP32 / Pico / Arduino + DS18B20 or DHT22", other: "Finished battery or AC sensor" },
+      { capability: "Up-front cost", thermaltrace: "About $25 in parts per probe", other: "$149 standard; about $199 PRO with pipe clamp" },
+      { capability: "Ongoing cost", thermaltrace: "Free plan; Member $4/mo; Pro $10/mo for SMS", other: "None" },
+      { capability: "Pipe-mounted probe", thermaltrace: "Yes (waterproof DS18B20 on the pipe)", other: "Yes on PRO (pipe clamp)" },
+      { capability: "Leak / flood contacts", thermaltrace: "Yes, alert automatically when wet", other: "Not listed on the pipe-clamp model" },
+      { capability: "Alert channels", thermaltrace: "Email + chat apps free; SMS, push, webhooks on Pro", other: "SMS, email, app, all free" },
+      { capability: "Sharing and data", thermaltrace: "Household invites, CSV (Member+), API (Pro)", other: "Up to 10 alert contacts, CSV export, public API" },
+      { capability: "Home Assistant", thermaltrace: "Official HACS integration + push from HA", other: "Via their API" },
+      { capability: "Forecast warnings", thermaltrace: "Forecast freeze (Member+), NWS alerts (Pro)", other: "Not listed; threshold alerts" },
     ],
     faqs: [
       {
-        question: "Is TempStick easier to set up than ThermalTrace?",
+        question: "Is Temp Stick easier to set up than ThermalTrace?",
         answer:
-          "Yes for a single sealed pod: power it, join Wi‑Fi, use the vendor app. ThermalTrace needs a push device and a flashed ESP sketch, then you own placement and multi-sensor wiring.",
+          "Yes. A Temp Stick joins Wi‑Fi and works through its app. ThermalTrace needs an ESP32 or similar board flashed with a pre-filled sketch, or an existing Home Assistant, ESPHome, or MQTT setup.",
       },
       {
-        question: "Can ThermalTrace replace TempStick for cabin freeze watch?",
+        question: "Which is cheaper?",
         answer:
-          "Yes if you can run Wi‑Fi ESP ingest. You get pipe probes, optional leak pads, a remaining-hours freeze clock, and household channels. Start from the freeze kit BOM and freeze-season checklist.",
+          "For one sensor with SMS, Temp Stick: $149–209 once versus about $25 in parts plus $100/year for ThermalTrace Pro. For several zones or email-only alerts, ThermalTrace: three probes cost about $75 in parts and the Free plan includes email alerts, versus $447+ for three Temp Sticks.",
       },
       {
-        question: "Do I need both?",
+        question: "Does Temp Stick charge a subscription?",
         answer:
-          "Rarely. Pick TempStick for zero-DIY ambient only. Pick ThermalTrace when pipes, floods, multi-zone, or export matter.",
+          "No. Temp Stick says monitoring, data logging, and text, email, and app alerts are free for the life of the sensor.",
+      },
+      {
+        question: "Can ThermalTrace watch an empty cabin like a Temp Stick?",
+        answer:
+          "Yes, if the cabin has Wi‑Fi and power for an ESP32. Put a waterproof probe on the coldest pipe, add a leak contact if you like, and choose email alerts (free) or SMS (Pro).",
       },
     ],
+    sources: {
+      checkedOn: "September 2026",
+      links: [
+        { label: "Temp Stick Wi‑Fi sensor ($149)", url: "https://tempstick.com/product/tempstick-wifi-temperature-humidity-sensor/" },
+        { label: "Temp Stick PRO with pipe clamp", url: "https://tempstick.com/product/temp-stick-pro-for-frozen-pipe-prevention/" },
+        { label: "Temp Stick common questions (fees, contacts, export, API)", url: "https://tempstick.com/common-questions/" },
+      ],
+    },
   },
 ];
 
