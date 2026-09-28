@@ -10,8 +10,10 @@ import { resolveOutdoorCompareCoords } from "./outdoorCompareCoords";
 import {
   averageOpenMeteoTempF,
   fetchOpenMeteoHourlyHistory,
+  fetchOpenMeteoHourlyWindow,
   openMeteoPointsToChartPoints,
   priorYearWindow,
+  splitOpenMeteoPastAndForecast,
 } from "./openMeteoHistory";
 
 export type PriorYearSource = "local" | "outdoor_estimate" | "none";
@@ -21,6 +23,12 @@ export type PriorYearCompareBundle = {
   source: PriorYearSource;
   outdoorLocationLabel: string | null;
   earliestLocalReadingAt: string | null;
+  /**
+   * With an outdoor-estimate baseline: the same location's outdoor average over
+   * the current window, so the comparison is weather vs weather rather than
+   * indoor probes vs last year's outdoor air. Only set when requested.
+   */
+  thisWindowOutdoorAvgF?: number | null;
 };
 
 export async function fetchPriorYearCompareBundle(
@@ -28,6 +36,7 @@ export async function fetchPriorYearCompareBundle(
   days: number,
   filters: HistoryFilters = {},
   user?: User | null,
+  options: { includeThisWindowOutdoor?: boolean } = {},
 ): Promise<PriorYearCompareBundle> {
   const householdId = await getUserHouseholdId(userId);
 
@@ -78,10 +87,20 @@ export async function fetchPriorYearCompareBundle(
     };
   }
 
+  let thisWindowOutdoorAvgF: number | null | undefined;
+  if (options.includeThisWindowOutdoor) {
+    const recent = await fetchOpenMeteoHourlyWindow(coords.lat, coords.lon, {
+      pastDays: days,
+      forecastDays: 1,
+    });
+    thisWindowOutdoorAvgF = averageOpenMeteoTempF(splitOpenMeteoPastAndForecast(recent).past);
+  }
+
   return {
     points: openMeteoPointsToChartPoints(hourly),
     source: "outdoor_estimate",
     outdoorLocationLabel: coords.label,
     earliestLocalReadingAt,
+    ...(options.includeThisWindowOutdoor ? { thisWindowOutdoorAvgF } : {}),
   };
 }

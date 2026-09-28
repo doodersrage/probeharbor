@@ -54,7 +54,42 @@ describe("fetchWeekCompare", () => {
 
     await fetchWeekCompare("user-1", user, [point()]);
 
-    expect(mockFetchPriorYearCompareBundle).toHaveBeenCalledWith("user-1", 7, {}, user);
+    expect(mockFetchPriorYearCompareBundle).toHaveBeenCalledWith("user-1", 7, {}, user, {
+      includeThisWindowOutdoor: true,
+    });
+  });
+
+  it("compares outdoor with outdoor when last year's baseline is an outdoor estimate", async () => {
+    mockFetchPriorYearCompareBundle.mockResolvedValue({
+      points: [point({ tempf: 70, probeLabel: "Outdoor (estimated)" })],
+      source: "outdoor_estimate",
+      outdoorLocationLabel: "Richmond",
+      earliestLocalReadingAt: null,
+      thisWindowOutdoorAvgF: 65,
+    });
+    const { fetchWeekCompare } = await import("./dashboardInsights");
+
+    const { compare } = await fetchWeekCompare("user-1", null, [point({ tempf: 82 })]);
+
+    expect(compare.thisWeekAvgF).toBe(82);
+    expect(compare.thisWeekOutdoorAvgF).toBe(65);
+    // 65 - 70, not the 82 - 70 indoor-vs-outdoor gap.
+    expect(compare.deltaF).toBe(-5);
+  });
+
+  it("leaves the change blank when this week's outdoor average is missing", async () => {
+    mockFetchPriorYearCompareBundle.mockResolvedValue({
+      points: [point({ tempf: 70 })],
+      source: "outdoor_estimate",
+      outdoorLocationLabel: null,
+      earliestLocalReadingAt: null,
+      thisWindowOutdoorAvgF: null,
+    });
+    const { fetchWeekCompare } = await import("./dashboardInsights");
+
+    const { compare } = await fetchWeekCompare("user-1", null, [point({ tempf: 82 })]);
+
+    expect(compare.deltaF).toBeNull();
   });
 
   it("returns an empty compare and the error when fetching this week's points fails", async () => {

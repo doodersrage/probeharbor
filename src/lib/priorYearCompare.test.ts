@@ -22,7 +22,11 @@ const mockAverageOpenMeteoTempF = vi.fn();
 const mockFetchOpenMeteoHourlyHistory = vi.fn();
 const mockOpenMeteoPointsToChartPoints = vi.fn();
 const mockPriorYearWindow = vi.fn();
+const mockFetchOpenMeteoHourlyWindow = vi.fn();
+const mockSplitOpenMeteoPastAndForecast = vi.fn();
 vi.mock("./openMeteoHistory", () => ({
+  fetchOpenMeteoHourlyWindow: (...a: unknown[]) => mockFetchOpenMeteoHourlyWindow(...a),
+  splitOpenMeteoPastAndForecast: (...a: unknown[]) => mockSplitOpenMeteoPastAndForecast(...a),
   averageOpenMeteoTempF: (...a: unknown[]) => mockAverageOpenMeteoTempF(...a),
   fetchOpenMeteoHourlyHistory: (...a: unknown[]) => mockFetchOpenMeteoHourlyHistory(...a),
   openMeteoPointsToChartPoints: (...a: unknown[]) => mockOpenMeteoPointsToChartPoints(...a),
@@ -37,6 +41,8 @@ beforeEach(() => {
   mockAverageOpenMeteoTempF.mockReset().mockReturnValue(null);
   mockFetchOpenMeteoHourlyHistory.mockReset().mockResolvedValue([]);
   mockOpenMeteoPointsToChartPoints.mockReset().mockReturnValue([]);
+  mockFetchOpenMeteoHourlyWindow.mockReset().mockResolvedValue([]);
+  mockSplitOpenMeteoPastAndForecast.mockReset().mockImplementation((points: unknown[]) => ({ past: points, forecast: [] }));
   mockPriorYearWindow.mockReset().mockReturnValue({ start: new Date("2023-06-08"), end: new Date("2023-06-15") });
 });
 
@@ -142,6 +148,25 @@ describe("fetchPriorYearCompareBundle", () => {
       outdoorLocationLabel: "Denver",
       earliestLocalReadingAt: "2023-01-01T00:00:00.000Z",
     });
+  });
+
+  it("adds this window's outdoor average only when asked", async () => {
+    mockResolveOutdoorCompareCoords.mockResolvedValue({ lat: 39.7, lon: -104.9, label: "Denver" });
+    mockFetchOpenMeteoHourlyHistory.mockResolvedValue([{ timestamp: "t", tempf: 30 }]);
+    const recent = [{ timestamp: "r", tempf: 50 }];
+    mockFetchOpenMeteoHourlyWindow.mockResolvedValue(recent);
+    mockAverageOpenMeteoTempF.mockImplementation((points: Array<{ tempf: number }>) => points[0]?.tempf ?? null);
+    const { fetchPriorYearCompareBundle } = await import("./priorYearCompare");
+
+    const plain = await fetchPriorYearCompareBundle("user-1", 7);
+    expect(plain).not.toHaveProperty("thisWindowOutdoorAvgF");
+    expect(mockFetchOpenMeteoHourlyWindow).not.toHaveBeenCalled();
+
+    const withOutdoor = await fetchPriorYearCompareBundle("user-1", 7, {}, null, {
+      includeThisWindowOutdoor: true,
+    });
+    expect(mockFetchOpenMeteoHourlyWindow).toHaveBeenCalledWith(39.7, -104.9, { pastDays: 7, forecastDays: 1 });
+    expect(withOutdoor.thisWindowOutdoorAvgF).toBe(50);
   });
 
   it("passes the user through to resolveOutdoorCompareCoords", async () => {

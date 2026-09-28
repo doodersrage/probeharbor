@@ -26,13 +26,9 @@ const priorYearLabel = priorYearIsOutdoor
 <DashboardCard>
   <h2 class="card-title">This week vs last year</h2>
   <p class="card-subtitle mb-4">
-    7-day average temperature compared to the same window one year ago.
-    {priorYearIsOutdoor && (
-      <>
-        {" "}
-        Prior-year line uses estimated outdoor temps (Open-Meteo), not your probe readings.
-      </>
-    )}
+    {priorYearIsOutdoor
+      ? "No probe data from last year yet, so the change compares outdoor weather (Open-Meteo) this week with the same week last year."
+      : "7-day average temperature compared to the same window one year ago."}
   </p>
   {compare.thisWeekAvgF == null ? (
     <p class="mb-0 text-sm text-muted-foreground">Not enough readings this week yet.</p>
@@ -40,7 +36,7 @@ const priorYearLabel = priorYearIsOutdoor
     <>
       <div class="stat-grid">
         <article class="stat-item">
-          <span class="stat-label">This week</span>
+          <span class="stat-label">{priorYearIsOutdoor ? "Your probes this week" : "This week"}</span>
           <p class="stat-value">{formatTemperature(compare.thisWeekAvgF, useCelsius, 1)}</p>
           <p class="stat-detail">{compare.sampleCount} samples</p>
         </article>
@@ -56,16 +52,20 @@ const priorYearLabel = priorYearIsOutdoor
           )}
         </article>
         <article class="stat-item">
-          <span class="stat-label">Change</span>
+          <span class="stat-label">{priorYearIsOutdoor ? "Outdoor change" : "Change"}</span>
           <p class="stat-value">
             {compare.deltaF != null ? formatDeltaF(compare.deltaF, useCelsius) : "—"}
           </p>
           <p class="stat-detail">
-            {compare.deltaF != null && compare.deltaF < 0
-              ? priorYearIsOutdoor
-                ? "Cooler than outdoor baseline"
-                : "Colder than last year"
-              : "Warmer or similar"}
+            {priorYearIsOutdoor
+              ? compare.thisWeekOutdoorAvgF != null
+                ? `Outdoor this week ${formatTemperature(compare.thisWeekOutdoorAvgF, useCelsius, 1)}`
+                : "This week's outdoor average is unavailable"
+              : compare.deltaF == null
+                ? ""
+                : compare.deltaF < 0
+                  ? "Colder than last year"
+                  : "Warmer or similar"}
           </p>
         </article>
       </div>

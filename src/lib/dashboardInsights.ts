@@ -27,7 +27,9 @@ export async function fetchWeekCompare(
       ? { points: thisWeekPoints, error: null as string | null }
       : await fetchGarageTempChartData(userId, 7);
 
-  const priorYearBundle = await fetchPriorYearCompareBundle(userId, 7, {}, user);
+  const priorYearBundle = await fetchPriorYearCompareBundle(userId, 7, {}, user, {
+    includeThisWindowOutdoor: true,
+  });
 
   if (thisWeekResult.error) {
     return { compare: { ...EMPTY_COMPARE }, error: thisWeekResult.error };
@@ -35,8 +37,15 @@ export async function fetchWeekCompare(
 
   const base = compareWeekAverages(thisWeekResult.points, priorYearBundle.points);
   const priorYearAvgF = base.priorYearAvgF;
-  const deltaF =
-    base.thisWeekAvgF != null && priorYearAvgF != null
+  const outdoorBaseline = priorYearBundle.source === "outdoor_estimate";
+  const thisWeekOutdoorAvgF = outdoorBaseline ? (priorYearBundle.thisWindowOutdoorAvgF ?? null) : undefined;
+  // Last year's baseline is outdoor air, so compare it with this week's outdoor
+  // air; probes vs outdoor mostly measures insulation, not a change.
+  const deltaF = outdoorBaseline
+    ? thisWeekOutdoorAvgF != null && priorYearAvgF != null
+      ? thisWeekOutdoorAvgF - priorYearAvgF
+      : null
+    : base.thisWeekAvgF != null && priorYearAvgF != null
       ? base.thisWeekAvgF - priorYearAvgF
       : null;
 
@@ -48,6 +57,7 @@ export async function fetchWeekCompare(
       priorYearSource: priorYearBundle.source,
       priorYearOutdoorLabel: priorYearBundle.outdoorLocationLabel,
       earliestLocalReadingAt: priorYearBundle.earliestLocalReadingAt,
+      ...(outdoorBaseline ? { thisWeekOutdoorAvgF } : {}),
     },
     error: null,
   };

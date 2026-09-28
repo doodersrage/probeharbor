@@ -11,6 +11,8 @@ export type WeekCompareResult = WeekCompareCore & {
   priorYearSource: "local" | "outdoor_estimate" | "none";
   priorYearOutdoorLabel: string | null;
   earliestLocalReadingAt: string | null;
+  /** Outdoor average this week, set only with an outdoor-estimate baseline. */
+  thisWeekOutdoorAvgF?: number | null;
 };
 
 export function averageTempF(points: ChartPoint[]): number | null {
