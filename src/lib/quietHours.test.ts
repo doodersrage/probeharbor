@@ -13,15 +13,18 @@ describe("quiet hours SMS critical", () => {
     quietHoursSmsCritical: true,
   };
 
+  // Fixed clock: the 00:00–23:59 window excludes the last minute of the UTC day.
+  const noon = new Date("2026-01-15T12:00:00Z");
+
   it("suppresses non-SMS channels during quiet hours", () => {
-    expect(shouldSuppressForQuietHours(base, "threshold")).toBe(true);
+    expect(shouldSuppressForQuietHours(base, "threshold", noon)).toBe(true);
   });
 
   it("allows SMS for threshold/forecast when sms critical is on", () => {
-    expect(quietHoursAllowsSmsCritical(base, "threshold")).toBe(true);
-    expect(quietHoursAllowsSmsCritical(base, "forecast")).toBe(true);
-    expect(quietHoursAllowsSmsCritical(base, "flood")).toBe(true);
-    expect(quietHoursAllowsSmsCritical(base, "rate")).toBe(false);
+    expect(quietHoursAllowsSmsCritical(base, "threshold", noon)).toBe(true);
+    expect(quietHoursAllowsSmsCritical(base, "forecast", noon)).toBe(true);
+    expect(quietHoursAllowsSmsCritical(base, "flood", noon)).toBe(true);
+    expect(quietHoursAllowsSmsCritical(base, "rate", noon)).toBe(false);
   });
 
   it("does not allow SMS critical when setting is off", () => {
@@ -29,6 +32,7 @@ describe("quiet hours SMS critical", () => {
       quietHoursAllowsSmsCritical(
         { ...base, quietHoursSmsCritical: false },
         "threshold",
+        noon,
       ),
     ).toBe(false);
   });
