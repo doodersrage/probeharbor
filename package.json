@@ -32,6 +32,8 @@
     "lint:fix": "pnpm dlx @biomejs/biome@2.5.12 check --write .",
     "format": "pnpm dlx @biomejs/biome@2.5.12 format --write .",
     "audit:stripe": "node --env-file=.env scripts/audit-stripe-prices.mjs",
+    "audit:billing": "node --env-file=.env scripts/audit-billing.mjs",
+    "ops:funnel": "node --env-file=.env scripts/ops-funnel.mjs",
     "stripe:portal": "node --env-file=.env scripts/configure-stripe-portal.mjs",
     "smoke:portfolio-billing": "node --env-file=.env scripts/smoke-portfolio-billing.mjs",
     "generate:vapid": "node scripts/generate-vapid-keys.mjs",
