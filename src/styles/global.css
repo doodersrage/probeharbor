@@ -23,6 +23,8 @@
   --color-sage: rgb(255 255 255 / 0.1);
 
   --color-surface-muted: #1a2230;
+  /* Alias for muted fills (read-only fields, save bars); follows the theme. */
+  --color-bg-muted: var(--color-surface-muted);
   --color-border: rgb(255 255 255 / 0.08);
   --color-border-strong: rgb(255 255 255 / 0.14);
   --color-text: #f8fafc;
