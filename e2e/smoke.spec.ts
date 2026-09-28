@@ -84,10 +84,17 @@ test.describe("public smoke", () => {
     await expect(page.getByRole("link", { name: /See plans & pricing/i }).first()).toBeVisible();
   });
 
-  test("case study CTA links to pricing", async ({ page }) => {
+  test("scenario page is labeled and links to pricing", async ({ page }) => {
     await page.goto("/stories/garage-freeze-alert");
-    await expect(page.getByRole("heading", { name: /pipes froze/i })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: /heater trips/i })).toBeVisible();
+    await expect(page.getByText(/Illustrative scenario/i)).toBeVisible();
     await expect(page.getByRole("link", { name: /See plans & pricing/i })).toBeVisible();
+  });
+
+  test("answer page leads with the question and a short answer", async ({ page }) => {
+    await page.goto("/answers/garage-pipe-freeze-temperature");
+    await expect(page.getByRole("heading", { level: 1, name: /pipes freeze in a garage/i })).toBeVisible();
+    await expect(page.getByText(/about 20°F outside/i).first()).toBeVisible();
   });
 
   test("system status page loads", async ({ page }) => {
