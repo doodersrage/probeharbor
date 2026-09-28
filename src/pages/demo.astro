@@ -6,6 +6,7 @@ import Layout from "../layouts/Layout.astro";
 import PageHeader from "../components/PageHeader.astro";
 import DemoTempsPanel from "../components/DemoTempsPanel";
 import WeatherPanel from "../components/WeatherPanel";
+import DemoHistoryChart from "../components/DemoHistoryChart";
 import HomeStatusChip from "../components/HomeStatusChip.astro";
 import FaqSection from "../components/FaqSection.astro";
 import ProductScreenshot from "../components/ProductScreenshot.astro";
@@ -109,6 +110,12 @@ const schema = [
         <DemoTempsPanel client:visible intervalMs={15000} />
         <WeatherPanel client:visible cityId={null} guest />
       </div>
+      <div class="mt-6" id="demo-history">
+        <DemoHistoryChart client:visible />
+        <p class="mt-2 mb-0 text-xs text-[var(--color-text-muted)]">
+          Probe curves are the demo shop model run over the past week's real hourly weather; the dashed line is outdoor temperature.
+        </p>
+      </div>
     </section>
 
     <ProductScreenshot
@@ -162,7 +169,7 @@ const schema = [
           <div>
             <h3 class="home-step-title">Create a push device</h3>
             <p class="home-step-copy">
-              Sign up and open Devices, or use <strong>Try without hardware</strong> on Overview for the demo pull feed. Copy the ingest URL or QR from the 30-minute callout.
+              Sign up and pick a path on Devices: Home Assistant, ESPHome, or MQTT get a copy-paste snippet; a board gets a pre-filled sketch; no hardware gets a one-click demo feed.
             </p>
           </div>
         </li>

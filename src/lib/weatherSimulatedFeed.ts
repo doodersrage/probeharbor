@@ -70,8 +70,10 @@ function round1(value: number): number {
 export function deriveSunIntensity(
   weather: Pick<WeatherSnapshot, "cloudCover">,
   now: Date,
+  /** Hour of day at the weather location; defaults to the runtime's clock. */
+  localHour?: number,
 ): number {
-  const hour = now.getHours() + now.getMinutes() / 60;
+  const hour = localHour ?? now.getHours() + now.getMinutes() / 60;
   const daylight = Math.max(0, Math.sin(((hour - 6) / 12) * Math.PI));
   const clear = (100 - clamp(weather.cloudCover, 0, 100)) / 100;
   return Math.round(clamp(daylight * clear * 100, 0, 100));
