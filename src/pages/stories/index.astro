@@ -11,20 +11,20 @@ import {
   resolveSiteUrl,
 } from "../../lib/schemaMarkup";
 
-const title = "Customer stories";
+const title = "Freeze, leak, and heat scenarios";
 const description =
-  "Real ThermalTrace freeze, flood, and heat alerts from garages, workshops, cabins, and near-miss pipe saves using ESP/Arduino probes.";
+  "Illustrative walkthroughs of ThermalTrace freeze, leak, and heat alerts in garages, crawlspaces, cabins, and closets: the setup, the timeline, and why each alert matters.";
 
 const siteUrl = resolveSiteUrl(Astro.site);
 const pageUrl = resolvePageUrl(siteUrl, "/stories");
 const schema = [
   getBreadcrumbSchema(siteUrl, [
     { name: "Home", path: "/" },
-    { name: "Customer stories", path: "/stories" },
+    { name: "Scenarios", path: "/stories" },
   ]),
   getItemListSchema({
     pageUrl,
-    name: "ThermalTrace customer stories",
+    name: "ThermalTrace scenarios",
     description,
     items: stories.map((story) => ({
       name: story.title,
@@ -41,9 +41,9 @@ const schema = [
 >
   <div class="page-shell page-stack">
     <PageHeader
-      kicker="Customer stories"
-      title="Alerts that paid for themselves"
-      lede="How homeowners use ThermalTrace freeze, flood/leak, and heat alerts, with ESP32, Arduino, and Pro SMS, to catch heater failures, cabin outages, wet pads, and cold corners before pipes freeze."
+      kicker="Scenarios"
+      title="What an alert looks like when something fails"
+      lede="Illustrative walkthroughs, not customer accounts: a heater trips, a vent sticks open, a pan goes wet. Each shows the probe setup, how the alerts play out, and why it matters."
     >
       <a slot="actions" class="btn-primary" href="/register?next=/dashboard/devices">Start free</a>
       <a slot="actions" class="btn-secondary" href="/pricing">See plans</a>
@@ -55,11 +55,11 @@ const schema = [
       {
         stories.map((story) => (
           <section class="card">
-            <p class="text-sm text-[var(--color-text-muted)] mb-2">{story.location}</p>
+            <p class="text-sm text-[var(--color-text-muted)] mb-2">Scenario · {story.setting}</p>
             <h2 class="card-title">{story.title}</h2>
             <p class="card-subtitle">{story.description}</p>
             <p class="mb-0">
-              <a class="btn-primary" href={story.path}>Read story</a>
+              <a class="btn-primary" href={story.path}>Read scenario</a>
             </p>
           </section>
         ))

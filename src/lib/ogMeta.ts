@@ -121,7 +121,7 @@ export function resolveOgImageAlt(pathname: string): string {
     return `${BRAND_NAME} guides for probes, firmware, freeze and flood/leak alerts, and ingest`;
   }
   if (path.startsWith("/stories")) {
-    return `${BRAND_NAME} customer stories: freeze-risk and leak alerts before pipes and pads take damage`;
+    return `${BRAND_NAME} scenarios: how freeze, leak, and heat alerts play out before pipes and pads take damage`;
   }
   if (path.startsWith("/docs")) {
     return `${BRAND_NAME} HTTP API: ingest, metrics, webhooks, and OpenAPI`;

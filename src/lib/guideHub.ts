@@ -87,13 +87,13 @@ const GUIDE_HUB_DEFS: GuideHubCategoryDef[] = [
       { href: "/about/alert-channel-cookbook", slug: "alert-channel-cookbook" },
       {
         href: "/stories/garage-freeze-alert",
-        label: "Freeze case study",
-        summary: "How a probe curve caught a cold night before pipes froze.",
+        label: "Freeze scenario",
+        summary: "What a garage heater failure at 2 a.m. looks like, alert by alert.",
       },
       {
         href: "/stories/water-heater-pad-leak",
-        label: "Leak case study",
-        summary: "How a wet contact under a garage water heater caught a drip before it soaked the slab.",
+        label: "Leak scenario",
+        summary: "How a wet contact under a garage water heater flags a drip before it soaks the slab.",
       },
     ],
   },

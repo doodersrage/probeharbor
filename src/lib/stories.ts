@@ -1,17 +1,24 @@
+/**
+ * Illustrative scenarios, not customer accounts: each one walks through how
+ * ThermalTrace behaves in a common failure (heater trip, stuck vent, wet pan)
+ * using real features and plan limits. Keep them labeled as scenarios and never
+ * attribute quotes, names, or results to real people.
+ */
 export type Story = {
   slug: string;
   path: string;
   headline: string;
   title: string;
   description: string;
-  quote: string;
-  location: string;
+  /** The kind of space, e.g. "Attached garage, cold climate". Not a real location. */
+  setting: string;
   datePublished: string;
   ogImage: string;
   /** Optional Creative Commons hero from aboutPhotos (not used on dashboard). */
   photoId?: import("./aboutPhotos").AboutPhotoId;
   setup: string[];
   timeline: Array<{ time: string; detail: string }>;
+  /** Why the scenario matters: the takeaway, not a claimed result. */
   outcome: string;
   faqs: Array<{ question: string; answer: string }>;
 };
@@ -20,257 +27,250 @@ export const stories: Story[] = [
   {
     slug: "garage-freeze-alert",
     path: "/stories/garage-freeze-alert",
-    headline: "Garage freeze alert case study",
-    title: "We got the text before the pipes froze",
+    headline: "Garage heater failure scenario",
+    title: "A garage heater trips at 2 a.m.",
     description:
-      "How a Minneapolis homeowner avoided pipe damage with ThermalTrace freeze alerts, ESP32 ingest, and Pro SMS when a space heater failed overnight.",
-    quote: "We got the text before the pipes froze",
-    location: "Minneapolis, MN",
+      "Scenario: a garage heater fails overnight in a cold snap. How an ESP32 probe, a 34°F freeze threshold, and SMS alerts buy time before pipes freeze.",
+    setting: "Heated garage with plumbing, cold climate",
     datePublished: "2025-11-01",
     ogImage: "/og-story-freeze.jpg",
     setup: [
       "ESP32 + DHT22 pushing every 5 minutes to ThermalTrace ingest",
-      "Freeze threshold at 34°F with Pro SMS + Telegram routing",
-      "Weekly digest for the household; share link for a neighbor who watches the house",
+      "Freeze threshold at 34°F with SMS (Pro) and Telegram routing",
+      "Weekly digest for the household; family live link for a neighbor who watches the house",
     ],
     timeline: [
-      { time: "2:14 a.m.", detail: "Garage crossed 33°F; SMS to both owners + Telegram family channel." },
-      { time: "2:22 a.m.", detail: "Owner restarted the space heater remotely via a smart plug." },
-      { time: "3:05 a.m.", detail: "Temperature recovering; no pipe damage, no emergency plumber." },
+      { time: "2:14 a.m.", detail: "The garage crosses 34°F; ThermalTrace texts both owners and posts to a Telegram family channel." },
+      { time: "2:22 a.m.", detail: "One owner power-cycles the heater through a smart plug." },
+      { time: "3:05 a.m.", detail: "The chart shows the temperature recovering, well before the pipes reach 32°F." },
     ],
     outcome:
-      "One failed heater overnight would have meant a burst pipe. The alert paid for a year of Pro in a single night.",
+      "A heater failure is only a disaster if nobody finds out until morning. The threshold sits a couple of degrees above freezing so there is time to respond, and SMS is what wakes you up at 2 a.m.; email alone is easy to sleep through.",
     faqs: [
       {
-        question: "What alert channels caught the freeze?",
+        question: "Which alert channels wake you up overnight?",
         answer:
-          "Pro SMS to both owners plus Telegram to a family channel when the garage crossed 33°F at 2:14 a.m.",
+          "SMS and push (Pro) are the ones that reliably wake people up. Email and chat channels like Telegram are on every plan and work well as a second route.",
       },
       {
-        question: "What hardware was used?",
+        question: "What hardware does this take?",
         answer:
-          "An ESP32 with a DHT22 pushing every five minutes to ThermalTrace ingest, with a 34°F freeze threshold.",
+          "An ESP32 with a DHT22 or waterproof DS18B20 pushing every few minutes to ThermalTrace ingest, and a freeze threshold around 34°F.",
       },
     ],
   },
   {
     slug: "cabin-winter-watch",
     path: "/stories/cabin-winter-watch",
-    headline: "Cabin winter watch case study",
-    title: "Weekend cabin, weekday peace of mind",
+    headline: "Empty cabin furnace outage scenario",
+    title: "The cabin furnace quits mid-week",
     description:
-      "How a Vermont cabin owner used ThermalTrace email and Pro push alerts to catch a furnace outage mid-week before pipes froze in an empty house.",
-    quote: "The cabin texted us from three hours away",
-    location: "Stowe, VT",
+      "Scenario: a power blip resets the furnace in an empty winter cabin. A crawlspace probe and email and push alerts catch it days before your next visit.",
+    setting: "Vacation cabin, empty most of the week",
     datePublished: "2025-12-12",
     ogImage: "/og-story-freeze.jpg",
     photoId: "snow-cabins",
     setup: [
-      "Wi-Fi ESP8266 near the mechanical room, two probes (indoor + crawlspace)",
-      "Pro plan with email + browser push; freeze threshold 36°F",
-      "Household invite for a local friend as backup responder",
+      "Wi-Fi ESP8266 near the mechanical room, two probes (living space + crawlspace)",
+      "Email plus browser push (Pro); freeze threshold 36°F",
+      "A local friend invited to the household as a backup responder",
     ],
     timeline: [
-      { time: "Tue 11:40 a.m.", detail: "Crawlspace dropped below threshold after a power blip reset the furnace." },
-      { time: "Tue 11:41 a.m.", detail: "Push + email fired; owner called the local friend." },
-      { time: "Tue 1:10 p.m.", detail: "Friend reset the furnace; temps climbing before evening cold set in." },
+      { time: "Tue 11:40 a.m.", detail: "A power blip resets the furnace; the crawlspace drifts below 36°F." },
+      { time: "Tue 11:41 a.m.", detail: "Push and email go out; the owner calls the local friend." },
+      { time: "Tue 1:10 p.m.", detail: "The friend resets the furnace and the chart climbs before the evening cold." },
     ],
     outcome:
-      "Empty cabins fail silently. A mid-week alert beat a Friday arrival to frozen pipes and a flooded crawlspace.",
+      "Empty buildings fail silently. The value is the lead time: a Tuesday alert instead of discovering frozen pipes on Friday.",
     faqs: [
       {
         question: "Do you need SMS for a cabin?",
         answer:
-          "Email and Pro browser push were enough here because someone could respond within two hours. SMS helps when you’re offline hiking.",
+          "Not always. Email and push work when someone can respond within a couple of hours. SMS (Pro) helps when you may be away from a data connection.",
       },
       {
         question: "How many probes?",
         answer:
-          "Two: living space for comfort context, crawlspace for the freeze risk that actually matters.",
+          "Two: one in the living space for context, one in the crawlspace where the freeze risk to pipes actually is.",
       },
     ],
   },
   {
     slug: "server-closet-heat",
     path: "/stories/server-closet-heat",
-    headline: "Server closet heat case study",
-    title: "Homelab heat spike before the weekend",
+    headline: "Server closet overheating scenario",
+    title: "A closet fan dies before the weekend",
     description:
-      "A Denver homelabber caught a stuck garage-door-adjacent server closet fan with ThermalTrace high-temp alerts and webhook → Home Assistant.",
-    quote: "The closet was cooking and we were out of town",
-    location: "Denver, CO",
+      "Scenario: a homelab closet fan fails while you're away. A ThermalTrace heat rule and a Home Assistant webhook power down gear before it overheats.",
+    setting: "Homelab closet next to a garage",
     datePublished: "2026-01-18",
     ogImage: "/og-dashboard.jpg",
     photoId: "server-rack",
     setup: [
-      "Existing ESP32 already on ThermalTrace for the garage; second probe in the closet",
-      "High-temp threshold 95°F plus freeze watch on the garage side",
-      "Pro webhook into Home Assistant to cut a smart plug if temps stayed high (today: use the HACS integration or outbound webhook blueprint)",
+      "An ESP32 already watching the garage; a second probe in the closet",
+      "Heat rule at 95°F (Alerts → Rules → Add heat rule) alongside freeze watch on the garage side",
+      "Outbound webhook (Pro) into Home Assistant to switch off a smart plug",
     ],
     timeline: [
-      { time: "Fri 6:05 p.m.", detail: "Closet hit 96°F after a fan failed; webhook tripped HA automation." },
-      { time: "Fri 6:06 p.m.", detail: "Non-critical gear powered down; SMS confirmed the cutover." },
-      { time: "Sat a.m.", detail: "Owner replaced the fan; no cooked NAS, no melt smell." },
+      { time: "Fri 6:05 p.m.", detail: "The closet reaches 96°F after a fan fails; the heat rule fires and the webhook reaches Home Assistant." },
+      { time: "Fri 6:06 p.m.", detail: "An automation powers down non-critical gear; SMS confirms the alert." },
+      { time: "Sat morning", detail: "The owner replaces the fan; the history chart shows how fast the closet heated." },
     ],
     outcome:
-      "Same stack that watches freeze risk also watches heat. One ingest path, two failure modes covered.",
+      "The same probes and ingest path cover both failure modes: freeze on the garage side, heat in the closet.",
     faqs: [
       {
         question: "Is ThermalTrace only for cold?",
         answer:
-          "No: thresholds work both ways. Freeze is the headline risk for garages; heat matters for closets and workshops.",
+          "No. Freeze alerts are built in, and heat uses a rule (Temperature above, default 95°F) that you add in one click under Alerts → Rules.",
       },
       {
-        question: "How did Home Assistant fit?",
+        question: "How does Home Assistant fit?",
         answer:
-          "Pro outbound webhooks POST alert JSON into Home Assistant. An automation switched a smart plug when closet temp stayed elevated. Today you can also use the official HACS integration for share-link sensors and snooze services, see thermaltrace.dev/integrations/home-assistant.",
+          "Pro outbound webhooks POST alert JSON to Home Assistant, where an automation can switch a smart plug. The official HACS integration also exposes readings as sensors and adds snooze services; see thermaltrace.dev/integrations/home-assistant.",
       },
     ],
   },
   {
     slug: "pipe-near-miss",
     path: "/stories/pipe-near-miss",
-    headline: "Attached garage pipe near-miss",
-    title: "Thirty-four degrees and a near miss",
+    headline: "Attached garage cold corner scenario",
+    title: "The same corner dips below 34°F every clear night",
     description:
-      "An Ohio attached-garage household used ThermalTrace history and a 34°F alert to catch a drafty door seal before supply lines iced.",
-    quote: "History showed the cold corner every clear night",
-    location: "Columbus, OH",
+      "Scenario: repeat freeze alerts in an attached garage. How ThermalTrace history and CSV export point to a drafty door seal before supply lines ice.",
+    setting: "Attached garage with a water heater",
     datePublished: "2026-02-04",
     ogImage: "/og-story-freeze.jpg",
     photoId: "basement-pex-pipes",
     setup: [
-      "Arduino + DHT22 on a shelf above the water heater in the attached garage",
-      "Free plan email alerts at 34°F while evaluating; upgraded to Member for CSV",
-      "Compared indoor garage vs outdoor weather on the dashboard",
+      "Arduino + DHT22 on a shelf above the water heater",
+      "Email alerts at 34°F on the Free plan; Member for CSV export",
+      "Indoor garage compared against outdoor weather on the dashboard",
     ],
     timeline: [
-      { time: "Week 1", detail: "Alerts fired on clear nights; owner assumed ‘just cold air.’" },
-      { time: "Week 2", detail: "CSV export showed the same corner dipping first every time." },
-      { time: "Week 3", detail: "Weatherstripped the door; nights stayed above threshold." },
+      { time: "Week 1", detail: "Alerts fire on clear, still nights; it looks like ordinary cold." },
+      { time: "Week 2", detail: "History and CSV show the door-side probe dipping first every time." },
+      { time: "Week 3", detail: "After weatherstripping the door, nights stay above the threshold." },
     ],
     outcome:
-      "The alert was the tip; history was the proof. Fixing the seal cost less than one thawed-pipe deductible.",
+      "An alert tells you something is wrong; history tells you where. A cheap seal fix beats waiting for the night it gets cold enough to split a pipe.",
     faqs: [
       {
-        question: "Was Free enough?",
+        question: "Is the Free plan enough for this?",
         answer:
-          "Free caught the problem with email. Member CSV made the cold-corner pattern obvious enough to fix the door.",
+          "Free email alerts catch the problem. Member adds CSV export and longer history, which makes a repeating pattern easy to see.",
       },
       {
-        question: "Attached garages still freeze?",
+        question: "Do attached garages freeze?",
         answer:
-          "Yes, especially against exterior walls and leaky doors. ‘Attached’ is not the same as ‘conditioned.’",
+          "Yes, especially along exterior walls and leaky doors. Attached is not the same as heated.",
       },
     ],
   },
   {
     slug: "crawlspace-pipe-watch",
     path: "/stories/crawlspace-pipe-watch",
-    headline: "Crawlspace pipe watch case study",
-    title: "The crawlspace texted before the supply line iced",
+    headline: "Crawlspace vent scenario",
+    title: "A crawlspace vent sticks open overnight",
     description:
-      "How a Michigan homeowner used a DS18B20 in the crawlspace with ThermalTrace freeze alerts to catch a drafty vent before supply lines froze.",
-    quote: "The crawlspace texted before the supply line iced",
-    location: "Grand Rapids, MI",
+      "Scenario: a foundation vent sticks open on a cold night. How a waterproof DS18B20 on the supply line and ThermalTrace freeze alerts give you time to close it.",
+    setting: "Crawlspace under a house, cold climate",
     datePublished: "2026-02-20",
     ogImage: "/og-story-freeze.jpg",
     photoId: "basement-pex-pipes",
     setup: [
-      "ESP32 + waterproof DS18B20 zip-tied near the main supply run in the crawlspace",
-      "Freeze threshold 36°F with email + Pro SMS",
-      "Share link for a sibling who lives closer and can close the vent",
+      "ESP32 + waterproof DS18B20 zip-tied near the main supply run",
+      "Freeze threshold 36°F with email and SMS (Pro)",
+      "Family live link for a relative who lives nearby",
     ],
     timeline: [
-      { time: "Sun 4:05 a.m.", detail: "Crawlspace crossed 35°F after a foundation vent stuck open overnight." },
-      { time: "Sun 4:06 a.m.", detail: "SMS to owner + email; sibling drove over with a flashlight." },
-      { time: "Sun 5:20 a.m.", detail: "Vent closed and insulated; temps climbing before morning low." },
+      { time: "Sun 4:05 a.m.", detail: "The crawlspace crosses 36°F with a foundation vent stuck open." },
+      { time: "Sun 4:06 a.m.", detail: "SMS and email go out; the nearby relative checks the live link and heads over." },
+      { time: "Sun 5:20 a.m.", detail: "The vent is closed and the chart starts climbing before the morning low." },
     ],
     outcome:
-      "Crawlspaces fail silently. A probe on the pipe run beat a thawed-pipe deductible by hours.",
+      "Nobody checks a crawlspace at 4 a.m. A probe on the pipe run, not at the hatch, is what turns a stuck vent into a quick fix.",
     faqs: [
       {
         question: "Where should the crawlspace probe go?",
         answer:
-          "On or near the coldest supply line, not just the access hatch. Pair with a living-space probe if you want comfort context upstairs.",
+          "On or next to the coldest supply line, not at the access hatch. Add a living-space probe if you want context from upstairs.",
       },
       {
-        question: "Is humidity enough?",
+        question: "Is a humidity sensor enough?",
         answer:
-          "Humidity helps spot moisture, but freeze risk is temperature at the pipes. Use a waterproof probe and a threshold a few degrees above 32°F.",
+          "No. Humidity helps spot moisture, but freeze risk is the temperature at the pipes. Use a waterproof probe and a threshold a few degrees above 32°F.",
       },
     ],
   },
   {
     slug: "detached-garage-winter",
     path: "/stories/detached-garage-winter",
-    headline: "Detached garage winter case study",
-    title: "Detached garage, attached anxiety",
+    headline: "Detached shop heater scenario",
+    title: "A forecast warning, then a tripped heater",
     description:
-      "A Colorado detached garage used ThermalTrace email and forecast alerts to catch a failed shop heater before a utility sink line froze.",
-    quote: "Detached does not mean disposable",
-    location: "Fort Collins, CO",
+      "Scenario: a detached shop heater trips its GFCI on a forecast cold night. Forecast warnings cover the day before; threshold alerts cover the night of.",
+    setting: "Detached shop with a utility sink",
     datePublished: "2026-03-01",
     ogImage: "/og-story-freeze.jpg",
     setup: [
-      "Wi-Fi ESP32 on a shelf above the utility sink; second probe near the overhead door",
-      "Member plan with forecast freeze warnings + email",
-      "Vacation mode cleared before a week-long trip",
+      "Wi-Fi ESP32 above the utility sink; second probe near the overhead door",
+      "Forecast freeze warnings (Member) plus email",
+      "Vacation mode off before a trip, so alerts keep flowing",
     ],
     timeline: [
-      { time: "Wed forecast", detail: "Forecast alert flagged a Thursday overnight low; owner confirmed heater was on." },
-      { time: "Thu 1:50 a.m.", detail: "Shop crossed 34°F after the heater tripped a GFCI; email fired." },
-      { time: "Thu 2:15 a.m.", detail: "Owner reset the circuit remotely via a smart plug; sink line never iced." },
+      { time: "Wed", detail: "A forecast warning flags Thursday's overnight low; the owner confirms the heater is on." },
+      { time: "Thu 1:50 a.m.", detail: "The heater trips its GFCI; the shop crosses 34°F and the email goes out." },
+      { time: "Thu 2:15 a.m.", detail: "The owner resets the circuit through a smart plug before the sink line freezes." },
     ],
     outcome:
-      "Detached garages lose heat fast. Forecast + threshold alerts covered both the planning window and the failure night.",
+      "Detached buildings lose heat fast. A forecast warning covers the planning window; the threshold alert covers the failure itself.",
     faqs: [
       {
         question: "Do detached garages need two probes?",
         answer:
-          "One near pipes or the utility sink is enough to start. A second near the door catches drafts that the back wall never sees.",
+          "One near the pipes or sink is enough to start. A second near the door catches drafts the back wall never sees.",
       },
       {
-        question: "Is Free enough for a detached bay?",
+        question: "Is Free enough for a detached shop?",
         answer:
-          "Free email works. Member forecast alerts help when you are traveling and want a heads-up before the overnight low.",
+          "Free email alerts work. Member adds forecast warnings, which help when you are away and want notice before the overnight low.",
       },
     ],
   },
   {
     slug: "water-heater-pad-leak",
     path: "/stories/water-heater-pad-leak",
-    headline: "Water heater pad leak case study",
-    title: "The pad went wet at 3 a.m., not the freeze night",
+    headline: "Water heater drip scenario",
+    title: "A water heater drips at 3 a.m.",
     description:
-      "How a Wisconsin household used a ThermalTrace flood contact under a garage water heater to catch a slow drip before it soaked the slab and ruined stored boxes.",
-    quote: "The pad went wet at 3 a.m., not the freeze night",
-    location: "Madison, WI",
+      "Scenario: a garage water heater's drain valve drips overnight. A flood contact in the pan alerts you before the slab and stored boxes get soaked.",
+    setting: "Garage with a water heater and storage",
     datePublished: "2026-03-08",
     ogImage: "/og-story-freeze.jpg",
     photoId: "basement-pex-pipes",
     setup: [
-      "ESP32 already pushing garage temp; added a cheap wet/dry contact on the heater pan",
-      "Ingest kind flood: auto-alerts when wet (no custom rule)",
-      "Email + Pro SMS; freeze threshold still watching the same bay",
+      "The ESP32 already pushing garage temperature; a wet/dry contact added in the heater pan",
+      "Ingest kind flood: alerts automatically when wet, no custom rule needed",
+      "Email plus SMS (Pro); the freeze threshold keeps watching the same space",
     ],
     timeline: [
-      { time: "3:08 a.m.", detail: "Flood contact reported wet; SMS + email fired while vacation mode was on for a trip." },
-      { time: "3:20 a.m.", detail: "Neighbor with a share link confirmed a drip at the drain valve." },
-      { time: "Morning", detail: "Plumber tightened the valve; slab stayed dry enough that boxes were salvageable." },
+      { time: "3:08 a.m.", detail: "The flood contact reports wet; SMS and email go out even though vacation mode is on." },
+      { time: "3:20 a.m.", detail: "A neighbor with the family live link checks in and finds a drip at the drain valve." },
+      { time: "Morning", detail: "A plumber tightens the valve while the slab is still mostly dry." },
     ],
     outcome:
-      "Freeze and flood share one ingest path. Vacation muted threshold noise; the wet contact still woke the household.",
+      "Leaks don't wait for a freeze. Flood contacts share the same device and ingest path, and wet alerts get through even when vacation mode mutes the routine ones.",
     faqs: [
       {
         question: "Do flood alerts need a custom rule?",
         answer:
-          "No, when alerts are enabled, wet flood/leak contacts notify automatically. Use Rules → flood only to combine with door or temp conditions.",
+          "No. With alerts enabled, wet flood/leak contacts notify automatically. Use a rule only to combine flood with door or temperature conditions.",
       },
       {
         question: "Where should the contact sit?",
         answer:
-          "On the pan floor away from normal condensation drip lines. Test with a damp cloth, then dry so you do not leave a sticky wet state.",
+          "On the pan floor, away from normal condensation drips. Test with a damp cloth, then dry it so it doesn't stay in a wet state.",
       },
     ],
   },

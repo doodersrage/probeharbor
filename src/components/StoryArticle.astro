@@ -38,13 +38,13 @@ const schema = [
     pageUrl,
     headline: story.headline,
     description: story.description,
-    articleSection: "Customer stories",
+    articleSection: "Scenarios",
     datePublished: story.datePublished,
     imageUrl: `${siteUrl}${story.ogImage}`,
   }),
   getBreadcrumbSchema(siteUrl, [
     { name: "Home", path: "/" },
-    { name: "Customer stories", path: "/stories" },
+    { name: "Scenarios", path: "/stories" },
     { name: story.headline, path: story.path },
   ]),
   getFaqPageSchema(pageUrl, story.faqs),
@@ -57,16 +57,20 @@ const schema = [
   ogType="article"
   ogImage={story.ogImage}
   ogPublishedTime={story.datePublished}
-  ogSection="Customer stories"
+  ogSection="Scenarios"
   speakableSelectors={[".card-title", ".card-subtitle", ".faq-answer"]}
 >
   <div class="page-shell page-stack">
     <section class="card animate-slide-in-left">
       <p class="text-sm text-[var(--color-text-muted)] mb-2">
-        Customer story · {story.location}
+        Scenario · {story.setting}
       </p>
-      <h1 class="card-title">“{story.title}”</h1>
+      <h1 class="card-title">{story.title}</h1>
       <p class="card-subtitle">{story.description}</p>
+      <p class="scenario-note mt-4 mb-0 text-sm" role="note">
+        <strong>Illustrative scenario.</strong> This is a walkthrough of how ThermalTrace behaves in a common
+        failure, not an account from a real customer. The features, thresholds, and plan limits are real.
+      </p>
     </section>
 
     {
@@ -104,7 +108,7 @@ const schema = [
     </section>
 
     <section class="card">
-      <h2 class="card-title">Timeline</h2>
+      <h2 class="card-title">How it plays out</h2>
       <ol class="text-sm space-y-3 mb-0 list-decimal pl-5">
         {
           story.timeline.map((step) => (
@@ -117,24 +121,14 @@ const schema = [
     </section>
 
     <section class="card">
-      <blockquote class="border-l-4 border-[var(--color-accent)] pl-4 my-0">
-        <p class="mb-2 italic">“{story.quote}”</p>
-        <footer class="text-sm text-[var(--color-text-muted)]">
-          Homeowner, {story.location} (name withheld)
-        </footer>
-      </blockquote>
-    </section>
-
-    <section class="card">
-      <h2 class="card-title">What happened</h2>
+      <h2 class="card-title">Why it matters</h2>
       <p class="mb-4">{story.outcome}</p>
       <p class="mb-0 text-sm text-[var(--color-text-muted)]">
-        Typical Pro trial → Member or Pro subscription after winter. Your results depend on
-        sensor placement and alert thresholds.
+        Real outcomes depend on sensor placement, thresholds, and how quickly someone can respond.
       </p>
     </section>
 
-    <FaqSection faqs={story.faqs} title="Story FAQ" />
+    <FaqSection faqs={story.faqs} title="FAQ" />
 
     <section class="card">
       <h2 class="card-title">Try it on your space</h2>
@@ -149,8 +143,17 @@ const schema = [
         {" "}
         <a class="text-link" href="/compare">Compare vs DIY</a>
         {" · "}
-        <a class="text-link" href="/stories">All customer stories</a>
+        <a class="text-link" href="/stories">All scenarios</a>
       </p>
     </section>
   </div>
 </Layout>
+
+<style>
+  .scenario-note {
+    padding: 0.6rem 0.8rem;
+    border-left: 3px solid var(--color-accent);
+    background: color-mix(in srgb, var(--color-surface) 85%, var(--color-accent) 15%);
+    border-radius: 0.4rem;
+  }
+</style>
