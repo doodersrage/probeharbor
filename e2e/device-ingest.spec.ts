@@ -21,7 +21,7 @@ test.describe("device ingest", () => {
 
     await signIn(page, "/dashboard/devices?view=setup&tab=push");
 
-    await page.getByRole("button", { name: /Create push device/i }).click();
+    await page.getByRole("button", { name: /Create push device|Create device & get sketch/i }).click();
 
     // Device creation stores the key in a flash cookie — not the URL.
     await page.waitForURL(/view=setup.*device_created=1.*focus_device=.+/, {

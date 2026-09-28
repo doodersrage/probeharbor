@@ -1,8 +1,14 @@
 ---
 /**
- * Empty / first-device path on Devices — guided ESP → reading → freeze/leak alert,
- * with other connect paths available but de-emphasized.
+ * Empty Devices → Setup: ask what the person already has and give each answer
+ * one button. Sensors in Home Assistant / ESPHome / MQTT get a device plus a
+ * snippet with the real key; no hardware gets the demo feed right away.
  */
+import DemoPullQuickStart from "../DemoPullQuickStart";
+import { getExampleFeedUrl } from "../../lib/exampleFeed";
+import { SETUP_VIA_DEVICE_NAMES, type SetupVia } from "../../lib/firstDevicePaths";
+import { withQuery } from "../../lib/siteUrl";
+
 interface Props {
   canEdit: boolean;
   atDeviceLimit: boolean;
@@ -11,186 +17,135 @@ interface Props {
 }
 
 const { canEdit, atDeviceLimit, redirectTo, nestEntitled } = Astro.props;
+const exampleFeedUrl = getExampleFeedUrl(Astro.site);
+const canCreate = canEdit && !atDeviceLimit;
+const createFor = (via: SetupVia) => ({
+  redirect: withQuery(redirectTo, { via }),
+  name: SETUP_VIA_DEVICE_NAMES[via],
+});
 ---
 <section class="card devices-first-run" id="devices-first-run" aria-labelledby="devices-first-run-title">
-  <h2 class="card-title" id="devices-first-run-title">Get your first freeze or leak alert</h2>
+  <h2 class="card-title" id="devices-first-run-title">Connect your first sensor</h2>
   <p class="card-subtitle mb-4">
-    Recommended path: ESP32 freeze kit → create a push device → POST once → set freeze °F + email. A flood/leak contact on the same device auto-alerts when wet.
+    Pick what you have today. Each path ends with a live reading; freeze and leak alerts come right after.
   </p>
 
-  <ol class="devices-guide" aria-label="Guided first-run">
-    <li class="devices-guide-step">
-      <span class="devices-guide-num" aria-hidden="true">1</span>
-      <div>
-        <h3 class="devices-guide-title">Build the ESP32 freeze kit, then create a push device</h3>
-        <p class="devices-guide-copy">
-          About $20–30 in parts (ESP32 + waterproof DS18B20). We pre-fill a sketch with your ingest URL — flash Wi‑Fi, power the board, and POST once: sensors auto-import.
-        </p>
-        {canEdit && !atDeviceLimit ? (
-          <div class="flex flex-wrap gap-2 mt-2">
-            <form action="/api/devices" method="post">
-              <input type="hidden" name="action" value="create_push" />
-              <input type="hidden" name="redirect" value={redirectTo} />
-              <input type="hidden" name="name" value="Workshop probe" />
-              <button class="btn-primary" type="submit">Create push device</button>
-            </form>
-            <a class="btn-secondary" href="/about/esp32-freeze-kit">Parts list (~$25)</a>
-            <a class="btn-ghost" href="/about/esp32-web-flash">ESP32 flash guide</a>
-          </div>
-        ) : atDeviceLimit ? (
-          <div class="flex flex-wrap gap-2 mt-2">
-            <a class="btn-secondary" href="/dashboard/plans">Upgrade for more devices</a>
-            <a class="btn-ghost" href="/about/esp32-freeze-kit">Parts list</a>
-          </div>
-        ) : (
-          <p class="mb-0 mt-2 text-sm text-[var(--color-text-muted)]">View-only, ask an owner to create a device.</p>
-        )}
-      </div>
-    </li>
-    <li class="devices-guide-step">
-      <span class="devices-guide-num" aria-hidden="true">2</span>
-      <div>
-        <h3 class="devices-guide-title">Verify the first reading</h3>
-        <p class="devices-guide-copy">
-          After the first POST, rename imported sensors on the device card so Overview and alerts read clearly.
-        </p>
-        <details class="devices-other-boards mt-2">
-          <summary class="devices-other-summary">Other board guides</summary>
-          <div class="flex flex-wrap gap-2 mt-2">
-            <a class="btn-ghost inline-flex" href="/about/pico-w-ingest">Pico W</a>
-            <a class="btn-ghost inline-flex" href="/about/stm32-zephyr-ingest">STM32 Zephyr</a>
-            <a class="btn-ghost inline-flex" href="/about/ch32v-riscv-ingest">CH32V RISC-V</a>
-            <a class="btn-ghost inline-flex" href="/about/avr-asm-ingest">AVR assembly</a>
-            <a class="btn-ghost inline-flex" href="/about/teensy41-ingest">Teensy 4.1</a>
-            <a class="btn-ghost inline-flex" href="/about/pic18-ethernet-ingest">PIC18 Ethernet</a>
-            <a class="btn-ghost inline-flex" href="/about/cellular-ingest">Cellular</a>
-          </div>
-        </details>
-      </div>
-    </li>
-    <li class="devices-guide-step">
-      <span class="devices-guide-num" aria-hidden="true">3</span>
-      <div>
-        <h3 class="devices-guide-title">Set freeze °F + email, then send a test</h3>
-        <p class="devices-guide-copy">
-          Essentials: threshold a few degrees above 32°F, your email, then one test. Flood/leak contacts auto-alert when wet once alerts are on, no separate rule required.
-        </p>
-        <a class="btn-secondary mt-2 inline-flex" href="/dashboard/alerts?tab=settings#alert-section-essentials">Open alert essentials</a>
-      </div>
-    </li>
-  </ol>
+  {!canEdit && (
+    <p class="mb-4 text-sm text-[var(--color-text-muted)]">View-only, ask an owner to add a device.</p>
+  )}
+  {canEdit && atDeviceLimit && (
+    <p class="mb-4 text-sm">
+      Device limit reached. <a class="text-link" href="/dashboard/plans">Upgrade for more devices</a>
+    </p>
+  )}
 
-  <details class="devices-other mt-5">
-    <summary class="devices-other-summary">Other ways to connect</summary>
-    <div class="devices-intent-grid mt-3" role="list">
-      <div class="devices-intent" role="listitem">
-        <h3 class="devices-intent-title">Claim puck</h3>
-        <p class="devices-intent-copy">
-          RP2040-Zero presence key: claim a bay with a button press, then light freeze/flood moods on the LED via Bay Buddy.
-        </p>
+  <div class="devices-path-grid" role="list">
+    <div class="devices-path" role="listitem" id="first-run-have-sensors">
+      <h3 class="devices-path-title">I already have sensors</h3>
+      <p class="devices-path-copy">
+        Home Assistant, ESPHome, or an MQTT broker. We create a device and hand you a copy-paste snippet with its key. About 5 minutes.
+      </p>
+      {canCreate && (
         <div class="flex flex-wrap gap-2">
-          <a class="btn-secondary" href="/claim-puck">Setup guide</a>
-          <a class="btn-ghost" href="/bay-buddy">Bay Buddy</a>
-          <a class="btn-ghost" href="/accessories">All accessories</a>
+          {(["ha", "esphome", "mqtt"] as const).map((via, i) => {
+            const target = createFor(via);
+            return (
+              <form action="/api/devices" method="post">
+                <input type="hidden" name="action" value="create_push" />
+                <input type="hidden" name="redirect" value={target.redirect} />
+                <input type="hidden" name="name" value={target.name} />
+                <button class={i === 0 ? "btn-primary" : "btn-secondary"} type="submit">
+                  {via === "ha" ? "Home Assistant" : via === "esphome" ? "ESPHome" : "MQTT / Node-RED"}
+                </button>
+              </form>
+            );
+          })}
         </div>
-      </div>
-      <div class="devices-intent" role="listitem">
-        <h3 class="devices-intent-title">Flood / leak contact</h3>
-        <p class="devices-intent-copy">
-          Same push device can POST a <code>flood</code> bool: wet auto-alerts (bypasses snooze). Optional <code>level</code> for sump %.
-          Dedicated leak pads:
-          <a class="text-link" href="/leak-puck">leak puck</a>.
-        </p>
-        <a class="btn-secondary" href="/about/ingest-and-webhooks">Ingest kinds</a>
-      </div>
-      <div class="devices-intent" role="listitem">
-        <h3 class="devices-intent-title">Demo feed</h3>
-        <p class="devices-intent-copy">No hardware yet? Pull our public example HTTPS JSON.</p>
-        <a class="btn-secondary" href="#demo-pull-nudge">Try demo feed</a>
-      </div>
-      <div class="devices-intent" role="listitem">
-        <h3 class="devices-intent-title">Home Assistant</h3>
-        <p class="devices-intent-copy">HACS polls a share link, or push from HA automations.</p>
-        <div class="flex flex-wrap gap-2">
-          <a class="btn-secondary" href="/dashboard/share/links">Create share link</a>
-          <a class="btn-ghost" href="/integrations/home-assistant">HACS guide</a>
-        </div>
-      </div>
-      <div class="devices-intent" role="listitem">
-        <h3 class="devices-intent-title">MQTT bridge</h3>
-        <p class="devices-intent-copy">Keep Mosquitto on the LAN; mirror topics over HTTPS.</p>
-        <a class="btn-secondary" href="/about/mqtt-bridge">MQTT recipe</a>
-      </div>
-      <div class="devices-intent" role="listitem">
-        <h3 class="devices-intent-title">Nest / Ecobee</h3>
-        <p class="devices-intent-copy">
-          {nestEntitled
-            ? "Connect house thermostat context on the Pull feeds tab (Pro)."
-            : "Indoor house context via Nest/Ecobee OAuth is on Pro, or push climate temp from HA."}
-        </p>
-        <div class="flex flex-wrap gap-2">
-          <a class="btn-secondary" href="/dashboard/devices?tab=pull#thermostat-connect">
-            Pull feeds &amp; thermostats
-          </a>
-          {!nestEntitled && (
-            <a class="btn-ghost" href="/dashboard/plans">View Pro</a>
-          )}
-        </div>
-      </div>
+      )}
     </div>
-  </details>
+
+    <div class="devices-path" role="listitem" id="first-run-have-board">
+      <h3 class="devices-path-title">I have a board to flash</h3>
+      <p class="devices-path-copy">
+        ESP32, Pico W, or Arduino with a DS18B20 or DHT22. We pre-fill a sketch with your ingest URL; sensors auto-import on the first POST.
+      </p>
+      {canCreate && (
+        <form action="/api/devices" method="post">
+          <input type="hidden" name="action" value="create_push" />
+          <input type="hidden" name="redirect" value={createFor("esp").redirect} />
+          <input type="hidden" name="name" value={createFor("esp").name} />
+          <button class="btn-primary" type="submit">Create device &amp; get sketch</button>
+        </form>
+      )}
+      <details class="devices-other-boards mt-2">
+        <summary class="devices-other-summary">Other board guides</summary>
+        <div class="flex flex-wrap gap-2 mt-2">
+          <a class="btn-ghost inline-flex" href="/about/esp32-web-flash">ESP32 web flash</a>
+          <a class="btn-ghost inline-flex" href="/about/pico-w-ingest">Pico W</a>
+          <a class="btn-ghost inline-flex" href="/about/stm32-zephyr-ingest">STM32 Zephyr</a>
+          <a class="btn-ghost inline-flex" href="/about/teensy41-ingest">Teensy 4.1</a>
+          <a class="btn-ghost inline-flex" href="/about/cellular-ingest">Cellular</a>
+        </div>
+      </details>
+    </div>
+
+    <div class="devices-path" role="listitem" id="first-run-no-hardware">
+      <h3 class="devices-path-title">No hardware yet</h3>
+      <p class="devices-path-copy">
+        See the dashboard working now with a live example feed, then build the ESP32 freeze kit (about $25) when you're ready.
+      </p>
+      {canCreate && (
+        <DemoPullQuickStart client:visible exampleFeedUrl={exampleFeedUrl} redirectTo="/dashboard" buttonLabel="Try it with a demo feed" />
+      )}
+      <p class="mt-2 mb-0 text-sm">
+        <a class="text-link" href="/about/esp32-freeze-kit">ESP32 freeze kit parts list</a>
+      </p>
+    </div>
+  </div>
 
   <p class="mt-4 mb-0 text-sm text-[var(--color-text-muted)]">
-    Still exploring placement?
-    {" "}
-    <a class="text-link" href="/about/probe-demo">Open the interactive probe simulator</a>
+    Also: <a class="text-link" href="/dashboard/devices?view=setup&tab=pull">HTTPS JSON feed</a>
     {" · "}
-    <a class="text-link" href="/about/esp32-freeze-kit">ESP32 freeze kit BOM</a>
+    <a class="text-link" href="/dashboard/devices?tab=pull#thermostat-connect">
+      Nest / Ecobee{nestEntitled ? "" : " (Pro)"}
+    </a>
     {" · "}
-    <a class="text-link" href="/docs/api">HTTP API quick reference</a>
+    <a class="text-link" href="/leak-puck">Leak pucks</a>
+    {" · "}
+    <a class="text-link" href="/docs/api">HTTP API</a>
   </p>
 </section>
 
 <style>
-  .devices-guide {
-    list-style: none;
-    margin: 0;
-    padding: 0;
+  .devices-path-grid {
     display: grid;
     gap: 1rem;
+    grid-template-columns: 1fr;
   }
 
-  .devices-guide-step {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 0.75rem 1rem;
-    align-items: start;
-    padding: 0.85rem 1rem;
+  @media (min-width: 900px) {
+    .devices-path-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  .devices-path {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem;
     border: 1px solid var(--color-border);
     border-radius: 0.75rem;
     background: color-mix(in srgb, var(--color-surface) 88%, var(--color-accent) 12%);
   }
 
-  .devices-guide-num {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 1.75rem;
-    height: 1.75rem;
-    border-radius: 999px;
-    font-weight: 700;
-    font-size: 0.875rem;
-    background: var(--color-accent);
-    color: var(--color-accent-contrast);
-  }
-
-  .devices-guide-title {
-    margin: 0 0 0.25rem;
+  .devices-path-title {
+    margin: 0;
     font-size: 1rem;
     font-weight: 650;
   }
 
-  .devices-guide-copy {
+  .devices-path-copy {
     margin: 0;
     font-size: 0.875rem;
     color: var(--color-text-muted);
@@ -198,43 +153,8 @@ const { canEdit, atDeviceLimit, redirectTo, nestEntitled } = Astro.props;
 
   .devices-other-summary {
     cursor: pointer;
-    font-weight: 600;
-    color: var(--color-text);
-  }
-
-  .devices-other-boards .devices-other-summary {
     font-size: 0.875rem;
     font-weight: 550;
-    color: var(--color-text-muted);
-  }
-
-  .devices-intent-grid {
-    display: grid;
-    gap: 1rem;
-    grid-template-columns: 1fr;
-  }
-
-  @media (min-width: 640px) {
-    .devices-intent-grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-  }
-
-  .devices-intent {
-    padding: 0.85rem 1rem;
-    border: 1px solid var(--color-border);
-    border-radius: 0.75rem;
-  }
-
-  .devices-intent-title {
-    margin: 0 0 0.35rem;
-    font-size: 0.95rem;
-    font-weight: 650;
-  }
-
-  .devices-intent-copy {
-    margin: 0 0 0.75rem;
-    font-size: 0.875rem;
     color: var(--color-text-muted);
   }
 </style>

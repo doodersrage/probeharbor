@@ -9,7 +9,6 @@ import PushDevicesPanel from "../../components/dashboard/PushDevicesPanel.astro"
 import PullFeedsPanel from "../../components/dashboard/PullFeedsPanel.astro";
 import DeviceIntegrationsStrip from "../../components/DeviceIntegrationsStrip.astro";
 import FirstAlertSetupCard from "../../components/FirstAlertSetupCard.astro";
-import DemoPullNudge from "../../components/DemoPullNudge.astro";
 import { getAuthFromCookies } from "../../lib/auth";
 import { getUserPreferences } from "../../lib/userPreferences";
 import { checkFeedHealth } from "../../lib/collectHistory";
@@ -32,6 +31,12 @@ import ProductAnalyticsTracker from "../../components/ProductAnalyticsTracker.as
 import { FLASH_INGEST_KEY, peekSecretFlash } from "../../lib/secretFlash";
 import { ingestKeyVaultConfigured } from "../../lib/ingestKeyVault";
 import { getAlertSettingsForUser } from "../../lib/notify";
+import { buildEspHomeHttpRequestSnippet } from "../../lib/waitingIngest";
+import {
+  buildHomeAssistantPushYaml,
+  buildMqttBridgeCurl,
+  parseSetupVia,
+} from "../../lib/firstDevicePaths";
 
 const shell = Astro.locals.dashboardShell ?? null;
 const { session, user } = shell
@@ -229,6 +234,33 @@ const ingestUrl = ingestKey
   ? `${Astro.url.origin}/api/ingest/${ingestKey}`
   : "";
 const ingestQrSvg = ingestUrl ? renderIngestQrSvg(ingestUrl, 180) : "";
+// Chosen on the first-run card: lead the key callout with that path's snippet.
+const setupVia = parseSetupVia(Astro.url.searchParams.get("via"));
+const viaSnippet =
+  ingestUrl && ingestKey
+    ? setupVia === "ha"
+      ? {
+          title: "Paste into Home Assistant",
+          hint: "Swap in your entity ids, reload YAML, and the first reading lands within 5 minutes. °C sensors are converted for you.",
+          code: buildHomeAssistantPushYaml(ingestUrl),
+          guide: { href: "/integrations/home-assistant", label: "Home Assistant guide" },
+        }
+      : setupVia === "esphome"
+        ? {
+            title: "Add to your ESPHome node",
+            hint: "Call this from an interval or on_value automation, then flash the node.",
+            code: buildEspHomeHttpRequestSnippet(ingestUrl),
+            guide: { href: "/about/esphome-shelly-recipes", label: "ESPHome & Shelly recipes" },
+          }
+        : setupVia === "mqtt"
+          ? {
+              title: "Relay MQTT over HTTPS",
+              hint: "Keep your broker on the LAN. Import the Node-RED flow and paste this key, or POST like this from any relay.",
+              code: buildMqttBridgeCurl(Astro.url.origin, ingestKey),
+              guide: { href: "/nodered/mqtt-to-thermaltrace.json", label: "Node-RED flow" },
+            }
+          : null
+    : null;
 const ingestKeyDeviceName =
   (focusDevice && devices.find((d) => d.id === focusDevice)?.name) ||
   pushDevices[0]?.name ||
@@ -263,7 +295,6 @@ const showFirstAlertSetup =
   (ingestOk || hasLiveIngest) &&
   (!alertsEssentialsDone || alertSaved || testError);
 const showPowerFeatures = hasLiveIngest || showAllDevices;
-const showZeroHardwareCta = canEdit && devices.length === 0 && activeTab === "push";
 const firmwareSensors =
   waitingSensors.length > 0
     ? waitingSensors.map((s) => ({ key: s.key, kind: s.kind }))
@@ -333,7 +364,7 @@ const redirectTo =
       />
     )}
 
-    {devicesView === "setup" && (activeTab === "push" ? (
+    {devicesView === "setup" && (activeTab === "push" ? devices.length > 0 && (
       <p class="form-hint mb-0">
         Prefer a scheduled HTTPS JSON feed or thermostat?
         <a class="text-link" href="/dashboard/devices?view=setup&tab=pull">Other ways to connect</a>
@@ -352,7 +383,7 @@ const redirectTo =
       </nav>
     ))}
 
-    {devicesView === "setup" && activeTab === "push" && (
+    {devicesView === "setup" && activeTab === "push" && devices.length > 0 && (
       <DeviceIntegrationsStrip />
     )}
 
@@ -371,10 +402,6 @@ const redirectTo =
     />
     )}
 
-    {devicesView === "setup" && showZeroHardwareCta && (
-      <DemoPullNudge show redirectTo="/dashboard" />
-    )}
-
     {(noticeParam === "device_limit" || atDeviceLimit) && (
       <UpgradeNudge feature="device_limit" tier={entitlements.tier} compact />
     )}
@@ -386,6 +413,19 @@ const redirectTo =
           Scan the QR, download a pre-filled ESP32 sketch, or copy the URL. This key stays available for
           30 minutes and survives refresh until you dismiss it.
         </p>
+        {viaSnippet && (
+          <div class="mb-4" id="ingest-via-snippet">
+            <h3 class="form-label mb-1">{viaSnippet.title}</h3>
+            <p class="text-sm text-[var(--color-text-muted)] mt-0 mb-2">{viaSnippet.hint}</p>
+            <pre class="ingest-key-curl text-xs overflow-x-auto mb-2"><code>{viaSnippet.code}</code></pre>
+            <div class="flex flex-wrap gap-3">
+              <button type="button" class="btn-primary" data-copy={viaSnippet.code} data-copy-label="Copy snippet">
+                Copy snippet
+              </button>
+              <a class="btn-ghost" href={viaSnippet.guide.href}>{viaSnippet.guide.label}</a>
+            </div>
+          </div>
+        )}
         <div class="flex flex-wrap gap-6 items-start mb-4">
           <div
             class="ingest-key-qr shrink-0 rounded-lg bg-white p-2"
@@ -439,7 +479,7 @@ const redirectTo =
           ingestKey={ingestKey}
           origin={Astro.url.origin}
           sensors={firmwareSensors}
-          presetsOpen
+          presetsOpen={!viaSnippet}
         />
       </section>
     )}
