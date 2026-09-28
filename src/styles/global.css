@@ -2282,6 +2282,8 @@
     @apply rounded-xl p-4;
     background-color: var(--color-surface-raised);
     border: 1px solid var(--color-border);
+    /* Lets .stat-value shrink with the tile instead of breaking mid-number. */
+    container-type: inline-size;
   }
 
   .stat-label {
@@ -2291,9 +2293,16 @@
 
   .stat-value {
     @apply text-2xl font-bold tracking-tight;
+    font-size: clamp(1rem, 22cqi, 1.5rem);
     color: var(--color-text);
     font-variant-numeric: tabular-nums;
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
+  }
+
+  /* Words, not numbers (e.g. "Scattered clouds"): smaller so they wrap between words. */
+  .stat-value.stat-value-text {
+    font-size: clamp(0.95rem, 12cqi, 1.125rem);
+    line-height: 1.3;
   }
 
   .stat-detail {

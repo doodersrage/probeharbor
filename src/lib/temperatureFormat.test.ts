@@ -5,9 +5,9 @@ import {
 } from "./temperatureFormat";
 
 describe("formatLiveTempF", () => {
-  it("rounds to hundredths", () => {
-    expect(formatLiveTempF(89.78001)).toBe("89.78°F");
-    expect(formatLiveTempF(89.60001)).toBe("89.60°F");
+  it("rounds to tenths", () => {
+    expect(formatLiveTempF(89.78001)).toBe("89.8°F");
+    expect(formatLiveTempF(89.60001)).toBe("89.6°F");
   });
 
   it("handles non-finite values", () => {
@@ -16,9 +16,9 @@ describe("formatLiveTempF", () => {
 });
 
 describe("formatLiveTempDetail", () => {
-  it("rounds C and humidity", () => {
+  it("rounds C to tenths and humidity to whole percents", () => {
     expect(formatLiveTempDetail(32.10001, 61.666)).toBe(
-      "32.10°C · 61.67% humidity",
+      "32.1°C · 62% humidity",
     );
   });
 });

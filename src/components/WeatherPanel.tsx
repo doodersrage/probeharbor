@@ -118,17 +118,19 @@ export default function WeatherPanel({
     weather.lon != null &&
     Number.isFinite(weather.lat) &&
     Number.isFinite(weather.lon);
+  // Providers return hundredths; whole units match what a forecast shows.
+  const whole = (n: number) => String(Math.round(n));
   const stats: Array<{ label: string; value: string; detail?: boolean }> = [
-    { label: "Temperature", value: `${weather.temp}°F` },
-    { label: "Humidity", value: `${weather.humidity}%` },
-    { label: "Feels Like", value: `${weather.feelsLike}°F` },
-    { label: "Wind Speed", value: `${weather.windSpeed} mph` },
+    { label: "Temperature", value: `${whole(weather.temp)}°F` },
+    { label: "Humidity", value: `${whole(weather.humidity)}%` },
+    { label: "Feels Like", value: `${whole(weather.feelsLike)}°F` },
+    { label: "Wind Speed", value: `${whole(weather.windSpeed)} mph` },
   ];
   if (weather.windGust != null) {
-    stats.push({ label: "Wind Gusts", value: `${weather.windGust} mph` });
+    stats.push({ label: "Wind Gusts", value: `${whole(weather.windGust)} mph` });
   }
   stats.push(
-    { label: "Cloud Cover", value: `${weather.cloudCover}%` },
+    { label: "Cloud Cover", value: `${whole(weather.cloudCover)}%` },
     { label: "Condition", value: weather.description, detail: true },
   );
 
@@ -162,7 +164,7 @@ export default function WeatherPanel({
           <article class="stat-item" key={label}>
             <span class="stat-label">{label}</span>
             {detail ? (
-              <p class="stat-value capitalize">{value}</p>
+              <p class="stat-value stat-value-text capitalize">{value}</p>
             ) : (
               <p class="stat-value">{value}</p>
             )}

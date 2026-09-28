@@ -60,7 +60,7 @@ function formatSensorValue(
           detail:
             humidity != null
               ? formatLiveTempDetail(sensor.temp.c, humidity)
-              : `${sensor.temp.c.toFixed(2)}°C`,
+              : `${sensor.temp.c.toFixed(1)}°C`,
         };
       }
       if (sensor.value_num != null) {

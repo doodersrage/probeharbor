@@ -14,8 +14,8 @@ export function formatTemperature(
   return `${tempF.toFixed(decimals)}°F`;
 }
 
-/** Live tile °F: hundredths avoid float junk overflow in compact cards. */
-export function formatLiveTempF(tempF: number, decimals = 2): string {
+/** Live tile °F: tenths, which is already finer than typical probe accuracy. */
+export function formatLiveTempF(tempF: number, decimals = 1): string {
   if (!Number.isFinite(tempF)) return "—";
   return `${tempF.toFixed(decimals)}°F`;
 }
@@ -23,10 +23,11 @@ export function formatLiveTempF(tempF: number, decimals = 2): string {
 export function formatLiveTempDetail(
   tempC: number,
   humidity: number,
-  decimals = 2,
+  decimals = 1,
 ): string {
   const c = Number.isFinite(tempC) ? tempC.toFixed(decimals) : "—";
-  const h = Number.isFinite(humidity) ? humidity.toFixed(decimals) : "—";
+  // Humidity sensors are ±2–3%, so whole percents.
+  const h = Number.isFinite(humidity) ? humidity.toFixed(0) : "—";
   return `${c}°C · ${h}% humidity`;
 }
 
