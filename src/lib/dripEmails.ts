@@ -13,6 +13,8 @@ import {
 import { buildUnsubscribeUrl, unsubscribeHeaders } from "./emailUnsubscribe";
 
 export type DripStageId = "day1" | "day3" | "day7";
+/** Stage ids plus the variants sent to people who have no reading yet. */
+export type DripEmailId = DripStageId | "day3_setup" | "day7_setup";
 
 type DripStage = {
   id: DripStageId;
@@ -20,6 +22,8 @@ type DripStage = {
   subject: string;
   content: (siteUrl: string) => BrandedEmailContent;
 };
+
+type DripEmail = Omit<DripStage, "id" | "day">;
 
 export const DRIP_STAGES: DripStage[] = [
   {
@@ -33,15 +37,14 @@ export const DRIP_STAGES: DripStage[] = [
       intro:
         "Welcome to ThermalTrace. Your free account is ready — next step is a live reading on Home.",
       paragraphs: [
-        "Open Devices, create a push device, and copy the ingest URL from the callout. POST JSON from your ESP/Arduino sketch — sensor keys auto-import on first POST. Lost the key? Use Reveal ingest key on the device card when enabled.",
+        "Open Devices and pick what you have. Each path creates a device and hands you a snippet with its key; sensors auto-import on the first reading.",
       ],
       bullets: [
-        "Devices → Create push device → copy ingest URL / QR",
-        "Quick-add a temp + humidity pair so JSON keys become labels",
-        `POST to ${site}/api/ingest/<your-key> — sample sketches are in the GitHub repo`,
-        "Prefer reading first? Live demo (no account): /demo",
+        "Sensors in Home Assistant, ESPHome, or MQTT: copy-paste YAML or a relay, about 5 minutes",
+        "An ESP32, Pico W, or Arduino: download a sketch pre-filled with your ingest URL",
+        "No hardware yet: one click adds a live demo feed so you can see the dashboard work",
       ],
-      cta: { label: "Open Devices", url: `${site}/dashboard/devices` },
+      cta: { label: "Open Devices", url: `${site}/dashboard/devices?view=setup` },
       secondaryCta: { label: "Adding devices guide", url: `${site}/about/adding-devices` },
       tone: "brand",
     }),
@@ -96,23 +99,109 @@ export const DRIP_STAGES: DripStage[] = [
   },
 ];
 
+/**
+ * Day 3 and day 7 assume a working sensor (alerts, then Pro). Most people who
+ * stall never got a first reading, so they get setup help instead.
+ */
+export const DRIP_SETUP_EMAILS: Record<"day3_setup" | "day7_setup", DripEmail> = {
+  day3_setup: {
+    subject: "Still setting up? Three quick ways to a first reading",
+    content: (site) => ({
+      eyebrow: "Getting started",
+      preheader: "Home Assistant, a flashed ESP32, or a one-click demo feed.",
+      title: "Your dashboard is waiting for a first reading",
+      intro:
+        "Nothing has reported in yet. Pick whichever you have today; each takes a few minutes from Devices → Setup.",
+      bullets: [
+        "Home Assistant, ESPHome, or MQTT: we generate the YAML or relay command with your key",
+        "ESP32 + DS18B20 (about $25): download a sketch with your ingest URL already filled in",
+        "Nothing yet: add the demo feed to see charts and alerts work before buying parts",
+      ],
+      cta: { label: "Open Devices setup", url: `${site}/dashboard/devices?view=setup` },
+      secondaryCta: { label: "ESP32 freeze kit parts", url: `${site}/about/esp32-freeze-kit` },
+      tone: "brand",
+    }),
+  },
+  day7_setup: {
+    subject: "What are you trying to connect?",
+    content: (site) => ({
+      eyebrow: "Setup help",
+      preheader: "Tell us your sensor or hub and we'll point you at the shortest path.",
+      title: "Stuck on setup? Tell us what you have",
+      intro:
+        "Your account still has no readings. If a sensor, hub, or board didn't fit one of the setup paths, send a note with what you're using and we'll help you get it reporting.",
+      paragraphs: [
+        "Freeze season is close. A single probe near the coldest pipe is enough to get an alert before it matters.",
+      ],
+      cta: { label: "Ask for setup help", url: `${site}/contact` },
+      secondaryCta: { label: "Open Devices setup", url: `${site}/dashboard/devices?view=setup` },
+      tone: "brand",
+    }),
+  },
+};
+
 export function buildDripEmail(
-  stageId: DripStageId,
+  emailId: DripEmailId,
   siteUrl = resolveSiteUrl(null),
   unsubscribeUrl: string | null = null,
 ): { subject: string; text: string; html: string } {
-  const stage = DRIP_STAGES.find((item) => item.id === stageId) ?? DRIP_STAGES[0];
-  const parts = brandedEmailParts({ ...stage.content(siteUrl), unsubscribeUrl });
-  return { subject: stage.subject, ...parts };
+  const email: DripEmail =
+    emailId === "day3_setup" || emailId === "day7_setup"
+      ? DRIP_SETUP_EMAILS[emailId]
+      : (DRIP_STAGES.find((item) => item.id === emailId) ?? DRIP_STAGES[0]);
+  const parts = brandedEmailParts({ ...email.content(siteUrl), unsubscribeUrl });
+  return { subject: email.subject, ...parts };
 }
 
-export async function sendDripEmailsForAllUsers(): Promise<{
+/** Pick the email for a stage: setup help instead of alerts/Pro when nothing has reported. */
+export function dripEmailIdForStage(stageId: DripStageId, hasReading: boolean): DripEmailId {
+  if (hasReading || stageId === "day1") return stageId;
+  return stageId === "day3" ? "day3_setup" : "day7_setup";
+}
+
+type AdminClient = ReturnType<typeof createAdminClient>;
+
+/** Any push device that has posted, or any pull-feed reading. Errors count as "yes" so the usual email goes out. */
+async function userHasFirstReading(admin: AdminClient, userId: string): Promise<boolean> {
+  try {
+    const { data: memberships, error: memberError } = await admin
+      .from("household_members")
+      .select("household_id")
+      .eq("user_id", userId);
+    if (memberError) return true;
+    const householdIds = (memberships ?? []).map((m) => m.household_id);
+    if (householdIds.length > 0) {
+      const { data: seen, error } = await admin
+        .from("devices")
+        .select("id")
+        .in("household_id", householdIds)
+        .not("last_seen_at", "is", null)
+        .limit(1);
+      if (error) return true;
+      if ((seen ?? []).length > 0) return true;
+    }
+    const { data: pulled, error: pullError } = await admin
+      .from("garage_temps")
+      .select("id")
+      .eq("user_id", userId)
+      .limit(1);
+    if (pullError) return true;
+    return (pulled ?? []).length > 0;
+  } catch {
+    return true;
+  }
+}
+
+export async function sendDripEmailsForAllUsers(
+  deps: { hasFirstReading?: (userId: string) => Promise<boolean> } = {},
+): Promise<{
   sent: number;
   skipped: number;
   errors: string[];
   restricted: number;
 }> {
   const admin = createAdminClient();
+  const hasFirstReading = deps.hasFirstReading ?? ((userId: string) => userHasFirstReading(admin, userId));
   const siteUrl = resolveSiteUrl(null);
   let sent = 0;
   let skipped = 0;
@@ -156,7 +245,11 @@ export async function sendDripEmailsForAllUsers(): Promise<{
       }
 
       const unsubscribeUrl = await buildUnsubscribeUrl(siteUrl, row.user_id, "drip");
-      const mail = buildDripEmail(nextStage.id, siteUrl, unsubscribeUrl);
+      const emailId =
+        nextStage.id === "day1"
+          ? nextStage.id
+          : dripEmailIdForStage(nextStage.id, await hasFirstReading(row.user_id));
+      const mail = buildDripEmail(emailId, siteUrl, unsubscribeUrl);
       await sendEmail(user.email, mail.subject, mail.text, {
         html: mail.html,
         headers: unsubscribeHeaders(unsubscribeUrl),

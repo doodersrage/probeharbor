@@ -75,6 +75,27 @@ describe("buildDripEmail", () => {
     expect(mail.subject).toBe("Try Pro free — SMS, push, and more share scopes");
   });
 
+  it("builds the setup-help variants for people with no reading", async () => {
+    const { buildDripEmail } = await import("./dripEmails");
+
+    expect(buildDripEmail("day3_setup", "https://site.example").subject).toBe(
+      "Still setting up? Three quick ways to a first reading",
+    );
+    expect(buildDripEmail("day7_setup", "https://site.example").subject).toBe(
+      "What are you trying to connect?",
+    );
+  });
+
+  it("swaps day3 and day7 for setup help only when nothing has reported", async () => {
+    const { dripEmailIdForStage } = await import("./dripEmails");
+
+    expect(dripEmailIdForStage("day1", false)).toBe("day1");
+    expect(dripEmailIdForStage("day3", false)).toBe("day3_setup");
+    expect(dripEmailIdForStage("day7", false)).toBe("day7_setup");
+    expect(dripEmailIdForStage("day3", true)).toBe("day3");
+    expect(dripEmailIdForStage("day7", true)).toBe("day7");
+  });
+
   it("falls back to the resolved site url when none is given", async () => {
     const { buildDripEmail } = await import("./dripEmails");
 
@@ -126,6 +147,43 @@ describe("sendDripEmailsForAllUsers", () => {
     );
     expect(mockUpdateEq).toHaveBeenCalledWith("user_id", "user-1");
     expect(result).toEqual({ sent: 1, skipped: 0, errors: [], restricted: 0 });
+  });
+
+  it("sends setup help on day 3 when the user has no reading yet", async () => {
+    mockSelectEq.mockResolvedValue({ data: [row({ drip_email_stage: 1, last_drip_email_at: "2024-06-10T00:00:00Z" })] });
+    mockGetUserById.mockResolvedValue({
+      data: { user: { email: "user@example.com", created_at: "2024-06-11T00:00:00.000Z" } },
+    });
+    const hasFirstReading = vi.fn().mockResolvedValue(false);
+    const { sendDripEmailsForAllUsers } = await import("./dripEmails");
+
+    await sendDripEmailsForAllUsers({ hasFirstReading });
+
+    expect(hasFirstReading).toHaveBeenCalledWith("user-1");
+    expect(mockSendEmail).toHaveBeenCalledWith(
+      "user@example.com",
+      "Still setting up? Three quick ways to a first reading",
+      expect.any(String),
+      expect.any(Object),
+    );
+    expect(mockUpdate).toHaveBeenCalledWith(expect.objectContaining({ drip_email_stage: 3 }));
+  });
+
+  it("sends the alerts email on day 3 once a reading exists", async () => {
+    mockSelectEq.mockResolvedValue({ data: [row({ drip_email_stage: 1, last_drip_email_at: "2024-06-10T00:00:00Z" })] });
+    mockGetUserById.mockResolvedValue({
+      data: { user: { email: "user@example.com", created_at: "2024-06-11T00:00:00.000Z" } },
+    });
+    const { sendDripEmailsForAllUsers } = await import("./dripEmails");
+
+    await sendDripEmailsForAllUsers({ hasFirstReading: async () => true });
+
+    expect(mockSendEmail).toHaveBeenCalledWith(
+      "user@example.com",
+      "Turn on freeze and leak alerts before the next surprise",
+      expect.any(String),
+      expect.any(Object),
+    );
   });
 
   it("skips a row when the account is too young for the next stage", async () => {
