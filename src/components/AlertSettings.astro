@@ -318,7 +318,7 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
       <summary>Snooze & vacation</summary>
       <div class="alert-settings-nested-body">
         <p class="form-hint mb-3">
-          Snooze pauses most alerts (outage and flood still fire). Vacation suppresses non-critical alerts until a return date or for a set number of days.
+          Snooze pauses most alerts (outage and flood still fire). Vacation mutes routine alerts (rate of change, rules, battery, digests) until a return date or for a set number of days; freeze, forecast, and flood alerts still fire.
           {settings.snoozeUntil && (
             <span class="block mt-1">Snoozed until {new Date(settings.snoozeUntil).toLocaleString()}.</span>
           )}

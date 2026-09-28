@@ -13,8 +13,11 @@ const SNOOZE_BLOCKED: NotifyKind[] = [
   "rssi",
 ];
 
+/**
+ * Vacation mutes routine noise while nobody is home. Freeze threshold alerts
+ * are not muted: an empty house is exactly when a freeze matters.
+ */
 const VACATION_BLOCKED: NotifyKind[] = [
-  "threshold",
   "rate",
   "digest",
   "generic",

@@ -62,7 +62,7 @@ describe("computeFreezeReadiness", () => {
     expect(result.checks.find((c) => c.id === "flood_sensor")?.ok).toBe(true);
   });
 
-  it("fails ready when vacation mode is on", () => {
+  it("stays ready in vacation mode, which no longer mutes freeze alerts", () => {
     const result = computeFreezeReadiness({
       alertSettings: {
         ...DEFAULT_ALERT_SETTINGS,
@@ -80,7 +80,7 @@ describe("computeFreezeReadiness", () => {
       canUseNws: true,
       hasSentAnyAlert: true,
     });
-    expect(result.checks.find((c) => c.id === "vacation_clear")?.ok).toBe(false);
-    expect(result.ready).toBe(false);
+    expect(result.checks.find((c) => c.id === "vacation_clear")).toBeUndefined();
+    expect(result.ready).toBe(true);
   });
 });

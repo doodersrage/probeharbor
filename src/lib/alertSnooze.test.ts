@@ -26,6 +26,8 @@ describe("alert snooze and vacation", () => {
     };
     expect(isVacationActive(settings)).toBe(true);
     expect(shouldSuppressForSnoozeOrVacation(settings, "rate")).toBe(true);
+    // Freeze threshold alerts still reach you while you are away.
+    expect(shouldSuppressForSnoozeOrVacation(settings, "threshold")).toBe(false);
     expect(shouldSuppressForSnoozeOrVacation(settings, "forecast")).toBe(false);
     expect(shouldSuppressForSnoozeOrVacation(settings, "runway")).toBe(false);
     expect(shouldSuppressForSnoozeOrVacation(settings, "flood")).toBe(false);

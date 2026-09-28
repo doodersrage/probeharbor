@@ -116,7 +116,7 @@ export const aboutFaqsBySlug: Record<string, AboutFaqItem[]> = {
     {
       question: "Does vacation mode mute flood alerts?",
       answer:
-        "No. Vacation and snooze mute threshold freeze noise; flood and forecast/NWS alerts still deliver so empty-house wet events get through.",
+        "No. Flood alerts always deliver. Vacation mode also lets freeze threshold and forecast/NWS alerts through, so an empty house still warns you; a short snooze pauses freeze threshold alerts but not flood.",
     },
     {
       question: "Where should I place wet contacts for thaw floods?",

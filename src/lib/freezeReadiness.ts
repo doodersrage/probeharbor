@@ -3,7 +3,6 @@ import type { DeviceWithSensors } from "./devices";
 import { resolveAlertEmail, type AlertSettings } from "./alerts";
 import type { LatestSensorRow } from "./sensorReadings";
 import { listLowBatteryDevices } from "./deviceBatteryUi";
-import { isVacationActive } from "./alertSnooze";
 
 export type ReadinessCheck = {
   id: string;
@@ -58,14 +57,12 @@ export function computeFreezeReadiness(input: {
     canUseForecast,
     canUseNws,
     hasSentAnyAlert,
-    nowMs = Date.now(),
   } = input;
 
   const stale: StaleSensorSummary = summarizeStaleSensors(latest, devices);
   const lowBattery = listLowBatteryDevices(devices, alertSettings.batteryThresholdPct);
 
   const channelOk = alertSettings.enabled && hasConfiguredAlertChannel(alertSettings);
-  const vacationOn = isVacationActive(alertSettings, nowMs);
   const hasFloodSensor = devices.some((d) => d.sensors.some((s) => s.kind === "flood"));
   const hasLevelSensor = devices.some((d) => d.sensors.some((s) => s.kind === "level"));
 
@@ -121,14 +118,6 @@ export function computeFreezeReadiness(input: {
         lowBattery.length === 0
           ? undefined
           : `${lowBattery.length} device(s) below ${alertSettings.batteryThresholdPct}% battery.`,
-    },
-    {
-      id: "vacation_clear",
-      label: "Not muted by vacation mode",
-      ok: !vacationOn,
-      hint: vacationOn
-        ? "Vacation suppresses threshold noise: flood and forecast still fire. Clear vacation under Alerts when you are home."
-        : undefined,
     },
     {
       id: "weather",
@@ -192,7 +181,6 @@ export function computeFreezeReadiness(input: {
     ready:
       score >= 85 &&
       checks.find((c) => c.id === "alerts_on")?.ok === true &&
-      channelOk &&
-      !vacationOn,
+      channelOk,
   };
 }
