@@ -34,6 +34,7 @@ Allow: /freeze-season
 Allow: /demo
 Allow: /share-kit
 Allow: /stories/
+Allow: /answers
 Allow: /contact
 Allow: /privacy
 Allow: /terms
