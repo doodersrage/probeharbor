@@ -177,7 +177,7 @@ const readingsUrl = `/api/share/${token}/readings`;
             const staleClass = age && age.stale ? " stat-item-stale" : "";
             const ageHtml = age
               ? `<p class="m-0 mt-1 text-sm ${
-                  age.stale ? "text-amber-300" : "text-[var(--color-text-muted)]"
+                  age.stale ? "text-[var(--color-warning)]" : "text-[var(--color-text-muted)]"
                 }">${age.stale ? "Stale · " + age.label : age.label}</p>`
               : "";
             return `<div class="card${staleClass}">

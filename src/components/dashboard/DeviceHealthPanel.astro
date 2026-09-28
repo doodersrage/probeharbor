@@ -243,8 +243,14 @@ const rankedDevices = [...devices].sort((a, b) => {
 </style>
 
 {latest.length > 0 && (
-  <section class="card">
-    <h2 class="card-title">Latest sensor values</h2>
+  <details class="card">
+    <summary class="card-title cursor-pointer">
+      Latest sensor values ({latest.length})
+    </summary>
+    <p class="card-subtitle mt-2">
+      Per-sensor readings for debugging a device. For current conditions, use
+      <a class="text-link" href="/dashboard/live">Live</a>.
+    </p>
     <div class="feed-health-grid">
       {latest.map((row) => {
         const device = devices.find((d) => d.id === row.sensor.device_id);
@@ -257,7 +263,7 @@ const rankedDevices = [...devices].sort((a, b) => {
                 {row.deviceName} · {kindLabels[row.sensor.kind] ?? row.sensor.kind}
                 {device?.source === "pull_url" ? " · pull" : device?.source === "push" ? " · push" : ""}
               </p>
-              <p class:list={["m-0 mt-1 text-sm", age.lagging && "text-amber-300"]}>
+              <p class:list={["m-0 mt-1 text-sm", age.lagging && "text-[var(--color-warning)]"]}>
                 <ReadingAgeBadge iso={row.recorded_at} />
                 {" · "}
                 {freshnessDetailForSource(row.recorded_at, device?.source ?? null)}
@@ -268,7 +274,7 @@ const rankedDevices = [...devices].sort((a, b) => {
         );
       })}
     </div>
-  </section>
+  </details>
 )}
 
 {feedHealth.statuses.length > 0 && (

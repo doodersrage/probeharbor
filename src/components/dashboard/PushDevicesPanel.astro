@@ -206,7 +206,7 @@ function sensorNeedsRename(label: string): boolean {
                   <p class="m-0 text-sm text-[var(--color-text-muted)]">
                     key prefix {device.ingest_key_prefix}…
                     {" · "}
-                    <span class={seen.lagging ? "text-amber-300" : ""} title={seen.absolute ?? undefined}>
+                    <span class={seen.lagging ? "text-[var(--color-warning)]" : ""} title={seen.absolute ?? undefined}>
                       {seen.label === "never seen"
                         ? "never seen"
                         : freshnessDetail(seen)}
