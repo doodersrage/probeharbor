@@ -33,18 +33,31 @@ Adjust the template for your probe keys. Share links are read-only and safe to p
 
 ## Push from ESPHome or HA → ThermalTrace
 
-Point ESPHome `api`/`http_request` or an HA `rest` **service call** at your device ingest URL:
+Point ESPHome `http_request` or an HA `rest_command` at your device ingest URL, and call it on a schedule. Flat keys like `temp1` are read as °F, so convert °C sensors in the template:
 
 ```yaml
-rest:
-  - resource: https://thermaltrace.dev/api/ingest/YOUR_DEVICE_KEY
+rest_command:
+  thermaltrace_push:
+    url: "https://thermaltrace.dev/api/ingest/YOUR_DEVICE_KEY"
     method: POST
-    headers:
-      Content-Type: application/json
-    payload: '{"temp1": {{ states("sensor.garage_temp") | float }}, "humidity1": {{ states("sensor.garage_humidity") | float }}}'
+    content_type: "application/json"
+    payload: >-
+      {% set t = states('sensor.garage_temperature') | float(none) %}
+      {% if t is not none and state_attr('sensor.garage_temperature', 'unit_of_measurement') == '°C' %}
+      {% set t = t * 9 / 5 + 32 %}
+      {% endif %}
+      {"temp1": {{ t | tojson }}, "humidity1": {{ states('sensor.garage_humidity') | float(none) | tojson }}}
+
+automation:
+  - alias: Send garage readings to ThermalTrace
+    triggers:
+      - trigger: time_pattern
+        minutes: "/5"
+    actions:
+      - action: rest_command.thermaltrace_push
 ```
 
-Create the push device and copy the ingest key from **Dashboard → Devices**.
+On **Dashboard → Devices → Setup**, choose **Home Assistant**: it creates the device and shows this snippet with your key filled in.
 
 ## MQTT bridge (keep Mosquitto local)
 
@@ -52,7 +65,7 @@ If probes already publish to Mosquitto, mirror selected topics over HTTPS:
 
 ```bash
 curl -X POST https://thermaltrace.dev/api/ingest/mqtt \
-  -H "Authorization: Bearer YOUR_DEVICE_KEY" \
+  -H "X-Ingest-Key: YOUR_DEVICE_KEY" \
   -H "Content-Type: application/json" \
   -d '{"topic":"garage/temp","payload":"42.5"}'
 ```
