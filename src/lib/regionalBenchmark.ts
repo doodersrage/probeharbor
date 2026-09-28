@@ -1,5 +1,6 @@
 import { createServerClient } from "./supabase";
 import { freezeMapAggregateKey } from "./weatherCities";
+import { FREEZE_MAP_SAMPLE_FLOOR } from "./freezeMapSeed";
 
 export type RegionalBenchmark = {
   cityLabel: string;
@@ -36,13 +37,18 @@ export async function fetchRegionalBenchmark(input: {
 
   const { data: snapshot } = await supabase
     .from("freeze_map_snapshots")
-    .select("city_label, avg_temp_f, min_temp_f")
+    .select("city_label, avg_temp_f, min_temp_f, sample_count")
     .eq("city_id", cityId)
     .order("captured_at", { ascending: false })
     .limit(1)
     .maybeSingle();
 
   if (!snapshot?.avg_temp_f && snapshot?.min_temp_f == null) {
+    return null;
+  }
+  // Same floor as the public freeze map: with one or two households the "city
+  // average" is mostly this household, and would expose a neighbor's readings.
+  if ((snapshot.sample_count ?? 0) < FREEZE_MAP_SAMPLE_FLOOR) {
     return null;
   }
 
