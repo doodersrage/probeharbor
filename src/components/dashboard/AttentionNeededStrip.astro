@@ -32,7 +32,12 @@ const quietLabel =
 ---
 
 {(count > 0 || (showQuietControls && quietActive)) && (
-  <div class="attention-needed card" data-attention-root data-storage-key={storageKey}>
+  <div
+    class="attention-needed card"
+    data-attention-root
+    data-attention-counted={count > 0 ? "1" : undefined}
+    data-storage-key={storageKey}
+  >
     <div class="attention-needed-row">
       {count > 0 ? (
         <div class="attention-needed-main">
@@ -42,7 +47,7 @@ const quietLabel =
             open={defaultOpen || undefined}
           >
             <summary class="attention-needed-summary">
-              {title} ({count})
+              {title} (<span data-attention-count>{count}</span>)
             </summary>
             <div class="attention-needed-body" data-attention-slot>
               <slot />

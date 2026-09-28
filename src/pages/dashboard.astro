@@ -894,7 +894,7 @@ const coldestProbeSummary = (() => {
       defaultOpen={attentionOpsCount > 0 && prioritizeFirstRun}
       showQuietControls={false}
     >
-      <div class="space-y-4">
+      <div class="space-y-4" data-attention-items>
           <AlertSetupNudge
             hasAlertsEnabled={hasAlertsEnabled}
             hasEmailAlerts={hasEmailAlerts}
@@ -1278,7 +1278,7 @@ const coldestProbeSummary = (() => {
         showQuietControls={true}
         showGrowthDismiss={showNestInDigest || showPwaInDigest || showAndroidInDigest || showBayBuddyInDigest}
       >
-        <div class="space-y-4">
+        <div class="space-y-4" data-attention-items>
             <NestConnectNudge
               show={showNestInDigest}
               nestEntitled={entitlements.canUseThermostatIntegration}
