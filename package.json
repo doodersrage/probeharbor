@@ -27,7 +27,7 @@
     "test:e2e": "playwright test",
     "test:e2e:auth": "node scripts/e2e-auth.mjs",
     "e2e:reset-password": "node scripts/e2e-reset-password.mjs",
-    "typecheck": "astro sync && tsc --noEmit",
+    "typecheck": "astro sync && tsc --noEmit && astro check",
     "lint": "pnpm dlx @biomejs/biome@2.5.12 ci --formatter-enabled=false .",
     "lint:fix": "pnpm dlx @biomejs/biome@2.5.12 check --write .",
     "format": "pnpm dlx @biomejs/biome@2.5.12 format --write .",
@@ -62,6 +62,7 @@
     "wrangler": "^4.86.0"
   },
   "devDependencies": {
+    "@astrojs/check": "^0.9.10",
     "@playwright/test": "^1.55.0",
     "supabase": "^2.108.0",
     "typescript": "~5.8.3",

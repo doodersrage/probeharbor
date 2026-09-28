@@ -1,6 +1,7 @@
 ---
 interface Props {
-  message: string;
+  /** Nothing renders when empty or null. */
+  message: string | null;
 }
 
 const { message } = Astro.props;

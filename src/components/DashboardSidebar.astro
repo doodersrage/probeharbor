@@ -182,7 +182,7 @@ const mobileMonitor = mobileMonitorHrefs(showPortfolioInMonitor)
                   ]}
                   aria-current={isActive ? "page" : undefined}
                 >
-                  <Icon class="dashboard-nav-icon" size={16} strokeWidth={2} aria-hidden="true" />
+                  <Icon class="dashboard-nav-icon" size={16} aria-hidden="true" />
                   <span class="dashboard-nav-label">{label}</span>
                   {typeof badge === "number" && badge > 0 && (
                     <span class="dashboard-nav-badge" aria-label={`${badge} unhandled`}>
@@ -239,7 +239,7 @@ const mobileMonitor = mobileMonitorHrefs(showPortfolioInMonitor)
       ]}
       aria-current={isActive ? "page" : undefined}
     >
-      <Icon class="dashboard-mobile-monitor-icon" size={18} strokeWidth={2} aria-hidden="true" />
+      <Icon class="dashboard-mobile-monitor-icon" size={18} aria-hidden="true" />
       <span>{label}</span>
       {typeof badge === "number" && badge > 0 && (
         <span class="dashboard-nav-badge dashboard-nav-badge--mobile">{badge > 99 ? "99+" : badge}</span>

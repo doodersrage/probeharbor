@@ -73,7 +73,7 @@ const thermostatConnectionsWithSnapshots = await Promise.all(
     const result =
       household.householdId
         ? await fetchThermostatContextWithStatus(household.householdId, connection.provider)
-        : { snapshot: null as const };
+        : { snapshot: null };
     return {
       provider: connection.provider,
       snapshot: result.snapshot,

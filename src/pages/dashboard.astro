@@ -792,8 +792,8 @@ const coldestProbeSummary = (() => {
   <div class="dashboard-stack">
     <OverviewFlash
       passwordUpdated={passwordUpdated}
-      prefsSaved={prefsSaved}
-      prefsError={prefsError}
+      prefsSaved={Boolean(prefsSaved)}
+      prefsError={Boolean(prefsError)}
       checkedSaved={checkedSaved}
       checkedError={checkedError}
       ackOk={ackOk}
@@ -1357,7 +1357,12 @@ const coldestProbeSummary = (() => {
           mins < 1 ? "Updated just now" : mins === 1 ? "Updated 1m ago" : "Updated " + mins + "m ago";
       }
 
-      function setMetric(field, value, detail, tone) {
+      function setMetric(
+        field: string,
+        value: string | null,
+        detail: string | null,
+        tone: string | null,
+      ) {
         var card = document.querySelector('[data-snapshot-field="' + field + '"]');
         if (!card) return;
         var valueEl = card.querySelector("[data-metric-value]");
@@ -1369,23 +1374,24 @@ const coldestProbeSummary = (() => {
         }
       }
 
-      function showLiveFlash(message, isError) {
-        var flash = document.getElementById("overview-live-flash");
+      var liveFlashTimer: number | undefined;
+      function showLiveFlash(message: string, isError: boolean) {
+        const flash = document.getElementById("overview-live-flash");
         if (!flash) return;
         flash.textContent = message;
         flash.classList.remove("hidden");
         flash.classList.toggle("dashboard-flash--error", Boolean(isError));
         flash.classList.toggle("alert-warning", Boolean(isError));
         flash.classList.toggle("alert-success", !isError);
-        window.clearTimeout(showLiveFlash._t);
-        showLiveFlash._t = window.setTimeout(function () {
+        window.clearTimeout(liveFlashTimer);
+        liveFlashTimer = window.setTimeout(function () {
           flash.classList.add("hidden");
         }, 4500);
       }
 
-      function applyUnackedChrome(count) {
+      function applyUnackedChrome(count: unknown) {
         var n = typeof count === "number" ? count : 0;
-        var banner = document.querySelector("[data-unacked-banner]");
+        var banner = document.querySelector<HTMLElement>("[data-unacked-banner]");
         if (banner) {
           banner.setAttribute("data-unacked-count", String(n));
           var show = n > 0;
@@ -1435,7 +1441,7 @@ const coldestProbeSummary = (() => {
         }
       }
 
-      function applySnoozeChrome(active) {
+      function applySnoozeChrome(active: boolean) {
         var qa = document.querySelector("[data-overview-quick-actions]");
         if (qa) qa.setAttribute("data-snooze-active", active ? "1" : "0");
         var slot = document.querySelector("[data-qa-snooze-slot]");
@@ -1462,7 +1468,9 @@ const coldestProbeSummary = (() => {
         }
       }
 
-      function applySnapshot(data) {
+      // Shape of /api/user/dashboard-snapshot; fields are checked before use.
+      // biome-ignore lint/suspicious/noExplicitAny: loosely typed JSON payload
+      function applySnapshot(data: any) {
         if (!data || typeof data !== "object") return;
         loadedAt = Date.now();
         renderAge();
@@ -1486,7 +1494,7 @@ const coldestProbeSummary = (() => {
 
         if (typeof data.unackedAlerts === "number") {
           applyUnackedChrome(data.unackedAlerts);
-          var qaDetails = document.querySelector("[data-qa-details]");
+          var qaDetails = document.querySelector<HTMLDetailsElement>("[data-qa-details]");
           if (qaDetails && data.unackedAlerts > 0) qaDetails.open = true;
           document.querySelectorAll('[data-overview-field="unackedCount"]').forEach(function (el) {
             el.textContent = String(data.unackedAlerts);
@@ -1554,7 +1562,7 @@ const coldestProbeSummary = (() => {
           setMetric("coldest_margin", marginLabel, marginDetail, marginTone);
         }
 
-        document.querySelectorAll("[data-stale-banner]").forEach(function (el) {
+        document.querySelectorAll<HTMLElement>("[data-stale-banner]").forEach(function (el) {
           var show = typeof data.staleSensors === "number" && data.staleSensors > 0;
           el.hidden = !show;
           el.classList.toggle("hidden", !show);
@@ -1606,8 +1614,10 @@ const coldestProbeSummary = (() => {
         softRefresh();
       }, 60000);
 
-      function setPinUi(metric, pinned) {
-        document.querySelectorAll('[data-pin-metric="' + metric + '"]').forEach(function (btnEl) {
+      function setPinUi(metric: string, pinned: boolean) {
+        document
+          .querySelectorAll<HTMLElement>('[data-pin-metric="' + metric + '"]')
+          .forEach(function (btnEl) {
           btnEl.setAttribute("data-pinned", pinned ? "1" : "0");
           btnEl.textContent = pinned ? "★" : "☆";
           var label = btnEl.getAttribute("aria-label") || "";
@@ -1620,12 +1630,12 @@ const coldestProbeSummary = (() => {
           }
           btnEl.title = pinned ? "Unpin from Status" : "Pin to Status";
         });
-        var card = document.querySelector('#status [data-metric-id="' + metric + '"]');
+        var card = document.querySelector<HTMLElement>('#status [data-metric-id="' + metric + '"]');
         if (card) {
           card.hidden = !pinned;
           card.classList.toggle("hidden", !pinned);
         }
-        var checkbox = document.querySelector(
+        var checkbox = document.querySelector<HTMLInputElement>(
           'input[name="metrics"][value="' + metric + '"]',
         );
         if (checkbox) checkbox.checked = pinned;
@@ -1634,11 +1644,11 @@ const coldestProbeSummary = (() => {
       document.addEventListener("click", function (event) {
         var target = event.target;
         if (!(target instanceof Element)) return;
-        var pinBtn = target.closest("[data-pin-metric]");
+        const pinBtn = target.closest("[data-pin-metric]");
         if (!(pinBtn instanceof HTMLButtonElement)) return;
         event.preventDefault();
         event.stopPropagation();
-        var metric = pinBtn.getAttribute("data-pin-metric");
+        const metric = pinBtn.getAttribute("data-pin-metric");
         if (!metric) return;
         var wasPinned = pinBtn.getAttribute("data-pinned") === "1";
         pinBtn.disabled = true;
@@ -1652,7 +1662,8 @@ const coldestProbeSummary = (() => {
           body: JSON.stringify({ action: "toggle", metric: metric }),
         })
           .then(function (res) {
-            return res.json().then(function (data) {
+            return res.json().then(function (raw: unknown) {
+              const data = raw as { error?: string; metrics?: string[] } | null;
               return { ok: res.ok, status: res.status, data: data };
             });
           })

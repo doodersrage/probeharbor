@@ -277,7 +277,7 @@ const spaces = deviceSpaces.filter(Boolean);
         const household =
           root?.querySelector<HTMLInputElement>("[data-qa-household]")?.value ?? "";
         const space =
-          root?.querySelector<HTMLSelectElement>("[data-qa-space]")?.value ?? "";
+          (root?.querySelector("[data-qa-space]") as HTMLSelectElement | null)?.value ?? "";
         const data = await postJson("/api/user/space-checked", {
           household_id: household || undefined,
           space: space || undefined,
