@@ -691,7 +691,8 @@
     color: var(--color-text-muted);
   }
 
-  h1.home-hero-brand {
+  /* The wordmark is a <p>; the promise below it is the page's h1. */
+  p.home-hero-brand {
     font-size: clamp(2.35rem, 6vw, 3.6rem);
     font-weight: 650;
   }
