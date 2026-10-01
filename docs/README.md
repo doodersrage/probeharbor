@@ -1,6 +1,6 @@
 # Docs site (VitePress → GitHub Pages)
 
-**Live:** https://doodersrage.github.io/thermaltrace/
+**Live:** https://thermaltrace.dev/developers/
 
 Product guides stay on https://thermaltrace.dev/about — this site is the developer reference (ingest, API, sketches, HA, Grafana, local setup, and deploy).
 

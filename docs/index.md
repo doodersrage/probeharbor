@@ -83,6 +83,6 @@ features:
 
 ::: tip Repo links
 Source: [github.com/doodersrage/thermaltrace](https://github.com/doodersrage/thermaltrace) ·  
-This docs site: [doodersrage.github.io/thermaltrace](https://doodersrage.github.io/thermaltrace/) ·  
+This docs site: [thermaltrace.dev/developers](https://thermaltrace.dev/developers/) ·  
 Production app: [thermaltrace.dev](https://thermaltrace.dev)
 :::

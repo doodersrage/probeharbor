@@ -18,11 +18,14 @@ export function buildSitemapUrlsetXml(site: string): string {
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${body}\n</urlset>\n`;
 }
 
-/** Sitemap index pointing at the single urlset (SSR-served). */
+/** Sitemap index: the SSR-served urlset plus the developer docs' own sitemap. */
 export function buildSitemapIndexXml(site: string): string {
   const base = site.replace(/\/+$/, "");
-  const loc = `${base}/sitemap-0.xml`;
-  return `<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <sitemap><loc>${escapeXml(loc)}</loc></sitemap>\n</sitemapindex>\n`;
+  // /developers/sitemap.xml is written by the VitePress build (scripts/build-docs-site.mjs).
+  const entries = [`${base}/sitemap-0.xml`, `${base}/developers/sitemap.xml`]
+    .map((loc) => `  <sitemap><loc>${escapeXml(loc)}</loc></sitemap>`)
+    .join("\n");
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${entries}\n</sitemapindex>\n`;
 }
 
 export function sitemapXmlResponse(xml: string): Response {

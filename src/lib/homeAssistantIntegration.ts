@@ -11,10 +11,10 @@ export const HA_DESCRIPTION =
 export const INTEGRATIONS_HUB_PAGE = "/integrations";
 
 export const HA_DEV_DOCS_INGEST =
-  "https://doodersrage.github.io/thermaltrace/ingest/home-assistant";
+  "https://thermaltrace.dev/developers/ingest/home-assistant";
 
 export const HA_DEV_DOCS_INTEGRATIONS =
-  "https://doodersrage.github.io/thermaltrace/integrations/home-assistant";
+  "https://thermaltrace.dev/developers/integrations/home-assistant";
 
 export const HA_BLUEPRINT_URL = "/ha/thermaltrace_webhook.yaml";
 

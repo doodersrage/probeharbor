@@ -32,5 +32,6 @@ describe("sitemapXml", () => {
     const xml = buildSitemapIndexXml("https://thermaltrace.dev/");
     expect(xml).toContain("<sitemapindex");
     expect(xml).toContain("https://thermaltrace.dev/sitemap-0.xml");
+    expect(xml).toContain("https://thermaltrace.dev/developers/sitemap.xml");
   });
 });

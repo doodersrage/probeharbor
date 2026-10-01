@@ -218,7 +218,7 @@ export const marketingFaqs = {
     {
       question: "Where do I find full request/response schemas?",
       answer:
-        "openapi.yaml is the source of truth. Longer walkthroughs live at doodersrage.github.io/thermaltrace (ingest, Grafana, webhooks). Product how-tos: thermaltrace.dev/about/ingest-and-webhooks and /about/adding-devices.",
+        "openapi.yaml is the source of truth. Longer walkthroughs live at thermaltrace.dev/developers (ingest, Grafana, webhooks). Product how-tos: thermaltrace.dev/about/ingest-and-webhooks and /about/adding-devices.",
     },
     {
       question: "What is the claim puck API?",

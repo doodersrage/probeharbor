@@ -7,7 +7,7 @@
     "node": ">=22.12.0"
   },
   "scripts": {
-    "deploy": "astro build && wrangler deploy --config dist/server/wrangler.json",
+    "deploy": "astro build && pnpm docs:build:site && wrangler deploy --config dist/server/wrangler.json",
     "db:push": "supabase db push --linked",
     "secrets:push": "node scripts/push-worker-secrets.mjs",
     "secrets:push:dry": "node scripts/push-worker-secrets.mjs --dry-run",
@@ -41,6 +41,7 @@
     "astro": "astro",
     "docs:dev": "pnpm --dir docs --ignore-workspace dev",
     "docs:build": "pnpm --dir docs --ignore-workspace build",
+    "docs:build:site": "node scripts/build-docs-site.mjs",
     "generate-types": "supabase gen types typescript --linked > src/types/supabase.ts && wrangler types"
   },
   "dependencies": {
