@@ -12,7 +12,7 @@ import {
 
 const answer = getAnswer(Astro.params.slug ?? "");
 if (!answer) {
-  return Astro.redirect("/answers");
+  return Astro.rewrite("/404");
 }
 
 const siteUrl = resolveSiteUrl(Astro.site);
@@ -27,6 +27,7 @@ const schema = [
     description: answer.description,
     articleSection: "Answers",
     datePublished: answer.datePublished,
+    dateModified: answer.dateModified,
   }),
   getBreadcrumbSchema(siteUrl, [
     { name: "Home", path: "/" },
@@ -42,6 +43,7 @@ const schema = [
   schema={schema}
   ogType="article"
   ogPublishedTime={answer.datePublished}
+  ogModifiedTime={answer.dateModified}
   ogSection="Answers"
   speakableSelectors={[".answer-question", ".answer-short", ".faq-answer"]}
 >
