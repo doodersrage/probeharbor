@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { META_DESCRIPTION_MAX_LENGTH } from "./brand";
-import { answers } from "./answers";
+import { answers, getAnswersRelatedTo } from "./answers";
 import { getPublicSitemapPaths } from "./sitemapPages";
 
 describe("answers", () => {
@@ -26,6 +26,15 @@ describe("answers", () => {
         expect(paths.has(link.href), `${a.slug} → ${link.href}`).toBe(true);
       }
     }
+  });
+
+  it("finds answers that link to a page, then fills from fallbacks", () => {
+    const related = getAnswersRelatedTo("/compare/tempstick", ["freeze-alarm-temperature-setting"]);
+    expect(related.map((a) => a.slug)).toEqual([
+      "freeze-alarm-without-subscription",
+      "freeze-alarm-temperature-setting",
+    ]);
+    expect(getAnswersRelatedTo("/nowhere", ["missing-slug"])).toEqual([]);
   });
 
   it("lists the hub and every answer in the sitemap", () => {

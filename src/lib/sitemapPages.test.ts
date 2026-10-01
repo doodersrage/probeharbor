@@ -36,6 +36,8 @@ describe("sitemapPages", () => {
     expect(paths).not.toContain("/embed/freeze-map");
     expect(paths).not.toContain("/about/astro-server-side-rendering");
     expect(paths).not.toContain("/about/nextjs-monitoring-dashboards");
+    expect(paths).not.toContain("/about/astro-applications");
+    expect(paths).not.toContain("/about/tailwind-v4-setup");
   });
 
   it("includes traffic pages", () => {

@@ -3,7 +3,7 @@ import { compareGuides } from "./compareGuides";
 
 describe("compareGuides", () => {
   it("keeps hub teasers distinct from sub-page ledes", () => {
-    expect(compareGuides.length).toBe(6);
+    expect(compareGuides.length).toBe(9);
     for (const guide of compareGuides) {
       expect(guide.lede.length).toBeGreaterThan(guide.summary.length);
       expect(guide.lede).not.toBe(guide.summary);

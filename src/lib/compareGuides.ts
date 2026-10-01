@@ -2,6 +2,8 @@ export type CompareGuide = {
   slug: string;
   path: string;
   title: string;
+  /** <title> tag, phrased the way people search ("<product> alternative"). Falls back to title. */
+  seoTitle?: string;
   headline: string;
   description: string;
   competitor: string;
@@ -22,6 +24,7 @@ export const compareGuides: CompareGuide[] = [
     slug: "diy-mqtt",
     path: "/compare/diy-mqtt",
     title: "ThermalTrace vs DIY MQTT",
+    seoTitle: "Hosted alternative to DIY MQTT freeze alerts",
     headline: "ThermalTrace vs DIY MQTT + Node-RED",
     description:
       "Compare ThermalTrace freeze and leak alerts to a self-hosted MQTT, Node-RED, and cron stack: ops burden, SMS, history, and household sharing.",
@@ -70,6 +73,7 @@ export const compareGuides: CompareGuide[] = [
     slug: "govee",
     path: "/compare/govee",
     title: "ThermalTrace vs Govee",
+    seoTitle: "Govee alternative for garage freeze alerts",
     headline: "ThermalTrace vs Govee sensors",
     description:
       "Govee vs ThermalTrace for freeze and leak monitoring in unheated spaces: alerts, ESP ingest, multi-probe zones, and exportable history.",
@@ -126,6 +130,7 @@ export const compareGuides: CompareGuide[] = [
     slug: "tempest",
     path: "/compare/tempest",
     title: "ThermalTrace vs Tempest",
+    seoTitle: "Tempest vs indoor probes for pipe freeze alerts",
     headline: "ThermalTrace vs WeatherFlow Tempest",
     description:
       "Outdoor weather stations like Tempest vs ThermalTrace indoor probes, when you need pipe freeze alerts where the water actually is.",
@@ -174,6 +179,7 @@ export const compareGuides: CompareGuide[] = [
     slug: "nest",
     path: "/compare/nest",
     title: "ThermalTrace vs Nest Thermostat",
+    seoTitle: "Nest thermostat vs a garage freeze sensor",
     headline: "ThermalTrace vs a Nest Thermostat for freeze protection in unheated spaces",
     description:
       "A Nest thermostat has no signal from an unheated garage. ThermalTrace probes that space and can show your Nest reading with freeze alerts.",
@@ -223,6 +229,7 @@ export const compareGuides: CompareGuide[] = [
     slug: "ecobee",
     path: "/compare/ecobee",
     title: "ThermalTrace vs Ecobee Thermostat",
+    seoTitle: "Ecobee thermostat vs a garage freeze sensor",
     headline: "ThermalTrace vs an Ecobee Thermostat for freeze protection in unheated spaces",
     description:
       "An Ecobee thermostat has no signal from an unheated garage. ThermalTrace probes that space and can show your Ecobee reading with freeze alerts.",
@@ -272,6 +279,7 @@ export const compareGuides: CompareGuide[] = [
     slug: "tempstick",
     path: "/compare/tempstick",
     title: "ThermalTrace vs TempStick",
+    seoTitle: "Temp Stick alternative: DIY freeze sensors",
     headline: "ThermalTrace vs Temp Stick Wi‑Fi sensors",
     description:
       "Temp Stick vs ThermalTrace for freeze alerts: one-time $149–209 sensors with free SMS, or $25 DIY probes with multi-zone, leak contacts, and Home Assistant.",
@@ -332,6 +340,197 @@ export const compareGuides: CompareGuide[] = [
         { label: "Temp Stick Wi‑Fi sensor ($149)", url: "https://tempstick.com/product/tempstick-wifi-temperature-humidity-sensor/" },
         { label: "Temp Stick PRO with pipe clamp", url: "https://tempstick.com/product/temp-stick-pro-for-frozen-pipe-prevention/" },
         { label: "Temp Stick common questions (fees, contacts, export, API)", url: "https://tempstick.com/common-questions/" },
+      ],
+    },
+  },
+  {
+    slug: "yolink",
+    path: "/compare/yolink",
+    title: "ThermalTrace vs YoLink",
+    seoTitle: "YoLink alternative for pipe freeze alerts",
+    headline: "ThermalTrace vs YoLink temperature sensors",
+    description:
+      "YoLink vs ThermalTrace for freeze alerts: a $59.99 hub kit with finished battery sensors and SMS, or DIY probes on the pipe with open-source software.",
+    competitor: "YoLink",
+    summary:
+      "YoLink is the easier and often cheaper choice for finished sensors: a hub and two battery sensors cost $59.99 and alert by push, email, and SMS. ThermalTrace fits if you want a probe taped to the pipe, no hub, your own hardware, or readings in an open system.",
+    lede:
+      "YoLink sells a hub with two battery temperature and humidity sensors for $59.99. The sensors are rated from −22°F to 140°F, run two or more years on a pair of batteries, and send push, email, and SMS alerts. For most people who want a finished product in a cold garage, that is a strong option. ThermalTrace is the better fit when you want a waterproof probe directly on the pipe, leak contacts and freeze alerts in one place, no proprietary hub, or software you can read and self-host: an ESP32 and probe cost about $25, email and chat alerts are free, and SMS is on Pro.",
+    whenThermalTrace: [
+      "You want a waterproof probe taped to the pipe itself rather than a room sensor on the wall",
+      "You already run Home Assistant, ESPHome, or MQTT and want one more destination, not another hub",
+      "You want open-source software, an HTTP API you can post to from any board, and no vendor hardware",
+      "You want forecast freeze warnings and a time-to-freeze estimate alongside threshold alerts",
+    ],
+    whenOther: [
+      "You want finished battery sensors with no wiring or flashing",
+      "There is no outlet where the sensor needs to go",
+      "You want push, email, and SMS alerts from one vendor app",
+      "The space is far from your Wi‑Fi and a long-range hub suits it better",
+    ],
+    rows: [
+      { capability: "Hardware", thermaltrace: "DIY: ESP32 / Pico / Arduino + DS18B20 or DHT22", other: "Finished battery sensor; YoLink hub required" },
+      { capability: "Up-front cost", thermaltrace: "About $25 in parts per probe", other: "$59.99 for a hub and two sensors" },
+      { capability: "Ongoing cost", thermaltrace: "Free plan; Member $4/mo; Pro $10/mo for SMS", other: "Not stated on the product page" },
+      { capability: "Rated for freezing spaces", thermaltrace: "Yes (DS18B20 probe: −67°F to 257°F)", other: "Yes (−22°F to 140°F)" },
+      { capability: "Power", thermaltrace: "USB power at the board", other: "Two batteries, 2+ years expected" },
+      { capability: "Pipe-mounted probe", thermaltrace: "Yes (waterproof DS18B20 on the pipe)", other: "Separate outdoor sensor with probe (YS8005)" },
+      { capability: "Alert channels", thermaltrace: "Email + chat apps free; SMS, push, webhooks on Pro", other: "Push, email, SMS" },
+      { capability: "Data export", thermaltrace: "CSV (Member+), API (Pro)", other: "CSV export" },
+      { capability: "Home Assistant", thermaltrace: "Official HACS integration + push from HA", other: "Listed as compatible" },
+    ],
+    faqs: [
+      {
+        question: "Is YoLink cheaper than ThermalTrace?",
+        answer:
+          "For finished sensors, usually yes. YoLink's hub with two sensors is $59.99. Two ThermalTrace probes cost about $50 in parts and the Free plan includes email alerts, but you build them, and SMS needs Pro.",
+      },
+      {
+        question: "Does YoLink need a hub?",
+        answer:
+          "Yes. YoLink sensors talk to a YoLink hub, which connects to your network. ThermalTrace devices post straight to the internet over Wi‑Fi, Ethernet, or cellular with no hub.",
+      },
+      {
+        question: "Can YoLink sensors work in an unheated garage?",
+        answer:
+          "Yes. YoLink rates its YS8003 sensor for −22°F to 140°F and lists freezers among its uses.",
+      },
+      {
+        question: "Why choose ThermalTrace over YoLink?",
+        answer:
+          "For the probe placement and the openness: a waterproof probe on the coldest pipe, several probes on one board, leak contacts on the same account, and open-source software that takes readings from any device that can send an HTTPS request.",
+      },
+    ],
+    sources: {
+      checkedOn: "October 2026",
+      links: [
+        { label: "YoLink hub with two temperature and humidity sensors ($59.99)", url: "https://shop.yosmart.com/products/ys1603-2ys8003" },
+        { label: "YoLink YS8003 datasheet (range, battery, alerts)", url: "https://www.yosmart.com/wp-content/uploads/YOLINK-YS8003-TEMPERATURE-HUMIDITY-SENSOR-DATASHEET-091622.pdf" },
+      ],
+    },
+  },
+  {
+    slug: "sensorpush",
+    path: "/compare/sensorpush",
+    title: "ThermalTrace vs SensorPush",
+    seoTitle: "SensorPush alternative for remote freeze alerts",
+    headline: "ThermalTrace vs SensorPush sensors",
+    description:
+      "SensorPush vs ThermalTrace for freeze alerts: accurate Bluetooth sensors that need a $99.95 gateway for remote alerts, or Wi‑Fi DIY probes on the pipe.",
+    competitor: "SensorPush",
+    summary:
+      "SensorPush makes small, accurate Bluetooth sensors with a polished app and no monthly fee, but alerts away from home need the $99.95 Wi‑Fi gateway. ThermalTrace probes report over Wi‑Fi directly and can sit on the pipe; you build them, and SMS needs Pro.",
+    lede:
+      "SensorPush sensors are compact and accurate: the HT1 is $54.95 and the water-resistant HT.w is $69.99, both rated from −40°F to 140°F with a year or more of battery life. They are Bluetooth sensors, so your phone has to be in range unless you add the $99.95 G1 Wi‑Fi Gateway, which includes cloud access with no monthly fee and in-app and email alerts. ThermalTrace starts from the other end: an ESP32 with a waterproof probe (about $25 in parts) reports over Wi‑Fi on its own, email and chat alerts are free, and leak contacts, forecast warnings, and Home Assistant are built in. SMS is on Pro.",
+    whenThermalTrace: [
+      "You want remote alerts without buying a gateway",
+      "You want a waterproof probe on the pipe, or several probes from one board",
+      "You want SMS, chat-app, or webhook alerts, or a leak contact on the same account",
+      "You run Home Assistant, ESPHome, or MQTT and want readings to flow into it",
+    ],
+    whenOther: [
+      "You want a small finished sensor with a year or more of battery life",
+      "You are usually home, so Bluetooth range to your phone is enough",
+      "You want very accurate air temperature and humidity (a humidor, instrument case, or wine storage)",
+      "You prefer a one-time purchase with no plan to think about",
+    ],
+    rows: [
+      { capability: "Hardware", thermaltrace: "DIY: ESP32 / Pico / Arduino + DS18B20 or DHT22", other: "Finished Bluetooth sensor" },
+      { capability: "Up-front cost", thermaltrace: "About $25 in parts per probe", other: "$54.95 (HT1) or $69.99 (HT.w) per sensor" },
+      { capability: "Alerts away from home", thermaltrace: "Yes, sensors report over Wi‑Fi", other: "Needs the G1 Wi‑Fi Gateway ($99.95)" },
+      { capability: "Ongoing cost", thermaltrace: "Free plan; Member $4/mo; Pro $10/mo for SMS", other: "None; gateway cloud has no monthly fee" },
+      { capability: "Rated for freezing spaces", thermaltrace: "Yes (DS18B20 probe: −67°F to 257°F)", other: "Yes (−40°F to 140°F)" },
+      { capability: "Alert channels", thermaltrace: "Email + chat apps free; SMS, push, webhooks on Pro", other: "In-app and email; SMS not listed" },
+      { capability: "Power", thermaltrace: "USB power at the board", other: "Battery: over 1 year (HT1), over 2 years (HT.w)" },
+      { capability: "API", thermaltrace: "HTTP ingest on every plan; API keys on Pro", other: "API for the gateway cloud" },
+    ],
+    faqs: [
+      {
+        question: "Does SensorPush work without the gateway?",
+        answer:
+          "Yes, over Bluetooth when your phone is in range (SensorPush lists 325 feet line of sight). To see readings or get alerts when you are away, you need the G1 Wi‑Fi Gateway.",
+      },
+      {
+        question: "Does SensorPush charge a subscription?",
+        answer:
+          "No. SensorPush says the cloud service included with the G1 Wi‑Fi Gateway has no monthly fee.",
+      },
+      {
+        question: "Which costs less for remote freeze alerts?",
+        answer:
+          "For one sensor with remote alerts, SensorPush is $154.90 (HT1 plus gateway) once. A ThermalTrace probe is about $25 in parts with free email alerts, or $100 a year more if you want SMS on Pro. Extra SensorPush sensors add $54.95 each; extra ThermalTrace probes add about $25, or less if they share a board.",
+      },
+      {
+        question: "Is SensorPush more accurate?",
+        answer:
+          "For air temperature, yes: SensorPush lists ±0.5°F typical for the HT1 against about ±1°F for a DS18B20. For a freeze alarm either is ample, since the alert threshold should sit a few degrees above 32°F anyway.",
+      },
+    ],
+    sources: {
+      checkedOn: "October 2026",
+      links: [
+        { label: "SensorPush HT1 sensor ($54.95)", url: "https://www.sensorpush.com/products/p/ht1" },
+        { label: "SensorPush HT.w water-resistant sensor ($69.99)", url: "https://www.sensorpush.com/products/p/ht-w" },
+        { label: "SensorPush G1 Wi‑Fi Gateway ($99.95; cloud, alerts, API)", url: "https://www.sensorpush.com/products/p/g1-gateway" },
+      ],
+    },
+  },
+  {
+    slug: "shelly",
+    path: "/compare/shelly",
+    title: "ThermalTrace vs Shelly H&T",
+    seoTitle: "Shelly H&T for freeze alerts: limits and alternatives",
+    headline: "ThermalTrace vs Shelly H&T Gen3 for freeze alerts",
+    description:
+      "Shelly H&T Gen3 is a good $40.99 room sensor, but Shelly rates it for 32–105°F, so it is not built for a freezing garage. How a pipe probe differs.",
+    competitor: "Shelly H&T",
+    summary:
+      "The Shelly H&T Gen3 is a tidy $40.99 Wi‑Fi room sensor with a display, MQTT, and webhooks. Shelly rates it for 32°F to 105°F, though, which rules it out for spaces that actually freeze. ThermalTrace uses a probe rated far below freezing, mounted on the pipe.",
+    lede:
+      "The Shelly H&T Gen3 costs $40.99, runs about a year on four AA batteries or from USB‑C, shows temperature and humidity on an e-paper display, and speaks Wi‑Fi, MQTT, and webhooks. It is a good sensor for a heated room. Shelly lists its ambient working temperature as 0°C to 40°C (32°F to 105°F) and 30–70% humidity, so an unheated garage or crawlspace in a cold snap is outside what it is rated for. ThermalTrace is built for those spaces: a waterproof DS18B20 probe rated to −67°F on the pipe, with freeze, leak, and outage alerts and forecast warnings. If you already run Shelly gear indoors, its readings can reach ThermalTrace through Home Assistant or MQTT.",
+    whenThermalTrace: [
+      "The space can drop below 32°F, which is outside the Shelly H&T's rated range",
+      "You want the reading at the pipe, under the insulation, not the air in the room",
+      "You want freeze, leak, and sensor-offline alerts and a forecast warning without building automations",
+      "You want household members to receive alerts through household invites",
+    ],
+    whenOther: [
+      "You are monitoring a heated room: a basement, utility room, or living space",
+      "You want a battery sensor with a display and no wiring",
+      "You already use the Shelly app, Home Assistant, or MQTT and will build the alert yourself",
+      "Humidity in a conditioned space matters more than pipe temperature",
+    ],
+    rows: [
+      { capability: "Hardware", thermaltrace: "DIY: ESP32 / Pico / Arduino + DS18B20 or DHT22", other: "Finished Wi‑Fi sensor with e-paper display" },
+      { capability: "Up-front cost", thermaltrace: "About $25 in parts per probe", other: "$40.99" },
+      { capability: "Rated working temperature", thermaltrace: "DS18B20 probe: −67°F to 257°F", other: "32°F to 105°F (0°C to 40°C)" },
+      { capability: "Pipe-mounted probe", thermaltrace: "Yes (waterproof DS18B20 on the pipe)", other: "No; measures air at the device" },
+      { capability: "Power", thermaltrace: "USB power at the board", other: "4 AA batteries (about 1 year) or USB‑C" },
+      { capability: "Local integrations", thermaltrace: "Home Assistant (HACS), ESPHome, MQTT bridge", other: "MQTT and webhooks (URL actions)" },
+      { capability: "Leak / flood contacts", thermaltrace: "Yes, alert automatically when wet", other: "Not on this device" },
+    ],
+    faqs: [
+      {
+        question: "Can a Shelly H&T be used in an unheated garage?",
+        answer:
+          "Shelly lists the H&T Gen3's ambient working temperature as 0°C to 40°C (32°F to 105°F). A garage that drops below freezing is outside that range, so it is the wrong tool for a freeze alarm there.",
+      },
+      {
+        question: "Can a Shelly device send readings to ThermalTrace?",
+        answer:
+          "Yes. The simplest route for an H&T is through Home Assistant or MQTT, which ThermalTrace has an integration and a bridge recipe for. The ESPHome and Shelly recipes guide at thermaltrace.dev/about/esphome-shelly-recipes covers posting directly from Shelly Plus and Gen2 modules.",
+      },
+      {
+        question: "Is a Shelly H&T cheaper than a ThermalTrace probe?",
+        answer:
+          "No. The H&T Gen3 is $40.99; an ESP32 with a waterproof DS18B20 is about $25 in parts. The Shelly is finished and battery powered, which is what the extra money buys.",
+      },
+    ],
+    sources: {
+      checkedOn: "October 2026",
+      links: [
+        { label: "Shelly H&T Gen3 product page and specifications ($40.99)", url: "https://us.shelly.com/products/shelly-h-t-gen3-matte-white" },
+        { label: "Waterproof DS18B20 technical specs (Adafruit)", url: "https://www.adafruit.com/product/381" },
       ],
     },
   },

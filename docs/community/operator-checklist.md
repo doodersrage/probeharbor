@@ -8,6 +8,15 @@ Tasks only **you** can complete — everything else in the HACS/integration pass
 - [ ] Push freeze-map opt-ins so seed cities give way to live aggregates
 - Kit SKU / pre-flash batch is outside this repo (BOM page is ready)
 
+## Organic traffic (operator-only)
+
+- [ ] Google Search Console: before the SEO branch deploys, note the last 28 days of impressions, clicks, and indexed pages as a baseline
+- [ ] Google Search Console: confirm `sitemap-index.xml` is submitted, then check Pages → "Crawled – currently not indexed" a few weeks after the 2026-10-01 noindex of web-stack About guides (`NOINDEX_ABOUT_SLUGS` in `src/lib/sitemapPages.ts`)
+- [ ] Bing Webmaster Tools: verify the site so IndexNow submissions (sent after each deploy) show up
+- [ ] Post one build write-up per platform (Hackster, Instructables, Arduino Project Hub) from the [draft](./build-writeup-esp32-freeze-probe.md), with your own photos
+- [ ] Ask for listings on awesome-home-assistant and ESPHome community device lists once the HACS default PR merges
+- [ ] After the first deploy that includes `/developers/`, open `https://thermaltrace.dev/developers/` and one deep page, then update external links you control (HACS repo README, forum post) from `doodersrage.github.io/thermaltrace` to `thermaltrace.dev/developers`
+
 ## Google Play
 
 - [ ] When review clears, set `PUBLIC_PLAY_STORE_URL` in `.env` / Worker secrets and redeploy — `/android` flips to Play CTA automatically

@@ -15,7 +15,7 @@ const page = getAboutPage(slug);
 const sections = getExpandedAboutContent(slug);
 
 if (!page || !sections) {
-  return Astro.redirect("/about");
+  return Astro.rewrite("/404");
 }
 
 const hero = getAboutHeroPhoto(slug);

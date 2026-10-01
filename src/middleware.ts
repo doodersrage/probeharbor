@@ -14,7 +14,11 @@ import {
 } from "./lib/mfa";
 import { hasValidMfaStepUpProof } from "./lib/mfaStepUpProof";
 import { recordServerError } from "./lib/serverErrors";
-import { CANONICAL_HOST, shouldRedirectLegacyHost } from "./lib/siteConfig";
+import {
+  CANONICAL_HOST,
+  shouldRedirectLegacyHost,
+  trailingSlashRedirectPath,
+} from "./lib/siteConfig";
 import {
   HA_BLUEPRINT_LEGACY_URL,
   HA_BLUEPRINT_URL,
@@ -60,6 +64,13 @@ export const onRequest = defineMiddleware(async (context, next) => {
   if (hostname === CANONICAL_HOST && protocol === "http:") {
     const dest = new URL(context.url);
     dest.protocol = "https:";
+    return context.redirect(dest.toString(), 301);
+  }
+
+  const withoutSlash = trailingSlashRedirectPath(pathname, context.request.method);
+  if (withoutSlash) {
+    const dest = new URL(context.url);
+    dest.pathname = withoutSlash;
     return context.redirect(dest.toString(), 301);
   }
 

@@ -13,6 +13,8 @@ export type Story = {
   /** The kind of space, e.g. "Attached garage, cold climate". Not a real location. */
   setting: string;
   datePublished: string;
+  /** Set when the scenario is meaningfully revised. */
+  dateModified?: string;
   ogImage: string;
   /** Optional Creative Commons hero from aboutPhotos (not used on dashboard). */
   photoId?: import("./aboutPhotos").AboutPhotoId;
@@ -33,6 +35,7 @@ export const stories: Story[] = [
       "Scenario: a garage heater fails overnight in a cold snap. How an ESP32 probe, a 34°F freeze threshold, and SMS alerts buy time before pipes freeze.",
     setting: "Heated garage with plumbing, cold climate",
     datePublished: "2025-11-01",
+    dateModified: "2026-09-28",
     ogImage: "/og-story-freeze.jpg",
     setup: [
       "ESP32 + DHT22 pushing every 5 minutes to ThermalTrace ingest",
@@ -68,6 +71,7 @@ export const stories: Story[] = [
       "Scenario: a power blip resets the furnace in an empty winter cabin. A crawlspace probe and email and push alerts catch it days before your next visit.",
     setting: "Vacation cabin, empty most of the week",
     datePublished: "2025-12-12",
+    dateModified: "2026-09-28",
     ogImage: "/og-story-freeze.jpg",
     photoId: "snow-cabins",
     setup: [
@@ -104,6 +108,7 @@ export const stories: Story[] = [
       "Scenario: a homelab closet fan fails while you're away. A ThermalTrace heat rule and a Home Assistant webhook power down gear before it overheats.",
     setting: "Homelab closet next to a garage",
     datePublished: "2026-01-18",
+    dateModified: "2026-09-28",
     ogImage: "/og-dashboard.jpg",
     photoId: "server-rack",
     setup: [
@@ -140,6 +145,7 @@ export const stories: Story[] = [
       "Scenario: repeat freeze alerts in an attached garage. How ThermalTrace history and CSV export point to a drafty door seal before supply lines ice.",
     setting: "Attached garage with a water heater",
     datePublished: "2026-02-04",
+    dateModified: "2026-09-28",
     ogImage: "/og-story-freeze.jpg",
     photoId: "basement-pex-pipes",
     setup: [
@@ -176,6 +182,7 @@ export const stories: Story[] = [
       "Scenario: a foundation vent sticks open on a cold night. How a waterproof DS18B20 on the supply line and ThermalTrace freeze alerts give you time to close it.",
     setting: "Crawlspace under a house, cold climate",
     datePublished: "2026-02-20",
+    dateModified: "2026-09-28",
     ogImage: "/og-story-freeze.jpg",
     photoId: "basement-pex-pipes",
     setup: [
@@ -212,6 +219,7 @@ export const stories: Story[] = [
       "Scenario: a detached shop heater trips its GFCI on a forecast cold night. Forecast warnings cover the day before; threshold alerts cover the night of.",
     setting: "Detached shop with a utility sink",
     datePublished: "2026-03-01",
+    dateModified: "2026-09-28",
     ogImage: "/og-story-freeze.jpg",
     setup: [
       "Wi-Fi ESP32 above the utility sink; second probe near the overhead door",
@@ -247,6 +255,7 @@ export const stories: Story[] = [
       "Scenario: a garage water heater's drain valve drips overnight. A flood contact in the pan alerts you before the slab and stored boxes get soaked.",
     setting: "Garage with a water heater and storage",
     datePublished: "2026-03-08",
+    dateModified: "2026-09-28",
     ogImage: "/og-story-freeze.jpg",
     photoId: "basement-pex-pipes",
     setup: [

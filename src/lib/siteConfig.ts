@@ -22,6 +22,19 @@ export function shouldRedirectLegacyHost(hostname: string, method: string): bool
   return verb === "GET" || verb === "HEAD";
 }
 
+/**
+ * Path without its trailing slash when a GET/HEAD page request should 301 to
+ * it, else null. /pricing/ otherwise renders as an indexable duplicate of
+ * /pricing with its own canonical. API routes are left alone for machine clients.
+ */
+export function trailingSlashRedirectPath(pathname: string, method: string): string | null {
+  if (pathname.length < 2 || !pathname.endsWith("/")) return null;
+  if (pathname.startsWith("/api/")) return null;
+  const verb = method.toUpperCase();
+  if (verb !== "GET" && verb !== "HEAD") return null;
+  return pathname.replace(/\/+$/, "") || "/";
+}
+
 export function resolveConfiguredSiteUrl(
   siteUrl?: string | URL | null,
   env?: Pick<ImportMetaEnv, "SITE_URL" | "ORIGIN">,

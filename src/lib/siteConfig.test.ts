@@ -1,5 +1,10 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { DEFAULT_SITE_URL, resolveConfiguredSiteUrl, resolvePageUrl } from "./siteConfig";
+import {
+  DEFAULT_SITE_URL,
+  resolveConfiguredSiteUrl,
+  resolvePageUrl,
+  trailingSlashRedirectPath,
+} from "./siteConfig";
 
 type EnvRecord = Record<string, string | undefined>;
 
@@ -102,5 +107,20 @@ describe("shouldRedirectLegacyHost", () => {
   it("never redirects the canonical host", async () => {
     const { shouldRedirectLegacyHost } = await import("./siteConfig");
     expect(shouldRedirectLegacyHost("thermaltrace.dev", "GET")).toBe(false);
+  });
+});
+
+describe("trailingSlashRedirectPath", () => {
+  it("strips trailing slashes from page requests", () => {
+    expect(trailingSlashRedirectPath("/pricing/", "GET")).toBe("/pricing");
+    expect(trailingSlashRedirectPath("/compare/govee//", "HEAD")).toBe("/compare/govee");
+    expect(trailingSlashRedirectPath("//", "GET")).toBe("/");
+  });
+
+  it("leaves the home page, slashless paths, API routes, and writes alone", () => {
+    expect(trailingSlashRedirectPath("/", "GET")).toBeNull();
+    expect(trailingSlashRedirectPath("/pricing", "GET")).toBeNull();
+    expect(trailingSlashRedirectPath("/api/ingest/key/", "GET")).toBeNull();
+    expect(trailingSlashRedirectPath("/contact/", "POST")).toBeNull();
   });
 });
