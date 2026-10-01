@@ -29,7 +29,7 @@ const schema = [
 ].filter(Boolean) as Record<string, unknown>[];
 ---
 <Layout
-  title={guide.title}
+  title={guide.seoTitle ?? guide.title}
   description={guide.description}
   schema={schema}
   speakableSelectors={[".page-header-title", ".page-header-lede", ".faq-answer"]}

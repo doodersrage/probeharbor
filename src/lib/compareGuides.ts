@@ -2,6 +2,8 @@ export type CompareGuide = {
   slug: string;
   path: string;
   title: string;
+  /** <title> tag, phrased the way people search ("<product> alternative"). Falls back to title. */
+  seoTitle?: string;
   headline: string;
   description: string;
   competitor: string;
@@ -22,6 +24,7 @@ export const compareGuides: CompareGuide[] = [
     slug: "diy-mqtt",
     path: "/compare/diy-mqtt",
     title: "ThermalTrace vs DIY MQTT",
+    seoTitle: "Hosted alternative to DIY MQTT freeze alerts",
     headline: "ThermalTrace vs DIY MQTT + Node-RED",
     description:
       "Compare ThermalTrace freeze and leak alerts to a self-hosted MQTT, Node-RED, and cron stack: ops burden, SMS, history, and household sharing.",
@@ -70,6 +73,7 @@ export const compareGuides: CompareGuide[] = [
     slug: "govee",
     path: "/compare/govee",
     title: "ThermalTrace vs Govee",
+    seoTitle: "Govee alternative for garage freeze alerts",
     headline: "ThermalTrace vs Govee sensors",
     description:
       "Govee vs ThermalTrace for freeze and leak monitoring in unheated spaces: alerts, ESP ingest, multi-probe zones, and exportable history.",
@@ -126,6 +130,7 @@ export const compareGuides: CompareGuide[] = [
     slug: "tempest",
     path: "/compare/tempest",
     title: "ThermalTrace vs Tempest",
+    seoTitle: "Tempest vs indoor probes for pipe freeze alerts",
     headline: "ThermalTrace vs WeatherFlow Tempest",
     description:
       "Outdoor weather stations like Tempest vs ThermalTrace indoor probes, when you need pipe freeze alerts where the water actually is.",
@@ -174,6 +179,7 @@ export const compareGuides: CompareGuide[] = [
     slug: "nest",
     path: "/compare/nest",
     title: "ThermalTrace vs Nest Thermostat",
+    seoTitle: "Nest thermostat vs a garage freeze sensor",
     headline: "ThermalTrace vs a Nest Thermostat for freeze protection in unheated spaces",
     description:
       "A Nest thermostat has no signal from an unheated garage. ThermalTrace probes that space and can show your Nest reading with freeze alerts.",
@@ -223,6 +229,7 @@ export const compareGuides: CompareGuide[] = [
     slug: "ecobee",
     path: "/compare/ecobee",
     title: "ThermalTrace vs Ecobee Thermostat",
+    seoTitle: "Ecobee thermostat vs a garage freeze sensor",
     headline: "ThermalTrace vs an Ecobee Thermostat for freeze protection in unheated spaces",
     description:
       "An Ecobee thermostat has no signal from an unheated garage. ThermalTrace probes that space and can show your Ecobee reading with freeze alerts.",
@@ -272,6 +279,7 @@ export const compareGuides: CompareGuide[] = [
     slug: "tempstick",
     path: "/compare/tempstick",
     title: "ThermalTrace vs TempStick",
+    seoTitle: "Temp Stick alternative: DIY freeze sensors",
     headline: "ThermalTrace vs Temp Stick Wi‑Fi sensors",
     description:
       "Temp Stick vs ThermalTrace for freeze alerts: one-time $149–209 sensors with free SMS, or $25 DIY probes with multi-zone, leak contacts, and Home Assistant.",
