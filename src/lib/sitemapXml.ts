@@ -1,4 +1,4 @@
-import { buildPublicSitemapUrls, getPublicSitemapPaths } from "./sitemapPages";
+import { getPublicSitemapPaths, getSitemapLastModified } from "./sitemapPages";
 
 const XML_HEADERS = {
   "Content-Type": "application/xml; charset=utf-8",
@@ -7,9 +7,13 @@ const XML_HEADERS = {
 
 /** Build a urlset sitemap body for all public paths. */
 export function buildSitemapUrlsetXml(site: string): string {
-  const urls = buildPublicSitemapUrls(site);
-  const body = urls
-    .map((loc) => `  <url><loc>${escapeXml(loc)}</loc></url>`)
+  const base = site.replace(/\/+$/, "");
+  const lastModified = getSitemapLastModified();
+  const body = getPublicSitemapPaths()
+    .map((path) => {
+      const lastmod = lastModified.get(path);
+      return `  <url><loc>${escapeXml(`${base}${path}`)}</loc>${lastmod ? `<lastmod>${lastmod}</lastmod>` : ""}</url>`;
+    })
     .join("\n");
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${body}\n</urlset>\n`;
 }

@@ -6,17 +6,38 @@ import { answers } from "./answers";
 const EXCLUDED_ABOUT_SLUGS = new Set(["zapier-integration"]);
 
 /**
- * Thin framework/stack explainers: keep crawlable from parent hubs, but omit
- * from the sitemap to reduce long-tail index bloat. Parents (astro-applications,
- * nextjs-node-applications) stay listed.
+ * Web-stack and operator explainers (Astro, Next.js, Supabase, Redis, …) that
+ * are not about freeze or leak monitoring. They stay reachable from the About
+ * hub but are noindex and left out of the sitemap, so search engines read the
+ * site as being about its actual topic.
  */
-const SITEMAP_DEPRIORITIZED_ABOUT_SLUGS = new Set([
+export const NOINDEX_ABOUT_SLUGS: ReadonlySet<string> = new Set([
+  "astro-applications",
   "astro-server-side-rendering",
   "astro-islands-and-hydration",
+  "cloudflare-workers-deployment",
+  "middleware-auth-patterns",
+  "env-secrets-cloudflare",
+  "tailwind-v4-setup",
+  "nextjs-node-applications",
   "nextjs-monitoring-dashboards",
   "node-express-api-patterns",
   "comparing-full-stack-options",
+  "websocket-live-updates",
+  "hosting-cost-comparison",
   "relay-security-and-access",
+  "redis-cache-for-feeds",
+  "docker-relay-deployment",
+  "environment-variables-relay",
+  "health-check-endpoints",
+  "home-page-probe-fetch",
+  "supabase-history-inserts",
+  "cookie-session-lifecycle",
+  "caching-feed-responses",
+  "supabase-auth-flow",
+  "stripe-csv-subscription",
+  "admin-dashboard-features",
+  "contact-form-admin-review",
 ]);
 
 /** Public marketing and docs paths (not auth, dashboard, or token routes). */
@@ -74,13 +95,22 @@ export function getPublicSitemapPaths(): string[] {
     .filter(
       (page) =>
         !EXCLUDED_ABOUT_SLUGS.has(page.slug) &&
-        !SITEMAP_DEPRIORITIZED_ABOUT_SLUGS.has(page.slug),
+        !NOINDEX_ABOUT_SLUGS.has(page.slug),
     )
     .map((page) => `/about/${page.slug}`);
   const storyPaths = stories.map((story) => story.path);
   const answerPaths = answers.map((answer) => answer.path);
 
   return [...new Set([...STATIC_PUBLIC_PATHS, ...answerPaths, ...storyPaths, ...aboutPaths])];
+}
+
+/**
+ * Last-modified dates (YYYY-MM-DD) for pages that record one. Pages without a
+ * real date are omitted: a made-up lastmod teaches crawlers to ignore the field.
+ */
+export function getSitemapLastModified(): Map<string, string> {
+  const dated = [...answers, ...stories];
+  return new Map(dated.map((page) => [page.path, page.dateModified ?? page.datePublished]));
 }
 
 /** Absolute URLs for @astrojs/sitemap `customPages`. */

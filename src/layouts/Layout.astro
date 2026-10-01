@@ -36,8 +36,11 @@ interface Props {
   /** Override auto alt text for the share image. */
   ogImageAlt?: string;
   skipAuth?: boolean;
-  /** When true, emit noindex,nofollow (error pages, private-ish surfaces). */
-  noindex?: boolean;
+  /**
+   * true emits noindex,nofollow (error pages, private-ish surfaces); "follow"
+   * keeps a page out of the index while still letting crawlers follow its links.
+   */
+  noindex?: boolean | "follow";
   /** Optional Referrer-Policy meta (e.g. no-referrer for token handoff pages). */
   referrerPolicy?: string;
   /** Include SoftwareApplication JSON-LD (home / product pages). */
@@ -146,7 +149,7 @@ const registerServiceWorker =
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width" />
 		<meta name="description" content={metaDescription} />
-		{noindex && <meta name="robots" content="noindex, nofollow" />}
+		{noindex && <meta name="robots" content={noindex === "follow" ? "noindex, follow" : "noindex, nofollow"} />}
 		{referrerPolicy && <meta name="referrer" content={referrerPolicy} />}
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<link rel="icon" href="/favicon.ico" />

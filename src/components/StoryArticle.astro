@@ -40,6 +40,7 @@ const schema = [
     description: story.description,
     articleSection: "Scenarios",
     datePublished: story.datePublished,
+    dateModified: story.dateModified,
     imageUrl: `${siteUrl}${story.ogImage}`,
   }),
   getBreadcrumbSchema(siteUrl, [
@@ -57,6 +58,7 @@ const schema = [
   ogType="article"
   ogImage={story.ogImage}
   ogPublishedTime={story.datePublished}
+  ogModifiedTime={story.dateModified}
   ogSection="Scenarios"
   speakableSelectors={[".card-title", ".card-subtitle", ".faq-answer"]}
 >
