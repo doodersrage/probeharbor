@@ -7,7 +7,7 @@ Runs in production at [thermaltrace.dev](https://thermaltrace.dev) with 15-minut
 [![App](https://img.shields.io/badge/app-thermaltrace.dev-f97316)](https://thermaltrace.dev)
 [![Live demo](https://img.shields.io/badge/demo-no%20account-0ea5e9)](https://thermaltrace.dev/demo)
 [![Start free](https://img.shields.io/badge/start-free%20(no%20card)-22c55e)](https://thermaltrace.dev/register?next=/dashboard/devices)
-[![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-0ea5e9)](https://doodersrage.github.io/thermaltrace/)
+[![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-0ea5e9)](https://thermaltrace.dev/developers/)
 [![CI](https://github.com/doodersrage/thermaltrace/actions/workflows/ci.yml/badge.svg)](https://github.com/doodersrage/thermaltrace/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-slategray)](./LICENSE)
 
@@ -16,7 +16,7 @@ Runs in production at [thermaltrace.dev](https://thermaltrace.dev) with 15-minut
 | **App** | [thermaltrace.dev](https://thermaltrace.dev) |
 | **Live demo** | [thermaltrace.dev/demo](https://thermaltrace.dev/demo) — no account |
 | **Start free** | [Create account → Devices](https://thermaltrace.dev/register?next=/dashboard/devices) — no credit card |
-| **Developer docs** | [doodersrage.github.io/thermaltrace](https://doodersrage.github.io/thermaltrace/) |
+| **Developer docs** | [thermaltrace.dev/developers](https://thermaltrace.dev/developers/) |
 | **Product guides** | [thermaltrace.dev/guides](https://thermaltrace.dev/guides) |
 | **OpenAPI** | [thermaltrace.dev/openapi.yaml](https://thermaltrace.dev/openapi.yaml) |
 | **Contributing** | [CONTRIBUTING.md](./CONTRIBUTING.md) |
@@ -56,7 +56,7 @@ pnpm test
 pnpm typecheck
 ```
 
-More: [Local development](https://doodersrage.github.io/thermaltrace/guide/local-dev) · [Deploy & ops](https://doodersrage.github.io/thermaltrace/guide/deploy)
+More: [Local development](https://thermaltrace.dev/developers/guide/local-dev) · [Deploy & ops](https://thermaltrace.dev/developers/guide/deploy)
 
 ```bash
 pnpm build && pnpm deploy
@@ -88,7 +88,7 @@ Step-by-step: [Adding devices](https://thermaltrace.dev/about/adding-devices) ·
 
 Pull feeds (HTTPS JSON we fetch): **Devices → Pull feeds** tab — add URL, **Save pull setup**, probes auto-import from the live feed.
 
-**Integrations:** [Home Assistant (HACS)](https://thermaltrace.dev/integrations/home-assistant) · [Matter / Apple Home](https://thermaltrace.dev/integrations/matter) · [Node-RED](https://thermaltrace.dev/integrations/node-red) · [Influx / Telegraf](https://thermaltrace.dev/integrations/influx) · [IFTTT / n8n](https://thermaltrace.dev/integrations/automation) · [HACS repo](https://github.com/doodersrage/thermaltrace-home-assistant) · [Matterbridge plugin](https://github.com/doodersrage/thermaltrace-matter) · [Developer docs](https://doodersrage.github.io/thermaltrace/)
+**Integrations:** [Home Assistant (HACS)](https://thermaltrace.dev/integrations/home-assistant) · [Matter / Apple Home](https://thermaltrace.dev/integrations/matter) · [Node-RED](https://thermaltrace.dev/integrations/node-red) · [Influx / Telegraf](https://thermaltrace.dev/integrations/influx) · [IFTTT / n8n](https://thermaltrace.dev/integrations/automation) · [HACS repo](https://github.com/doodersrage/thermaltrace-home-assistant) · [Matterbridge plugin](https://github.com/doodersrage/thermaltrace-matter) · [Developer docs](https://thermaltrace.dev/developers/)
 
 **Operator launch checklist:** [docs/community/operator-checklist.md](./docs/community/operator-checklist.md) (forum post, thermostat OAuth, HACS default PR status)
 
@@ -98,7 +98,7 @@ curl -X POST "https://your-domain/api/ingest/YOUR_KEY" \
   -d '{"door1": true, "temp1": 42.5, "battery": 87, "rssi": -62}'
 ```
 
-Guides: [Adding devices](https://thermaltrace.dev/about/adding-devices) · [Push ingest](https://doodersrage.github.io/thermaltrace/ingest/) · [Sketches](./sketches) · [Ingest & webhooks](https://thermaltrace.dev/about/ingest-and-webhooks)
+Guides: [Adding devices](https://thermaltrace.dev/about/adding-devices) · [Push ingest](https://thermaltrace.dev/developers/ingest/) · [Sketches](./sketches) · [Ingest & webhooks](https://thermaltrace.dev/about/ingest-and-webhooks)
 
 Related repos: [arduino JSON probe](https://github.com/doodersrage/arduino-network-json-temperature-sever) · [Python relay](https://github.com/doodersrage/fast-api-relay) · [Home Assistant integration](https://github.com/doodersrage/thermaltrace-home-assistant) · [Matter / Apple Home](https://github.com/doodersrage/thermaltrace-matter) · [ThermalTrace Desktop](https://github.com/doodersrage/thermaltrace-desktop) · [Bay Buddy (mood glance)](https://github.com/doodersrage/thermaltrace-bay-buddy) · [Claim puck (RP2040-Zero)](https://github.com/doodersrage/thermaltrace-claim-puck) · [Android app](https://github.com/doodersrage/thermaltrace-android)
 

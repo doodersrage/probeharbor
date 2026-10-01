@@ -1,15 +1,29 @@
 import { defineConfig } from "vitepress";
 
 const site = "https://thermaltrace.dev";
-const docs = "https://doodersrage.github.io/thermaltrace/";
+// GitHub Pages serves this site under /thermaltrace/. The copy published on the
+// main domain is built with DOCS_BASE=/developers/ (see scripts/build-docs-site.mjs).
+const base = process.env.DOCS_BASE || "/thermaltrace/";
+const onMainDomain = base === "/developers/";
+// Both builds name the main-domain copy as canonical, so links to either one
+// count toward thermaltrace.dev.
+const docs = `${site}/developers/`;
 
 export default defineConfig({
   title: "ThermalTrace Docs",
   description:
     "Developer documentation for ThermalTrace — ingest, API, sketches, local development, and deploy.",
-  base: "/thermaltrace/",
+  base,
   cleanUrls: true,
   lastUpdated: true,
+  // Operator notes and drafts live in the repo, not on the published site.
+  srcExclude: ["README.md", "analytics-funnel.md", "community/**"],
+  sitemap: onMainDomain ? { hostname: docs } : undefined,
+  transformHead({ pageData }) {
+    if (pageData.isNotFound) return [];
+    const path = pageData.relativePath.replace(/(^|\/)index\.md$/, "$1").replace(/\.md$/, "");
+    return [["link", { rel: "canonical", href: `${docs}${path}` }]];
+  },
   head: [
     ["link", { rel: "icon", href: `${site}/favicon.svg` }],
     ["meta", { name: "theme-color", content: "#090b0f" }],

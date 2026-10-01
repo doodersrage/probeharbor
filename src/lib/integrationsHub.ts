@@ -29,7 +29,7 @@ export type IntegrationCard = {
 export const INTEGRATIONS_HUB_PATH = "/integrations";
 
 /** Extended developer docs (VitePress on GitHub Pages). Prefer in-app pages for hub CTAs. */
-export const DEV_DOCS_BASE = "https://doodersrage.github.io/thermaltrace";
+export const DEV_DOCS_BASE = "https://thermaltrace.dev/developers";
 
 export const INTEGRATION_CARDS: IntegrationCard[] = [
   {

@@ -32,7 +32,6 @@ export function getOrganizationSchema(siteUrl: string) {
     description: DEFAULT_DESCRIPTION,
     sameAs: [
       "https://github.com/doodersrage/thermaltrace",
-      "https://doodersrage.github.io/thermaltrace/",
     ],
     contactPoint: {
       "@type": "ContactPoint",

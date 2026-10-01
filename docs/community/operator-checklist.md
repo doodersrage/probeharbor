@@ -15,7 +15,7 @@ Tasks only **you** can complete — everything else in the HACS/integration pass
 - [ ] Bing Webmaster Tools: verify the site so IndexNow submissions (sent after each deploy) show up
 - [ ] Post one build write-up per platform (Hackster, Instructables, Arduino Project Hub) from the [draft](./build-writeup-esp32-freeze-probe.md), with your own photos
 - [ ] Ask for listings on awesome-home-assistant and ESPHome community device lists once the HACS default PR merges
-- [ ] Decide whether to serve the VitePress docs under `thermaltrace.dev/docs` instead of `doodersrage.github.io` so links to them count for the main domain
+- [ ] After the first deploy that includes `/developers/`, open `https://thermaltrace.dev/developers/` and one deep page, then update external links you control (HACS repo README, forum post) from `doodersrage.github.io/thermaltrace` to `thermaltrace.dev/developers`
 
 ## Google Play
 

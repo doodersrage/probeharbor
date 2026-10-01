@@ -25,6 +25,7 @@ Disallow: /app/oauth
 # Keep public docs and marketing crawlable
 Allow: /docs/api
 Allow: /docs/
+Allow: /developers/
 Allow: /about
 Allow: /guides
 Allow: /pricing

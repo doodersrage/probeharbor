@@ -100,6 +100,12 @@ jobs:
       - if: env.skip != 'true'
         run: pnpm build || (rm -rf node_modules/.vite && pnpm build)
 
+      - name: Build developer docs into the site (/developers/)
+        if: env.skip != 'true'
+        run: |
+          pnpm --dir docs install --frozen-lockfile --ignore-workspace
+          pnpm docs:build:site
+
       - name: Deploy to Cloudflare Workers
         if: env.skip != 'true'
         env:
