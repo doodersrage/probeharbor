@@ -53,10 +53,11 @@ export const GET: APIRoute = ({ site }) => {
 
 - Pricing and plan limits: ${siteUrl}/pricing
 - Live demo (no account): ${siteUrl}/demo
+- Pipe freeze time calculator: ${siteUrl}/freeze-time-calculator
 - Create a free account: ${siteUrl}/register
 - ESP32 freeze kit parts list: ${siteUrl}/about/esp32-freeze-kit
 - Home Assistant (HACS integration and push): ${siteUrl}/integrations/home-assistant
-- Comparisons (TempStick, Govee, Nest, Ecobee, Tempest, DIY MQTT): ${siteUrl}/compare
+- Comparisons (TempStick, YoLink, SensorPush, Shelly H&T, Govee, Nest, Ecobee, Tempest, DIY MQTT): ${siteUrl}/compare
 - Guides: ${siteUrl}/guides
 - Illustrative freeze, leak, and heat scenarios (not customer accounts): ${siteUrl}/stories
 

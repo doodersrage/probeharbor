@@ -31,6 +31,7 @@ Allow: /pricing
 Allow: /compare
 Allow: /freeze-map
 Allow: /freeze-season
+Allow: /freeze-time-calculator
 Allow: /demo
 Allow: /share-kit
 Allow: /stories/

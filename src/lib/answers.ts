@@ -332,6 +332,7 @@ export const answers: Answer[] = [
     ],
     related: [
       { label: "At what temperature do pipes freeze in a garage?", href: "/answers/garage-pipe-freeze-temperature" },
+      { label: "Pipe freeze time calculator", href: "/freeze-time-calculator" },
       { label: "Time-to-freeze explained", href: "/about/time-to-freeze" },
       { label: "Should I let faucets drip to prevent frozen pipes?", href: "/answers/drip-faucets-to-prevent-frozen-pipes" },
     ],
@@ -817,6 +818,19 @@ sensor:
     ],
   },
 ];
+
+/**
+ * Answers to link from another page: those that already link to `path`, then
+ * `fallbackSlugs` to fill up to `limit`. Keeps cross-links two-way without a
+ * second list to maintain.
+ */
+export function getAnswersRelatedTo(path: string, fallbackSlugs: string[] = [], limit = 3): Answer[] {
+  const linking = answers.filter((a) => a.related.some((link) => link.href === path));
+  const fallback = fallbackSlugs
+    .map((slug) => getAnswer(slug))
+    .filter((a): a is Answer => !!a && !linking.includes(a));
+  return [...linking, ...fallback].slice(0, limit);
+}
 
 export function getAnswer(slug: string): Answer | undefined {
   return answers.find((a) => a.slug === slug);
