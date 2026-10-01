@@ -112,3 +112,8 @@ jobs:
             exit 0
           fi
           npx wrangler deploy --config dist/server/wrangler.json
+
+      - name: Submit public URLs to IndexNow
+        if: env.skip != 'true'
+        continue-on-error: true
+        run: node scripts/ping-sitemaps.mjs "$SITE_URL"

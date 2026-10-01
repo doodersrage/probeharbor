@@ -8,6 +8,14 @@ Tasks only **you** can complete — everything else in the HACS/integration pass
 - [ ] Push freeze-map opt-ins so seed cities give way to live aggregates
 - Kit SKU / pre-flash batch is outside this repo (BOM page is ready)
 
+## Organic traffic (operator-only)
+
+- [ ] Google Search Console: confirm `sitemap-index.xml` is submitted, then check Pages → "Crawled – currently not indexed" a few weeks after the 2026-10-01 noindex of web-stack About guides (`NOINDEX_ABOUT_SLUGS` in `src/lib/sitemapPages.ts`)
+- [ ] Bing Webmaster Tools: verify the site so IndexNow submissions (sent after each deploy) show up
+- [ ] Post one build write-up per platform using the sketches (Hackster, Instructables, Arduino Project Hub), each linking to `/about/esp32-freeze-kit`
+- [ ] Ask for listings on awesome-home-assistant and ESPHome community device lists once the HACS default PR merges
+- [ ] Decide whether to serve the VitePress docs under `thermaltrace.dev/docs` instead of `doodersrage.github.io` so links to them count for the main domain
+
 ## Google Play
 
 - [ ] When review clears, set `PUBLIC_PLAY_STORE_URL` in `.env` / Worker secrets and redeploy — `/android` flips to Play CTA automatically

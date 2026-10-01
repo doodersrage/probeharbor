@@ -57,8 +57,8 @@ The Worker binds **thermaltrace.dev** (and **www** → apex via middleware). Leg
 
 ```bash
 pnpm smoke:public
-pnpm ops:smoke              # smoke + sitemap coverage + search-engine ping
-pnpm ping:sitemaps          # Google/Bing sitemap ping only
+pnpm ops:smoke              # smoke + sitemap coverage + IndexNow dry run
+pnpm ping:sitemaps          # submit public URLs to IndexNow (also runs after each deploy)
 ```
 
 Submit `https://thermaltrace.dev/sitemap-index.xml` in [Google Search Console](https://search.google.com/search-console) → Sitemaps.
