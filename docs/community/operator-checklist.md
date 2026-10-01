@@ -10,9 +10,10 @@ Tasks only **you** can complete — everything else in the HACS/integration pass
 
 ## Organic traffic (operator-only)
 
+- [ ] Google Search Console: before the SEO branch deploys, note the last 28 days of impressions, clicks, and indexed pages as a baseline
 - [ ] Google Search Console: confirm `sitemap-index.xml` is submitted, then check Pages → "Crawled – currently not indexed" a few weeks after the 2026-10-01 noindex of web-stack About guides (`NOINDEX_ABOUT_SLUGS` in `src/lib/sitemapPages.ts`)
 - [ ] Bing Webmaster Tools: verify the site so IndexNow submissions (sent after each deploy) show up
-- [ ] Post one build write-up per platform using the sketches (Hackster, Instructables, Arduino Project Hub), each linking to `/about/esp32-freeze-kit`
+- [ ] Post one build write-up per platform (Hackster, Instructables, Arduino Project Hub) from the [draft](./build-writeup-esp32-freeze-probe.md), with your own photos
 - [ ] Ask for listings on awesome-home-assistant and ESPHome community device lists once the HACS default PR merges
 - [ ] Decide whether to serve the VitePress docs under `thermaltrace.dev/docs` instead of `doodersrage.github.io` so links to them count for the main domain
 
