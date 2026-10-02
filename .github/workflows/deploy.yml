@@ -75,7 +75,21 @@ jobs:
         with:
           ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
+      # Each CI run on main triggers its own deploy. If a newer commit has landed
+      # since, leave the deploy to that commit's run so an older build never ships last.
+      - name: Skip if main has moved on
+        if: github.event_name == 'workflow_run'
+        env:
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          tip="$(git ls-remote origin refs/heads/main | cut -f1)"
+          if [ -n "$tip" ] && [ "$tip" != "$HEAD_SHA" ]; then
+            echo "::notice::Deploy skipped — main is now at ${tip}, newer than ${HEAD_SHA}."
+            echo "skip=true" >> "$GITHUB_ENV"
+          fi
+
       - name: Require production build secrets
+        if: env.skip != 'true'
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
