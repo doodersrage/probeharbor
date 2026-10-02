@@ -40,6 +40,44 @@ const memberPrice = getMemberPriceDisplay().monthly;
 const proPrice = getProPriceDisplay().monthly;
 const appStatus = await fetchAppStatusSummary();
 const featuredStory = getStory("pipe-near-miss")!;
+const guideJobs = [
+  {
+    title: "Hardware setup",
+    href: "/guides#hardware",
+    links: [
+      { href: "/about/esp32-freeze-kit", label: "ESP32 freeze kit" },
+      { href: "/accessories", label: "Accessories" },
+      { href: "/claim-puck", label: "Claim puck" },
+    ],
+  },
+  {
+    title: "Freeze alerts",
+    href: "/guides#alerts",
+    links: [
+      { href: "/answers", label: "Freezing pipes, answered" },
+      { href: "/freeze-time-calculator", label: "Freeze time calculator" },
+      { href: "/about/cold-snap-playbook", label: "Cold-snap playbook" },
+    ],
+  },
+  {
+    title: "Flood / leak alerts",
+    href: "/guides#alerts",
+    links: [
+      { href: "/about/ingest-and-webhooks", label: "Flood / leak guide" },
+      { href: "/leak-puck", label: "Leak contact puck" },
+      { href: "/about/freeze-thaw-flood-playbook", label: "Freeze-thaw flood playbook" },
+    ],
+  },
+  {
+    title: "Sharing and API",
+    href: "/guides#sharing",
+    links: [
+      { href: "/about/household-sharing-walkthrough", label: "Household sharing" },
+      { href: "/about/install-pwa", label: "Install the phone app" },
+      { href: "/docs/api", label: "HTTP API" },
+    ],
+  },
+];
 ---
 
 <Layout
@@ -356,23 +394,33 @@ const featuredStory = getStory("pipe-near-miss")!;
 
 				<HomePwaCard />
 
-				<section class="card home-guides">
+				<section class="card home-guides" aria-labelledby="home-guides-title">
 					<div class="home-guides-copy">
-						<h2 class="card-title">Guides by job</h2>
+						<h2 class="card-title" id="home-guides-title">Guides by job</h2>
 						<p class="card-subtitle mb-0">
-							Hardware setup, freeze alerts, flood/leak alerts, sharing, and the API. Then all articles if you want every guide.
+							Start with the job you need done, or open the hub for every guide.
 						</p>
 					</div>
 					<div class="home-guides-actions">
 						<a class="btn-primary" href="/guides">Open the guides hub</a>
-						<a class="btn-secondary" href="/about/esp32-freeze-kit">ESP32 freeze kit</a>
-						<a class="btn-secondary" href="/answers">Freezing pipes, answered</a>
-						<a class="btn-secondary" href="/freeze-time-calculator">Freeze time calculator</a>
-						<a class="btn-secondary" href="/accessories">Accessories</a>
-						<a class="btn-secondary" href="/claim-puck">Claim puck</a>
-						<a class="btn-secondary" href="/about/ingest-and-webhooks">Flood / leak guide</a>
 						<a class="btn-ghost" href="/about">All articles</a>
 					</div>
+					<ul class="home-guide-jobs">
+						{guideJobs.map((job) => (
+							<li class="home-guide-job">
+								<h3 class="home-guide-job-title">
+									<a href={job.href}>{job.title}</a>
+								</h3>
+								<ul class="home-guide-job-links">
+									{job.links.map((link) => (
+										<li>
+											<a class="text-link" href={link.href}>{link.label}</a>
+										</li>
+									))}
+								</ul>
+							</li>
+						))}
+					</ul>
 				</section>
 
 				<p class="home-oss mb-0">

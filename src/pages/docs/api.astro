@@ -210,27 +210,27 @@ const mqttCurl = `curl -X POST "${siteUrl}/api/ingest/mqtt" \\
             <tr>
               <td><code>400</code></td>
               <td>Missing key, invalid JSON, empty body, unusable payload</td>
-              <td><code>{`{ "error": "…" }`}</code></td>
+              <td><code>&#123; "error": "…" &#125;</code></td>
             </tr>
             <tr>
               <td><code>401</code></td>
               <td>Unknown / invalid device key</td>
-              <td><code>{`{ "error": "Invalid device key" }`}</code></td>
+              <td><code>&#123; "error": "Invalid device key" &#125;</code></td>
             </tr>
             <tr>
               <td><code>413</code></td>
               <td>Body larger than ~{maxKb}KB</td>
-              <td><code>{`{ "error": "Payload too large…" }`}</code></td>
+              <td><code>&#123; "error": "Payload too large…" &#125;</code></td>
             </tr>
             <tr>
               <td><code>429</code></td>
               <td>More than ~{INGEST_RATE_LIMIT_MAX} POSTs/min for that device key</td>
-              <td><code>{`{ "error": "Rate limit exceeded…" }`}</code></td>
+              <td><code>&#123; "error": "Rate limit exceeded…" &#125;</code></td>
             </tr>
             <tr>
               <td><code>500</code></td>
               <td>Server-side persistence failure</td>
-              <td><code>{`{ "error": "…" }`}</code></td>
+              <td><code>&#123; "error": "…" &#125;</code></td>
             </tr>
           </tbody>
         </table>
@@ -259,7 +259,7 @@ const mqttCurl = `curl -X POST "${siteUrl}/api/ingest/mqtt" \\
       </p>
       <pre class="text-xs overflow-x-auto mb-3 p-4 rounded-lg bg-[var(--color-surface-muted)]"><code>{inboundCurl}</code></pre>
       <p class="mb-0 text-sm">
-        Invalid token → <code>401</code>; bad signature → <code>401</code> <code>{`{ "error": "Invalid signature" }`}</code>.
+        Invalid token → <code>401</code>; bad signature → <code>401</code> <code>&#123; "error": "Invalid signature" &#125;</code>.
         Guide:
         <a class="text-link" href="/about/ingest-and-webhooks">Ingest &amp; webhooks</a>
         ·
@@ -294,9 +294,8 @@ const mqttCurl = `curl -X POST "${siteUrl}/api/ingest/mqtt" \\
       <p class="card-subtitle mb-4">
         Machine-readable contract for all paths above (plus MQTT bridge and devices CRUD). Prefer the downloaded YAML over any truncated preview.
       </p>
-      <p class="mb-0">
+      <p class="mb-0 flex flex-wrap items-center gap-3">
         <a class="btn-secondary" href="/openapi.yaml" download>Download openapi.yaml</a>
-        {" "}
         <a class="text-link" href="/openapi.yaml">Open in browser</a>
       </p>
     </section>
@@ -305,23 +304,23 @@ const mqttCurl = `curl -X POST "${siteUrl}/api/ingest/mqtt" \\
       <h2 class="card-title">Guides &amp; next steps</h2>
       <ul class="text-sm space-y-2 mb-0">
         <li>
-          <a class="text-link" href="/about/ingest-and-webhooks">Ingest &amp; webhooks guide</a>
+          <a class="text-link" href="/about/ingest-and-webhooks">Ingest &amp; webhooks guide</a>:
           payload shapes, HA blueprints, and alert channels
         </li>
         <li>
-          <a class="text-link" href="/about/json-probe-output-schema">JSON probe schema</a>
+          <a class="text-link" href="/about/json-probe-output-schema">JSON probe schema</a>:
           stable keys for dashboard mapping
         </li>
         <li>
-          <a class="text-link" href="/integrations">Integrations hub</a>
+          <a class="text-link" href="/integrations">Integrations hub</a>:
           HACS, MQTT, Grafana, Zapier
         </li>
         <li>
-          <a class="text-link" href="/pricing">Plans &amp; pricing</a>
+          <a class="text-link" href="/pricing">Plans &amp; pricing</a>:
           Free ingest + family live share JSON; Pro for metrics API keys, expanded share scopes, and inbound webhooks
         </li>
         <li>
-          <a class="text-link" href={`${DEV_DOCS_BASE}/`} target="_blank" rel="noreferrer">Extended developer docs ↗</a>
+          <a class="text-link" href={`${DEV_DOCS_BASE}/`} target="_blank" rel="noreferrer">Extended developer docs ↗</a>:
           VitePress on GitHub Pages
         </li>
       </ul>
