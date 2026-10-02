@@ -1,9 +1,18 @@
 name: Deploy
 
+# Runs after CI finishes on main, so a push that fails typecheck/lint/build/e2e
+# never ships (including admin pushes that bypass the branch ruleset).
+# workflow_dispatch stays as a manual override.
 on:
-  push:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
     branches: [main]
   workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
 
 # Production builds must use real secrets (Astro inlines import.meta.env at build time).
 # CI placeholders here would ship a broken Worker. Values come from repo secrets
@@ -54,8 +63,17 @@ env:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    # Only pushes to this repo's main: pull_request CI runs (including forks with
+    # a branch named main) must never reach the production secrets.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'push' &&
+       github.event.workflow_run.head_repository.full_name == github.repository)
     steps:
       - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
       - name: Require production build secrets
         env:
