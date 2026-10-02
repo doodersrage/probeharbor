@@ -105,6 +105,13 @@ test.describe("public smoke", () => {
   test("API docs page loads", async ({ page }) => {
     await page.goto("/docs/api");
     await expect(page.getByRole("heading", { name: /API documentation/i })).toBeVisible();
+    // An unclosed inline tag (e.g. <code> in a table cell) gets re-opened by the
+    // HTML parser around every later card, which drops the gaps between them.
+    const stackChildren = await page
+      .locator(".page-stack > *")
+      .evaluateAll((els) => els.map((el) => el.tagName));
+    expect(stackChildren.length).toBeGreaterThan(5);
+    expect(stackChildren.filter((tag) => tag !== "HEADER" && tag !== "SECTION")).toEqual([]);
   });
 
   test("guides hub loads", async ({ page }) => {

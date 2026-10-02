@@ -33,7 +33,34 @@ const guidesFaqs = [
       "Illustrative freeze, leak, and heat scenarios: thermaltrace.dev/stories. Versus DIY MQTT, Govee, Tempest, Nest, and Ecobee: thermaltrace.dev/compare. Home Assistant: thermaltrace.dev/integrations.",
   },
 ];
-const guideListItems = categories.flatMap((category) =>
+const alsoUseful = [
+  {
+    href: "/stories",
+    label: "Scenarios",
+    summary: "Illustrative freeze, leak, and heat walkthroughs, alert by alert.",
+  },
+  {
+    href: "/compare",
+    label: "Compare alternatives",
+    summary: "ThermalTrace vs DIY MQTT, Govee, Tempest, Nest, Ecobee, and others.",
+  },
+  {
+    href: "/integrations",
+    label: "Integrations",
+    summary: "Home Assistant, Matter, Node-RED, Influx, MQTT, and webhooks.",
+  },
+  {
+    href: "/accessories",
+    label: "Accessories",
+    summary: "Claim puck, alert beacon, door/leak/power contacts, kit labels, mounts.",
+  },
+  {
+    href: "/gift",
+    label: "Gift / referral",
+    summary: "Share an invite link: they get extra Pro trial days, and so do you when they subscribe.",
+  },
+];
+const guideListItems =categories.flatMap((category) =>
   category.links.map((link) => ({
     name: link.label,
     url: resolvePageUrl(siteUrl, link.href),
@@ -116,13 +143,16 @@ const stripHrefs = guidesHubPhotos.map((p) => p.href);
       <p class="card-subtitle mb-4">
         Stories, comparisons, and integrations sit beside the how-to library.
       </p>
-      <div class="flex flex-wrap gap-3 mb-0">
-        <a class="btn-secondary" href="/stories">Scenarios</a>
-        <a class="btn-secondary" href="/compare">Compare alternatives</a>
-        <a class="btn-secondary" href="/integrations">Integrations</a>
-        <a class="btn-ghost" href="/accessories">Accessories</a>
-        <a class="btn-ghost" href="/gift">Gift / referral</a>
-      </div>
+      <ul class="guide-hub-list guide-hub-list--grid">
+        {alsoUseful.map((link) => (
+          <li>
+            <a class="guide-hub-link" href={link.href}>
+              <span class="guide-hub-link-title">{link.label}</span>
+              <span class="guide-hub-link-summary">{link.summary}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
     </section>
 
     <FaqSection
