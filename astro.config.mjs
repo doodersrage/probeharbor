@@ -32,6 +32,7 @@ function isIndexablePublicPage(pageUrl) {
     !pageUrl.includes("/signin") &&
     !pageUrl.includes("/register") &&
     !pageUrl.includes("/forgot-password") &&
+    !pageUrl.includes("/resend-confirmation") &&
     !pageUrl.includes("/reset-password") &&
     !pageUrl.includes("/invite/") &&
     !pageUrl.includes("/share/") &&

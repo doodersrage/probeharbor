@@ -248,6 +248,17 @@ otp_expiry = 3600
 # admin_email = "admin@email.com"
 # sender_name = "Admin"
 
+# Links use token_hash -> /api/auth/confirm (verifyOtp) instead of
+# {{ .ConfirmationURL }}: signUp runs on a throwaway server client, so the
+# PKCE ?code= that ConfirmationURL ends in can never be exchanged.
+[auth.email.template.confirmation]
+subject = "Confirm your email address"
+content_path = "./supabase/templates/confirmation.html"
+
+[auth.email.template.recovery]
+subject = "Reset your password"
+content_path = "./supabase/templates/recovery.html"
+
 # Uncomment to customize email template
 # [auth.email.template.invite]
 # subject = "You have been invited"

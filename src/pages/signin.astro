@@ -30,13 +30,15 @@ if (session && user) {
   return Astro.redirect(safeRedirect);
 }
 
-const errorMessage = getSignInErrorMessage(Astro.url.searchParams.get("error"));
+const errorCode = Astro.url.searchParams.get("error");
+const errorMessage = getSignInErrorMessage(errorCode);
 const oauthDetail = Astro.url.searchParams.get("oauth_detail")?.trim() ?? "";
 const registered = Astro.url.searchParams.get("registered") === "1";
+const confirmed = Astro.url.searchParams.get("confirmed") === "1";
 const emailValue = Astro.url.searchParams.get("email") ?? "";
 const nextPath = Astro.url.searchParams.get("next") ?? "";
 const safeNext =
-  sanitizeNextPath(nextPath) ?? (registered ? REGISTER_NEXT_DEVICES : "");
+  sanitizeNextPath(nextPath) ?? (registered || confirmed ? REGISTER_NEXT_DEVICES : "");
 const registerHref = buildRegisterHref({ next: safeNext || REGISTER_NEXT_DEVICES });
 ---
 
@@ -65,11 +67,24 @@ const registerHref = buildRegisterHref({ next: safeNext || REGISTER_NEXT_DEVICES
           </p>
         </div>
       )}
+      {confirmed && (
+        <div class="alert-success mb-4" role="status">
+          <p class="m-0">
+            Email confirmed. Sign in to finish setup: next stop is <strong>Devices</strong>,
+            where you connect your first sensor.
+          </p>
+        </div>
+      )}
       {errorMessage && (
         <div class="alert-warning mb-4" role="alert">
           <p class="m-0">{errorMessage}</p>
           {oauthDetail && (
             <p class="m-0 mt-2 text-sm opacity-90">{oauthDetail}</p>
+          )}
+          {(errorCode === "email_not_confirmed" || errorCode === "confirm_link") && (
+            <p class="m-0 mt-2">
+              <a class="text-link" href="/resend-confirmation">Resend the confirmation email</a>
+            </p>
           )}
         </div>
       )}

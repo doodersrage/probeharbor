@@ -15,6 +15,7 @@ Disallow: /api/
 Disallow: /signin
 Disallow: /register
 Disallow: /forgot-password
+Disallow: /resend-confirmation
 Disallow: /reset-password
 Disallow: /invite/
 Disallow: /share/

@@ -22,6 +22,14 @@ import { fetchAppStatusSummary } from '../lib/appStatus';
 import { getStory } from '../lib/stories';
 import dashboardInsights from '../assets/marketing/thermaltrace-dashboard-insights.jpg';
 
+// Supabase's default confirmation link lands here as /?code=... after it has
+// already confirmed the address. The PKCE code can't be exchanged (its
+// verifier lived in the server client that called signUp), so send the user
+// to sign in with a confirmation notice instead of a silent homepage.
+if (Astro.url.searchParams.has("code")) {
+  return Astro.redirect("/signin?confirmed=1");
+}
+
 const { user } = await getAuthFromCookies(Astro.cookies);
 const isAuthenticated = !!user;
 

@@ -15,6 +15,8 @@ export const SIGNIN_ERROR_MESSAGES = {
     "GitHub sign-in could not read your profile or email. Revoke ThermalTrace under GitHub → Settings → Authorized OAuth Apps, then try again: the authorize screen must show ThermalTrace and request email access.",
   oauth_exchange_failed:
     "Something went wrong while completing social sign-in. Please try again.",
+  confirm_link:
+    "That confirmation link has expired or was already used. If you already confirmed, just sign in.",
   turnstile_failed:
     "Please complete the human verification checkbox, then try again.",
   rate_limited:
