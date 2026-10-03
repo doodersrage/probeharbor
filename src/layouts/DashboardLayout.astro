@@ -82,7 +82,7 @@ const householdError = Astro.url.searchParams.get("household_error") === "1";
             variant="chrome"
           />
           <div class="dashboard-topbar-freshness">
-            <ReadingAgeBadge iso={lastReadingAt} emptyLabel="No reading" />
+            <ReadingAgeBadge iso={lastReadingAt} emptyLabel="No reading" quietWhenFresh />
             <button
               type="button"
               class="btn-ghost btn-sm"
@@ -93,15 +93,6 @@ const householdError = Astro.url.searchParams.get("household_error") === "1";
             </button>
           </div>
           <div class="dashboard-topbar-tools">
-            <button
-              type="button"
-              class="dashboard-shortcut-hint btn-secondary btn-sm"
-              data-tt-shortcut-help
-              title="Search dashboard"
-              aria-label="Search dashboard"
-            >
-              <kbd>/</kbd>
-            </button>
             <KioskModeToggle client:idle />
           </div>
         </div>

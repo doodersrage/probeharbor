@@ -56,7 +56,8 @@
         "reading-age-badge--danger",
         "reading-age-badge--neutral",
       );
-      var tone = age.stale ? "danger" : age.lagging ? "warning" : "ok";
+      var fresh = el.hasAttribute("data-quiet-fresh") ? "neutral" : "ok";
+      var tone = age.stale ? "danger" : age.lagging ? "warning" : fresh;
       el.classList.add("reading-age-badge--" + tone);
     });
 

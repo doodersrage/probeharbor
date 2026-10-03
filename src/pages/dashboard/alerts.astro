@@ -282,6 +282,20 @@ const referralRewardDays = Number(
               <a class="btn-ghost btn-sm" href="/dashboard/alerts?tab=activity#recent-alert-activity">Clear</a>
             )}
           </form>
+          {canEdit && unackedAlertCount > 1 && (
+            <form
+              class="mb-4"
+              action="/api/user/alert-events/ack"
+              method="post"
+              onsubmit={`return confirm('Mark all ${unackedAlertCount} unhandled alerts as handled?');`}
+            >
+              <input type="hidden" name="action" value="ack_all" />
+              <input type="hidden" name="redirect" value="/dashboard/alerts?tab=activity" />
+              <button type="submit" class="btn-secondary btn-sm">
+                Mark all {unackedAlertCount} handled
+              </button>
+            </form>
+          )}
           <div id="recent-alert-activity">
             <AlertActivityList
               events={recentEvents}

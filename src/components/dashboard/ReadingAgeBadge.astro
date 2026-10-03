@@ -5,9 +5,14 @@ interface Props {
   iso: string | null | undefined;
   emptyLabel?: string;
   class?: string;
+  /**
+   * Grey instead of green when fresh. For summary badges (newest reading of
+   * many probes) where green would read as "everything is fine".
+   */
+  quietWhenFresh?: boolean;
 }
 
-const { iso, emptyLabel = "Never", class: className } = Astro.props;
+const { iso, emptyLabel = "Never", class: className, quietWhenFresh = false } = Astro.props;
 const age = formatRelativeAge(iso, emptyLabel);
 const tone =
   !iso
@@ -16,7 +21,9 @@ const tone =
       ? "danger"
       : age.lagging
         ? "warning"
-        : "ok";
+        : quietWhenFresh
+          ? "neutral"
+          : "ok";
 ---
 
 <span
@@ -27,6 +34,7 @@ const tone =
   ]}
   title={iso ? new Date(iso).toLocaleString() : undefined}
   data-iso={iso || undefined}
+  data-quiet-fresh={quietWhenFresh ? "" : undefined}
 >
   {age.label}
 </span>

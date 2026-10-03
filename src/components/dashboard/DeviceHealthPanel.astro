@@ -3,7 +3,7 @@ import type { DeviceWithSensors } from "../../lib/devices";
 import { formatBoolSensorValue, SENSOR_KIND_LABELS } from "../../lib/devices";
 import type { FeedHealthStatus } from "../../lib/collectHistory";
 import type { LatestSensorRow } from "../../lib/sensorReadings";
-import { formatRelativeAge, freshnessDetail } from "../../lib/relativeTime";
+import { formatRelativeAge } from "../../lib/relativeTime";
 import { freshnessDetailForSource } from "../../lib/sensorFreshness";
 import { batterySparklinePath, parseBatteryHistory } from "../../lib/batterySparkline";
 import {
@@ -64,6 +64,22 @@ const healthRank: Record<string, number> = {
   healthy: 3,
 };
 
+const healthLabels: Record<string, string> = {
+  healthy: "Healthy",
+  watch: "Watch",
+  at_risk: "At risk",
+  offline: "Offline",
+};
+
+/** Short status next to the last-seen badge; the badge already carries the age. */
+function lastSeenStatus(iso: string | null | undefined): string | null {
+  if (!iso) return "No readings yet";
+  const age = formatRelativeAge(iso);
+  if (age.stale) return "Offline";
+  if (age.lagging) return "May be offline";
+  return null;
+}
+
 const rankedDevices = [...devices].sort((a, b) => {
   const ha = scoreDeviceHealth(a, latest);
   const hb = scoreDeviceHealth(b, latest);
@@ -72,6 +88,12 @@ const rankedDevices = [...devices].sort((a, b) => {
   if (ha.score !== hb.score) return ha.score - hb.score;
   return a.name.localeCompare(b.name);
 });
+
+// Columns that are empty for every device just add width; hide them.
+const showEtaColumn = rankedDevices.some(
+  (device) => scoreDeviceHealth(device, latest).daysRemaining != null,
+);
+const showRssiColumn = rankedDevices.some((device) => formatDeviceRssi(device.meta) !== "—");
 ---
 <section class="card" id="device-health">
   <h2 class="card-title">Device health</h2>
@@ -88,7 +110,6 @@ const rankedDevices = [...devices].sort((a, b) => {
     <>
       <div class="device-health-mobile space-y-3">
         {rankedDevices.map((device) => {
-          const age = formatRelativeAge(device.last_seen_at);
           const battery = formatDeviceBattery(device.meta);
           const rssi = formatDeviceRssi(device.meta);
           const sparkPath = batterySparklinePath(parseBatteryHistory(device.meta));
@@ -99,11 +120,8 @@ const rankedDevices = [...devices].sort((a, b) => {
               <div class="flex flex-wrap items-baseline justify-between gap-2">
                 <strong>{device.name}</strong>
                 <span class:list={["font-semibold", healthTone[health.label]]}>
-                  {health.score}
-                  <span class="font-normal text-[var(--color-text-muted)]">
-                    {" · "}
-                    {health.label.replace("_", " ")}
-                  </span>
+                  {healthLabels[health.label] ?? health.label}
+                  <span class="font-normal text-[var(--color-text-muted)]"> {health.score}/100</span>
                 </span>
               </div>
               <p class="m-0 mt-1 text-xs text-[var(--color-text-muted)]">
@@ -114,12 +132,14 @@ const rankedDevices = [...devices].sort((a, b) => {
                 {" · "}
                 {device.sensors.length} sensor{device.sensors.length === 1 ? "" : "s"}
               </p>
-              <p class:list={["m-0 mt-2", age.lagging && "text-[var(--color-danger)]"]}>
+              <p class="m-0 mt-2">
                 <ReadingAgeBadge iso={device.last_seen_at} emptyLabel="Never" />
-                <span class="text-xs text-[var(--color-text-muted)]">
-                  {" · "}
-                  {device.last_seen_at ? freshnessDetail(age) : "No readings yet"}
-                </span>
+                {lastSeenStatus(device.last_seen_at) && (
+                  <span class="text-xs text-[var(--color-text-muted)]">
+                    {" · "}
+                    {lastSeenStatus(device.last_seen_at)}
+                  </span>
+                )}
               </p>
               <p class="m-0 mt-2 text-xs text-[var(--color-text-muted)]">
                 Battery {battery}
@@ -154,13 +174,12 @@ const rankedDevices = [...devices].sort((a, b) => {
             <th class="py-2 pr-3">Last seen</th>
             <th class="py-2 pr-3">Sensors</th>
             <th class="py-2 pr-3">Battery</th>
-            <th class="py-2 pr-3">ETA</th>
-            <th class="py-2">RSSI</th>
+            {showEtaColumn && <th class="py-2 pr-3">Battery ETA</th>}
+            {showRssiColumn && <th class="py-2 pr-3">RSSI</th>}
           </tr>
         </thead>
         <tbody>
           {rankedDevices.map((device) => {
-            const age = formatRelativeAge(device.last_seen_at);
             const battery = formatDeviceBattery(device.meta);
             const rssi = formatDeviceRssi(device.meta);
             const sparkPath = batterySparklinePath(parseBatteryHistory(device.meta));
@@ -178,11 +197,10 @@ const rankedDevices = [...devices].sort((a, b) => {
                 </td>
                 <td class="py-2 pr-3">
                   <span class:list={["font-semibold", healthTone[health.label]]}>
-                    {health.score}
+                    {healthLabels[health.label] ?? health.label}
                   </span>
-                  <span class="block text-xs text-[var(--color-text-muted)]">
-                    {health.label.replace("_", " ")} · {health.detail}
-                  </span>
+                  <span class="text-xs text-[var(--color-text-muted)]"> {health.score}/100</span>
+                  <span class="block text-xs text-[var(--color-text-muted)]">{health.detail}</span>
                 </td>
                 <td class="py-2 pr-3">{device.space || "—"}</td>
                 <td class="py-2 pr-3">
@@ -193,11 +211,13 @@ const rankedDevices = [...devices].sort((a, b) => {
                     </span>
                   )}
                 </td>
-                <td class:list={["py-2 pr-3", age.lagging && "text-[var(--color-danger)]"]}>
+                <td class="py-2 pr-3 whitespace-nowrap">
                   <ReadingAgeBadge iso={device.last_seen_at} emptyLabel="Never" />
-                  <span class="block text-xs text-[var(--color-text-muted)] mt-1">
-                    {device.last_seen_at ? freshnessDetail(age) : "No readings yet"}
-                  </span>
+                  {lastSeenStatus(device.last_seen_at) && (
+                    <span class="block text-xs text-[var(--color-text-muted)] mt-1">
+                      {lastSeenStatus(device.last_seen_at)}
+                    </span>
+                  )}
                 </td>
                 <td class="py-2 pr-3">{device.sensors.length}</td>
                 <td class="py-2 pr-3">
@@ -214,8 +234,10 @@ const rankedDevices = [...devices].sort((a, b) => {
                     </svg>
                   )}
                 </td>
-                <td class="py-2 pr-3">{formatBatteryEta(health.daysRemaining)}</td>
-                <td class="py-2">{rssi}</td>
+                {showEtaColumn && (
+                  <td class="py-2 pr-3">{formatBatteryEta(health.daysRemaining)}</td>
+                )}
+                {showRssiColumn && <td class="py-2 pr-3">{rssi}</td>}
               </tr>
             );
           })}

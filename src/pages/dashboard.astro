@@ -787,6 +787,20 @@ const coldestProbeSummary = (() => {
     recordedAt: coldestProbeRow.recorded_at,
   };
 })();
+const onboardingProps = {
+  hasDevices,
+  hasSensors,
+  hasHistory,
+  hasAlertsEnabled,
+  hasEmailAlerts,
+  hasTestAlert,
+  hasHouseholdMembers,
+  hasLiveSensors: latest.length > 0,
+  hasHousehold: Boolean(household.householdId),
+  hasFloodSensor: devices.some((d) => d.sensors.some((s) => s.kind === "flood")),
+  dismissed: onboardingDismissed,
+  showDemoFeed: showDemoPullNudge,
+};
 ---
 <DashboardLayout
   title="Overview"
@@ -815,20 +829,7 @@ const coldestProbeSummary = (() => {
     />
     <div id="overview-live-flash" class="dashboard-flash hidden" aria-live="polite"></div>
 
-    <DashboardOnboarding
-      hasDevices={hasDevices}
-      hasSensors={hasSensors}
-      hasHistory={hasHistory}
-      hasAlertsEnabled={hasAlertsEnabled}
-      hasEmailAlerts={hasEmailAlerts}
-      hasTestAlert={hasTestAlert}
-      hasHouseholdMembers={hasHouseholdMembers}
-      hasLiveSensors={latest.length > 0}
-      hasHousehold={Boolean(household.householdId)}
-      hasFloodSensor={devices.some((d) => d.sensors.some((s) => s.kind === "flood"))}
-      dismissed={onboardingDismissed}
-      showDemoFeed={showDemoPullNudge}
-    />
+    <DashboardOnboarding {...onboardingProps} />
 
     <GarageRiskStatusCard status={garageRisk} coldestProbe={coldestProbeSummary} />
     <div id="overview-offline-banner" class="alert-warning mb-0" role="status" hidden>
@@ -839,6 +840,7 @@ const coldestProbeSummary = (() => {
       count={unackedAlertCount}
       canEdit={canEdit}
     />
+    <DashboardOnboarding {...onboardingProps} placement="below-status" />
 
     {alertMoment && (
       <AlertMomentUpgradeCard
