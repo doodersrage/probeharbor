@@ -14,6 +14,7 @@ import {
   type FloodAlertReading,
 } from "./alerts";
 import { listRecentAlertEvents } from "./alertEvents";
+import { freezeThresholdForReading, readingIncludedInThresholdAlerts } from "./thresholdSensorScope";
 import { evaluateAlertRules, type RuleEvalContext } from "./alertRules";
 import {
   getAlertSettingsForUser,
@@ -29,6 +30,7 @@ import {
   getRecentNumericReadings,
   getFreezeDwellSamples,
   getRecentNumericReadingSamples,
+  hasNumericReadingAboveSince,
 } from "./sensorReadings";
 import { isBoolSensorKind, isNumericSensorKind } from "./sensorKinds";
 import {
@@ -94,6 +96,49 @@ async function latestThresholdAlertAcknowledged(userId: string): Promise<boolean
   const events = await listRecentAlertEvents(userId, 20).catch(() => []);
   const latest = events.find((event) => event.kind === "threshold");
   return Boolean(latest?.acknowledged_at);
+}
+
+/**
+ * "I'm on it" means the person knows: stay quiet while the same freeze
+ * continues instead of repeating every cooldown window. A repeat goes out
+ * only once a sensor has recovered above its threshold since the
+ * acknowledgement and dropped again (a new incident). Humidity alerts, readings
+ * without a sensor id, and lookup errors never suppress: when in doubt, alert.
+ */
+async function acknowledgedFreezeStillOngoing(
+  userId: string,
+  settings: AlertSettings,
+  readings: AlertReading[],
+  messages: string[],
+  dwellSamplesBySensorId: Record<string, Array<{ at: string; tempF: number }>>,
+): Promise<boolean> {
+  const freezeOnly = evaluateAlerts(
+    { ...settings, humidityThreshold: Number.POSITIVE_INFINITY },
+    readings,
+    { dwellSamplesBySensorId },
+  );
+  if (freezeOnly.length === 0 || freezeOnly.length !== messages.length) return false;
+
+  const events = await listRecentAlertEvents(userId, 20).catch(() => null);
+  const ackedAt = events?.find((event) => event.kind === "threshold")?.acknowledged_at;
+  if (!ackedAt) return false;
+
+  const freezing = readings.filter(
+    (reading) =>
+      readingIncludedInThresholdAlerts(settings.thresholdSensorScope, reading) &&
+      reading.tempf <= freezeThresholdForReading(settings, reading),
+  );
+  if (freezing.length === 0 || freezing.some((reading) => !reading.sensorId)) return false;
+  try {
+    const recovered = await Promise.all(
+      freezing.map((reading) =>
+        hasNumericReadingAboveSince(reading.sensorId!, ackedAt, freezeThresholdForReading(settings, reading)),
+      ),
+    );
+    return !recovered.some(Boolean);
+  } catch {
+    return false;
+  }
 }
 
 export async function sendThresholdAlertsIfNeeded(
@@ -167,6 +212,9 @@ export async function sendThresholdAlertsIfNeeded(
   if (messages.length === 0) return;
   // A failed delivery skips the cooldown so it retries, but not on every reading.
   if (await recentFailedThresholdAttempt(userId)) return;
+  if (await acknowledgedFreezeStillOngoing(userId, settings, readings, messages, dwellSamplesBySensorId)) {
+    return;
+  }
 
   const alertSpace = readings.find((r) => r.space)?.space ?? null;
   // Annotate, never suppress: the annotation only adds context to an alert

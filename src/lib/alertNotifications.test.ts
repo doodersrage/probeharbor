@@ -22,6 +22,12 @@ vi.mock("./alertRules", () => ({
   evaluateAlertRules: (...args: unknown[]) => mockEvaluateAlertRules(...args),
 }));
 
+const mockHasNumericReadingAboveSince = vi.fn();
+vi.mock("./sensorReadings", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("./sensorReadings")>()),
+  hasNumericReadingAboveSince: (...args: unknown[]) => mockHasNumericReadingAboveSince(...args),
+}));
+
 const mockBuildFreezeAlertContext = vi.fn();
 vi.mock("./alertContext", () => ({
   buildFreezeAlertContext: (...args: unknown[]) => mockBuildFreezeAlertContext(...args),
@@ -33,6 +39,7 @@ beforeEach(() => {
   mockMarkEscalation.mockReset().mockResolvedValue(undefined);
   mockBuildFreezeAlertContext.mockReset().mockResolvedValue(null);
   mockListRecentAlertEvents.mockReset().mockResolvedValue([]);
+  mockHasNumericReadingAboveSince.mockReset().mockResolvedValue(false);
 });
 
 describe("sendThresholdAlertsIfNeeded escalation", () => {
@@ -280,5 +287,66 @@ describe("maybeSendRateAndOutageAlerts outages", () => {
     expect(body).not.toContain("Garage");
     expect(body).toContain("1 other device is still offline");
     expect(mockMarkCooldown).toHaveBeenCalledWith("user-1", "last_outage_alert_at");
+  });
+});
+
+describe("sendThresholdAlertsIfNeeded after \"I'm on it\"", () => {
+  const settings = { ...DEFAULT_ALERT_SETTINGS, enabled: true };
+  const ackedAt = new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString();
+  const withSensor: AlertReading[] = [{ label: "Garage", tempf: 30, humidity: 40, sensorId: "s1" }];
+  const sentTemperatureAlerts = () =>
+    mockNotifyUser.mock.calls.filter((call) => call[3]?.title === "Temperature alert");
+
+  it("stays quiet while an acknowledged freeze continues", async () => {
+    mockListRecentAlertEvents.mockResolvedValue([{ kind: "threshold", acknowledged_at: ackedAt }]);
+    const { sendThresholdAlertsIfNeeded } = await import("./alertNotifications");
+
+    await sendThresholdAlertsIfNeeded("user-1", "a@example.com", settings, withSensor);
+
+    expect(mockHasNumericReadingAboveSince).toHaveBeenCalledWith("s1", ackedAt, settings.freezeThresholdF);
+    expect(sentTemperatureAlerts()).toHaveLength(0);
+    expect(mockMarkCooldown).not.toHaveBeenCalled();
+  });
+
+  it("alerts again once the sensor recovered above the threshold and dropped back", async () => {
+    mockListRecentAlertEvents.mockResolvedValue([{ kind: "threshold", acknowledged_at: ackedAt }]);
+    mockHasNumericReadingAboveSince.mockResolvedValue(true);
+    const { sendThresholdAlertsIfNeeded } = await import("./alertNotifications");
+
+    await sendThresholdAlertsIfNeeded("user-1", "a@example.com", settings, withSensor);
+
+    expect(sentTemperatureAlerts()).toHaveLength(1);
+  });
+
+  it("keeps repeating when the last alert was never acknowledged", async () => {
+    mockListRecentAlertEvents.mockResolvedValue([{ kind: "threshold", acknowledged_at: null }]);
+    const { sendThresholdAlertsIfNeeded } = await import("./alertNotifications");
+
+    await sendThresholdAlertsIfNeeded("user-1", "a@example.com", settings, withSensor);
+
+    expect(mockHasNumericReadingAboveSince).not.toHaveBeenCalled();
+    expect(sentTemperatureAlerts()).toHaveLength(1);
+  });
+
+  it("never suppresses when humidity is also alerting", async () => {
+    mockListRecentAlertEvents.mockResolvedValue([{ kind: "threshold", acknowledged_at: ackedAt }]);
+    const { sendThresholdAlertsIfNeeded } = await import("./alertNotifications");
+
+    await sendThresholdAlertsIfNeeded("user-1", "a@example.com", settings, [
+      { label: "Garage", tempf: 30, humidity: 99, sensorId: "s1" },
+    ]);
+
+    expect(sentTemperatureAlerts()).toHaveLength(1);
+  });
+
+  it("alerts when it can't tell (reading without a sensor id)", async () => {
+    mockListRecentAlertEvents.mockResolvedValue([{ kind: "threshold", acknowledged_at: ackedAt }]);
+    const { sendThresholdAlertsIfNeeded } = await import("./alertNotifications");
+
+    await sendThresholdAlertsIfNeeded("user-1", "a@example.com", settings, [
+      { label: "Garage", tempf: 30, humidity: 40 },
+    ]);
+
+    expect(sentTemperatureAlerts()).toHaveLength(1);
   });
 });

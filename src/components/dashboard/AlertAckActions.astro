@@ -29,7 +29,13 @@ const moreActions: Array<{ value: string; label: string }> = [
 >
   <input type="hidden" name="event_id" value={eventId} />
   <input type="hidden" name="redirect" value="/dashboard/alerts" />
-  <button type="submit" name="action" value="ack" class="btn-secondary btn-sm">
+  <button
+    type="submit"
+    name="action"
+    value="ack"
+    class="btn-secondary btn-sm"
+    title="Stops repeat alerts until the space warms back above your threshold"
+  >
     I'm on it
   </button>
   <details class="alert-ack-more">

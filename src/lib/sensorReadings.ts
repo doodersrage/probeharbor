@@ -114,6 +114,23 @@ export async function getRecentNumericReadings(
     .filter((v): v is number => typeof v === "number");
 }
 
+/** True when the sensor reported a value above `thresholdF` at or after `sinceIso` (one-row probe). */
+export async function hasNumericReadingAboveSince(
+  sensorId: string,
+  sinceIso: string,
+  thresholdF: number,
+): Promise<boolean> {
+  const supabase = createServerClient();
+  const { data } = await supabase
+    .from("sensor_readings")
+    .select("id")
+    .eq("sensor_id", sensorId)
+    .gte("recorded_at", sinceIso)
+    .gt("value_num", thresholdF)
+    .limit(1);
+  return (data ?? []).length > 0;
+}
+
 export async function getRecentNumericReadingSamples(
   sensorId: string,
   sinceIso: string,
