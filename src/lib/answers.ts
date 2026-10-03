@@ -73,6 +73,7 @@ export const answers: Answer[] = [
       },
     ],
     related: [
+      { label: "Will my pipes freeze tonight? (forecast)", href: "/pipe-freeze-forecast" },
       { label: "What temperature should a freeze alarm be set to?", href: "/answers/freeze-alarm-temperature-setting" },
       { label: "How long does it take for pipes to freeze?", href: "/answers/how-long-for-pipes-to-freeze" },
       { label: "ESP32 freeze kit parts list", href: "/about/esp32-freeze-kit" },
@@ -331,6 +332,7 @@ export const answers: Answer[] = [
       },
     ],
     related: [
+      { label: "Will my pipes freeze tonight? (forecast)", href: "/pipe-freeze-forecast" },
       { label: "At what temperature do pipes freeze in a garage?", href: "/answers/garage-pipe-freeze-temperature" },
       { label: "Pipe freeze time calculator", href: "/freeze-time-calculator" },
       { label: "Time-to-freeze explained", href: "/about/time-to-freeze" },
@@ -436,6 +438,7 @@ export const answers: Answer[] = [
       },
     ],
     related: [
+      { label: "Will my pipes freeze tonight? (forecast)", href: "/pipe-freeze-forecast" },
       { label: "How long does it take for pipes to freeze?", href: "/answers/how-long-for-pipes-to-freeze" },
       { label: "How do I thaw a frozen pipe safely?", href: "/answers/how-to-thaw-frozen-pipes" },
       { label: "Cold-snap alert playbook", href: "/about/cold-snap-playbook" },

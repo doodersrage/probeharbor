@@ -53,6 +53,7 @@ export const GET: APIRoute = ({ site }) => {
 
 - Pricing and plan limits: ${siteUrl}/pricing
 - Live demo (no account): ${siteUrl}/demo
+- Pipe freeze forecast (US city or ZIP, next five nights): ${siteUrl}/pipe-freeze-forecast
 - Pipe freeze time calculator: ${siteUrl}/freeze-time-calculator
 - Create a free account: ${siteUrl}/register
 - ESP32 freeze kit parts list: ${siteUrl}/about/esp32-freeze-kit

@@ -29,6 +29,15 @@ test.describe("public smoke", () => {
     await expect(page.getByRole("button", { name: /Send confirmation link/i })).toBeVisible();
   });
 
+  test("pipe freeze forecast page loads with its search", async ({ page }) => {
+    await page.goto("/pipe-freeze-forecast");
+    await expect(page.getByRole("heading", { name: /Will my pipes freeze tonight\?/i })).toBeVisible();
+    await expect(page.getByLabel(/US city or ZIP code/i)).toBeVisible();
+    await expect(page.getByRole("button", { name: /Use my location/i })).toBeVisible();
+    const jsonLd = await page.locator('script[type="application/ld+json"]').allTextContents();
+    expect(jsonLd.some((block) => block.includes('"FAQPage"'))).toBe(true);
+  });
+
   test("pricing page loads", async ({ page }) => {
     await page.goto("/pricing");
     await expect(page.getByRole("heading", { name: /Plans that grow/i })).toBeVisible();

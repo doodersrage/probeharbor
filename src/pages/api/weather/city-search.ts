@@ -31,12 +31,22 @@ export const GET: APIRoute = async ({ url, clientAddress }) => {
     });
   }
 
-  const endpoint = `https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(q)}&limit=5&appid=${apiKey}`;
+  // A bare US ZIP goes to the ZIP geocoder (one result); anything else is a name search.
+  const zip = /^\d{5}$/.test(q) ? q : null;
+  const endpoint = zip
+    ? `https://api.openweathermap.org/geo/1.0/zip?zip=${zip},US&appid=${apiKey}`
+    : `https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(q)}&limit=5&appid=${apiKey}`;
 
   try {
     const response = await fetch(endpoint, {
       signal: AbortSignal.timeout(5000),
     });
+    if (zip && response.status === 404) {
+      return new Response(JSON.stringify({ results: [] }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
     if (!response.ok) {
       return new Response(JSON.stringify({ error: "Geocode failed" }), {
         status: 502,
@@ -44,7 +54,12 @@ export const GET: APIRoute = async ({ url, clientAddress }) => {
       });
     }
     const raw = await response.json();
-    const results = normalizeGeocodeResults(raw);
+    // The ZIP geocoder returns one object with no state; label it "Name ZIP, US".
+    const results = normalizeGeocodeResults(
+      zip && raw && typeof raw === "object" && !Array.isArray(raw)
+        ? [{ ...(raw as Record<string, unknown>), state: zip }]
+        : raw,
+    );
     return new Response(JSON.stringify({ results }), {
       status: 200,
       headers: { "Content-Type": "application/json" },

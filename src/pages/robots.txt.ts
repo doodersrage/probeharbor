@@ -34,6 +34,7 @@ Allow: /compare
 Allow: /freeze-map
 Allow: /freeze-season
 Allow: /freeze-time-calculator
+Allow: /pipe-freeze-forecast
 Allow: /demo
 Allow: /share-kit
 Allow: /stories/

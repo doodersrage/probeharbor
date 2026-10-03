@@ -4271,6 +4271,96 @@
     transition: width var(--motion-duration) var(--motion-ease);
   }
 
+  /* Public /pipe-freeze-forecast tool */
+  .pipe-freeze-search {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: flex-end;
+  }
+
+  .pipe-freeze-search > label {
+    flex: 1 1 16rem;
+  }
+
+  .pipe-freeze-results {
+    list-style: none;
+    margin: 0.5rem 0 0;
+    padding: 0.25rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-raised);
+  }
+
+  .pipe-freeze-result {
+    display: block;
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--color-text);
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .pipe-freeze-result:hover,
+  .pipe-freeze-result:focus-visible {
+    background: var(--hover-wash-strong);
+  }
+
+  .pipe-freeze-headline {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--color-text);
+  }
+
+  .pipe-freeze-nights {
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
+  }
+
+  .pipe-freeze-night {
+    padding: 1rem;
+    border: 1px solid var(--color-border);
+    border-left-width: 4px;
+    border-radius: var(--radius-md);
+    background: var(--color-surface-raised);
+  }
+
+  .pipe-freeze-risk {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .pipe-freeze-risk--high {
+    border-left-color: var(--color-danger);
+  }
+
+  .pipe-freeze-risk--high .pipe-freeze-risk {
+    color: var(--color-danger);
+  }
+
+  .pipe-freeze-risk--watch {
+    border-left-color: var(--color-warning);
+  }
+
+  .pipe-freeze-risk--watch .pipe-freeze-risk {
+    color: var(--color-warning-text);
+  }
+
+  .pipe-freeze-risk--low {
+    border-left-color: var(--color-success);
+  }
+
+  .pipe-freeze-risk--low .pipe-freeze-risk {
+    color: var(--color-success-text);
+  }
+
   .dashboard-onboarding-optional-summary {
     display: flex;
     align-items: baseline;

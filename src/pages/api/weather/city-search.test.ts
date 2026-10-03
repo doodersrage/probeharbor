@@ -106,6 +106,36 @@ describe("GET /api/weather/city-search", () => {
     expect(calledUrl).toContain("appid=test-api-key");
   });
 
+  it("looks up a bare US ZIP with the ZIP geocoder and labels it with the ZIP", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve({ zip: "23219", name: "Richmond", lat: 37.5, lon: -77.4, country: "US" }),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    mockNormalizeGeocodeResults.mockImplementation((raw: unknown) => raw);
+    const { GET } = await import("./city-search");
+
+    const response = await GET(makeContext("23219"));
+
+    const [calledUrl] = fetchMock.mock.calls[0]!;
+    expect(calledUrl).toContain("/geo/1.0/zip?zip=23219,US");
+    expect(mockNormalizeGeocodeResults).toHaveBeenCalledWith([
+      expect.objectContaining({ name: "Richmond", state: "23219" }),
+    ]);
+    expect(response.status).toBe(200);
+  });
+
+  it("returns no results for an unknown ZIP instead of an error", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: false, status: 404 }));
+    const { GET } = await import("./city-search");
+
+    const response = await GET(makeContext("00000"));
+
+    expect(response.status).toBe(200);
+    expect(await readJson(response)).toEqual({ results: [] });
+  });
+
   it("returns 502 when the upstream geocode request fails", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: false }));
     const { GET } = await import("./city-search");
