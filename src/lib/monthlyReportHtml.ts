@@ -166,7 +166,7 @@ export function buildMonthlyReportHtmlDocument(data: MonthlyReportData): string 
 <body style="margin:0;padding:24px;background:#090b0f;color:#e2e8f0;font-family:system-ui,-apple-system,sans-serif;line-height:1.5">
   <div style="max-width:720px;margin:0 auto">
     <header style="margin-bottom:24px">
-      <p style="margin:0 0 8px;font-size:13px;font-weight:800;letter-spacing:-0.02em"><span style="color:#c5cbd3">Thermal</span><span style="color:#e85500">Trace</span></p>
+      <p style="margin:0 0 8px;font-size:13px;font-weight:800;letter-spacing:-0.02em"><span style="color:#c5cbd3">Thermal</span><span style="color:#ff7a00">Trace</span></p>
       <h1 style="margin:0 0 8px;font-size:28px;color:#f8fafc">${escapeHtml(reportTitle(data))} — ${escapeHtml(data.monthLabel)}</h1>
       <p style="margin:0;color:#94a3b8">${escapeHtml(periodPhrase(data))} snapshot from your saved readings and forecast outlook.</p>
     </header>

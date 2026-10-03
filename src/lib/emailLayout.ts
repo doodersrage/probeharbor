@@ -51,10 +51,12 @@ const COLORS = {
   text: "#f8fafc",
   muted: "#94a3b8",
   steel: "#c5cbd3",
-  brand: "#e85500",
+  brand: "#ff7a00",
   brandSoft: "#ff9e4a",
   alert: "#f87171",
   success: "#22c55e",
+  // Dark ink on every CTA: white on the orange/red/green accents is 2.3–3.6:1.
+  ctaInk: "#1a0d00",
 } as const;
 
 export function escapeEmailHtml(value: string): string {
@@ -258,7 +260,7 @@ export function buildBrandedEmailHtml(content: BrandedEmailContent): string {
     ? `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:8px 0 20px">
         <tr>
           <td style="border-radius:10px;background:${accent}">
-            <a href="${escapeEmailHtml(content.cta.url)}" style="display:inline-block;padding:14px 22px;color:#ffffff;font-size:15px;font-weight:700;text-decoration:none;letter-spacing:0.01em">${escapeEmailHtml(content.cta.label)}</a>
+            <a href="${escapeEmailHtml(content.cta.url)}" style="display:inline-block;padding:14px 22px;color:${COLORS.ctaInk};font-size:15px;font-weight:700;text-decoration:none;letter-spacing:0.01em">${escapeEmailHtml(content.cta.label)}</a>
           </td>
         </tr>
       </table>`
