@@ -62,7 +62,9 @@ const mapPinsJson = JSON.stringify(mapPins);
 
 const siteUrl = resolveSiteUrl(Astro.site);
 const pageUrl = resolvePageUrl(siteUrl, "/freeze-map");
-const embedSnippet = `<iframe src="${siteUrl}/embed/freeze-map" title="ThermalTrace freeze-risk map" width="100%" height="420" style="border:0;border-radius:12px" loading="lazy"></iframe>`;
+// Plain attribution link outside the iframe: links inside an iframe don't count for the host page.
+const embedSnippet = `<iframe src="${siteUrl}/embed/freeze-map" title="ThermalTrace freeze-risk map" width="100%" height="420" style="border:0;border-radius:12px" loading="lazy"></iframe>
+<p><a href="${siteUrl}/freeze-map">Freeze-risk map</a> by ThermalTrace</p>`;
 const badgeSnippet = `[![ThermalTrace freeze map](${siteUrl}/badge/freeze-map.svg)](${siteUrl}/freeze-map)`;
 const freezeMapFaqs = getMarketingFaqs("freeze-map");
 const schema = [
@@ -414,8 +416,8 @@ function trendDeltaLabel(values: number[]): string {
         <a class="text-link" href="/embed/freeze-map?compact=1">/embed/freeze-map?compact=1</a>.
       </p>
       <div class="form-field">
-        <label class="form-label" for="freeze-embed-code">iframe</label>
-        <textarea class="form-textarea font-mono text-xs" id="freeze-embed-code" rows="3" readonly>{embedSnippet}</textarea>
+        <label class="form-label" for="freeze-embed-code">Embed code</label>
+        <textarea class="form-textarea font-mono text-xs" id="freeze-embed-code" rows="4" readonly>{embedSnippet}</textarea>
         <button type="button" class="btn-secondary mt-2" data-copy-target="freeze-embed-code">Copy embed</button>
       </div>
       <div class="form-field mb-0">
