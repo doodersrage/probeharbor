@@ -57,10 +57,11 @@ const healthTone: Record<string, string> = {
   offline: "text-[var(--color-text-muted)]",
 };
 
+// A device that just went quiet is more actionable than one that has been off for days.
 const healthRank: Record<string, number> = {
   at_risk: 0,
-  offline: 1,
-  watch: 2,
+  watch: 1,
+  offline: 2,
   healthy: 3,
 };
 
@@ -70,15 +71,6 @@ const healthLabels: Record<string, string> = {
   at_risk: "At risk",
   offline: "Offline",
 };
-
-/** Short status next to the last-seen badge; the badge already carries the age. */
-function lastSeenStatus(iso: string | null | undefined): string | null {
-  if (!iso) return "No readings yet";
-  const age = formatRelativeAge(iso);
-  if (age.stale) return "Offline";
-  if (age.lagging) return "May be offline";
-  return null;
-}
 
 const rankedDevices = [...devices].sort((a, b) => {
   const ha = scoreDeviceHealth(a, latest);
@@ -134,12 +126,7 @@ const showRssiColumn = rankedDevices.some((device) => formatDeviceRssi(device.me
               </p>
               <p class="m-0 mt-2">
                 <ReadingAgeBadge iso={device.last_seen_at} emptyLabel="Never" />
-                {lastSeenStatus(device.last_seen_at) && (
-                  <span class="text-xs text-[var(--color-text-muted)]">
-                    {" · "}
-                    {lastSeenStatus(device.last_seen_at)}
-                  </span>
-                )}
+
               </p>
               <p class="m-0 mt-2 text-xs text-[var(--color-text-muted)]">
                 Battery {battery}
@@ -213,11 +200,7 @@ const showRssiColumn = rankedDevices.some((device) => formatDeviceRssi(device.me
                 </td>
                 <td class="py-2 pr-3 whitespace-nowrap">
                   <ReadingAgeBadge iso={device.last_seen_at} emptyLabel="Never" />
-                  {lastSeenStatus(device.last_seen_at) && (
-                    <span class="block text-xs text-[var(--color-text-muted)] mt-1">
-                      {lastSeenStatus(device.last_seen_at)}
-                    </span>
-                  )}
+
                 </td>
                 <td class="py-2 pr-3">{device.sensors.length}</td>
                 <td class="py-2 pr-3">

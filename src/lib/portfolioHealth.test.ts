@@ -21,6 +21,12 @@ describe("scorePropertyHealth", () => {
     expect(health.score).toBeLessThan(40);
   });
 
+  it("watches a property when some devices are silent even if one is reporting", () => {
+    const health = scorePropertyHealth({ ...base, deviceCount: 11, silentDeviceCount: 10 });
+    expect(health.label).toBe("watch");
+    expect(health.detail).toBe("10 of 11 devices silent, check power/Wi‑Fi");
+  });
+
   it("flags at-risk properties", () => {
     const health = scorePropertyHealth({
       ...base,

@@ -21,6 +21,10 @@ function readMetaNumber(meta: unknown, key: string): number | null {
   return typeof value === "number" && Number.isFinite(value) ? value : null;
 }
 
+const DAY_MS = 24 * 60 * 60 * 1000;
+/** Silence past this is "offline"; between STALE_MS and this it is "watch". */
+export const OFFLINE_MS = DAY_MS;
+
 /** Score a single device for the Devices health table. */
 export function scoreDeviceHealth(
   device: DeviceWithSensors,
@@ -68,6 +72,19 @@ export function scoreDeviceHealth(
       score: stale ? 10 : 20,
       label: "at_risk",
       detail: "Flood / leak contact wet",
+      batteryPct,
+      rssi,
+      daysRemaining,
+    };
+  }
+
+  // Silent for a day or more: call it offline rather than something to watch.
+  if (stale && ageMs >= OFFLINE_MS) {
+    const days = Math.floor(ageMs / DAY_MS);
+    return {
+      score: 20,
+      label: "offline",
+      detail: `No data for ${days} day${days === 1 ? "" : "s"}, check power/Wi‑Fi`,
       batteryPct,
       rssi,
       daysRemaining,

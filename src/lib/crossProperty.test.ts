@@ -151,6 +151,32 @@ describe("fetchCrossPropertySnapshots", () => {
     expect(result.properties[0].atRisk).toBe(true);
   });
 
+  it("counts enabled devices with no recent data as silent", async () => {
+    mockListUserHouseholds.mockResolvedValue({
+      households: [{ household_id: "house-1", role: "owner", name: "Cabin" }],
+      error: null,
+    });
+    const hoursAgo = (h: number) => new Date(Date.now() - h * 3_600_000).toISOString();
+    mockFrom.mockImplementation(
+      tableRouter({
+        devices: {
+          data: [
+            { id: "live", household_id: "house-1", enabled: true, last_seen_at: hoursAgo(0.1) },
+            { id: "dead", household_id: "house-1", enabled: true, last_seen_at: hoursAgo(72) },
+            { id: "never", household_id: "house-1", enabled: true, last_seen_at: null },
+            { id: "off", household_id: "house-1", enabled: false, last_seen_at: hoursAgo(72) },
+          ],
+          error: null,
+        },
+      }),
+    );
+
+    const { fetchCrossPropertySnapshots } = await import("./crossProperty");
+    const result = await fetchCrossPropertySnapshots("user-1");
+
+    expect(result.properties[0]).toMatchObject({ deviceCount: 4, silentDeviceCount: 2 });
+  });
+
   it("skips the sensor/reading queries entirely when no household has any devices", async () => {
     mockListUserHouseholds.mockResolvedValue({
       households: [{ household_id: "house-1", role: "owner", name: "Cabin" }],

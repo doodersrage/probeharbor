@@ -1,3 +1,4 @@
+import { STALE_MS } from "./relativeTime";
 import { createServerClient } from "./supabase";
 import { listUserHouseholds, type UserHousehold } from "./households";
 import { getAlertSettingsForUser } from "./notify";
@@ -13,6 +14,11 @@ export type PropertySnapshot = {
   floodWet: boolean;
   lastReadingAt: string | null;
   deviceCount: number;
+  /**
+   * Enabled devices with no data in the stale window. lastReadingAt is the
+   * newest reading of any device, so one live feed would otherwise hide the rest.
+   */
+  silentDeviceCount?: number;
 };
 
 /**
@@ -52,10 +58,12 @@ export async function fetchCrossPropertySnapshots(
 
   const { data: devices } = await supabase
     .from("devices")
-    .select("id, household_id")
+    .select("id, household_id, enabled, last_seen_at")
     .in("household_id", householdIds);
 
   const deviceCountByHousehold = new Map<string, number>();
+  const silentCountByHousehold = new Map<string, number>();
+  const nowMs = Date.now();
   const householdIdByDevice = new Map<string, string>();
   for (const device of devices ?? []) {
     householdIdByDevice.set(device.id, device.household_id);
@@ -63,6 +71,13 @@ export async function fetchCrossPropertySnapshots(
       device.household_id,
       (deviceCountByHousehold.get(device.household_id) ?? 0) + 1,
     );
+    const lastSeen = device.last_seen_at ? Date.parse(device.last_seen_at) : NaN;
+    if (device.enabled && !(nowMs - lastSeen < STALE_MS)) {
+      silentCountByHousehold.set(
+        device.household_id,
+        (silentCountByHousehold.get(device.household_id) ?? 0) + 1,
+      );
+    }
   }
 
   const allDeviceIds = [...householdIdByDevice.keys()];
@@ -151,6 +166,7 @@ export async function fetchCrossPropertySnapshots(
       floodWet,
       lastReadingAt: lastReadingByHousehold.get(household.household_id) ?? null,
       deviceCount: deviceCountByHousehold.get(household.household_id) ?? 0,
+      silentDeviceCount: silentCountByHousehold.get(household.household_id) ?? 0,
     };
   });
 

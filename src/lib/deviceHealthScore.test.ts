@@ -32,6 +32,27 @@ describe("deviceHealthScore", () => {
     expect(health.label).toBe("offline");
   });
 
+  it("watches a device silent for a few hours", () => {
+    const now = Date.parse("2026-01-10T12:00:00.000Z");
+    const health = scoreDeviceHealth(
+      device({ id: "d1", name: "Probe", last_seen_at: new Date(now - 3 * 3_600_000).toISOString() }),
+      [],
+      now,
+    );
+    expect(health.label).toBe("watch");
+  });
+
+  it("calls a device silent for a day or more offline", () => {
+    const now = Date.parse("2026-01-10T12:00:00.000Z");
+    const health = scoreDeviceHealth(
+      device({ id: "d1", name: "Probe", last_seen_at: new Date(now - 31 * 86_400_000).toISOString() }),
+      [],
+      now,
+    );
+    expect(health.label).toBe("offline");
+    expect(health.detail).toBe("No data for 31 days, check power/Wi‑Fi");
+  });
+
   it("formats battery ETA", () => {
     expect(formatBatteryEta(null)).toBe("—");
     expect(formatBatteryEta(1)).toBe("Replace soon");

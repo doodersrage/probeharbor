@@ -55,6 +55,15 @@ export function scorePropertyHealth(property: PropertySnapshot, nowMs = Date.now
     };
   }
 
+  const silent = property.silentDeviceCount ?? 0;
+  if (silent > 0) {
+    return {
+      score: 50,
+      label: "watch",
+      detail: `${silent} of ${property.deviceCount} device${property.deviceCount === 1 ? "" : "s"} silent, check power/Wi‑Fi`,
+    };
+  }
+
   const near =
     property.minTempF != null &&
     property.minTempF <= property.freezeThresholdF + 5;

@@ -144,6 +144,8 @@
     color: var(--color-text);
     /* Plus Jakarta Sans ships a ~0.14em space; widen it so words don't run together. */
     word-spacing: 0.1em;
+    /* Native checkboxes, radios, and ranges use the brand accent, not browser blue. */
+    accent-color: var(--color-accent);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -2283,7 +2285,9 @@
     color: var(--color-text);
   }
 
-  h2.card-title {
+  /* Collapsible card headers sit beside h2 card titles; match their size. */
+  h2.card-title,
+  summary.card-title {
     font-size: clamp(1.125rem, 2vw, 1.35rem);
     font-weight: 650;
     letter-spacing: -0.025em;
