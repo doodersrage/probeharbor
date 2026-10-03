@@ -142,14 +142,14 @@ export default defineConfig({
       name: 'Plus Jakarta Sans',
       cssVariable: "--font-sans",
       subsets: ['latin'],
-      weights: ['400', '600', '700'],
+      weights: ['400', '600', '700', '800'],
     },
     {
       provider: fontProviders.google(),
-      name: 'Sora',
-      cssVariable: "--font-display",
+      name: 'JetBrains Mono',
+      cssVariable: "--font-mono",
       subsets: ['latin'],
-      weights: ['600', '700'],
+      weights: ['500', '600'],
     },
   ],
   
