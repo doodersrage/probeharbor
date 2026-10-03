@@ -41,9 +41,11 @@ const isProOrAbove =
 
 const isProOnly = isProOrAbove && !isPortfolioOrAbove;
 
-const tierLabel =
+const tierId =
   entitlements?.tier ??
   (isPortfolioOrAbove ? "portfolio" : isProOrAbove ? "pro" : canDownloadCsv ? "member" : "free");
+// Plan names are proper nouns in the UI ("Pro", not "pro").
+const tierLabel = tierId.charAt(0).toUpperCase() + tierId.slice(1);
 
 const activeSubscriptionLabel = isPortfolioOrAbove
   ? "Portfolio"

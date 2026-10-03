@@ -130,10 +130,8 @@ const showRssiColumn = rankedDevices.some((device) => formatDeviceRssi(device.me
               </p>
               <p class="m-0 mt-2 text-xs text-[var(--color-text-muted)]">
                 Battery {battery}
-                {" · "}
-                ETA {formatBatteryEta(health.daysRemaining)}
-                {" · "}
-                RSSI {rssi}
+                {showEtaColumn && ` · ETA ${formatBatteryEta(health.daysRemaining)}`}
+                {showRssiColumn && ` · RSSI ${rssi}`}
               </p>
               {sparkPath && (
                 <svg

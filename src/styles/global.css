@@ -2934,6 +2934,12 @@
     color: var(--color-text-muted);
   }
 
+  /* Let a long subtitle wrap inside its column instead of pushing the actions to a new row. */
+  .dashboard-topbar-text {
+    flex: 1 1 18rem;
+    min-width: 0;
+  }
+
   .dashboard-topbar-actions {
     display: flex;
     flex-wrap: wrap;
