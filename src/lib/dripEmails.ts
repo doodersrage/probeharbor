@@ -14,7 +14,7 @@ import { buildUnsubscribeUrl, unsubscribeHeaders } from "./emailUnsubscribe";
 
 export type DripStageId = "day1" | "day3" | "day7";
 /** Stage ids plus the variants sent to people who have no reading yet. */
-export type DripEmailId = DripStageId | "day3_setup" | "day7_setup";
+export type DripEmailId = DripStageId | "day3_setup" | "day7_setup" | "confirm";
 
 type DripStage = {
   id: DripStageId;
@@ -140,17 +140,48 @@ export const DRIP_SETUP_EMAILS: Record<"day3_setup" | "day7_setup", DripEmail> =
   },
 };
 
+/**
+ * For accounts that never confirmed their address: they can't sign in, so
+ * device setup and the Pro pitch are useless until they confirm.
+ */
+export const DRIP_CONFIRM_EMAIL: DripEmail = {
+  subject: "Confirm your email to finish setting up ThermalTrace",
+  content: (site) => ({
+    eyebrow: "One step left",
+    preheader: "Your account is waiting on email confirmation; links expire, so grab a fresh one.",
+    title: "Confirm your email to sign in",
+    intro:
+      "You started a ThermalTrace account but the address was never confirmed, so sign-in is still locked.",
+    paragraphs: [
+      "Confirmation links expire. Request a fresh one, click it, and you'll land on Devices ready to connect a first sensor (or a demo feed if you have no hardware yet).",
+    ],
+    cta: { label: "Send a new confirmation link", url: `${site}/resend-confirmation` },
+    secondaryCta: { label: "Sign in", url: `${site}/signin` },
+    tone: "brand",
+  }),
+};
+
 export function buildDripEmail(
   emailId: DripEmailId,
   siteUrl = resolveSiteUrl(null),
   unsubscribeUrl: string | null = null,
 ): { subject: string; text: string; html: string } {
   const email: DripEmail =
-    emailId === "day3_setup" || emailId === "day7_setup"
-      ? DRIP_SETUP_EMAILS[emailId]
-      : (DRIP_STAGES.find((item) => item.id === emailId) ?? DRIP_STAGES[0]);
+    emailId === "confirm"
+      ? DRIP_CONFIRM_EMAIL
+      : emailId === "day3_setup" || emailId === "day7_setup"
+        ? DRIP_SETUP_EMAILS[emailId]
+        : (DRIP_STAGES.find((item) => item.id === emailId) ?? DRIP_STAGES[0]);
   const parts = brandedEmailParts({ ...email.content(siteUrl), unsubscribeUrl });
   return { subject: email.subject, ...parts };
+}
+
+/**
+ * Unconfirmed accounts get a confirm reminder on day 1 and day 3, then nothing
+ * (null: advance the stage without sending).
+ */
+export function dripEmailIdForUnconfirmed(stageId: DripStageId): DripEmailId | null {
+  return stageId === "day7" ? null : "confirm";
 }
 
 /** Pick the email for a stage: setup help instead of alerts/Pro when nothing has reported. */
@@ -244,16 +275,19 @@ export async function sendDripEmailsForAllUsers(
         }
       }
 
-      const unsubscribeUrl = await buildUnsubscribeUrl(siteUrl, row.user_id, "drip");
-      const emailId =
-        nextStage.id === "day1"
+      const emailId = !user.email_confirmed_at
+        ? dripEmailIdForUnconfirmed(nextStage.id)
+        : nextStage.id === "day1"
           ? nextStage.id
           : dripEmailIdForStage(nextStage.id, await hasFirstReading(row.user_id));
-      const mail = buildDripEmail(emailId, siteUrl, unsubscribeUrl);
-      await sendEmail(user.email, mail.subject, mail.text, {
-        html: mail.html,
-        headers: unsubscribeHeaders(unsubscribeUrl),
-      });
+      if (emailId) {
+        const unsubscribeUrl = await buildUnsubscribeUrl(siteUrl, row.user_id, "drip");
+        const mail = buildDripEmail(emailId, siteUrl, unsubscribeUrl);
+        await sendEmail(user.email, mail.subject, mail.text, {
+          html: mail.html,
+          headers: unsubscribeHeaders(unsubscribeUrl),
+        });
+      }
       await admin
         .from("alert_settings")
         .update({
@@ -262,7 +296,8 @@ export async function sendDripEmailsForAllUsers(
           updated_at: new Date().toISOString(),
         })
         .eq("user_id", row.user_id);
-      sent += 1;
+      if (emailId) sent += 1;
+      else skipped += 1;
     } catch (error) {
       if (isMailerRecipientNotAllowed(error)) {
         // Cloudflare Email binding is destination-restricted; do not fail the cron.
