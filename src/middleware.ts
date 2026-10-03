@@ -166,13 +166,18 @@ export const onRequest = defineMiddleware(async (context, next) => {
     if (!headers.has("Referrer-Policy")) {
       headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
     }
-    if (!headers.has("X-Frame-Options")) {
+    // /embed/* pages are read-only widgets meant for other sites' iframes
+    // (freeze map, share-link readings); SAMEORIGIN silently broke every embed.
+    const embeddable = pathname.startsWith("/embed/");
+    if (!embeddable && !headers.has("X-Frame-Options")) {
       headers.set("X-Frame-Options", "SAMEORIGIN");
     }
     if (!headers.has("Permissions-Policy")) {
+      // The public pipe freeze forecast offers "Use my location"; nothing else asks.
+      const geolocation = pathname === "/pipe-freeze-forecast" ? "(self)" : "()";
       headers.set(
         "Permissions-Policy",
-        "camera=(), microphone=(), geolocation=()",
+        `camera=(), microphone=(), geolocation=${geolocation}`,
       );
     }
     if (!headers.has("Content-Security-Policy-Report-Only")) {
@@ -183,7 +188,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
           "default-src 'self'",
           "base-uri 'self'",
           "form-action 'self'",
-          "frame-ancestors 'self'",
+          embeddable ? "frame-ancestors *" : "frame-ancestors 'self'",
           "object-src 'none'",
           "img-src 'self' data: blob: https:",
           "font-src 'self' data:",
