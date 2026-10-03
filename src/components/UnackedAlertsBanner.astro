@@ -1,33 +1,21 @@
 ---
+/** Handling alerts lives in Overview's Quick actions; this banner only links out. */
 interface Props {
   count: number;
-  canEdit?: boolean;
 }
 
-const { count, canEdit = false } = Astro.props;
+const { count } = Astro.props;
 ---
 <div
   class:list={["alert-warning mb-4", count <= 0 && "hidden"]}
   role="status"
   data-unacked-banner
   data-unacked-count={String(count)}
-  data-can-edit={canEdit ? "1" : "0"}
   hidden={count <= 0}
 >
   <strong data-overview-field="unackedCount">{count}</strong>
   <span data-unacked-label> unhandled alert{count === 1 ? "" : "s"}.</span>
   <a href="/dashboard/alerts?tab=activity" class="text-link ml-1">Review</a>
-  <span data-unacked-ack-all class:list={[(!canEdit || count <= 0) && "hidden"]}>
-    {" · "}
-    <button
-      type="button"
-      class="text-link bg-transparent border-0 p-0 cursor-pointer"
-      data-qa-action="ack_all"
-      data-qa-confirm={`Mark all ${count} unhandled alerts as handled?`}
-    >
-      Handle all
-    </button>
-  </span>
   <span data-unacked-claims class:list={[count <= 0 && "hidden"]}>
     {" · "}
     <a href="/dashboard/history?tab=exports#claims-pack" class="text-link">

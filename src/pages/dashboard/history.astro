@@ -459,26 +459,21 @@ const historyUpgradeFeature =
           : " Subscribe to unlock CSV export of your saved history."}
       </p>
       <DashboardTabNav tabs={historyTabs} activeId={historyTab} ariaLabel="History views" />
+      <p
+        class="mt-3 mb-0 text-xs text-[var(--color-text-muted)]"
+        title="Raw readings older than 90 days roll into hourly averages for longer windows."
+      >
+        Your {entitlements.tier === "admin" ? "Admin" : entitlements.tier} plan keeps{" "}
+        {formatHistoryRetention(historyDays)}
+        {entitlements.tier === "pro" || entitlements.tier === "admin" ? "+" : ""} of history;
+        readings older than 90 days are kept as hourly averages.
+      </p>
     </section>
 
     {historyUpgradeFeature && (
       <UpgradeNudge feature={historyUpgradeFeature} tier={entitlements.tier} />
     )}
 
-    <details class="card">
-      <summary class="dashboard-recommendations-summary">Plan & retention details</summary>
-      <div class="dashboard-recommendations-body">
-        <p class="mb-0 text-sm">
-          Your {entitlements.tier === "admin" ? "Admin" : entitlements.tier} plan includes{" "}
-          <strong>{formatHistoryRetention(historyDays)}</strong> of history
-          {entitlements.tier === "pro" || entitlements.tier === "admin" ? "+" : ""}.
-          Raw readings older than 90 days roll into hourly averages for longer windows.
-          {canDownloadCsv
-            ? " CSV export covers the retained window."
-            : " Member unlocks CSV export of the retained window."}
-        </p>
-      </div>
-    </details>
 
     {(historyTab === "chart" || historyTab === "table") && (
       <>

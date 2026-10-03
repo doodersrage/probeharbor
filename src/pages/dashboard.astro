@@ -836,10 +836,7 @@ const onboardingProps = {
       Showing last-known dashboard status (offline or stale cache).
     </div>
 
-    <UnackedAlertsBanner
-      count={unackedAlertCount}
-      canEdit={canEdit}
-    />
+    <UnackedAlertsBanner count={unackedAlertCount} />
     <DashboardOnboarding {...onboardingProps} placement="below-status" />
 
     {alertMoment && (
@@ -1417,18 +1414,6 @@ const onboardingProps = {
           var label = banner.querySelector("[data-unacked-label]");
           if (label) {
             label.textContent = " unhandled alert" + (n === 1 ? "" : "s") + ".";
-          }
-          var ackAllWrap = banner.querySelector("[data-unacked-ack-all]");
-          var canEdit = banner.getAttribute("data-can-edit") === "1";
-          if (ackAllWrap) {
-            ackAllWrap.classList.toggle("hidden", !(canEdit && n > 0));
-            var ackBtn = ackAllWrap.querySelector("[data-qa-action='ack_all']");
-            if (ackBtn) {
-              ackBtn.setAttribute(
-                "data-qa-confirm",
-                "Mark all " + n + " unhandled alerts as handled?",
-              );
-            }
           }
           var claims = banner.querySelector("[data-unacked-claims]");
           if (claims) claims.classList.toggle("hidden", n <= 0);

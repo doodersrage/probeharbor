@@ -443,12 +443,21 @@ export default function LiveTempsPanel({ intervalMs = 30000 }: Props) {
           </p>
           {laggingSensors.length > 1 && (
             <ul class="mb-0 mt-2 pl-5 text-sm">
-              {laggingSensors.slice(0, 4).map(({ sensor, age }) => (
+              {laggingSensors.slice(0, 4).map(({ sensor }) => (
                 <li key={`${sensor.deviceId}:${sensor.key}`}>
-                  {sensor.label} —{" "}
+                  {/* Sensor labels repeat across devices ("Temp1"); the device name tells them apart. */}
+                  {sensor.deviceName && sensor.deviceName !== sensor.label
+                    ? `${sensor.deviceName} · ${sensor.label}`
+                    : sensor.label}{" "}
+                  —{" "}
                   {freshnessDetailForSource(sensor.recorded_at, sensor.deviceSource ?? null)}
                 </li>
               ))}
+              {laggingSensors.length > 4 && (
+                <li class="list-none -ml-5 text-[var(--color-text-muted)]">
+                  and {laggingSensors.length - 4} more on Devices
+                </li>
+              )}
             </ul>
           )}
           <p class="mb-0 mt-3 text-sm">

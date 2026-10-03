@@ -30,7 +30,7 @@ interface Props {
   canvasClassName?: string;
 }
 
-const COLORS = ["#ff7a00", "#34d399", "#fbbf24", "#f472b6"];
+const COLORS = ["#e2e8f0", "#34d399", "#f472b6", "#a3e635"];
 
 export default function BatteryTrendChart({
   series,
