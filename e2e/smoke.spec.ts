@@ -38,6 +38,17 @@ test.describe("public smoke", () => {
     expect(jsonLd.some((block) => block.includes('"FAQPage"'))).toBe(true);
   });
 
+  test("embed pages can be framed by other sites; normal pages cannot", async ({ request }) => {
+    const embed = await request.get("/embed/pipe-freeze");
+    expect(embed.status()).toBe(200);
+    expect(embed.headers()["x-frame-options"]).toBeUndefined();
+    expect(await embed.text()).toContain("Add ?lat= and ?lon= for a US location.");
+    const map = await request.get("/embed/freeze-map");
+    expect(map.headers()["x-frame-options"]).toBeUndefined();
+    const pricing = await request.get("/pricing");
+    expect(pricing.headers()["x-frame-options"]).toBe("SAMEORIGIN");
+  });
+
   test("pricing page loads", async ({ page }) => {
     await page.goto("/pricing");
     await expect(page.getByRole("heading", { name: /Plans that grow/i })).toBeVisible();

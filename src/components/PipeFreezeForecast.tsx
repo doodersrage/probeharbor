@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "preact/hooks";
 import {
   describeFreezeNight,
+  embedSnippet,
   type FreezeNight,
   type FreezeRisk,
 } from "../lib/pipeFreezeForecast";
@@ -47,6 +48,7 @@ export default function PipeFreezeForecast() {
   const [forecast, setForecast] = useState<Forecast | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [copied, setCopied] = useState(false);
   const searchTimer = useRef<number | undefined>(undefined);
 
   async function load(next: Place) {
@@ -184,6 +186,33 @@ export default function PipeFreezeForecast() {
                 </article>
               ))}
             </div>
+            {place && (
+              <details class="mt-4">
+                <summary class="cursor-pointer text-sm text-link">Embed this forecast on your site</summary>
+                <p class="mt-2 mb-2 text-sm text-[var(--color-text-muted)]">
+                  A small live widget for a plumber's, property manager's, or neighborhood site. It shows tonight and
+                  the next two nights and updates on its own.
+                </p>
+                <textarea class="form-textarea font-mono text-xs w-full" rows={4} readOnly>
+                  {embedSnippet(window.location.origin, place)}
+                </textarea>
+                <button
+                  type="button"
+                  class="btn-secondary btn-sm mt-2"
+                  onClick={async () => {
+                    try {
+                      await navigator.clipboard.writeText(embedSnippet(window.location.origin, place));
+                      setCopied(true);
+                      window.setTimeout(() => setCopied(false), 2000);
+                    } catch {
+                      setCopied(false);
+                    }
+                  }}
+                >
+                  {copied ? "Copied" : "Copy embed code"}
+                </button>
+              </details>
+            )}
           </div>
         )}
       </div>

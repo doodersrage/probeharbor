@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   describeFreezeNight,
+  embedSnippet,
   parseWindMph,
   riskForNight,
   summarizeFreezeNights,
@@ -88,5 +89,15 @@ describe("worstRisk and describeFreezeNight", () => {
     expect(worstRisk([])).toBe("low");
     expect(describeFreezeNight(watch!)).toMatch(/^Below freezing for about 3 hours, low 30°F\./);
     expect(describeFreezeNight(low!)).toBe("Stays above freezing (low 35°F).");
+  });
+});
+
+describe("embedSnippet", () => {
+  it("builds an iframe plus a plain attribution link, escaping the place name", () => {
+    const snippet = embedSnippet("https://thermaltrace.dev", { label: 'Joe\'s "Shop" <AK>', lat: 64.8378, lon: -147.7164 });
+    const [iframe, credit] = snippet.split("\n");
+    expect(iframe).toContain('src="https://thermaltrace.dev/embed/pipe-freeze?lat=64.838&amp;lon=-147.716&amp;place=');
+    expect(iframe).toContain('title="Pipe freeze forecast for Joe\'s &quot;Shop&quot; &lt;AK&gt;"');
+    expect(credit).toBe('<p><a href="https://thermaltrace.dev/pipe-freeze-forecast">Pipe freeze forecast</a> by ThermalTrace</p>');
   });
 });

@@ -128,3 +128,20 @@ export function describeFreezeNight(night: FreezeNight): string {
   }
   return parts.join(" ");
 }
+
+function escapeAttr(value: string): string {
+  return value.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+/** iframe plus a plain attribution link: links inside an iframe don't count for the host page. */
+export function embedSnippet(origin: string, place: { label: string; lat: number; lon: number }): string {
+  const params = new URLSearchParams({
+    lat: place.lat.toFixed(3),
+    lon: place.lon.toFixed(3),
+    place: place.label,
+  });
+  return [
+    `<iframe src="${origin}/embed/pipe-freeze?${params.toString().replace(/&/g, "&amp;")}" title="Pipe freeze forecast for ${escapeAttr(place.label)}" width="100%" height="200" style="border:0" loading="lazy"></iframe>`,
+    `<p><a href="${origin}/pipe-freeze-forecast">Pipe freeze forecast</a> by ThermalTrace</p>`,
+  ].join("\n");
+}
