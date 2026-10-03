@@ -14,6 +14,21 @@ test.describe("public smoke", () => {
     expect(jsonLd.some((block) => block.includes('"FAQPage"'))).toBe(true);
   });
 
+  test("a stray confirmation ?code= on the homepage forwards to sign-in with a notice", async ({ page }) => {
+    await page.goto("/?code=unexchangeable");
+    await expect(page).toHaveURL(/\/signin\?confirmed=1/);
+    await expect(page.getByText(/Email confirmed\. Sign in to finish setup/i)).toBeVisible();
+  });
+
+  test("a bad confirmation link explains itself and offers a resend", async ({ page }) => {
+    await page.goto("/api/auth/confirm?token_hash=bogus&type=email");
+    await expect(page).toHaveURL(/\/signin\?error=confirm_link/);
+    await expect(page.getByText(/confirmation link has expired or was already used/i)).toBeVisible();
+    await page.getByRole("link", { name: /Resend the confirmation email/i }).click();
+    await expect(page.getByRole("heading", { name: /Resend confirmation email/i })).toBeVisible();
+    await expect(page.getByRole("button", { name: /Send confirmation link/i })).toBeVisible();
+  });
+
   test("pricing page loads", async ({ page }) => {
     await page.goto("/pricing");
     await expect(page.getByRole("heading", { name: /Plans that grow/i })).toBeVisible();
