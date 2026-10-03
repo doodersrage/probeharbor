@@ -1,3 +1,7 @@
+---
+description: "Install the official ThermalTrace HACS integration to bring garage and crawlspace temperature, humidity, and leak sensors into Home Assistant."
+---
+
 # Home Assistant
 
 ThermalTrace ships an **official [HACS custom integration](https://github.com/doodersrage/thermaltrace-home-assistant)**. Product landing page: [thermaltrace.dev/integrations/home-assistant](https://thermaltrace.dev/integrations/home-assistant).

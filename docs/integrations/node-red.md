@@ -1,3 +1,7 @@
+---
+description: "Import the ready-made Node-RED flow that bridges MQTT sensor topics to ThermalTrace push ingest, then set your key and deploy."
+---
+
 # Node-RED
 
 Import the ready-made MQTT → HTTPS bridge flow:

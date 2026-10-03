@@ -1,3 +1,7 @@
+---
+description: "ThermalTrace HTTP API reference: device-key ingest, Bearer API keys, share-link JSON, Prometheus metrics, and the OpenAPI contract."
+---
+
 # HTTP API
 
 Machine-readable contract:

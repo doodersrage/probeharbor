@@ -1,3 +1,7 @@
+---
+description: "Push ESPHome temperature and humidity and Shelly door-contact events to ThermalTrace over HTTPS, with copy-paste ESPHome YAML."
+---
+
 # ESPHome & Shelly → ThermalTrace
 
 ThermalTrace does not ship ESPHome or Shelly components. Use HTTPS **push ingest** from firmware you already run on the LAN.

@@ -63,6 +63,7 @@ features:
     details: Long-form wiring, freeze playbooks, and journeys live on the app site Guides hub (and all articles).
     link: https://thermaltrace.dev/guides
     linkText: thermaltrace.dev/guides
+description: "Developer docs for ThermalTrace: push ingest, the HTTP API, sensor sketches, self-hosting, and Home Assistant, MQTT, and Grafana integrations."
 ---
 
 ## Where to go

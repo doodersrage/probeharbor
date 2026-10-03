@@ -1,3 +1,7 @@
+---
+description: "Ready-made ThermalTrace firmware for DS18B20, MAX31855, and MAX6675 probes: Arduino, MicroPython, CircuitPython, Zephyr, CH32V, and AVR."
+---
+
 # Sensor sketches
 
 Firmware samples live in the repo:

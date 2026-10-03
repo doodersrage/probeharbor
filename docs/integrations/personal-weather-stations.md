@@ -1,3 +1,7 @@
+---
+description: "Use an Ambient Weather or WeatherFlow Tempest station as ThermalTrace's outdoor source for freeze context at your actual address."
+---
+
 # Personal weather stations
 
 Use your **Ambient Weather** or **WeatherFlow Tempest** station for outdoor context instead of a distant OpenWeather city.

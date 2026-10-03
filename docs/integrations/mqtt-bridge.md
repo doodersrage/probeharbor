@@ -1,3 +1,7 @@
+---
+description: "Mirror MQTT readings from Mosquitto or Home Assistant to ThermalTrace over HTTPS for cloud freeze alerts and history, no broker required."
+---
+
 # MQTT → ThermalTrace bridge
 
 ThermalTrace does **not** run an MQTT broker. Keep Mosquitto / Home Assistant MQTT on your LAN, then mirror readings to cloud alerts and history over HTTPS.

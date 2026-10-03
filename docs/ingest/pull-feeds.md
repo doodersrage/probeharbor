@@ -1,3 +1,7 @@
+---
+description: "Let ThermalTrace poll a probe that already serves HTTPS JSON: add the feed URL, test it, and auto-import probe keys from the response."
+---
+
 # Pull feeds
 
 If your probe already serves HTTPS JSON (Arduino Ethernet server, FastAPI relay, etc.), use a **pull feed** instead of push ingest.

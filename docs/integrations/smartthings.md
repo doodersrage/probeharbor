@@ -1,3 +1,7 @@
+---
+description: "Add ThermalTrace garage temperature, humidity, and leak sensors to SmartThings over Matter with the Matterbridge plugin on your LAN."
+---
+
 # SmartThings (via Matter)
 
 ThermalTrace does **not** ship a SmartThings Cloud-to-Cloud connector.

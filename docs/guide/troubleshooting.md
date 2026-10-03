@@ -1,3 +1,7 @@
+---
+description: "Fix common ThermalTrace problems: ingest 401s, devices online with an empty dashboard, lost ingest keys, and alerts that never arrive."
+---
+
 # Troubleshooting
 
 ## Ingest returns 401

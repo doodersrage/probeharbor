@@ -1,3 +1,7 @@
+---
+description: "Store ThermalTrace readings long-term in InfluxDB or VictoriaMetrics by scraping its Prometheus metrics with Telegraf; sample config included."
+---
+
 # InfluxDB, Telegraf & VictoriaMetrics
 
 Scrape Pro Prometheus metrics into a long-term TSDB — same endpoint Grafana uses.

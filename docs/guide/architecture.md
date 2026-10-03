@@ -1,3 +1,7 @@
+---
+description: "How ThermalTrace is built: Astro on Cloudflare Workers, Supabase Postgres with RLS, Stripe billing, and the push and pull data paths."
+---
+
 # Architecture
 
 ThermalTrace is an **Astro 6** app with **`output: 'server'`** on **Cloudflare Workers**, **Supabase** (Auth + Postgres + RLS), and **Stripe** for paid plans.

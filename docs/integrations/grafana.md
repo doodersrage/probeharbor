@@ -1,3 +1,7 @@
+---
+description: "Graph ThermalTrace probes in Grafana by scraping the Prometheus metrics endpoint with an API key; Prometheus data source setup."
+---
+
 # Grafana & Prometheus
 
 Pro API keys expose Prometheus metrics:

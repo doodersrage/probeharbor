@@ -1,3 +1,7 @@
+---
+description: "POST temperature, humidity, and leak readings to ThermalTrace with a per-device ingest key. Payload formats, health fields, and auto-import."
+---
+
 # Push ingest
 
 Create a **push** device under **[Dashboard → Devices](https://thermaltrace.dev/dashboard/devices)** on the live app. You receive a per-device ingest key in a **30-minute callout** (survives refresh until dismissed). **Lost it later?** Use **Reveal ingest key** on the device card when key recovery is enabled on the server, or **Rotate key** for a new one.

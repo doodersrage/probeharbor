@@ -1,3 +1,7 @@
+---
+description: "Deploy and operate a ThermalTrace instance: checks, Supabase migrations, Worker secrets, Cloudflare deploys, and cron jobs."
+---
+
 # Deploy & ops
 
 Production app: [thermaltrace.dev](https://thermaltrace.dev).

@@ -1,3 +1,7 @@
+---
+description: "Run ThermalTrace locally: clone, install with pnpm, fill .env with Supabase and site keys, and start the Astro dev server."
+---
+
 # Local development
 
 ```bash

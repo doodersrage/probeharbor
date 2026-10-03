@@ -1,3 +1,7 @@
+---
+description: "Expose ThermalTrace sensors to Apple Home, Google Home, and Alexa through the Matterbridge plugin on a Raspberry Pi or other LAN host."
+---
+
 # Matter / Apple Home
 
 ThermalTrace ships a **[Matterbridge plugin](https://github.com/doodersrage/thermaltrace-matter)** that polls a family live share link and exposes sensors to Apple Home, Google Home, Alexa, and other Matter controllers.

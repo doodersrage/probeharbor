@@ -19,23 +19,23 @@ export default defineConfig({
   // Operator notes and drafts live in the repo, not on the published site.
   srcExclude: ["README.md", "analytics-funnel.md", "community/**"],
   sitemap: onMainDomain ? { hostname: docs } : undefined,
-  transformHead({ pageData }) {
+  transformHead({ pageData, siteData }) {
     if (pageData.isNotFound) return [];
     const path = pageData.relativePath.replace(/(^|\/)index\.md$/, "$1").replace(/\.md$/, "");
-    return [["link", { rel: "canonical", href: `${docs}${path}` }]];
+    const url = `${docs}${path}`;
+    // Per-page share previews: each page's own title, description, and URL.
+    const title = pageData.title ? `${pageData.title} | ${siteData.title}` : siteData.title;
+    const description = pageData.frontmatter.description ?? pageData.description ?? siteData.description;
+    return [
+      ["link", { rel: "canonical", href: url }],
+      ["meta", { property: "og:title", content: title }],
+      ["meta", { property: "og:description", content: description }],
+      ["meta", { property: "og:url", content: url }],
+    ];
   },
   head: [
     ["link", { rel: "icon", href: `${site}/favicon.svg` }],
     ["meta", { name: "theme-color", content: "#090b0f" }],
-    ["meta", { property: "og:title", content: "ThermalTrace Docs" }],
-    [
-      "meta",
-      {
-        property: "og:description",
-        content: "Ingest API, sensor sketches, webhooks, and local development for ThermalTrace.",
-      },
-    ],
-    ["meta", { property: "og:url", content: docs }],
     ["meta", { property: "og:image", content: `${site}/og-dashboard.jpg` }],
   ],
   themeConfig: {

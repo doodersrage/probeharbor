@@ -1,3 +1,7 @@
+---
+description: "Send Home Assistant sensors to ThermalTrace with the official HACS integration, HTTPS push ingest, the MQTT bridge, or share-link polling."
+---
+
 # Home Assistant integration
 
 Install the official **[HACS custom integration](https://github.com/doodersrage/thermaltrace-home-assistant)** for automatic entities, or wire manually below.

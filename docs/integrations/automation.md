@@ -1,3 +1,7 @@
+---
+description: "Route ThermalTrace freeze and leak alerts to IFTTT, n8n, Zapier, Make, or Google Sheets with outbound webhooks and ready-made recipes."
+---
+
 # IFTTT, n8n & Sheets
 
 Pro outbound alert webhooks work with IFTTT Maker, self-hosted n8n, Zapier, and Make.

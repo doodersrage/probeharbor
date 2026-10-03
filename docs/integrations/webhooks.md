@@ -1,3 +1,7 @@
+---
+description: "ThermalTrace outbound alert webhooks: the JSON payload each freeze, leak, or outage alert POSTs, and how to verify its HMAC signature."
+---
+
 # Alert webhooks
 
 Pro accounts can enable an **outbound webhook** under Dashboard → Alerts. Each alert POSTs JSON:

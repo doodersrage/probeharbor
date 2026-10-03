@@ -71,7 +71,11 @@ const {
   ogModifiedTime,
   ogSection,
 } = Astro.props;
-const pageTitle = title ? `${title} · ${BRAND_NAME}` : BRAND_NAME;
+// Search results cut titles around 60 characters. Long question-style titles
+// keep their wording and drop the brand suffix instead of losing the end.
+const MAX_TITLE_WITH_BRAND = 62;
+const brandedTitle = title ? `${title} · ${BRAND_NAME}` : BRAND_NAME;
+const pageTitle = title && brandedTitle.length > MAX_TITLE_WITH_BRAND ? title : brandedTitle;
 const metaDescription = description ?? getDefaultDescription();
 const siteUrl = resolveSiteUrl(Astro.site);
 const currentPath = Astro.url.pathname;
