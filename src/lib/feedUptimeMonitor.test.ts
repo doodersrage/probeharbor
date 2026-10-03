@@ -1,11 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { FeedHealthStatus } from "./collectHistory";
 
-function mockQuery(result: { data?: unknown; error?: unknown }) {
+/** `lastOk` is what the last-successful-check lookup (maybeSingle) returns. */
+function mockQuery(result: { data?: unknown; error?: unknown }, lastOk: string | null = null) {
   const builder: Record<string, unknown> = {};
-  for (const method of ["select", "eq", "insert", "update"]) {
+  for (const method of ["select", "eq", "insert", "update", "order", "limit"]) {
     builder[method] = vi.fn(() => builder);
   }
+  builder.maybeSingle = vi.fn(() =>
+    Promise.resolve({ data: lastOk ? { checked_at: lastOk } : null, error: null }),
+  );
   (builder as { then: unknown }).then = (
     resolve: (value: unknown) => unknown,
     reject?: (reason: unknown) => unknown,
@@ -165,7 +169,11 @@ describe("runFeedUptimeForAllUsers", () => {
       ],
       error: null,
     });
-    const updateBuilder = mockQuery({ error: null });
+    // Both feeds were reachable an hour ago, after the previous alert: new outages.
+    const updateBuilder = mockQuery(
+      { error: null },
+      new Date(Date.now() - 60 * 60 * 1000).toISOString(),
+    );
     mockFrom.mockReturnValue(updateBuilder);
     mockGetAlertSettingsForUser.mockResolvedValue({
       feedUptimeAlertsEnabled: true,
@@ -211,6 +219,29 @@ describe("runFeedUptimeForAllUsers", () => {
     expect(mockNotifyUser).toHaveBeenCalled();
   });
 
+  it("does not re-alert for a feed that has stayed down since the last alert", async () => {
+    mockListAllHouseholdOwnerUserIds.mockResolvedValue(["u1"]);
+    mockCheckFeedHealth.mockResolvedValue({
+      statuses: [status({ ok: false, message: "timeout" })],
+      error: null,
+    });
+    // Last reachable 3 days ago; already reported by the alert 5 hours ago.
+    mockFrom.mockReturnValue(
+      mockQuery({ error: null }, new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString()),
+    );
+    mockGetAlertSettingsForUser.mockResolvedValue({
+      feedUptimeAlertsEnabled: true,
+      lastFeedUptimeAlertAt: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
+      email: "user@example.com",
+    });
+    const { runFeedUptimeForAllUsers } = await import("./feedUptimeMonitor");
+
+    const result = await runFeedUptimeForAllUsers();
+
+    expect(mockNotifyUser).not.toHaveBeenCalled();
+    expect(result.alertsSent).toBe(0);
+  });
+
   it("truncates a very long digest body to 1500 characters", async () => {
     mockListAllHouseholdOwnerUserIds.mockResolvedValue(["u1"]);
     const longMessage = "x".repeat(2000);
@@ -249,5 +280,22 @@ describe("runFeedUptimeForAllUsers", () => {
     const result = await runFeedUptimeForAllUsers();
 
     expect(result.errors).toEqual(["u1: Unknown error"]);
+  });
+});
+
+describe("isNewFeedOutage", () => {
+  const alertAt = "2026-01-10T12:00:00.000Z";
+
+  it("treats any outage as new before the first feed alert", async () => {
+    const { isNewFeedOutage } = await import("./feedUptimeMonitor");
+    expect(isNewFeedOutage(null, null)).toBe(true);
+    expect(isNewFeedOutage("2025-01-01T00:00:00.000Z", null)).toBe(true);
+  });
+
+  it("is new only when the feed was reachable after the last alert", async () => {
+    const { isNewFeedOutage } = await import("./feedUptimeMonitor");
+    expect(isNewFeedOutage("2026-01-10T13:00:00.000Z", alertAt)).toBe(true);
+    expect(isNewFeedOutage("2026-01-10T11:00:00.000Z", alertAt)).toBe(false);
+    expect(isNewFeedOutage(null, alertAt)).toBe(false);
   });
 });

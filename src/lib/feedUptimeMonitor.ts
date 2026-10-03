@@ -22,6 +22,33 @@ export async function storeFeedUptimeChecks(
   await supabase.from("feed_uptime_checks").insert(rows);
 }
 
+/**
+ * True when a down feed has not been reported yet: it was last reachable after
+ * the previous feed alert (or has never been alerted on). A feed that stays
+ * down is reported once instead of every cooldown window.
+ */
+export function isNewFeedOutage(lastOkAt: string | null, lastAlertAt: string | null): boolean {
+  const lastAlert = lastAlertAt ? Date.parse(lastAlertAt) : NaN;
+  if (Number.isNaN(lastAlert)) return true;
+  if (!lastOkAt) return false;
+  const lastOk = Date.parse(lastOkAt);
+  return !Number.isNaN(lastOk) && lastOk > lastAlert;
+}
+
+async function lastOkCheckAt(userId: string, feedId: string): Promise<string | null> {
+  const supabase = createServerClient();
+  const { data } = await supabase
+    .from("feed_uptime_checks")
+    .select("checked_at")
+    .eq("user_id", userId)
+    .eq("feed_id", feedId)
+    .eq("ok", true)
+    .order("checked_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  return typeof data?.checked_at === "string" ? data.checked_at : null;
+}
+
 export async function runFeedUptimeForAllUsers(): Promise<{
   checked: number;
   failed: number;
@@ -56,7 +83,14 @@ export async function runFeedUptimeForAllUsers(): Promise<{
         : 0;
       if (Date.now() - lastAt < 4 * 60 * 60 * 1000) continue;
 
-      const body = down
+      const newlyDown: FeedHealthStatus[] = [];
+      for (const s of down) {
+        const lastOk = await lastOkCheckAt(userId, s.feedId);
+        if (isNewFeedOutage(lastOk, settings.lastFeedUptimeAlertAt)) newlyDown.push(s);
+      }
+      if (newlyDown.length === 0) continue;
+
+      const body = newlyDown
         .map((s) => `${s.feedName}: ${s.message}`)
         .join("\n")
         .slice(0, 1500);

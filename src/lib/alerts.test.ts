@@ -11,6 +11,7 @@ import {
   evaluateRssiHealth,
   getAlertSettingsFromMetadata,
   isAlertCooldownActive,
+  isNewOutage,
   parseChannelSeverity,
   resolveAlertEmail,
   type AlertReading,
@@ -284,6 +285,41 @@ describe("evaluateOutage", () => {
     expect(evaluateOutage(settings, "Garage", atThreshold, now)).toBe(
       "Garage has been silent for 2.0 hours (outage threshold 2h).",
     );
+  });
+});
+
+describe("isNewOutage", () => {
+  const hour = 60 * 60 * 1000;
+  const alertAt = Date.parse("2026-01-10T12:00:00.000Z");
+  const settings = {
+    ...enabled,
+    outageHours: 2,
+    lastOutageAlertAt: new Date(alertAt).toISOString(),
+  };
+  const iso = (ms: number) => new Date(ms).toISOString();
+
+  it("treats every outage as new before any outage alert was sent", () => {
+    const fresh = { ...settings, lastOutageAlertAt: null };
+    expect(isNewOutage(fresh, iso(alertAt - 30 * 24 * hour))).toBe(true);
+    expect(isNewOutage(fresh, null)).toBe(true);
+  });
+
+  it("stays quiet for a device that was already silent at the last alert", () => {
+    // Dead for a month: reported once, not every cooldown window after.
+    expect(isNewOutage(settings, iso(alertAt - 30 * 24 * hour))).toBe(false);
+    // Outage began exactly at the last alert: already covered by it.
+    expect(isNewOutage(settings, iso(alertAt - 2 * hour))).toBe(false);
+  });
+
+  it("reports a device whose outage began after the last alert", () => {
+    // Last seen 1h before the alert: its 2h window ended after the alert went out.
+    expect(isNewOutage(settings, iso(alertAt - 1 * hour))).toBe(true);
+    // Recovered after the alert, then went silent again.
+    expect(isNewOutage(settings, iso(alertAt + 5 * hour))).toBe(true);
+  });
+
+  it("does not re-report never-reporting devices once an outage alert went out", () => {
+    expect(isNewOutage(settings, null)).toBe(false);
   });
 });
 

@@ -5,6 +5,7 @@ import {
   evaluateFloodAlerts,
   evaluateForecastFreeze,
   evaluateOutage,
+  isNewOutage,
   evaluateRateChange,
   evaluateRssiHealth,
   isAlertCooldownActive,
@@ -602,15 +603,26 @@ export async function maybeSendRateAndOutageAlerts(
   if (!settings.enabled) return;
 
   const outageMessages: string[] = [];
+  let stillOutCount = 0;
   for (const device of devices.filter((d) => d.enabled)) {
     const msg = evaluateOutage(settings, device.name, device.last_seen_at);
-    if (msg) outageMessages.push(msg);
+    if (!msg) continue;
+    // Report each outage once; devices already reported stay quiet until they recover.
+    if (isNewOutage(settings, device.last_seen_at)) outageMessages.push(msg);
+    else stillOutCount += 1;
   }
 
   if (outageMessages.length > 0 && !isAlertCooldownActive(settings.lastOutageAlertAt)) {
+    const body =
+      stillOutCount > 0
+        ? [
+            ...outageMessages,
+            `${stillOutCount} other device${stillOutCount === 1 ? " is" : "s are"} still offline from earlier alerts.`,
+          ]
+        : outageMessages;
     await notifyUser(userId, email, settings, {
       title: "Device outage alert",
-      body: outageMessages.join("\n"),
+      body: body.join("\n"),
       kind: "outage",
     });
     await markCooldown(userId, "last_outage_alert_at");

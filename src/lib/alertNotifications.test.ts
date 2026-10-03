@@ -245,3 +245,40 @@ describe("sendThresholdAlertsIfNeeded delivery retry", () => {
     expect(mockMarkCooldown).toHaveBeenCalledWith("user-1", "last_alert_sent_at");
   });
 });
+
+describe("maybeSendRateAndOutageAlerts outages", () => {
+  const hoursAgo = (h: number) => new Date(Date.now() - h * 60 * 60 * 1000).toISOString();
+  const device = (name: string, lastSeenAt: string) =>
+    ({ id: name, name, enabled: true, last_seen_at: lastSeenAt, sensors: [] }) as never;
+  const settings = { ...DEFAULT_ALERT_SETTINGS, enabled: true, outageHours: 2 };
+
+  it("does not re-alert for a device that was already offline at the last outage alert", async () => {
+    const { maybeSendRateAndOutageAlerts } = await import("./alertNotifications");
+    await maybeSendRateAndOutageAlerts(
+      "user-1",
+      "a@example.com",
+      [device("Garage", hoursAgo(30 * 24))],
+      { ...settings, lastOutageAlertAt: hoursAgo(5) },
+    );
+
+    expect(mockNotifyUser).not.toHaveBeenCalled();
+    expect(mockMarkCooldown).not.toHaveBeenCalled();
+  });
+
+  it("alerts only the newly silent device and counts the ones already reported", async () => {
+    const { maybeSendRateAndOutageAlerts } = await import("./alertNotifications");
+    await maybeSendRateAndOutageAlerts(
+      "user-1",
+      "a@example.com",
+      [device("Garage", hoursAgo(30 * 24)), device("Attic", hoursAgo(3))],
+      { ...settings, lastOutageAlertAt: hoursAgo(5) },
+    );
+
+    expect(mockNotifyUser).toHaveBeenCalledTimes(1);
+    const body: string = mockNotifyUser.mock.calls[0][3].body;
+    expect(body).toContain("Attic has been silent");
+    expect(body).not.toContain("Garage");
+    expect(body).toContain("1 other device is still offline");
+    expect(mockMarkCooldown).toHaveBeenCalledWith("user-1", "last_outage_alert_at");
+  });
+});

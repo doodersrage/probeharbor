@@ -737,6 +737,28 @@ export function evaluateOutage(
   return null;
 }
 
+/**
+ * True when this device's outage began after the last outage alert, so it has
+ * not been reported yet. A device that stays silent is reported once; it is
+ * reported again only after it recovers (last_seen_at moves forward) and goes
+ * silent again. Without this, a dead device re-alerted every cooldown window.
+ *
+ * Devices that never reported have no outage start; they count as new only
+ * when no outage alert has been sent yet.
+ */
+export function isNewOutage(
+  settings: AlertSettings,
+  lastSeenAt: string | null,
+): boolean {
+  const lastAlert = settings.lastOutageAlertAt ? Date.parse(settings.lastOutageAlertAt) : NaN;
+  if (Number.isNaN(lastAlert)) return true;
+  if (!lastSeenAt) return false;
+  const lastSeen = Date.parse(lastSeenAt);
+  if (Number.isNaN(lastSeen)) return false;
+  const outageStart = lastSeen + settings.outageHours * 60 * 60 * 1000;
+  return outageStart > lastAlert;
+}
+
 export function serializeAlertSettings(settings: AlertSettings): Record<string, unknown> {
   return {
     enabled: settings.enabled,
