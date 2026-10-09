@@ -7,31 +7,10 @@
       "namespace": "android_app",
       "package_name": "dev.probeharbor.android",
       "sha256_cert_fingerprints": [
-        "FF67EBBB981232FD5A0C7C3338DE137F5B8478A5B94B9869BC04BEB639435D19"
-      ]
-    }
-  },
-  {
-    "relation": [
-      "delegate_permission/common.handle_all_urls"
-    ],
-    "target": {
-      "namespace": "android_app",
-      "package_name": "dev.probeharbor.android",
-      "sha256_cert_fingerprints": [
-        "44D93A098977AE30271231ECAE4919CC7A656EAC7FACF909F94E83A8A68957BF"
-      ]
-    }
-  },
-  {
-    "relation": [
-      "delegate_permission/common.handle_all_urls"
-    ],
-    "target": {
-      "namespace": "android_app",
-      "package_name": "dev.thermaltrace.android",
-      "sha256_cert_fingerprints": [
-        "FF67EBBB981232FD5A0C7C3338DE137F5B8478A5B94B9869BC04BEB639435D19"
+        "B9:02:98:62:CE:22:08:87:5E:21:CB:A3:7C:2D:95:D2:95:14:45:A2:67:92:53:13:82:99:42:AB:0D:DC:3C:C3",
+        "48:B6:F2:3B:53:A2:15:C8:5E:73:58:38:AF:82:FD:01:31:CA:C5:02:0F:75:A1:A7:BC:FA:8E:CD:52:72:5F:89",
+        "FF:67:EB:BB:98:12:32:FD:5A:0C:7C:33:38:DE:13:7F:5B:84:78:A5:B9:4B:98:69:BC:04:BE:B6:39:43:5D:19",
+        "44:D9:3A:09:89:77:AE:30:27:12:31:EC:AE:49:19:CC:7A:65:6E:AC:7F:AC:F9:09:F9:4E:83:A8:A6:89:57:BF"
       ]
     }
   },
@@ -43,7 +22,8 @@
       "namespace": "android_app",
       "package_name": "dev.thermaltrace.android",
       "sha256_cert_fingerprints": [
-        "44D93A098977AE30271231ECAE4919CC7A656EAC7FACF909F94E83A8A68957BF"
+        "FF:67:EB:BB:98:12:32:FD:5A:0C:7C:33:38:DE:13:7F:5B:84:78:A5:B9:4B:98:69:BC:04:BE:B6:39:43:5D:19",
+        "44:D9:3A:09:89:77:AE:30:27:12:31:EC:AE:49:19:CC:7A:65:6E:AC:7F:AC:F9:09:F9:4E:83:A8:A6:89:57:BF"
       ]
     }
   }
