@@ -151,6 +151,30 @@ jobs:
           fi
           npx wrangler deploy --config dist/server/wrangler.json
 
+      # Static files (OG images, assetlinks.json, /developers docs) otherwise stay
+      # stale at the edge after a deploy. Needs a token with Zone → Cache Purge.
+      - name: Purge Cloudflare cache
+        if: env.skip != 'true'
+        continue-on-error: true
+        env:
+          CLOUDFLARE_PURGE_TOKEN: ${{ secrets.CLOUDFLARE_PURGE_TOKEN }}
+          CLOUDFLARE_ZONE_ID: 2c2e86eb7acbef933dc29dfae7ddf9be # probeharbor.dev
+        run: |
+          if [ -z "$CLOUDFLARE_PURGE_TOKEN" ]; then
+            echo "::notice::Cache purge skipped — set the CLOUDFLARE_PURGE_TOKEN secret."
+            exit 0
+          fi
+          result=$(curl -sS -X POST \
+            -H "Authorization: Bearer $CLOUDFLARE_PURGE_TOKEN" \
+            -H "Content-Type: application/json" \
+            "https://api.cloudflare.com/client/v4/zones/$CLOUDFLARE_ZONE_ID/purge_cache" \
+            --data '{"purge_everything":true}')
+          if [ "$(echo "$result" | jq -r '.success')" != "true" ]; then
+            echo "::warning::Cache purge failed: $(echo "$result" | jq -c '.errors')"
+            exit 0
+          fi
+          echo "Purged probeharbor.dev edge cache."
+
       - name: Submit public URLs to IndexNow
         if: env.skip != 'true'
         continue-on-error: true
