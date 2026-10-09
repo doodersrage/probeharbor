@@ -15,7 +15,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
-const projectDir = join(repoRoot, "firmware", "thermaltrace-probe");
+const projectDir = join(repoRoot, "firmware", "probeharbor-probe");
 const outDir = join(repoRoot, "public", "firmware");
 const pio = process.env.PIO ?? "pio";
 const coreDir = process.env.PLATFORMIO_CORE_DIR ?? join(homedir(), ".platformio");
@@ -54,7 +54,7 @@ if (!existsSync(bootApp0)) {
 mkdirSync(outDir, { recursive: true });
 for (const target of TARGETS) {
   const buildDir = join(projectDir, ".pio", "build", target.env);
-  const image = `thermaltrace-probe-${target.env}.bin`;
+  const image = `probeharbor-probe-${target.env}.bin`;
   execFileSync(
     pio,
     [
@@ -70,12 +70,12 @@ for (const target of TARGETS) {
 }
 
 const manifest = {
-  name: "ThermalTrace probe",
+  name: "ProbeHarbor probe",
   version,
   new_install_prompt_erase: true,
   builds: TARGETS.map((target) => ({
     chipFamily: target.chipFamily,
-    parts: [{ path: `thermaltrace-probe-${target.env}.bin`, offset: 0 }],
+    parts: [{ path: `probeharbor-probe-${target.env}.bin`, offset: 0 }],
   })),
 };
 writeFileSync(join(outDir, "manifest.json"), `${JSON.stringify(manifest, null, 2)}\n`);

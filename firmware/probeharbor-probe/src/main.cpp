@@ -1,10 +1,10 @@
 /**
- * ThermalTrace probe: DS18B20 → push ingest, configured after flashing.
+ * ProbeHarbor probe: DS18B20 → push ingest, configured after flashing.
  *
  * Unlike the sketches under sketches/, nothing is compiled in. The Wi-Fi
  * network and the device key are set either:
  *   - over USB serial, by the flasher page:  TTCFG<TAB>ssid<TAB>password<TAB>key
- *   - or through the "ThermalTrace-Setup" Wi-Fi portal (captive page).
+ *   - or through the "ProbeHarbor-Setup" Wi-Fi portal (captive page).
  * Hold the BOOT button for 5 seconds to erase both and start over.
  *
  * Every line the device prints for the flasher page starts with "TT ".
@@ -24,7 +24,7 @@
 #define FIRMWARE_VERSION "1.0.0"
 #endif
 #ifndef INGEST_HOST
-#define INGEST_HOST "thermaltrace.dev"
+#define INGEST_HOST "probeharbor.dev"
 #endif
 #ifndef ONE_WIRE_PIN
 #define ONE_WIRE_PIN 4
@@ -187,7 +187,7 @@ void setup() {
   Serial.begin(115200);
   pinMode(RESET_PIN, INPUT_PULLUP);
   probes.begin();
-  prefs.begin("thermaltrace", false);
+  prefs.begin("probeharbor", false);
   deviceKey = prefs.getString("key", "");
 
   Serial.println();
@@ -199,10 +199,10 @@ void setup() {
   wifiManager.setConfigPortalTimeout(PORTAL_TIMEOUT_S);
   wifiManager.setConnectTimeout(30);
   wifiManager.setDebugOutput(false);
-  if (wifiManager.autoConnect("ThermalTrace-Setup")) {
+  if (wifiManager.autoConnect("ProbeHarbor-Setup")) {
     Serial.println("TT wifi ok");
   } else {
-    Serial.println("TT setup: send settings over USB, or join the ThermalTrace-Setup Wi-Fi network");
+    Serial.println("TT setup: send settings over USB, or join the ProbeHarbor-Setup Wi-Fi network");
   }
 }
 

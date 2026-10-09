@@ -1,5 +1,5 @@
 {
-  "name": "ThermalTrace probe",
+  "name": "ProbeHarbor probe",
   "version": "1.0.0",
   "new_install_prompt_erase": true,
   "builds": [
@@ -7,7 +7,7 @@
       "chipFamily": "ESP32",
       "parts": [
         {
-          "path": "thermaltrace-probe-esp32.bin",
+          "path": "probeharbor-probe-esp32.bin",
           "offset": 0
         }
       ]
@@ -16,7 +16,7 @@
       "chipFamily": "ESP32-S3",
       "parts": [
         {
-          "path": "thermaltrace-probe-esp32s3.bin",
+          "path": "probeharbor-probe-esp32s3.bin",
           "offset": 0
         }
       ]
@@ -25,7 +25,7 @@
       "chipFamily": "ESP32-C3",
       "parts": [
         {
-          "path": "thermaltrace-probe-esp32c3.bin",
+          "path": "probeharbor-probe-esp32c3.bin",
           "offset": 0
         }
       ]

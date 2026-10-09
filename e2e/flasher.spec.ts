@@ -3,7 +3,7 @@ import { test, expect, type Page } from "@playwright/test";
 /**
  * The browser flasher's "Send settings over USB" step, driven against a
  * stand-in for the board that speaks the probe firmware's serial protocol
- * (firmware/thermaltrace-probe). No hardware: this covers the page's side of
+ * (firmware/probeharbor-probe). No hardware: this covers the page's side of
  * the conversation only.
  */
 type BoardMode = "ok" | "reset-first" | "wifi-fail" | "bad-key" | "no-probe";
@@ -98,14 +98,14 @@ test.describe("browser flasher", () => {
   });
 
   test("sends settings and reports the first reading", async ({ page }) => {
-    const board = await sendSettings(page, "ok", `https://thermaltrace.dev/api/ingest/${DEVICE_KEY}`);
+    const board = await sendSettings(page, "ok", `https://probeharbor.dev/api/ingest/${DEVICE_KEY}`);
 
     await expect(page.locator("[data-flasher-status]")).toHaveText(/First reading delivered/);
     expect(board.baudRate).toBe(115200);
     expect(board.closed).toBe(true);
     // Tab-separated; the password keeps its spaces.
     expect(board.frames).toEqual([
-      `TTCFG\tHome WiFi 2.4\t pass word \thttps://thermaltrace.dev/api/ingest/${DEVICE_KEY}\n`,
+      `TTCFG\tHome WiFi 2.4\t pass word \thttps://probeharbor.dev/api/ingest/${DEVICE_KEY}\n`,
     ]);
   });
 

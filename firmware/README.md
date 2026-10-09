@@ -1,7 +1,7 @@
-# ThermalTrace probe firmware
+# ProbeHarbor probe firmware
 
-`thermaltrace-probe/` is the generic firmware behind the browser flasher at
-[thermaltrace.dev/flash](https://thermaltrace.dev/flash). Unlike the samples in
+`probeharbor-probe/` is the generic firmware behind the browser flasher at
+[probeharbor.dev/flash](https://probeharbor.dev/flash). Unlike the samples in
 [`sketches/`](../sketches/), nothing is compiled in: Wi‑Fi and the device key
 are set after flashing.
 
@@ -14,7 +14,7 @@ are set after flashing.
 ## Setup after flashing
 
 - **USB:** the flasher page sends `TTCFG<TAB>ssid<TAB>password<TAB>key` at 115200 baud.
-- **Phone:** join the `ThermalTrace-Setup` Wi‑Fi network and fill in the portal.
+- **Phone:** join the `ProbeHarbor-Setup` Wi‑Fi network and fill in the portal.
 - **Reset:** hold BOOT for five seconds to erase Wi‑Fi and the key.
 
 Lines the device prints for the flasher page start with `TT ` (`TT wifi ok`,

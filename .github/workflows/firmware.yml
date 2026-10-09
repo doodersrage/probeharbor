@@ -28,7 +28,7 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: ~/.platformio
-          key: platformio-${{ hashFiles('firmware/thermaltrace-probe/platformio.ini') }}
+          key: platformio-${{ hashFiles('firmware/probeharbor-probe/platformio.ini') }}
 
       - run: pip install platformio
 

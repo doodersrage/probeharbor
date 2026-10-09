@@ -66,7 +66,7 @@ const { deviceKey = "", headingLevel: Heading = "h2" } = Astro.props;
     <pre class="ingest-key-curl text-xs overflow-x-auto mb-4" data-flasher-log hidden></pre>
     <p class="mb-0 text-sm text-[var(--color-text-muted)]">
       No USB serial in your browser, or the board is already mounted somewhere else? Power it up and join the
-      <strong>ThermalTrace-Setup</strong> Wi‑Fi network from a phone to enter the same settings. Holding the BOOT button
+      <strong>ProbeHarbor-Setup</strong> Wi‑Fi network from a phone to enter the same settings. Holding the BOOT button
       for five seconds erases them.
     </p>
   </section>
@@ -186,7 +186,7 @@ const { deviceKey = "", headingLevel: Heading = "h2" } = Astro.props;
         writer.releaseLock();
         if (outcome === "ok") {
           status.textContent = "First reading delivered. The probe is live: you can unplug it and mount it.";
-          root.dispatchEvent(new CustomEvent("thermaltrace:probe-live", { bubbles: true }));
+          root.dispatchEvent(new CustomEvent("probeharbor:probe-live", { bubbles: true }));
         } else if (outcome === "timeout") {
           status.textContent = acknowledged
             ? "The board has the settings but no reading arrived yet. Check the probe wiring, then try again."
