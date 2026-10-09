@@ -21,9 +21,9 @@ import EditorialPhotoStrip from "../../components/EditorialPhotoStrip.astro";
 import "../../styles/about.css";
 import { aboutHubPhotoIds } from "../../lib/aboutPhotos";
 
-const title = "About ThermalTrace";
+const title = "About ProbeHarbor";
 const description =
-  "Guides on temperature probes, freeze and flood/leak alerts, Arduino firmware, ESP ingest, household sharing, and the monitoring stack behind ThermalTrace.";
+  "Guides on temperature probes, freeze and flood/leak alerts, Arduino firmware, ESP ingest, household sharing, and the monitoring stack behind ProbeHarbor.";
 
 const siteUrl = resolveSiteUrl(Astro.site);
 const pageUrl = resolvePageUrl(siteUrl, "/about");
@@ -31,7 +31,7 @@ const aboutHubFaqs = [
   {
     question: "What is covered in the About guides?",
     answer:
-      "Probe placement, DHT22 and Arduino wiring, freeze thresholds, flood/leak contacts, ingest APIs, household sharing, PWA install, and how ThermalTrace stores and charts readings.",
+      "Probe placement, DHT22 and Arduino wiring, freeze thresholds, flood/leak contacts, ingest APIs, household sharing, PWA install, and how ProbeHarbor stores and charts readings.",
   },
   {
     question: "Where should I start?",
@@ -39,12 +39,12 @@ const aboutHubFaqs = [
       "Pick a job-based journey on this page (freeze protection, flood/leak setup, wiring, ingest, debugging, or household setup), or search the full guide index.",
   },
   {
-    question: "Is ThermalTrace open source?",
+    question: "Is ProbeHarbor open source?",
     answer:
       "Yes: application and firmware-related repos are linked from this hub so you can inspect, fork, or adapt the stack.",
   },
   {
-    question: "Where does ThermalTrace run?",
+    question: "Where does ProbeHarbor run?",
     answer:
       "The website and ingest APIs run on Cloudflare’s edge (Workers). Live job and ingest health is on /system-status: we publish measured health, not a marketing uptime percentage. Stack detail: /about/astro-applications.",
   },
@@ -74,7 +74,7 @@ const initialSearchQuery = Astro.url.searchParams.get("q")?.trim() ?? "";
     <PageHeader
       kicker="About"
       title={title}
-      lede="Open-source guides on probes, freeze/flood alerts, firmware, and the stack behind ThermalTrace. Prefer a shorter list? Start on the guides hub."
+      lede="Open-source guides on probes, freeze/flood alerts, firmware, and the stack behind ProbeHarbor. Prefer a shorter list? Start on the guides hub."
     >
       <a slot="actions" class="btn-primary" href="/register?next=/dashboard/devices">Start free</a>
       <a slot="actions" class="btn-secondary" href="/guides">Guides hub</a>
@@ -132,7 +132,7 @@ const initialSearchQuery = Astro.url.searchParams.get("q")?.trim() ?? "";
         </li>
         <li>
           <a class="about-repos-link" target="_blank" rel="noreferrer" href="https://github.com/doodersrage/thermaltrace">
-            <strong>thermaltrace</strong>
+            <strong>probeharbor</strong>
             <span>This website (Astro on Cloudflare): includes sample sensor sketches</span>
           </a>
         </li>

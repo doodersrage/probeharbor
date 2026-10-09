@@ -1,15 +1,15 @@
 ---
-description: "Mirror MQTT readings from Mosquitto or Home Assistant to ThermalTrace over HTTPS for cloud freeze alerts and history, no broker required."
+description: "Mirror MQTT readings from Mosquitto or Home Assistant to ProbeHarbor over HTTPS for cloud freeze alerts and history, no broker required."
 ---
 
-# MQTT → ThermalTrace bridge
+# MQTT → ProbeHarbor bridge
 
-ThermalTrace does **not** run an MQTT broker. Keep Mosquitto / Home Assistant MQTT on your LAN, then mirror readings to cloud alerts and history over HTTPS.
+ProbeHarbor does **not** run an MQTT broker. Keep Mosquitto / Home Assistant MQTT on your LAN, then mirror readings to cloud alerts and history over HTTPS.
 
 ## Endpoint
 
 ```http
-POST https://thermaltrace.dev/api/ingest/mqtt
+POST https://probeharbor.dev/api/ingest/mqtt
 X-Ingest-Key: <device-key>
 Content-Type: application/json
 ```
@@ -28,7 +28,7 @@ The Worker unwraps `payload` / `message` and forwards into the same path as `POS
 
 ## Home Assistant (MQTT trigger → HTTP)
 
-For automatic entities without YAML, use the [official HACS integration](https://github.com/doodersrage/thermaltrace-home-assistant) ([product guide](https://thermaltrace.dev/integrations/home-assistant)).
+For automatic entities without YAML, use the [official HACS integration](https://github.com/doodersrage/thermaltrace-home-assistant) ([product guide](https://probeharbor.dev/integrations/home-assistant)).
 
 Manual MQTT → HTTP bridge:
 
@@ -37,40 +37,40 @@ Manual MQTT → HTTP bridge:
 3. Automation sketch:
 
 ```yaml
-alias: ThermalTrace MQTT bridge
+alias: ProbeHarbor MQTT bridge
 trigger:
   - platform: mqtt
     topic: home/garage/temp
 action:
-  - service: rest_command.thermaltrace_ingest
+  - service: rest_command.probeharbor_ingest
 ```
 
 ```yaml
 # configuration.yaml
 rest_command:
-  thermaltrace_ingest:
-    url: "https://thermaltrace.dev/api/ingest/mqtt"
+  probeharbor_ingest:
+    url: "https://probeharbor.dev/api/ingest/mqtt"
     method: POST
     headers:
       Content-Type: application/json
-      X-Ingest-Key: !secret thermaltrace_ingest_key
+      X-Ingest-Key: !secret probeharbor_ingest_key
     payload: >
       {"topic":"{{ trigger.topic }}","payload":{{ trigger.payload }}}
 ```
 
-Put `thermaltrace_ingest_key` in `secrets.yaml`. If your MQTT payload is already a JSON object string, the bridge parses it; if it is a bare number, wrap it in Node-RED or a template first.
+Put `probeharbor_ingest_key` in `secrets.yaml`. If your MQTT payload is already a JSON object string, the bridge parses it; if it is a bare number, wrap it in Node-RED or a template first.
 
 ## Node-RED
 
-Import [`/nodered/mqtt-to-thermaltrace.json`](https://thermaltrace.dev/nodered/mqtt-to-thermaltrace.json) — includes **temperature** and optional **garage door** tabs:
+Import [`/nodered/mqtt-to-probeharbor.json`](https://probeharbor.dev/nodered/mqtt-to-probeharbor.json) — includes **temperature** and optional **garage door** tabs:
 
 1. Set your Mosquitto broker on the **mqtt in** node.  
-2. Set env `THERMALTRACE_INGEST_KEY` (or edit the function node).  
+2. Set env `PROBEHARBOR_INGEST_KEY` (or edit the function node).  
 3. Confirm the topic matches your ESP publish path.  
 4. Deploy and watch the debug node for HTTP `200`.
 
 ## Dual-run tip
 
-Keep local automations on MQTT. Use ThermalTrace for household freeze and leak SMS/email, history, and share links—without exposing the broker to the internet.
+Keep local automations on MQTT. Use ProbeHarbor for household freeze and leak SMS/email, history, and share links—without exposing the broker to the internet.
 
-Product walkthrough: [Adding devices](https://thermaltrace.dev/about/adding-devices#mqtt-bridge) · Compare: [vs DIY MQTT](https://thermaltrace.dev/compare/diy-mqtt)
+Product walkthrough: [Adding devices](https://probeharbor.dev/about/adding-devices#mqtt-bridge) · Compare: [vs DIY MQTT](https://probeharbor.dev/compare/diy-mqtt)

@@ -1,5 +1,5 @@
 /**
- * DS18B20 → ThermalTrace push ingest (Arduino: ESP32 / ESP8266 / Pico W).
+ * DS18B20 → ProbeHarbor push ingest (Arduino: ESP32 / ESP8266 / Pico W).
  *
  * Libraries: OneWire, DallasTemperature, WiFi, HTTPClient.
  * Pico W / Pico 2 W: install Earle Philhower’s “Raspberry Pi Pico/RP2040” board package
@@ -23,7 +23,7 @@
 #define WIFI_PASS "your-password"
 #endif
 #ifndef INGEST_URL
-#define INGEST_URL "https://thermaltrace.dev/api/ingest/YOUR_DEVICE_KEY"
+#define INGEST_URL "https://probeharbor.dev/api/ingest/YOUR_DEVICE_KEY"
 #endif
 
 #ifndef ONE_WIRE_PIN

@@ -73,7 +73,7 @@ beforeEach(() => {
     user: { id: "user-1", email: "user@example.com" },
   });
   mockGetUserEntitlements.mockReset().mockResolvedValue({ canUseClaimsPack: true });
-  mockGetSiteUrl.mockReset().mockReturnValue("https://thermaltrace.dev/");
+  mockGetSiteUrl.mockReset().mockReturnValue("https://probeharbor.dev/");
   mockFormRedirectPath.mockReset().mockReturnValue("/dashboard/history");
   mockGenerateClaimsPackForUser.mockReset().mockResolvedValue({
     pack: {
@@ -208,7 +208,7 @@ describe("POST /api/claims/email", () => {
     );
     expect(json).toEqual({
       ok: true,
-      verify_url: "https://thermaltrace.dev/api/claims/pack/tok-1",
+      verify_url: "https://probeharbor.dev/api/claims/pack/tok-1",
       verification_code: "hash-1",
     });
   });

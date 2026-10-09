@@ -61,7 +61,7 @@ const products = [...byProduct.entries()].map(([product, prices]) => ({
 
 const payload = {
   business_profile: {
-    headline: "Manage your ThermalTrace subscription",
+    headline: "Manage your ProbeHarbor subscription",
   },
   features: {
     customer_update: {

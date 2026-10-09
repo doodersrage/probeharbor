@@ -1,16 +1,16 @@
 ---
-description: "Expose ThermalTrace sensors to Apple Home, Google Home, and Alexa through the Matterbridge plugin on a Raspberry Pi or other LAN host."
+description: "Expose ProbeHarbor sensors to Apple Home, Google Home, and Alexa through the Matterbridge plugin on a Raspberry Pi or other LAN host."
 ---
 
 # Matter / Apple Home
 
-ThermalTrace ships a **[Matterbridge plugin](https://github.com/doodersrage/thermaltrace-matter)** that polls a family live share link and exposes sensors to Apple Home, Google Home, Alexa, and other Matter controllers.
+ProbeHarbor ships a **[Matterbridge plugin](https://github.com/doodersrage/thermaltrace-matter)** that polls a family live share link and exposes sensors to Apple Home, Google Home, Alexa, and other Matter controllers.
 
-Product landing page: [thermaltrace.dev/integrations/matter](https://thermaltrace.dev/integrations/matter).
+Product landing page: [probeharbor.dev/integrations/matter](https://probeharbor.dev/integrations/matter).
 
 ## Important constraints
 
-- **Not CSA-certified.** DIY companion for households that already use ThermalTrace.
+- **Not CSA-certified.** DIY companion for households that already use ProbeHarbor.
 - **Runs on a LAN host** (Raspberry Pi, NAS, always-on PC). Matter pairing needs mDNS; this does **not** run on Cloudflare Workers.
 - **Not a probe.** ESP/Arduino (or HTTPS feeds) push readings; the plugin only mirrors the share JSON.
 
@@ -19,7 +19,7 @@ Product landing page: [thermaltrace.dev/integrations/matter](https://thermaltrac
 1. Install [Matterbridge](https://matterbridge.io/)
 2. Clone `https://github.com/doodersrage/thermaltrace-matter`, `npm install && npm run build`, then `matterbridge --add .`
 3. Create a **family live** share link under Dashboard → Share (Free includes one)
-4. Paste the token into plugin config (`host` defaults to `https://thermaltrace.dev`)
+4. Paste the token into plugin config (`host` defaults to `https://probeharbor.dev`)
 5. Pair the Matterbridge QR code in Apple Home / Google Home / Alexa
 
 ## API contract
@@ -27,13 +27,13 @@ Product landing page: [thermaltrace.dev/integrations/matter](https://thermaltrac
 | Direction | Endpoint | Notes |
 | --- | --- | --- |
 | Poll | `GET /api/share/{token}/readings` | Same JSON as HACS |
-| Optional snooze | `POST /api/inbound/{token}` with `{"action":"snooze","hours":N}` | Pro; HMAC via `X-ThermalTrace-Signature` |
+| Optional snooze | `POST /api/inbound/{token}` with `{"action":"snooze","hours":N}` | Pro; HMAC via `X-ProbeHarbor-Signature` |
 
 Poll every 60–3600 seconds (default 120). Share readings allow ~60 req/min.
 
 ## Sensor map
 
-| ThermalTrace `kind` | Matter device |
+| ProbeHarbor `kind` | Matter device |
 | --- | --- |
 | `temperature` | Temperature Sensor (°F → °C hundredths) |
 | `humidity` | Humidity Sensor |
@@ -48,4 +48,4 @@ Skipped in v1: energy, level, air quality, time-to-freeze.
 
 - [Home Assistant (HACS)](/integrations/home-assistant) — same share link, HA entities
 - [Webhooks](/integrations/webhooks) — inbound signing details
-- Plugin README: [thermaltrace-matter](https://github.com/doodersrage/thermaltrace-matter)
+- Plugin README: [probeharbor-matter](https://github.com/doodersrage/thermaltrace-matter)

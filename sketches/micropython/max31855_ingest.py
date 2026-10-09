@@ -1,5 +1,5 @@
 """
-MAX31855 thermocouple → ThermalTrace push ingest (MicroPython / ESP32).
+MAX31855 thermocouple → ProbeHarbor push ingest (MicroPython / ESP32).
 
 Bit-bangs the MAX31855 SPI-ish protocol (read 32-bit frame).
 Adjust CS / SCK / MISO pins for your wiring.
@@ -14,7 +14,7 @@ from machine import Pin
 
 WIFI_SSID = "your-wifi"
 WIFI_PASS = "your-password"
-INGEST_URL = "https://thermaltrace.dev/api/ingest/YOUR_DEVICE_KEY"
+INGEST_URL = "https://probeharbor.dev/api/ingest/YOUR_DEVICE_KEY"
 PIN_CS = 5
 PIN_SCK = 18
 PIN_MISO = 19

@@ -42,8 +42,8 @@ async function sendStatusChangeEmail(
   const { text, html } = brandedEmailParts({
     eyebrow: "Status update",
     title: healthy
-      ? "ThermalTrace is back to normal"
-      : "ThermalTrace is degraded",
+      ? "ProbeHarbor is back to normal"
+      : "ProbeHarbor is degraded",
     intro: healthy
       ? "Scheduled jobs and ingest monitoring are healthy again."
       : "We're seeing job failures or missed schedules. We're investigating.",
@@ -54,12 +54,12 @@ async function sendStatusChangeEmail(
     },
     tone: healthy ? "success" : "alert",
     footerNote:
-      "You're receiving this because you subscribed to ThermalTrace status updates.",
+      "You're receiving this because you subscribed to ProbeHarbor status updates.",
   });
 
   await sendEmail(
     to,
-    healthy ? "ThermalTrace: back to normal" : "ThermalTrace: service degraded",
+    healthy ? "ProbeHarbor: back to normal" : "ProbeHarbor: service degraded",
     text,
     { html },
   );

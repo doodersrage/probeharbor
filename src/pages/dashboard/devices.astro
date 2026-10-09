@@ -257,7 +257,7 @@ const viaSnippet =
               title: "Relay MQTT over HTTPS",
               hint: "Keep your broker on the LAN. Import the Node-RED flow and paste this key, or POST like this from any relay.",
               code: buildMqttBridgeCurl(Astro.url.origin, ingestKey),
-              guide: { href: "/nodered/mqtt-to-thermaltrace.json", label: "Node-RED flow" },
+              guide: { href: "/nodered/mqtt-to-probeharbor.json", label: "Node-RED flow" },
             }
           : null
     : null;
@@ -463,7 +463,7 @@ const redirectTo =
             class="btn-secondary"
             id="ingest-qr-download"
             href="#"
-            download="thermaltrace-ingest-qr.svg"
+            download="probeharbor-ingest-qr.svg"
           >
             Download SVG
           </a>
@@ -679,7 +679,7 @@ const redirectTo =
         const href = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = href;
-        a.download = "thermaltrace-ingest-qr.svg";
+        a.download = "probeharbor-ingest-qr.svg";
         a.click();
         URL.revokeObjectURL(href);
       });

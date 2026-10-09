@@ -1,18 +1,18 @@
 ---
-description: "Let ThermalTrace poll a probe that already serves HTTPS JSON: add the feed URL, test it, and auto-import probe keys from the response."
+description: "Let ProbeHarbor poll a probe that already serves HTTPS JSON: add the feed URL, test it, and auto-import probe keys from the response."
 ---
 
 # Pull feeds
 
 If your probe already serves HTTPS JSON (Arduino Ethernet server, FastAPI relay, etc.), use a **pull feed** instead of push ingest.
 
-Product walkthrough (UI steps): [Adding push and pull devices](https://thermaltrace.dev/about/adding-devices).
+Product walkthrough (UI steps): [Adding push and pull devices](https://probeharbor.dev/about/adding-devices).
 
-**No hardware?** On **Overview**, use **Try without hardware** to save the public [example feed](https://thermaltrace.dev/api/feeds/example) in one click.
+**No hardware?** On **Overview**, use **Try without hardware** to save the public [example feed](https://probeharbor.dev/api/feeds/example) in one click.
 
 ## Setup
 
-1. Open **[Dashboard → Devices → Pull feeds](https://thermaltrace.dev/dashboard/devices?tab=pull)**
+1. Open **[Dashboard → Devices → Pull feeds](https://probeharbor.dev/dashboard/devices?tab=pull)**
 2. Add an HTTPS URL and set **JSON root key** (default `temp`)
 3. Click **Test feed URL**, then **Save pull setup** — probe keys auto-import from the live feed
 4. Rename labels on the same page, or click **Accept suggested names**
@@ -38,28 +38,28 @@ If probes live under another top-level key (for example `readings`), set **JSON 
 
 ## Alternate JSON shapes (auto-detected)
 
-If the configured root is missing, ThermalTrace also accepts:
+If the configured root is missing, ProbeHarbor also accepts:
 
 - **SenML JSON** (RFC 8428 array) — probe keys from SenML names; `Cel` / `degF` for temperature, `%RH` for humidity
 - **Home Assistant REST** — `{ "state": "65.3", "attributes": { "unit_of_measurement": "°F" } }`
 
-Try the public example: `https://thermaltrace.dev/api/feeds/example?format=senml` or `?format=homeassistant`.
+Try the public example: `https://probeharbor.dev/api/feeds/example?format=senml` or `?format=homeassistant`.
 
 ## Relay pattern
 
 When the MCU cannot do TLS:
 
 ```
-[Probe HTTP] → [local FastAPI / nginx TLS] → [ThermalTrace pull URL]
+[Probe HTTP] → [local FastAPI / nginx TLS] → [ProbeHarbor pull URL]
 ```
 
-See [python feeds](https://thermaltrace.dev/about/python-feeds) and the [fast-api-relay](https://github.com/doodersrage/fast-api-relay) repo.
+See [python feeds](https://probeharbor.dev/about/python-feeds) and the [fast-api-relay](https://github.com/doodersrage/fast-api-relay) repo.
 
 ## Push vs pull
 
 | | Push | Pull |
 |---|------|------|
-| Who initiates | Your device | ThermalTrace |
+| Who initiates | Your device | ProbeHarbor |
 | Firewall | Device needs outbound HTTPS | Feed URL must be publicly reachable |
 | Auth | Per-device key in path | HTTPS URL |
 | JSON shape | Flat keys, `temp` object, or `sensors[]` | Nested probes under configurable root (default `temp`); SenML or HA REST auto-detected |
@@ -68,4 +68,4 @@ See [python feeds](https://thermaltrace.dev/about/python-feeds) and the [fast-ap
 ## Related
 
 - [Push ingest](/ingest/)
-- Product: [Adding devices](https://thermaltrace.dev/about/adding-devices) · [Configuring temperature feeds](https://thermaltrace.dev/about/configuring-temperature-feeds)
+- Product: [Adding devices](https://probeharbor.dev/about/adding-devices) · [Configuring temperature feeds](https://probeharbor.dev/about/configuring-temperature-feeds)

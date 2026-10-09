@@ -2,7 +2,7 @@
 
 export const AUTOMATION_INTEGRATION_PAGE = "/integrations/automation";
 
-export const N8N_ALERT_SHEETS_FLOW_URL = "/n8n/thermaltrace-alert-to-sheets.json";
+export const N8N_ALERT_SHEETS_FLOW_URL = "/n8n/probeharbor-alert-to-sheets.json";
 
 export const AUTOMATION_NAME = "IFTTT, n8n & Sheets";
 

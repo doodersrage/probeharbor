@@ -120,7 +120,7 @@ describe("GET /api/alerts/export.csv", () => {
     expect(response.status).toBe(200);
     expect(response.headers.get("Content-Type")).toBe("text/csv; charset=utf-8");
     expect(response.headers.get("Content-Disposition")).toBe(
-      'attachment; filename="thermaltrace-alert-events-2024-06-15.csv"',
+      'attachment; filename="probeharbor-alert-events-2024-06-15.csv"',
     );
     expect(await response.text()).toBe("created_at,kind\n2024-06-01,freeze\n");
   });

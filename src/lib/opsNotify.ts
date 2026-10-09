@@ -31,11 +31,11 @@ async function sendOpsEmail(subject: string, body: string): Promise<boolean> {
       title: subject,
       intro: body,
       tone: "alert",
-      footerNote: "ThermalTrace operator notification.",
+      footerNote: "ProbeHarbor operator notification.",
     });
     await sendEmail(to, subject, parts.text, {
       html: parts.html,
-      fromName: "ThermalTrace Ops",
+      fromName: "ProbeHarbor Ops",
     });
     return true;
   } catch (error) {

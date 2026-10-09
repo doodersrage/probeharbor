@@ -340,7 +340,7 @@ export default function HistoryChart({
     canvasRef,
     wrapRef,
     plotBoundsRef,
-    pngFilenamePrefix: "thermaltrace-chart",
+    pngFilenamePrefix: "probeharbor-chart",
     hover: hoverHandlers,
     initialPresetId: prefsReady ? initialPresetId : null,
     onPresetChange: (id) => {

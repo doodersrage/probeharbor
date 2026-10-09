@@ -1,19 +1,19 @@
 {
-  "name": "ThermalTrace alert → Google Sheets",
+  "name": "ProbeHarbor alert → Google Sheets",
   "nodes": [
     {
       "parameters": {
         "httpMethod": "POST",
-        "path": "thermaltrace-alert",
+        "path": "probeharbor-alert",
         "responseMode": "onReceived",
         "options": {}
       },
       "id": "tt_webhook",
-      "name": "ThermalTrace outbound webhook",
+      "name": "ProbeHarbor outbound webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
       "position": [0, 0],
-      "webhookId": "thermaltrace-alert"
+      "webhookId": "probeharbor-alert"
     },
     {
       "parameters": {
@@ -34,7 +34,7 @@
             {
               "id": "title",
               "name": "title",
-              "value": "={{ $json.body.title || $json.title || \"ThermalTrace alert\" }}",
+              "value": "={{ $json.body.title || $json.title || \"ProbeHarbor alert\" }}",
               "type": "string"
             },
             {
@@ -82,11 +82,11 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
       "position": [520, 0],
-      "notes": "Create a sheet with headers: sent_at, kind, title, body. Replace YOUR_GOOGLE_SHEET_ID. Paste this workflow's webhook URL into ThermalTrace Pro → Alerts → Outbound webhook."
+      "notes": "Create a sheet with headers: sent_at, kind, title, body. Replace YOUR_GOOGLE_SHEET_ID. Paste this workflow's webhook URL into ProbeHarbor Pro → Alerts → Outbound webhook."
     }
   ],
   "connections": {
-    "ThermalTrace outbound webhook": {
+    "ProbeHarbor outbound webhook": {
       "main": [[{ "node": "Normalize fields", "type": "main", "index": 0 }]]
     },
     "Normalize fields": {
@@ -95,6 +95,6 @@
   },
   "meta": {
     "templateCredsSetupCompleted": false,
-    "instanceId": "thermaltrace-n8n-alert-sheets"
+    "instanceId": "probeharbor-n8n-alert-sheets"
   }
 }

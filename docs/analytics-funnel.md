@@ -1,4 +1,4 @@
-# GA4 setup funnel (ThermalTrace)
+# GA4 setup funnel (ProbeHarbor)
 
 Product events are sent client-side via `gtag` when `GA_MEASUREMENT_ID` is set and the user has not opted out of product analytics.
 

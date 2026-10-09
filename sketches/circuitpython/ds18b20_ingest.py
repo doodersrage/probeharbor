@@ -1,5 +1,5 @@
 """
-DS18B20 → ThermalTrace push ingest (CircuitPython).
+DS18B20 → ProbeHarbor push ingest (CircuitPython).
 
 Primary target: Raspberry Pi Pico W / Pico 2 W (RP2040 / RP2350).
 Also runs on other CircuitPython boards with Wi‑Fi and a GP4, IO4, or D4 pin
@@ -29,7 +29,7 @@ from adafruit_onewire.bus import OneWireBus
 
 WIFI_SSID = "your-wifi"
 WIFI_PASS = "your-password"
-INGEST_URL = "https://thermaltrace.dev/api/ingest/YOUR_DEVICE_KEY"
+INGEST_URL = "https://probeharbor.dev/api/ingest/YOUR_DEVICE_KEY"
 INTERVAL_S = 60
 
 

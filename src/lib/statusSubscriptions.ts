@@ -25,16 +25,16 @@ async function sendConfirmEmail(email: string, token: string): Promise<void> {
     eyebrow: "Status updates",
     title: "Confirm your subscription",
     intro:
-      "Click below to start receiving an email whenever ThermalTrace's system status changes.",
+      "Click below to start receiving an email whenever ProbeHarbor's system status changes.",
     paragraphs: [
       "If you didn't request this, you can ignore this message -- you won't be subscribed unless you confirm.",
     ],
     cta: { label: "Confirm subscription", url: confirmUrl(token) },
     footerNote:
-      "You're receiving this because someone entered this address on the ThermalTrace status page. Confirming subscribes you to status-change emails only.",
+      "You're receiving this because someone entered this address on the ProbeHarbor status page. Confirming subscribes you to status-change emails only.",
   });
 
-  await sendEmail(email, "Confirm your ThermalTrace status subscription", text, {
+  await sendEmail(email, "Confirm your ProbeHarbor status subscription", text, {
     html,
   });
 }

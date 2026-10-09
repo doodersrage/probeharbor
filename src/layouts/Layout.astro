@@ -14,6 +14,7 @@ import {
 } from "../lib/schemaMarkup";
 import { BRAND_NAME, BRAND_TAGLINE } from "../lib/brand";
 import BrandMark from "../components/BrandMark.astro";
+import RenameNotice from "../components/RenameNotice.astro";
 import GoogleAnalytics from "../components/GoogleAnalytics.astro";
 import AhrefsAnalytics from "../components/AhrefsAnalytics.astro";
 import AnalyticsDisclosure from "../components/AnalyticsDisclosure.astro";
@@ -205,12 +206,13 @@ const registerServiceWorker =
 	</head>
 	<body class:list={[isDashboard && "is-dashboard"]}>
 		<a class="skip-link" href="#main-content">Skip to content</a>
+		{!Astro.url.pathname.startsWith("/embed/") && <RenameNotice />}
 		<div class="flex min-h-screen flex-col">
 			{!isDashboard && (
 			<header class="site-header">
 				<div class="site-header-inner">
 					<a href="/" class="site-logo-link">
-						<Image src={logo} height={44} width={344} alt="ThermalTrace" class="site-logo" />
+						<Image src={logo} height={44} width={344} alt="ProbeHarbor" class="site-logo" />
 					</a>
 					<button
 						type="button"
@@ -321,7 +323,7 @@ const registerServiceWorker =
 									</li>
 									<li>
 										<a
-											href="https://thermaltrace.dev/developers/"
+											href="https://probeharbor.dev/developers/"
 											target="_blank"
 											rel="noreferrer"
 										>Extended docs</a>
@@ -350,7 +352,7 @@ const registerServiceWorker =
 							</div>
 						</div>
 						<p class="site-footer-legal">
-							Copyright © {currentYear} ThermalTrace. All rights reserved.
+							Copyright © {currentYear} ProbeHarbor. All rights reserved.
 							{" · "}
 							<a href="/privacy">Privacy</a>
 							{" · "}

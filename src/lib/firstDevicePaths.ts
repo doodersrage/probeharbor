@@ -24,7 +24,7 @@ export function parseSetupVia(raw: string | null | undefined): SetupVia | null {
 export function buildHomeAssistantPushYaml(ingestUrl: string): string {
   return `# configuration.yaml: replace sensor.garage_* with your entity ids
 rest_command:
-  thermaltrace_push:
+  probeharbor_push:
     url: "${ingestUrl}"
     method: POST
     content_type: "application/json"
@@ -36,12 +36,12 @@ rest_command:
       {"temp1": {{ t | tojson }}, "humidity1": {{ states('sensor.garage_humidity') | float(none) | tojson }}}
 
 # automations.yaml
-- alias: Send garage readings to ThermalTrace
+- alias: Send garage readings to ProbeHarbor
   triggers:
     - trigger: time_pattern
       minutes: "/5"
   actions:
-    - action: rest_command.thermaltrace_push`;
+    - action: rest_command.probeharbor_push`;
 }
 
 /** Node-RED / relay payload for the MQTT-over-HTTP bridge. */

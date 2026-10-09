@@ -5,7 +5,7 @@ describe("buildFreezeDrillEmailParts", () => {
   it("renders readiness checks as separate list rows in HTML", () => {
     const parts = buildFreezeDrillEmailParts({
       score: 40,
-      siteUrl: "https://thermaltrace.dev",
+      siteUrl: "https://probeharbor.dev",
       checks: [
         { ok: false, label: "Alerts enabled (freeze + auto flood)" },
         { ok: true, label: "All probes reporting (not stale)" },

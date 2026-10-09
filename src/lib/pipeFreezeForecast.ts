@@ -142,6 +142,6 @@ export function embedSnippet(origin: string, place: { label: string; lat: number
   });
   return [
     `<iframe src="${origin}/embed/pipe-freeze?${params.toString().replace(/&/g, "&amp;")}" title="Pipe freeze forecast for ${escapeAttr(place.label)}" width="100%" height="200" style="border:0" loading="lazy"></iframe>`,
-    `<p><a href="${origin}/pipe-freeze-forecast">Pipe freeze forecast</a> by ThermalTrace</p>`,
+    `<p><a href="${origin}/pipe-freeze-forecast">Pipe freeze forecast</a> by ProbeHarbor</p>`,
   ].join("\n");
 }

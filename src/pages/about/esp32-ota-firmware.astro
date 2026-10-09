@@ -17,7 +17,7 @@ const hero = getAboutHeroPhoto(page.slug);
   heroCreditHref={hero?.sourceUrl}
 >
   <p>
-    ThermalTrace cares about <strong>readings over HTTPS</strong>, not how you update the MCU.
+    ProbeHarbor cares about <strong>readings over HTTPS</strong>, not how you update the MCU.
     Keep OTA on your LAN; keep ingest pointed at
     <code>/api/ingest/&lt;key&gt;</code>. Download a pre-filled sketch from
     <a class="text-link" href="/dashboard/devices">Devices</a> after you create a push device.
@@ -57,7 +57,7 @@ void loop() {
 }`}</code></pre>
   <p class="text-sm text-[var(--color-text-muted)]">
     OTA and ingest are independent: a failed cloud POST does not block OTA, and an OTA update does not
-    change your ThermalTrace device key.
+    change your ProbeHarbor device key.
   </p>
 
   <h2>Ingest payload with battery and RSSI</h2>

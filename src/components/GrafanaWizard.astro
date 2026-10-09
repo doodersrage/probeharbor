@@ -10,11 +10,11 @@ interface Props {
 
 const { siteUrl, apiKeyPrefix = null, apiKey = null } = Astro.props;
 const metricsUrl = `${siteUrl}/api/v1/metrics`;
-const dashboardJsonUrl = `${siteUrl}/grafana/thermaltrace-dashboard.json`;
+const dashboardJsonUrl = `${siteUrl}/grafana/probeharbor-dashboard.json`;
 const host = siteUrl.replace(/^https?:\/\//, "");
 const scrapeSnippet = `# prometheus.yml
 scrape_configs:
-  - job_name: thermaltrace
+  - job_name: probeharbor
     metrics_path: /api/v1/metrics
     scheme: ${siteUrl.startsWith("https") ? "https" : "http"}
     static_configs:
@@ -26,7 +26,7 @@ scrape_configs:
 <DashboardCard>
   <h2 class="card-title">Grafana setup wizard</h2>
   <p class="card-subtitle mb-4">
-    Scrape <code>thermaltrace_sensor_value</code> from ThermalTrace with a Pro API key, then import the bundled dashboard JSON.
+    Scrape <code>probeharbor_sensor_value</code> from ProbeHarbor with a Pro API key, then import the bundled dashboard JSON.
   </p>
   <ol class="text-sm space-y-3 mb-4 list-decimal pl-5">
     <li>
@@ -39,8 +39,8 @@ scrape_configs:
     </li>
     <li>
       Download
-      <a class="text-link" href="/grafana/thermaltrace-dashboard.json" download>
-        thermaltrace-dashboard.json
+      <a class="text-link" href="/grafana/probeharbor-dashboard.json" download>
+        probeharbor-dashboard.json
       </a>
       and import via Dashboards → New → Import.
     </li>

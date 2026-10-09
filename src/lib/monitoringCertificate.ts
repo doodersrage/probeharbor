@@ -87,7 +87,7 @@ export function buildMonitoringCertificateHtml(data: MonitoringCertificateData):
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>ThermalTrace monitoring certificate — ${escapeHtml(data.householdLabel)}</title>
+  <title>ProbeHarbor monitoring certificate — ${escapeHtml(data.householdLabel)}</title>
   <style>
     :root { color-scheme: light; }
     body {
@@ -153,7 +153,7 @@ export function buildMonitoringCertificateHtml(data: MonitoringCertificateData):
 <body>
   <div class="wrap">
     <header class="hero">
-      <p class="brand">Thermal<span class="accent">Trace</span></p>
+      <p class="brand">Probe<span class="accent">Harbor</span></p>
       <p class="cert-badge">Monitoring certificate</p>
       <h1>${escapeHtml(data.householdLabel)}</h1>
       <p class="lead">

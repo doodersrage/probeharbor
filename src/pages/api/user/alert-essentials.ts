@@ -72,8 +72,8 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   if (alsoTest) {
     try {
       const { sent, skipped } = await notifyUser(user.id, user.email, settings, {
-        title: "ThermalTrace test alert",
-        body: "This is a test notification from your ThermalTrace dashboard. If you received this, your alert channels are working.",
+        title: "ProbeHarbor test alert",
+        body: "This is a test notification from your ProbeHarbor dashboard. If you received this, your alert channels are working.",
         kind: "generic",
       });
       if (sent.length === 0) {

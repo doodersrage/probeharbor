@@ -81,7 +81,7 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
   }
 
   const msg = createMimeMessage();
-  msg.setSender({ name: "ThermalTrace", addr: from });
+  msg.setSender({ name: "ProbeHarbor", addr: from });
   msg.setRecipient(to);
   msg.setSubject("Contact Form Submission");
   msg.addMessage({

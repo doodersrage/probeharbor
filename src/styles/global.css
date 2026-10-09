@@ -563,12 +563,12 @@
     color: #c5d0d4;
   }
 
-  html[data-theme="light"] .site-footer .brand-mark-thermal,
+  html[data-theme="light"] .site-footer .brand-mark-probe,
   html[data-theme="light"] .site-footer .site-footer-heading {
     color: #f4f7f8;
   }
 
-  html[data-theme="light"] .site-footer .brand-mark-trace {
+  html[data-theme="light"] .site-footer .brand-mark-harbor {
     color: #ff7a00;
   }
 
@@ -692,16 +692,16 @@
     letter-spacing: inherit;
   }
 
-  .brand-mark-thermal,
-  .brand-mark-trace {
+  .brand-mark-probe,
+  .brand-mark-harbor {
     display: inline;
   }
 
-  .brand-mark-thermal {
+  .brand-mark-probe {
     color: var(--color-text);
   }
 
-  .brand-mark-trace {
+  .brand-mark-harbor {
     margin-left: 0.06em;
     color: var(--color-accent);
   }

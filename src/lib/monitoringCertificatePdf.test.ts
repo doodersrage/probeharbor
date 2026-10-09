@@ -27,7 +27,7 @@ const sample: MonitoringCertificateData = {
   nwsEnabled: true,
   forecastEnabled: false,
   dataRetentionLabel: "1 year (plan default)",
-  siteUrl: "https://thermaltrace.dev",
+  siteUrl: "https://probeharbor.dev",
 };
 
 describe("resolveMonitoringRetentionLabel", () => {

@@ -1,12 +1,12 @@
 name: Feature request
-description: A change you would like in ThermalTrace.
+description: A change you would like in ProbeHarbor.
 title: "[Feature] "
 labels: ["enhancement"]
 body:
   - type: markdown
     attributes:
       value: |
-        For account or billing help, use the [contact form](https://thermaltrace.dev/contact).
+        For account or billing help, use the [contact form](https://probeharbor.dev/contact).
   - type: textarea
     id: problem
     attributes:

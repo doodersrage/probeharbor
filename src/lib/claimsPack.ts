@@ -82,7 +82,7 @@ export const CLAIMS_ADJUSTER_NOTES =
   "Use this PDF as a cover sheet: confirm the verification code or URL if present, download the companion readings and alert CSVs for the same window, and compare timestamps to any on-site hardware logs. Freeze threshold is a household setting, not a regulatory standard.";
 
 export const CLAIMS_DISCLAIMER =
-  "This pack is a monitoring record exported by ThermalTrace for the household's own use. It is not a legal determination, insurance appraisal, or proof of coverage. Adjusters should verify timestamps against original sensor hardware and delivery channels where required.";
+  "This pack is a monitoring record exported by ProbeHarbor for the household's own use. It is not a legal determination, insurance appraisal, or proof of coverage. Adjusters should verify timestamps against original sensor hardware and delivery channels where required.";
 
 function formatTemp(value: number | null): string {
   return value != null ? `${value.toFixed(1)}°F` : "—";
@@ -168,7 +168,7 @@ function statBlock(label: string, value: string, detail?: string): string {
 export function buildClaimsPackHtml(data: ClaimsPackData): string {
   const fromLabel = formatRangeDate(data.rangeFrom);
   const toLabel = formatRangeDate(data.rangeTo);
-  const title = `ThermalTrace claims pack — ${fromLabel} to ${toLabel}`;
+  const title = `ProbeHarbor claims pack — ${fromLabel} to ${toLabel}`;
 
   const deviceRows =
     data.devices.length === 0
@@ -272,7 +272,7 @@ export function buildClaimsPackHtml(data: ClaimsPackData): string {
 </head>
 <body>
   <div class="wrap">
-    <p class="brand">Thermal<span class="accent">Trace</span></p>
+    <p class="brand">Probe<span class="accent">Harbor</span></p>
     <h1>Claims / insurance evidence pack</h1>
     <p class="muted">
       Household: ${escapeHtml(data.householdLabel)} · Window: ${escapeHtml(fromLabel)} → ${escapeHtml(toLabel)} · Exported ${escapeHtml(formatDateTime(data.exportedAt))}

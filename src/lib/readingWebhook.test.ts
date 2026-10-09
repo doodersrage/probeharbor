@@ -60,7 +60,7 @@ describe("sendReadingWebhook", () => {
       "https://hooks.example.com/reading",
       {
         "Content-Type": "application/json",
-        "User-Agent": "ThermalTrace/1.0",
+        "User-Agent": "ProbeHarbor/1.0",
       },
       JSON.stringify({ tempF: 30 }),
     );
@@ -76,6 +76,7 @@ describe("sendReadingWebhook", () => {
     });
 
     const [, , , headers] = mockDeliverWebhookPost.mock.calls[0]!;
+    expect(headers["X-ProbeHarbor-Signature"]).toBe(expectedSig);
     expect(headers["X-ThermalTrace-Signature"]).toBe(expectedSig);
     expect(headers["X-GarageTemp-Signature"]).toBe(expectedSig);
   });
@@ -91,7 +92,7 @@ describe("sendReadingWebhook", () => {
 
     const [, , url, headers] = mockDeliverWebhookPost.mock.calls[0]!;
     expect(url).toBe("https://hooks.example.com/reading");
-    expect(headers["X-ThermalTrace-Signature"]).toBeUndefined();
+    expect(headers["X-ProbeHarbor-Signature"]).toBeUndefined();
   });
 
   it("passes userId through even when null/undefined", async () => {

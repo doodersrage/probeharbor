@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" fill="none" role="img" aria-labelledby="tt-line-title">
-  <title id="tt-line-title">ThermalTrace mark</title>
+  <title id="tt-line-title">ProbeHarbor mark</title>
   <defs>
     <linearGradient id="tt-trace-line" x1="20" y1="40" x2="112" y2="72" gradientUnits="userSpaceOnUse">
       <stop offset="0%" stop-color="#FF7A00"/>

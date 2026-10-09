@@ -1,5 +1,5 @@
 /**
- * DS18B20 → ThermalTrace push ingest (Teensy 4.1 + onboard Ethernet).
+ * DS18B20 → ProbeHarbor push ingest (Teensy 4.1 + onboard Ethernet).
  *
  * NXP i.MX RT1062, PJRC Teensy 4.1 with Ethernet kit (magnetics + RJ45).
  * QNEthernet + HTTP to the same LAN TLS relay as Uno / STM32 / CH32V.

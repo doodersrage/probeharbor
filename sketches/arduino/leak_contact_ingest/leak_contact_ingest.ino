@@ -1,5 +1,5 @@
 /**
- * Leak / moisture pads → ThermalTrace push ingest (ESP32).
+ * Leak / moisture pads → ProbeHarbor push ingest (ESP32).
  *
  * Wet between pads pulls CONTACT_PIN low (with pull-up). POSTs leak1 true/false.
  * Flood/leak keys auto-alert when wet once alerts are enabled.
@@ -19,7 +19,7 @@
 #define WIFI_PASS "your-password"
 #endif
 #ifndef INGEST_URL
-#define INGEST_URL "https://thermaltrace.dev/api/ingest/YOUR_DEVICE_KEY"
+#define INGEST_URL "https://probeharbor.dev/api/ingest/YOUR_DEVICE_KEY"
 #endif
 #ifndef CONTACT_PIN
 #define CONTACT_PIN 4

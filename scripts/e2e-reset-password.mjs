@@ -96,4 +96,4 @@ if (!user) {
 
 upsertEnvKey(envPath, "E2E_TEST_PASSWORD", password);
 console.log("Wrote E2E_TEST_PASSWORD to .env (not printed).");
-console.log("Next: PLAYWRIGHT_BASE_URL=https://thermaltrace.dev pnpm test:e2e:auth");
+console.log("Next: PLAYWRIGHT_BASE_URL=https://probeharbor.dev pnpm test:e2e:auth");

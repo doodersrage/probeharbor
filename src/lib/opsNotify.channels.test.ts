@@ -16,7 +16,7 @@ describe("notifyOps", () => {
     vi.stubGlobal("fetch", fetchMock);
     const { notifyOps } = await import("./opsNotify");
 
-    await notifyOps("ThermalTrace: test", "body");
+    await notifyOps("ProbeHarbor: test", "body");
 
     expect(fetchMock).toHaveBeenCalledWith(
       "https://discord.com/api/webhooks/ops/xyz",

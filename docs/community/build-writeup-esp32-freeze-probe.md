@@ -5,7 +5,7 @@ One draft to adapt for [Hackster](https://www.hackster.io/), [Instructables](htt
 Before posting:
 
 - Add your own photos: parts laid out, the wiring on a breadboard, the probe taped to a pipe, the Serial monitor showing `POST 200`, and the dashboard chart after a night of readings.
-- Disclose that you wrote ThermalTrace (the intro below does).
+- Disclose that you wrote ProbeHarbor (the intro below does).
 - Only describe results you actually measured. Do not add a story about pipes that were saved unless it happened.
 - Vary the title and intro per site so the three posts are not copies of each other.
 
@@ -27,7 +27,7 @@ Before posting:
 
 Pipes in an unheated garage or crawlspace freeze on long cold nights, usually when it is around 20°F or colder outside, and the first sign is often water on the floor after the thaw. This build puts a waterproof temperature probe directly on the pipe and sends an email when it gets close to freezing, so there is time to close a door, restart a heater, or open a faucet.
 
-The probe posts readings to ThermalTrace, an open-source (MIT) dashboard I wrote for this. The free plan covers two devices with email alerts. The firmware is a plain HTTPS POST, so you can point it at your own server instead if you prefer.
+The probe posts readings to ProbeHarbor, an open-source (MIT) dashboard I wrote for this. The free plan covers two devices with email alerts. The firmware is a plain HTTPS POST, so you can point it at your own server instead if you prefer.
 
 ## Parts
 
@@ -40,7 +40,7 @@ The probe posts readings to ThermalTrace, an open-source (MIT) dashboard I wrote
 
 Skip "ESP32 + sensor" bundles that include a DHT11: it is not waterproof and it is the wrong sensor for a pipe.
 
-Parts list with links: https://thermaltrace.dev/about/esp32-freeze-kit
+Parts list with links: https://probeharbor.dev/about/esp32-freeze-kit
 
 ## Step 1: Wire the probe
 
@@ -53,7 +53,7 @@ Parts list with links: https://thermaltrace.dev/about/esp32-freeze-kit
 
 ## Step 2: Create a device and get the sketch
 
-1. Create a free account at https://thermaltrace.dev
+1. Create a free account at https://probeharbor.dev
 2. Dashboard → Devices → add a push device
 3. Download the Arduino sketch. It comes with your device's ingest URL filled in.
 
@@ -96,8 +96,8 @@ The server stores the reading, compares it with your threshold, and estimates ho
 
 - Add a second DS18B20 on the same pin (1‑Wire probes share a data line) to compare the pipe with the room air
 - Add a leak contact on the floor to catch the thaw: https://github.com/doodersrage/thermaltrace/tree/main/sketches/arduino/leak_contact_ingest
-- Already on ESPHome or Home Assistant? Post readings from there instead of flashing a sketch: https://thermaltrace.dev/integrations/home-assistant
-- Work out how long you have on a cold night: https://thermaltrace.dev/freeze-time-calculator
+- Already on ESPHome or Home Assistant? Post readings from there instead of flashing a sketch: https://probeharbor.dev/integrations/home-assistant
+- Work out how long you have on a cold night: https://probeharbor.dev/freeze-time-calculator
 
 ## Source
 

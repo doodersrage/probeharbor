@@ -25,12 +25,12 @@ rsvg-convert -w 48 -h 48 "$PUB/favicon.svg" -o "$TMP/favicon-48.png"
 magick "$TMP/favicon-16.png" "$TMP/favicon-32.png" "$TMP/favicon-48.png" "$PUB/favicon.ico"
 
 # Optional: push into sibling companion checkouts when present
-DESKTOP="${THERMALTRACE_DESKTOP:-$ROOT/../thermaltrace-desktop}"
-BAY="${THERMALTRACE_BAY_BUDDY:-$ROOT/../bay-buddy}"
-ANDROID="${THERMALTRACE_ANDROID:-$ROOT/../thermaltrace-android}"
+DESKTOP="${PROBEHARBOR_DESKTOP:-$ROOT/../thermaltrace-desktop}"
+BAY="${PROBEHARBOR_BAY_BUDDY:-$ROOT/../bay-buddy}"
+ANDROID="${PROBEHARBOR_ANDROID:-$ROOT/../thermaltrace-android}"
 
 if [[ -d "$DESKTOP/src-tauri" ]]; then
-  echo "→ thermaltrace-desktop icons via tauri icon"
+  echo "→ probeharbor-desktop icons via tauri icon"
   rsvg-convert -w 1024 -h 1024 "$BRAND/mark-dark.svg" -o "$TMP/tauri-source-1024.png"
   (cd "$DESKTOP" && npx --yes @tauri-apps/cli icon "$TMP/tauri-source-1024.png")
   rm -rf "$DESKTOP/src-tauri/icons/android" "$DESKTOP/src-tauri/icons/ios"

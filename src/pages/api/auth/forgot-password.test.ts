@@ -27,7 +27,7 @@ function makeContext(form: Record<string, string>): APIContext {
     request,
     redirect,
     clientAddress: "127.0.0.1",
-    site: new URL("https://thermaltrace.dev"),
+    site: new URL("https://probeharbor.dev"),
   } as unknown as APIContext;
 }
 
@@ -35,7 +35,7 @@ beforeEach(() => {
   mockResetPasswordForEmail.mockReset().mockResolvedValue({ data: {}, error: null });
   mockGetTurnstileToken.mockReset().mockReturnValue("token");
   mockVerifyTurnstileToken.mockReset().mockResolvedValue({ success: true });
-  mockResolveSiteUrl.mockReset().mockReturnValue("https://thermaltrace.dev");
+  mockResolveSiteUrl.mockReset().mockReturnValue("https://probeharbor.dev");
 });
 
 describe("POST /api/auth/forgot-password", () => {
@@ -66,7 +66,7 @@ describe("POST /api/auth/forgot-password", () => {
     await POST(context);
 
     expect(mockResetPasswordForEmail).toHaveBeenCalledWith("user@example.com", {
-      redirectTo: "https://thermaltrace.dev/reset-password",
+      redirectTo: "https://probeharbor.dev/reset-password",
     });
     expect(context.redirect).toHaveBeenCalledWith("/forgot-password?sent=1");
   });

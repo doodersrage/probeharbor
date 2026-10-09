@@ -16,12 +16,12 @@ describe("parseSetupVia", () => {
 });
 
 describe("buildHomeAssistantPushYaml", () => {
-  const yaml = buildHomeAssistantPushYaml("https://thermaltrace.dev/api/ingest/abc123");
+  const yaml = buildHomeAssistantPushYaml("https://probeharbor.dev/api/ingest/abc123");
 
   it("posts to the ingest URL with a rest_command", () => {
     expect(yaml).toContain("rest_command:");
-    expect(yaml).toContain('url: "https://thermaltrace.dev/api/ingest/abc123"');
-    expect(yaml).toContain("action: rest_command.thermaltrace_push");
+    expect(yaml).toContain('url: "https://probeharbor.dev/api/ingest/abc123"');
+    expect(yaml).toContain("action: rest_command.probeharbor_push");
   });
 
   it("converts °C sensors because flat keys are read as °F", () => {
@@ -32,14 +32,14 @@ describe("buildHomeAssistantPushYaml", () => {
 
 describe("buildMqttBridgeCurl", () => {
   it("sends the key in X-Ingest-Key, which the bridge requires", () => {
-    const curl = buildMqttBridgeCurl("https://thermaltrace.dev", "abc123");
-    expect(curl).toContain('"https://thermaltrace.dev/api/ingest/mqtt"');
+    const curl = buildMqttBridgeCurl("https://probeharbor.dev", "abc123");
+    expect(curl).toContain('"https://probeharbor.dev/api/ingest/mqtt"');
     expect(curl).toContain('-H "X-Ingest-Key: abc123"');
     expect(curl).not.toContain("Bearer");
   });
 
   it("embeds a payload the bridge can parse", () => {
-    const curl = buildMqttBridgeCurl("https://thermaltrace.dev", "k");
+    const curl = buildMqttBridgeCurl("https://probeharbor.dev", "k");
     const body = curl.slice(curl.indexOf("-d '") + 4, curl.lastIndexOf("'"));
     const envelope = JSON.parse(body) as { payload: string };
     expect(JSON.parse(envelope.payload)).toEqual({ temp1: 42.5, humidity1: 55 });

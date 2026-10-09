@@ -44,7 +44,7 @@ const schema = [
     <PageHeader
       kicker="HACS integration"
       title="The freeze alert that still works when Home Assistant is down"
-      lede="A Home Assistant automation cannot warn you about the power cut or internet outage that takes Home Assistant offline, and that is often the same event that lets the house get cold. Send the sensors you already have to ThermalTrace and it alerts you off-site when a space nears freezing, when a leak sensor gets wet, and when the readings stop arriving. Keep everything local in Home Assistant; add this for the alerts that have to reach you."
+      lede="A Home Assistant automation cannot warn you about the power cut or internet outage that takes Home Assistant offline, and that is often the same event that lets the house get cold. Send the sensors you already have to ProbeHarbor and it alerts you off-site when a space nears freezing, when a leak sensor gets wet, and when the readings stop arriving. Keep everything local in Home Assistant; add this for the alerts that have to reach you."
     >
       <a slot="actions" class="btn-primary" href={HACS_REPO_URL} target="_blank" rel="noreferrer">
         HACS repo on GitHub
@@ -78,7 +78,7 @@ const schema = [
       <h2 class="card-title">What it adds to a Home Assistant setup</h2>
       <ul class="text-sm space-y-2 mb-4">
         <li>
-          <strong>An alert when the house goes quiet.</strong> If readings stop for a set number of hours, ThermalTrace
+          <strong>An alert when the house goes quiet.</strong> If readings stop for a set number of hours, ProbeHarbor
           tells you. Silence in winter usually means the power or internet is out, and the heat may be out with it.
         </li>
         <li>
@@ -94,9 +94,9 @@ const schema = [
         </li>
       </ul>
       <p class="mb-0 text-sm text-[var(--color-text-muted)]">
-        Two directions, use either or both: push entities from Home Assistant to ThermalTrace for off-site alerts (YAML is
+        Two directions, use either or both: push entities from Home Assistant to ProbeHarbor for off-site alerts (YAML is
         generated with your key under <a class="text-link" href="/dashboard/devices">Dashboard → Devices</a> when you pick
-        Home Assistant), and pull ThermalTrace probes into Home Assistant as entities with the HACS integration below.
+        Home Assistant), and pull ProbeHarbor probes into Home Assistant as entities with the HACS integration below.
         Background: <a class="text-link" href="/answers/home-assistant-freeze-alert">setting up a freeze alert in Home Assistant</a>
         and <a class="text-link" href="/answers/wifi-freeze-alarm-power-outage">what happens in a power outage</a>.
       </p>
@@ -111,9 +111,9 @@ const schema = [
         <li>
           Add repository <code class="text-xs break-all">{HACS_REPO_URL}</code> (category: Integration)
         </li>
-        <li>Install <strong>ThermalTrace</strong> and restart Home Assistant</li>
+        <li>Install <strong>ProbeHarbor</strong> and restart Home Assistant</li>
         <li>
-          <strong>Settings → Devices & services → Add integration → ThermalTrace</strong>
+          <strong>Settings → Devices & services → Add integration → ProbeHarbor</strong>
         </li>
         <li>
           Create a <strong>live</strong> share link under
@@ -140,7 +140,7 @@ const schema = [
         </li>
         <li>
           <strong>Polling</strong>. HACS defaults to every 5 minutes (60–3600 s configurable). That is fine for dashboards; for
-          time-critical freeze thresholds and wet contacts prefer <strong>native push ingest</strong> (ESP/Arduino → ThermalTrace) so alerts fire on
+          time-critical freeze thresholds and wet contacts prefer <strong>native push ingest</strong> (ESP/Arduino → ProbeHarbor) so alerts fire on
           the reading, not after the next HA poll. Dual-run is normal: push for freeze and leak SMS, HACS for local entities.
         </li>
         <li>
@@ -156,7 +156,7 @@ const schema = [
     <section class="card">
       <h2 class="card-title">Native JSON formats (push &amp; pull)</h2>
       <p class="card-subtitle mb-4">
-        Beyond the HACS share-link path, ThermalTrace auto-detects JSON your HA stack may already emit, no custom wrapper required.
+        Beyond the HACS share-link path, ProbeHarbor auto-detects JSON your HA stack may already emit, no custom wrapper required.
       </p>
       <ul class="text-sm space-y-2 mb-4">
         <li>
@@ -191,7 +191,7 @@ const schema = [
 
       <h3 class="text-base font-semibold mt-2 mb-2">Nest OAuth (Pro, preferred when available)</h3>
       <p class="text-sm mb-3">
-        On <strong>thermaltrace.dev</strong>, Pro households can connect Nest from
+        On <strong>probeharbor.dev</strong>, Pro households can connect Nest from
         <a class="text-link" href="/dashboard/devices">Dashboard → Temperature</a>
         for live indoor temp, setpoint, and HVAC mode next to attic/crawlspace/shop probes: freeze alerts can include that context.
         History stores thermostat snapshots on the same ~15-minute cron as other Pro collectors.
@@ -199,7 +199,7 @@ const schema = [
       <ul class="text-sm space-y-2 mb-4">
         <li>
           End-user compare:
-          <a class="text-link" href="/compare/nest">ThermalTrace vs Nest</a>
+          <a class="text-link" href="/compare/nest">ProbeHarbor vs Nest</a>
         </li>
         <li>
           Self-hosted operators enabling OAuth secrets:
@@ -210,17 +210,17 @@ const schema = [
       <h3 class="text-base font-semibold mt-2 mb-2">Plan B: push indoor air from Home Assistant</h3>
       <p class="text-sm mb-3">
         Ecobee’s developer program signups are often closed, so Ecobee OAuth may not be available even on Pro.
-        Any thermostat already in HA (Ecobee, Nest via HA, generic <code>climate.*</code>) can still feed ThermalTrace:
+        Any thermostat already in HA (Ecobee, Nest via HA, generic <code>climate.*</code>) can still feed ProbeHarbor:
         push indoor air with <code>thermaltrace.push</code>, then choose that probe as your
         <strong>Indoor reference</strong> under Dashboard → Devices.
       </p>
       <ol class="text-sm space-y-2 pl-5 list-decimal mb-4">
         <li>Expose your thermostat in HA (e.g. <code>climate.living_room</code>).</li>
         <li>Every 15 minutes, call <code>thermaltrace.push</code> with a <code>temperature</code> sensor (key <code>house_indoor</code>).</li>
-        <li>In ThermalTrace: <a class="text-link" href="/dashboard/devices?view=setup&tab=pull#indoor-reference">Devices → Indoor reference</a>: pick that sensor.</li>
+        <li>In ProbeHarbor: <a class="text-link" href="/dashboard/devices?view=setup&tab=pull#indoor-reference">Devices → Indoor reference</a>: pick that sensor.</li>
       </ol>
       <pre class="text-xs overflow-x-auto mb-4"><code>{`automation:
-  - alias: Push house temp to ThermalTrace
+  - alias: Push house temp to ProbeHarbor
     trigger:
       - platform: time_pattern
         minutes: "/15"
@@ -234,16 +234,16 @@ const schema = [
               unit: F`}</code></pre>
       <p class="mb-0 text-sm text-[var(--color-text-muted)]">
         Also useful for Ecobee via HA when OAuth is unavailable: see
-        <a class="text-link" href="/compare/ecobee">ThermalTrace vs Ecobee</a>.
+        <a class="text-link" href="/compare/ecobee">ProbeHarbor vs Ecobee</a>.
         Extended payload notes (GitHub Pages):
-        <a class="text-link" href="https://thermaltrace.dev/developers/integrations/home-assistant#indoor-temperature-ecobee--any-thermostat" target="_blank" rel="noreferrer">developer docs ↗</a>
+        <a class="text-link" href="https://probeharbor.dev/developers/integrations/home-assistant#indoor-temperature-ecobee--any-thermostat" target="_blank" rel="noreferrer">developer docs ↗</a>
       </p>
     </section>
 
     <section class="card">
       <h2 class="card-title">Dual-run with MQTT (usual pattern)</h2>
       <p class="card-subtitle mb-4">
-        ThermalTrace is not an MQTT broker. Most homelabbers keep Mosquitto / ESPHome / HA MQTT on the LAN and mirror selected topics over HTTPS when they want cloud freeze and leak alerts and history.
+        ProbeHarbor is not an MQTT broker. Most homelabbers keep Mosquitto / ESPHome / HA MQTT on the LAN and mirror selected topics over HTTPS when they want cloud freeze and leak alerts and history.
       </p>
       <ul class="text-sm space-y-2 mb-0">
         <li>
@@ -251,10 +251,10 @@ const schema = [
           <code>POST /api/ingest/mqtt</code> with your device key
         </li>
         <li>
-          <a class="text-link" href="/nodered/mqtt-to-thermaltrace.json" download>Node-RED flow</a> for Mosquitto subscribers
+          <a class="text-link" href="/nodered/mqtt-to-probeharbor.json" download>Node-RED flow</a> for Mosquitto subscribers
         </li>
         <li>
-          <a class="text-link" href="/compare/diy-mqtt">ThermalTrace vs self-hosted MQTT</a>, when hosted alerts beat running your own stack
+          <a class="text-link" href="/compare/diy-mqtt">ProbeHarbor vs self-hosted MQTT</a>, when hosted alerts beat running your own stack
         </li>
       </ul>
     </section>
@@ -262,7 +262,7 @@ const schema = [
     <section class="card">
       <h2 class="card-title">Alerts into Home Assistant</h2>
       <p class="card-subtitle mb-4">
-        Pro outbound webhooks fire when ThermalTrace sends a freeze, leak, or custom-rule alert. Point the URL at your HA webhook endpoint or import the blueprint.
+        Pro outbound webhooks fire when ProbeHarbor sends a freeze, leak, or custom-rule alert. Point the URL at your HA webhook endpoint or import the blueprint.
       </p>
       <ul class="text-sm space-y-2 mb-4">
         <li>
@@ -281,7 +281,7 @@ const schema = [
         </li>
       </ul>
       <p class="text-sm mb-0">
-        <strong>Verify <code>X-Signature</code></strong> when you set a webhook signing secret in ThermalTrace.        HA (or any receiver) should reject POSTs that fail the HMAC check. The blueprint documents the header; details in the
+        <strong>Verify <code>X-Signature</code></strong> when you set a webhook signing secret in ProbeHarbor.        HA (or any receiver) should reject POSTs that fail the HMAC check. The blueprint documents the header; details in the
         <a class="text-link" href="/about/ingest-and-webhooks">ingest &amp; webhooks guide</a>
         and FAQ below.
       </p>
@@ -289,9 +289,9 @@ const schema = [
 
     <section class="card">
       <h2 class="card-title">Example automation</h2>
-      <p class="card-subtitle mb-4">Snooze ThermalTrace freeze and leak alerts while a door is open for maintenance:</p>
+      <p class="card-subtitle mb-4">Snooze ProbeHarbor freeze and leak alerts while a door is open for maintenance:</p>
       <pre class="text-xs overflow-x-auto mb-0"><code>{`automation:
-  - alias: Snooze ThermalTrace while door open
+  - alias: Snooze ProbeHarbor while door open
     trigger:
       - platform: state
         entity_id: cover.garage_door

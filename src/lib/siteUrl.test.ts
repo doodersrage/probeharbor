@@ -37,7 +37,7 @@ describe("buildSiteUrl", () => {
 
   it("falls back to SITE_URL/ORIGIN env vars when no site or request is given", () => {
     stubEnv({});
-    expect(buildSiteUrl()).toBe("https://thermaltrace.dev");
+    expect(buildSiteUrl()).toBe("https://probeharbor.dev");
   });
 
   it("uses SITE_URL from env when a request is given, trimming trailing slashes", () => {

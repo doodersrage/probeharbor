@@ -25,4 +25,4 @@ All are Creative Commons or public domain and used with attribution in figcaptio
 | `frozen-thermometer.jpg` | CC BY-SA 4.0 | August Geyler | https://commons.wikimedia.org/wiki/File:Eingefrorenes_Außenthermometer.jpg |
 
 Project-owned photos (`temp-probe-v1.jpg`, `temp-probe-v2.jpg`, `json-temp.jpg`) remain for case study / feed docs.
-Lifestyle composites on marketing pages (`thermaltrace-*-lifestyle.jpg`) are project-owned, not Commons.
+Lifestyle composites on marketing pages (`probeharbor-*-lifestyle.jpg`) are project-owned, not Commons.

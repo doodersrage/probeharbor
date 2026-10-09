@@ -1,5 +1,5 @@
-/* ThermalTrace PWA service worker */
-const CACHE = "thermaltrace-v5";
+/* ProbeHarbor PWA service worker */
+const CACHE = "probeharbor-v5";
 const PRECACHE = [
   "/manifest.webmanifest",
   "/favicon.svg",
@@ -71,7 +71,7 @@ self.addEventListener("fetch", (event) => {
           caches.match(request).then((cached) => {
             if (cached) {
               const stale = cached.clone();
-              stale.headers.set("X-ThermalTrace-Stale", "1");
+              stale.headers.set("X-ProbeHarbor-Stale", "1");
               stale.headers.set("X-Garage-Temp-Stale", "1");
               return stale;
             }
@@ -120,7 +120,7 @@ self.addEventListener("fetch", (event) => {
 });
 
 self.addEventListener("push", (event) => {
-  let title = "ThermalTrace";
+  let title = "ProbeHarbor";
   let body = "New alert";
   try {
     const data = event.data ? event.data.json() : null;
@@ -135,7 +135,7 @@ self.addEventListener("push", (event) => {
       body,
       icon: "/favicon.svg",
       badge: "/favicon.svg",
-      tag: "thermaltrace-alert",
+      tag: "probeharbor-alert",
       renotify: true,
     }),
   );

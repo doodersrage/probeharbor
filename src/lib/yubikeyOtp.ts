@@ -188,7 +188,7 @@ export async function verifyYubiKeyOtpWithYubiCloud(
     try {
       const response = await fetch(`${endpoint}?${query.toString()}`, {
         method: "GET",
-        headers: { "User-Agent": "ThermalTrace/1.0" },
+        headers: { "User-Agent": "ProbeHarbor/1.0" },
       });
       const body = await response.text();
       const fields = parseYubiCloudBody(body);

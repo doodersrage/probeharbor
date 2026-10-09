@@ -1,0 +1,74 @@
+---
+/** Dismissible site-wide notice for the ThermalTrace → ProbeHarbor rename. */
+import { BRAND_NAME } from "../lib/brand";
+import { FORMER_BRAND_NAME, FORMER_DOMAIN, shouldShowRenameNotice } from "../lib/rebrand";
+
+const show = shouldShowRenameNotice();
+---
+{show && (
+  <div class="rename-notice" role="status" data-rename-notice>
+    <p>
+      <strong>{FORMER_BRAND_NAME} is now {BRAND_NAME}.</strong>
+      {" "}Same app, same account, same sensors. Old {FORMER_DOMAIN} links and device
+      ingest URLs keep working. You may need to sign in again once.
+    </p>
+    <button type="button" class="rename-notice-close" aria-label="Dismiss notice" data-rename-dismiss>
+      ×
+    </button>
+  </div>
+  <script is:inline>
+    (function () {
+      var KEY = "probeharbor.renameNoticeDismissed";
+      var el = document.querySelector("[data-rename-notice]");
+      if (!el) return;
+      try {
+        if (localStorage.getItem(KEY) === "1") el.hidden = true;
+      } catch (e) {}
+      var btn = el.querySelector("[data-rename-dismiss]");
+      if (btn) {
+        btn.addEventListener("click", function () {
+          el.hidden = true;
+          try {
+            localStorage.setItem(KEY, "1");
+          } catch (e) {}
+        });
+      }
+    })();
+  </script>
+)}
+
+<style>
+  .rename-notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.625rem 1rem;
+    background: var(--color-accent-soft);
+    border-bottom: 1px solid var(--color-border-strong);
+    color: var(--color-text);
+    font-size: 0.875rem;
+    line-height: 1.4;
+  }
+  .rename-notice[hidden] {
+    display: none;
+  }
+  .rename-notice p {
+    flex: 1;
+    margin: 0;
+    max-width: 72rem;
+    margin-inline: auto;
+  }
+  .rename-notice-close {
+    flex: none;
+    background: none;
+    border: 0;
+    color: var(--color-text-muted);
+    font-size: 1.25rem;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0 0.25rem;
+  }
+  .rename-notice-close:hover {
+    color: var(--color-text);
+  }
+</style>

@@ -224,7 +224,7 @@ export function buildBrandedEmailText(content: BrandedEmailContent): string {
     lines.push(`${content.secondaryCta.label}: ${content.secondaryCta.url}`);
     lines.push("");
   }
-  lines.push(content.footerNote ?? "ThermalTrace — live probe curves, freeze and flood/leak alerts, and history.");
+  lines.push(content.footerNote ?? "ProbeHarbor — live probe curves, freeze and flood/leak alerts, and history.");
   const siteUrl = resolveSiteUrl(null);
   lines.push(`${siteUrl}/dashboard`);
   if (content.unsubscribeUrl) {
@@ -280,7 +280,7 @@ export function buildBrandedEmailHtml(content: BrandedEmailContent): string {
 
   const footerNote = escapeEmailHtml(
     content.footerNote ??
-      "You’re receiving this because you have a ThermalTrace account. Manage email preferences in Dashboard → Alerts.",
+      "You’re receiving this because you have a ProbeHarbor account. Manage email preferences in Dashboard → Alerts.",
   );
 
   return `<!DOCTYPE html>
@@ -299,7 +299,7 @@ export function buildBrandedEmailHtml(content: BrandedEmailContent): string {
           <tr>
             <td style="padding:28px 28px 8px">
               <p style="margin:0;font-size:22px;font-weight:800;letter-spacing:-0.03em;line-height:1.2">
-                <span style="color:${COLORS.steel}">Thermal</span><span style="color:${COLORS.brand}">Trace</span>
+                <span style="color:${COLORS.steel}">Probe</span><span style="color:${COLORS.brand}">Harbor</span>
               </p>
             </td>
           </tr>
@@ -334,7 +334,7 @@ export function buildBrandedEmailHtml(content: BrandedEmailContent): string {
             </td>
           </tr>
         </table>
-        <p style="margin:18px 0 0;color:${COLORS.muted};font-size:11px;line-height:1.4">© ThermalTrace · ${escapeEmailHtml(siteUrl.replace(/^https?:\/\//, ""))}</p>
+        <p style="margin:18px 0 0;color:${COLORS.muted};font-size:11px;line-height:1.4">© ProbeHarbor · ${escapeEmailHtml(siteUrl.replace(/^https?:\/\//, ""))}</p>
       </td>
     </tr>
   </table>

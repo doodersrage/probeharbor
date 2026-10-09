@@ -54,7 +54,7 @@ const mqttCurl = `curl -X POST "${siteUrl}/api/ingest/mqtt" \\
 ---
 <Layout
   title="API documentation"
-  description="ThermalTrace HTTP API quick reference: ingest curl examples, rate limits, error codes, Prometheus metrics, inbound webhooks, and OpenAPI download."
+  description="ProbeHarbor HTTP API quick reference: ingest curl examples, rate limits, error codes, Prometheus metrics, inbound webhooks, and OpenAPI download."
   schema={schema}
   speakableSelectors={[".page-header-title", ".page-header-lede", ".faq-answer"]}
 >
@@ -189,7 +189,7 @@ const mqttCurl = `curl -X POST "${siteUrl}/api/ingest/mqtt" \\
       </div>
       <p class="mb-0 text-sm text-[var(--color-text-muted)]">
         Firmware + CLI:
-        <a class="text-link" href="https://github.com/doodersrage/thermaltrace-claim-puck" target="_blank" rel="noreferrer">thermaltrace-claim-puck</a>
+        <a class="text-link" href="https://github.com/doodersrage/thermaltrace-claim-puck" target="_blank" rel="noreferrer">probeharbor-claim-puck</a>
         · Desktop claim UI:
         <a class="text-link" href="/bay-buddy">Bay Buddy</a>
       </p>
@@ -255,7 +255,7 @@ const mqttCurl = `curl -X POST "${siteUrl}/api/ingest/mqtt" \\
       <p class="card-subtitle mb-4">
         Pro inbound webhooks for Home Assistant / Zapier / Make: actions such as <code>snooze</code>, <code>vacation</code>, <code>status</code>.
         Create the token under Dashboard → Share. Optional HMAC via signing secret
-        (<code>X-ThermalTrace-Signature</code>; legacy <code>X-GarageTemp-Signature</code> still accepted).
+        (<code>X-ProbeHarbor-Signature</code>; legacy <code>X-ThermalTrace-Signature</code> and <code>X-GarageTemp-Signature</code> still accepted).
       </p>
       <pre class="text-xs overflow-x-auto mb-3 p-4 rounded-lg bg-[var(--color-surface-muted)]"><code>{inboundCurl}</code></pre>
       <p class="mb-0 text-sm">

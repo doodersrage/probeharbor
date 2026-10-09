@@ -136,7 +136,7 @@ const schema = [
 ---
 <Layout
   title="Plans & pricing"
-  description="Compare ThermalTrace Free, Member, Pro, and Portfolio: devices, history, freeze and flood alerts, NWS warnings, and annual billing. Start free."
+  description="Compare ProbeHarbor Free, Member, Pro, and Portfolio: devices, history, freeze and flood alerts, NWS warnings, and annual billing. Start free."
   schema={schema}
   speakableSelectors={[".page-header-title", ".page-header-lede", ".faq-answer"]}
 >
@@ -144,7 +144,7 @@ const schema = [
     <PageHeader
       kicker="Pricing"
       title="Plans that grow with your probes"
-      lede="Start free to see if ThermalTrace fits. Upgrade to Member for a full cold season of history, or Pro when you want serious freeze and flood alerts, thermostat context, and automation. Need more than a handful of properties or on-site manager logins? Portfolio is below."
+      lede="Start free to see if ProbeHarbor fits. Upgrade to Member for a full cold season of history, or Pro when you want serious freeze and flood alerts, thermostat context, and automation. Need more than a handful of properties or on-site manager logins? Portfolio is below."
     >
       {user ? (
         <p class="page-header-meta">
@@ -170,7 +170,7 @@ const schema = [
       <ul class="pricing-ladder-list">
         <li>
           <strong>Free</strong>
-          <span>See if ThermalTrace works for you: live curves, freeze and leak alerts, one family live share.</span>
+          <span>See if ProbeHarbor works for you: live curves, freeze and leak alerts, one family live share.</span>
         </li>
         <li>
           <strong>Member</strong>
@@ -455,7 +455,7 @@ const schema = [
           at full power. Connect <a class="text-link" href="/about/thermostat-oauth">Nest or Ecobee</a> for house
           ambient and setpoint beside your garage probes, or push any indoor climate sensor as an
           <a class="text-link" href="/dashboard/devices?view=setup&tab=pull#indoor-reference">indoor reference</a>.
-          Keep MQTT on your LAN; use ThermalTrace for household freeze and leak SMS, history, and off-site alerts.
+          Keep MQTT on your LAN; use ProbeHarbor for household freeze and leak SMS, history, and off-site alerts.
         </p>
         <div class="flex flex-wrap gap-3">
           <a class="btn-primary" href="/integrations">All integrations</a>
@@ -470,7 +470,7 @@ const schema = [
       <h2 class="card-title">Full feature comparison</h2>
       <p class="card-subtitle mb-4">
         Canonical plan matrix for Free / Member / Pro / Portfolio: device counts, retention, freeze and leak alerts, thermostat, and manager logins.
-        Comparing ThermalTrace against MQTT, Govee, or a weather station?
+        Comparing ProbeHarbor against MQTT, Govee, or a weather station?
         {" "}<a class="text-link" href="/compare">See alternatives</a>
         {" "}(competitor guides, not a second copy of this table).
       </p>
@@ -510,7 +510,7 @@ const schema = [
   </div>
 
   <script define:vars={{ defaultInterval }}>
-    const STORAGE_KEY = "thermaltrace-pricing-interval";
+    const STORAGE_KEY = "probeharbor-pricing-interval";
 
     function readInterval() {
       try {

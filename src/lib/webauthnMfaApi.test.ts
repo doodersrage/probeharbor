@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { WebAuthnRp } from "./webauthnRp";
 
-const rp: WebAuthnRp = { rpId: "thermaltrace.dev", rpOrigins: ["https://thermaltrace.dev"] };
+const rp: WebAuthnRp = { rpId: "probeharbor.dev", rpOrigins: ["https://probeharbor.dev"] };
 
 function jsonResponse(body: unknown, ok = true, status = ok ? 200 : 400) {
   return {
@@ -87,7 +87,7 @@ describe("challengeWebAuthnFactor", () => {
     fetchMock.mockResolvedValue(
       jsonResponse({
         id: "challenge-1",
-        webauthn: { type: "request", credential_options: { publicKey: { rpId: "thermaltrace.dev" } } },
+        webauthn: { type: "request", credential_options: { publicKey: { rpId: "probeharbor.dev" } } },
       }),
     );
     const { challengeWebAuthnFactor } = await import("./webauthnMfaApi");
@@ -99,7 +99,7 @@ describe("challengeWebAuthnFactor", () => {
         challengeId: "challenge-1",
         factorId: "factor-1",
         ceremonyType: "request",
-        publicKey: { rpId: "thermaltrace.dev" },
+        publicKey: { rpId: "probeharbor.dev" },
       },
       error: null,
     });

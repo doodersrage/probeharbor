@@ -29,13 +29,13 @@ export const DRIP_STAGES: DripStage[] = [
   {
     id: "day1",
     day: 1,
-    subject: "Add your first probe to ThermalTrace",
+    subject: "Add your first probe to ProbeHarbor",
     content: (site) => ({
       eyebrow: "Getting started",
       preheader: "Create a device key, POST JSON, sensors auto-import — about 10 minutes.",
       title: "Connect your first probe",
       intro:
-        "Welcome to ThermalTrace. Your free account is ready — next step is a live reading on Home.",
+        "Welcome to ProbeHarbor. Your free account is ready — next step is a live reading on Home.",
       paragraphs: [
         "Open Devices and pick what you have. Each path creates a device and hands you a snippet with its key; sensors auto-import on the first reading.",
       ],
@@ -59,7 +59,7 @@ export const DRIP_STAGES: DripStage[] = [
         "Most unconditioned spaces start freeze alerts around 34°F — and wet flood contacts notify automatically once alerts are on.",
       title: "Don’t wait for the cold snap or a wet pad",
       intro:
-        "ThermalTrace can reach you when temperatures drop toward freezing or a leak contact goes wet — email and push now, plus SMS on Pro.",
+        "ProbeHarbor can reach you when temperatures drop toward freezing or a leak contact goes wet — email and push now, plus SMS on Pro.",
       paragraphs: [
         "Set a freeze threshold on your coldest zone, enable the channels you actually check, and send a test while you’re awake. Add a wet/dry flood contact on a heater pan, laundry, or sump when you have one.",
       ],
@@ -83,7 +83,7 @@ export const DRIP_STAGES: DripStage[] = [
         "SMS, WhatsApp, Pro share scopes, and webhooks — 14-day free trial.",
       title: "Level up with a free Pro trial",
       intro:
-        "You’ve had a week to explore ThermalTrace. Pro adds the channels and sharing tools that matter at 2 a.m. (Free already includes one family live link.)",
+        "You’ve had a week to explore ProbeHarbor. Pro adds the channels and sharing tools that matter at 2 a.m. (Free already includes one family live link.)",
       paragraphs: [
         "Start a 14-day trial from Pricing — cancel anytime from the dashboard billing portal.",
       ],
@@ -145,13 +145,13 @@ export const DRIP_SETUP_EMAILS: Record<"day3_setup" | "day7_setup", DripEmail> =
  * device setup and the Pro pitch are useless until they confirm.
  */
 export const DRIP_CONFIRM_EMAIL: DripEmail = {
-  subject: "Confirm your email to finish setting up ThermalTrace",
+  subject: "Confirm your email to finish setting up ProbeHarbor",
   content: (site) => ({
     eyebrow: "One step left",
     preheader: "Your account is waiting on email confirmation; links expire, so grab a fresh one.",
     title: "Confirm your email to sign in",
     intro:
-      "You started a ThermalTrace account but the address was never confirmed, so sign-in is still locked.",
+      "You started a ProbeHarbor account but the address was never confirmed, so sign-in is still locked.",
     paragraphs: [
       "Confirmation links expire. Request a fresh one, click it, and you'll land on Devices ready to connect a first sensor (or a demo feed if you have no hardware yet).",
     ],

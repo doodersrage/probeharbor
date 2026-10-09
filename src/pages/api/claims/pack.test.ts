@@ -50,7 +50,7 @@ beforeEach(() => {
     user: { id: "user-1" },
   });
   mockGetUserEntitlements.mockReset().mockResolvedValue({ canUseClaimsPack: true });
-  mockGetSiteUrl.mockReset().mockReturnValue("https://thermaltrace.dev/");
+  mockGetSiteUrl.mockReset().mockReturnValue("https://probeharbor.dev/");
   mockBuildClaimsPackHtml.mockReset().mockReturnValue("<html>pack</html>");
   mockGenerateClaimsPackForUser.mockReset().mockResolvedValue({
     pack: { householdLabel: "Garage" },
@@ -91,7 +91,7 @@ describe("GET /api/claims/pack", () => {
 
     expect(mockBuildClaimsPackHtml).toHaveBeenCalledWith(
       expect.objectContaining({
-        verifyUrl: "https://thermaltrace.dev/api/claims/pack/tok-1",
+        verifyUrl: "https://probeharbor.dev/api/claims/pack/tok-1",
         contentHash: "hash-1",
       }),
     );
@@ -119,7 +119,7 @@ describe("GET /api/claims/pack", () => {
 
     expect(response.headers.get("Content-Type")).toBe("text/html; charset=utf-8");
     expect(response.headers.get("Content-Disposition")).toBe(
-      'attachment; filename="thermaltrace-claims-2024-01-01-to-2024-01-31.html"',
+      'attachment; filename="probeharbor-claims-2024-01-01-to-2024-01-31.html"',
     );
     expect(await response.text()).toBe("<html>pack</html>");
     expect(mockRenderDocumentPdf).not.toHaveBeenCalled();
@@ -141,7 +141,7 @@ describe("GET /api/claims/pack", () => {
 
     expect(response.headers.get("Content-Type")).toBe("application/pdf");
     expect(response.headers.get("Content-Disposition")).toBe(
-      'attachment; filename="thermaltrace-claims-2024-01-01-to-2024-01-31.pdf"',
+      'attachment; filename="probeharbor-claims-2024-01-01-to-2024-01-31.pdf"',
     );
     expect(response.headers.get("X-Pdf-Source")).toBe("browser");
   });

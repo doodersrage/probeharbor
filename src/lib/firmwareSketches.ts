@@ -31,9 +31,9 @@ export function parseIngestUrlParts(ingestUrl: string): {
     };
   } catch {
     return {
-      host: "thermaltrace.dev",
+      host: "probeharbor.dev",
       path: "/api/ingest/YOUR_DEVICE_KEY",
-      origin: "https://thermaltrace.dev",
+      origin: "https://probeharbor.dev",
     };
   }
 }
@@ -82,7 +82,7 @@ export function buildArduinoEthernetDefinesSnippet(ingestUrl: string): string {
 export function buildPersonalizedDs18b20Ino(ingestUrl: string): string {
   const url = cEscape(ingestUrl);
   return `/**
- * DS18B20 → ThermalTrace push ingest (ESP32 / ESP8266 / Pico W Arduino core).
+ * DS18B20 → ProbeHarbor push ingest (ESP32 / ESP8266 / Pico W Arduino core).
  *
  * 1. Install board: ESP32 Arduino, ESP8266, or Earle Philhower Pico/RP2040 (Pico W).
  * 2. Libraries: OneWire, DallasTemperature (Library Manager).
@@ -169,7 +169,7 @@ void loop() {
 export function buildPersonalizedDs18b20Micropython(ingestUrl: string): string {
   const urlLit = JSON.stringify(ingestUrl);
   return `"""
-DS18B20 → ThermalTrace push ingest (MicroPython / ESP32 / Pico W).
+DS18B20 → ProbeHarbor push ingest (MicroPython / ESP32 / Pico W).
 
 1. Flash MicroPython on the ESP32 or Pico W / Pico 2 W.
 2. Set WIFI_SSID / WIFI_PASS below.
@@ -263,7 +263,7 @@ if __name__ == "__main__":
 export function buildPersonalizedDs18b20Circuitpython(ingestUrl: string): string {
   const urlLit = JSON.stringify(ingestUrl);
   return `"""
-DS18B20 → ThermalTrace push ingest (CircuitPython / Pico W).
+DS18B20 → ProbeHarbor push ingest (CircuitPython / Pico W).
 
 1. Flash CircuitPython UF2 for Pico W or Pico 2 W.
 2. circup install adafruit_requests adafruit_connection_manager adafruit_ds18x20 adafruit_onewire
@@ -386,7 +386,7 @@ export function buildPersonalizedDs18b20ZephyrC(ingestUrl: string): string {
   const { path } = parseIngestUrlParts(ingestUrl);
   const ingestPath = cEscape(path);
   return `/**
- * DS18B20 → ThermalTrace push ingest (Zephyr C / STM32 Nucleo-F767ZI).
+ * DS18B20 → ProbeHarbor push ingest (Zephyr C / STM32 Nucleo-F767ZI).
  *
  * 1. Run sketches/relay/push_https_forward.py on a LAN host.
  * 2. Set INGEST_HOST to that machine if it is not 192.168.1.50.
@@ -645,15 +645,15 @@ export function buildPersonalizedDs18b20TeensyIno(ingestUrl: string): string {
 }
 
 const PARTICLE_INGEST_URL_PLACEHOLDER =
-  '#define INGEST_URL "https://thermaltrace.dev/api/ingest/YOUR_DEVICE_KEY"';
+  '#define INGEST_URL "https://probeharbor.dev/api/ingest/YOUR_DEVICE_KEY"';
 const PARTICLE_WEBHOOK_URL_PLACEHOLDER =
-  '"url": "https://thermaltrace.dev/api/ingest/YOUR_DEVICE_KEY"';
+  '"url": "https://probeharbor.dev/api/ingest/YOUR_DEVICE_KEY"';
 
 /** Particle Boron cellular — Console webhook URL (device publishes JSON). */
 export function buildParticleCellularSnippet(ingestUrl: string): string {
   return `// Particle Boron / B-Series cellular. Device publishes JSON;
 // Console webhook POSTs to HTTPS ingest. Stale-probe alerts cover dropouts.
-// Event: thermaltrace_ingest
+// Event: probeharbor_ingest
 // Webhook URL:
 ${ingestUrl}
 // Sketch: sketches/particle/boron_ds18b20_ingest/

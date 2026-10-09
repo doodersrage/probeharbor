@@ -37,7 +37,7 @@ async function sendMonthlyReportEmail(
 
   const msg = createMimeMessage();
   msg.setSender({
-    name: "ThermalTrace",
+    name: "ProbeHarbor",
     addr: from,
   });
   msg.setRecipient(to);
@@ -48,7 +48,7 @@ async function sendMonthlyReportEmail(
   msg.addMessage({ contentType: "text/plain", data: plainBody });
   msg.addMessage({ contentType: "text/html", data: htmlBody });
   msg.addAttachment({
-    filename: "thermaltrace-monthly-report.html",
+    filename: "probeharbor-monthly-report.html",
     contentType: "text/html; charset=UTF-8",
     data: encodeBase64Utf8(attachmentHtml),
   });

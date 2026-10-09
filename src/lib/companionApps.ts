@@ -12,7 +12,7 @@ export type CompanionApp = {
   cta: string;
 };
 
-/** Clients that watch ThermalTrace — not sensors, not hardware accessories. */
+/** Clients that watch ProbeHarbor — not sensors, not hardware accessories. */
 export const COMPANION_APPS: CompanionApp[] = [
   {
     id: "android",

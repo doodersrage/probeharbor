@@ -29,7 +29,7 @@ export type IntegrationCard = {
 export const INTEGRATIONS_HUB_PATH = "/integrations";
 
 /** Extended developer docs (VitePress on GitHub Pages). Prefer in-app pages for hub CTAs. */
-export const DEV_DOCS_BASE = "https://thermaltrace.dev/developers";
+export const DEV_DOCS_BASE = "https://probeharbor.dev/developers";
 
 export const INTEGRATION_CARDS: IntegrationCard[] = [
   {
@@ -59,7 +59,7 @@ export const INTEGRATION_CARDS: IntegrationCard[] = [
     id: "smartthings",
     title: "SmartThings (via Matter)",
     summary:
-      "No Cloud-to-Cloud app: add the ThermalTrace Matterbridge on your LAN so SmartThings sees the same garage sensors as Apple Home.",
+      "No Cloud-to-Cloud app: add the ProbeHarbor Matterbridge on your LAN so SmartThings sees the same garage sensors as Apple Home.",
     href: SMARTTHINGS_INTEGRATION_PAGE,
     tier: "Family live link (Free)",
     cta: "SmartThings path",
@@ -70,7 +70,7 @@ export const INTEGRATION_CARDS: IntegrationCard[] = [
     id: "node-red",
     title: "Node-RED",
     summary:
-      "Import a ready-made flow to mirror Mosquitto topics to ThermalTrace over HTTPS. Keep the broker local; optional door-sensor tab.",
+      "Import a ready-made flow to mirror Mosquitto topics to ProbeHarbor over HTTPS. Keep the broker local; optional door-sensor tab.",
     href: NODERED_INTEGRATION_PAGE,
     cta: "Node-RED guide",
     secondaryHref: NODERED_FLOW_URL,
@@ -129,9 +129,9 @@ export const INTEGRATION_CARDS: IntegrationCard[] = [
     id: "thermostat",
     title: "Nest & Ecobee",
     summary:
-      "On thermaltrace.dev, Pro households connect Nest or Ecobee from Dashboard → Temperature for house setpoint context next to attic, crawlspace, and shop probes. Self-hosted deployments need the operator to enable OAuth client secrets first.",
+      "On probeharbor.dev, Pro households connect Nest or Ecobee from Dashboard → Temperature for house setpoint context next to attic, crawlspace, and shop probes. Self-hosted deployments need the operator to enable OAuth client secrets first.",
     href: "/compare/nest",
-    tier: "Pro (enabled on thermaltrace.dev)",
+    tier: "Pro (enabled on probeharbor.dev)",
     cta: "vs Nest / Ecobee",
     secondaryHref: "/about/thermostat-oauth",
     secondaryLabel: "Operator OAuth setup",

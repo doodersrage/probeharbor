@@ -91,9 +91,9 @@ if (!existsSync(envPath)) {
 
 const parsed = parseEnvFile(envPath);
 const siteUrl = parsed.SITE_URL?.trim() ?? "";
-if (!siteUrl.includes("thermaltrace.dev") && !process.env.ALLOW_NON_PROD_GITHUB_SECRETS) {
+if (!siteUrl.includes("probeharbor.dev") && !process.env.ALLOW_NON_PROD_GITHUB_SECRETS) {
   console.error(
-    `Refusing: SITE_URL is "${siteUrl || "(empty)"}". Production GitHub secrets should use https://thermaltrace.dev`,
+    `Refusing: SITE_URL is "${siteUrl || "(empty)"}". Production GitHub secrets should use https://probeharbor.dev`,
   );
   process.exit(1);
 }

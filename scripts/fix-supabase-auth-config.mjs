@@ -18,8 +18,8 @@ if (!token) {
 }
 
 const body = {
-  site_url: "https://thermaltrace.dev",
-  uri_allow_list: "https://thermaltrace.dev/api/auth/callback",
+  site_url: "https://probeharbor.dev",
+  uri_allow_list: "https://probeharbor.dev/api/auth/callback",
   external_github_enabled: true,
   external_github_email_optional: true,
   external_github_client_id: "Iv23liHaziDDyWmsvtlv",

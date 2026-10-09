@@ -29,15 +29,15 @@ const schema = [
 ---
 <Layout
   title="Integrations"
-  description="Connect ThermalTrace to Home Assistant, Matter, MQTT, Grafana, Nest, Ecobee, webhooks, and Zapier for freeze and flood alerts."
+  description="Connect ProbeHarbor to Home Assistant, Matter, MQTT, Grafana, Nest, Ecobee, webhooks, and Zapier for freeze and flood alerts."
   schema={schema}
   speakableSelectors={[".page-header-title", ".page-header-lede"]}
 >
   <div class="page-shell page-stack">
     <PageHeader
       kicker="Integrations"
-      title="Wire ThermalTrace into your stack"
-      lede="Hosted freeze and flood/leak alerts plus history for ESP/Arduino probes, with optional Home Assistant, Matter / SmartThings, Node-RED, Influx, Prometheus metrics, thermostat context, and webhook automations. Guides below stay on thermaltrace.dev; deep payload/Grafana write-ups live on the developer docs site and are labeled when they leave."
+      title="Wire ProbeHarbor into your stack"
+      lede="Hosted freeze and flood/leak alerts plus history for ESP/Arduino probes, with optional Home Assistant, Matter / SmartThings, Node-RED, Influx, Prometheus metrics, thermostat context, and webhook automations. Guides below stay on probeharbor.dev; deep payload/Grafana write-ups live on the developer docs site and are labeled when they leave."
     >
       <a slot="actions" class="btn-primary" href="/integrations/home-assistant">Home Assistant (HACS)</a>
       <a slot="actions" class="btn-secondary" href="/integrations/matter">Matter / Apple Home</a>
@@ -116,7 +116,7 @@ const schema = [
     <section class="card">
       <h2 class="card-title">Still on DIY MQTT?</h2>
       <p class="mb-4">
-        You can keep Mosquitto on the LAN and mirror readings to ThermalTrace for freeze/flood alerts, share links, and claims evidence.
+        You can keep Mosquitto on the LAN and mirror readings to ProbeHarbor for freeze/flood alerts, share links, and claims evidence.
         <a class="text-link" href="/compare/diy-mqtt">Compare vs DIY MQTT</a>
         ·
         <a class="text-link" href="/guides">Guides hub</a>

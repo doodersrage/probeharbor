@@ -4,37 +4,37 @@ Copy/paste into a new topic on [community.home-assistant.io](https://community.h
 
 ---
 
-**Title:** ThermalTrace — freeze and leak monitoring for garages, workshops & crawlspaces (official HACS integration)
+**Title:** ProbeHarbor — freeze and leak monitoring for garages, workshops & crawlspaces (official HACS integration)
 
 **Tags:** `custom-component` `integration` `sensor` `freeze` `leak` `garage`
 
 ---
 
-Hi all — we run [ThermalTrace](https://thermaltrace.dev), a hosted dashboard for ESP/Arduino probes in garages, workshops, attics, and crawlspaces — freeze and leak alerts, history, and household sharing. We shipped an **official HACS custom integration** and wanted to share it here.
+Hi all — we run [ProbeHarbor](https://probeharbor.dev), a hosted dashboard for ESP/Arduino probes in garages, workshops, attics, and crawlspaces — freeze and leak alerts, history, and household sharing. We shipped an **official HACS custom integration** and wanted to share it here.
 
 ### What it does
 
 - Polls a **share link** (`GET /api/share/{token}/readings`) — Free includes one family live link; Pro adds history/metrics scopes — and creates temperature, humidity, door, leak, and other entities automatically
 - Optional **inbound webhook** services: `thermaltrace.snooze`, `thermaltrace.vacation`, `thermaltrace.clear_snooze`, `thermaltrace.clear_vacation`, `thermaltrace.status`
 - Optional **push** service to POST readings from HA automations
-- Designed to **dual-run with MQTT** — keep Mosquitto on your LAN; use ThermalTrace for off-site SMS/history
+- Designed to **dual-run with MQTT** — keep Mosquitto on your LAN; use ProbeHarbor for off-site SMS/history
 
 ### Install
 
 1. HACS → Integrations → Custom repositories → add  
    `https://github.com/doodersrage/thermaltrace-home-assistant`
-2. Install **ThermalTrace**, restart HA
-3. Create a **family live** share link at [thermaltrace.dev](https://thermaltrace.dev) (Free includes one; Pro adds broader scopes)
-4. Settings → Devices & services → Add integration → ThermalTrace → paste token
+2. Install **ProbeHarbor**, restart HA
+3. Create a **family live** share link at [probeharbor.dev](https://probeharbor.dev) (Free includes one; Pro adds broader scopes)
+4. Settings → Devices & services → Add integration → ProbeHarbor → paste token
 
-Full guide: https://thermaltrace.dev/integrations/home-assistant
+Full guide: https://probeharbor.dev/integrations/home-assistant
 
 ### Beyond HACS (optional)
 
 - **Indoor reference via HA** — push `climate.*` current temperature on a schedule, then select it under Dashboard → Devices → Indoor reference (works when Ecobee developer signups are closed)
-- **MQTT → HTTP bridge** — mirror Mosquitto to ThermalTrace without exposing your broker: [MQTT bridge docs](https://doodersrage.github.io/thermaltrace/integrations/mqtt-bridge) · import [Node-RED flow](https://thermaltrace.dev/nodered/mqtt-to-thermaltrace.json) (temp + garage door tabs)
-- **ESPHome / Shelly** — push ingest recipes if you do not want HA in the middle: https://thermaltrace.dev/about/esphome-shelly-recipes
-- **Garage door + cold alerts** — combined rule when a bay door is open while temps drop: https://thermaltrace.dev/about/garage-door-cold-playbook
+- **MQTT → HTTP bridge** — mirror Mosquitto to ProbeHarbor without exposing your broker: [MQTT bridge docs](https://doodersrage.github.io/thermaltrace/integrations/mqtt-bridge) · import [Node-RED flow](https://probeharbor.dev/nodered/mqtt-to-probeharbor.json) (temp + garage door tabs)
+- **ESPHome / Shelly** — push ingest recipes if you do not want HA in the middle: https://probeharbor.dev/about/esphome-shelly-recipes
+- **Garage door + cold alerts** — combined rule when a bay door is open while temps drop: https://probeharbor.dev/about/garage-door-cold-playbook
 
 ### Example automation
 
@@ -42,7 +42,7 @@ Snooze freeze and leak alerts while the garage door is open for maintenance:
 
 ```yaml
 automation:
-  - alias: Snooze ThermalTrace while garage door open
+  - alias: Snooze ProbeHarbor while garage door open
     trigger:
       - platform: state
         entity_id: binary_sensor.garage_door
@@ -56,9 +56,9 @@ automation:
 ### Links
 
 - HACS repo: https://github.com/doodersrage/thermaltrace-home-assistant
-- Product + docs: https://thermaltrace.dev/integrations/home-assistant
-- Integrations hub: https://thermaltrace.dev/integrations
-- OpenAPI: https://thermaltrace.dev/openapi.yaml
+- Product + docs: https://probeharbor.dev/integrations/home-assistant
+- Integrations hub: https://probeharbor.dev/integrations
+- OpenAPI: https://probeharbor.dev/openapi.yaml
 
 Happy to answer setup questions in this thread. If you try it, we'd love feedback on entity naming and poll interval defaults.
 

@@ -45,7 +45,7 @@ describe("serverErrors", () => {
       }),
     );
     expect(notifyOps).toHaveBeenCalledWith(
-      "ThermalTrace page error: /dashboard/history",
+      "ProbeHarbor page error: /dashboard/history",
       expect.stringContaining("boom"),
     );
   });

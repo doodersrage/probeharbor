@@ -3,7 +3,7 @@
  * Smoke-check OAuth sign-in hops on production (or SMOKE_BASE_URL).
  * Verifies PKCE cookie is set and Supabase providers are enabled.
  */
-const base = (process.argv[2] ?? process.env.SMOKE_BASE_URL ?? "https://thermaltrace.dev").replace(
+const base = (process.argv[2] ?? process.env.SMOKE_BASE_URL ?? "https://probeharbor.dev").replace(
   /\/+$/,
   "",
 );
@@ -80,7 +80,7 @@ async function main() {
   console.log(`  GitHub OAuth app callback (direct): ${base}/api/auth/github/callback`);
   console.log("  Google Cloud → Authorized redirect URIs: Supabase callback above");
   console.log("  Discord app → OAuth2 Redirects: Supabase callback above");
-  console.log("  GitHub ThermalTrace app → Authorization callback URL: direct GitHub callback above");
+  console.log("  GitHub ProbeHarbor app → Authorization callback URL: direct GitHub callback above");
   console.log("  Supabase → Authentication → Providers: Google + Discord Client ID + Secret");
 }
 

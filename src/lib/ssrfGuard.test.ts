@@ -37,7 +37,7 @@ describe("isBlockedFetchHost", () => {
   it("allows ordinary public hosts", () => {
     expect(isBlockedFetchHost("api.example.com")).toBe(false);
     expect(isBlockedFetchHost("8.8.8.8")).toBe(false);
-    expect(isBlockedFetchHost("thermaltrace.dev")).toBe(false);
+    expect(isBlockedFetchHost("probeharbor.dev")).toBe(false);
   });
 });
 

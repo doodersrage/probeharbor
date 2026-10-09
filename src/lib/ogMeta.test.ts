@@ -33,11 +33,11 @@ describe("ogMeta", () => {
   });
 
   it("builds absolute image URLs", () => {
-    expect(absoluteOgImageUrl("https://thermaltrace.dev", "/og-api.jpg")).toBe(
-      "https://thermaltrace.dev/og-api.jpg",
+    expect(absoluteOgImageUrl("https://probeharbor.dev", "/og-api.jpg")).toBe(
+      "https://probeharbor.dev/og-api.jpg",
     );
     expect(
-      absoluteOgImageUrl("https://thermaltrace.dev", "https://cdn.example/x.jpg"),
+      absoluteOgImageUrl("https://probeharbor.dev", "https://cdn.example/x.jpg"),
     ).toBe("https://cdn.example/x.jpg");
   });
 

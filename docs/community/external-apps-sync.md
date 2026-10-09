@@ -1,10 +1,10 @@
 # External apps — doc sync checklist
 
-ThermalTrace ships in multiple repos. When onboarding UX changes in **this** repo, check whether sibling projects need a README or marketing pass.
+ProbeHarbor ships in multiple repos. When onboarding UX changes in **this** repo, check whether sibling projects need a README or marketing pass.
 
-**2026-09-10 web dashboard UX** (Live at `/dashboard/live`, property chrome shell, first-run Overview, Devices Setup/Status panes, Overview perf): **no companion code or README update required** — APIs and OAuth contracts unchanged. Product copy updated in [Accounts & dashboard](https://thermaltrace.dev/about/accounts-and-dashboard); architecture note in [docs/guide/architecture.md](../guide/architecture.md).
+**2026-09-10 web dashboard UX** (Live at `/dashboard/live`, property chrome shell, first-run Overview, Devices Setup/Status panes, Overview perf): **no companion code or README update required** — APIs and OAuth contracts unchanged. Product copy updated in [Accounts & dashboard](https://probeharbor.dev/about/accounts-and-dashboard); architecture note in [docs/guide/architecture.md](../guide/architecture.md).
 
-## thermaltrace-home-assistant (HACS)
+## probeharbor-home-assistant (HACS)
 
 **Repo:** [github.com/doodersrage/thermaltrace-home-assistant](https://github.com/doodersrage/thermaltrace-home-assistant)
 
@@ -16,13 +16,13 @@ ThermalTrace ships in multiple repos. When onboarding UX changes in **this** rep
 - New sensor kinds or inbound webhook actions
 - HACS default store PR [#10550](https://github.com/hacs/default/pull/10550) merges → update badge in `src/lib/integrationsHub.ts` here
 
-**Canonical product docs:** [thermaltrace.dev/integrations/home-assistant](https://thermaltrace.dev/integrations/home-assistant)
+**Canonical product docs:** [probeharbor.dev/integrations/home-assistant](https://probeharbor.dev/integrations/home-assistant)
 
-## thermaltrace-bay-buddy
+## probeharbor-bay-buddy
 
 **Repo:** [github.com/doodersrage/thermaltrace-bay-buddy](https://github.com/doodersrage/thermaltrace-bay-buddy)
 
-**Status (2026-09-10):** Desktop mood glance (Tauri). Connects via `/api/auth/companion/start` + loopback / custom-scheme OAuth. Product page: [thermaltrace.dev/bay-buddy](https://thermaltrace.dev/bay-buddy). Claim puck UI claims/follows RP2040-Zero mood lights. Unaffected by web Live/Overview split.
+**Status (2026-09-10):** Desktop mood glance (Tauri). Connects via `/api/auth/companion/start` + loopback / custom-scheme OAuth. Product page: [probeharbor.dev/bay-buddy](https://probeharbor.dev/bay-buddy). Claim puck UI claims/follows RP2040-Zero mood lights. Unaffected by web Live/Overview split.
 
 **Re-sync when:**
 
@@ -30,11 +30,11 @@ ThermalTrace ships in multiple repos. When onboarding UX changes in **this** rep
 - Home insights payload shapes Bay Buddy displays (time_to_freeze, door/leak)
 - Claim puck serial / `/api/pucks` / bay mood contract changes
 
-## thermaltrace-desktop
+## probeharbor-desktop
 
 **Repo:** [github.com/doodersrage/thermaltrace-desktop](https://github.com/doodersrage/thermaltrace-desktop)
 
-**Status (2026-09-10):** Full desktop companion dashboard (Tauri). Connects via `/api/auth/companion/start?client=desktop` + loopback OAuth. Product page: [thermaltrace.dev/desktop](https://thermaltrace.dev/desktop). Android-parity screens: Home, History, Alerts, Devices, Household, Share, Account, Portfolio. Home ≈ web Live; full Overview Status/Insights remain web-only.
+**Status (2026-09-10):** Full desktop companion dashboard (Tauri). Connects via `/api/auth/companion/start?client=desktop` + loopback OAuth. Product page: [probeharbor.dev/desktop](https://probeharbor.dev/desktop). Android-parity screens: Home, History, Alerts, Devices, Household, Share, Account, Portfolio. Home ≈ web Live; full Overview Status/Insights remain web-only.
 
 **Re-sync when:**
 
@@ -42,18 +42,18 @@ ThermalTrace ships in multiple repos. When onboarding UX changes in **this** rep
 - Dashboard API shapes used by Android (readings, history, export, share, household)
 - Form POST success query flags for preferences / alert-settings / devices / share change
 
-## thermaltrace-claim-puck
+## probeharbor-claim-puck
 
 **Repo:** [github.com/doodersrage/thermaltrace-claim-puck](https://github.com/doodersrage/thermaltrace-claim-puck)
 
-**Status (2026-09-10):** CircuitPython firmware + host CLI for RP2040-Zero presence key. Product page: [thermaltrace.dev/claim-puck](https://thermaltrace.dev/claim-puck). API: `/api/pucks/*` + `/api/bays/{bay}/mood`.
+**Status (2026-09-10):** CircuitPython firmware + host CLI for RP2040-Zero presence key. Product page: [probeharbor.dev/claim-puck](https://probeharbor.dev/claim-puck). API: `/api/pucks/*` + `/api/bays/{bay}/mood`.
 
 **Re-sync when:**
 
 - Claim HMAC protocol or companion auth header requirements change
 - Bay mood vocabulary or derivation rules change
 
-## thermaltrace-android
+## probeharbor-android
 
 **Repo:** [github.com/doodersrage/thermaltrace-android](https://github.com/doodersrage/thermaltrace-android) (sibling checkout)
 
@@ -65,11 +65,11 @@ ThermalTrace ships in multiple repos. When onboarding UX changes in **this** rep
 - Play Store listing copy after `PUBLIC_PLAY_STORE_URL` is set
 - Web Overview Insights grow into dedicated mobile screens
 
-## thermaltrace-matter
+## probeharbor-matter
 
 **Repo:** [github.com/doodersrage/thermaltrace-matter](https://github.com/doodersrage/thermaltrace-matter)
 
-**Status (2026-09-10):** Matterbridge DynamicPlatform plugin. Polls `/api/share/{token}/readings`, maps temperature / humidity / flood / door / power / motion to Matter accessories. Optional Pro snooze via `/api/inbound/{token}` + HMAC. Product page: [thermaltrace.dev/integrations/matter](https://thermaltrace.dev/integrations/matter). Not CSA-certified; runs on LAN host only.
+**Status (2026-09-10):** Matterbridge DynamicPlatform plugin. Polls `/api/share/{token}/readings`, maps temperature / humidity / flood / door / power / motion to Matter accessories. Optional Pro snooze via `/api/inbound/{token}` + HMAC. Product page: [probeharbor.dev/integrations/matter](https://probeharbor.dev/integrations/matter). Not CSA-certified; runs on LAN host only.
 
 **Re-sync when:**
 
@@ -79,7 +79,7 @@ ThermalTrace ships in multiple repos. When onboarding UX changes in **this** rep
 
 ## This repo (source of truth)
 
-User-facing onboarding: [Adding devices](https://thermaltrace.dev/about/adding-devices) (source: `src/pages/about/adding-devices.astro`) · [Accounts & dashboard](https://thermaltrace.dev/about/accounts-and-dashboard)
+User-facing onboarding: [Adding devices](https://probeharbor.dev/about/adding-devices) (source: `src/pages/about/adding-devices.astro`) · [Accounts & dashboard](https://probeharbor.dev/about/accounts-and-dashboard)
 
 Developer ingest: [docs/ingest/index.md](../ingest/index.md) · [docs/ingest/pull-feeds.md](../ingest/pull-feeds.md)
 

@@ -96,7 +96,7 @@ const showWebhookNudge =
             </ul>
           )}
           <p class="mt-4 mb-0 text-sm">
-            <a class="text-link" href="/grafana/thermaltrace-dashboard.json" download>
+            <a class="text-link" href="/grafana/probeharbor-dashboard.json" download>
               Download Grafana dashboard JSON
             </a>
           </p>
@@ -111,7 +111,7 @@ const showWebhookNudge =
         <section class="card" id="inbound-webhooks">
           <h2 class="card-title">Inbound webhooks</h2>
           <p class="card-subtitle mb-4">
-            Let Home Assistant or Zapier POST to ThermalTrace. Actions:
+            Let Home Assistant or Zapier POST to ProbeHarbor. Actions:
             <code>snooze</code>, <code>vacation</code>, <code>clear_snooze</code>, <code>clear_vacation</code>, <code>status</code>.
             Example: <code>{`{"action":"snooze","hours":24}`}</code> to <code>POST /api/inbound/&lt;token&gt;</code>.
           </p>
@@ -124,7 +124,7 @@ const showWebhookNudge =
               <p class="ingest-key-value break-all text-sm mb-2">{siteUrl}/api/inbound/{inboundToken}</p>
               {inboundSigningSecret && (
                 <>
-                  <p class="text-sm mb-2">Signing secret (for X-ThermalTrace-Signature, copy now):</p>
+                  <p class="text-sm mb-2">Signing secret (for X-ProbeHarbor-Signature, copy now):</p>
                   <p class="ingest-key-value break-all text-sm mb-2">{inboundSigningSecret}</p>
                 </>
               )}

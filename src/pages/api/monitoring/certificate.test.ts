@@ -34,11 +34,11 @@ beforeEach(() => {
     session: { access_token: "at" },
     user: { id: "user-1" },
   });
-  mockGetSiteUrl.mockReset().mockReturnValue("https://thermaltrace.dev/");
+  mockGetSiteUrl.mockReset().mockReturnValue("https://probeharbor.dev/");
   mockGenerateMonitoringCertificateForUser.mockReset().mockResolvedValue({
     html: "<html>cert</html>",
     data: { deviceCount: 2 },
-    filenameBase: "thermaltrace-certificate",
+    filenameBase: "probeharbor-certificate",
     error: null,
   });
   mockRenderDocumentPdf.mockReset().mockResolvedValue({
@@ -79,7 +79,7 @@ describe("GET /api/monitoring/certificate", () => {
 
     expect(response.headers.get("Content-Type")).toBe("text/html; charset=utf-8");
     expect(response.headers.get("Content-Disposition")).toBe(
-      'attachment; filename="thermaltrace-certificate.html"',
+      'attachment; filename="probeharbor-certificate.html"',
     );
     expect(await response.text()).toBe("<html>cert</html>");
     expect(mockRenderDocumentPdf).not.toHaveBeenCalled();
@@ -101,7 +101,7 @@ describe("GET /api/monitoring/certificate", () => {
 
     expect(response.headers.get("Content-Type")).toBe("application/pdf");
     expect(response.headers.get("Content-Disposition")).toBe(
-      'attachment; filename="thermaltrace-certificate.pdf"',
+      'attachment; filename="probeharbor-certificate.pdf"',
     );
     expect(response.headers.get("X-Pdf-Source")).toBe("browser");
   });

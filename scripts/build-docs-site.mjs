@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Build the VitePress developer docs for the main domain and copy them into
- * the Worker's static assets, so they are served at thermaltrace.dev/developers/.
+ * the Worker's static assets, so they are served at probeharbor.dev/developers/.
  * Run after `astro build` (needs dist/client) and before `wrangler deploy`.
  *
  * Usage: pnpm docs:build:site

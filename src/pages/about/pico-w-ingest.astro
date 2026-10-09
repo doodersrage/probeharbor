@@ -28,7 +28,7 @@ const AMAZON_RESISTOR = BOM.amazonResistor4k7;
 >
   <p>
     ESP32 is still the default freeze-kit board, but it is not the only Wi‑Fi microcontroller that can
-    POST to ThermalTrace. A <strong>Raspberry Pi Pico W</strong> or <strong>Pico 2 W</strong> speaks HTTPS
+    POST to ProbeHarbor. A <strong>Raspberry Pi Pico W</strong> or <strong>Pico 2 W</strong> speaks HTTPS
     on-chip, uses the same DS18B20 wiring idea as the ESP sketches, and flashes without Arduino IDE if you
     prefer CircuitPython’s <code>CIRCUITPY</code> drive.
   </p>
@@ -93,7 +93,7 @@ const AMAZON_RESISTOR = BOM.amazonResistor4k7;
     <li>DS18B20 data → <strong>GP4</strong>, with 4.7k between data and 3.3V</li>
   </ul>
   <p>
-    GP4 is GPIO 4, the same numeric pin the ESP32 sketches use. After the first POST, ThermalTrace imports
+    GP4 is GPIO 4, the same numeric pin the ESP32 sketches use. After the first POST, ProbeHarbor imports
     <code>temp1</code> automatically.
   </p>
 

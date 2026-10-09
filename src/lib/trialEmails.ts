@@ -29,8 +29,8 @@ export function buildTrialReminderEmail(options: {
   const { plan, remaining } = options;
   const subject =
     remaining === 1
-      ? `Your ThermalTrace ${plan} trial ends tomorrow`
-      : `Your ThermalTrace ${plan} trial ends in ${remaining} days`;
+      ? `Your ProbeHarbor ${plan} trial ends tomorrow`
+      : `Your ProbeHarbor ${plan} trial ends in ${remaining} days`;
   const when = remaining === 1 ? "tomorrow" : `in ${remaining} days`;
   const parts = brandedEmailParts({
     eyebrow: "Trial reminder",

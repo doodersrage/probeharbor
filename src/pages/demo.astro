@@ -17,7 +17,7 @@ import {
   resolvePageUrl,
   resolveSiteUrl,
 } from "../lib/schemaMarkup";
-import historyChart from "../assets/marketing/thermaltrace-dashboard-history-chart.jpg";
+import historyChart from "../assets/marketing/probeharbor-dashboard-history-chart.jpg";
 
 const siteUrl = resolveSiteUrl(Astro.site);
 const pageUrl = resolvePageUrl(siteUrl, "/demo");
@@ -32,9 +32,9 @@ const schema = [
   {
     "@context": "https://schema.org",
     "@type": "WebApplication",
-    name: "ThermalTrace live probe demo",
+    name: "ProbeHarbor live probe demo",
     description:
-      "No-account ThermalTrace demos: interactive multi-zone probe simulator plus live demo probes on the production ingest path.",
+      "No-account ProbeHarbor demos: interactive multi-zone probe simulator plus live demo probes on the production ingest path.",
     url: pageUrl,
     applicationCategory: "UtilitiesApplication",
     operatingSystem: "Any",
@@ -43,11 +43,11 @@ const schema = [
 ---
 <Layout
   title="Live probe demo"
-  description="Try ThermalTrace without an account: interactive probe simulator, real live demo probes, and the same freeze/flood alert path your hardware will use."
+  description="Try ProbeHarbor without an account: interactive probe simulator, real live demo probes, and the same freeze/flood alert path your hardware will use."
   schema={schema}
   speakableSelectors={[".page-header-title", ".page-header-lede", ".faq-answer"]}
   ogImage="/og-dashboard.jpg"
-  ogImageAlt="ThermalTrace live probe temperature curves, no account required"
+  ogImageAlt="ProbeHarbor live probe temperature curves, no account required"
 >
   <div class="page-shell page-stack">
     <PageHeader
@@ -61,7 +61,7 @@ const schema = [
     </PageHeader>
 
     <section class="card" aria-labelledby="demo-paths-title">
-      <h2 class="card-title" id="demo-paths-title">Three ways to try ThermalTrace</h2>
+      <h2 class="card-title" id="demo-paths-title">Three ways to try ProbeHarbor</h2>
       <p class="card-subtitle mb-4">
         Start with the simulator if you want to feel freeze risk respond to you, then confirm with the live feed and auto-wet flood path.
       </p>
@@ -127,7 +127,7 @@ const schema = [
       <div class="demo-freeze-copy">
         <h2 class="demo-freeze-title" id="demo-freeze-title">Same data that fires freeze and flood alerts</h2>
         <p class="demo-freeze-lede">
-          When a probe crosses your threshold, ThermalTrace can reach you on email, browser push, Discord, Telegram, Slack, and on Pro, SMS. Wet flood/leak contacts auto-alert on the same stack. Set the line once; test it before the next cold night.
+          When a probe crosses your threshold, ProbeHarbor can reach you on email, browser push, Discord, Telegram, Slack, and on Pro, SMS. Wet flood/leak contacts auto-alert on the same stack. Set the line once; test it before the next cold night.
         </p>
         <ul class="demo-freeze-channels" aria-label="Alert channels">
           <li>Email · Discord · Telegram · Slack</li>
@@ -144,7 +144,7 @@ const schema = [
       <figure class="demo-freeze-visual">
         <Image
           src={historyChart}
-          alt="ThermalTrace temperature trend with humidity, dew point, and freeze threshold at 34°F"
+          alt="ProbeHarbor temperature trend with humidity, dew point, and freeze threshold at 34°F"
           widths={[480, 720, 960]}
           sizes="(max-width: 767px) 100vw, 42vw"
           class="demo-freeze-img"
@@ -212,7 +212,7 @@ const schema = [
         <li>Discord · Telegram · Slack</li>
       </ul>
       <p class="home-compat-note">
-        Keep MQTT on your LAN; mirror to ThermalTrace over HTTPS for household freeze/flood alerts and history.
+        Keep MQTT on your LAN; mirror to ProbeHarbor over HTTPS for household freeze/flood alerts and history.
         <a class="text-link" href="/about/mqtt-bridge">MQTT bridge recipe</a>
       </p>
     </section>

@@ -25,12 +25,12 @@ const guidesFaqs = [
   {
     question: "Do you sell hardware kits?",
     answer:
-      "No. ThermalTrace is software. Buy parts from Adafruit or Amazon using the ESP32 freeze kit BOM and accessories pages, then flash a pre-filled sketch from Devices.",
+      "No. ProbeHarbor is software. Buy parts from Adafruit or Amazon using the ESP32 freeze kit BOM and accessories pages, then flash a pre-filled sketch from Devices.",
   },
   {
     question: "Where are example scenarios and comparisons?",
     answer:
-      "Illustrative freeze, leak, and heat scenarios: thermaltrace.dev/stories. Versus DIY MQTT, Govee, Tempest, Nest, and Ecobee: thermaltrace.dev/compare. Home Assistant: thermaltrace.dev/integrations.",
+      "Illustrative freeze, leak, and heat scenarios: probeharbor.dev/stories. Versus DIY MQTT, Govee, Tempest, Nest, and Ecobee: probeharbor.dev/compare. Home Assistant: probeharbor.dev/integrations.",
   },
 ];
 const alsoUseful = [
@@ -42,7 +42,7 @@ const alsoUseful = [
   {
     href: "/compare",
     label: "Compare alternatives",
-    summary: "ThermalTrace vs DIY MQTT, Govee, Tempest, Nest, Ecobee, and others.",
+    summary: "ProbeHarbor vs DIY MQTT, Govee, Tempest, Nest, Ecobee, and others.",
   },
   {
     href: "/integrations",
@@ -74,7 +74,7 @@ const schema = [
   getFaqPageSchema(pageUrl, guidesFaqs),
   getItemListSchema({
     pageUrl,
-    name: "ThermalTrace guides by job",
+    name: "ProbeHarbor guides by job",
     description:
       "Hardware setup, freeze and flood alerts, household sharing, and API guides.",
     items: guideListItems,
@@ -87,7 +87,7 @@ const stripHrefs = guidesHubPhotos.map((p) => p.href);
 ---
 <Layout
   title="Guides"
-  description="ThermalTrace guides by job: hardware setup, freeze and flood/leak alerts, household sharing, and the HTTP API, plus all articles in one library."
+  description="ProbeHarbor guides by job: hardware setup, freeze and flood/leak alerts, household sharing, and the HTTP API, plus all articles in one library."
   schema={schema}
   speakableSelectors={[".page-header-title", ".page-header-lede", ".faq-answer"]}
 >

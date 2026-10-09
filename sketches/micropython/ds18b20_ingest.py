@@ -1,5 +1,5 @@
 """
-DS18B20 → ThermalTrace push ingest (MicroPython).
+DS18B20 → ProbeHarbor push ingest (MicroPython).
 
 Works on ESP32 / ESP8266 and Raspberry Pi Pico W / Pico 2 W.
 Copy to the board as main.py (or import from boot). Set WIFI and INGEST_URL.
@@ -23,7 +23,7 @@ except ImportError:
 
 WIFI_SSID = "your-wifi"
 WIFI_PASS = "your-password"
-INGEST_URL = "https://thermaltrace.dev/api/ingest/YOUR_DEVICE_KEY"
+INGEST_URL = "https://probeharbor.dev/api/ingest/YOUR_DEVICE_KEY"
 ONE_WIRE_PIN = 4
 INTERVAL_S = 60
 

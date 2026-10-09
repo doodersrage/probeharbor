@@ -15,7 +15,7 @@ if (existsSync(envFile)) {
   process.loadEnvFile?.(envFile);
 }
 
-const base = (process.argv[2] ?? process.env.SMOKE_BASE_URL ?? "https://thermaltrace.dev").replace(
+const base = (process.argv[2] ?? process.env.SMOKE_BASE_URL ?? "https://probeharbor.dev").replace(
   /\/+$/,
   "",
 );

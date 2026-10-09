@@ -1,12 +1,12 @@
 ---
-description: "Run ThermalTrace locally: clone, install with pnpm, fill .env with Supabase and site keys, and start the Astro dev server."
+description: "Run ProbeHarbor locally: clone, install with pnpm, fill .env with Supabase and site keys, and start the Astro dev server."
 ---
 
 # Local development
 
 ```bash
 git clone https://github.com/doodersrage/thermaltrace.git
-cd thermaltrace
+cd probeharbor
 pnpm install
 cp .env.example .env   # fill Supabase, SITE_URL, etc.
 pnpm dev               # http://localhost:4321
@@ -22,7 +22,7 @@ pnpm typecheck         # full-repo tsc --noEmit
 pnpm build
 pnpm test:e2e          # Playwright (needs build / local server per config)
 pnpm audit:stripe      # compare STRIPE_DISPLAY_* to live Stripe prices
-pnpm docs:dev          # this docs site locally (base /thermaltrace/)
+pnpm docs:dev          # this docs site locally (base /probeharbor/)
 pnpm docs:build
 ```
 
@@ -32,7 +32,7 @@ Authenticated alert-settings E2E: set `E2E_TEST_EMAIL` and `E2E_TEST_PASSWORD` i
 pnpm setup:e2e-github-secrets   # sync .env → GitHub Actions secrets for CI e2e job
 pnpm e2e:reset-password         # optional: recreate/reset the E2E user via Supabase admin
 pnpm test:e2e:auth
-# against production: PLAYWRIGHT_BASE_URL=https://thermaltrace.dev pnpm test:e2e:auth
+# against production: PLAYWRIGHT_BASE_URL=https://probeharbor.dev pnpm test:e2e:auth
 ```
 
 Auth E2E signs in through the Supabase API (sets session cookies) so it does not depend on Turnstile.
@@ -86,7 +86,7 @@ pnpm secrets:push
 pnpm deploy
 ```
 
-Worker name on Cloudflare may still be `garage-temp`; the product brand is ThermalTrace. Set `SITE_URL` / `ORIGIN` to `https://thermaltrace.dev`.
+Worker name on Cloudflare may still be `garage-temp`; the product brand is ProbeHarbor. Set `SITE_URL` / `ORIGIN` to `https://probeharbor.dev`.
 
 ## Docs site only
 

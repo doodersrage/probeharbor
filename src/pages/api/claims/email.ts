@@ -98,9 +98,9 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   try {
     const parts = brandedEmailParts({
       eyebrow: "Claims pack",
-      preheader: `A ThermalTrace freeze-exposure report for ${pack.householdLabel} is ready to view.`,
+      preheader: `A ProbeHarbor freeze-exposure report for ${pack.householdLabel} is ready to view.`,
       title: `Claims pack: ${pack.householdLabel}`,
-      intro: `A ThermalTrace household member shared a freeze-exposure and alert-history report covering ${rangeLabel}.`,
+      intro: `A ProbeHarbor household member shared a freeze-exposure and alert-history report covering ${rangeLabel}.`,
       paragraphs: [
         "The report includes freeze-exposure stats, device and probe tables, and a timeline of critical alerts for the selected period, with a verification code so this specific export can be reconfirmed later.",
         `Verification code: ${contentHash}`,
@@ -111,7 +111,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
         : undefined,
       tone: "brand",
       footerNote:
-        "This report was sent by a ThermalTrace household member. It's a monitoring summary, not a certified inspection -- see the report itself for full context.",
+        "This report was sent by a ProbeHarbor household member. It's a monitoring summary, not a certified inspection -- see the report itself for full context.",
     });
     await sendEmail(adjusterEmail, `Claims pack: ${pack.householdLabel}`, parts.text, {
       html: parts.html,

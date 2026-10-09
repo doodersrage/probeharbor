@@ -41,7 +41,7 @@ export function useHistoryChartInteraction(options: {
     points,
     canvasRef,
     wrapRef,
-    pngFilenamePrefix = "thermaltrace-chart",
+    pngFilenamePrefix = "probeharbor-chart",
     hover,
     initialPresetId = null,
     onPresetChange,

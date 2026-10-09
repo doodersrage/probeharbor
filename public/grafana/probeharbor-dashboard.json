@@ -3,14 +3,14 @@
     {
       "name": "DS_PROMETHEUS",
       "label": "Prometheus",
-      "description": "ThermalTrace metrics scrape target",
+      "description": "ProbeHarbor metrics scrape target",
       "type": "datasource",
       "pluginId": "prometheus",
       "pluginName": "Prometheus"
     }
   ],
-  "title": "ThermalTrace",
-  "uid": "thermaltrace",
+  "title": "ProbeHarbor",
+  "uid": "probeharbor",
   "timezone": "browser",
   "schemaVersion": 39,
   "version": 2,
@@ -21,7 +21,7 @@
       "gridPos": { "h": 8, "w": 24, "x": 0, "y": 0 },
       "targets": [
         {
-          "expr": "thermaltrace_sensor_value{kind=\"temperature\"}",
+          "expr": "probeharbor_sensor_value{kind=\"temperature\"}",
           "legendFormat": "{{device}} / {{key}}",
           "refId": "A"
         }
@@ -34,7 +34,7 @@
       "gridPos": { "h": 8, "w": 24, "x": 0, "y": 8 },
       "targets": [
         {
-          "expr": "thermaltrace_sensor_value{kind=\"humidity\"}",
+          "expr": "probeharbor_sensor_value{kind=\"humidity\"}",
           "legendFormat": "{{device}} / {{key}}",
           "refId": "A"
         }
@@ -47,7 +47,7 @@
       "gridPos": { "h": 8, "w": 24, "x": 0, "y": 16 },
       "targets": [
         {
-          "expr": "thermaltrace_sensor_value{kind=\"flood\"}",
+          "expr": "probeharbor_sensor_value{kind=\"flood\"}",
           "legendFormat": "{{device}} / {{key}}",
           "refId": "A"
         }

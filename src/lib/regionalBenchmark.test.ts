@@ -119,7 +119,7 @@ describe("fetchRegionalBenchmark", () => {
 
     const result = await fetchRegionalBenchmark({ householdId: "house-1", yourTempF: 30.9 });
 
-    expect(result?.message).toBe("About typical for other ThermalTrace households in Denver tonight.");
+    expect(result?.message).toBe("About typical for other ProbeHarbor households in Denver tonight.");
   });
 
   it("reports colder-than-typical below the 1.5F band", async () => {
@@ -130,7 +130,7 @@ describe("fetchRegionalBenchmark", () => {
 
     expect(result?.deltaF).toBe(-5);
     expect(result?.message).toBe(
-      "5.0°F colder than typical ThermalTrace households in Denver right now.",
+      "5.0°F colder than typical ProbeHarbor households in Denver right now.",
     );
   });
 
@@ -142,7 +142,7 @@ describe("fetchRegionalBenchmark", () => {
 
     expect(result?.deltaF).toBe(6);
     expect(result?.message).toBe(
-      "6.0°F warmer than typical ThermalTrace households in Denver right now.",
+      "6.0°F warmer than typical ProbeHarbor households in Denver right now.",
     );
   });
 

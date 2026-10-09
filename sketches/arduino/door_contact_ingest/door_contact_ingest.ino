@@ -1,5 +1,5 @@
 /**
- * Door reed/button → ThermalTrace push ingest (ESP32).
+ * Door reed/button → ProbeHarbor push ingest (ESP32).
  *
  * Libraries: WiFi, HTTPClient (ESP32 Arduino).
  * CONTACT_PIN to GND when closed (reed closed = door shut → door1 false).
@@ -19,7 +19,7 @@
 #define WIFI_PASS "your-password"
 #endif
 #ifndef INGEST_URL
-#define INGEST_URL "https://thermaltrace.dev/api/ingest/YOUR_DEVICE_KEY"
+#define INGEST_URL "https://probeharbor.dev/api/ingest/YOUR_DEVICE_KEY"
 #endif
 #ifndef CONTACT_PIN
 #define CONTACT_PIN 4

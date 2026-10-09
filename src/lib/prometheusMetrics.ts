@@ -1,6 +1,6 @@
 import { fetchLatestSensorValues } from "./sensorReadings";
 
-export const PROMETHEUS_SENSOR_METRIC = "thermaltrace_sensor_value";
+export const PROMETHEUS_SENSOR_METRIC = "probeharbor_sensor_value";
 
 function escapeLabelValue(value: string): string {
   return value.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\n/g, "\\n");
@@ -9,7 +9,7 @@ function escapeLabelValue(value: string): string {
 export async function buildPrometheusText(householdId: string): Promise<string> {
   const readings = await fetchLatestSensorValues(householdId);
   const lines: string[] = [
-    `# HELP ${PROMETHEUS_SENSOR_METRIC} Latest numeric ThermalTrace sensor reading`,
+    `# HELP ${PROMETHEUS_SENSOR_METRIC} Latest numeric ProbeHarbor sensor reading`,
     `# TYPE ${PROMETHEUS_SENSOR_METRIC} gauge`,
   ];
   for (const row of readings) {

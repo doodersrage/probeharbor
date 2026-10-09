@@ -104,9 +104,20 @@ describe("shouldRedirectLegacyHost", () => {
     expect(shouldRedirectLegacyHost("garage-temp.robmcd.name", "POST")).toBe(false);
   });
 
+  it("redirects the pre-rename thermaltrace.dev domain", async () => {
+    const { shouldRedirectLegacyHost } = await import("./siteConfig");
+    expect(shouldRedirectLegacyHost("thermaltrace.dev", "GET", "/pricing")).toBe(true);
+    expect(shouldRedirectLegacyHost("www.thermaltrace.dev", "GET")).toBe(true);
+  });
+
+  it("serves API GETs in place so clients keep their Authorization header", async () => {
+    const { shouldRedirectLegacyHost } = await import("./siteConfig");
+    expect(shouldRedirectLegacyHost("thermaltrace.dev", "GET", "/api/v1/metrics")).toBe(false);
+  });
+
   it("never redirects the canonical host", async () => {
     const { shouldRedirectLegacyHost } = await import("./siteConfig");
-    expect(shouldRedirectLegacyHost("thermaltrace.dev", "GET")).toBe(false);
+    expect(shouldRedirectLegacyHost("probeharbor.dev", "GET")).toBe(false);
   });
 });
 

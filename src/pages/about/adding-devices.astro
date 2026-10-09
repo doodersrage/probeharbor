@@ -18,7 +18,7 @@ const hero = getAboutPhoto("ethernet-cable");
   heroCreditHref={hero.sourceUrl}
 >
   <p>
-    ThermalTrace accepts readings two ways: your hardware <strong>pushes</strong> JSON to an ingest URL,
+    ProbeHarbor accepts readings two ways: your hardware <strong>pushes</strong> JSON to an ingest URL,
     or we <strong>pull</strong> HTTPS JSON from a public feed on a schedule. Both are configured under
     <a class="text-link" href="/dashboard/devices">Dashboard → Devices</a>.
     New ESP / battery nodes should use push. Pull is for always-on LAN servers or relays that already expose HTTPS JSON.
@@ -42,7 +42,7 @@ const hero = getAboutPhoto("ethernet-cable");
         <tr>
           <td>Who initiates</td>
           <td>Your device</td>
-          <td>ThermalTrace</td>
+          <td>ProbeHarbor</td>
         </tr>
         <tr>
           <td>Network</td>
@@ -144,7 +144,7 @@ const hero = getAboutPhoto("ethernet-cable");
     <a class="text-link" href="/api/feeds/example?format=ingest">example ingest feed</a>
     (weather-driven), then POST it to your device key.
   </p>
-  <pre><code>{`curl -X POST "https://thermaltrace.dev/api/ingest/YOUR_DEVICE_KEY" \\
+  <pre><code>{`curl -X POST "https://probeharbor.dev/api/ingest/YOUR_DEVICE_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{"temp1": 42.5, "door1": false, "battery": 87, "rssi": -62}'`}</code></pre>
 
@@ -152,7 +152,7 @@ const hero = getAboutPhoto("ethernet-cable");
     Payload styles: flat keys, classic <code>temp</code> object, typed <code>sensors[]</code>,
     <strong>SenML (RFC 8428)</strong>, or <strong>Home Assistant REST</strong> <code>state</code> JSON: are documented in
     <a class="text-link" href="/about/ingest-and-webhooks">ingest &amp; webhooks</a> and the developer
-    <a class="text-link" href="https://thermaltrace.dev/developers/ingest/">push ingest</a> reference.
+    <a class="text-link" href="https://probeharbor.dev/developers/ingest/">push ingest</a> reference.
     Try live samples: <a class="text-link" href="/api/feeds/example?format=ingest">native</a>,
     <a class="text-link" href="/api/feeds/example?format=senml">SenML</a>,
     <a class="text-link" href="/api/feeds/example?format=homeassistant">HA REST</a>.
@@ -201,10 +201,10 @@ const hero = getAboutPhoto("ethernet-cable");
 
   <h2 id="mqtt-bridge">Already on MQTT?</h2>
   <p>
-    Keep Mosquitto or Home Assistant MQTT on your LAN and mirror readings over HTTPS.    ThermalTrace is not an MQTT broker. Full recipe (curl, HA <code>rest_command</code>, Node-RED):
+    Keep Mosquitto or Home Assistant MQTT on your LAN and mirror readings over HTTPS.    ProbeHarbor is not an MQTT broker. Full recipe (curl, HA <code>rest_command</code>, Node-RED):
     <a class="text-link" href="/about/mqtt-bridge">MQTT bridge guide</a>.
     See also
-    <a class="text-link" href="/compare/diy-mqtt">ThermalTrace vs DIY MQTT</a>.
+    <a class="text-link" href="/compare/diy-mqtt">ProbeHarbor vs DIY MQTT</a>.
   </p>
 
   <h2>Verify you’re live</h2>
@@ -223,8 +223,8 @@ const hero = getAboutPhoto("ethernet-cable");
     <li><a class="text-link" href="/about/debugging-stale-readings">Debugging stale readings</a></li>
     <li><a class="text-link" href="/about/mqtt-bridge">MQTT bridge recipe</a> ·
       <a class="text-link" href="/compare/diy-mqtt">vs DIY MQTT</a> ·
-      <a class="text-link" href="https://thermaltrace.dev/developers/integrations/mqtt-bridge">developer MQTT docs</a></li>
-    <li><a class="text-link" href="https://thermaltrace.dev/developers/ingest/">Developer: push ingest</a> ·
-      <a class="text-link" href="https://thermaltrace.dev/developers/ingest/pull-feeds">pull feeds</a></li>
+      <a class="text-link" href="https://probeharbor.dev/developers/integrations/mqtt-bridge">developer MQTT docs</a></li>
+    <li><a class="text-link" href="https://probeharbor.dev/developers/ingest/">Developer: push ingest</a> ·
+      <a class="text-link" href="https://probeharbor.dev/developers/ingest/pull-feeds">pull feeds</a></li>
   </ul>
 </AboutArticle>

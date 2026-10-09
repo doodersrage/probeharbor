@@ -1,5 +1,5 @@
 /**
- * Mains / USB power sense → ThermalTrace push ingest (ESP32).
+ * Mains / USB power sense → ProbeHarbor push ingest (ESP32).
  *
  * Sense module: CONTACT_PIN LOW = power present → power1 true.
  * Run this ESP32 from a UPS or always-on circuit so it can report outages.
@@ -19,7 +19,7 @@
 #define WIFI_PASS "your-password"
 #endif
 #ifndef INGEST_URL
-#define INGEST_URL "https://thermaltrace.dev/api/ingest/YOUR_DEVICE_KEY"
+#define INGEST_URL "https://probeharbor.dev/api/ingest/YOUR_DEVICE_KEY"
 #endif
 #ifndef CONTACT_PIN
 #define CONTACT_PIN 4

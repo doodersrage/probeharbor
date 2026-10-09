@@ -61,11 +61,11 @@ export async function fetchRegionalBenchmark(input: {
 
   let message: string;
   if (Math.abs(deltaF) < 1.5) {
-    message = `About typical for other ThermalTrace households in ${cityLabel} tonight.`;
+    message = `About typical for other ProbeHarbor households in ${cityLabel} tonight.`;
   } else if (deltaF < 0) {
-    message = `${abs}°F colder than typical ThermalTrace households in ${cityLabel} right now.`;
+    message = `${abs}°F colder than typical ProbeHarbor households in ${cityLabel} right now.`;
   } else {
-    message = `${abs}°F warmer than typical ThermalTrace households in ${cityLabel} right now.`;
+    message = `${abs}°F warmer than typical ProbeHarbor households in ${cityLabel} right now.`;
   }
 
   return {

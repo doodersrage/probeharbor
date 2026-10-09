@@ -1,25 +1,25 @@
-# ThermalTrace → Home Assistant webhook blueprint
+# ProbeHarbor → Home Assistant webhook blueprint
 # Import via Settings → Automations & Scenes → Blueprints → Import
-# Or copy into config/blueprints/automation/thermaltrace_alert_webhook.yaml
+# Or copy into config/blueprints/automation/probeharbor_alert_webhook.yaml
 #
 # For share-link sensors and thermaltrace.snooze services, use the HACS integration:
-#   https://thermaltrace.dev/integrations/home-assistant
+#   https://probeharbor.dev/integrations/home-assistant
 #
-# Point ThermalTrace Pro outbound webhook at:
+# Point ProbeHarbor Pro outbound webhook at:
 #   https://<your-ha-host>/api/webhook/<webhook_id>
-# Optional: set the same secret in ThermalTrace and verify X-Signature (HMAC-SHA256 hex of body).
+# Optional: set the same secret in ProbeHarbor and verify X-Signature (HMAC-SHA256 hex of body).
 
 blueprint:
-  name: ThermalTrace alert webhook
+  name: ProbeHarbor alert webhook
   description: >
-    Receive ThermalTrace outbound HTTPS alerts and create a persistent notification.
+    Receive ProbeHarbor outbound HTTPS alerts and create a persistent notification.
     Optionally republish to MQTT for local automations.
   domain: automation
   input:
     webhook_id:
       name: Webhook ID
       description: Must match the path segment in /api/webhook/<id>
-      default: thermaltrace_alerts
+      default: probeharbor_alerts
       selector:
         text:
     mqtt_topic:
@@ -30,7 +30,7 @@ blueprint:
         text:
     notify_title_prefix:
       name: Notification title prefix
-      default: "ThermalTrace"
+      default: "ProbeHarbor"
       selector:
         text:
 

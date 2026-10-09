@@ -138,7 +138,7 @@ beforeEach(() => {
   mockRecordMfaVerifyFailure.mockReset();
   mockChallengeWebAuthnFactor.mockReset();
   mockVerifyWebAuthnFactor.mockReset();
-  mockResolveWebAuthnRp.mockReset().mockReturnValue({ id: "example.com", name: "ThermalTrace" });
+  mockResolveWebAuthnRp.mockReset().mockReturnValue({ id: "example.com", name: "ProbeHarbor" });
   mockGetYubiKeyPublicIdsFromUser.mockReset().mockReturnValue([]);
   mockIsYubiKeyOtpConfigured.mockReset().mockReturnValue(true);
   mockUserHasYubiKeyOtpEnrolled.mockReset().mockReturnValue(false);

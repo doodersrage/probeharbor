@@ -9,7 +9,7 @@ export type AboutFaqItem = {
 export const aboutFaqsBySlug: Record<string, AboutFaqItem[]> = {
   "temperature-probes": [
     {
-      question: "What temperature probes work with ThermalTrace?",
+      question: "What temperature probes work with ProbeHarbor?",
       answer:
         "Any sensor that can publish temperature (and optional humidity) as JSON: commonly DHT22, DS18B20, or similar on Arduino/ESP32. Map probe indexes in the dashboard after ingest.",
     },
@@ -28,7 +28,7 @@ export const aboutFaqsBySlug: Record<string, AboutFaqItem[]> = {
   ],
   "historical-data": [
     {
-      question: "How long does ThermalTrace keep history?",
+      question: "How long does ProbeHarbor keep history?",
       answer:
         "Retention depends on plan and your Settings retention window. Free keeps shorter windows; paid tiers keep more history for charts and CSV export.",
     },
@@ -42,7 +42,7 @@ export const aboutFaqsBySlug: Record<string, AboutFaqItem[]> = {
     {
       question: "Where are sample Arduino sketches?",
       answer:
-        "In the thermaltrace GitHub repo under sketches/, plus the Arduino guides in About. ESP32 samples POST HTTPS directly. Uno + W5100 Ethernet uses ethernet_dht22_ingest (classic temp JSON on A4/A5) plus a LAN HTTP→HTTPS relay: the shield cannot TLS to thermaltrace.dev.",
+        "In the probeharbor GitHub repo under sketches/, plus the Arduino guides in About. ESP32 samples POST HTTPS directly. Uno + W5100 Ethernet uses ethernet_dht22_ingest (classic temp JSON on A4/A5) plus a LAN HTTP→HTTPS relay: the shield cannot TLS to probeharbor.dev.",
     },
   ],
   "arduino-pin-wiring": [
@@ -54,7 +54,7 @@ export const aboutFaqsBySlug: Record<string, AboutFaqItem[]> = {
   ],
   "arduino-dht22-lcd": [
     {
-      question: "Do I need an LCD if I use ThermalTrace?",
+      question: "Do I need an LCD if I use ProbeHarbor?",
       answer:
         "No: the cloud dashboard is enough. A local LCD is optional for workshop visibility when Wi‑Fi is down.",
     },
@@ -176,7 +176,7 @@ export const aboutFaqsBySlug: Record<string, AboutFaqItem[]> = {
     {
       question: "Do I need a public IP on the Arduino?",
       answer:
-        "No. Push ingest posts outbound to ThermalTrace with a device key. Pull feeds need a reachable HTTPS JSON URL if you use that path instead.",
+        "No. Push ingest posts outbound to ProbeHarbor with a device key. Pull feeds need a reachable HTTPS JSON URL if you use that path instead.",
     },
     {
       question: "What belongs in an ingest payload?",
@@ -188,7 +188,7 @@ export const aboutFaqsBySlug: Record<string, AboutFaqItem[]> = {
     {
       question: "Should I use push or pull?",
       answer:
-        "Use push for ESP/Arduino nodes that can POST outbound HTTPS. Use pull when you already have a public HTTPS JSON feed (or a TLS relay) that ThermalTrace can fetch on a schedule.",
+        "Use push for ESP/Arduino nodes that can POST outbound HTTPS. Use pull when you already have a public HTTPS JSON feed (or a TLS relay) that ProbeHarbor can fetch on a schedule.",
     },
     {
       question: "Why don’t readings show on Home after ingest succeeds?",
@@ -198,7 +198,7 @@ export const aboutFaqsBySlug: Record<string, AboutFaqItem[]> = {
   ],
   "json-probe-output-schema": [
     {
-      question: "What JSON shape does ThermalTrace expect?",
+      question: "What JSON shape does ProbeHarbor expect?",
       answer:
         "Default pull shape is a temp object with probe keys (f, c, h). Push also accepts flat keys, sensors[], SenML JSON arrays, and Home Assistant REST state objects. Optional battery_pct and rssi help diagnose weak devices. See /about/ingest-and-webhooks or the example feed at /api/feeds/example?format=document.",
     },
@@ -212,9 +212,9 @@ export const aboutFaqsBySlug: Record<string, AboutFaqItem[]> = {
   ],
   "esp32-freeze-kit": [
     {
-      question: "Does ThermalTrace sell an ESP32 kit?",
+      question: "Does ProbeHarbor sell an ESP32 kit?",
       answer:
-        "No. ThermalTrace is software. Buy an ESP32 and a waterproof DS18B20 from Adafruit or Amazon, then download a pre-filled ingest sketch from Dashboard → Devices. Parts list: thermaltrace.dev/about/esp32-freeze-kit.",
+        "No. ProbeHarbor is software. Buy an ESP32 and a waterproof DS18B20 from Adafruit or Amazon, then download a pre-filled ingest sketch from Dashboard → Devices. Parts list: probeharbor.dev/about/esp32-freeze-kit.",
     },
     {
       question: "Is a DHT11 starter kit enough for pipe freeze?",
@@ -224,12 +224,12 @@ export const aboutFaqsBySlug: Record<string, AboutFaqItem[]> = {
     {
       question: "Do I need the Adafruit board specifically?",
       answer:
-        "No. Any ESP32 DevKit that runs Arduino IDE or MicroPython works with the ThermalTrace sketches. Adafruit links are stable reference SKUs; Amazon DevKit searches are fine for cost.",
+        "No. Any ESP32 DevKit that runs Arduino IDE or MicroPython works with the ProbeHarbor sketches. Adafruit links are stable reference SKUs; Amazon DevKit searches are fine for cost.",
     },
   ],
   "esp32-ota-firmware": [
     {
-      question: "Can ESP32 devices update firmware while posting to ThermalTrace?",
+      question: "Can ESP32 devices update firmware while posting to ProbeHarbor?",
       answer:
         "Yes: run OTA on your LAN for firmware, and keep push ingest posting readings to the cloud API. Battery and RSSI fields are optional in the payload. Download a pre-filled sketch from Dashboard → Devices for the first USB flash.",
     },
@@ -241,16 +241,16 @@ export const aboutFaqsBySlug: Record<string, AboutFaqItem[]> = {
   ],
   "esp32-web-flash": [
     {
-      question: "Is there a browser flasher built into ThermalTrace?",
+      question: "Is there a browser flasher built into ProbeHarbor?",
       answer:
-        "No hosted one-click .bin flasher: your ingest URL is per device. Download a pre-filled .ino/.py from Devices, then flash with Arduino IDE, PlatformIO, Thonny, or Espressif’s esptool-js if you already built a binary. Guide: thermaltrace.dev/about/esp32-web-flash.",
+        "No hosted one-click .bin flasher: your ingest URL is per device. Download a pre-filled .ino/.py from Devices, then flash with Arduino IDE, PlatformIO, Thonny, or Espressif’s esptool-js if you already built a binary. Guide: probeharbor.dev/about/esp32-web-flash.",
     },
   ],
   "pico-w-ingest": [
     {
-      question: "Can a Raspberry Pi Pico W post to ThermalTrace?",
+      question: "Can a Raspberry Pi Pico W post to ProbeHarbor?",
       answer:
-        "Yes. Pico W and Pico 2 W speak HTTPS on-chip. Download CircuitPython code.py (or the MicroPython / Arduino sketch) from Dashboard → Devices, put a DS18B20 on GP4 with a 4.7k pull-up to 3.3V, and watch Serial for POST 200. Guide: thermaltrace.dev/about/pico-w-ingest.",
+        "Yes. Pico W and Pico 2 W speak HTTPS on-chip. Download CircuitPython code.py (or the MicroPython / Arduino sketch) from Dashboard → Devices, put a DS18B20 on GP4 with a 4.7k pull-up to 3.3V, and watch Serial for POST 200. Guide: probeharbor.dev/about/pico-w-ingest.",
     },
     {
       question: "Is a Pico W the same as the claim puck?",
@@ -265,14 +265,14 @@ export const aboutFaqsBySlug: Record<string, AboutFaqItem[]> = {
   ],
   "stm32-zephyr-ingest": [
     {
-      question: "Can an STM32 post to ThermalTrace without Arduino or Python?",
+      question: "Can an STM32 post to ProbeHarbor without Arduino or Python?",
       answer:
-        "Yes. The Nucleo-F767ZI sample is Zephyr C: west build, ST-LINK flash, onboard Ethernet. DS18B20 on Arduino D4 (PF14). HTTP to the LAN TLS relay, same as the Uno W5100 path. Guide: thermaltrace.dev/about/stm32-zephyr-ingest.",
+        "Yes. The Nucleo-F767ZI sample is Zephyr C: west build, ST-LINK flash, onboard Ethernet. DS18B20 on Arduino D4 (PF14). HTTP to the LAN TLS relay, same as the Uno W5100 path. Guide: probeharbor.dev/about/stm32-zephyr-ingest.",
     },
     {
       question: "Why not HTTPS straight from the Nucleo?",
       answer:
-        "You can, with Zephyr mbedTLS and a baked-in CA. ThermalTrace sits behind Cloudflare, so that CA can change. The LAN relay keeps the MCU on HTTP and lets the Pi/NAS handle TLS, which is the same pattern as Uno Ethernet.",
+        "You can, with Zephyr mbedTLS and a baked-in CA. ProbeHarbor sits behind Cloudflare, so that CA can change. The LAN relay keeps the MCU on HTTP and lets the Pi/NAS handle TLS, which is the same pattern as Uno Ethernet.",
     },
     {
       question: "Is the Arduino header running Arduino firmware?",
@@ -282,14 +282,14 @@ export const aboutFaqsBySlug: Record<string, AboutFaqItem[]> = {
   ],
   "ch32v-riscv-ingest": [
     {
-      question: "Can a CH32V post to ThermalTrace without Arduino or Python?",
+      question: "Can a CH32V post to ProbeHarbor without Arduino or Python?",
       answer:
-        "Yes. The CH32V307V-EVT sample is WCHNET C in MounRiver Studio: drop-in User/main.c on the official ETH/DHCP project, WCH-Link flash, onboard 10M Ethernet. DS18B20 on PB12. HTTP to the LAN TLS relay, same as Uno W5100 and STM32 Zephyr. Guide: thermaltrace.dev/about/ch32v-riscv-ingest.",
+        "Yes. The CH32V307V-EVT sample is WCHNET C in MounRiver Studio: drop-in User/main.c on the official ETH/DHCP project, WCH-Link flash, onboard 10M Ethernet. DS18B20 on PB12. HTTP to the LAN TLS relay, same as Uno W5100 and STM32 Zephyr. Guide: probeharbor.dev/about/ch32v-riscv-ingest.",
     },
     {
       question: "Why not HTTPS straight from the CH32V?",
       answer:
-        "WCHNET is IPv4 TCP/UDP without a maintained TLS client. ThermalTrace ingest is HTTPS. The LAN relay keeps the MCU on HTTP and lets a Pi/NAS handle TLS, which is the same pattern as Uno Ethernet and STM32 Zephyr.",
+        "WCHNET is IPv4 TCP/UDP without a maintained TLS client. ProbeHarbor ingest is HTTPS. The LAN relay keeps the MCU on HTTP and lets a Pi/NAS handle TLS, which is the same pattern as Uno Ethernet and STM32 Zephyr.",
     },
     {
       question: "Is this Arduino-CH32 or PlatformIO Arduino?",
@@ -299,9 +299,9 @@ export const aboutFaqsBySlug: Record<string, AboutFaqItem[]> = {
   ],
   "avr-asm-ingest": [
     {
-      question: "Do any ThermalTrace boards require assembly language?",
+      question: "Do any ProbeHarbor boards require assembly language?",
       answer:
-        "No Ethernet freeze probe requires assembly. PADAUK and PIC10F are assembly-first but cannot POST HTTP. The supported assembly path is GNU AVR on an Uno + W5100: avr-gcc, no Arduino C, DS18B20 on D7, HTTP to the LAN TLS relay. Guide: thermaltrace.dev/about/avr-asm-ingest.",
+        "No Ethernet freeze probe requires assembly. PADAUK and PIC10F are assembly-first but cannot POST HTTP. The supported assembly path is GNU AVR on an Uno + W5100: avr-gcc, no Arduino C, DS18B20 on D7, HTTP to the LAN TLS relay. Guide: probeharbor.dev/about/avr-asm-ingest.",
     },
     {
       question: "Why not put the DS18B20 on D4 like the ESP32 sample?",
@@ -316,14 +316,14 @@ export const aboutFaqsBySlug: Record<string, AboutFaqItem[]> = {
   ],
   "cellular-ingest": [
     {
-      question: "Can a cellular board post to ThermalTrace without Wi‑Fi?",
+      question: "Can a cellular board post to ProbeHarbor without Wi‑Fi?",
       answer:
-        "Yes. The Particle Boron sample publishes JSON on event thermaltrace_ingest; a Particle Console webhook POSTs that body to your HTTPS ingest URL. DS18B20 on D2. Guide: thermaltrace.dev/about/cellular-ingest.",
+        "Yes. The Particle Boron sample publishes JSON on event probeharbor_ingest; a Particle Console webhook POSTs that body to your HTTPS ingest URL. DS18B20 on D2. Guide: probeharbor.dev/about/cellular-ingest.",
     },
     {
       question: "What happens when LTE drops?",
       answer:
-        "Missed intervals are expected. ThermalTrace flags stale probes when posts stop, and freeze alerts still fire on the last known cold reading plus silence. Avoid tight reconnect loops that drain the battery.",
+        "Missed intervals are expected. ProbeHarbor flags stale probes when posts stop, and freeze alerts still fire on the last known cold reading plus silence. Avoid tight reconnect loops that drain the battery.",
     },
     {
       question: "Is Blues Notecard supported?",
@@ -333,9 +333,9 @@ export const aboutFaqsBySlug: Record<string, AboutFaqItem[]> = {
   ],
   "pic18-ethernet-ingest": [
     {
-      question: "Can a PIC18F67J60 post to ThermalTrace?",
+      question: "Can a PIC18F67J60 post to ProbeHarbor?",
       answer:
-        "Yes. Drop-in MLA TCP/IP Stack C in MPLAB X: onboard Ethernet MAC/PHY, DS18B20 on RD0, HTTP to the LAN TLS relay. Guide: thermaltrace.dev/about/pic18-ethernet-ingest.",
+        "Yes. Drop-in MLA TCP/IP Stack C in MPLAB X: onboard Ethernet MAC/PHY, DS18B20 on RD0, HTTP to the LAN TLS relay. Guide: probeharbor.dev/about/pic18-ethernet-ingest.",
     },
     {
       question: "Why not HTTPS from the PIC?",
@@ -350,9 +350,9 @@ export const aboutFaqsBySlug: Record<string, AboutFaqItem[]> = {
   ],
   "teensy41-ingest": [
     {
-      question: "Can a Teensy 4.1 post to ThermalTrace?",
+      question: "Can a Teensy 4.1 post to ProbeHarbor?",
       answer:
-        "Yes. Teensyduino + QNEthernet on Teensy 4.1 with the Ethernet kit: DS18B20 on pin 4, HTTP to the LAN TLS relay. Guide: thermaltrace.dev/about/teensy41-ingest.",
+        "Yes. Teensyduino + QNEthernet on Teensy 4.1 with the Ethernet kit: DS18B20 on pin 4, HTTP to the LAN TLS relay. Guide: probeharbor.dev/about/teensy41-ingest.",
     },
     {
       question: "Why not HTTPS straight from the Teensy?",
@@ -369,7 +369,7 @@ export const aboutFaqsBySlug: Record<string, AboutFaqItem[]> = {
     {
       question: "Does the PWA support freeze push alerts?",
       answer:
-        "Yes, on every plan. Push works in the browser (PWA) and the ThermalTrace Android app. Install the PWA or Android app, enable Push under Alerts, and allow notifications where the OS requires it (iOS Safari has extra limits for web push).",
+        "Yes, on every plan. Push works in the browser (PWA) and the ProbeHarbor Android app. Install the PWA or Android app, enable Push under Alerts, and allow notifications where the OS requires it (iOS Safari has extra limits for web push).",
     },
   ],
   "data-flow": [
@@ -431,7 +431,7 @@ export const aboutFaqsBySlug: Record<string, AboutFaqItem[]> = {
   ],
   "zapier-make-recipes": [
     {
-      question: "Can I connect ThermalTrace to Zapier or Make?",
+      question: "Can I connect ProbeHarbor to Zapier or Make?",
       answer:
         "Yes on Pro via outbound webhooks for alerts and inbound tokens for actions like snooze. Recipes live in the Zapier/Make guides under About.",
     },
@@ -447,7 +447,7 @@ export const aboutFaqsBySlug: Record<string, AboutFaqItem[]> = {
     {
       question: "Do I need to stop using Home Assistant MQTT?",
       answer:
-        "No. Many households dual-run: Mosquitto locally for automations, plus HTTPS push ingest for ThermalTrace freeze and leak SMS and history.",
+        "No. Many households dual-run: Mosquitto locally for automations, plus HTTPS push ingest for ProbeHarbor freeze and leak SMS and history.",
     },
     {
       question: "Which Shelly models work?",
@@ -481,81 +481,81 @@ export const aboutFaqsBySlug: Record<string, AboutFaqItem[]> = {
   ],
   "astro-server-side-rendering": [
     {
-      question: "Does ThermalTrace use Astro SSR?",
+      question: "Does ProbeHarbor use Astro SSR?",
       answer:
         "Yes. Marketing, about, and dashboard shells render on the Cloudflare Workers edge via the Astro adapter for fast first paint.",
     },
     {
       question: "Is everything static HTML?",
       answer:
-        "No. Many routes are SSR. Interactive pieces hydrate as islands; see thermaltrace.dev/about/astro-islands-and-hydration.",
+        "No. Many routes are SSR. Interactive pieces hydrate as islands; see probeharbor.dev/about/astro-islands-and-hydration.",
     },
   ],
   "astro-islands-and-hydration": [
     {
-      question: "What is an Astro island on ThermalTrace?",
+      question: "What is an Astro island on ProbeHarbor?",
       answer:
         "A small client component (charts, contact form, probe demo) hydrated only where needed, while the surrounding page stays server-rendered.",
     },
     {
       question: "Do I need a full React SPA for monitoring?",
       answer:
-        "ThermalTrace does not. Prefer SSR + islands for public pages; keep interactivity local. Product home: thermaltrace.dev.",
+        "ProbeHarbor does not. Prefer SSR + islands for public pages; keep interactivity local. Product home: probeharbor.dev.",
     },
   ],
   "nextjs-monitoring-dashboards": [
     {
-      question: "Why is ThermalTrace not built on Next.js?",
+      question: "Why is ProbeHarbor not built on Next.js?",
       answer:
         "Astro on Cloudflare Workers fits edge SSR and light islands for this product. Next.js App Router is a strong alternative for auth-heavy React dashboards — see the comparison notes on this page.",
     },
     {
-      question: "Can I still use ThermalTrace with a Next.js site?",
+      question: "Can I still use ProbeHarbor with a Next.js site?",
       answer:
-        "Yes as a customer: probes POST to ThermalTrace ingest regardless of your other apps. ThermalTrace remains the hosted alerts and history layer.",
+        "Yes as a customer: probes POST to ProbeHarbor ingest regardless of your other apps. ProbeHarbor remains the hosted alerts and history layer.",
     },
   ],
   "node-express-api-patterns": [
     {
-      question: "Does ThermalTrace run Express?",
+      question: "Does ProbeHarbor run Express?",
       answer:
         "No. Public APIs and pages run on Cloudflare Workers with Astro routes. Express is discussed here for comparison with long-running Node APIs.",
     },
     {
       question: "Where is the HTTP API?",
       answer:
-        "thermaltrace.dev/docs/api and openapi.yaml — ingest, metrics, webhooks, and claim-puck endpoints.",
+        "probeharbor.dev/docs/api and openapi.yaml — ingest, metrics, webhooks, and claim-puck endpoints.",
     },
   ],
   "comparing-full-stack-options": [
     {
-      question: "Which stack does ThermalTrace use?",
+      question: "Which stack does ProbeHarbor use?",
       answer:
         "Astro SSR on Cloudflare Workers, Supabase for data, and probe ingest over HTTPS. Alternatives (Next, Express) are compared on this page.",
     },
     {
-      question: "Should I rebuild ThermalTrace myself?",
+      question: "Should I rebuild ProbeHarbor myself?",
       answer:
-        "Only if you want to own ops. Most homeowners use the hosted product: thermaltrace.dev/pricing.",
+        "Only if you want to own ops. Most homeowners use the hosted product: probeharbor.dev/pricing.",
     },
   ],
   "relay-security-and-access": [
     {
       question: "Do ESP32 freeze probes need a public IP?",
       answer:
-        "No for push ingest: the board POSTs outbound HTTPS to ThermalTrace. Pull feeds need a reachable HTTPS JSON URL if you use that path.",
+        "No for push ingest: the board POSTs outbound HTTPS to ProbeHarbor. Pull feeds need a reachable HTTPS JSON URL if you use that path.",
     },
     {
       question: "How should I harden a DIY JSON relay?",
       answer:
-        "Terminate TLS, restrict source IPs when possible, and avoid embedding ingest keys in public repos. Prefer ThermalTrace push keys from Dashboard → Devices.",
+        "Terminate TLS, restrict source IPs when possible, and avoid embedding ingest keys in public repos. Prefer ProbeHarbor push keys from Dashboard → Devices.",
     },
   ],
   "thermostat-oauth": [
     {
-      question: "Which thermostats connect to ThermalTrace?",
+      question: "Which thermostats connect to ProbeHarbor?",
       answer:
-        "Nest (Google Device Access / SDM) when Worker secrets are set, and Ecobee when developer signup is open. Guide: thermaltrace.dev/about/thermostat-oauth.",
+        "Nest (Google Device Access / SDM) when Worker secrets are set, and Ecobee when developer signup is open. Guide: probeharbor.dev/about/thermostat-oauth.",
     },
     {
       question: "Is Nest required for freeze alerts?",
@@ -570,17 +570,17 @@ export const aboutFaqsBySlug: Record<string, AboutFaqItem[]> = {
   ],
   "mqtt-bridge": [
     {
-      question: "Do I have to abandon MQTT for ThermalTrace?",
+      question: "Do I have to abandon MQTT for ProbeHarbor?",
       answer:
-        "No. Keep Mosquitto/Home Assistant for local automations and POST HTTPS ingest for ThermalTrace freeze/leak alerts and history.",
+        "No. Keep Mosquitto/Home Assistant for local automations and POST HTTPS ingest for ProbeHarbor freeze/leak alerts and history.",
     },
     {
       question: "What does the MQTT bridge publish?",
       answer:
-        "It maps broker topics into ThermalTrace ingest JSON (temps, doors, leaks). Details: thermaltrace.dev/about/mqtt-bridge.",
+        "It maps broker topics into ProbeHarbor ingest JSON (temps, doors, leaks). Details: probeharbor.dev/about/mqtt-bridge.",
     },
     {
-      question: "Is TLS required to thermaltrace.dev?",
+      question: "Is TLS required to probeharbor.dev?",
       answer:
         "Yes for cloud ingest. Local MQTT can stay on your LAN; the bridge or device must HTTPS POST to your ingest URL.",
     },
@@ -589,7 +589,7 @@ export const aboutFaqsBySlug: Record<string, AboutFaqItem[]> = {
     {
       question: "Where should I mount a waterproof DS18B20?",
       answer:
-        "On pipe metal or in still air away from sunny doors. Leave the epoxy bead uncrushed. Guide: thermaltrace.dev/about/probe-mounting-enclosures.",
+        "On pipe metal or in still air away from sunny doors. Leave the epoxy bead uncrushed. Guide: probeharbor.dev/about/probe-mounting-enclosures.",
     },
     {
       question: "Can the ESP32 live in the crawlspace with the probe?",
@@ -599,7 +599,7 @@ export const aboutFaqsBySlug: Record<string, AboutFaqItem[]> = {
     {
       question: "Is there a parts list for mounts?",
       answer:
-        "Yes: zip-ties, clips, pads, and 4.7k notes on thermaltrace.dev/probe-mount-kit, plus the ESP32 freeze kit BOM.",
+        "Yes: zip-ties, clips, pads, and 4.7k notes on probeharbor.dev/probe-mount-kit, plus the ESP32 freeze kit BOM.",
     },
   ],
 };

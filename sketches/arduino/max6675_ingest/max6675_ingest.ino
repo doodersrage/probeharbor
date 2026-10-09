@@ -1,5 +1,5 @@
 /**
- * MAX6675 thermocouple → ThermalTrace push ingest (Arduino: ESP32 / ESP8266 / Pico W).
+ * MAX6675 thermocouple → ProbeHarbor push ingest (Arduino: ESP32 / ESP8266 / Pico W).
  *
  * Library: MAX6675 (or Adafruit MAX6675).
  * Pico W: Earle Philhower Raspberry Pi Pico/RP2040 board package.
@@ -20,7 +20,7 @@
 #define WIFI_PASS "your-password"
 #endif
 #ifndef INGEST_URL
-#define INGEST_URL "https://thermaltrace.dev/api/ingest/YOUR_DEVICE_KEY"
+#define INGEST_URL "https://probeharbor.dev/api/ingest/YOUR_DEVICE_KEY"
 #endif
 
 #ifndef MAX_SCK

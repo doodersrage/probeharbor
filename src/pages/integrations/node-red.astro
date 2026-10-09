@@ -42,7 +42,7 @@ const schema = [
   <div class="page-shell page-stack">
     <PageHeader
       kicker="Node-RED"
-      title="Mirror Mosquitto to ThermalTrace"
+      title="Mirror Mosquitto to ProbeHarbor"
       lede={NODERED_TAGLINE}
     >
       <a slot="actions" class="btn-primary" href={NODERED_FLOW_URL} download>
@@ -65,16 +65,16 @@ const schema = [
         </li>
         <li>
           In Node-RED: <strong>Menu → Import</strong> → upload
-          <a class="text-link" href={NODERED_FLOW_URL} download>mqtt-to-thermaltrace.json</a>
+          <a class="text-link" href={NODERED_FLOW_URL} download>mqtt-to-probeharbor.json</a>
           (or paste the URL).
         </li>
         <li>
-          Set env <code>THERMALTRACE_INGEST_KEY</code> (or edit the function node). Point MQTT nodes at your broker.
+          Set env <code>PROBEHARBOR_INGEST_KEY</code> (or edit the function node). Point MQTT nodes at your broker.
         </li>
         <li>Deploy and confirm HTTP 200 on the debug node. Readings appear under Devices / Overview.</li>
       </ol>
       <p class="mb-0 text-sm text-[var(--color-text-muted)]">
-        The flow rate-limits to about 1 POST per minute and includes an optional garage-door tab. ThermalTrace is not an MQTT broker — keep Mosquitto on the LAN.
+        The flow rate-limits to about 1 POST per minute and includes an optional garage-door tab. ProbeHarbor is not an MQTT broker — keep Mosquitto on the LAN.
       </p>
     </section>
 

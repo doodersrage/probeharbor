@@ -63,7 +63,7 @@ export const ACCESSORIES: AccessoryDef[] = [
     name: "Leak contact puck",
     shortName: "Leak puck",
     tagline:
-      "Water-contact pads that POST wet/dry flood sensors. ThermalTrace auto-alerts when wet once alerts are on.",
+      "Water-contact pads that POST wet/dry flood sensors. ProbeHarbor auto-alerts when wet once alerts are on.",
     kind: "sensor-contact",
     faqKey: "leakPuck",
   },

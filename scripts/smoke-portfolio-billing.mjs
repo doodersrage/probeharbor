@@ -12,7 +12,7 @@ if (!key?.startsWith("sk_")) {
 }
 
 const stripe = new Stripe(key);
-const site = (process.env.SITE_URL || "https://thermaltrace.dev").replace(/\/+$/, "");
+const site = (process.env.SITE_URL || "https://probeharbor.dev").replace(/\/+$/, "");
 
 const monthly = process.env.STRIPE_PRICE_ID_PORTFOLIO?.trim();
 const annual = process.env.STRIPE_PRICE_ID_PORTFOLIO_ANNUAL?.trim();

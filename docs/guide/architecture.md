@@ -1,10 +1,10 @@
 ---
-description: "How ThermalTrace is built: Astro on Cloudflare Workers, Supabase Postgres with RLS, Stripe billing, and the push and pull data paths."
+description: "How ProbeHarbor is built: Astro on Cloudflare Workers, Supabase Postgres with RLS, Stripe billing, and the push and pull data paths."
 ---
 
 # Architecture
 
-ThermalTrace is an **Astro 6** app with **`output: 'server'`** on **Cloudflare Workers**, **Supabase** (Auth + Postgres + RLS), and **Stripe** for paid plans.
+ProbeHarbor is an **Astro 6** app with **`output: 'server'`** on **Cloudflare Workers**, **Supabase** (Auth + Postgres + RLS), and **Stripe** for paid plans.
 
 ```
 Sensors / relays ──push or pull──► Cloudflare Worker (Astro)
@@ -88,4 +88,4 @@ public/openapi.yaml     HTTP API contract
 
 - [Local development](/guide/local-dev) — env, database, scripts
 - [Deploy & ops](/guide/deploy) — Worker secrets, email sending, post-deploy checklist
-- Product DIY guides: [thermaltrace.dev/about](https://thermaltrace.dev/about)
+- Product DIY guides: [probeharbor.dev/about](https://probeharbor.dev/about)

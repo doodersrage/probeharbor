@@ -1,6 +1,6 @@
 {
-  "name": "ThermalTrace",
-  "short_name": "ThermalTrace",
+  "name": "ProbeHarbor",
+  "short_name": "ProbeHarbor",
   "description": "Open-source dashboard to track, log, and analyze temperature probe curves — with live readings, freeze and flood/leak alerts, and history.",
   "start_url": "/dashboard",
   "scope": "/",

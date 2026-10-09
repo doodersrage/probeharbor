@@ -14,7 +14,7 @@
 import { createClient } from "@supabase/supabase-js";
 import Stripe from "stripe";
 
-const CANONICAL_HOST = "thermaltrace.dev";
+const CANONICAL_HOST = "probeharbor.dev";
 const WEBHOOK_PATH = "/api/stripe/webhook";
 const REQUIRED_EVENTS = [
   "checkout.session.completed",

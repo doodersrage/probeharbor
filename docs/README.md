@@ -1,12 +1,12 @@
 # Docs site (VitePress → GitHub Pages)
 
-**Live:** https://thermaltrace.dev/developers/
+**Live:** https://probeharbor.dev/developers/
 
-Product guides stay on https://thermaltrace.dev/about — this site is the developer reference (ingest, API, sketches, HA, Grafana, local setup, and deploy).
+Product guides stay on https://probeharbor.dev/about — this site is the developer reference (ingest, API, sketches, HA, Grafana, local setup, and deploy).
 
 ```bash
 pnpm --dir docs --ignore-workspace install
-pnpm docs:dev      # http://localhost:5173/thermaltrace/
+pnpm docs:dev      # http://localhost:5173/probeharbor/
 pnpm docs:build
 ```
 

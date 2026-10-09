@@ -26,6 +26,14 @@
 	// Primary domain + legacy hostnames (middleware 301s legacy → apex).
 	"routes": [
 		{
+			"pattern": "probeharbor.dev",
+			"custom_domain": true
+		},
+		{
+			"pattern": "www.probeharbor.dev",
+			"custom_domain": true
+		},
+		{
 			"pattern": "thermaltrace.dev",
 			"custom_domain": true
 		},

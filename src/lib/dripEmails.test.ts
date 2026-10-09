@@ -33,7 +33,7 @@ beforeEach(() => {
     text: `TEXT:${content.title}`,
     html: `HTML:${content.title}`,
   }));
-  mockResolveSiteUrl.mockReset().mockReturnValue("https://thermaltrace.dev");
+  mockResolveSiteUrl.mockReset().mockReturnValue("https://probeharbor.dev");
   mockSendEmail.mockReset().mockResolvedValue(undefined);
   mockIsMailerRecipientNotAllowed.mockReset().mockReturnValue(false);
   mockPartitionMailErrors.mockReset().mockReturnValue({ hardErrors: [], restrictedErrors: [] });
@@ -54,7 +54,7 @@ describe("buildDripEmail", () => {
 
     const mail = buildDripEmail("day1", "https://site.example");
 
-    expect(mail.subject).toBe("Add your first probe to ThermalTrace");
+    expect(mail.subject).toBe("Add your first probe to ProbeHarbor");
     expect(mail.text).toBe("TEXT:Connect your first probe");
     expect(mail.html).toBe("HTML:Connect your first probe");
   });
@@ -138,7 +138,7 @@ describe("sendDripEmailsForAllUsers", () => {
 
     expect(mockSendEmail).toHaveBeenCalledWith(
       "user@example.com",
-      "Add your first probe to ThermalTrace",
+      "Add your first probe to ProbeHarbor",
       expect.any(String),
       expect.objectContaining({ html: expect.any(String) }),
     );
@@ -199,7 +199,7 @@ describe("sendDripEmailsForAllUsers", () => {
     expect(hasFirstReading).not.toHaveBeenCalled();
     expect(mockSendEmail).toHaveBeenCalledWith(
       "user@example.com",
-      "Confirm your email to finish setting up ThermalTrace",
+      "Confirm your email to finish setting up ProbeHarbor",
       expect.any(String),
       expect.any(Object),
     );

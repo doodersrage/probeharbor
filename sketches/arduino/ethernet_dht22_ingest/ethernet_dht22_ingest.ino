@@ -1,13 +1,13 @@
 /**
- * Arduino Uno + W5100 Ethernet shield → ThermalTrace push (and optional LAN pull).
+ * Arduino Uno + W5100 Ethernet shield → ProbeHarbor push (and optional LAN pull).
  *
  * Hardware matches the garage wiring guides (DHT22 on A4/A5; SPI 10–13 for Ethernet):
- *   https://thermaltrace.dev/about/arduino-pin-wiring
+ *   https://probeharbor.dev/about/arduino-pin-wiring
  *
  * The Uno cannot speak HTTPS. Point INGEST_HOST at a LAN HTTP→HTTPS relay:
  *   sketches/relay/push_https_forward.py
  * or a self-hosted HTTP ingest URL. Payload is the classic `temp` object
- * ThermalTrace auto-imports on POST /api/ingest/<key>.
+ * ProbeHarbor auto-imports on POST /api/ingest/<key>.
  *
  * Libraries: Ethernet (Arduino), DHT sensor library (Adafruit).
  * Board: Arduino Uno. Serial 9600. Expect HTTP 200 on the relay / ingest log.
@@ -106,7 +106,7 @@ bool appendProbe(size_t &off, const char *key, float c, float h) {
   return true;
 }
 
-/** Classic ThermalTrace garage JSON: temp.0 / temp.1 / temp.avg. Returns 0 on read failure. */
+/** Classic ProbeHarbor garage JSON: temp.0 / temp.1 / temp.avg. Returns 0 on read failure. */
 int buildTempJson() {
   float c0, h0, c1, h1;
   bool ok0 = readProbe(dht1, c0, h0);

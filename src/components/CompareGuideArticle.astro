@@ -53,14 +53,14 @@ const schema = [
     {guide.photoId && <AboutCcFigure photoId={guide.photoId} />}
 
     <section class="card">
-      <h2 class="card-title">ThermalTrace vs {guide.competitor}</h2>
+      <h2 class="card-title">ProbeHarbor vs {guide.competitor}</h2>
       <div class="overflow-x-auto">
         <table class="plan-comparison-table">
           <caption class="sr-only">{guide.headline} capability comparison</caption>
           <thead>
             <tr>
               <th scope="col">Capability</th>
-              <th scope="col">ThermalTrace</th>
+              <th scope="col">ProbeHarbor</th>
               <th scope="col">{guide.competitor}</th>
             </tr>
           </thead>
@@ -68,7 +68,7 @@ const schema = [
             {guide.rows.map((row) => (
               <tr>
                 <th scope="row">{row.capability}</th>
-                <td>{row.thermaltrace}</td>
+                <td>{row.probeharbor}</td>
                 <td>{row.other}</td>
               </tr>
             ))}
@@ -81,9 +81,9 @@ const schema = [
       <h2 class="card-title">When to choose which</h2>
       <div class="grid gap-6 sm:grid-cols-2">
         <div>
-          <h3 class="text-base font-semibold mb-2">Choose ThermalTrace when</h3>
+          <h3 class="text-base font-semibold mb-2">Choose ProbeHarbor when</h3>
           <ul class="text-sm space-y-2 mb-0">
-            {guide.whenThermalTrace.map((item) => (
+            {guide.whenProbeHarbor.map((item) => (
               <li>{item}</li>
             ))}
           </ul>
@@ -101,7 +101,7 @@ const schema = [
 
     <FaqSection
       faqs={guide.faqs}
-      lede={`Straight answers for people comparing ThermalTrace to ${guide.competitor}.`}
+      lede={`Straight answers for people comparing ProbeHarbor to ${guide.competitor}.`}
     />
 
     {guide.sources && (
@@ -162,7 +162,7 @@ const schema = [
             {" · "}
             <a class="text-link" href="/integrations/home-assistant">HACS integration</a>
             {" · "}
-            <a class="text-link" href="/nodered/mqtt-to-thermaltrace.json" download>Node-RED flow</a>
+            <a class="text-link" href="/nodered/mqtt-to-probeharbor.json" download>Node-RED flow</a>
           </>
         )}
       </p>

@@ -1,5 +1,5 @@
 /**
- * MAX31855 thermocouple → ThermalTrace push ingest (Arduino: ESP32 / ESP8266 / Pico W).
+ * MAX31855 thermocouple → ProbeHarbor push ingest (Arduino: ESP32 / ESP8266 / Pico W).
  *
  * Library: Adafruit MAX31855.
  * Wire CS / SCK / MISO to your board; set pins below.
@@ -22,7 +22,7 @@
 #define WIFI_PASS "your-password"
 #endif
 #ifndef INGEST_URL
-#define INGEST_URL "https://thermaltrace.dev/api/ingest/YOUR_DEVICE_KEY"
+#define INGEST_URL "https://probeharbor.dev/api/ingest/YOUR_DEVICE_KEY"
 #endif
 
 #ifndef MAX_CS

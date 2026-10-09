@@ -1,5 +1,5 @@
 ---
-description: "Use an Ambient Weather or WeatherFlow Tempest station as ThermalTrace's outdoor source for freeze context at your actual address."
+description: "Use an Ambient Weather or WeatherFlow Tempest station as ProbeHarbor's outdoor source for freeze context at your actual address."
 ---
 
 # Personal weather stations
@@ -8,12 +8,12 @@ Use your **Ambient Weather** or **WeatherFlow Tempest** station for outdoor cont
 
 ## Product setup
 
-1. Open [Dashboard → Settings](https://thermaltrace.dev/dashboard/settings) on thermaltrace.dev.
+1. Open [Dashboard → Settings](https://probeharbor.dev/dashboard/settings) on probeharbor.dev.
 2. Under **Outdoor weather source**, choose Ambient or WeatherFlow.
 3. Enter credentials and save.
 4. Confirm the home weather card shows your station name.
 
-Full guide: [Personal weather stations on thermaltrace.dev](https://thermaltrace.dev/about/personal-weather-stations)
+Full guide: [Personal weather stations on probeharbor.dev](https://probeharbor.dev/about/personal-weather-stations)
 
 ## Ambient Weather
 
@@ -43,8 +43,8 @@ OpenWeather city remains the fallback if a personal station fetch fails. Forecas
 
 ## Push ingest alternative
 
-To store every sensor reading in ThermalTrace history (not just the outdoor card), push via ingest instead:
+To store every sensor reading in ProbeHarbor history (not just the outdoor card), push via ingest instead:
 
-- [ESPHome & Shelly](https://thermaltrace.dev/about/esphome-shelly-recipes)
-- [Node-RED MQTT flow](https://thermaltrace.dev/nodered/mqtt-to-thermaltrace.json)
-- [Home Assistant HACS](https://thermaltrace.dev/integrations/home-assistant)
+- [ESPHome & Shelly](https://probeharbor.dev/about/esphome-shelly-recipes)
+- [Node-RED MQTT flow](https://probeharbor.dev/nodered/mqtt-to-probeharbor.json)
+- [Home Assistant HACS](https://probeharbor.dev/integrations/home-assistant)

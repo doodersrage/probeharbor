@@ -10,7 +10,7 @@ describe("integrationsHub", () => {
     expect(INTEGRATION_CARDS[0]?.id).toBe("home-assistant");
   });
 
-  it("keeps primary CTAs on thermaltrace.dev when in-app docs exist", () => {
+  it("keeps primary CTAs on probeharbor.dev when in-app docs exist", () => {
     for (const card of INTEGRATION_CARDS) {
       if (card.external) {
         expect(card.href).toMatch(/^https?:\/\//);

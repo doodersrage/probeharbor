@@ -3,7 +3,7 @@ import { test, expect } from "@playwright/test";
 test.describe("public smoke", () => {
   test("home page loads", async ({ page }) => {
     await page.goto("/");
-    await expect(page).toHaveTitle(/ThermalTrace/i);
+    await expect(page).toHaveTitle(/ProbeHarbor/i);
     await expect(page.getByText(/Garage & workshop sensor monitoring/i)).toBeVisible();
     await expect(page.getByText(/Know before your pipes freeze/i)).toBeVisible();
     await expect(page.getByRole("link", { name: /Free forever/i })).toBeVisible();
@@ -159,7 +159,7 @@ test.describe("public smoke", () => {
 
   test("about hub loads", async ({ page }) => {
     await page.goto("/about/");
-    await expect(page.getByRole("heading", { name: /About ThermalTrace/i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /About ProbeHarbor/i })).toBeVisible();
     await expect(page.getByRole("heading", { name: /Start here/i })).toBeVisible();
   });
 
@@ -175,7 +175,7 @@ test.describe("public smoke", () => {
     await expect(page.getByRole("heading", { name: /This form/i })).toBeVisible();
     await expect(page.getByRole("heading", { name: /GitHub issues/i })).toBeVisible();
     const issues = page.getByRole("link", { name: /GitHub issues/i }).first();
-    await expect(issues).toHaveAttribute("href", /github.com\/doodersrage\/thermaltrace\/issues/);
+    await expect(issues).toHaveAttribute("href", /github.com\/doodersrage\/probeharbor\/issues/);
     await expect(page.getByLabel(/Name/i)).toBeVisible();
     await expect(page.getByText("Protected by Cloudflare Turnstile.")).toBeVisible();
     await page.getByRole("button", { name: /Send message/i }).click();
@@ -193,7 +193,7 @@ test.describe("public smoke", () => {
   });
 
   test("404 page loads", async ({ page }) => {
-    const res = await page.goto("/this-page-does-not-exist-thermaltrace");
+    const res = await page.goto("/this-page-does-not-exist-probeharbor");
     expect(res?.status()).toBe(404);
     await expect(page.getByRole("heading", { name: /Page not found/i })).toBeVisible();
   });
@@ -205,7 +205,7 @@ test.describe("public smoke", () => {
 
   test("integrations hub loads", async ({ page }) => {
     await page.goto("/integrations");
-    await expect(page.getByRole("heading", { name: /Wire ThermalTrace into your stack/i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Wire ProbeHarbor into your stack/i })).toBeVisible();
     await expect(page.getByRole("link", { name: /Home Assistant \(HACS\)/i }).first()).toBeVisible();
     await expect(page.getByRole("heading", { name: /Nest & Ecobee/i })).toBeVisible();
   });
@@ -222,7 +222,7 @@ test.describe("public smoke", () => {
   test("thermostat OAuth operator guide loads", async ({ page }) => {
     await page.goto("/about/thermostat-oauth");
     await expect(page.getByRole("heading", { name: /Nest & Ecobee thermostat OAuth/i })).toBeVisible();
-    await expect(page.getByText("thermaltrace.dev/api/integrations/nest/callback")).toBeVisible();
+    await expect(page.getByText("probeharbor.dev/api/integrations/nest/callback")).toBeVisible();
   });
 
   test("portfolio requires sign-in", async ({ page }) => {

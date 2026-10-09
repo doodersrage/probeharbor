@@ -105,7 +105,7 @@ describe("generateMonitoringCertificateForUser", () => {
     expect(result).toEqual({
       html: null,
       data: null,
-      filenameBase: "thermaltrace-monitoring-certificate",
+      filenameBase: "probeharbor-monitoring-certificate",
       error: "No household",
     });
     expect(mockGetAlertSettingsForUser).not.toHaveBeenCalled();
@@ -167,14 +167,14 @@ describe("generateMonitoringCertificateForUser", () => {
 
     const result = await generateMonitoringCertificateForUser(user(), "https://example.com");
 
-    expect(result.filenameBase).toBe("thermaltrace-monitoring-the-smiths-garage");
+    expect(result.filenameBase).toBe("probeharbor-monitoring-the-smiths-garage");
 
     mockMaybeSingle.mockResolvedValue({ data: { name: "!!!" } });
     const fallback = await generateMonitoringCertificateForUser(
       user({ email: undefined }),
       "https://example.com",
     );
-    expect(fallback.filenameBase).toBe("thermaltrace-monitoring-certificate");
+    expect(fallback.filenameBase).toBe("probeharbor-monitoring-certificate");
   });
 
   it("only lists alert channels that are both enabled and have a destination configured", async () => {

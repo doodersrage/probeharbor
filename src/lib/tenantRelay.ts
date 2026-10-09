@@ -75,7 +75,7 @@ export async function sendTenantFreezeRelay(input: {
     preheader: input.alertTitle,
     title: input.alertTitle,
     intro: `${intro}\n\n${input.alertBody}`,
-    cta: { label: "ThermalTrace", url: siteUrl },
+    cta: { label: "ProbeHarbor", url: siteUrl },
     tone: "alert",
     footerNote:
       "You received this because the property owner listed you as an on-site contact. This is not a full dashboard login.",

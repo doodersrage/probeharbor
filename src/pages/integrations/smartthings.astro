@@ -61,7 +61,7 @@ const schema = [
       <h2 class="card-title">No Cloud-to-Cloud app (on purpose)</h2>
       <p class="text-sm mb-0">
         A Samsung SmartThings Cloud-to-Cloud connector means store review, OAuth, and a second cloud hop.
-        ThermalTrace already has a <strong>Matterbridge</strong> plugin that exposes share-link temperature, humidity, leak, door, power, and motion on your LAN.
+        ProbeHarbor already has a <strong>Matterbridge</strong> plugin that exposes share-link temperature, humidity, leak, door, power, and motion on your LAN.
         SmartThings (like Apple Home and Google Home) can add that Matter bridge — one install path for all three.
       </p>
     </section>
@@ -70,17 +70,17 @@ const schema = [
       <h2 class="card-title">Setup</h2>
       <ol class="text-sm space-y-2 pl-5 list-decimal mb-0">
         <li>Create a family live share link under <a class="text-link" href="/dashboard/share/links">Dashboard → Share</a>.</li>
-        <li>Install Matterbridge + <a class="text-link" href={MATTER_REPO_URL} target="_blank" rel="noreferrer">thermaltrace-matter</a> on a Pi/NAS.</li>
+        <li>Install Matterbridge + <a class="text-link" href={MATTER_REPO_URL} target="_blank" rel="noreferrer">probeharbor-matter</a> on a Pi/NAS.</li>
         <li>In the SmartThings app: add a Matter device / scan the Matterbridge QR (same flow as other Matter bridges).</li>
-        <li>Keep freeze SMS on ThermalTrace push ingest — Matter polling is for glance and local automations.</li>
+        <li>Keep freeze SMS on ProbeHarbor push ingest — Matter polling is for glance and local automations.</li>
       </ol>
     </section>
 
     <section class="card">
-      <h2 class="card-title">When to stay on ThermalTrace alone</h2>
+      <h2 class="card-title">When to stay on ProbeHarbor alone</h2>
       <p class="mb-0 text-sm">
         Consumer ST/Govee pods win on price for bedrooms. For detached garages and shops, ESP ingest + household freeze/leak channels still beat vendor Bluetooth range.
-        See <a class="text-link" href="/compare/govee">ThermalTrace vs Govee / SmartThings</a>.
+        See <a class="text-link" href="/compare/govee">ProbeHarbor vs Govee / SmartThings</a>.
       </p>
     </section>
 

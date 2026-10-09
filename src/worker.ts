@@ -73,7 +73,7 @@ async function runCollectHistoryJob(): Promise<void> {
         warnings: result.warnings.slice(0, 20),
       });
       await notifyOps(
-        "ThermalTrace job failed: collect-history",
+        "ProbeHarbor job failed: collect-history",
         formatJobFailureBody("collect-history", {
           householdsProcessed: result.householdsProcessed,
           usersProcessed: result.usersProcessed,
@@ -103,7 +103,7 @@ async function runCollectHistoryJob(): Promise<void> {
     };
     await finishJobRun(historyJobId, "error", details);
     await notifyOps(
-      "ThermalTrace job failed: collect-history",
+      "ProbeHarbor job failed: collect-history",
       formatJobFailureBody("collect-history", details),
     );
     throw error;
@@ -114,7 +114,7 @@ async function runHourlyMaintenanceJobs(env: WorkerEnv): Promise<void> {
   const lastHistoryPollAt = await fetchLastSuccessfulCollectHistory();
   if (isCollectHistoryStale(lastHistoryPollAt)) {
     await notifyOps(
-      "ThermalTrace: collect-history overdue",
+      "ProbeHarbor: collect-history overdue",
       formatJobFailureBody("collect-history", {
         message: collectHistoryStaleMessage(lastHistoryPollAt),
         lastSuccessAt: lastHistoryPollAt,
@@ -134,7 +134,7 @@ async function runHourlyMaintenanceJobs(env: WorkerEnv): Promise<void> {
                 errors: digest.errors.slice(0, 20),
               });
               await notifyOps(
-                "ThermalTrace job failed: weekly-digest",
+                "ProbeHarbor job failed: weekly-digest",
                 formatJobFailureBody("weekly-digest", {
                   sent: digest.sent,
                   skipped: digest.skipped,
@@ -157,7 +157,7 @@ async function runHourlyMaintenanceJobs(env: WorkerEnv): Promise<void> {
             };
             await finishJobRun(digestJobId, "error", details);
             await notifyOps(
-              "ThermalTrace job failed: weekly-digest",
+              "ProbeHarbor job failed: weekly-digest",
               formatJobFailureBody("weekly-digest", details),
             );
           }
@@ -252,7 +252,7 @@ async function runHourlyMaintenanceJobs(env: WorkerEnv): Promise<void> {
           });
           if (failed) {
             await notifyOps(
-              "ThermalTrace job failed: drip-emails",
+              "ProbeHarbor job failed: drip-emails",
               formatJobFailureBody("drip-emails", {
                 message: "Hard drip email failures",
                 errors: drip.errors.slice(0, 10),
@@ -276,7 +276,7 @@ async function runHourlyMaintenanceJobs(env: WorkerEnv): Promise<void> {
                 error: retention.error,
               });
               await notifyOps(
-                "ThermalTrace job failed: sensor-retention",
+                "ProbeHarbor job failed: sensor-retention",
                 formatJobFailureBody("sensor-retention", {
                   message: retention.error,
                   rolledUp: retention.rolledUp,
@@ -299,7 +299,7 @@ async function runHourlyMaintenanceJobs(env: WorkerEnv): Promise<void> {
             };
             await finishJobRun(retentionJobId, "error", details);
             await notifyOps(
-              "ThermalTrace job failed: sensor-retention",
+              "ProbeHarbor job failed: sensor-retention",
               formatJobFailureBody("sensor-retention", details),
             );
           }
@@ -314,7 +314,7 @@ async function runHourlyMaintenanceJobs(env: WorkerEnv): Promise<void> {
               error: freezeMap.error,
             });
             await notifyOps(
-              "ThermalTrace job failed: freeze-map",
+              "ProbeHarbor job failed: freeze-map",
               formatJobFailureBody("freeze-map", {
                 message: freezeMap.error,
                 cities: freezeMap.cities,
@@ -333,7 +333,7 @@ async function runHourlyMaintenanceJobs(env: WorkerEnv): Promise<void> {
           };
           await finishJobRun(freezeMapJobId, "error", details);
           await notifyOps(
-            "ThermalTrace job failed: freeze-map",
+            "ProbeHarbor job failed: freeze-map",
             formatJobFailureBody("freeze-map", details),
           );
         }
@@ -370,7 +370,7 @@ async function runHourlyMaintenanceJobs(env: WorkerEnv): Promise<void> {
             );
             if (watchdog.findings.length > 0) {
               await notifyOps(
-                "ThermalTrace: freeze alerts not delivered",
+                "ProbeHarbor: freeze alerts not delivered",
                 `${watchdog.findings.length} member(s) have a probe below their freeze threshold with no delivered alert in the last 6 hours.\n\n${formatWatchdogFindings(watchdog.findings)}`,
               );
             }
@@ -393,7 +393,7 @@ async function runHourlyMaintenanceJobs(env: WorkerEnv): Promise<void> {
             });
             if (!health.ok) {
               await notifyOps(
-                "ThermalTrace: Stripe webhooks unhealthy",
+                "ProbeHarbor: Stripe webhooks unhealthy",
                 health.problems.map((problem) => `- ${problem}`).join("\n"),
               );
             }

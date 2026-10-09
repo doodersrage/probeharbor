@@ -670,7 +670,7 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
         <ChannelDeliveryStatus channel="push" delivery={channelDelivery.push} enabledSaved={settings.channelPush} canEdit={canEdit} />
         <p class="form-hint mb-3">
           One channel covers <strong>this browser</strong> (Web Push) and the
-          <strong>ThermalTrace Android app</strong> (FCM). Enable below for this browser; the Android app registers automatically when you sign in on Pro.
+          <strong>ProbeHarbor Android app</strong> (FCM). Enable below for this browser; the Android app registers automatically when you sign in on Pro.
         </p>
         {!vapidPublicKey ? (
           <p class="form-hint mb-2">Browser push is not configured on the server yet (missing VAPID keys).</p>

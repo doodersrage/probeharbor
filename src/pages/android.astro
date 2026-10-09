@@ -11,7 +11,7 @@ import {
   resolveSiteUrl,
 } from "../lib/schemaMarkup";
 import { getMarketingFaqs, getMarketingFaqSchema } from "../lib/marketingFaqs";
-import garageInstallLifestyle from "../assets/thermaltrace-garage-install-lifestyle.jpg";
+import garageInstallLifestyle from "../assets/probeharbor-garage-install-lifestyle.jpg";
 
 const siteUrl = resolveSiteUrl(Astro.site);
 const pageUrl = resolvePageUrl(siteUrl, "/android");
@@ -63,10 +63,10 @@ const description = playStoreLive
   <div class="page-shell page-stack">
     <PageHeader
       kicker={playStoreLive ? "Google Play" : "Works today · native app next"}
-      title="ThermalTrace for Android"
+      title="ProbeHarbor for Android"
       lede={playStoreLive
-        ? "Native companion on Google Play, live readings, history, freeze/flood alerts, devices, MFA, and household tools for your ThermalTrace account."
-        : "Use ThermalTrace on Android today with the installable web app — same account, live readings, and alerts. The native Play listing is in review; GitHub build/sideload is optional for early testers."}
+        ? "Native companion on Google Play, live readings, history, freeze/flood alerts, devices, MFA, and household tools for your ProbeHarbor account."
+        : "Use ProbeHarbor on Android today with the installable web app — same account, live readings, and alerts. The native Play listing is in review; GitHub build/sideload is optional for early testers."}
     >
       {playStoreLive ? (
         <a slot="actions" class="btn-primary" href={playStoreUrl} target="_blank" rel="noreferrer">
@@ -105,13 +105,13 @@ const description = playStoreLive
       <h2 class="card-title">What the phone does (and does not)</h2>
       <ul class="text-sm space-y-2 mb-0">
         <li>
-          <strong>Does:</strong> sign in to your ThermalTrace account, show live curves, history,
+          <strong>Does:</strong> sign in to your ProbeHarbor account, show live curves, history,
           and the same forecast-backed time-to-freeze clock as Overview,
           manage alerts/devices/household settings, and receive freeze/flood push via Firebase Cloud Messaging.
         </li>
         <li>
           <strong>Does not:</strong> read temperature from the handset. Your ESP/Arduino (or JSON feeds)
-          keep posting to thermaltrace.dev; the app is a client over HTTPS.
+          keep posting to probeharbor.dev; the app is a client over HTTPS.
         </li>
       </ul>
       <p class="mt-4 mb-0 text-sm text-[var(--color-text-muted)]">
@@ -125,7 +125,7 @@ const description = playStoreLive
       <section class="card">
         <h2 class="card-title">Google Play</h2>
         <p class="card-subtitle mb-4">
-          Install from the Play Store with the same ThermalTrace account you use on the web.
+          Install from the Play Store with the same ProbeHarbor account you use on the web.
           Push alerts use Firebase Cloud Messaging on Android and are on every plan.
         </p>
         <a class="btn-primary" href={playStoreUrl} target="_blank" rel="noreferrer">
@@ -136,18 +136,18 @@ const description = playStoreLive
       <section class="card">
         <h2 class="card-title">Use Android today (PWA)</h2>
         <p class="card-subtitle mb-4">
-          Install thermaltrace.dev from Chrome — home screen icon, live readings, and alerts on your existing account.
+          Install probeharbor.dev from Chrome — home screen icon, live readings, and alerts on your existing account.
           Native Play listing is next; GitHub build/sideload stays optional for early testers.
         </p>
         <div class="flex flex-wrap gap-3 mb-4">
           <a class="btn-primary" href="/about/install-pwa">PWA install steps</a>
           <a class="btn-secondary" href={ANDROID_REPO} target="_blank" rel="noreferrer">
-            GitHub · thermaltrace-android
+            GitHub · probeharbor-android
           </a>
         </div>
         <ol class="text-sm space-y-2 pl-5 list-decimal mb-0">
           <li>
-            <a class="text-link" href="/register?next=/dashboard/devices">Create a free ThermalTrace account</a>
+            <a class="text-link" href="/register?next=/dashboard/devices">Create a free ProbeHarbor account</a>
             and connect at least one probe.
           </li>
           <li>
@@ -204,7 +204,7 @@ const description = playStoreLive
           href={ANDROID_REPO}
           target="_blank"
           rel="noreferrer"
-        >thermaltrace-android</a>
+        >probeharbor-android</a>
         · Privacy:
         <a class="text-link" href="/privacy">how Android push tokens are handled</a>
         · API:

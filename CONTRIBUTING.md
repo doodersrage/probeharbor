@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for helping improve ThermalTrace. Issue creation on this repo is currently restricted, so **bugs, feature ideas, account, billing, and household questions** all go through the [contact form](https://thermaltrace.dev/contact) for now. Code contributions are still welcome as PRs — see below.
+Thanks for helping improve ProbeHarbor. Issue creation on this repo is currently restricted, so **bugs, feature ideas, account, billing, and household questions** all go through the [contact form](https://probeharbor.dev/contact) for now. Code contributions are still welcome as PRs — see below.
 
 Please follow the [Code of Conduct](./CODE_OF_CONDUCT.md).
 
@@ -39,4 +39,4 @@ The **import-guard** suite (`src/lib/astroImportGuard.test.ts`) fails if an Astr
 |----------|--------|
 | First-time clone | Root [README.md](./README.md) |
 | Env, cron, deploy | [Developer docs](https://doodersrage.github.io/thermaltrace/) (`docs/`) |
-| Wiring and freeze playbooks | [Guides hub](https://thermaltrace.dev/guides) |
+| Wiring and freeze playbooks | [Guides hub](https://probeharbor.dev/guides) |

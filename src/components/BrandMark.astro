@@ -10,7 +10,7 @@ interface Props {
 const { as: Tag = "span", class: className, mark = false } = Astro.props;
 ---
 <Tag class:list={["brand-mark", className]}>
-  <span class="brand-mark-thermal">Thermal</span><span class="brand-mark-trace">Trace</span>{
+  <span class="brand-mark-probe">Probe</span><span class="brand-mark-harbor">Harbor</span>{
     mark ? <span class="brand-mark-tm" aria-hidden="true">™</span> : null
   }
 </Tag>

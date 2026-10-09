@@ -311,7 +311,7 @@ export const expandedAboutContent: Record<string, AboutContentBlock[]> = {
       { type: "h2", text: "Caching interaction" },
       { type: "p", html: "Do not cache authenticated dashboard HTML at the CDN edge. Public home page caching should respect how fresh probes need to be, often aligned with <a class=\"text-link\" href=\"/about/redis-cache-for-feeds\">Redis TTL</a> upstream." },
       { type: "h2", text: "Reliability for users" },
-      { type: "p", html: "Edge hosting is a trust signal, not a substitute for measured health. ThermalTrace publishes cron and ingest status on <a class=\"text-link\" href=\"/system-status\">system status</a> (with optional email on degradation). Platform-wide Cloudflare incidents are tracked at <a class=\"text-link\" href=\"https://www.cloudflarestatus.com/\" target=\"_blank\" rel=\"noreferrer\">cloudflarestatus.com</a>: we do not repackage Cloudflare’s SLA as a ThermalTrace uptime percentage." },
+      { type: "p", html: "Edge hosting is a trust signal, not a substitute for measured health. ProbeHarbor publishes cron and ingest status on <a class=\"text-link\" href=\"/system-status\">system status</a> (with optional email on degradation). Platform-wide Cloudflare incidents are tracked at <a class=\"text-link\" href=\"https://www.cloudflarestatus.com/\" target=\"_blank\" rel=\"noreferrer\">cloudflarestatus.com</a>: we do not repackage Cloudflare’s SLA as a ProbeHarbor uptime percentage." },
       { type: "h2", text: "Alternatives" },
       { type: "p", html: "<a class=\"text-link\" href=\"/about/comparing-full-stack-options\">Comparing full-stack options</a> covers Node hosting versus edge Astro." }
   ],
@@ -395,13 +395,13 @@ export const expandedAboutContent: Record<string, AboutContentBlock[]> = {
   ],
 
   "configuring-temperature-feeds": [
-      { type: "p", html: "Pull feeds let ThermalTrace fetch HTTPS JSON on a schedule when your probe already serves a public URL (or a TLS relay). For the full push <em>and</em> pull walkthrough that matches today’s Devices UI, start with <a class=\"text-link\" href=\"/about/adding-devices\">adding push and pull devices</a>." },
+      { type: "p", html: "Pull feeds let ProbeHarbor fetch HTTPS JSON on a schedule when your probe already serves a public URL (or a TLS relay). For the full push <em>and</em> pull walkthrough that matches today’s Devices UI, start with <a class=\"text-link\" href=\"/about/adding-devices\">adding push and pull devices</a>." },
       { type: "h2", text: "Setup steps" },
       { type: "ol", items: ["Verify the feed with **curl**: nested probes under a root object (default <code>temp</code>).","Open <strong>Dashboard → Devices → Pull feeds</strong> tab.","Add the HTTPS URL and set <strong>JSON root key</strong> if your object is not named <code>temp</code> (e.g. <code>readings</code>).","Use <strong>Test feed URL</strong>, then <strong>Save pull setup</strong>: probe keys auto-import.","Rename labels on the same page or click <strong>Accept suggested names</strong>." ] },
       { type: "h2", text: "JSON root key" },
       { type: "p", html: "Pull parsing looks for <code>{ \"&lt;root&gt;\": { \"0\": { \"f\": …, \"h\": … }, … } }</code>. The root defaults to <code>temp</code>. Flat push-style keys and typed <code>sensors[]</code> are for <a class=\"text-link\" href=\"/about/ingest-and-webhooks\">push ingest</a>, not the default pull path." },
       { type: "h2", text: "SenML and Home Assistant REST" },
-      { type: "p", html: "When the configured root is missing, ThermalTrace auto-detects <strong>SenML JSON</strong> (RFC 8428 array) and <strong>HA REST sensor</strong> JSON (<code>state</code> + <code>attributes</code>). Paste the HTTPS URL as-is, no JSON root override needed. Map probe keys from SenML names (e.g. <code>0</code>) or <code>state</code> for single-entity REST feeds. Try the public <a class=\"text-link\" href=\"/api/feeds/example?format=senml\">SenML example</a> or <a class=\"text-link\" href=\"/api/feeds/example?format=homeassistant\">HA REST example</a>." },
+      { type: "p", html: "When the configured root is missing, ProbeHarbor auto-detects <strong>SenML JSON</strong> (RFC 8428 array) and <strong>HA REST sensor</strong> JSON (<code>state</code> + <code>attributes</code>). Paste the HTTPS URL as-is, no JSON root override needed. Map probe keys from SenML names (e.g. <code>0</code>) or <code>state</code> for single-entity REST feeds. Try the public <a class=\"text-link\" href=\"/api/feeds/example?format=senml\">SenML example</a> or <a class=\"text-link\" href=\"/api/feeds/example?format=homeassistant\">HA REST example</a>." },
       { type: "h2", text: "Multiple feeds" },
       { type: "p", html: "You can add several pull URLs (plan limits apply). Document which URL is production vs demo. Security: <a class=\"text-link\" href=\"/about/relay-security-and-access\">relay security</a>. Fetch behavior: <a class=\"text-link\" href=\"/about/home-page-probe-fetch\">home page probe fetch</a>." },
       { type: "h2", text: "Troubleshooting" },
@@ -748,7 +748,7 @@ export const expandedAboutContent: Record<string, AboutContentBlock[]> = {
   ],
 
   "cold-snap-playbook": [
-      { type: "p", html: "A freeze alert only helps if someone knows what to do next. This playbook covers the night before a cold snap, the moment an alert fires, and the morning after, so ThermalTrace becomes a response loop, not just a chart." },
+      { type: "p", html: "A freeze alert only helps if someone knows what to do next. This playbook covers the night before a cold snap, the moment an alert fires, and the morning after, so ProbeHarbor becomes a response loop, not just a chart." },
       { type: "h2", text: "Before the cold snap" },
       { type: "ol", items: ["Confirm the <a class=\"text-link\" href=\"/about/freeze-protection-thresholds\">freeze threshold</a> matches your coldest zone (often a few degrees above hard freeze).","Enable email under <a class=\"text-link\" href=\"/dashboard/alerts?tab=settings#alert-section-essentials\">Alerts → Essentials</a> (plus push, and SMS on Pro), see the <a class=\"text-link\" href=\"/about/alert-channel-cookbook\">channel cookbook</a>.","Turn on forecast / NWS freeze inputs so you get warning before indoor air drops.","Send a <strong>test alert</strong> from Essentials or Devices while you are awake."] },
       { type: "h2", text: "When an alert fires" },
@@ -760,7 +760,7 @@ export const expandedAboutContent: Record<string, AboutContentBlock[]> = {
   ],
 
   "alert-channel-cookbook": [
-      { type: "p", html: "ThermalTrace can reach you on email, chat apps, SMS, browser push, and webhooks. The right mix depends on how loud a freeze needs to be at 2 a.m., not on enabling every checkbox." },
+      { type: "p", html: "ProbeHarbor can reach you on email, chat apps, SMS, browser push, and webhooks. The right mix depends on how loud a freeze needs to be at 2 a.m., not on enabling every checkbox." },
       { type: "h2", text: "Free vs Pro channels" },
       { type: "ul", items: ["**Free:** email, browser and Android push, Discord, Telegram, Slack, Teams, ntfy, Pushover.","**Pro:** SMS, WhatsApp, outbound webhooks, timed playbooks."] },
       { type: "h2", text: "Setup pattern" },
@@ -772,7 +772,7 @@ export const expandedAboutContent: Record<string, AboutContentBlock[]> = {
   ],
 
   "household-sharing-walkthrough": [
-      { type: "p", html: "Freeze risk is a household problem. ThermalTrace lets you invite people by email so everyone sees the same probes and alerts without sharing a single login password, and Free includes one family live share link for people who do not want an account." },
+      { type: "p", html: "Freeze risk is a household problem. ProbeHarbor lets you invite people by email so everyone sees the same probes and alerts without sharing a single login password, and Free includes one family live share link for people who do not want an account." },
       { type: "h2", text: "Invite flow" },
       { type: "ol", items: ["Open Dashboard → Household.","Enter the invitee email and send the invite.","They create or sign into an account with that email and accept.","Confirm they appear under Members with the intended role."] },
       { type: "h2", text: "Family live share link" },
@@ -786,13 +786,13 @@ export const expandedAboutContent: Record<string, AboutContentBlock[]> = {
   ],
 
   "esphome-shelly-recipes": [
-      { type: "p", html: "Many garages already run <strong>ESPHome</strong> or <strong>Shelly</strong> modules for lights, doors, and climate. You do not need a custom Arduino sketch to feed ThermalTrace. POST the same typed <code>sensors[]</code> JSON the ingest API accepts from any HTTPS client on your LAN." },
+      { type: "p", html: "Many garages already run <strong>ESPHome</strong> or <strong>Shelly</strong> modules for lights, doors, and climate. You do not need a custom Arduino sketch to feed ProbeHarbor. POST the same typed <code>sensors[]</code> JSON the ingest API accepts from any HTTPS client on your LAN." },
       { type: "h2", text: "Before you wire YAML" },
       { type: "ol", items: ["Create a <strong>push device</strong> under <a class=\"text-link\" href=\"/dashboard/devices\">Dashboard → Devices</a> (one click) and copy the ingest URL.","Send one test POST (curl or firmware): keys auto-import; rename later if you want.","Keep Mosquitto local if you want: see <a class=\"text-link\" href=\"/about/adding-devices\">MQTT bridge</a> or the <a class=\"text-link\" href=\"/integrations/home-assistant\">HACS integration</a> for dual-run."] },
       { type: "h2", text: "ESPHome pattern" },
       { type: "p", html: "Enable the <code>http_request</code> component, poll your DHT/BME probe on an interval, and POST a JSON body with <code>temperature</code> and <code>humidity</code> kinds. Store the ingest URL in <code>secrets.yaml</code>, never commit the device key." },
-      { type: "pre", code: "# secrets.yaml\nthermaltrace_ingest_url: https://thermaltrace.dev/api/ingest/YOUR_DEVICE_KEY\n\n# interval action (simplified)\n# POST {\"sensors\":[\n#   {\"key\":\"garage_temp\",\"kind\":\"temperature\",\"value\":42.1,\"unit\":\"F\"},\n#   {\"key\":\"garage_rh\",\"kind\":\"humidity\",\"value\":38,\"unit\":\"%\"}\n# ]}" },
-      { type: "p", html: "Full YAML with lambda body: <a class=\"text-link\" href=\"https://thermaltrace.dev/developers/integrations/esphome-shelly\">developer docs</a> · payload reference in <a class=\"text-link\" href=\"/about/ingest-and-webhooks\">ingest and webhooks</a>." },
+      { type: "pre", code: "# secrets.yaml\nprobeharbor_ingest_url: https://probeharbor.dev/api/ingest/YOUR_DEVICE_KEY\n\n# interval action (simplified)\n# POST {\"sensors\":[\n#   {\"key\":\"garage_temp\",\"kind\":\"temperature\",\"value\":42.1,\"unit\":\"F\"},\n#   {\"key\":\"garage_rh\",\"kind\":\"humidity\",\"value\":38,\"unit\":\"%\"}\n# ]}" },
+      { type: "p", html: "Full YAML with lambda body: <a class=\"text-link\" href=\"https://probeharbor.dev/developers/integrations/esphome-shelly\">developer docs</a> · payload reference in <a class=\"text-link\" href=\"/about/ingest-and-webhooks\">ingest and webhooks</a>." },
       { type: "h2", text: "Shelly door contact" },
       { type: "p", html: "On Shelly Plus / Gen2, fire an HTTP POST when the garage door input toggles. Use <code>kind: door</code> with <code>bool: true</code> when open and <code>false</code> when closed. Map the key (for example <code>garage_door</code>) under Devices." },
       { type: "pre", code: "{\n  \"sensors\": [\n    { \"key\": \"garage_door\", \"kind\": \"door\", \"bool\": true }\n  ]\n}" },
@@ -847,20 +847,20 @@ export const expandedAboutContent: Record<string, AboutContentBlock[]> = {
   ],
 
   "home-assistant-notify-recipes": [
-      { type: "p", html: "ThermalTrace can wake the house through Home Assistant: mobile push, TTS on a speaker, or a light flash, while email/SMS stay as the out-of-band backup. Use these recipes when you already run HA on the LAN." },
+      { type: "p", html: "ProbeHarbor can wake the house through Home Assistant: mobile push, TTS on a speaker, or a light flash, while email/SMS stay as the out-of-band backup. Use these recipes when you already run HA on the LAN." },
       { type: "h2", text: "Option A. HACS integration (share link)" },
-      { type: "ol", items: ["Create a <strong>family live</strong> or Pro share link under <a class=\"text-link\" href=\"/dashboard/share/links\">Dashboard → Share → Links</a>.","Install the <a class=\"text-link\" href=\"/integrations/home-assistant\">ThermalTrace HACS integration</a> and point it at that URL.","Build an automation on <code>sensor.*_temperature</code> below your freeze threshold that calls <code>notify.mobile_app_…</code> or <code>tts.speak</code>."] },
+      { type: "ol", items: ["Create a <strong>family live</strong> or Pro share link under <a class=\"text-link\" href=\"/dashboard/share/links\">Dashboard → Share → Links</a>.","Install the <a class=\"text-link\" href=\"/integrations/home-assistant\">ProbeHarbor HACS integration</a> and point it at that URL.","Build an automation on <code>sensor.*_temperature</code> below your freeze threshold that calls <code>notify.mobile_app_…</code> or <code>tts.speak</code>."] },
       { type: "h2", text: "Option B: outbound alert webhook (Pro)" },
-      { type: "ol", items: ["Enable the outbound webhook under Dashboard → Alerts (Pro).","In HA, create an automation triggered by <code>webhook</code> (or use the HA companion REST notify path).","Map ThermalTrace JSON fields (<code>title</code>, <code>body</code>, <code>kind</code>) into <code>notify</code> or <code>tts.cloud_say</code>."] },
-      { type: "pre", code: "# Example: HA automation sketch (adapt entity ids)\nalias: ThermalTrace freeze → phone + TTS\ntrigger:\n  - platform: webhook\n    webhook_id: thermaltrace_freeze\naction:\n  - service: notify.mobile_app_phone\n    data:\n      title: \"{{ trigger.json.title }}\"\n      message: \"{{ trigger.json.body }}\"\n  - service: tts.speak\n    target:\n      entity_id: media_player.kitchen_display\n    data:\n      message: \"Freeze risk. {{ trigger.json.body }}\"" },
+      { type: "ol", items: ["Enable the outbound webhook under Dashboard → Alerts (Pro).","In HA, create an automation triggered by <code>webhook</code> (or use the HA companion REST notify path).","Map ProbeHarbor JSON fields (<code>title</code>, <code>body</code>, <code>kind</code>) into <code>notify</code> or <code>tts.cloud_say</code>."] },
+      { type: "pre", code: "# Example: HA automation sketch (adapt entity ids)\nalias: ProbeHarbor freeze → phone + TTS\ntrigger:\n  - platform: webhook\n    webhook_id: probeharbor_freeze\naction:\n  - service: notify.mobile_app_phone\n    data:\n      title: \"{{ trigger.json.title }}\"\n      message: \"{{ trigger.json.body }}\"\n  - service: tts.speak\n    target:\n      entity_id: media_player.kitchen_display\n    data:\n      message: \"Freeze risk. {{ trigger.json.body }}\"" },
       { type: "h2", text: "Option C: inbound snooze from HA" },
-      { type: "p", html: "When you are working in a cold bay, call the ThermalTrace inbound webhook (<code>action=snooze</code> or <code>vacation</code>) from an HA script so threshold alerts pause while you work (snooze) or routine alerts pause while you travel (vacation), without opening the dashboard. Guide: <a class=\"text-link\" href=\"/about/ingest-and-webhooks\">ingest and webhooks</a>." },
+      { type: "p", html: "When you are working in a cold bay, call the ProbeHarbor inbound webhook (<code>action=snooze</code> or <code>vacation</code>) from an HA script so threshold alerts pause while you work (snooze) or routine alerts pause while you travel (vacation), without opening the dashboard. Guide: <a class=\"text-link\" href=\"/about/ingest-and-webhooks\">ingest and webhooks</a>." },
       { type: "h2", text: "Keep an out-of-band channel" },
-      { type: "p", html: "Local notify fails when the LAN or HA host is down. Keep ThermalTrace email and push (and SMS on Pro) enabled so freeze risk still reaches a phone that is not on the same Wi‑Fi." }
+      { type: "p", html: "Local notify fails when the LAN or HA host is down. Keep ProbeHarbor email and push (and SMS on Pro) enabled so freeze risk still reaches a phone that is not on the same Wi‑Fi." }
   ],
 
   "personal-weather-stations": [
-      { type: "p", html: "OpenWeather city IDs are fine for a rough regional forecast. If you already run an <strong>Ambient Weather</strong> or <strong>WeatherFlow Tempest</strong> station in the yard, ThermalTrace can read outdoor temp/humidity from <em>your</em> property, and use those coordinates for NWS and forecast freeze alerts." },
+      { type: "p", html: "OpenWeather city IDs are fine for a rough regional forecast. If you already run an <strong>Ambient Weather</strong> or <strong>WeatherFlow Tempest</strong> station in the yard, ProbeHarbor can read outdoor temp/humidity from <em>your</em> property, and use those coordinates for NWS and forecast freeze alerts." },
       { type: "h2", text: "Dashboard → Settings" },
       { type: "ol", items: ["Open <a class=\"text-link\" href=\"/dashboard/settings\">Dashboard → Settings</a> → Live display.","Under <strong>Outdoor weather source</strong>, choose Ambient or WeatherFlow.","Enter your station credentials (see below) and save.","Confirm the Live weather card shows your station name."] },
       { type: "h2", text: "Ambient Weather" },
@@ -870,7 +870,7 @@ export const expandedAboutContent: Record<string, AboutContentBlock[]> = {
       { type: "h2", text: "What updates automatically" },
       { type: "p", html: "Outdoor card on Home, indoor/outdoor delta on History, forecast freeze alerts, NWS freeze advisories, and cold-snap checklist context all use the configured source. OpenWeather remains the fallback if a personal fetch fails." },
       { type: "h2", text: "Also mirror station data via ingest" },
-      { type: "p", html: "Prefer pushing every sensor into ThermalTrace history? Use <a class=\"text-link\" href=\"/about/esphome-shelly-recipes\">ESPHome/Shelly recipes</a>, the <a class=\"text-link\" href=\"/nodered/mqtt-to-thermaltrace.json\">Node-RED MQTT flow</a>, or Home Assistant HACS: separate from the outdoor weather card." }
+      { type: "p", html: "Prefer pushing every sensor into ProbeHarbor history? Use <a class=\"text-link\" href=\"/about/esphome-shelly-recipes\">ESPHome/Shelly recipes</a>, the <a class=\"text-link\" href=\"/nodered/mqtt-to-probeharbor.json\">Node-RED MQTT flow</a>, or Home Assistant HACS: separate from the outdoor weather card." }
   ],
 };
 

@@ -22,7 +22,7 @@ describe("waitingIngest", () => {
   });
 
   it("builds a curl example with placeholder key", () => {
-    const curl = buildWaitingIngestCurl("https://thermaltrace.dev", [
+    const curl = buildWaitingIngestCurl("https://probeharbor.dev", [
       { key: "temp1", kind: "temperature" },
     ]);
     expect(curl).toContain("/api/ingest/YOUR_KEY");
@@ -30,15 +30,15 @@ describe("waitingIngest", () => {
   });
 
   it("builds ESPHome and Arduino firmware presets", () => {
-    const url = "https://thermaltrace.dev/api/ingest/abc123";
+    const url = "https://probeharbor.dev/api/ingest/abc123";
     const sensors = [{ key: "temp1", kind: "temperature" as const }];
     expect(buildEspHomeHttpRequestSnippet(url, sensors)).toContain(
-      "url: https://thermaltrace.dev/api/ingest/abc123",
+      "url: https://probeharbor.dev/api/ingest/abc123",
     );
     const arduino = buildArduinoHttpClientSnippet(url, sensors);
     expect(arduino).toContain(url);
     expect(arduino).toContain("POST /api/ingest/abc123 HTTP/1.1");
-    expect(arduino).toContain("Host: thermaltrace.dev");
+    expect(arduino).toContain("Host: probeharbor.dev");
     expect(arduino).not.toContain("YOUR_KEY");
   });
 });

@@ -17,6 +17,6 @@ describe("ical feed", () => {
     ]);
     expect(ical).toContain("DTSTART;VALUE=DATE:20240131");
     expect(ical).toContain("DTEND;VALUE=DATE:20240201");
-    expect(ical).toContain("UID:thermaltrace-freeze-2024-01-31@thermaltrace.dev");
+    expect(ical).toContain("UID:probeharbor-freeze-2024-01-31@probeharbor.dev");
   });
 });

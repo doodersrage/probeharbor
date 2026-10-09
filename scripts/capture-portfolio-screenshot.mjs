@@ -1,6 +1,6 @@
 /**
  * Renders a dark-theme Portfolio table matching /dashboard/portfolio
- * and writes src/assets/marketing/thermaltrace-dashboard-portfolio.jpg
+ * and writes src/assets/marketing/probeharbor-dashboard-portfolio.jpg
  *
  * Usage: node scripts/capture-portfolio-screenshot.mjs
  */
@@ -11,7 +11,7 @@ import { fileURLToPath } from "node:url";
 
 const root = path.dirname(fileURLToPath(import.meta.url));
 const outDir = path.join(root, "../src/assets/marketing");
-const outFile = path.join(outDir, "thermaltrace-dashboard-portfolio.jpg");
+const outFile = path.join(outDir, "probeharbor-dashboard-portfolio.jpg");
 
 const html = `<!DOCTYPE html>
 <html lang="en">

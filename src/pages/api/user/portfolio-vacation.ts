@@ -28,7 +28,7 @@ function withFlashParams(
   redirectTo: string,
   params: Record<string, string | number>,
 ): string {
-  const url = new URL(redirectTo, "https://thermaltrace.local");
+  const url = new URL(redirectTo, "https://probeharbor.local");
   for (const [key, value] of Object.entries(params)) {
     url.searchParams.set(key, String(value));
   }

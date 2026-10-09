@@ -101,7 +101,7 @@ beforeEach(() => {
   mockChallengeWebAuthnFactor.mockReset();
   mockEnrollWebAuthnFactor.mockReset();
   mockVerifyWebAuthnFactor.mockReset();
-  mockResolveWebAuthnRp.mockReset().mockReturnValue({ id: "example.com", name: "ThermalTrace" });
+  mockResolveWebAuthnRp.mockReset().mockReturnValue({ id: "example.com", name: "ProbeHarbor" });
   mockBuildYubiKeyMetadataRemove.mockReset();
   mockBuildYubiKeyMetadataUpdate.mockReset();
   mockGetYubiKeyPublicIdsFromUser.mockReset().mockReturnValue([]);

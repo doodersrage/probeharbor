@@ -28,7 +28,7 @@ const BLUES_NOTECARD = affiliateHref("https://blues.io/products/notecard/");
   <p>
     Cabins, wells, and outbuildings often have power but no garage Wi‑Fi. A
     <strong>Particle Boron</strong> (or B-Series) LTE board POSTs the same ingest JSON through a
-    <strong>Particle Console webhook</strong>. Cellular dropouts are normal: ThermalTrace already
+    <strong>Particle Console webhook</strong>. Cellular dropouts are normal: ProbeHarbor already
     marks probes stale when posts stop, so you do not need an aggressive on-device retry storm.
   </p>
   <p>
@@ -107,7 +107,7 @@ const BLUES_NOTECARD = affiliateHref("https://blues.io/products/notecard/");
       <code>OneWire</code>, <code>spark-dallas-temperature</code>.
     </li>
     <li>
-      Console → Integrations → Webhook: event <code>thermaltrace_ingest</code>, POST to your ingest URL,
+      Console → Integrations → Webhook: event <code>probeharbor_ingest</code>, POST to your ingest URL,
       use the downloaded webhook JSON (or set the body to the Particle event value), Content-Type
       <code>application/json</code>.
     </li>

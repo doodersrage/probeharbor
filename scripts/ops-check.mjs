@@ -68,9 +68,9 @@ const groups = [
 let failed = false;
 
 const siteUrl = env.SITE_URL?.trim();
-if (siteUrl && !siteUrl.includes("thermaltrace.dev")) {
+if (siteUrl && !siteUrl.includes("probeharbor.dev")) {
   console.log(
-    `⚠ SITE_URL is "${siteUrl}" — production should use https://thermaltrace.dev (run pnpm secrets:push after updating .env)`,
+    `⚠ SITE_URL is "${siteUrl}" — production should use https://probeharbor.dev (run pnpm secrets:push after updating .env)`,
   );
 }
 
@@ -99,7 +99,7 @@ console.log("  pnpm secrets:push     — sync .env secrets to Cloudflare Worker"
 console.log("  pnpm ops:smoke        — public pages + sitemap after deploy");
 console.log("  pnpm ops:dogfood      — alert test + Ops email smokes (needs E2E admin)");
 console.log("  pnpm test:e2e:auth    — authenticated alert settings (needs E2E_TEST_*)");
-console.log("  GSC                   — confirm https://thermaltrace.dev/sitemap-index.xml in Search Console");
+console.log("  GSC                   — confirm https://probeharbor.dev/sitemap-index.xml in Search Console");
 if (!env.TWILIO_ACCOUNT_SID?.trim()) {
   console.log("  Twilio                — add TWILIO_* to .env for SMS/WhatsApp, then secrets:push");
 }

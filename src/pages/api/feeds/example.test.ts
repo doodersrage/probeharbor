@@ -30,10 +30,10 @@ function makeContext(query: string, clientAddress = "1.2.3.4"): APIContext {
 
 beforeEach(() => {
   mockCheckDemoTempsRateLimit.mockReset().mockReturnValue({ ok: true });
-  mockGetExampleFeedUrl.mockReset().mockReturnValue("https://thermaltrace.dev/api/feeds/example");
+  mockGetExampleFeedUrl.mockReset().mockReturnValue("https://probeharbor.dev/api/feeds/example");
   mockFetchWeatherSimulatedFeed.mockReset().mockResolvedValue({ tempF: 40 });
   mockFormatExampleFeedResponse.mockReset().mockReturnValue({ ok: true });
-  mockResolveSiteUrl.mockReset().mockReturnValue("https://thermaltrace.dev");
+  mockResolveSiteUrl.mockReset().mockReturnValue("https://probeharbor.dev");
 });
 
 describe("GET /api/feeds/example", () => {
@@ -70,7 +70,7 @@ describe("GET /api/feeds/example", () => {
     expect(mockFormatExampleFeedResponse).toHaveBeenCalledWith(
       "pull",
       { tempF: 40 },
-      "https://thermaltrace.dev/api/feeds/example",
+      "https://probeharbor.dev/api/feeds/example",
     );
   });
 
@@ -88,7 +88,7 @@ describe("GET /api/feeds/example", () => {
     expect(mockFormatExampleFeedResponse).toHaveBeenCalledWith(
       "senml",
       { tempF: 40 },
-      "https://thermaltrace.dev/api/feeds/example",
+      "https://probeharbor.dev/api/feeds/example",
     );
   });
 
@@ -138,7 +138,7 @@ describe("GET /api/feeds/example", () => {
 
     expect(response.status).toBe(200);
     expect(response.headers.get("Content-Type")).toBe("application/json");
-    expect(response.headers.get("X-ThermalTrace-Feed")).toBe("weather-simulated-example");
+    expect(response.headers.get("X-ProbeHarbor-Feed")).toBe("weather-simulated-example");
     expect(await response.json()).toEqual({ someKey: "value" });
   });
 });

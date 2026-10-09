@@ -91,8 +91,8 @@ export const POST: APIRoute = async ({ request, cookies, redirect, url }) => {
       user.email,
       settings,
       {
-        title: "ThermalTrace test alert",
-        body: "This is a test notification from your ThermalTrace dashboard. If you received this, your alert channels are working.",
+        title: "ProbeHarbor test alert",
+        body: "This is a test notification from your ProbeHarbor dashboard. If you received this, your alert channels are working.",
         kind: "generic",
       },
       channel ? { channelFilter: [channel] } : undefined,

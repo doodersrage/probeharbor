@@ -60,7 +60,7 @@ export const GET: APIRoute = async ({ request, cookies }) => {
   return new Response(JSON.stringify(payload, null, 2), {
     headers: {
       "Content-Type": "application/json",
-      "Content-Disposition": 'attachment; filename="thermaltrace-export.json"',
+      "Content-Disposition": 'attachment; filename="probeharbor-export.json"',
     },
   });
 };

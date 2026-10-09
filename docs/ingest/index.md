@@ -1,15 +1,15 @@
 ---
-description: "POST temperature, humidity, and leak readings to ThermalTrace with a per-device ingest key. Payload formats, health fields, and auto-import."
+description: "POST temperature, humidity, and leak readings to ProbeHarbor with a per-device ingest key. Payload formats, health fields, and auto-import."
 ---
 
 # Push ingest
 
-Create a **push** device under **[Dashboard → Devices](https://thermaltrace.dev/dashboard/devices)** on the live app. You receive a per-device ingest key in a **30-minute callout** (survives refresh until dismissed). **Lost it later?** Use **Reveal ingest key** on the device card when key recovery is enabled on the server, or **Rotate key** for a new one.
+Create a **push** device under **[Dashboard → Devices](https://probeharbor.dev/dashboard/devices)** on the live app. You receive a per-device ingest key in a **30-minute callout** (survives refresh until dismissed). **Lost it later?** Use **Reveal ingest key** on the device card when key recovery is enabled on the server, or **Rotate key** for a new one.
 
-Full UI walkthrough (push **and** pull): [Adding push and pull devices](https://thermaltrace.dev/about/adding-devices).
+Full UI walkthrough (push **and** pull): [Adding push and pull devices](https://probeharbor.dev/about/adding-devices).
 
 ```http
-POST https://thermaltrace.dev/api/ingest/<device-key>
+POST https://probeharbor.dev/api/ingest/<device-key>
 Content-Type: application/json
 ```
 
@@ -24,7 +24,7 @@ Optional top-level health fields (any payload style):
 
 Sensor keys import automatically from your JSON (flat keys, classic `temp` object, typed `sensors[]`, SenML, or Home Assistant REST). Rename labels on the Devices page afterward. Manual mapping under **Advanced** is optional if you want to pre-map keys before the first POST.
 
-After the first successful POST, open **[Home](https://thermaltrace.dev/)** while signed in to confirm live values. History collects from the **15-minute** background poll and successful ingests.
+After the first successful POST, open **[Home](https://probeharbor.dev/)** while signed in to confirm live values. History collects from the **15-minute** background poll and successful ingests.
 
 **No hardware yet?** On **Overview**, use **Try without hardware** to save the public example pull feed in one click.
 
@@ -32,12 +32,12 @@ After the first successful POST, open **[Home](https://thermaltrace.dev/)** whil
 
 REST sensors, MQTT bridge, and inbound webhook examples: [Home Assistant integration](/ingest/home-assistant).
 
-**Product page:** [thermaltrace.dev/integrations/home-assistant](https://thermaltrace.dev/integrations/home-assistant) · **HACS:** [github.com/doodersrage/thermaltrace-home-assistant](https://github.com/doodersrage/thermaltrace-home-assistant)
+**Product page:** [probeharbor.dev/integrations/home-assistant](https://probeharbor.dev/integrations/home-assistant) · **HACS:** [github.com/doodersrage/thermaltrace-home-assistant](https://github.com/doodersrage/thermaltrace-home-assistant)
 
 ## curl smoke test
 
 ```bash
-curl -X POST "https://thermaltrace.dev/api/ingest/YOUR_DEVICE_KEY" \
+curl -X POST "https://probeharbor.dev/api/ingest/YOUR_DEVICE_KEY" \
   -H "Content-Type: application/json" \
   -d '{"temp1": 42.5, "door1": false, "battery": 87, "rssi": -62}'
 ```
@@ -102,13 +102,13 @@ SenML JSON arrays are auto-detected when native shapes are absent. Temperature u
 
 ```json
 [
-  { "bn": "thermaltrace/garage/", "n": "0", "u": "Cel", "v": 18.5 },
+  { "bn": "probeharbor/garage/", "n": "0", "u": "Cel", "v": 18.5 },
   { "n": "0", "u": "%RH", "v": 42 },
   { "n": "door", "vb": true }
 ]
 ```
 
-Example feed: `https://thermaltrace.dev/api/feeds/example?format=senml`
+Example feed: `https://probeharbor.dev/api/feeds/example?format=senml`
 
 ### Home Assistant REST sensor
 
@@ -124,21 +124,21 @@ Single-entity REST responses (`state` + `attributes.unit_of_measurement`) are al
 }
 ```
 
-Example feed: `https://thermaltrace.dev/api/feeds/example?format=homeassistant`
+Example feed: `https://probeharbor.dev/api/feeds/example?format=homeassistant`
 
 ## MQTT-over-HTTP bridge
 
 Cloudflare Workers are not an MQTT broker. Keep Mosquitto / Home Assistant MQTT on your LAN and mirror readings with:
 
 ```http
-POST https://thermaltrace.dev/api/ingest/mqtt
+POST https://probeharbor.dev/api/ingest/mqtt
 X-Ingest-Key: <device-key>
 Content-Type: application/json
 ```
 
 Body may include `topic`, `payload` (JSON string), or `message` (object). The Worker unwraps and forwards into the same ingest path.
 
-Recipes (Home Assistant + Node-RED import): [MQTT bridge](/integrations/mqtt-bridge). Product page: [Adding devices § MQTT](https://thermaltrace.dev/about/adding-devices#mqtt-bridge).
+Recipes (Home Assistant + Node-RED import): [MQTT bridge](/integrations/mqtt-bridge). Product page: [Adding devices § MQTT](https://probeharbor.dev/about/adding-devices#mqtt-bridge).
 
 ## Common mistakes
 
@@ -147,7 +147,7 @@ Recipes (Home Assistant + Node-RED import): [MQTT bridge](/integrations/mqtt-bri
 | `401` | Wrong or rotated device key |
 | Readings missing on Home | First POST not received yet, or device disabled |
 | No history | Need successful ingest **and** 15-minute poll / signed-in Home |
-| TLS failures on MCU | Use a local HTTPS relay ([python feeds](https://thermaltrace.dev/about/python-feeds)). Uno + W5100: [`ethernet_dht22_ingest`](https://github.com/doodersrage/thermaltrace/tree/main/sketches/arduino/ethernet_dht22_ingest) + [`push_https_forward.py`](https://github.com/doodersrage/thermaltrace/blob/main/sketches/relay/push_https_forward.py) |
+| TLS failures on MCU | Use a local HTTPS relay ([python feeds](https://probeharbor.dev/about/python-feeds)). Uno + W5100: [`ethernet_dht22_ingest`](https://github.com/doodersrage/thermaltrace/tree/main/sketches/arduino/ethernet_dht22_ingest) + [`push_https_forward.py`](https://github.com/doodersrage/thermaltrace/blob/main/sketches/relay/push_https_forward.py) |
 | Can't recover key | Operator must set `INGEST_KEY_ENCRYPTION_SECRET`; older devices need one **Rotate key** |
 
 ## Related
@@ -155,4 +155,4 @@ Recipes (Home Assistant + Node-RED import): [MQTT bridge](/integrations/mqtt-bri
 - [Sensor sketches](/sketches/)
 - [Pull feeds](/ingest/pull-feeds) (alternative to push)
 - [Home Assistant](/ingest/home-assistant)
-- Product: [Adding devices](https://thermaltrace.dev/about/adding-devices) · [ingest & webhooks](https://thermaltrace.dev/about/ingest-and-webhooks) · [Pico W](https://thermaltrace.dev/about/pico-w-ingest) · [STM32 Zephyr](https://thermaltrace.dev/about/stm32-zephyr-ingest) · [CH32V RISC-V](https://thermaltrace.dev/about/ch32v-riscv-ingest) · [AVR assembly](https://thermaltrace.dev/about/avr-asm-ingest) · [Teensy 4.1](https://thermaltrace.dev/about/teensy41-ingest) · [PIC18 Ethernet](https://thermaltrace.dev/about/pic18-ethernet-ingest) · [Cellular](https://thermaltrace.dev/about/cellular-ingest)
+- Product: [Adding devices](https://probeharbor.dev/about/adding-devices) · [ingest & webhooks](https://probeharbor.dev/about/ingest-and-webhooks) · [Pico W](https://probeharbor.dev/about/pico-w-ingest) · [STM32 Zephyr](https://probeharbor.dev/about/stm32-zephyr-ingest) · [CH32V RISC-V](https://probeharbor.dev/about/ch32v-riscv-ingest) · [AVR assembly](https://probeharbor.dev/about/avr-asm-ingest) · [Teensy 4.1](https://probeharbor.dev/about/teensy41-ingest) · [PIC18 Ethernet](https://probeharbor.dev/about/pic18-ethernet-ingest) · [Cellular](https://probeharbor.dev/about/cellular-ingest)

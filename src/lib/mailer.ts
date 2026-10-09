@@ -62,7 +62,7 @@ export async function sendEmail(
 
   const msg = createMimeMessage();
   msg.setSender({
-    name: options?.fromName ?? "ThermalTrace",
+    name: options?.fromName ?? "ProbeHarbor",
     addr: from,
   });
   msg.setRecipient(to);

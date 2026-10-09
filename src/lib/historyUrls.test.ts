@@ -33,14 +33,14 @@ describe("historyUrls", () => {
 
   it("builds absolute and path-only History URLs", () => {
     expect(
-      buildHistoryChartUrl("https://thermaltrace.dev/", {
+      buildHistoryChartUrl("https://probeharbor.dev/", {
         from: "2026-09-01",
         to: "2026-09-09",
         tab: "exports",
         highlightAlertId: 42,
       }),
     ).toBe(
-      "https://thermaltrace.dev/dashboard/history?from=2026-09-01&to=2026-09-09&tab=exports&alert=42",
+      "https://probeharbor.dev/dashboard/history?from=2026-09-01&to=2026-09-09&tab=exports&alert=42",
     );
     expect(
       buildHistoryChartUrl(null, { from: "2026-09-01", to: "2026-09-09" }),

@@ -1,5 +1,5 @@
 ---
-description: "ThermalTrace HTTP API reference: device-key ingest, Bearer API keys, share-link JSON, Prometheus metrics, and the OpenAPI contract."
+description: "ProbeHarbor HTTP API reference: device-key ingest, Bearer API keys, share-link JSON, Prometheus metrics, and the OpenAPI contract."
 ---
 
 # HTTP API
@@ -7,8 +7,8 @@ description: "ThermalTrace HTTP API reference: device-key ingest, Bearer API key
 Machine-readable contract:
 
 - **This docs site:** [openapi.yaml](/openapi.yaml)
-- **Production:** [thermaltrace.dev/openapi.yaml](https://thermaltrace.dev/openapi.yaml)
-- **In-app page:** [thermaltrace.dev/docs/api](https://thermaltrace.dev/docs/api)
+- **Production:** [probeharbor.dev/openapi.yaml](https://probeharbor.dev/openapi.yaml)
+- **In-app page:** [probeharbor.dev/docs/api](https://probeharbor.dev/docs/api)
 
 ## Authentication
 
@@ -40,7 +40,7 @@ Machine-readable contract:
 
 ## Claim puck
 
-Physical RP2040-Zero presence key. Product page: [thermaltrace.dev/claim-puck](https://thermaltrace.dev/claim-puck). Firmware: [thermaltrace-claim-puck](https://github.com/doodersrage/thermaltrace-claim-puck).
+Physical RP2040-Zero presence key. Product page: [probeharbor.dev/claim-puck](https://probeharbor.dev/claim-puck). Firmware: [probeharbor-claim-puck](https://github.com/doodersrage/thermaltrace-claim-puck).
 
 Auth matches Bay Buddy: `Authorization: Bearer <access>` + `X-SB-Refresh-Token: <refresh>`.
 
@@ -53,14 +53,14 @@ Flow: `register` → `claim/start` → device `CHALLENGE` + button → `claim/fi
 3. Call:
 
 ```bash
-curl -sS "https://thermaltrace.dev/api/v1/metrics" \
+curl -sS "https://probeharbor.dev/api/v1/metrics" \
   -H "Authorization: Bearer YOUR_API_KEY" | head
 ```
 
 ## Example: list devices
 
 ```bash
-curl -sS "https://thermaltrace.dev/api/v1/devices" \
+curl -sS "https://probeharbor.dev/api/v1/devices" \
   -H "Authorization: Bearer YOUR_API_KEY"
 ```
 

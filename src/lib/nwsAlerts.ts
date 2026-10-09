@@ -36,7 +36,7 @@ export async function fetchNwsAlerts(
       signal: AbortSignal.timeout(8_000),
       headers: {
         Accept: "application/geo+json",
-        "User-Agent": `ThermalTrace/1.0 (${resolveConfiguredSiteUrl()})`,
+        "User-Agent": `ProbeHarbor/1.0 (${resolveConfiguredSiteUrl()})`,
       },
     });
     if (!response.ok) return null;

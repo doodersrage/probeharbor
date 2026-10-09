@@ -3,7 +3,7 @@ import { trackProductEvent } from "../lib/productAnalytics";
 import { CONTACT_HONEYPOT_FIELD, CONTACT_MAX_MESSAGE_CHARS } from "../lib/contactLimits";
 
 const ANDROID_TOPIC_MESSAGE =
-  "Please send me a note when the ThermalTrace Android app is live on Google Play.";
+  "Please send me a note when the ProbeHarbor Android app is live on Google Play.";
 
 const SUCCESS_MESSAGE =
   "Thanks — we got your message. We usually reply within 1–2 business days.";

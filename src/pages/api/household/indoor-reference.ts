@@ -31,12 +31,12 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
 
   const result = await updateIndoorReferenceSensor(householdId, sensorId);
   if (result.error) {
-    const url = new URL(redirectTo, "https://thermaltrace.dev");
+    const url = new URL(redirectTo, "https://probeharbor.dev");
     url.searchParams.set("indoor_ref_error", "save_failed");
     return redirect(`${url.pathname}${url.search}${url.hash}`);
   }
 
-  const url = new URL(redirectTo, "https://thermaltrace.dev");
+  const url = new URL(redirectTo, "https://probeharbor.dev");
   url.searchParams.set("indoor_ref_saved", "1");
   return redirect(`${url.pathname}${url.search}${url.hash}`);
 };

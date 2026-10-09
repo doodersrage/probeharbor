@@ -24,13 +24,13 @@ import {
 } from "./firmwareSketches";
 
 describe("firmwareSketches", () => {
-  const url = "https://thermaltrace.dev/api/ingest/abc123key";
+  const url = "https://probeharbor.dev/api/ingest/abc123key";
 
   it("parses ingest URL host and path", () => {
     expect(parseIngestUrlParts(url)).toEqual({
-      host: "thermaltrace.dev",
+      host: "probeharbor.dev",
       path: "/api/ingest/abc123key",
-      origin: "https://thermaltrace.dev",
+      origin: "https://probeharbor.dev",
     });
   });
 
@@ -39,7 +39,7 @@ describe("firmwareSketches", () => {
       { key: "temp1", kind: "temperature" },
     ]);
     expect(snippet).toContain("POST /api/ingest/abc123key HTTP/1.1");
-    expect(snippet).toContain("Host: thermaltrace.dev");
+    expect(snippet).toContain("Host: probeharbor.dev");
     expect(snippet).not.toContain("YOUR_KEY");
   });
 
@@ -146,7 +146,7 @@ describe("firmwareSketches", () => {
     expect(c).toContain('#define INGEST_PATH "/api/ingest/abc123key"');
     expect(c).not.toContain("YOUR_DEVICE_KEY");
     expect(c).toContain("PIC18F67J60");
-    expect(c).toContain("ThermalTraceAppTask");
+    expect(c).toContain("ProbeHarborAppTask");
   });
 
   it("builds PIC18 Ethernet defines with the real ingest path", () => {
@@ -159,7 +159,7 @@ describe("firmwareSketches", () => {
     const ino = buildPersonalizedDs18b20ParticleIno(url);
     expect(ino).toContain(`#define INGEST_URL "${url}"`);
     expect(ino).not.toContain("YOUR_DEVICE_KEY");
-    expect(ino).toContain("thermaltrace_ingest");
+    expect(ino).toContain("probeharbor_ingest");
     const webhook = buildPersonalizedParticleWebhookJson(url);
     expect(webhook).toContain(`"url": "${url}"`);
     expect(webhook).not.toContain("YOUR_DEVICE_KEY");

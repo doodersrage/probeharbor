@@ -1,8 +1,8 @@
-# ThermalTrace push ingest — ESPHome snippet
+# ProbeHarbor push ingest — ESPHome snippet
 # Add to your device YAML after creating a push device (Dashboard → Devices).
 #
 # secrets.yaml:
-#   thermaltrace_ingest_url: https://thermaltrace.dev/api/ingest/YOUR_DEVICE_KEY
+#   probeharbor_ingest_url: https://probeharbor.dev/api/ingest/YOUR_DEVICE_KEY
 #
 # Example sensor IDs — rename to match your entities:
 #   id(garage_temp_c)   — Celsius temperature
@@ -18,7 +18,7 @@ interval:
   - interval: 60s
     then:
       - http_request.post:
-          url: !secret thermaltrace_ingest_url
+          url: !secret probeharbor_ingest_url
           request_headers:
             Content-Type: application/json
           body: !lambda |-
@@ -35,7 +35,7 @@ interval:
 # Door contact (separate POST on state change — add a binary_sensor platform with on_state):
 # on_state:
 #   - http_request.post:
-#       url: !secret thermaltrace_ingest_url
+#       url: !secret probeharbor_ingest_url
 #       request_headers:
 #         Content-Type: application/json
 #       body: !lambda |-

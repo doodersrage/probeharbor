@@ -1,11 +1,11 @@
 /**
- * DS18B20 → ThermalTrace push ingest (Zephyr C / STM32).
+ * DS18B20 → ProbeHarbor push ingest (Zephyr C / STM32).
  *
  * Primary board: ST Nucleo-F767ZI (onboard Ethernet MAC + PHY).
  * Not Arduino IDE, not Python: west + Zephyr SDK, ST-LINK flash.
  *
  * The W5100 Uno path cannot TLS. This sample is the same topology with a
- * Cortex-M7: HTTP POST to a LAN HTTPS relay, then thermaltrace.dev.
+ * Cortex-M7: HTTP POST to a LAN HTTPS relay, then probeharbor.dev.
  *
  * 1. Create a push device. Download this file from Devices (path pre-filled)
  *    or set INGEST_PATH below.

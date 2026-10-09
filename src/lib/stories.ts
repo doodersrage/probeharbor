@@ -1,6 +1,6 @@
 /**
  * Illustrative scenarios, not customer accounts: each one walks through how
- * ThermalTrace behaves in a common failure (heater trip, stuck vent, wet pan)
+ * ProbeHarbor behaves in a common failure (heater trip, stuck vent, wet pan)
  * using real features and plan limits. Keep them labeled as scenarios and never
  * attribute quotes, names, or results to real people.
  */
@@ -38,12 +38,12 @@ export const stories: Story[] = [
     dateModified: "2026-09-28",
     ogImage: "/og-story-freeze.jpg",
     setup: [
-      "ESP32 + DHT22 pushing every 5 minutes to ThermalTrace ingest",
+      "ESP32 + DHT22 pushing every 5 minutes to ProbeHarbor ingest",
       "Freeze threshold at 34°F with SMS (Pro) and Telegram routing",
       "Weekly digest for the household; family live link for a neighbor who watches the house",
     ],
     timeline: [
-      { time: "2:14 a.m.", detail: "The garage crosses 34°F; ThermalTrace texts both owners and posts to a Telegram family channel." },
+      { time: "2:14 a.m.", detail: "The garage crosses 34°F; ProbeHarbor texts both owners and posts to a Telegram family channel." },
       { time: "2:22 a.m.", detail: "One owner power-cycles the heater through a smart plug." },
       { time: "3:05 a.m.", detail: "The chart shows the temperature recovering, well before the pipes reach 32°F." },
     ],
@@ -58,7 +58,7 @@ export const stories: Story[] = [
       {
         question: "What hardware does this take?",
         answer:
-          "An ESP32 with a DHT22 or waterproof DS18B20 pushing every few minutes to ThermalTrace ingest, and a freeze threshold around 34°F.",
+          "An ESP32 with a DHT22 or waterproof DS18B20 pushing every few minutes to ProbeHarbor ingest, and a freeze threshold around 34°F.",
       },
     ],
   },
@@ -105,7 +105,7 @@ export const stories: Story[] = [
     headline: "Server closet overheating scenario",
     title: "A closet fan dies before the weekend",
     description:
-      "Scenario: a homelab closet fan fails while you're away. A ThermalTrace heat rule and a Home Assistant webhook power down gear before it overheats.",
+      "Scenario: a homelab closet fan fails while you're away. A ProbeHarbor heat rule and a Home Assistant webhook power down gear before it overheats.",
     setting: "Homelab closet next to a garage",
     datePublished: "2026-01-18",
     dateModified: "2026-09-28",
@@ -125,14 +125,14 @@ export const stories: Story[] = [
       "The same probes and ingest path cover both failure modes: freeze on the garage side, heat in the closet.",
     faqs: [
       {
-        question: "Is ThermalTrace only for cold?",
+        question: "Is ProbeHarbor only for cold?",
         answer:
           "No. Freeze alerts are built in, and heat uses a rule (Temperature above, default 95°F) that you add in one click under Alerts → Rules.",
       },
       {
         question: "How does Home Assistant fit?",
         answer:
-          "Pro outbound webhooks POST alert JSON to Home Assistant, where an automation can switch a smart plug. The official HACS integration also exposes readings as sensors and adds snooze services; see thermaltrace.dev/integrations/home-assistant.",
+          "Pro outbound webhooks POST alert JSON to Home Assistant, where an automation can switch a smart plug. The official HACS integration also exposes readings as sensors and adds snooze services; see probeharbor.dev/integrations/home-assistant.",
       },
     ],
   },
@@ -142,7 +142,7 @@ export const stories: Story[] = [
     headline: "Attached garage cold corner scenario",
     title: "The same corner dips below 34°F every clear night",
     description:
-      "Scenario: repeat freeze alerts in an attached garage. How ThermalTrace history and CSV export point to a drafty door seal before supply lines ice.",
+      "Scenario: repeat freeze alerts in an attached garage. How ProbeHarbor history and CSV export point to a drafty door seal before supply lines ice.",
     setting: "Attached garage with a water heater",
     datePublished: "2026-02-04",
     dateModified: "2026-09-28",
@@ -179,7 +179,7 @@ export const stories: Story[] = [
     headline: "Crawlspace vent scenario",
     title: "A crawlspace vent sticks open overnight",
     description:
-      "Scenario: a foundation vent sticks open on a cold night. How a waterproof DS18B20 on the supply line and ThermalTrace freeze alerts give you time to close it.",
+      "Scenario: a foundation vent sticks open on a cold night. How a waterproof DS18B20 on the supply line and ProbeHarbor freeze alerts give you time to close it.",
     setting: "Crawlspace under a house, cold climate",
     datePublished: "2026-02-20",
     dateModified: "2026-09-28",

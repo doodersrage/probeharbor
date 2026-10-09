@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Run authenticated Playwright tests with credentials from .env.
- * Usage: PLAYWRIGHT_BASE_URL=https://thermaltrace.dev pnpm test:e2e:auth
+ * Usage: PLAYWRIGHT_BASE_URL=https://probeharbor.dev pnpm test:e2e:auth
  */
 import { spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";

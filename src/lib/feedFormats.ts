@@ -316,7 +316,7 @@ export function parseHomeAssistantPayload(payload: unknown): StandardFeedParseRe
   };
 }
 
-/** SenML or Home Assistant JSON when native ThermalTrace shapes are absent. */
+/** SenML or Home Assistant JSON when native ProbeHarbor shapes are absent. */
 export function parseStandardFeedPayload(payload: unknown): StandardFeedParseResult {
   if (isSenMLPayload(payload)) {
     const senml = parseSenMLPayload(payload);
@@ -333,7 +333,7 @@ export function buildSenMLPack(
   probes: Record<string, TempReading>,
   options: { baseName?: string; includeHumidity?: boolean } = {},
 ): SenMLRecord[] {
-  const baseName = options.baseName ?? "thermaltrace/example/";
+  const baseName = options.baseName ?? "probeharbor/example/";
   const includeHumidity = options.includeHumidity ?? true;
   const records: SenMLRecord[] = [];
   let baseSet = false;

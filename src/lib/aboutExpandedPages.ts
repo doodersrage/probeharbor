@@ -70,14 +70,14 @@ export const expandedAboutPageMeta: ExpandedAboutPageMeta[] = [
     slug: "seasonal-garage-patterns",
     parentSlug: "temperature-changes",
     title: "Seasonal garage patterns",
-    description: "Read multi-month ThermalTrace history for winter floors, summer peaks, and shoulder-season swings so one cold night does not skew decisions.",
+    description: "Read multi-month ProbeHarbor history for winter floors, summer peaks, and shoulder-season swings so one cold night does not skew decisions.",
     summary: "Long-horizon context so single-day spikes do not drive bad decisions.",
   },
   {
     slug: "history-dashboard-browsing",
     parentSlug: "historical-data",
     title: "History dashboard browsing",
-    description: "Navigate paginated ThermalTrace probe history, read feed and probe columns, and spot gaps before you trust a freeze-season CSV export.",
+    description: "Navigate paginated ProbeHarbor probe history, read feed and probe columns, and spot gaps before you trust a freeze-season CSV export.",
     summary: "Turn stored snapshots into a readable timeline inside the signed-in dashboard.",
   },
   {
@@ -189,14 +189,14 @@ export const expandedAboutPageMeta: ExpandedAboutPageMeta[] = [
     slug: "fastapi-relay-setup",
     parentSlug: "python-feeds",
     title: "FastAPI relay setup",
-    description: "Install and run the Python FastAPI relay that polls upstream Arduino JSON and exposes a stable HTTPS feed for ThermalTrace to pull.",
+    description: "Install and run the Python FastAPI relay that polls upstream Arduino JSON and exposes a stable HTTPS feed for ProbeHarbor to pull.",
     summary: "Install, configure upstream URL, and verify cached responses with curl.",
   },
   {
     slug: "redis-cache-for-feeds",
     parentSlug: "python-feeds",
     title: "Redis cache for feeds",
-    description: "Cache Arduino probe JSON in Redis so every ThermalTrace page view does not hammer your home uplink. TTL, stale-while-revalidate, recovery.",
+    description: "Cache Arduino probe JSON in Redis so every ProbeHarbor page view does not hammer your home uplink. TTL, stale-while-revalidate, recovery.",
     summary: "TTL tuning, stale-while-revalidate behavior, and restart recovery.",
   },
   {
@@ -210,7 +210,7 @@ export const expandedAboutPageMeta: ExpandedAboutPageMeta[] = [
     slug: "astro-server-side-rendering",
     parentSlug: "astro-applications",
     title: "Astro server-side rendering",
-    description: "How Astro server-side rendering delivers fast first paint on ThermalTrace home, about, and dashboard pages versus static prerender.",
+    description: "How Astro server-side rendering delivers fast first paint on ProbeHarbor home, about, and dashboard pages versus static prerender.",
     summary: "SSR pages versus static prerender in this Cloudflare deployment.",
   },
   {
@@ -224,14 +224,14 @@ export const expandedAboutPageMeta: ExpandedAboutPageMeta[] = [
     slug: "cloudflare-workers-deployment",
     parentSlug: "astro-applications",
     title: "Cloudflare Workers deployment",
-    description: "Build and deploy ThermalTrace to Cloudflare Workers with the Astro adapter, wrangler config, and edge hosting for pages plus APIs.",
+    description: "Build and deploy ProbeHarbor to Cloudflare Workers with the Astro adapter, wrangler config, and edge hosting for pages plus APIs.",
     summary: "Edge hosting for pages, API routes, and assets in one pipeline.",
   },
   {
     slug: "nextjs-monitoring-dashboards",
     parentSlug: "nextjs-node-applications",
     title: "Next.js for monitoring dashboards",
-    description: "When Next.js App Router and React Server Components fit environmental monitoring UIs versus ThermalTrace’s Astro edge stack.",
+    description: "When Next.js App Router and React Server Components fit environmental monitoring UIs versus ProbeHarbor’s Astro edge stack.",
     summary: "Strengths of Next for auth-heavy dashboards versus this Astro stack.",
   },
   {
@@ -259,14 +259,14 @@ export const expandedAboutPageMeta: ExpandedAboutPageMeta[] = [
     slug: "supabase-history-inserts",
     parentSlug: "data-flow",
     title: "Supabase history inserts",
-    description: "Understand when signed-in ThermalTrace loads persist probe rows with timestamps, labels, and humidity, and what guests never store.",
+    description: "Understand when signed-in ProbeHarbor loads persist probe rows with timestamps, labels, and humidity, and what guests never store.",
     summary: "What triggers a save, what is stored per probe, and guest behavior.",
   },
   {
     slug: "debugging-stale-readings",
     parentSlug: "data-flow",
     title: "Debugging stale readings",
-    description: "Trace stale or missing probe readings from firmware through relay cache to ThermalTrace dashboard mapping, with a curl and auth checklist.",
+    description: "Trace stale or missing probe readings from firmware through relay cache to ProbeHarbor dashboard mapping, with a curl and auth checklist.",
     summary: "Checklist for curl, cache, auth, and key typos in order.",
   },
   {
@@ -295,7 +295,7 @@ export const expandedAboutPageMeta: ExpandedAboutPageMeta[] = [
     slug: "admin-dashboard-features",
     parentSlug: "accounts-and-dashboard",
     title: "Admin dashboard features",
-    description: "Use admin-only tools for user management, contact triage, and CSV export without a paid subscription when you operate the ThermalTrace site.",
+    description: "Use admin-only tools for user management, contact triage, and CSV export without a paid subscription when you operate the ProbeHarbor site.",
     summary: "Tools gated by the admin group for site operators.",
   },
   {
@@ -344,7 +344,7 @@ export const expandedAboutPageMeta: ExpandedAboutPageMeta[] = [
     slug: "charting-with-spreadsheets",
     parentSlug: "historical-data",
     title: "Charting history with spreadsheets",
-    description: "Build pivot charts, overnight rolling minimums, and dual-axis humidity plots from ThermalTrace CSV exports for freeze audits.",
+    description: "Build pivot charts, overnight rolling minimums, and dual-axis humidity plots from ProbeHarbor CSV exports for freeze audits.",
     summary: "Turn raw timestamp rows into freeze audits and seasonal comparisons outside the website UI.",
   },
   {
@@ -513,7 +513,7 @@ export const expandedAboutPageMeta: ExpandedAboutPageMeta[] = [
     parentSlug: "ingest-and-webhooks",
     title: "Kit QR onboarding",
     description:
-      "Sticker a QR code on your probe enclosure encoding the ingest URL for one-scan ThermalTrace device setup without typing long keys.",
+      "Sticker a QR code on your probe enclosure encoding the ingest URL for one-scan ProbeHarbor device setup without typing long keys.",
     summary:
       "Encode the ingest URL on a label so new hardware setup is a single phone scan.",
   },
@@ -522,7 +522,7 @@ export const expandedAboutPageMeta: ExpandedAboutPageMeta[] = [
     parentSlug: "adding-devices",
     title: "ESP32 freeze kit parts list",
     description:
-      "Buy an ESP32 and waterproof DS18B20 that match ThermalTrace’s push-ingest sketches. Adafruit and Amazon product pages, not a branded drop-ship kit.",
+      "Buy an ESP32 and waterproof DS18B20 that match ProbeHarbor’s push-ingest sketches. Adafruit and Amazon product pages, not a branded drop-ship kit.",
     summary:
       "Verified ESP32 + waterproof DS18B20 BOM with stable Adafruit product links and Amazon /dp/ alternatives.",
   },
@@ -531,7 +531,7 @@ export const expandedAboutPageMeta: ExpandedAboutPageMeta[] = [
     parentSlug: "ingest-and-webhooks",
     title: "ESP32 OTA and battery reporting",
     description:
-      "Keep ESP32 probe firmware current with LAN OTA while push ingest posts battery and RSSI fields to the ThermalTrace HTTP API.",
+      "Keep ESP32 probe firmware current with LAN OTA while push ingest posts battery and RSSI fields to the ProbeHarbor HTTP API.",
     summary:
       "Keep ESP32 firmware current on your LAN while telemetry posts to the ingest API.",
   },
@@ -540,7 +540,7 @@ export const expandedAboutPageMeta: ExpandedAboutPageMeta[] = [
     parentSlug: "adding-devices",
     title: "ESP32 flashing options",
     description:
-      "Flash ThermalTrace ESP32 probes with Arduino IDE, PlatformIO, MicroPython, or Espressif’s web esptool, after downloading a pre-filled sketch from Devices.",
+      "Flash ProbeHarbor ESP32 probes with Arduino IDE, PlatformIO, MicroPython, or Espressif’s web esptool, after downloading a pre-filled sketch from Devices.",
     summary:
       "No hosted one-click binary flasher: download a personalized sketch, then flash with IDE, PlatformIO, or esptool-js.",
   },
@@ -549,7 +549,7 @@ export const expandedAboutPageMeta: ExpandedAboutPageMeta[] = [
     parentSlug: "adding-devices",
     title: "Raspberry Pi Pico W ingest",
     description:
-      "Push DS18B20 readings from a Pico W or Pico 2 W using CircuitPython, MicroPython, or the Arduino-Pico core. Same ThermalTrace HTTPS ingest as ESP32.",
+      "Push DS18B20 readings from a Pico W or Pico 2 W using CircuitPython, MicroPython, or the Arduino-Pico core. Same ProbeHarbor HTTPS ingest as ESP32.",
     summary:
       "RP2040 / RP2350 Wi‑Fi probes: CircuitPython code.py, MicroPython, or Earle Philhower Arduino, DS18B20 on GP4.",
   },
@@ -612,7 +612,7 @@ export const expandedAboutPageMeta: ExpandedAboutPageMeta[] = [
     parentSlug: "ingest-and-webhooks",
     title: "Zapier and Make.com recipes",
     description:
-      "Connect ThermalTrace outbound alert webhooks and inbound snooze actions to Zapier or Make.com for no-code freeze, leak, and vacation automations.",
+      "Connect ProbeHarbor outbound alert webhooks and inbound snooze actions to Zapier or Make.com for no-code freeze, leak, and vacation automations.",
     summary:
       "Route alerts to Zapier/Make and pause notifications from other smart-home flows.",
   },
@@ -639,7 +639,7 @@ export const expandedAboutPageMeta: ExpandedAboutPageMeta[] = [
     parentSlug: "accounts-and-dashboard",
     title: "Household sharing walkthrough",
     description:
-      "Invite family by email, set editor vs view-only roles, and share one freeze-risk dashboard without handing out a ThermalTrace password.",
+      "Invite family by email, set editor vs view-only roles, and share one freeze-risk dashboard without handing out a ProbeHarbor password.",
     summary:
       "Keep probes and alerts in one household without sharing a password.",
   },
@@ -657,7 +657,7 @@ export const expandedAboutPageMeta: ExpandedAboutPageMeta[] = [
     parentSlug: "ingest-and-webhooks",
     title: "ESPHome and Shelly recipes",
     description:
-      "Post temperature, humidity, and door contact readings from ESPHome or Shelly firmware to ThermalTrace push ingest without custom Arduino sketches.",
+      "Post temperature, humidity, and door contact readings from ESPHome or Shelly firmware to ProbeHarbor push ingest without custom Arduino sketches.",
     summary:
       "Copy-paste HTTP POST recipes for common LAN sensors: dual-run with Home Assistant MQTT.",
   },
@@ -675,9 +675,9 @@ export const expandedAboutPageMeta: ExpandedAboutPageMeta[] = [
     parentSlug: "ingest-and-webhooks",
     title: "Home Assistant notify recipes",
     description:
-      "Route ThermalTrace freeze and leak alerts into Home Assistant notify, TTS, and mobile push: outbound webhooks, HACS services, and inbound snooze.",
+      "Route ProbeHarbor freeze and leak alerts into Home Assistant notify, TTS, and mobile push: outbound webhooks, HACS services, and inbound snooze.",
     summary:
-      "Local voice and phone notify when freeze or leak risk hits: dual-run with ThermalTrace email/SMS.",
+      "Local voice and phone notify when freeze or leak risk hits: dual-run with ProbeHarbor email/SMS.",
   },
   {
     slug: "personal-weather-stations",
@@ -686,7 +686,7 @@ export const expandedAboutPageMeta: ExpandedAboutPageMeta[] = [
     description:
       "Use a backyard Ambient Weather or WeatherFlow Tempest station for outdoor context, NWS alerts, and forecast freeze risk.",
     summary:
-      "Point ThermalTrace at the station on your property: better yard-level freeze context.",
+      "Point ProbeHarbor at the station on your property: better yard-level freeze context.",
   },
   {
     slug: "freeze-thaw-flood-playbook",

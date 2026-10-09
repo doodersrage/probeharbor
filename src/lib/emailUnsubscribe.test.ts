@@ -33,7 +33,7 @@ describe("unsubscribe tokens", () => {
     const { buildUnsubscribeUrl, verifyUnsubscribeToken } = await import("./emailUnsubscribe");
 
     const url = new URL(
-      (await buildUnsubscribeUrl("https://thermaltrace.test/", "user-1", "digest")) ?? "",
+      (await buildUnsubscribeUrl("https://probeharbor.test/", "user-1", "digest")) ?? "",
     );
 
     expect(url.pathname).toBe("/api/email/unsubscribe");

@@ -273,7 +273,7 @@ export async function sendFcmToUser(
             android: {
               priority: "HIGH",
               notification: {
-                channel_id: "thermaltrace_alerts",
+                channel_id: "probeharbor_alerts",
                 click_action: "OPEN_ALERTS",
               },
             },

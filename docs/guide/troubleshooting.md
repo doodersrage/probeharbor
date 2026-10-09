@@ -1,5 +1,5 @@
 ---
-description: "Fix common ThermalTrace problems: ingest 401s, devices online with an empty dashboard, lost ingest keys, and alerts that never arrive."
+description: "Fix common ProbeHarbor problems: ingest 401s, devices online with an empty dashboard, lost ingest keys, and alerts that never arrive."
 ---
 
 # Troubleshooting
@@ -8,7 +8,7 @@ description: "Fix common ThermalTrace problems: ingest 401s, devices online with
 
 - Key typo or old key after **rotate**
 - Extra whitespace in firmware URL
-- Posting to the wrong host (`workers.dev` vs `thermaltrace.dev`) — prefer the apex
+- Posting to the wrong host (`workers.dev` vs `probeharbor.dev`) — prefer the apex
 
 ## Device online but Home is empty
 
@@ -33,7 +33,7 @@ description: "Fix common ThermalTrace problems: ingest 401s, devices online with
 
 Member/Pro (or admin) required. Free accounts see an upgrade nudge instead.
 
-## GitHub Pages 404 on `/thermaltrace/`
+## GitHub Pages 404 on `/probeharbor/`
 
 Site is published at the **project** base path:
 
@@ -47,6 +47,6 @@ Not at `https://doodersrage.github.io/` (user site).
 
 ## Still stuck
 
-- [System status](https://thermaltrace.dev/system-status)  
-- [Contact](https://thermaltrace.dev/contact)  
+- [System status](https://probeharbor.dev/system-status)  
+- [Contact](https://probeharbor.dev/contact)  
 - [Open an issue](https://github.com/doodersrage/thermaltrace/issues)

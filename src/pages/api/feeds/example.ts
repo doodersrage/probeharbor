@@ -64,7 +64,7 @@ export const GET: APIRoute = async ({ url, clientAddress, site }) => {
     headers: {
       "Content-Type": "application/json",
       "Cache-Control": "public, max-age=60, stale-while-revalidate=120",
-      "X-ThermalTrace-Feed": "weather-simulated-example",
+      "X-ProbeHarbor-Feed": "weather-simulated-example",
     },
   });
 };

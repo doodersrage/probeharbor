@@ -99,13 +99,13 @@ const esphomeHref = firmwareDownloadHref(esphomeYaml);
   </ol>
 
   <div class="flex flex-wrap gap-2 mb-4">
-    <a class="btn-primary" href={inoHref} download="thermaltrace_ds18b20_ingest.ino">
+    <a class="btn-primary" href={inoHref} download="probeharbor_ds18b20_ingest.ino">
       Download Arduino .ino
     </a>
-    <a class="btn-secondary" href={pyHref} download="thermaltrace_ds18b20_main.py">
+    <a class="btn-secondary" href={pyHref} download="probeharbor_ds18b20_main.py">
       Download MicroPython .py
     </a>
-    <a class="btn-secondary" href={esphomeHref} download="thermaltrace_esphome_ingest.yaml">
+    <a class="btn-secondary" href={esphomeHref} download="probeharbor_esphome_ingest.yaml">
       Download ESPHome snippet
     </a>
     <a
@@ -228,7 +228,7 @@ const esphomeHref = firmwareDownloadHref(esphomeYaml);
     <li>Edit <code>WIFI_SSID</code> / <code>WIFI_PASS</code>, save as <code>code.py</code>, watch Serial for <code>POST 200</code>.</li>
   </ol>
   <div class="flex flex-wrap gap-2 mb-4">
-    <a class="btn-secondary" href={circuitPyHref} download="thermaltrace_ds18b20_code.py">
+    <a class="btn-secondary" href={circuitPyHref} download="probeharbor_ds18b20_code.py">
       Download CircuitPython code.py
     </a>
     <a class="btn-ghost" href="/about/pico-w-ingest">Pico W guide</a>
@@ -252,7 +252,7 @@ const esphomeHref = firmwareDownloadHref(esphomeYaml);
     </li>
   </ol>
   <div class="flex flex-wrap gap-2 mb-4">
-    <a class="btn-secondary" href={zephyrHref} download="thermaltrace_ds18b20_zephyr_main.c">
+    <a class="btn-secondary" href={zephyrHref} download="probeharbor_ds18b20_zephyr_main.c">
       Download Zephyr main.c
     </a>
     <a class="btn-ghost" href="/about/stm32-zephyr-ingest">STM32 Zephyr guide</a>
@@ -276,7 +276,7 @@ const esphomeHref = firmwareDownloadHref(esphomeYaml);
     </li>
   </ol>
   <div class="flex flex-wrap gap-2 mb-4">
-    <a class="btn-secondary" href={ch32vHref} download="thermaltrace_ds18b20_ch32v_main.c">
+    <a class="btn-secondary" href={ch32vHref} download="probeharbor_ds18b20_ch32v_main.c">
       Download CH32V main.c
     </a>
     <a class="btn-ghost" href="/about/ch32v-riscv-ingest">CH32V RISC-V guide</a>
@@ -299,7 +299,7 @@ const esphomeHref = firmwareDownloadHref(esphomeYaml);
     </li>
   </ol>
   <div class="flex flex-wrap gap-2 mb-4">
-    <a class="btn-secondary" href={avrHref} download="thermaltrace_ds18b20_avr.S">
+    <a class="btn-secondary" href={avrHref} download="probeharbor_ds18b20_avr.S">
       Download AVR main.S
     </a>
     <a class="btn-ghost" href="/about/avr-asm-ingest">AVR assembly guide</a>
@@ -321,7 +321,7 @@ const esphomeHref = firmwareDownloadHref(esphomeYaml);
     </li>
   </ol>
   <div class="flex flex-wrap gap-2 mb-4">
-    <a class="btn-secondary" href={teensyHref} download="thermaltrace_ds18b20_teensy41.ino">
+    <a class="btn-secondary" href={teensyHref} download="probeharbor_ds18b20_teensy41.ino">
       Download Teensy 4.1 .ino
     </a>
     <a class="btn-ghost" href="/about/teensy41-ingest">Teensy 4.1 guide</a>
@@ -339,12 +339,12 @@ const esphomeHref = firmwareDownloadHref(esphomeYaml);
       machine.
     </li>
     <li>
-      Add the download below, call <code>ThermalTraceAppInit</code> / <code>ThermalTraceAppTask</code> from the demo
+      Add the download below, call <code>ProbeHarborAppInit</code> / <code>ProbeHarborAppTask</code> from the demo
       loop, build, PICkit flash.
     </li>
   </ol>
   <div class="flex flex-wrap gap-2 mb-4">
-    <a class="btn-secondary" href={pic18Href} download="thermaltrace_ds18b20_pic18_main.c">
+    <a class="btn-secondary" href={pic18Href} download="probeharbor_ds18b20_pic18_main.c">
       Download PIC18 main.c
     </a>
     <a class="btn-ghost" href="/about/pic18-ethernet-ingest">PIC18 Ethernet guide</a>
@@ -361,10 +361,10 @@ const esphomeHref = firmwareDownloadHref(esphomeYaml);
     <li>Serial <strong>115200</strong>: <code>publish ok</code>. Confirm HTTP 200 in webhook history.</li>
   </ol>
   <div class="flex flex-wrap gap-2 mb-4">
-    <a class="btn-secondary" href={particleHref} download="thermaltrace_ds18b20_boron.ino">
+    <a class="btn-secondary" href={particleHref} download="probeharbor_ds18b20_boron.ino">
       Download Particle Boron .ino
     </a>
-    <a class="btn-secondary" href={particleWebhookHref} download="thermaltrace_particle_webhook.json">
+    <a class="btn-secondary" href={particleWebhookHref} download="probeharbor_particle_webhook.json">
       Download webhook JSON
     </a>
     <a class="btn-ghost" href="/about/cellular-ingest">Cellular guide</a>

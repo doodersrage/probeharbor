@@ -1,8 +1,8 @@
 /** Product brand: keep infra IDs (worker, API paths, DB) separate. */
-export const BRAND_NAME = "ThermalTrace";
-export const BRAND_SHORT = "ThermalTrace";
+export const BRAND_NAME = "ProbeHarbor";
+export const BRAND_SHORT = "ProbeHarbor";
 /** Common-law claim mark for first prominent display (footer / wordmark captions). Not ®. */
-export const BRAND_NAME_TM = "ThermalTrace™";
+export const BRAND_NAME_TM = "ProbeHarbor™";
 /** Short list of spaces we monitor: use in marketing copy, not internal IDs. */
 export const BRAND_SPACES =
   "garages, workshops, attics, crawlspaces, and shops";
@@ -13,4 +13,4 @@ export const BRAND_TAGLINE = `Track, log, and analyze sensors in ${BRAND_SPACES}
 export const META_DESCRIPTION_MAX_LENGTH = 160;
 /** Definition-first for SEO/AEO meta defaults. */
 export const BRAND_DESCRIPTION =
-  "ThermalTrace is open-source freeze and flood monitoring for garages, workshops, attics, crawlspaces, and shops: ESP/Arduino ingest, live curves, and alerts.";
+  "ProbeHarbor is open-source freeze and flood monitoring for garages, workshops, attics, crawlspaces, and shops: ESP/Arduino ingest, live curves, and alerts.";

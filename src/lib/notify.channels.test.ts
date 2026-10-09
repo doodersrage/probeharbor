@@ -14,7 +14,7 @@ vi.mock("./alertEvents", () => ({
   updateAlertEventChannels: vi.fn().mockResolvedValue(undefined),
 }));
 vi.mock("./alertAckTokens", () => ({ buildUserAckUrl: vi.fn().mockResolvedValue(null) }));
-vi.mock("./siteUrl", () => ({ buildSiteUrl: () => "https://thermaltrace.test" }));
+vi.mock("./siteUrl", () => ({ buildSiteUrl: () => "https://probeharbor.test" }));
 
 const fetchMock = vi.fn();
 

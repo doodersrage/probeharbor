@@ -5,7 +5,7 @@ import { escapeHtml } from "../../../lib/htmlEscape";
 export const prerender = false;
 
 function badgeSvg(label: string, status: string, color: string): string {
-  const left = "ThermalTrace";
+  const left = "ProbeHarbor";
   const right = status;
   const leftW = 86;
   const rightW = Math.max(70, Math.min(160, 10 + right.length * 7));

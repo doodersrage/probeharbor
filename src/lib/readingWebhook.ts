@@ -24,15 +24,16 @@ export async function sendReadingWebhook(
   const body = JSON.stringify(payload);
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
-    "User-Agent": "ThermalTrace/1.0",
+    "User-Agent": "ProbeHarbor/1.0",
   };
 
   const secret = settings.readingWebhookSecret?.trim();
   if (secret) {
     const signature = await hmacSha256Hex(secret, body);
     const headerValue = `sha256=${signature}`;
+    headers["X-ProbeHarbor-Signature"] = headerValue;
+    // Legacy aliases for existing HA / Zapier verifiers (pre-rename names).
     headers["X-ThermalTrace-Signature"] = headerValue;
-    // Legacy alias for existing HA / Zapier verifiers.
     headers["X-GarageTemp-Signature"] = headerValue;
   }
 

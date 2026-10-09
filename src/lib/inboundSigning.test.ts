@@ -18,16 +18,21 @@ async function hmacHex(secret: string, body: string): Promise<string> {
 }
 
 describe("pickInboundSignatureHeader", () => {
-  it("prefers ThermalTrace over legacy GarageTemp and generic X-Signature", () => {
+  it("prefers ProbeHarbor over legacy GarageTemp and generic X-Signature", () => {
     const headers = new Headers({
       "X-Signature": "generic",
       "X-GarageTemp-Signature": "legacy",
-      "X-ThermalTrace-Signature": "canonical",
+      "X-ProbeHarbor-Signature": "canonical",
     });
     expect(pickInboundSignatureHeader(headers)).toBe("canonical");
   });
 
-  it("falls back to GarageTemp then X-Signature", () => {
+  it("falls back to ThermalTrace, then GarageTemp, then X-Signature", () => {
+    expect(
+      pickInboundSignatureHeader(
+        new Headers({ "X-ThermalTrace-Signature": "renamed", "X-GarageTemp-Signature": "legacy" }),
+      ),
+    ).toBe("renamed");
     expect(
       pickInboundSignatureHeader(
         new Headers({ "X-GarageTemp-Signature": "legacy", "X-Signature": "generic" }),

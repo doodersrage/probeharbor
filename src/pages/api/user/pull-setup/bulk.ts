@@ -12,7 +12,7 @@ import {
 } from "../../../../lib/userTempConfig";
 
 function withPullQuery(redirectTo: string, params: Record<string, string>): string {
-  const target = new URL(redirectTo, "https://thermaltrace.local");
+  const target = new URL(redirectTo, "https://probeharbor.local");
   return withQuery(redirectTo, target.searchParams.has("tab") ? params : { tab: "pull", ...params });
 }
 

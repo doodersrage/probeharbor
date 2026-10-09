@@ -4,19 +4,19 @@ import DashboardCard from "./dashboard/DashboardCard.astro";
 <DashboardCard>
   <h2 class="card-title">Node-RED MQTT bridge</h2>
   <p class="card-subtitle mb-4">
-    Import a flow to mirror Mosquitto readings (and optional door state) to ThermalTrace over HTTPS.
+    Import a flow to mirror Mosquitto readings (and optional door state) to ProbeHarbor over HTTPS.
   </p>
   <ol class="text-sm space-y-2 mb-4">
     <li>Create a push device under <a class="text-link" href="/dashboard/devices">Devices</a> and copy the ingest key.</li>
     <li>In Node-RED: Menu → Import → paste URL or upload JSON.</li>
-    <li>Set env <code class="text-xs">THERMALTRACE_INGEST_KEY</code> (or edit the function node).</li>
+    <li>Set env <code class="text-xs">PROBEHARBOR_INGEST_KEY</code> (or edit the function node).</li>
     <li>Point the MQTT nodes at your broker; deploy and watch for HTTP 200 on the debug node.</li>
   </ol>
   <div class="flex flex-wrap gap-3 mb-4">
-    <a class="btn-secondary" href="/nodered/mqtt-to-thermaltrace.json" download>
+    <a class="btn-secondary" href="/nodered/mqtt-to-probeharbor.json" download>
       Download flow JSON
     </a>
-    <a class="btn-ghost" href="https://thermaltrace.dev/developers/integrations/mqtt-bridge">
+    <a class="btn-ghost" href="https://probeharbor.dev/developers/integrations/mqtt-bridge">
       Developer docs
     </a>
     <a class="btn-ghost" href="/integrations/node-red">

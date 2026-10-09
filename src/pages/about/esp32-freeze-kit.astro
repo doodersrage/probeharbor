@@ -25,7 +25,7 @@ const AMAZON_DS18B20 = BOM.amazonDs18b20;
 const AMAZON_RESISTOR = BOM.amazonResistor4k7;
 
 const freezeKitHowTo = getHowToSchema({
-  name: "Build an ESP32 freeze probe for ThermalTrace",
+  name: "Build an ESP32 freeze probe for ProbeHarbor",
   description: page.description,
   pageUrl,
   totalTime: "PT45M",
@@ -41,7 +41,7 @@ const freezeKitHowTo = getHowToSchema({
     },
     {
       name: "Create a push device",
-      text: "Create a free ThermalTrace account and a push device on Dashboard → Devices, then download the pre-filled Arduino or MicroPython sketch.",
+      text: "Create a free ProbeHarbor account and a push device on Dashboard → Devices, then download the pre-filled Arduino or MicroPython sketch.",
       url: `${siteUrl}/dashboard/devices`,
     },
     {
@@ -70,7 +70,7 @@ const freezeKitHowTo = getHowToSchema({
   extraSchemas={freezeKitHowTo ? [freezeKitHowTo] : []}
 >
   <p>
-    ThermalTrace does not sell hardware. The sketches under
+    ProbeHarbor does not sell hardware. The sketches under
     <a
       class="text-link"
       href="https://github.com/doodersrage/thermaltrace/tree/main/sketches/arduino/ds18b20_ingest"
@@ -192,7 +192,7 @@ const freezeKitHowTo = getHowToSchema({
   <h2>What not to buy for pipe freeze</h2>
   <ul>
     <li><strong>DHT11-only starter kits</strong>: weak below freezing; short leads; not waterproof.</li>
-    <li><strong>Bluetooth / Zigbee room pods</strong>: they do not speak ThermalTrace push ingest.</li>
+    <li><strong>Bluetooth / Zigbee room pods</strong>: they do not speak ProbeHarbor push ingest.</li>
     <li><strong>Uno + Ethernet alone</strong>: needs a LAN HTTPS relay; fine for advanced builds, not first kit.</li>
   </ul>
   <p>

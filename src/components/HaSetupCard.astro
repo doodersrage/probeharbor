@@ -21,7 +21,7 @@ const { siteUrl = Astro.url.origin, apiKey = null, inboundWebhookUrl = null } =
 const metricsUrl = `${siteUrl}/api/v1/metrics`;
 const restCommandYaml = inboundWebhookUrl
   ? `rest_command:
-  thermaltrace_status:
+  probeharbor_status:
     url: "${inboundWebhookUrl}"
     method: POST
     headers:
@@ -30,7 +30,7 @@ const restCommandYaml = inboundWebhookUrl
   : null;
 
 const prometheusYaml = `scrape_configs:
-  - job_name: thermaltrace
+  - job_name: probeharbor
     metrics_path: /api/v1/metrics
     scheme: ${siteUrl.startsWith("https") ? "https" : "http"}
     static_configs:

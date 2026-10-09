@@ -7,11 +7,11 @@ describe("resolveWebAuthnRp", () => {
   });
 
   it("prefers SITE_URL over the request host for rpId", () => {
-    vi.stubEnv("SITE_URL", "https://thermaltrace.dev");
+    vi.stubEnv("SITE_URL", "https://probeharbor.dev");
     const request = new Request("http://localhost:4321/signin/mfa");
     expect(resolveWebAuthnRp(request)).toEqual({
-      rpId: "thermaltrace.dev",
-      rpOrigins: ["https://thermaltrace.dev"],
+      rpId: "probeharbor.dev",
+      rpOrigins: ["https://probeharbor.dev"],
     });
   });
 

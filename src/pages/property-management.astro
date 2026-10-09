@@ -57,7 +57,7 @@ const propertyFaqs: AboutFaqItem[] = [
       "Remove them from the household under Dashboard → Household. Their membership is deleted immediately: they lose access to that property's devices, alerts, and history, and they never had billing access to begin with. Pending invites can be revoked the same way before they're accepted.",
   },
   {
-    question: "Do I need a separate ThermalTrace account per property?",
+    question: "Do I need a separate ProbeHarbor account per property?",
     answer:
       "No -- one account owns all your properties as separate households, switches between them from the dashboard, and rolls them all up into a single portfolio risk view.",
   },
@@ -91,7 +91,7 @@ const schema = [
     <PageHeader
       kicker="For portfolios"
       title="One dashboard for every property you're responsible for"
-      lede="A vacant rental and a ten-unit portfolio don't share the same monitoring problem. ThermalTrace rolls every property you own into one freeze-risk view, keeps insurance-ready history when something fails, lets on-site managers handle devices without seeing billing, and prices Portfolio for that scale."
+      lede="A vacant rental and a ten-unit portfolio don't share the same monitoring problem. ProbeHarbor rolls every property you own into one freeze-risk view, keeps insurance-ready history when something fails, lets on-site managers handle devices without seeing billing, and prices Portfolio for that scale."
     >
       <a slot="actions" class="btn-primary" href={user ? "/dashboard/portfolio" : "/register?next=/dashboard/devices"}>
         {user ? "Open portfolio dashboard" : "Start free, add your first property"}
@@ -131,7 +131,7 @@ const schema = [
         <li><strong>Portfolio-wide alert digest</strong>: a rollup notification when any property in your portfolio needs attention, instead of watching each one separately.</li>
         <li><strong>Property-manager logins</strong>: invite on-site staff or contractors to manage devices and alert settings for one property, with no access to your billing or the rest of your portfolio.</li>
         <li><strong>Claims / insurance evidence pack</strong>: verifiable monitoring history for adjusters, carriers, and liability conversations after freeze or leak damage.</li>
-        <li><strong>Per-property everything else</strong>, each property gets its own device limit, alert thresholds, and history, exactly like a standalone ThermalTrace account would.</li>
+        <li><strong>Per-property everything else</strong>, each property gets its own device limit, alert thresholds, and history, exactly like a standalone ProbeHarbor account would.</li>
       </ul>
     </section>
 

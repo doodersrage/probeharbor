@@ -11,7 +11,7 @@ vi.mock("../../../lib/emailUnsubscribe", () => ({
 }));
 
 function ctx(query: string): APIContext {
-  return { url: new URL(`https://thermaltrace.test/api/email/unsubscribe${query}`) } as APIContext;
+  return { url: new URL(`https://probeharbor.test/api/email/unsubscribe${query}`) } as APIContext;
 }
 
 beforeEach(() => {

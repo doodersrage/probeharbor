@@ -54,7 +54,7 @@ describe("GET /api/v1/metrics", () => {
 
   it("returns the Prometheus text body for the resolved household on success", async () => {
     mockResolveApiKey.mockResolvedValue({ householdId: "house-1", keyId: "key-1" });
-    mockBuildPrometheusText.mockResolvedValue("thermaltrace_temp_f 42\n");
+    mockBuildPrometheusText.mockResolvedValue("probeharbor_temp_f 42\n");
     const { GET } = await import("./metrics");
 
     const response = await GET(makeContext("Bearer gtm_good-key"));
@@ -62,7 +62,7 @@ describe("GET /api/v1/metrics", () => {
     expect(response.status).toBe(200);
     expect(response.headers.get("Content-Type")).toBe("text/plain; version=0.0.4; charset=utf-8");
     expect(response.headers.get("Cache-Control")).toBe("no-store");
-    expect(await response.text()).toBe("thermaltrace_temp_f 42\n");
+    expect(await response.text()).toBe("probeharbor_temp_f 42\n");
     expect(mockBuildPrometheusText).toHaveBeenCalledWith("house-1");
   });
 

@@ -1,18 +1,18 @@
 import { defineConfig } from "vitepress";
 
-const site = "https://thermaltrace.dev";
-// GitHub Pages serves this site under /thermaltrace/. The copy published on the
+const site = "https://probeharbor.dev";
+// GitHub Pages serves this site under /probeharbor/. The copy published on the
 // main domain is built with DOCS_BASE=/developers/ (see scripts/build-docs-site.mjs).
 const base = process.env.DOCS_BASE || "/thermaltrace/";
 const onMainDomain = base === "/developers/";
 // Both builds name the main-domain copy as canonical, so links to either one
-// count toward thermaltrace.dev.
+// count toward probeharbor.dev.
 const docs = `${site}/developers/`;
 
 export default defineConfig({
-  title: "ThermalTrace Docs",
+  title: "ProbeHarbor Docs",
   description:
-    "Developer documentation for ThermalTrace — ingest, API, sketches, local development, and deploy.",
+    "Developer documentation for ProbeHarbor — ingest, API, sketches, local development, and deploy.",
   base,
   cleanUrls: true,
   lastUpdated: true,
@@ -39,8 +39,8 @@ export default defineConfig({
     ["meta", { property: "og:image", content: `${site}/og-dashboard.jpg` }],
   ],
   themeConfig: {
-    logo: { src: `${site}/favicon.svg`, alt: "ThermalTrace" },
-    siteTitle: "ThermalTrace",
+    logo: { src: `${site}/favicon.svg`, alt: "ProbeHarbor" },
+    siteTitle: "ProbeHarbor",
     nav: [
       { text: "Guide", link: "/guide/architecture" },
       { text: "Ingest", link: "/ingest/" },
@@ -93,7 +93,7 @@ export default defineConfig({
           ],
         },
         {
-          text: "On thermaltrace.dev",
+          text: "On probeharbor.dev",
           items: [
             { text: "Product About hub", link: `${site}/about` },
             { text: "In-app API page", link: `${site}/docs/api` },
@@ -108,8 +108,8 @@ export default defineConfig({
     ],
     footer: {
       message:
-        'App & product guides: <a href="https://thermaltrace.dev">thermaltrace.dev</a> · This site: developer reference',
-      copyright: "Copyright © ThermalTrace",
+        'App & product guides: <a href="https://probeharbor.dev">probeharbor.dev</a> · This site: developer reference',
+      copyright: "Copyright © ProbeHarbor",
     },
     search: { provider: "local" },
     editLink: {

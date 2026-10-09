@@ -59,7 +59,7 @@ export function formRedirectPath(
 
 /** Merge query params onto a relative path that may already have a query or hash. */
 export function withQuery(path: string, params: Record<string, string>): string {
-  const url = new URL(path, "https://thermaltrace.local");
+  const url = new URL(path, "https://probeharbor.local");
   for (const [key, value] of Object.entries(params)) {
     url.searchParams.set(key, value);
   }

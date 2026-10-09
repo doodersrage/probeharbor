@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Minimal ThermalTrace ingest SDK."""
+"""Minimal ProbeHarbor ingest SDK."""
 import json
 import os
 import sys
 import urllib.request
 
-base = (sys.argv[1] if len(sys.argv) > 1 else None) or os.environ.get("THERMALTRACE_URL", "https://thermaltrace.dev")
-key = (sys.argv[2] if len(sys.argv) > 2 else None) or os.environ.get("THERMALTRACE_INGEST_KEY")
+base = (sys.argv[1] if len(sys.argv) > 1 else None) or os.environ.get("PROBEHARBOR_URL", "https://probeharbor.dev")
+key = (sys.argv[2] if len(sys.argv) > 2 else None) or os.environ.get("PROBEHARBOR_INGEST_KEY")
 temp = float((sys.argv[3] if len(sys.argv) > 3 else None) or os.environ.get("TEMP", "42"))
 
 if not key:

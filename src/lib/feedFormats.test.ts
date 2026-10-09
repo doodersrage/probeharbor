@@ -24,7 +24,7 @@ describe("feedFormats SenML", () => {
 
   it("maps SenML temp and humidity to probe keys", () => {
     const { tempProbes, format } = parseSenMLPayload([
-      { bn: "thermaltrace/example/", n: "0", u: "Cel", v: 18.5 },
+      { bn: "probeharbor/example/", n: "0", u: "Cel", v: 18.5 },
       { n: "0/rh", u: "%RH", v: 42 },
       { n: "door", vb: true },
     ]);
@@ -44,7 +44,7 @@ describe("feedFormats SenML", () => {
       "0": { c: 10, f: 50, h: 40 },
       avg: { c: 10, f: 50, h: 40 },
     });
-    expect(pack[0]?.bn).toBe("thermaltrace/example/");
+    expect(pack[0]?.bn).toBe("probeharbor/example/");
     expect(pack.some((row) => row.u === "%RH")).toBe(true);
   });
 });

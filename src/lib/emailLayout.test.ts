@@ -13,14 +13,14 @@ describe("emailLayout", () => {
     const html = buildBrandedEmailHtml({
       title: `Freeze <alert>`,
       intro: `Check "north" wall & door`,
-      cta: { label: "Open", url: "https://thermaltrace.dev/dashboard" },
+      cta: { label: "Open", url: "https://probeharbor.dev/dashboard" },
     });
     expect(html).toContain("Freeze &lt;alert&gt;");
     expect(html).toContain("&quot;north&quot;");
-    expect(html).toContain("Thermal");
-    expect(html).toContain("Trace");
+    expect(html).toContain("Probe");
+    expect(html).toContain("Harbor");
     expect(html).toContain("font-family");
-    expect(html).toContain("https://thermaltrace.dev/dashboard");
+    expect(html).toContain("https://probeharbor.dev/dashboard");
   });
 
   it("builds plain text with CTA URLs", () => {
@@ -108,16 +108,16 @@ describe("emailLayout", () => {
 
 describe("product email templates", () => {
   it("builds drip and trial multipart templates", () => {
-    const drip = buildDripEmail("day1", "https://thermaltrace.dev");
+    const drip = buildDripEmail("day1", "https://probeharbor.dev");
     expect(drip.subject.toLowerCase()).toContain("probe");
     expect(drip.html).toContain("Open Devices");
     expect(drip.html).toContain("adding-devices");
-    expect(drip.text).toContain("https://thermaltrace.dev/dashboard/devices");
+    expect(drip.text).toContain("https://probeharbor.dev/dashboard/devices");
 
     const trial = buildTrialReminderEmail({
       plan: "Pro",
       remaining: 3,
-      siteUrl: "https://thermaltrace.dev",
+      siteUrl: "https://probeharbor.dev",
     });
     expect(trial.subject).toContain("3 days");
     expect(trial.html).toContain("Trial reminder");
@@ -127,7 +127,7 @@ describe("product email templates", () => {
 describe("unsubscribe footer", () => {
   it("adds an unsubscribe link to both parts when a URL is given", async () => {
     const { brandedEmailParts } = await import("./emailLayout");
-    const url = "https://thermaltrace.test/api/email/unsubscribe?uid=u1&kind=digest&sig=abc";
+    const url = "https://probeharbor.test/api/email/unsubscribe?uid=u1&kind=digest&sig=abc";
 
     const parts = brandedEmailParts({ title: "Digest", unsubscribeUrl: url });
 

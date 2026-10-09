@@ -1,12 +1,12 @@
 openapi: 3.1.0
 info:
-  title: ThermalTrace API
+  title: ProbeHarbor API
   version: 1.2.0
   description: |
     HTTP endpoints for device ingest, share links, metrics, devices CRUD, MQTT bridge, and inbound automations.
     Authenticated dashboard routes use Supabase session cookies; programmatic access uses API keys (Pro).
 servers:
-  - url: https://thermaltrace.dev
+  - url: https://probeharbor.dev
 paths:
   /api/ingest/{deviceKey}:
     post:

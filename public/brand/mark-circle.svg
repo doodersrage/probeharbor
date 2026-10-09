@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none" role="img" aria-labelledby="tt-circle-title">
-  <title id="tt-circle-title">ThermalTrace</title>
+  <title id="tt-circle-title">ProbeHarbor</title>
   <defs>
     <linearGradient id="tt-steel-c" x1="256" y1="80" x2="256" y2="430" gradientUnits="userSpaceOnUse">
       <stop offset="0%" stop-color="#F4F6F8"/>

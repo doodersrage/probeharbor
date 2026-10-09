@@ -121,7 +121,7 @@ describe("weekly digest layout", () => {
     const digest = buildWeeklyDigestParts({
       points: mixed,
       freezeThresholdF: 34,
-      siteUrl: "https://thermaltrace.dev",
+      siteUrl: "https://probeharbor.dev",
     });
 
     expect(digest.html).toContain("Freeze exposure");
@@ -145,7 +145,7 @@ describe("weekly digest layout", () => {
     const digest = buildWeeklyDigestParts({
       points: mixed.filter((point) => point.tempf > 34),
       freezeThresholdF: 34,
-      siteUrl: "https://thermaltrace.dev",
+      siteUrl: "https://probeharbor.dev",
     });
     expect(digest.html).toContain("None at or below 34°F");
     expect(digest.html).toContain("#22c55e");
@@ -182,7 +182,7 @@ describe("alert delivery in the weekly digest", () => {
     const digest = buildWeeklyDigestParts({
       points,
       freezeThresholdF: 34,
-      siteUrl: "https://thermaltrace.dev",
+      siteUrl: "https://probeharbor.dev",
       delivery: summarizeAlertDelivery([
         { kind: "threshold", channels_sent: ["email"], channels_skipped: [] },
       ]),
@@ -195,7 +195,7 @@ describe("alert delivery in the weekly digest", () => {
     const digest = buildWeeklyDigestParts({
       points,
       freezeThresholdF: 34,
-      siteUrl: "https://thermaltrace.dev",
+      siteUrl: "https://probeharbor.dev",
       delivery: summarizeAlertDelivery([
         { kind: "threshold", channels_sent: [], channels_skipped: ["sms"] },
       ]),
@@ -208,11 +208,11 @@ describe("alert delivery in the weekly digest", () => {
     const quiet = buildWeeklyDigestParts({
       points,
       freezeThresholdF: 34,
-      siteUrl: "https://thermaltrace.dev",
+      siteUrl: "https://probeharbor.dev",
       delivery: summarizeAlertDelivery([]),
     });
     expect(quiet.text).toContain("No alerts went out this week");
-    const none = buildWeeklyDigestParts({ points, freezeThresholdF: 34, siteUrl: "https://thermaltrace.dev" });
+    const none = buildWeeklyDigestParts({ points, freezeThresholdF: 34, siteUrl: "https://probeharbor.dev" });
     expect(none.text).not.toContain("Alert delivery");
     expect(none.text).not.toContain("No alerts went out");
   });

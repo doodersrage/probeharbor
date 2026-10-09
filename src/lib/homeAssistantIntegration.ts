@@ -11,14 +11,14 @@ export const HA_DESCRIPTION =
 export const INTEGRATIONS_HUB_PAGE = "/integrations";
 
 export const HA_DEV_DOCS_INGEST =
-  "https://thermaltrace.dev/developers/ingest/home-assistant";
+  "https://probeharbor.dev/developers/ingest/home-assistant";
 
 export const HA_DEV_DOCS_INTEGRATIONS =
-  "https://thermaltrace.dev/developers/integrations/home-assistant";
+  "https://probeharbor.dev/developers/integrations/home-assistant";
 
-export const HA_BLUEPRINT_URL = "/ha/thermaltrace_webhook.yaml";
+export const HA_BLUEPRINT_URL = "/ha/probeharbor_webhook.yaml";
 
-export const HA_ENTITIES_YAML = "/ha/thermaltrace_entities.yaml";
+export const HA_ENTITIES_YAML = "/ha/probeharbor_entities.yaml";
 
 /** Old public paths kept as 301 redirects in middleware. */
 export const HA_BLUEPRINT_LEGACY_URL = "/ha/garage_temp_webhook.yaml";

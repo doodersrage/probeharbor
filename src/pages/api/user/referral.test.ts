@@ -32,7 +32,7 @@ beforeEach(() => {
   });
   mockGetOrCreateReferralCode.mockReset().mockResolvedValue("REFCODE1");
   mockCountReferralSignups.mockReset().mockResolvedValue(3);
-  mockGetSiteUrl.mockReset().mockReturnValue("https://thermaltrace.example");
+  mockGetSiteUrl.mockReset().mockReturnValue("https://probeharbor.example");
 });
 
 describe("GET /api/user/referral", () => {
@@ -59,7 +59,7 @@ describe("GET /api/user/referral", () => {
     expect(mockGetSiteUrl).toHaveBeenCalledWith(context.request);
     expect(json).toEqual({
       code: "REFCODE1",
-      registerUrl: "https://thermaltrace.example/register?ref=REFCODE1",
+      registerUrl: "https://probeharbor.example/register?ref=REFCODE1",
       signupCount: 3,
       bonusTrialDays: 7,
     });

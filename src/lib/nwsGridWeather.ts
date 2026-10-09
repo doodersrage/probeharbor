@@ -10,7 +10,7 @@ export type NwsGridForecast = {
 };
 
 const NWS_USER_AGENT =
-  import.meta.env.SITE_URL?.trim() || "https://thermaltrace.dev";
+  import.meta.env.SITE_URL?.trim() || "https://probeharbor.dev";
 
 /** Fetch NWS gridpoint forecast as a secondary weather source. */
 export async function fetchNwsGridForecast(
@@ -23,7 +23,7 @@ export async function fetchNwsGridForecast(
       {
         headers: {
           Accept: "application/geo+json",
-          "User-Agent": `ThermalTrace (${NWS_USER_AGENT})`,
+          "User-Agent": `ProbeHarbor (${NWS_USER_AGENT})`,
         },
         signal: AbortSignal.timeout(8000),
       },
@@ -45,7 +45,7 @@ export async function fetchNwsGridForecast(
     const forecastRes = await fetch(forecastUrl, {
       headers: {
         Accept: "application/geo+json",
-        "User-Agent": `ThermalTrace (${NWS_USER_AGENT})`,
+        "User-Agent": `ProbeHarbor (${NWS_USER_AGENT})`,
       },
       signal: AbortSignal.timeout(8000),
     });

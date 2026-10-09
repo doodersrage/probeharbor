@@ -1,10 +1,10 @@
-# Home Assistant entity naming — ThermalTrace HACS integration
+# Home Assistant entity naming — ProbeHarbor HACS integration
 #
 # Preferred: install the official HACS integration and paste a Pro share-link token.
-# Entities appear automatically under Devices → ThermalTrace (sensor.* / binary_sensor.*).
+# Entities appear automatically under Devices → ProbeHarbor (sensor.* / binary_sensor.*).
 #
 # Custom repository: https://github.com/doodersrage/thermaltrace-home-assistant
-# Product guide: https://thermaltrace.dev/integrations/home-assistant
+# Product guide: https://probeharbor.dev/integrations/home-assistant
 #
 # Example entity IDs (depend on your device + label names from the share link):
 #   sensor.garage_garage_avg_temperature
@@ -12,7 +12,7 @@
 #   binary_sensor.garage_door_door
 
 automation:
-  - alias: "Snooze ThermalTrace freeze alerts below 34°F"
+  - alias: "Snooze ProbeHarbor freeze alerts below 34°F"
     trigger:
       - platform: numeric_state
         entity_id: sensor.garage_garage_avg_temperature
@@ -22,7 +22,7 @@ automation:
         data:
           hours: 24
 
-  - alias: "Snooze ThermalTrace while garage door open"
+  - alias: "Snooze ProbeHarbor while garage door open"
     trigger:
       - platform: state
         entity_id: binary_sensor.garage_door_door
@@ -34,7 +34,7 @@ automation:
 
 template:
   - sensor:
-      - name: "ThermalTrace Delta Outdoor"
+      - name: "ProbeHarbor Delta Outdoor"
         unit_of_measurement: "°F"
         device_class: temperature
         state: >

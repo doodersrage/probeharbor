@@ -113,7 +113,7 @@ describe("GET /api/garage-temps/export.csv", () => {
     expect(response.status).toBe(200);
     expect(response.headers.get("Content-Type")).toBe("text/csv; charset=utf-8");
     expect(response.headers.get("Content-Disposition")).toContain(
-      "attachment; filename=\"thermaltrace-readings-",
+      "attachment; filename=\"probeharbor-readings-",
     );
     expect(await response.text()).toBe("timestamp,tempF\n2024-01-01,40\n");
   });

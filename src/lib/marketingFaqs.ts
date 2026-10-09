@@ -9,22 +9,22 @@ export type MarketingFaqItem = AboutFaqItem;
 export const marketingFaqs = {
   home: [
     {
-      question: "What is ThermalTrace?",
+      question: "What is ProbeHarbor?",
       answer:
-        `${BRAND_DESCRIPTION} Build with ESP32, Pico W, or Arduino; ThermalTrace handles the hosted dashboard, history, and household alerts.`,
+        `${BRAND_DESCRIPTION} Build with ESP32, Pico W, or Arduino; ProbeHarbor handles the hosted dashboard, history, and household alerts.`,
     },
     {
       question: "How do I connect ESP32, Pico W, or Arduino sensors?",
       answer:
-        "Create a push device under Dashboard → Devices, copy the ingest key from the callout (or use Reveal ingest key later), POST JSON to /api/ingest/<key>, and sensors auto-import on first POST. ESP32, Pico W, and Arduino Ethernet samples live on thermaltrace.dev/about/adding-devices. No hardware? Try the demo pull quick start on Overview.",
+        "Create a push device under Dashboard → Devices, copy the ingest key from the callout (or use Reveal ingest key later), POST JSON to /api/ingest/<key>, and sensors auto-import on first POST. ESP32, Pico W, and Arduino Ethernet samples live on probeharbor.dev/about/adding-devices. No hardware? Try the demo pull quick start on Overview.",
     },
     {
-      question: "Does ThermalTrace send freeze alerts?",
+      question: "Does ProbeHarbor send freeze alerts?",
       answer:
-        "Yes. Set a freeze threshold and enable channels such as email, browser or Android push, Discord, Telegram, Slack, or (on Pro) SMS and WhatsApp. Remaining-hours time-to-freeze alerts fire before the probe crosses freeze, using this space's lag vs the outdoor forecast (details: thermaltrace.dev/about/time-to-freeze). Predictive outdoor forecast freeze alerts are on Member; official NWS freeze and cold alerts are on Pro. Leak / flood sensors also notify automatically when wet; door, motion, power, and air quality use custom rules. With a Telegram bot webhook, you can reply /status, /snooze, or /vacation from chat.",
+        "Yes. Set a freeze threshold and enable channels such as email, browser or Android push, Discord, Telegram, Slack, or (on Pro) SMS and WhatsApp. Remaining-hours time-to-freeze alerts fire before the probe crosses freeze, using this space's lag vs the outdoor forecast (details: probeharbor.dev/about/time-to-freeze). Predictive outdoor forecast freeze alerts are on Member; official NWS freeze and cold alerts are on Pro. Leak / flood sensors also notify automatically when wet; door, motion, power, and air quality use custom rules. With a Telegram bot webhook, you can reply /status, /snooze, or /vacation from chat.",
     },
     {
-      question: "Is ThermalTrace free?",
+      question: "Is ProbeHarbor free?",
       answer:
         "Yes, there is a free plan with live curves, 7-day history, threshold freeze and leak alerts by email and push, and one family live share link (7-day expiry). Member adds 90-day history, CSV export, more devices, and forecast freeze warnings; Pro adds 1-year+ history, official NWS freeze and cold alerts, SMS, unlimited share scopes (history, metrics, never-expire), a printable claims evidence pack, webhooks, and a trial. Annual Member and Pro billing is discounted versus monthly.",
     },
@@ -34,14 +34,14 @@ export const marketingFaqs = {
         "An account links your ingest keys, history, and alerts to your household: it is how we keep your probes private. Registration is free with no credit card. You can try the interactive probe simulator or watch the live demo without signing up; create an account when you are ready to connect your own hardware.",
     },
     {
-      question: "Is there a ThermalTrace Android app?",
+      question: "Is there a ProbeHarbor Android app?",
       answer:
-        "A native Android app is available in early access on GitHub while Google Play review finishes. You can also use the full web dashboard or install the Progressive Web App. Companion clients (Android, Desktop, Bay Buddy, PWA) are listed at thermaltrace.dev/apps. The phone and desktop apps do not sense temperature: they connect to your ThermalTrace account.",
+        "A native Android app is available in early access on GitHub while Google Play review finishes. You can also use the full web dashboard or install the Progressive Web App. Companion clients (Android, Desktop, Bay Buddy, PWA) are listed at probeharbor.dev/apps. The phone and desktop apps do not sense temperature: they connect to your ProbeHarbor account.",
     },
     {
-      question: "Where is ThermalTrace hosted?",
+      question: "Where is ProbeHarbor hosted?",
       answer:
-        "On Cloudflare’s edge network (Workers), so the site and ingest APIs run close to visitors without you maintaining a VPS. Live job and ingest health is on thermaltrace.dev/system-status: we publish what we measure, not a marketing uptime percentage.",
+        "On Cloudflare’s edge network (Workers), so the site and ingest APIs run close to visitors without you maintaining a VPS. Live job and ingest health is on probeharbor.dev/system-status: we publish what we measure, not a marketing uptime percentage.",
     },
   ],
   demo: [
@@ -58,17 +58,17 @@ export const marketingFaqs = {
     {
       question: "What is kit QR onboarding?",
       answer:
-        "After you create a push device, ThermalTrace shows a QR code for the full ingest URL (about 30 minutes). Scan it from a phone or print it on a kit label so firmware or Home Assistant can POST without typing the key. Walkthrough: thermaltrace.dev/about/kit-qr-onboarding.",
+        "After you create a push device, ProbeHarbor shows a QR code for the full ingest URL (about 30 minutes). Scan it from a phone or print it on a kit label so firmware or Home Assistant can POST without typing the key. Walkthrough: probeharbor.dev/about/kit-qr-onboarding.",
     },
     {
       question: "Is the live demo fake data?",
       answer:
-        "No. Readings come from the public ThermalTrace demo feed over the same HTTPS ingest/pull path production devices use. The interactive simulator is intentionally synthetic so you can manipulate outdoor air, sun, and door state: it reuses the real Overview space-status helper for freeze risk.",
+        "No. Readings come from the public ProbeHarbor demo feed over the same HTTPS ingest/pull path production devices use. The interactive simulator is intentionally synthetic so you can manipulate outdoor air, sun, and door state: it reuses the real Overview space-status helper for freeze risk.",
     },
     {
       question: "Do I need an account to try this?",
       answer:
-        "No for this page or the probe simulator. You need a free account (no credit card) to create your own device key, keep history, and set freeze alerts. Plan details: thermaltrace.dev/pricing.",
+        "No for this page or the probe simulator. You need a free account (no credit card) to create your own device key, keep history, and set freeze alerts. Plan details: probeharbor.dev/pricing.",
     },
   ],
   pricing: [
@@ -85,7 +85,7 @@ export const marketingFaqs = {
     {
       question: "When do I need Portfolio instead of Pro?",
       answer:
-        "Pro already covers up to 50 owned properties, enough for a vacation home, a few rentals, or a workshop plus house. Portfolio raises that ceiling to 500 and adds property-manager logins so on-site staff can manage devices and alerts for assigned properties without seeing billing or other sites. See thermaltrace.dev/property-management.",
+        "Pro already covers up to 50 owned properties, enough for a vacation home, a few rentals, or a workshop plus house. Portfolio raises that ceiling to 500 and adds property-manager logins so on-site staff can manage devices and alerts for assigned properties without seeing billing or other sites. See probeharbor.dev/property-management.",
     },
     {
       question: "What is the claims / insurance evidence pack?",
@@ -103,51 +103,51 @@ export const marketingFaqs = {
         "The Pro trial is free. Cancel before it ends and you are not charged. After a trial converts to a paid plan, the current billing period is generally non-refundable. Contact us if a charge looks wrong and we will review it.",
     },
     {
-      question: "How reliable is ThermalTrace hosting?",
+      question: "How reliable is ProbeHarbor hosting?",
       answer:
-        "The app runs on Cloudflare Workers at the edge. Check thermaltrace.dev/system-status for live cron and ingest health, and subscribe there for degradation notices. We do not quote Cloudflare’s platform SLA as our own uptime percentage.",
+        "The app runs on Cloudflare Workers at the edge. Check probeharbor.dev/system-status for live cron and ingest health, and subscribe there for degradation notices. We do not quote Cloudflare’s platform SLA as our own uptime percentage.",
     },
   ],
   compare: [
     {
-      question: "How is ThermalTrace different from a DIY script?",
+      question: "How is ProbeHarbor different from a DIY script?",
       answer:
-        "ThermalTrace hosts ingest, history, households, and multi-channel freeze and leak alerts for you. A DIY cron script requires you to run servers, databases, Twilio wiring, and uptime yourself.",
+        "ProbeHarbor hosts ingest, history, households, and multi-channel freeze and leak alerts for you. A DIY cron script requires you to run servers, databases, Twilio wiring, and uptime yourself.",
     },
     {
-      question: "How does ThermalTrace compare to Govee or SmartThings?",
+      question: "How does ProbeHarbor compare to Govee or SmartThings?",
       answer:
-        `Govee and SmartThings are general consumer/smart-home apps. ThermalTrace is purpose-built for ${BRAND_SPACES}: ESP/Arduino or JSON ingest, freeze workflows, air quality, doors, leaks, energy, and CSV history, rather than a catch-all device dashboard.`,
+        `Govee and SmartThings are general consumer/smart-home apps. ProbeHarbor is purpose-built for ${BRAND_SPACES}: ESP/Arduino or JSON ingest, freeze workflows, air quality, doors, leaks, energy, and CSV history, rather than a catch-all device dashboard.`,
     },
     {
       question: "Do I need a public IP for my Arduino?",
       answer:
-        "No for push ingest: the device POSTs outbound to ThermalTrace. Pull feeds need a reachable HTTPS JSON URL if you use that path instead.",
+        "No for push ingest: the device POSTs outbound to ProbeHarbor. Pull feeds need a reachable HTTPS JSON URL if you use that path instead.",
     },
     {
-      question: "Can I keep Home Assistant or MQTT and still use ThermalTrace?",
+      question: "Can I keep Home Assistant or MQTT and still use ProbeHarbor?",
       answer:
-        "Yes. Install the official HACS integration (github.com/doodersrage/thermaltrace-home-assistant) for automatic entities from a share link, or keep MQTT on your LAN and mirror with POST /api/ingest/mqtt. Many people dual-run: HA locally, ThermalTrace for household freeze and leak SMS and history. See thermaltrace.dev/integrations/home-assistant.",
+        "Yes. Install the official HACS integration (github.com/doodersrage/thermaltrace-home-assistant) for automatic entities from a share link, or keep MQTT on your LAN and mirror with POST /api/ingest/mqtt. Many people dual-run: HA locally, ProbeHarbor for household freeze and leak SMS and history. See probeharbor.dev/integrations/home-assistant.",
     },
     {
-      question: "Why does ThermalTrace require an account?",
+      question: "Why does ProbeHarbor require an account?",
       answer:
-        "ThermalTrace is hosted so you do not run databases or SMS wiring yourself. A free account (no credit card) attaches your ingest key to your household. You can still dual-run with Home Assistant or MQTT on the LAN. ThermalTrace is the off-site alerts and history layer.",
+        "ProbeHarbor is hosted so you do not run databases or SMS wiring yourself. A free account (no credit card) attaches your ingest key to your household. You can still dual-run with Home Assistant or MQTT on the LAN. ProbeHarbor is the off-site alerts and history layer.",
     },
     {
       question: "Do I need to keep a home server online?",
       answer:
-        "No. ThermalTrace runs on Cloudflare’s edge; your probes only need outbound HTTPS (push) or a reachable pull URL. Live service health is at thermaltrace.dev/system-status.",
+        "No. ProbeHarbor runs on Cloudflare’s edge; your probes only need outbound HTTPS (push) or a reachable pull URL. Live service health is at probeharbor.dev/system-status.",
     },
     {
       question: "I already have Govee or a Tempest: do I still need this?",
       answer:
-        `Govee is a consumer room sensor; Tempest is outdoor weather. ThermalTrace watches probe curves in ${BRAND_SPACES} on hardware you control. They can coexist: see the Govee and Tempest comparison pages for when each tool is the better fit.`,
+        `Govee is a consumer room sensor; Tempest is outdoor weather. ProbeHarbor watches probe curves in ${BRAND_SPACES} on hardware you control. They can coexist: see the Govee and Tempest comparison pages for when each tool is the better fit.`,
     },
   ],
   "freeze-map": [
     {
-      question: "What is the ThermalTrace freeze map?",
+      question: "What is the ProbeHarbor freeze map?",
       answer:
         "An opt-in, city-level aggregate of anonymized probe temperature samples from contributing households: useful for seeing regional freeze risk, not a personal live feed. Embed it or use the Markdown badge once your metro is live.",
     },
@@ -196,9 +196,9 @@ export const marketingFaqs = {
   ],
   docsApi: [
     {
-      question: "Where is the ThermalTrace OpenAPI spec?",
+      question: "Where is the ProbeHarbor OpenAPI spec?",
       answer:
-        "Download openapi.yaml from /openapi.yaml on thermaltrace.dev (also mirrored on the GitHub Pages developer docs). The in-app page at /docs/api is the human quick reference with curl examples, rate limits, and error codes.",
+        "Download openapi.yaml from /openapi.yaml on probeharbor.dev (also mirrored on the GitHub Pages developer docs). The in-app page at /docs/api is the human quick reference with curl examples, rate limits, and error codes.",
     },
     {
       question: "How do I authenticate to the HTTP API?",
@@ -213,39 +213,39 @@ export const marketingFaqs = {
     {
       question: "What does “encrypted vault” mean for reveal-ingest-key?",
       answer:
-        "When the deployment sets INGEST_KEY_ENCRYPTION_SECRET, new push keys are stored encrypted so owners can Reveal ingest key later from Devices (rate-limited and audited). On thermaltrace.dev this is enabled. If the vault secret is missing, create/rotate a key and copy it from the 30-minute callout, there is nothing to decrypt later.",
+        "When the deployment sets INGEST_KEY_ENCRYPTION_SECRET, new push keys are stored encrypted so owners can Reveal ingest key later from Devices (rate-limited and audited). On probeharbor.dev this is enabled. If the vault secret is missing, create/rotate a key and copy it from the 30-minute callout, there is nothing to decrypt later.",
     },
     {
       question: "Where do I find full request/response schemas?",
       answer:
-        "openapi.yaml is the source of truth. Longer walkthroughs live at thermaltrace.dev/developers (ingest, Grafana, webhooks). Product how-tos: thermaltrace.dev/about/ingest-and-webhooks and /about/adding-devices.",
+        "openapi.yaml is the source of truth. Longer walkthroughs live at probeharbor.dev/developers (ingest, Grafana, webhooks). Product how-tos: probeharbor.dev/about/ingest-and-webhooks and /about/adding-devices.",
     },
     {
       question: "What is the claim puck API?",
       answer:
-        "Companion-session endpoints under /api/pucks (register, claim/start, claim/finish) plus GET/PUT /api/bays/{bay}/mood. Used by the RP2040-Zero claim puck and Bay Buddy. Setup: thermaltrace.dev/claim-puck. Details on /docs/api#claim-puck.",
+        "Companion-session endpoints under /api/pucks (register, claim/start, claim/finish) plus GET/PUT /api/bays/{bay}/mood. Used by the RP2040-Zero claim puck and Bay Buddy. Setup: probeharbor.dev/claim-puck. Details on /docs/api#claim-puck.",
     },
   ],
   claimPuck: [
     {
-      question: "What is a ThermalTrace claim puck?",
+      question: "What is a ProbeHarbor claim puck?",
       answer:
-        "A Waveshare RP2040-Zero running claim-puck firmware. It proves physical presence when you claim a bay (button on GP4), then shows Bay Buddy freeze/flood moods on its LED. It is not a temperature probe. For a Wi‑Fi DS18B20 on Pico W / Pico 2 W, see thermaltrace.dev/about/pico-w-ingest.",
+        "A Waveshare RP2040-Zero running claim-puck firmware. It proves physical presence when you claim a bay (button on GP4), then shows Bay Buddy freeze/flood moods on its LED. It is not a temperature probe. For a Wi‑Fi DS18B20 on Pico W / Pico 2 W, see probeharbor.dev/about/pico-w-ingest.",
     },
     {
       question: "Do I need Bay Buddy?",
       answer:
-        "Bay Buddy is the easiest way to claim and drive the puck after you sign in. You can also use the host CLI in the thermaltrace-claim-puck repo with companion access and refresh tokens.",
+        "Bay Buddy is the easiest way to claim and drive the puck after you sign in. You can also use the host CLI in the probeharbor-claim-puck repo with companion access and refresh tokens.",
     },
     {
       question: "Is this the same as the Claims pack?",
       answer:
-        "No. Claims pack is a printable insurance evidence PDF on thermaltrace.dev/claims-pack. Claim puck is a hardware presence key and mood light.",
+        "No. Claims pack is a printable insurance evidence PDF on probeharbor.dev/claims-pack. Claim puck is a hardware presence key and mood light.",
     },
     {
       question: "Where are other accessories?",
       answer:
-        "Alert beacon, door/leak/power contacts, kit labels, probe mount kit, and puck case: thermaltrace.dev/accessories.",
+        "Alert beacon, door/leak/power contacts, kit labels, probe mount kit, and puck case: probeharbor.dev/accessories.",
     },
   ],
   accessories: [
@@ -262,36 +262,36 @@ export const marketingFaqs = {
     {
       question: "Where is the freeze kit parts list?",
       answer:
-        "ESP32 + waterproof DS18B20 BOM with Adafruit and Amazon buy links: thermaltrace.dev/about/esp32-freeze-kit. Accessory catalog: thermaltrace.dev/accessories.",
+        "ESP32 + waterproof DS18B20 BOM with Adafruit and Amazon buy links: probeharbor.dev/about/esp32-freeze-kit. Accessory catalog: probeharbor.dev/accessories.",
     },
     {
       question: "Do Amazon buy links include affiliate tags?",
       answer:
-        "When configured, Amazon URLs may include an Associates tag. Adafruit links stay direct. ThermalTrace may earn a commission from qualifying Amazon purchases at no extra cost to you.",
+        "When configured, Amazon URLs may include an Associates tag. Adafruit links stay direct. ProbeHarbor may earn a commission from qualifying Amazon purchases at no extra cost to you.",
     },
   ],
   apps: [
     {
       question: "Do companion apps measure temperature?",
       answer:
-        "No. Android, Desktop, Bay Buddy, and the PWA are clients for your ThermalTrace account. ESP/Arduino probes (or HTTPS feeds) push readings; apps sign in and display them.",
+        "No. Android, Desktop, Bay Buddy, and the PWA are clients for your ProbeHarbor account. ESP/Arduino probes (or HTTPS feeds) push readings; apps sign in and display them.",
     },
     {
       question: "Which app should I install first?",
       answer:
-        "Phone: Android companion or the PWA. Desk full dashboard: ThermalTrace Desktop. Glanceable freeze/flood mood on a second monitor: Bay Buddy. Catalog: thermaltrace.dev/apps.",
+        "Phone: Android companion or the PWA. Desk full dashboard: ProbeHarbor Desktop. Glanceable freeze/flood mood on a second monitor: Bay Buddy. Catalog: probeharbor.dev/apps.",
     },
     {
       question: "Where are hardware accessories?",
       answer:
-        "Claim puck, leak pads, door contacts, and mounts live under thermaltrace.dev/accessories — separate from companion apps.",
+        "Claim puck, leak pads, door contacts, and mounts live under probeharbor.dev/accessories — separate from companion apps.",
     },
   ],
   alertBeacon: [
     {
       question: "What is an alert beacon?",
       answer:
-        "A brighter NeoPixel mood light driven by the same Bay Buddy bay-mood API as the claim puck. It does not sense temperature. Setup: thermaltrace.dev/alert-beacon.",
+        "A brighter NeoPixel mood light driven by the same Bay Buddy bay-mood API as the claim puck. It does not sense temperature. Setup: probeharbor.dev/alert-beacon.",
     },
     {
       question: "Do I still need a claim puck?",
@@ -308,7 +308,7 @@ export const marketingFaqs = {
     {
       question: "What does the door contact puck post?",
       answer:
-        "JSON like {\"door1\":true} when open. Sketch: sketches/arduino/door_contact_ingest. Guide: thermaltrace.dev/door-puck.",
+        "JSON like {\"door1\":true} when open. Sketch: sketches/arduino/door_contact_ingest. Guide: probeharbor.dev/door-puck.",
     },
     {
       question: "Will an open door trigger freeze SMS by itself?",
@@ -325,7 +325,7 @@ export const marketingFaqs = {
     {
       question: "What does the leak contact puck post?",
       answer:
-        "JSON like {\"leak1\":true} when wet. Flood/leak keys auto-alert when wet once alerts are on. Guide: thermaltrace.dev/leak-puck.",
+        "JSON like {\"leak1\":true} when wet. Flood/leak keys auto-alert when wet once alerts are on. Guide: probeharbor.dev/leak-puck.",
     },
     {
       question: "Can leak and temperature share one device key?",
@@ -342,7 +342,7 @@ export const marketingFaqs = {
     {
       question: "What does the power outage nudge post?",
       answer:
-        "JSON like {\"power1\":false} when sensed mains/USB is lost. The reporting ESP32 should stay on a UPS. Guide: thermaltrace.dev/power-nudge.",
+        "JSON like {\"power1\":false} when sensed mains/USB is lost. The reporting ESP32 should stay on a UPS. Guide: probeharbor.dev/power-nudge.",
     },
     {
       question: "What if the freeze probe loses power too?",
@@ -357,9 +357,9 @@ export const marketingFaqs = {
   ],
   kitLabels: [
     {
-      question: "Does ThermalTrace sell QR stickers?",
+      question: "Does ProbeHarbor sell QR stickers?",
       answer:
-        "No. Download the SVG from Devices after create/rotate, print on waterproof labels, or write the ingest URL to an NFC tag. Guide: thermaltrace.dev/kit-labels.",
+        "No. Download the SVG from Devices after create/rotate, print on waterproof labels, or write the ingest URL to an NFC tag. Guide: probeharbor.dev/kit-labels.",
     },
     {
       question: "Is NFC safe on a public door?",
@@ -369,19 +369,19 @@ export const marketingFaqs = {
     {
       question: "How long does the on-screen QR last?",
       answer:
-        "About 30 minutes after create/rotate on Devices. Re-open the callout or download the SVG if it expires. Walkthrough: thermaltrace.dev/about/kit-qr-onboarding.",
+        "About 30 minutes after create/rotate on Devices. Re-open the callout or download the SVG if it expires. Walkthrough: probeharbor.dev/about/kit-qr-onboarding.",
     },
   ],
   probeMountKit: [
     {
       question: "What is the probe mount kit?",
       answer:
-        "A BOM for zip-ties, pipe clips, adhesive pads, 4.7k pull-up, and waterproof DS18B20 mounting — not a branded drop-ship kit. thermaltrace.dev/probe-mount-kit.",
+        "A BOM for zip-ties, pipe clips, adhesive pads, 4.7k pull-up, and waterproof DS18B20 mounting — not a branded drop-ship kit. probeharbor.dev/probe-mount-kit.",
     },
     {
       question: "Do I still need the ESP32 freeze kit page?",
       answer:
-        "Yes for board + probe wiring and sketch download. The mount kit is the physical install BOM; the freeze kit is the electronics path: thermaltrace.dev/about/esp32-freeze-kit.",
+        "Yes for board + probe wiring and sketch download. The mount kit is the physical install BOM; the freeze kit is the electronics path: probeharbor.dev/about/esp32-freeze-kit.",
     },
     {
       question: "Where should the probe tip sit?",
@@ -393,7 +393,7 @@ export const marketingFaqs = {
     {
       question: "Do I need a case for the claim puck?",
       answer:
-        "Optional. A printed enclosure, tactile button, and LED diffuser make the RP2040-Zero desk-safe. Firmware and claim API stay the same. thermaltrace.dev/claim-puck-case.",
+        "Optional. A printed enclosure, tactile button, and LED diffuser make the RP2040-Zero desk-safe. Firmware and claim API stay the same. probeharbor.dev/claim-puck-case.",
     },
     {
       question: "Does a case change the claim API?",
@@ -403,14 +403,14 @@ export const marketingFaqs = {
     {
       question: "What if I want a brighter hallway light?",
       answer:
-        "Use an alert beacon NeoPixel stick instead of overdriving the Zero’s tiny LED: thermaltrace.dev/alert-beacon.",
+        "Use an alert beacon NeoPixel stick instead of overdriving the Zero’s tiny LED: probeharbor.dev/alert-beacon.",
     },
   ],
   homeAssistant: [
     {
       question: "Is there an official Home Assistant integration?",
       answer:
-        "Yes: a HACS custom integration at github.com/doodersrage/thermaltrace-home-assistant. It polls a share link and creates sensors/binary sensors automatically. Free includes one family live link; Pro adds history/metrics scopes and inbound snooze webhooks. Install guide: thermaltrace.dev/integrations/home-assistant.",
+        "Yes: a HACS custom integration at github.com/doodersrage/thermaltrace-home-assistant. It polls a share link and creates sensors/binary sensors automatically. Free includes one family live link; Pro adds history/metrics scopes and inbound snooze webhooks. Install guide: probeharbor.dev/integrations/home-assistant.",
     },
     {
       question: "Do I need Pro for the HACS integration?",
@@ -420,34 +420,34 @@ export const marketingFaqs = {
     {
       question: "Will HACS polling delay freeze or leak alerts?",
       answer:
-        "HACS defaults to polling the share link every 5 minutes (configurable). ThermalTrace freeze and leak SMS/email/push still fire from your probe’s push ingest path immediately. Use native ESP/Arduino push (or MQTT→HTTPS bridge) for time-critical thresholds and wet contacts; keep HACS for local entities and automations.",
+        "HACS defaults to polling the share link every 5 minutes (configurable). ProbeHarbor freeze and leak SMS/email/push still fire from your probe’s push ingest path immediately. Use native ESP/Arduino push (or MQTT→HTTPS bridge) for time-critical thresholds and wet contacts; keep HACS for local entities and automations.",
     },
     {
       question: "Does Nest or Ecobee OAuth work for indoor context?",
       answer:
-        "On thermaltrace.dev, Pro households can connect Nest from Dashboard → Temperature when Nest OAuth is configured. Ecobee developer signups are often closed: use the HA Plan B (thermaltrace.push of climate current_temperature + Indoor reference) instead. Self-hosted operators: thermaltrace.dev/about/thermostat-oauth.",
+        "On probeharbor.dev, Pro households can connect Nest from Dashboard → Temperature when Nest OAuth is configured. Ecobee developer signups are often closed: use the HA Plan B (thermaltrace.push of climate current_temperature + Indoor reference) instead. Self-hosted operators: probeharbor.dev/about/thermostat-oauth.",
     },
     {
       question: "Can I push HA REST sensor JSON without the HACS integration?",
       answer:
-        "Yes. ThermalTrace auto-detects Home Assistant REST responses ({ state, attributes }) on POST /api/ingest/<key> and on pull feeds. Map probe key state on Devices. SenML JSON arrays are also supported. Samples: thermaltrace.dev/api/feeds/example?format=homeassistant",
+        "Yes. ProbeHarbor auto-detects Home Assistant REST responses ({ state, attributes }) on POST /api/ingest/<key> and on pull feeds. Map probe key state on Devices. SenML JSON arrays are also supported. Samples: probeharbor.dev/api/feeds/example?format=homeassistant",
     },
     {
-      question: "Can I use ThermalTrace with MQTT and Home Assistant together?",
+      question: "Can I use ProbeHarbor with MQTT and Home Assistant together?",
       answer:
-        "Yes: the usual pattern keeps Mosquitto/ESPHome on your LAN and mirrors selected topics to ThermalTrace over HTTPS (POST /api/ingest/mqtt). ThermalTrace handles off-site freeze and leak SMS/email and history; HA keeps local automations. Recipe: thermaltrace.dev/about/mqtt-bridge.",
+        "Yes: the usual pattern keeps Mosquitto/ESPHome on your LAN and mirrors selected topics to ProbeHarbor over HTTPS (POST /api/ingest/mqtt). ProbeHarbor handles off-site freeze and leak SMS/email and history; HA keeps local automations. Recipe: probeharbor.dev/about/mqtt-bridge.",
     },
     {
       question: "How do freeze and leak alerts reach Home Assistant?",
       answer:
-        "Configure a Pro outbound webhook in ThermalTrace pointing at your HA webhook URL, or import the thermaltrace_webhook.yaml blueprint from thermaltrace.dev/ha/thermaltrace_webhook.yaml. When you set a webhook signing secret, verify the X-Signature HMAC header before acting on the payload.",
+        "Configure a Pro outbound webhook in ProbeHarbor pointing at your HA webhook URL, or import the probeharbor_webhook.yaml blueprint from probeharbor.dev/ha/probeharbor_webhook.yaml. When you set a webhook signing secret, verify the X-Signature HMAC header before acting on the payload.",
     },
   ],
   matter: [
     {
       question: "Is this an official Apple Home / Matter product?",
       answer:
-        "No. thermaltrace-matter is a DIY Matterbridge plugin and is not CSA-certified. It is fine for household use; say so when pairing. Guide: thermaltrace.dev/integrations/matter.",
+        "No. probeharbor-matter is a DIY Matterbridge plugin and is not CSA-certified. It is fine for household use; say so when pairing. Guide: probeharbor.dev/integrations/matter.",
     },
     {
       question: "Do I need an iPhone app?",
@@ -462,27 +462,27 @@ export const marketingFaqs = {
     {
       question: "Will Matter polling delay freeze SMS?",
       answer:
-        "No. Freeze and leak SMS/email/push still fire from ThermalTrace push ingest. The Matter bridge polls the share link every 1–5 minutes for Home glance and automations, same idea as the HACS integration.",
+        "No. Freeze and leak SMS/email/push still fire from ProbeHarbor push ingest. The Matter bridge polls the share link every 1–5 minutes for Home glance and automations, same idea as the HACS integration.",
     },
     {
       question: "Can I run Matter and Home Assistant together?",
       answer:
-        "Yes. Both can poll the same share link. Use HACS for HA entities and the Matterbridge plugin for Apple Home: thermaltrace.dev/integrations/home-assistant and thermaltrace.dev/integrations/matter.",
+        "Yes. Both can poll the same share link. Use HACS for HA entities and the Matterbridge plugin for Apple Home: probeharbor.dev/integrations/home-assistant and probeharbor.dev/integrations/matter.",
     },
   ],
   nodeRed: [
     {
       question: "Do I need Node-RED if I already have Home Assistant?",
       answer:
-        "No. HACS can poll a share link for entities. Use Node-RED when you already mirror Mosquitto topics with flows and want HTTPS POSTs into ThermalTrace without exposing the broker. Guide: thermaltrace.dev/integrations/node-red.",
+        "No. HACS can poll a share link for entities. Use Node-RED when you already mirror Mosquitto topics with flows and want HTTPS POSTs into ProbeHarbor without exposing the broker. Guide: probeharbor.dev/integrations/node-red.",
     },
     {
       question: "Where is the flow file?",
       answer:
-        "Download thermaltrace.dev/nodered/mqtt-to-thermaltrace.json — temperature tab plus optional garage-door tab, rate-limited to about one POST per minute.",
+        "Download probeharbor.dev/nodered/mqtt-to-probeharbor.json — temperature tab plus optional garage-door tab, rate-limited to about one POST per minute.",
     },
     {
-      question: "Is ThermalTrace an MQTT broker?",
+      question: "Is ProbeHarbor an MQTT broker?",
       answer:
         "No. Keep Mosquitto local. Node-RED (or HA rest_command) POSTs to /api/ingest/mqtt with your push device key.",
     },
@@ -491,12 +491,12 @@ export const marketingFaqs = {
     {
       question: "IFTTT vs Zapier vs n8n?",
       answer:
-        "Same Pro outbound webhook JSON. IFTTT is simplest for phone notifies and Sheets. Zapier/Make add richer multi-step Zaps. n8n is self-hosted. Recipes: thermaltrace.dev/integrations/automation and thermaltrace.dev/about/zapier-make-recipes.",
+        "Same Pro outbound webhook JSON. IFTTT is simplest for phone notifies and Sheets. Zapier/Make add richer multi-step Zaps. n8n is self-hosted. Recipes: probeharbor.dev/integrations/automation and probeharbor.dev/about/zapier-make-recipes.",
     },
     {
       question: "Can I log freeze alerts to Google Sheets?",
       answer:
-        "Yes. Import thermaltrace.dev/n8n/thermaltrace-alert-to-sheets.json, or use IFTTT/Zapier Sheets actions with the outbound webhook URL.",
+        "Yes. Import probeharbor.dev/n8n/probeharbor-alert-to-sheets.json, or use IFTTT/Zapier Sheets actions with the outbound webhook URL.",
     },
     {
       question: "Can Notion get the same alerts?",
@@ -506,14 +506,14 @@ export const marketingFaqs = {
   ],
   influx: [
     {
-      question: "Do I need a new ThermalTrace API for Influx?",
+      question: "Do I need a new ProbeHarbor API for Influx?",
       answer:
-        "No. Telegraf scrapes the existing Pro Prometheus endpoint GET /api/v1/metrics. Sample config: thermaltrace.dev/telegraf/thermaltrace.conf. Guide: thermaltrace.dev/integrations/influx.",
+        "No. Telegraf scrapes the existing Pro Prometheus endpoint GET /api/v1/metrics. Sample config: probeharbor.dev/telegraf/probeharbor.conf. Guide: probeharbor.dev/integrations/influx.",
     },
     {
       question: "Does this replace Grafana?",
       answer:
-        "No. Use Grafana for dashboards against Prometheus; use Influx/VictoriaMetrics when you want a long-term TSDB or existing Influx stack. Same metric name: thermaltrace_sensor_value.",
+        "No. Use Grafana for dashboards against Prometheus; use Influx/VictoriaMetrics when you want a long-term TSDB or existing Influx stack. Same metric name: probeharbor_sensor_value.",
     },
     {
       question: "What about boolean leak/door sensors?",
@@ -525,34 +525,34 @@ export const marketingFaqs = {
     {
       question: "Is there an official SmartThings Cloud-to-Cloud app?",
       answer:
-        "No. Use the Matterbridge plugin (thermaltrace.dev/integrations/matter) so SmartThings can add garage sensors over Matter on your LAN — same path as Apple Home.",
+        "No. Use the Matterbridge plugin (probeharbor.dev/integrations/matter) so SmartThings can add garage sensors over Matter on your LAN — same path as Apple Home.",
     },
     {
       question: "Will freeze SMS still work?",
       answer:
-        "Yes. Critical alerts stay on ThermalTrace push ingest and Pro SMS/email. Matter polling is for glance and ST automations.",
+        "Yes. Critical alerts stay on ProbeHarbor push ingest and Pro SMS/email. Matter polling is for glance and ST automations.",
     },
     {
       question: "Should I replace Govee pods with this?",
       answer:
-        "Only if you want ESP-class garage coverage and exportable history. For bedrooms, Govee/ST pods can still win on price — see thermaltrace.dev/compare/govee.",
+        "Only if you want ESP-class garage coverage and exportable history. For bedrooms, Govee/ST pods can still win on price — see probeharbor.dev/compare/govee.",
     },
   ],
   android: [
     {
       question: "Does the Android app measure probe temperature?",
       answer:
-        "No. The phone is a companion client. ESP/Arduino sensors (or HTTPS JSON feeds) push readings to ThermalTrace; the app signs in and displays that account data.",
+        "No. The phone is a companion client. ESP/Arduino sensors (or HTTPS JSON feeds) push readings to ProbeHarbor; the app signs in and displays that account data.",
     },
     {
-      question: "When will ThermalTrace be on Google Play?",
+      question: "When will ProbeHarbor be on Google Play?",
       answer:
         "Google Play listing is in review. Build or sideload from github.com/doodersrage/thermaltrace-android, or use the web dashboard / PWA from Chrome on Android until the store link goes live.",
     },
     {
       question: "Will my web account work in the Android app?",
       answer:
-        "Yes. The same ThermalTrace login, households, devices, and alert settings apply. Push on Android uses Firebase Cloud Messaging in addition to browser Web Push.",
+        "Yes. The same ProbeHarbor login, households, devices, and alert settings apply. Push on Android uses Firebase Cloud Messaging in addition to browser Web Push.",
     },
     {
       question: "How do I get notified when the app launches?",
@@ -564,44 +564,44 @@ export const marketingFaqs = {
     {
       question: "What is Bay Buddy?",
       answer:
-        "Bay Buddy is the ThermalTrace desktop companion (Windows, macOS, Linux). It shows glanceable freeze and flood moods for one space after you sign in with your ThermalTrace account. It is not a second full dashboard.",
+        "Bay Buddy is the ProbeHarbor desktop companion (Windows, macOS, Linux). It shows glanceable freeze and flood moods for one space after you sign in with your ProbeHarbor account. It is not a second full dashboard.",
     },
     {
       question: "Where do I download Bay Buddy?",
       answer:
-        "GitHub Releases for thermaltrace-bay-buddy: Linux AppImage/deb/rpm, Windows MSI, and macOS DMG. Start at thermaltrace.dev/bay-buddy.",
+        "GitHub Releases for probeharbor-bay-buddy: Linux AppImage/deb/rpm, Windows MSI, and macOS DMG. Start at probeharbor.dev/bay-buddy.",
     },
     {
       question: "Does Bay Buddy replace the web dashboard?",
       answer:
-        "No. Devices, alerts, history, claims, and household settings stay on thermaltrace.dev, the Android app / PWA, or ThermalTrace Desktop (thermaltrace.dev/desktop). Bay Buddy is a mood glance for the bay you already monitor.",
+        "No. Devices, alerts, history, claims, and household settings stay on probeharbor.dev, the Android app / PWA, or ProbeHarbor Desktop (probeharbor.dev/desktop). Bay Buddy is a mood glance for the bay you already monitor.",
     },
     {
       question: "Can Bay Buddy drive a claim puck?",
       answer:
-        "Yes. After you connect, the Claim puck panel can register and claim an RP2040-Zero, then drive its LED from /api/bays/{bay}/mood. Setup: thermaltrace.dev/claim-puck.",
+        "Yes. After you connect, the Claim puck panel can register and claim an RP2040-Zero, then drive its LED from /api/bays/{bay}/mood. Setup: probeharbor.dev/claim-puck.",
     },
   ],
   desktop: [
     {
-      question: "What is ThermalTrace Desktop?",
+      question: "What is ProbeHarbor Desktop?",
       answer:
-        "ThermalTrace Desktop is the native Windows, macOS, and Linux companion dashboard for your ThermalTrace account. It covers live readings, history, alerts, devices, household, share, and portfolio — the same account as the web and Android apps. The PC is not a sensor.",
+        "ProbeHarbor Desktop is the native Windows, macOS, and Linux companion dashboard for your ProbeHarbor account. It covers live readings, history, alerts, devices, household, share, and portfolio — the same account as the web and Android apps. The PC is not a sensor.",
     },
     {
-      question: "Where do I download ThermalTrace Desktop?",
+      question: "Where do I download ProbeHarbor Desktop?",
       answer:
-        "GitHub Releases for thermaltrace-desktop: Linux AppImage/deb/rpm, Windows MSI, and macOS DMG. Start at thermaltrace.dev/desktop.",
+        "GitHub Releases for probeharbor-desktop: Linux AppImage/deb/rpm, Windows MSI, and macOS DMG. Start at probeharbor.dev/desktop.",
     },
     {
       question: "How is Desktop different from Bay Buddy?",
       answer:
-        "Bay Buddy is a glanceable freeze/flood mood for one space (and claim puck). ThermalTrace Desktop is the full dashboard client. Keep both if you want a mood glance plus a native dashboard.",
+        "Bay Buddy is a glanceable freeze/flood mood for one space (and claim puck). ProbeHarbor Desktop is the full dashboard client. Keep both if you want a mood glance plus a native dashboard.",
     },
     {
-      question: "Will my web account work in ThermalTrace Desktop?",
+      question: "Will my web account work in ProbeHarbor Desktop?",
       answer:
-        "Yes. Connect opens thermaltrace.dev in your browser, including MFA if enabled, then hands the session back to the app over a localhost callback.",
+        "Yes. Connect opens probeharbor.dev in your browser, including MFA if enabled, then hands the session back to the app over a localhost callback.",
     },
     {
       question: "Does Desktop support notifications and kiosk mode?",

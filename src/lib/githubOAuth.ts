@@ -24,7 +24,7 @@ export type GitHubProfile = {
 const GITHUB_API_HEADERS = (token: string) => ({
   Authorization: `Bearer ${token}`,
   Accept: "application/vnd.github+json",
-  "User-Agent": "ThermalTrace-OAuth/1.0",
+  "User-Agent": "ProbeHarbor-OAuth/1.0",
   "X-GitHub-Api-Version": "2022-11-28",
 });
 
@@ -70,7 +70,7 @@ export async function exchangeGitHubCode(
     headers: {
       Accept: "application/json",
       "Content-Type": "application/x-www-form-urlencoded",
-      "User-Agent": "ThermalTrace-OAuth/1.0",
+      "User-Agent": "ProbeHarbor-OAuth/1.0",
     },
     body,
     signal: AbortSignal.timeout(10_000),

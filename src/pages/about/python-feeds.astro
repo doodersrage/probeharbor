@@ -84,7 +84,7 @@ cache.set("garage:latest", response.text)`}</code></pre>
 
   <h2>Uno Ethernet: HTTP→HTTPS for push ingest</h2>
   <p>
-    A W5100 shield cannot POST to <code>https://thermaltrace.dev</code>. The stdlib relay
+    A W5100 shield cannot POST to <code>https://probeharbor.dev</code>. The stdlib relay
     <a
       class="text-link"
       target="_blank"
@@ -102,5 +102,5 @@ cache.set("garage:latest", response.text)`}</code></pre>
     (DHT22 on A4/A5, classic <code>temp</code> JSON).
   </p>
   <pre><code>{`python3 sketches/relay/push_https_forward.py --listen 0.0.0.0:8080 \\
-  --upstream https://thermaltrace.dev`}</code></pre>
+  --upstream https://probeharbor.dev`}</code></pre>
 </AboutArticle>

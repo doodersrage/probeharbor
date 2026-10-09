@@ -256,7 +256,7 @@ describe("executeAlertAckPlaybook", () => {
       expect(url).toBe("https://hooks.example/incoming");
       expect(headers).toEqual({ "Content-Type": "application/json" });
       expect(JSON.parse(body)).toMatchObject({
-        title: "ThermalTrace alert acknowledged",
+        title: "ProbeHarbor alert acknowledged",
         body: "Temp dropped below 32F",
         event_id: 42,
       });

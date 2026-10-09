@@ -1,5 +1,5 @@
 /**
- * DS18B20 → ThermalTrace push ingest (AVR GNU assembly).
+ * DS18B20 → ProbeHarbor push ingest (AVR GNU assembly).
  *
  * Board: Arduino Uno / ATmega328P @ 16 MHz + W5100 Ethernet shield.
  * Not Arduino C, not Python: avr-gcc assembles this .S, avrdude flashes it.

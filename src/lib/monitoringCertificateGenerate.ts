@@ -67,7 +67,7 @@ export async function generateMonitoringCertificateForUser(
     return {
       html: null,
       data: null,
-      filenameBase: "thermaltrace-monitoring-certificate",
+      filenameBase: "probeharbor-monitoring-certificate",
       error: "No household",
     };
   }
@@ -123,7 +123,7 @@ export async function generateMonitoringCertificateForUser(
   return {
     html: buildMonitoringCertificateHtml(data),
     data,
-    filenameBase: `thermaltrace-monitoring-${slug || "certificate"}`,
+    filenameBase: `probeharbor-monitoring-${slug || "certificate"}`,
     error: null,
   };
 }

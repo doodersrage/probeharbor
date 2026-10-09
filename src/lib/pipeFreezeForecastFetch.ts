@@ -25,7 +25,7 @@ export type PipeFreezeForecastResult =
 const CACHE_TTL_MS = 30 * 60 * 1000;
 const CACHE_MAX = 500;
 const cache = new Map<string, { at: number; body: PipeFreezeForecastBody }>();
-const USER_AGENT = `ThermalTrace (${import.meta.env.SITE_URL?.trim() || "https://thermaltrace.dev"})`;
+const USER_AGENT = `ProbeHarbor (${import.meta.env.SITE_URL?.trim() || "https://probeharbor.dev"})`;
 
 export function pipeFreezeCacheKey(lat: number, lon: number): string {
   return `${lat.toFixed(2)},${lon.toFixed(2)}`;

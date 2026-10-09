@@ -1,5 +1,5 @@
 /**
- * DS18B20 → ThermalTrace push ingest (Microchip PIC18F67J60).
+ * DS18B20 → ProbeHarbor push ingest (Microchip PIC18F67J60).
  *
  * Drop-in application layer for the classic Microchip TCP/IP Stack (MLA /
  * "TCPIP Stack") Ethernet demo on PIC18F67J60 (onboard MAC + 10BASE-T PHY).
@@ -20,8 +20,8 @@
  * 4.7k pull-up to VDD.
  *
  * Requires the demo's TCPIP.h / Tick.h / Delay.h and a periodic StackTask()
- * pump (usually already in MainDemo.c). Call ThermalTraceAppInit() after
- * stack init; call ThermalTraceAppTask() from the main loop alongside StackTask().
+ * pump (usually already in MainDemo.c). Call ProbeHarborAppInit() after
+ * stack init; call ProbeHarborAppTask() from the main loop alongside StackTask().
  */
 
 #include "TCPIP Stack/TCPIP.h"
@@ -221,15 +221,15 @@ static int build_http_post(float temp_f)
 	return 0;
 }
 
-void ThermalTraceAppInit(void)
+void ProbeHarborAppInit(void)
 {
 	OW_TRIS = 1;
 	lastPostTick = TickGet() - INTERVAL_TICKS;
 	httpSock = INVALID_SOCKET;
-	printf("ThermalTrace PIC18F67J60 ingest\r\n");
+	printf("ProbeHarbor PIC18F67J60 ingest\r\n");
 }
 
-void ThermalTraceAppTask(void)
+void ProbeHarborAppTask(void)
 {
 	BYTE remote[4];
 	float c;

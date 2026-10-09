@@ -1,13 +1,13 @@
 ---
 layout: home
-title: ThermalTrace Docs
+title: ProbeHarbor Docs
 hero:
-  name: ThermalTrace
+  name: ProbeHarbor
   text: Developer documentation
   tagline: Push ingest, HTTP API, sensor sketches, deploy notes, and integrations for the open-source environmental monitoring dashboard.
   image:
-    src: https://thermaltrace.dev/og-dashboard.jpg
-    alt: ThermalTrace live telemetry graph with humidity and dew point
+    src: https://probeharbor.dev/og-dashboard.jpg
+    alt: ProbeHarbor live telemetry graph with humidity and dew point
   actions:
     - theme: brand
       text: Push ingest
@@ -17,7 +17,7 @@ hero:
       link: /api/
     - theme: alt
       text: Live app
-      link: https://thermaltrace.dev
+      link: https://probeharbor.dev
 features:
   - title: Push ingest
     details: POST JSON from ESP32, Pico W, STM32, CH32V, AVR assembly, Teensy 4.1, PIC18, Particle Boron, Arduino, CircuitPython, or MicroPython. Sensors auto-import on first POST; Reveal ingest key when the operator vault is enabled.
@@ -33,19 +33,19 @@ features:
     linkText: Browse sketches
   - title: Home Assistant (HACS)
     details: Official custom integration — share-link sensors, snooze/vacation services, MQTT bridge recipes.
-    link: https://thermaltrace.dev/integrations/home-assistant
+    link: https://probeharbor.dev/integrations/home-assistant
     linkText: HACS integration
   - title: Matter / Apple Home
     details: Matterbridge plugin — share-link sensors in Apple Home, Google Home, and Alexa (not CSA-certified; LAN host).
-    link: https://thermaltrace.dev/integrations/matter
+    link: https://probeharbor.dev/integrations/matter
     linkText: Matter bridge
   - title: Node-RED & Influx
     details: MQTT→HTTPS flow JSON and Telegraf scrape into InfluxDB / VictoriaMetrics from Pro Prometheus metrics.
-    link: https://thermaltrace.dev/integrations/node-red
+    link: https://probeharbor.dev/integrations/node-red
     linkText: Node-RED
   - title: Integrations hub
     details: Home Assistant, Matter, SmartThings path, Node-RED, Influx, MQTT, Grafana, webhooks, Nest/Ecobee, Zapier, IFTTT/n8n — entry points on the product site.
-    link: https://thermaltrace.dev/integrations
+    link: https://probeharbor.dev/integrations
     linkText: All integrations
   - title: Alert webhooks
     details: Pro outbound webhooks with optional HMAC, plus Home Assistant blueprint and Zapier/Make hooks.
@@ -61,16 +61,16 @@ features:
     linkText: How it fits together
   - title: Product guides
     details: Long-form wiring, freeze playbooks, and journeys live on the app site Guides hub (and all articles).
-    link: https://thermaltrace.dev/guides
-    linkText: thermaltrace.dev/guides
-description: "Developer docs for ThermalTrace: push ingest, the HTTP API, sensor sketches, self-hosting, and Home Assistant, MQTT, and Grafana integrations."
+    link: https://probeharbor.dev/guides
+    linkText: probeharbor.dev/guides
+description: "Developer docs for ProbeHarbor: push ingest, the HTTP API, sensor sketches, self-hosting, and Home Assistant, MQTT, and Grafana integrations."
 ---
 
 ## Where to go
 
 | Goal | Start here |
 |------|------------|
-| Add a push or pull device (UI) | [Adding devices](https://thermaltrace.dev/about/adding-devices) |
+| Add a push or pull device (UI) | [Adding devices](https://probeharbor.dev/about/adding-devices) |
 | Wire an ESP and see live temps | [Push ingest](/ingest/) → [Sketches](/sketches/) |
 | Pull HTTPS JSON instead | [Pull feeds](/ingest/pull-feeds) |
 | Automate on freeze alerts | [Home Assistant (HACS)](/integrations/home-assistant) · [Alert webhooks](/integrations/webhooks) |
@@ -80,10 +80,10 @@ description: "Developer docs for ThermalTrace: push ingest, the HTTP API, sensor
 | Scrape metrics | [Grafana / Prometheus](/integrations/grafana) |
 | Run the app locally | [Local development](/guide/local-dev) |
 | Deploy or check production | [Deploy & ops](/guide/deploy) |
-| Read product / DIY guides | [About hub](https://thermaltrace.dev/about) |
+| Read product / DIY guides | [About hub](https://probeharbor.dev/about) |
 
 ::: tip Repo links
 Source: [github.com/doodersrage/thermaltrace](https://github.com/doodersrage/thermaltrace) ·  
-This docs site: [thermaltrace.dev/developers](https://thermaltrace.dev/developers/) ·  
-Production app: [thermaltrace.dev](https://thermaltrace.dev)
+This docs site: [probeharbor.dev/developers](https://probeharbor.dev/developers/) ·  
+Production app: [probeharbor.dev](https://probeharbor.dev)
 :::

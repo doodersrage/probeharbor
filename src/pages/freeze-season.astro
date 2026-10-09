@@ -47,7 +47,7 @@ const description =
 
 const freezeSeasonFaqs = [
   {
-    question: "When is freeze season for ThermalTrace?",
+    question: "When is freeze season for ProbeHarbor?",
     answer:
       "Treat November through March as primary freeze season in most of the contiguous US. Coastal and mountain climates vary; use your coldest nights and NWS freeze warnings as the real signal.",
   },
@@ -64,12 +64,12 @@ const freezeSeasonFaqs = [
   {
     question: "Where is the ESP32 parts list?",
     answer:
-      "thermaltrace.dev/about/esp32-freeze-kit — ESP32 + waterproof DS18B20 BOM, wiring, and flash steps.",
+      "probeharbor.dev/about/esp32-freeze-kit — ESP32 + waterproof DS18B20 BOM, wiring, and flash steps.",
   },
 ];
 
 const freezeSeasonHowTo = getHowToSchema({
-  name: "Prepare ThermalTrace for a freeze night",
+  name: "Prepare ProbeHarbor for a freeze night",
   description,
   pageUrl,
   totalTime: "PT30M",
@@ -131,7 +131,7 @@ const schema = [
         <p class="card-subtitle mb-4">
           {isSeed
             ? "Illustrative preview until enough households opt into the freeze map."
-            : "From the latest ThermalTrace freeze-map snapshot."}
+            : "From the latest ProbeHarbor freeze-map snapshot."}
         </p>
         <ul class="text-sm space-y-2 mb-0">
           {coldest.map((row) => (
@@ -150,7 +150,7 @@ const schema = [
       <h2 class="card-title">Why indoor probes beat outdoor weather alone</h2>
       <p class="mb-4 text-sm">
         A Tempest or airport reading says how cold the yard is. Your pipes care about the unheated bay,
-        the leaky door, and the failed space heater. ThermalTrace watches that space, and can sit next to
+        the leaky door, and the failed space heater. ProbeHarbor watches that space, and can sit next to
         outdoor weather on your dashboard for context.
       </p>
       <div class="flex flex-wrap gap-3">

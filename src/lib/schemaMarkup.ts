@@ -22,7 +22,7 @@ export function getOrganizationSchema(siteUrl: string) {
     "@context": "https://schema.org",
     "@type": "Organization",
     name: SITE_NAME,
-    alternateName: "ThermalTrace temperature dashboard",
+    alternateName: "ProbeHarbor temperature dashboard",
     url: siteUrl,
     logo: {
       "@type": "ImageObject",

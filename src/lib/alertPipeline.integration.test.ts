@@ -115,7 +115,7 @@ describe("freeze alert pipeline", () => {
     // What /api/user/alert-test does, then an Overview load.
     const settings = await getAlertSettingsForUser(USER);
     await notifyUser(USER, "owner@example.com", settings, {
-      title: "ThermalTrace test alert",
+      title: "ProbeHarbor test alert",
       body: "test",
       kind: "generic",
     });

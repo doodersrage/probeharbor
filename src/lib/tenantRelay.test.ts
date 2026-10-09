@@ -191,13 +191,13 @@ describe("sendTenantFreezeRelay", () => {
 
     await sendTenantFreezeRelay(baseInput);
     expect(mockBrandedEmailParts).toHaveBeenCalledWith(
-      expect.objectContaining({ cta: { label: "ThermalTrace", url: "https://default.example" } }),
+      expect.objectContaining({ cta: { label: "ProbeHarbor", url: "https://default.example" } }),
     );
 
     mockBrandedEmailParts.mockClear();
     await sendTenantFreezeRelay({ ...baseInput, siteUrl: "https://custom.example" });
     expect(mockBrandedEmailParts).toHaveBeenCalledWith(
-      expect.objectContaining({ cta: { label: "ThermalTrace", url: "https://custom.example" } }),
+      expect.objectContaining({ cta: { label: "ProbeHarbor", url: "https://custom.example" } }),
     );
   });
 

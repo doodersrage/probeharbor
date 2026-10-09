@@ -1591,7 +1591,7 @@ const onboardingProps = {
         fetch("/api/user/dashboard-snapshot", { headers: { Accept: "application/json" } })
           .then(function (res) {
             var banner = document.getElementById("overview-offline-banner");
-            if (res.headers.get("X-ThermalTrace-Stale") === "1" && banner) {
+            if (res.headers.get("X-ProbeHarbor-Stale") === "1" && banner) {
               banner.hidden = false;
             }
             if (!res.ok) throw new Error("refresh failed");
@@ -1698,7 +1698,7 @@ const onboardingProps = {
         .then(function (res) {
           var banner = document.getElementById("overview-offline-banner");
           if (!banner) return;
-          if (res.headers.get("X-ThermalTrace-Stale") === "1") {
+          if (res.headers.get("X-ProbeHarbor-Stale") === "1") {
             banner.hidden = false;
           }
         })

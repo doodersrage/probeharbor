@@ -44,7 +44,7 @@ discussions) and when an individual is officially representing the project.
 
 ## Enforcement
 
-Report issues via the [contact form](https://thermaltrace.dev/contact) (choose a
+Report issues via the [contact form](https://probeharbor.dev/contact) (choose a
 message that you are reporting a Code of Conduct concern) or by opening a
 **private** GitHub security/advisory report if the matter is sensitive.
 

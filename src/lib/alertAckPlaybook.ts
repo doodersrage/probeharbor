@@ -105,7 +105,7 @@ export async function executeAlertAckPlaybook(input: {
       return { ok: false, message: "No outbound webhook configured." };
     }
     const payload = JSON.stringify({
-      title: "ThermalTrace alert acknowledged",
+      title: "ProbeHarbor alert acknowledged",
       body: event.body,
       kind: "generic",
       action: "ack_playbook",

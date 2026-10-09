@@ -18,13 +18,13 @@ function formatIcalDay(date: Date): string {
 
 export function buildFreezeOutlookIcal(
   nights: NightRisk[],
-  calendarName = "ThermalTrace freeze outlook",
+  calendarName = "ProbeHarbor freeze outlook",
 ): string {
   const now = formatIcalDate(new Date());
   const lines = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//ThermalTrace//Freeze Outlook//EN",
+    "PRODID:-//ProbeHarbor//Freeze Outlook//EN",
     `X-WR-CALNAME:${escapeIcal(calendarName)}`,
     "CALSCALE:GREGORIAN",
   ];
@@ -34,7 +34,7 @@ export function buildFreezeOutlookIcal(
     if (Number.isNaN(start.getTime())) continue;
     const end = new Date(start);
     end.setUTCDate(end.getUTCDate() + 1);
-    const uid = `thermaltrace-freeze-${night.date}@thermaltrace.dev`;
+    const uid = `probeharbor-freeze-${night.date}@probeharbor.dev`;
     lines.push(
       "BEGIN:VEVENT",
       `UID:${uid}`,

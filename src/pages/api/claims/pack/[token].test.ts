@@ -26,7 +26,7 @@ function makeContext(token = "tok-1"): APIContext {
 }
 
 beforeEach(() => {
-  mockGetSiteUrl.mockReset().mockReturnValue("https://thermaltrace.dev/");
+  mockGetSiteUrl.mockReset().mockReturnValue("https://probeharbor.dev/");
   mockBuildClaimsPackHtml.mockReset().mockReturnValue("<html>pack</html>");
   mockComputeClaimsPackHash.mockReset().mockResolvedValue("hash-1");
   mockGetClaimsPackExportByToken.mockReset().mockResolvedValue({ householdLabel: "Garage" });
@@ -58,7 +58,7 @@ describe("GET /api/claims/pack/[token]", () => {
     expect(mockComputeClaimsPackHash).toHaveBeenCalledWith({ householdLabel: "Garage" });
     expect(mockBuildClaimsPackHtml).toHaveBeenCalledWith({
       householdLabel: "Garage",
-      verifyUrl: "https://thermaltrace.dev/api/claims/pack/tok-1",
+      verifyUrl: "https://probeharbor.dev/api/claims/pack/tok-1",
       contentHash: "hash-1",
     });
     expect(response.status).toBe(200);

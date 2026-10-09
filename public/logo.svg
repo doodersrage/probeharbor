@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 64" fill="none" role="img" aria-labelledby="tt-logo-title">
-  <title id="tt-logo-title">ThermalTrace</title>
+  <title id="tt-logo-title">ProbeHarbor</title>
   <defs>
     <linearGradient id="tt-steel" x1="32" y1="4" x2="32" y2="60" gradientUnits="userSpaceOnUse">
       <stop offset="0%" stop-color="#F4F6F8"/>
@@ -33,6 +33,6 @@
     font-weight="800"
     letter-spacing="-0.03em"
   >
-    <tspan x="72" fill="#E8ECF0">Thermal</tspan><tspan dx="2" fill="#FF7A00">Trace</tspan>
+    <tspan x="72" fill="#E8ECF0">Probe</tspan><tspan dx="2" fill="#FF7A00">Harbor</tspan>
   </text>
 </svg>

@@ -75,13 +75,13 @@ beforeEach(() => {
   mockCheckContactRateLimit.mockReset().mockReturnValue({ ok: true });
   mockGetTurnstileToken.mockReset().mockReturnValue("token");
   mockVerifyTurnstileToken.mockReset().mockResolvedValue({ success: true });
-  mockRequireSmtpMailFrom.mockReset().mockReturnValue("noreply@thermaltrace.dev");
+  mockRequireSmtpMailFrom.mockReset().mockReturnValue("noreply@probeharbor.dev");
   mockSendMailerRaw.mockReset().mockResolvedValue(undefined);
   mockInsert.mockReset().mockResolvedValue({ error: null });
   mockCreateServerClient.mockReset().mockReturnValue({
     from: () => ({ insert: mockInsert }),
   });
-  stubEnv("SMTP_MAIL_TO", "support@thermaltrace.dev");
+  stubEnv("SMTP_MAIL_TO", "support@probeharbor.dev");
 });
 
 afterEach(() => {

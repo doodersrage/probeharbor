@@ -77,7 +77,7 @@ export const coreAboutPages: AboutPage[] = [
     slug: "astro-applications",
     title: "Astro applications in this project",
     description:
-      "How Astro server rendering, islands, and Cloudflare Workers deployment power ThermalTrace pages, dashboards, and edge API routes.",
+      "How Astro server rendering, islands, and Cloudflare Workers deployment power ProbeHarbor pages, dashboards, and edge API routes.",
     summary:
       "This site uses Astro for fast pages, authenticated dashboards, and API routes at the edge.",
   },
@@ -85,7 +85,7 @@ export const coreAboutPages: AboutPage[] = [
     slug: "nextjs-node-applications",
     title: "Next.js and Node applications",
     description:
-      "Compare Node and Next.js monitoring dashboards with ThermalTrace’s Astro-on-Cloudflare stack and when each fits DIY space-sensor projects.",
+      "Compare Node and Next.js monitoring dashboards with ProbeHarbor’s Astro-on-Cloudflare stack and when each fits DIY space-sensor projects.",
     summary:
       "Node runtimes excel at APIs and SSR; this project achieves the same goals with Astro on Cloudflare.",
   },
@@ -109,7 +109,7 @@ export const coreAboutPages: AboutPage[] = [
     slug: "ingest-and-webhooks",
     title: "Ingest API and alert webhooks",
     description:
-      "Push sensor readings into ThermalTrace with the ingest API: native JSON, SenML, or Home Assistant REST, and send alerts to Discord, IFTTT, or Home Assistant.",
+      "Push sensor readings into ProbeHarbor with the ingest API: native JSON, SenML, or Home Assistant REST, and send alerts to Discord, IFTTT, or Home Assistant.",
     summary:
       "Device API keys, typed sensor payloads, SenML and HA REST auto-detect, outbound HMAC webhooks, and Pro alert channels.",
   },
@@ -117,7 +117,7 @@ export const coreAboutPages: AboutPage[] = [
     slug: "thermostat-oauth",
     title: "Nest & Ecobee thermostat OAuth (operators)",
     description:
-      "Enable Nest and Ecobee OAuth on your ThermalTrace deployment so Pro households can connect thermostats for indoor context on freeze and leak alerts.",
+      "Enable Nest and Ecobee OAuth on your ProbeHarbor deployment so Pro households can connect thermostats for indoor context on freeze and leak alerts.",
     summary:
       "Device Access Console, Ecobee developer app, redirect URIs, and Worker secrets for NEST_* and ECOBEE_CLIENT_ID.",
   },
@@ -133,7 +133,7 @@ export const coreAboutPages: AboutPage[] = [
     slug: "mqtt-bridge",
     title: "MQTT bridge recipe",
     description:
-      "Keep Mosquitto or Home Assistant MQTT on your LAN and mirror readings to ThermalTrace over HTTPS for household freeze and leak alerts and history.",
+      "Keep Mosquitto or Home Assistant MQTT on your LAN and mirror readings to ProbeHarbor over HTTPS for household freeze and leak alerts and history.",
     summary:
       "POST /api/ingest/mqtt, Home Assistant rest_command, and Node-RED flow: dual-run without exposing your broker.",
   },
@@ -141,7 +141,7 @@ export const coreAboutPages: AboutPage[] = [
     slug: "install-pwa",
     title: "Install as an app (PWA)",
     description:
-      "Install ThermalTrace as a PWA on desktop, Android, or iOS for faster dashboard access and optional browser push freeze and leak alerts.",
+      "Install ProbeHarbor as a PWA on desktop, Android, or iOS for faster dashboard access and optional browser push freeze and leak alerts.",
     summary:
       "Desktop, Android, and iOS install steps, plus Web Push limits on Apple devices.",
   },

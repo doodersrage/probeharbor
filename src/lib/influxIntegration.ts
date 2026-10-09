@@ -2,7 +2,7 @@
 
 export const INFLUX_INTEGRATION_PAGE = "/integrations/influx";
 
-export const TELEGRAF_CONFIG_URL = "/telegraf/thermaltrace.conf";
+export const TELEGRAF_CONFIG_URL = "/telegraf/probeharbor.conf";
 
 export const INFLUX_NAME = "InfluxDB & Telegraf";
 

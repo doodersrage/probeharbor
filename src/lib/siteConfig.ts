@@ -1,13 +1,16 @@
 /** Canonical public site URL — set SITE_URL or ORIGIN in Worker env / .env. */
-export const DEFAULT_SITE_URL = "https://thermaltrace.dev";
+export const DEFAULT_SITE_URL = "https://probeharbor.dev";
 
-export const CANONICAL_HOST = "thermaltrace.dev";
+export const CANONICAL_HOST = "probeharbor.dev";
 
 /** Hostnames that should 301 to CANONICAL_HOST (apex). */
 export const LEGACY_HOSTS = new Set([
   "garage-temp.robmcd.name",
   "thermaltrace.robmcd.name",
   "garage-temp.doodersrage.workers.dev",
+  "www.probeharbor.dev",
+  // Renamed from ThermalTrace on 2026-10-09 (name collision).
+  "thermaltrace.dev",
   "www.thermaltrace.dev",
 ]);
 
@@ -16,8 +19,15 @@ export const LEGACY_HOSTS = new Set([
  * clients: Stripe treats redirects as failed webhooks, and sensors or bridges
  * still pointed at an old hostname drop (or GET-retry) their readings.
  */
-export function shouldRedirectLegacyHost(hostname: string, method: string): boolean {
+export function shouldRedirectLegacyHost(
+  hostname: string,
+  method: string,
+  pathname = "/",
+): boolean {
   if (!LEGACY_HOSTS.has(hostname)) return false;
+  // API clients (Prometheus, curl, Go) drop Authorization on cross-host
+  // redirects, so serve /api/* in place on old hostnames.
+  if (pathname.startsWith("/api/")) return false;
   const verb = method.toUpperCase();
   return verb === "GET" || verb === "HEAD";
 }

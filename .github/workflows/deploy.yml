@@ -105,8 +105,8 @@ jobs:
             echo "skip=true" >> "$GITHUB_ENV"
             exit 0
           fi
-          if [ -z "$SITE_URL" ] || [[ "$SITE_URL" != *"thermaltrace.dev"* ]]; then
-            echo "::notice::Deploy skipped — SITE_URL secret must be https://thermaltrace.dev"
+          if [ -z "$SITE_URL" ] || [[ "$SITE_URL" != *"probeharbor.dev"* ]]; then
+            echo "::notice::Deploy skipped — SITE_URL secret must be https://probeharbor.dev"
             echo "skip=true" >> "$GITHUB_ENV"
             exit 0
           fi

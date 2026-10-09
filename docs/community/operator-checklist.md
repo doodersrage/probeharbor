@@ -1,4 +1,4 @@
-# Operator checklist (ThermalTrace)
+# Operator checklist (ProbeHarbor)
 
 Tasks only **you** can complete — everything else in the HACS/integration pass is shipped.
 
@@ -15,7 +15,7 @@ Tasks only **you** can complete — everything else in the HACS/integration pass
 - [ ] Bing Webmaster Tools: verify the site so IndexNow submissions (sent after each deploy) show up
 - [ ] Post one build write-up per platform (Hackster, Instructables, Arduino Project Hub) from the [draft](./build-writeup-esp32-freeze-probe.md), with your own photos
 - [ ] Ask for listings on awesome-home-assistant and ESPHome community device lists once the HACS default PR merges
-- [ ] After the first deploy that includes `/developers/`, open `https://thermaltrace.dev/developers/` and one deep page, then update external links you control (HACS repo README, forum post) from `doodersrage.github.io/thermaltrace` to `thermaltrace.dev/developers`
+- [ ] After the first deploy that includes `/developers/`, open `https://probeharbor.dev/developers/` and one deep page, then update external links you control (HACS repo README, forum post) from `doodersrage.github.io/thermaltrace` to `probeharbor.dev/developers`
 
 - [ ] Email the signups who never added a device, by hand, using the [draft](./stalled-signup-email.md); tally the replies
 
@@ -43,17 +43,17 @@ Tasks only **you** can complete — everything else in the HACS/integration pass
 
 ## Thermostat OAuth (Pro feature)
 
-Connect UI stays hidden until Worker secrets exist. Full steps: [thermaltrace.dev/about/thermostat-oauth](https://thermaltrace.dev/about/thermostat-oauth)
+Connect UI stays hidden until Worker secrets exist. Full steps: [probeharbor.dev/about/thermostat-oauth](https://probeharbor.dev/about/thermostat-oauth)
 
 Check what's missing locally: `pnpm operator:check`
 
 1. **Nest** — [Device Access Console](https://console.nest.google.com/device-access) + Google Cloud OAuth web client  
-   Redirect URI: `https://thermaltrace.dev/api/integrations/nest/callback`  
+   Redirect URI: `https://probeharbor.dev/api/integrations/nest/callback`  
    **Enable [Smart Device Management API](https://console.cloud.google.com/apis/library/smartdevicemanagement.googleapis.com)** in the GCP project that owns your OAuth client (prefix of `NEST_CLIENT_ID` before the first `-`).  
    Secrets: `NEST_CLIENT_ID`, `NEST_CLIENT_SECRET`, `NEST_PROJECT_ID`
 
 2. **Ecobee** — [Developer portal](https://www.ecobee.com/en-us/developer/) (signups often closed)  
-   Redirect URI: `https://thermaltrace.dev/api/integrations/ecobee/callback`  
+   Redirect URI: `https://probeharbor.dev/api/integrations/ecobee/callback`  
    Secret: `ECOBEE_CLIENT_ID` (no client secret)  
    **Workaround:** HA → ingest → **Indoor reference** on Dashboard → Devices (see [HA indoor temp guide](https://doodersrage.github.io/thermaltrace/integrations/home-assistant#indoor-temperature-indoor-temperature-ecobee--any-thermostat))
 
@@ -81,7 +81,7 @@ Check what's missing locally: `pnpm operator:check`
 
 ## Already done (no action)
 
-- HACS integration repo: [thermaltrace-home-assistant](https://github.com/doodersrage/thermaltrace-home-assistant) v1.0.2
+- HACS integration repo: [probeharbor-home-assistant](https://github.com/doodersrage/thermaltrace-home-assistant) v1.0.2
 - **Nest OAuth + SDM API** — live thermostat readings on Devices
 - **Ambient Weather** — `AMBIENT_APPLICATION_KEY` synced; users add station MAC + API key in Settings
 - **Ingest key vault** — `INGEST_KEY_ENCRYPTION_SECRET` for Reveal ingest key on Devices

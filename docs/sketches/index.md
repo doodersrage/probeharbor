@@ -1,5 +1,5 @@
 ---
-description: "Ready-made ThermalTrace firmware for DS18B20, MAX31855, and MAX6675 probes: Arduino, MicroPython, CircuitPython, Zephyr, CH32V, and AVR."
+description: "Ready-made ProbeHarbor firmware for DS18B20, MAX31855, and MAX6675 probes: Arduino, MicroPython, CircuitPython, Zephyr, CH32V, and AVR."
 ---
 
 # Sensor sketches
@@ -57,11 +57,11 @@ Uno Ethernet samples send the classic `temp` object (`0` / `1` / `avg` with `c`,
 
 ## Checklist
 
-1. Buy ESP32 + waterproof DS18B20 — [parts list](https://thermaltrace.dev/about/esp32-freeze-kit) — or a [Pico W](https://thermaltrace.dev/about/pico-w-ingest) — or a [Nucleo-F767ZI](https://thermaltrace.dev/about/stm32-zephyr-ingest) — or a [CH32V307V-EVT](https://thermaltrace.dev/about/ch32v-riscv-ingest) — or [AVR assembly on Uno + W5100](https://thermaltrace.dev/about/avr-asm-ingest) — or [Teensy 4.1](https://thermaltrace.dev/about/teensy41-ingest) — or [PIC18F67J60](https://thermaltrace.dev/about/pic18-ethernet-ingest) — or [Particle Boron cellular](https://thermaltrace.dev/about/cellular-ingest)
+1. Buy ESP32 + waterproof DS18B20 — [parts list](https://probeharbor.dev/about/esp32-freeze-kit) — or a [Pico W](https://probeharbor.dev/about/pico-w-ingest) — or a [Nucleo-F767ZI](https://probeharbor.dev/about/stm32-zephyr-ingest) — or a [CH32V307V-EVT](https://probeharbor.dev/about/ch32v-riscv-ingest) — or [AVR assembly on Uno + W5100](https://probeharbor.dev/about/avr-asm-ingest) — or [Teensy 4.1](https://probeharbor.dev/about/teensy41-ingest) — or [PIC18F67J60](https://probeharbor.dev/about/pic18-ethernet-ingest) — or [Particle Boron cellular](https://probeharbor.dev/about/cellular-ingest)
 2. Create push device on Devices; download pre-filled sketch (or paste `INGEST_URL`)
 3. Edit `WIFI_*` only
 4. Flash; watch serial (115200) for `POST 200`
-5. Open Home on thermaltrace.dev
+5. Open Home on probeharbor.dev
 6. Set freeze alerts under Dashboard → Alerts
 
 ## Uno + Ethernet shield
@@ -70,7 +70,7 @@ The W5100 cannot TLS. Use [`ethernet_dht22_ingest`](https://github.com/doodersra
 
 ```bash
 python3 sketches/relay/push_https_forward.py --listen 0.0.0.0:8080 \
-  --upstream https://thermaltrace.dev
+  --upstream https://probeharbor.dev
 ```
 
 Set `INGEST_HOST` to that machine and `INGEST_PATH` to `/api/ingest/<your-key>`.
@@ -80,4 +80,4 @@ Set `INGEST_HOST` to that machine and `INGEST_PATH` to `/api/ingest/<your-key>`.
 Ethernet + dual DHT22 + LCD firmware (separate repo):  
 [arduino-network-json-temperature-sever](https://github.com/doodersrage/arduino-network-json-temperature-sever)
 
-Wiring / LCD guides on the product site: [About → Arduino](https://thermaltrace.dev/about/arduino-sketches) · [Pico W ingest](https://thermaltrace.dev/about/pico-w-ingest) · [STM32 Zephyr](https://thermaltrace.dev/about/stm32-zephyr-ingest) · [CH32V RISC-V](https://thermaltrace.dev/about/ch32v-riscv-ingest) · [AVR assembly](https://thermaltrace.dev/about/avr-asm-ingest) · [Teensy 4.1](https://thermaltrace.dev/about/teensy41-ingest) · [PIC18 Ethernet](https://thermaltrace.dev/about/pic18-ethernet-ingest) · [Cellular](https://thermaltrace.dev/about/cellular-ingest)
+Wiring / LCD guides on the product site: [About → Arduino](https://probeharbor.dev/about/arduino-sketches) · [Pico W ingest](https://probeharbor.dev/about/pico-w-ingest) · [STM32 Zephyr](https://probeharbor.dev/about/stm32-zephyr-ingest) · [CH32V RISC-V](https://probeharbor.dev/about/ch32v-riscv-ingest) · [AVR assembly](https://probeharbor.dev/about/avr-asm-ingest) · [Teensy 4.1](https://probeharbor.dev/about/teensy41-ingest) · [PIC18 Ethernet](https://probeharbor.dev/about/pic18-ethernet-ingest) · [Cellular](https://probeharbor.dev/about/cellular-ingest)

@@ -77,7 +77,7 @@ describe("GET /api/ical/outlook", () => {
     expect(response.status).toBe(200);
     expect(response.headers.get("Content-Type")).toBe("text/calendar; charset=utf-8");
     expect(response.headers.get("Content-Disposition")).toBe(
-      'attachment; filename="thermaltrace-freeze-outlook.ics"',
+      'attachment; filename="probeharbor-freeze-outlook.ics"',
     );
     expect(response.headers.get("Cache-Control")).toBe("no-store");
     expect(await response.text()).toBe("BEGIN:VCALENDAR\nSUMMARY:Freeze\nEND:VCALENDAR");

@@ -51,8 +51,8 @@ describe("sitemapPages", () => {
   });
 
   it("builds absolute URLs from site origin", () => {
-    const urls = buildPublicSitemapUrls("https://thermaltrace.dev");
-    expect(urls).toContain("https://thermaltrace.dev/about/dht22-sensor-overview");
-    expect(urls.every((url) => url.startsWith("https://thermaltrace.dev/"))).toBe(true);
+    const urls = buildPublicSitemapUrls("https://probeharbor.dev");
+    expect(urls).toContain("https://probeharbor.dev/about/dht22-sensor-overview");
+    expect(urls.every((url) => url.startsWith("https://probeharbor.dev/"))).toBe(true);
   });
 });

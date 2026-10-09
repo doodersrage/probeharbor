@@ -62,7 +62,7 @@ const statusErrorMessage =
 ---
 <Layout
   title="System status"
-  description="Live ThermalTrace system health: scheduled alert jobs, ingest activity, Cloudflare hosting, and whether crons are running on schedule."
+  description="Live ProbeHarbor system health: scheduled alert jobs, ingest activity, Cloudflare hosting, and whether crons are running on schedule."
   schema={schema}
   speakableSelectors={[".page-header-title", ".page-header-lede"]}
 >
@@ -70,7 +70,7 @@ const statusErrorMessage =
     <PageHeader
       kicker="Status"
       title="System status"
-      lede="Public health for ThermalTrace jobs and ingest: what we measure ourselves. Updated on each page load."
+      lede="Public health for ProbeHarbor jobs and ingest: what we measure ourselves. Updated on each page load."
     />
 
     <section class="card" aria-live="polite">
@@ -197,7 +197,7 @@ const statusErrorMessage =
     <section class="card">
       <h2 class="card-title">Hosting</h2>
       <p class="mb-3 text-sm">
-        ThermalTrace runs on <strong>Cloudflare’s edge network</strong> (Workers) so the dashboard and ingest APIs stay close to visitors, without you operating a home server.
+        ProbeHarbor runs on <strong>Cloudflare’s edge network</strong> (Workers) so the dashboard and ingest APIs stay close to visitors, without you operating a home server.
         We publish <em>this</em> page’s job and ingest health, not a marketing uptime percentage or Cloudflare’s platform SLA as if it were our own.
       </p>
       <ul class="text-sm space-y-2 mb-0">

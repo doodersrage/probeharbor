@@ -2,10 +2,10 @@
 """HTTP→HTTPS forwarder for Arduino Uno + Ethernet shield push ingest.
 
 The W5100 stack cannot TLS. Run this on a LAN host (Pi, NAS, laptop), point the
-sketch INGEST_HOST/PORT here, and it POSTs the same path+body to ThermalTrace.
+sketch INGEST_HOST/PORT here, and it POSTs the same path+body to ProbeHarbor.
 
   python3 push_https_forward.py --listen 0.0.0.0:8080 \\
-    --upstream https://thermaltrace.dev
+    --upstream https://probeharbor.dev
 
 Then in ethernet_dht22_ingest.ino:
   #define INGEST_HOST "192.168.1.50"
@@ -69,12 +69,12 @@ class ForwardHandler(http.server.BaseHTTPRequestHandler):
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--listen", default="0.0.0.0:8080")
-    parser.add_argument("--upstream", default="https://thermaltrace.dev")
+    parser.add_argument("--upstream", default="https://probeharbor.dev")
     args = parser.parse_args()
     host, port = split_listen(args.listen)
     parsed = urllib.parse.urlparse(args.upstream)
     if not parsed.scheme or not parsed.hostname:
-        raise SystemExit("upstream must be an absolute URL, e.g. https://thermaltrace.dev")
+        raise SystemExit("upstream must be an absolute URL, e.g. https://probeharbor.dev")
     ForwardHandler.upstream = parsed
     http.server.ThreadingHTTPServer((host, port), ForwardHandler).serve_forever()
 

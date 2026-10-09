@@ -78,7 +78,7 @@ function createWriter(doc: PDFDocument, font: PDFFont, fontBold: PDFFont): PdfWr
         color: ACCENT,
       });
 
-      this.page.drawText("ThermalTrace", {
+      this.page.drawText("ProbeHarbor", {
         x: MARGIN + 14,
         y: PAGE_HEIGHT - MARGIN - 28,
         size: 11,

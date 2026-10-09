@@ -20,7 +20,7 @@ function endpoint(url: string, overrides: Partial<{ status: string; enabled_even
 
 describe("webhookEndpointProblems", () => {
   it("accepts an enabled canonical endpoint with every event", () => {
-    expect(webhookEndpointProblems([endpoint("https://thermaltrace.dev/api/stripe/webhook")])).toEqual([]);
+    expect(webhookEndpointProblems([endpoint("https://probeharbor.dev/api/stripe/webhook")])).toEqual([]);
   });
 
   it("flags a legacy host, which the site redirects", () => {
@@ -34,12 +34,12 @@ describe("webhookEndpointProblems", () => {
   it("flags a disabled endpoint and missing events", () => {
     expect(
       webhookEndpointProblems([
-        endpoint("https://thermaltrace.dev/api/stripe/webhook", { status: "disabled" }),
+        endpoint("https://probeharbor.dev/api/stripe/webhook", { status: "disabled" }),
       ]),
     ).toHaveLength(1);
     expect(
       webhookEndpointProblems([
-        endpoint("https://thermaltrace.dev/api/stripe/webhook", {
+        endpoint("https://probeharbor.dev/api/stripe/webhook", {
           enabled_events: ["checkout.session.completed"],
         }),
       ])[0],
@@ -55,7 +55,7 @@ describe("checkStripeWebhookHealth", () => {
       webhooks: real.webhooks,
       webhookEndpoints: {
         list: vi.fn().mockResolvedValue({
-          data: overrides.endpoints ?? [endpoint("https://thermaltrace.dev/api/stripe/webhook")],
+          data: overrides.endpoints ?? [endpoint("https://probeharbor.dev/api/stripe/webhook")],
         }),
       },
       events: {

@@ -2,16 +2,16 @@
 import { Image } from "astro:assets";
 import type { ImageMetadata } from "astro";
 import type { ProductShotId } from "../lib/productScreenshots";
-import insightsImg from "../assets/marketing/thermaltrace-dashboard-insights.jpg";
-import historyImg from "../assets/marketing/thermaltrace-dashboard-history.jpg";
-import historyChartImg from "../assets/marketing/thermaltrace-dashboard-history-chart.jpg";
-import devicesImg from "../assets/marketing/thermaltrace-dashboard-devices.jpg";
-import overviewCardsImg from "../assets/marketing/thermaltrace-dashboard-overview-cards.jpg";
-import overviewStatusImg from "../assets/marketing/thermaltrace-dashboard-overview-status.jpg";
-import portfolioImg from "../assets/marketing/thermaltrace-dashboard-portfolio.jpg";
-import claimsPackImg from "../assets/marketing/thermaltrace-claims-pack-preview.jpg";
-import claimsVerifyImg from "../assets/marketing/thermaltrace-claims-pack-verification.jpg";
-import monitoringCertImg from "../assets/marketing/thermaltrace-monitoring-certificate-preview.jpg";
+import insightsImg from "../assets/marketing/probeharbor-dashboard-insights.jpg";
+import historyImg from "../assets/marketing/probeharbor-dashboard-history.jpg";
+import historyChartImg from "../assets/marketing/probeharbor-dashboard-history-chart.jpg";
+import devicesImg from "../assets/marketing/probeharbor-dashboard-devices.jpg";
+import overviewCardsImg from "../assets/marketing/probeharbor-dashboard-overview-cards.jpg";
+import overviewStatusImg from "../assets/marketing/probeharbor-dashboard-overview-status.jpg";
+import portfolioImg from "../assets/marketing/probeharbor-dashboard-portfolio.jpg";
+import claimsPackImg from "../assets/marketing/probeharbor-claims-pack-preview.jpg";
+import claimsVerifyImg from "../assets/marketing/probeharbor-claims-pack-verification.jpg";
+import monitoringCertImg from "../assets/marketing/probeharbor-monitoring-certificate-preview.jpg";
 
 interface Props {
   shot: ProductShotId;
@@ -28,52 +28,52 @@ type ShotMeta = { image: ImageMetadata; alt: string; defaultCaption: string };
 const shots: Record<ProductShotId, ShotMeta> = {
   insights: {
     image: insightsImg,
-    alt: "ThermalTrace Insights with seven-day probe curves, freeze threshold line, and nights-at-risk forecast",
+    alt: "ProbeHarbor Insights with seven-day probe curves, freeze threshold line, and nights-at-risk forecast",
     defaultCaption: "Insights: probe curves with your freeze threshold.",
   },
   history: {
     image: historyImg,
-    alt: "ThermalTrace Reading History chart with probe traces and 34°F freeze line",
+    alt: "ProbeHarbor Reading History chart with probe traces and 34°F freeze line",
     defaultCaption: "History: week of probe traces against the freeze line.",
   },
   "history-chart": {
     image: historyChartImg,
-    alt: "ThermalTrace temperature trend with humidity percent, dew point overlay, house thermostat reference, and 34°F freeze line",
+    alt: "ProbeHarbor temperature trend with humidity percent, dew point overlay, house thermostat reference, and 34°F freeze line",
     defaultCaption: "Temperature trend with humidity, dew point, and freeze guide.",
   },
   devices: {
     image: devicesImg,
-    alt: "ThermalTrace Devices page showing Garage pull device health and connection options",
+    alt: "ProbeHarbor Devices page showing Garage pull device health and connection options",
     defaultCaption: "Devices. ESP push, pull feeds, MQTT, and Home Assistant.",
   },
   "overview-cards": {
     image: overviewCardsImg,
-    alt: "ThermalTrace Overview cards for freeze setup, connecting a device, and receiving live data",
+    alt: "ProbeHarbor Overview cards for freeze setup, connecting a device, and receiving live data",
     defaultCaption: "Overview, from first device to live readings.",
   },
   "overview-status": {
     image: overviewStatusImg,
-    alt: "ThermalTrace Overview Status strip with last reading, sensors, feeds, alerts, house, freeze hours, coldest margin, indoor−outdoor delta, probe spread, condensation, and feed health",
+    alt: "ProbeHarbor Overview Status strip with last reading, sensors, feeds, alerts, house, freeze hours, coldest margin, indoor−outdoor delta, probe spread, condensation, and feed health",
     defaultCaption: "Overview Status: freeze margin, ΔT, probe spread, condensation, and feed health.",
   },
   portfolio: {
     image: portfolioImg,
-    alt: "ThermalTrace Portfolio dashboard listing multiple properties with freeze-risk banner, min temperatures, device counts, and property-manager roles",
+    alt: "ProbeHarbor Portfolio dashboard listing multiple properties with freeze-risk banner, min temperatures, device counts, and property-manager roles",
     defaultCaption: "Portfolio, every property’s freeze risk in one table.",
   },
   "claims-pack": {
     image: claimsPackImg,
-    alt: "ThermalTrace claims pack PDF showing freeze-exposure stats, freeze threshold, critical alerts, and devices in scope",
+    alt: "ProbeHarbor claims pack PDF showing freeze-exposure stats, freeze threshold, critical alerts, and devices in scope",
     defaultCaption: "Claims pack: freeze-exposure stats and devices for an adjuster.",
   },
   "claims-verification": {
     image: claimsVerifyImg,
-    alt: "ThermalTrace claims pack verification section with SHA-256 code, permanent verify link, and legal disclaimer",
+    alt: "ProbeHarbor claims pack verification section with SHA-256 code, permanent verify link, and legal disclaimer",
     defaultCaption: "Verification. SHA-256 code and permanent re-view link.",
   },
   "monitoring-certificate": {
     image: monitoringCertImg,
-    alt: "ThermalTrace monitoring certificate showing alerts enabled, freeze threshold, retention, and device coverage",
+    alt: "ProbeHarbor monitoring certificate showing alerts enabled, freeze threshold, retention, and device coverage",
     defaultCaption: "Monitoring certificate: configuration proof for insurers and landlords.",
   },
 };

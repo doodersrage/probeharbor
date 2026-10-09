@@ -25,11 +25,13 @@ import {
   HA_ENTITIES_LEGACY_URL,
   HA_ENTITIES_YAML,
 } from "./lib/homeAssistantIntegration";
+import { THERMALTRACE_STATIC_REDIRECTS } from "./lib/rebrand";
 import type { AstroCookies } from "astro";
 
 const LEGACY_STATIC_REDIRECTS: Record<string, string> = {
   [HA_BLUEPRINT_LEGACY_URL]: HA_BLUEPRINT_URL,
   [HA_ENTITIES_LEGACY_URL]: HA_ENTITIES_YAML,
+  ...THERMALTRACE_STATIC_REDIRECTS,
 };
 
 function isMfaExemptPath(pathname: string): boolean {
@@ -54,7 +56,7 @@ function isMfaRequired(request: Request, cookies: AstroCookies): boolean {
 export const onRequest = defineMiddleware(async (context, next) => {
   const { pathname, hostname, protocol } = context.url;
 
-  if (shouldRedirectLegacyHost(hostname, context.request.method)) {
+  if (shouldRedirectLegacyHost(hostname, context.request.method, pathname)) {
     const dest = new URL(context.url);
     dest.hostname = CANONICAL_HOST;
     dest.protocol = "https:";

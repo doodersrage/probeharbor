@@ -12,7 +12,7 @@ const dryRun = args.includes("--dry-run");
 const base = (
   args.find((arg) => !arg.startsWith("--")) ??
   process.env.SITE_URL ??
-  "https://thermaltrace.dev"
+  "https://probeharbor.dev"
 ).replace(/\/+$/, "");
 
 /** Public by design: IndexNow verifies ownership by fetching /<key>.txt (see public/). */

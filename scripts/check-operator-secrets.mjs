@@ -45,7 +45,7 @@ const groups = [
   {
     title: "Push ingest key recovery (Reveal key on Devices)",
     keys: ["INGEST_KEY_ENCRYPTION_SECRET"],
-    doc: "https://thermaltrace.dev/dashboard/devices",
+    doc: "https://probeharbor.dev/dashboard/devices",
   },
   {
     title: "YubiKey OTP (YubiCloud)",
@@ -55,17 +55,17 @@ const groups = [
   {
     title: "Nest thermostat OAuth",
     keys: ["NEST_CLIENT_ID", "NEST_CLIENT_SECRET", "NEST_PROJECT_ID"],
-    doc: "https://thermaltrace.dev/about/thermostat-oauth",
+    doc: "https://probeharbor.dev/about/thermostat-oauth",
   },
   {
     title: "Ecobee thermostat OAuth",
     keys: ["ECOBEE_CLIENT_ID"],
-    doc: "https://thermaltrace.dev/about/thermostat-oauth",
+    doc: "https://probeharbor.dev/about/thermostat-oauth",
   },
   {
     title: "Ambient Weather (personal stations)",
     keys: ["AMBIENT_APPLICATION_KEY"],
-    doc: "https://thermaltrace.dev/about/personal-weather-stations",
+    doc: "https://probeharbor.dev/about/personal-weather-stations",
   },
 ];
 

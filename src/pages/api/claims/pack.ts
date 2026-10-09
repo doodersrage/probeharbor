@@ -39,7 +39,7 @@ export const GET: APIRoute = async ({ cookies, url, request }) => {
   }
 
   const html = buildClaimsPackHtml(packToRender);
-  const filenameBase = `thermaltrace-claims-${fromQ}-to-${toQ}`;
+  const filenameBase = `probeharbor-claims-${fromQ}-to-${toQ}`;
   const format = url.searchParams.get("format")?.toLowerCase();
 
   if (format === "html") {

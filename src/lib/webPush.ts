@@ -43,7 +43,7 @@ export async function sendWebPushToUser(
 ): Promise<WebPushDeliveryResult> {
   const publicKey = getRuntimeEnv("VAPID_PUBLIC_KEY");
   const privateKey = getRuntimeEnv("VAPID_PRIVATE_KEY");
-  const subject = getRuntimeEnv("VAPID_SUBJECT") ?? "mailto:noreply@thermaltrace.dev";
+  const subject = getRuntimeEnv("VAPID_SUBJECT") ?? "mailto:noreply@probeharbor.dev";
 
   if (!isVapidConfigured() || !publicKey || !privateKey) {
     return { delivered: 0, failed: 0, skippedReason: "push_not_configured" };

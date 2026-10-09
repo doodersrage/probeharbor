@@ -3,17 +3,17 @@
  * Public post-deploy smoke checks (no auth).
  * Usage: pnpm smoke:public [baseUrl]
  */
-const base = (process.argv[2] ?? process.env.SMOKE_BASE_URL ?? "https://thermaltrace.dev").replace(
+const base = (process.argv[2] ?? process.env.SMOKE_BASE_URL ?? "https://probeharbor.dev").replace(
   /\/+$/,
   "",
 );
 
 /** @type {Array<{ path: string; title?: RegExp; heading?: RegExp; json?: string; expect?: string; bodyIncludes?: string }>} */
 const checks = [
-  { path: "/", title: /ThermalTrace/i },
+  { path: "/", title: /ProbeHarbor/i },
   { path: "/pricing", heading: /Plans that grow/i },
   { path: "/compare", heading: /Built for homeowners/i },
-  { path: "/about/", heading: /About ThermalTrace/i },
+  { path: "/about/", heading: /About ProbeHarbor/i },
   { path: "/system-status", heading: /System status/i },
   { path: "/docs/api", heading: /API documentation/i },
   { path: "/privacy", heading: /Privacy/i },
@@ -25,7 +25,7 @@ const checks = [
   { path: "/sitemap-0.xml", bodyIncludes: "esphome-shelly-recipes" },
   { path: "/sitemap-index.xml", bodyIncludes: "sitemap-0.xml" },
   { path: "/robots.txt", bodyIncludes: "Sitemap:" },
-  { path: "/manifest.webmanifest", json: "name", expect: "ThermalTrace" },
+  { path: "/manifest.webmanifest", json: "name", expect: "ProbeHarbor" },
 ];
 
 let failed = 0;

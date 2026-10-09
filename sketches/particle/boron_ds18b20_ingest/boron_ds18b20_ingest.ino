@@ -1,15 +1,15 @@
 /**
- * DS18B20 → ThermalTrace push ingest (Particle Boron / B-Series cellular).
+ * DS18B20 → ProbeHarbor push ingest (Particle Boron / B-Series cellular).
  *
  * Cellular has no garage Wi‑Fi. This sketch publishes JSON on Particle Cloud;
- * a Console webhook POSTs it to your HTTPS ingest URL. ThermalTrace already
+ * a Console webhook POSTs it to your HTTPS ingest URL. ProbeHarbor already
  * flags stale / faulty probes when posts stop during network dropouts.
  *
  * 1. Create a push device. Download this file from Devices (ingest URL in comments).
  * 2. Particle Workbench or Web IDE: target Boron / B404X / B524, Device OS 5+.
  * 3. Libraries: OneWire, spark-dallas-temperature (Particle library list).
  * 4. Console → Integrations → Webhook:
- *      Event name: thermaltrace_ingest
+ *      Event name: probeharbor_ingest
  *      URL: see INGEST_URL below
  *      Request type: POST
  *      Form / JSON: {{SPARK_EVENT_VALUE}}  (raw JSON body)
@@ -33,11 +33,11 @@ SYSTEM_MODE(AUTOMATIC);
 
 /* Full HTTPS ingest URL — paste into Particle Console webhook URL field. */
 #ifndef INGEST_URL
-#define INGEST_URL "https://thermaltrace.dev/api/ingest/YOUR_DEVICE_KEY"
+#define INGEST_URL "https://probeharbor.dev/api/ingest/YOUR_DEVICE_KEY"
 #endif
 
 #ifndef PUBLISH_EVENT
-#define PUBLISH_EVENT "thermaltrace_ingest"
+#define PUBLISH_EVENT "probeharbor_ingest"
 #endif
 
 const unsigned long INTERVAL_MS = 60UL * 1000UL;
@@ -50,7 +50,7 @@ void setup() {
   Serial.begin(115200);
   sensors.begin();
   waitFor(Serial, 8000);
-  Serial.printlnf("ThermalTrace Boron ingest → webhook %s", INGEST_URL);
+  Serial.printlnf("ProbeHarbor Boron ingest → webhook %s", INGEST_URL);
 }
 
 bool publishTempF(float tempF) {

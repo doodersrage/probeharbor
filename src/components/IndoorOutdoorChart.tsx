@@ -112,7 +112,7 @@ export default function IndoorOutdoorChart({
     canvasRef,
     wrapRef,
     plotBoundsRef,
-    pngFilenamePrefix: "thermaltrace-delta",
+    pngFilenamePrefix: "probeharbor-delta",
     hover: hoverHandlers,
     initialPresetId: prefsReady ? initialPresetId : null,
     onPresetChange: (presetId) => {

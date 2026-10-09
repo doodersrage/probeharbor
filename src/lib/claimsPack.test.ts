@@ -167,11 +167,11 @@ describe("claimsPack", () => {
     const html = buildClaimsPackHtml({
       ...pack,
       contentHash: "deadbeef",
-      verifyUrl: "https://thermaltrace.dev/api/claims/pack/abc123",
+      verifyUrl: "https://probeharbor.dev/api/claims/pack/abc123",
     });
     expect(html).toContain("Verification code");
     expect(html).toContain("deadbeef");
-    expect(html).toContain("https://thermaltrace.dev/api/claims/pack/abc123");
+    expect(html).toContain("https://probeharbor.dev/api/claims/pack/abc123");
   });
 });
 

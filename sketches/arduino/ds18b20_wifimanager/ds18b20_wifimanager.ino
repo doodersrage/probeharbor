@@ -1,9 +1,9 @@
 /**
- * DS18B20 → ThermalTrace push ingest with WiFiManager (ESP32 / ESP8266).
+ * DS18B20 → ProbeHarbor push ingest with WiFiManager (ESP32 / ESP8266).
  *
  * Libraries: OneWire, DallasTemperature, WiFiManager (tzapu).
  * Set INGEST_URL (Devices download or #define). First boot opens a captive portal
- * AP named "ThermalTrace-Setup" — join it, enter home Wi‑Fi, reboot.
+ * AP named "ProbeHarbor-Setup" — join it, enter home Wi‑Fi, reboot.
  *
  * USB Serial 115200 → expect POST 200 after Wi‑Fi is saved.
  */
@@ -19,7 +19,7 @@
 #endif
 
 #ifndef INGEST_URL
-#define INGEST_URL "https://thermaltrace.dev/api/ingest/YOUR_DEVICE_KEY"
+#define INGEST_URL "https://probeharbor.dev/api/ingest/YOUR_DEVICE_KEY"
 #endif
 
 #ifndef ONE_WIRE_PIN
@@ -39,7 +39,7 @@ void setup() {
   WiFiManager wifiManager;
   // wifiManager.resetSettings(); // uncomment once to clear saved credentials
   wifiManager.setConfigPortalTimeout(180);
-  if (!wifiManager.autoConnect("ThermalTrace-Setup")) {
+  if (!wifiManager.autoConnect("ProbeHarbor-Setup")) {
     Serial.println("WiFi portal timed out — restarting");
     delay(2000);
     ESP.restart();

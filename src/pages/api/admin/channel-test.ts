@@ -42,7 +42,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
     const ok = await sendTwilioSms(
       phone,
-      "[Test] ThermalTrace SMS channel smoke test",
+      "[Test] ProbeHarbor SMS channel smoke test",
     );
     if (!ok) {
       return opsRedirect({ channel_error: "sms_send_failed" });
@@ -57,7 +57,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     }
 
     const result = await sendWebPushToUser(user.id, {
-      title: "[Test] ThermalTrace push",
+      title: "[Test] ProbeHarbor push",
       body: "Channel smoke test: browser push is working.",
     });
 

@@ -1,4 +1,4 @@
-# ThermalTrace brand marks
+# ProbeHarbor brand marks
 
 Logo system (2026-09): T + through-stem temperature trace.
 

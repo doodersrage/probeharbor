@@ -11,21 +11,21 @@ import {
 
 describe("schemaMarkup", () => {
   it("advertises a SearchAction that targets /about?q=", () => {
-    const schema = getWebSiteSchema("https://thermaltrace.dev");
+    const schema = getWebSiteSchema("https://probeharbor.dev");
     const action = schema.potentialAction as {
       "@type": string;
       target: { urlTemplate: string };
     };
     expect(action["@type"]).toBe("SearchAction");
     expect(action.target.urlTemplate).toBe(
-      "https://thermaltrace.dev/about?q={search_term_string}",
+      "https://probeharbor.dev/about?q={search_term_string}",
     );
   });
 
   it("uses stable Article dates by default", () => {
     const article = getArticleSchema({
-      siteUrl: "https://thermaltrace.dev",
-      pageUrl: "https://thermaltrace.dev/about/esp32-freeze-kit",
+      siteUrl: "https://probeharbor.dev",
+      pageUrl: "https://probeharbor.dev/about/esp32-freeze-kit",
       headline: "ESP32 freeze kit",
       description: "Parts list",
     });
@@ -37,13 +37,13 @@ describe("schemaMarkup", () => {
     const howTo = getHowToSchema({
       name: "Build a freeze probe",
       description: "ESP32 + DS18B20",
-      pageUrl: "https://thermaltrace.dev/about/esp32-freeze-kit",
+      pageUrl: "https://probeharbor.dev/about/esp32-freeze-kit",
       steps: [
         { name: "Buy parts", text: "ESP32 and DS18B20" },
         {
           name: "Wire",
           text: "GPIO 4 with 4.7k pull-up",
-          url: "https://thermaltrace.dev/about/esp32-freeze-kit",
+          url: "https://probeharbor.dev/about/esp32-freeze-kit",
         },
       ],
     });
@@ -53,11 +53,11 @@ describe("schemaMarkup", () => {
 
   it("builds ItemList schema for hubs", () => {
     const list = getItemListSchema({
-      pageUrl: "https://thermaltrace.dev/stories",
+      pageUrl: "https://probeharbor.dev/stories",
       name: "Stories",
       items: [
-        { name: "Garage freeze", url: "https://thermaltrace.dev/stories/garage-freeze-alert" },
-        { name: "Cabin", url: "https://thermaltrace.dev/stories/cabin-winter-watch" },
+        { name: "Garage freeze", url: "https://probeharbor.dev/stories/garage-freeze-alert" },
+        { name: "Cabin", url: "https://probeharbor.dev/stories/cabin-winter-watch" },
       ],
     });
     expect(list?.["@type"]).toBe("ItemList");
@@ -65,7 +65,7 @@ describe("schemaMarkup", () => {
   });
 
   it("exports a brand definition for AEO", () => {
-    expect(getBrandDefinition()).toMatch(/ThermalTrace/i);
+    expect(getBrandDefinition()).toMatch(/ProbeHarbor/i);
     expect(getBrandDefinition().length).toBeGreaterThan(40);
   });
 });

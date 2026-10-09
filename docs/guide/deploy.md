@@ -1,10 +1,10 @@
 ---
-description: "Deploy and operate a ThermalTrace instance: checks, Supabase migrations, Worker secrets, Cloudflare deploys, and cron jobs."
+description: "Deploy and operate a ProbeHarbor instance: checks, Supabase migrations, Worker secrets, Cloudflare deploys, and cron jobs."
 ---
 
 # Deploy & ops
 
-Production app: [thermaltrace.dev](https://thermaltrace.dev).
+Production app: [probeharbor.dev](https://probeharbor.dev).
 
 ```bash
 pnpm ops:check              # verify .env has core keys
@@ -16,8 +16,8 @@ pnpm deploy                 # astro build + wrangler deploy
 
 After deploy:
 
-1. **Infra IDs vs brand** — Cloudflare Worker name may stay `garage-temp`; some API paths like `/api/garage-temps/*` are stable URLs. User-facing brand is **ThermalTrace**.
-2. Set `SITE_URL` / `ORIGIN` Worker secrets to `https://thermaltrace.dev`
+1. **Infra IDs vs brand** — Cloudflare Worker name may stay `garage-temp`; some API paths like `/api/garage-temps/*` are stable URLs. User-facing brand is **ProbeHarbor**.
+2. Set `SITE_URL` / `ORIGIN` Worker secrets to `https://probeharbor.dev`
 3. Confirm cron triggers (`0 * * * *` and `15,30,45 * * * *` in `wrangler.jsonc`) are active
 4. Enable Cloudflare **Email Sending** for the domain in `SMTP_MAIL_FROM` (see below)
 5. Point Stripe webhooks at `/api/stripe/webhook` with `STRIPE_WEBHOOK_SECRET`
@@ -55,7 +55,7 @@ That syncs `CLOUDFLARE_*` plus build secrets from `.env` into GitHub Actions sec
 
 ## Custom domain
 
-The Worker binds **thermaltrace.dev** (and **www** → apex via middleware). Legacy hostnames listed in `wrangler.jsonc` redirect with 301. Set `SITE_URL` and `ORIGIN` to `https://thermaltrace.dev`, then `pnpm secrets:push`.
+The Worker binds **probeharbor.dev** (and **www** → apex via middleware). Legacy hostnames listed in `wrangler.jsonc` redirect with 301. Set `SITE_URL` and `ORIGIN` to `https://probeharbor.dev`, then `pnpm secrets:push`.
 
 ## Public smoke (no auth)
 
@@ -65,7 +65,7 @@ pnpm ops:smoke              # smoke + sitemap coverage + IndexNow dry run
 pnpm ping:sitemaps          # submit public URLs to IndexNow (also runs after each deploy)
 ```
 
-Submit `https://thermaltrace.dev/sitemap-index.xml` in [Google Search Console](https://search.google.com/search-console) → Sitemaps.
+Submit `https://probeharbor.dev/sitemap-index.xml` in [Google Search Console](https://search.google.com/search-console) → Sitemaps.
 
 Sitemaps are SSR routes (`/sitemap-0.xml`, `/sitemap-index.xml`) so they stay available on Cloudflare Workers even when static Asset uploads omit build-time XML.
 

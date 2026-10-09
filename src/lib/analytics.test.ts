@@ -63,7 +63,7 @@ describe("shouldLoadGoogleAnalytics", () => {
 
 describe("resolveGaCookieDomain", () => {
   it("returns registrable domain for apex host", () => {
-    expect(resolveGaCookieDomain("thermaltrace.dev")).toBe(".thermaltrace.dev");
+    expect(resolveGaCookieDomain("probeharbor.dev")).toBe(".probeharbor.dev");
   });
 
   it("returns undefined for localhost", () => {

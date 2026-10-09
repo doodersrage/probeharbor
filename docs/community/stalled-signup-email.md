@@ -6,11 +6,11 @@ Keep it plain text. Do not add tracking links or an unsubscribe-style footer; th
 
 ---
 
-**Subject:** Quick question about ThermalTrace
+**Subject:** Quick question about ProbeHarbor
 
 Hi,
 
-I'm Robert, I built ThermalTrace. You signed up a little while ago and I noticed no sensor ever got connected.
+I'm Robert, I built ProbeHarbor. You signed up a little while ago and I noticed no sensor ever got connected.
 
 Would you mind telling me what stopped you? A one-line reply is plenty. For example:
 

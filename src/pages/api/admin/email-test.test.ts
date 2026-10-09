@@ -81,7 +81,7 @@ beforeEach(() => {
   });
   mockIsUserAdmin.mockReset().mockResolvedValue(true);
   mockGetUserById.mockReset().mockResolvedValue({ data: { user: { email: "user@example.com" } } });
-  mockResolveSiteUrl.mockReset().mockReturnValue("https://thermaltrace.dev");
+  mockResolveSiteUrl.mockReset().mockReturnValue("https://probeharbor.dev");
   mockBuildDripEmail.mockReset().mockReturnValue({ subject: "Drip", text: "text", html: "<p>html</p>" });
   mockBuildTrialReminderEmail.mockReset().mockReturnValue({ subject: "Trial", text: "text", html: "<p>html</p>" });
   mockBuildWeeklyDigestParts.mockReset().mockReturnValue({
@@ -97,7 +97,7 @@ beforeEach(() => {
     html: "<p>freeze</p>",
   });
   mockSendEmail.mockReset().mockResolvedValue(undefined);
-  env.SMTP_MAIL_FROM = "noreply@thermaltrace.dev";
+  env.SMTP_MAIL_FROM = "noreply@probeharbor.dev";
 });
 
 afterEach(() => {
@@ -142,7 +142,7 @@ describe("POST /api/admin/email-test", () => {
 
     await POST(makeContext(null));
 
-    expect(mockBuildDripEmail).toHaveBeenCalledWith("day1", "https://thermaltrace.dev");
+    expect(mockBuildDripEmail).toHaveBeenCalledWith("day1", "https://probeharbor.dev");
     expect(mockSendEmail).toHaveBeenCalledWith(
       "user@example.com",
       "[Test] Drip",
@@ -156,7 +156,7 @@ describe("POST /api/admin/email-test", () => {
 
     await POST(makeContext({ kind: "drip_day3" }));
 
-    expect(mockBuildDripEmail).toHaveBeenCalledWith("day3", "https://thermaltrace.dev");
+    expect(mockBuildDripEmail).toHaveBeenCalledWith("day3", "https://probeharbor.dev");
   });
 
   it("builds the trial_3d template with the expected args", async () => {
@@ -167,7 +167,7 @@ describe("POST /api/admin/email-test", () => {
     expect(mockBuildTrialReminderEmail).toHaveBeenCalledWith({
       plan: "Pro",
       remaining: 3,
-      siteUrl: "https://thermaltrace.dev",
+      siteUrl: "https://probeharbor.dev",
     });
     expect(mockSendEmail).toHaveBeenCalledWith(
       "user@example.com",
@@ -225,7 +225,7 @@ describe("POST /api/admin/email-test", () => {
 
     await POST(makeContext({ kind: "bogus" }));
 
-    expect(mockBuildDripEmail).toHaveBeenCalledWith("day1", "https://thermaltrace.dev");
+    expect(mockBuildDripEmail).toHaveBeenCalledWith("day1", "https://probeharbor.dev");
   });
 
   it("redirects to the ops page on success", async () => {

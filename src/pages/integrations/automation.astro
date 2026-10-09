@@ -58,9 +58,9 @@ const schema = [
     <section class="card">
       <h2 class="card-title">IFTTT</h2>
       <ol class="text-sm space-y-2 pl-5 list-decimal mb-0">
-        <li>Create an applet with trigger <strong>Webhooks → Receive a web request</strong> (event name e.g. <code>thermaltrace_alert</code>).</li>
+        <li>Create an applet with trigger <strong>Webhooks → Receive a web request</strong> (event name e.g. <code>probeharbor_alert</code>).</li>
         <li>
-          Copy the IFTTT Maker URL into ThermalTrace <strong>Pro → Alerts → Outbound webhook</strong>.
+          Copy the IFTTT Maker URL into ProbeHarbor <strong>Pro → Alerts → Outbound webhook</strong>.
           Optionally set a signing secret and verify <code>X-Signature</code> in a filter step if your plan allows code.
         </li>
         <li>Action: notify, toggle a smart plug, or append to a Google Sheet via IFTTT’s Sheets service.</li>
@@ -72,10 +72,10 @@ const schema = [
       <ol class="text-sm space-y-2 pl-5 list-decimal mb-4">
         <li>
           Import
-          <a class="text-link" href={N8N_ALERT_SHEETS_FLOW_URL} download>thermaltrace-alert-to-sheets.json</a>
+          <a class="text-link" href={N8N_ALERT_SHEETS_FLOW_URL} download>probeharbor-alert-to-sheets.json</a>
           (Webhook → Set → Google Sheets append).
         </li>
-        <li>Activate the workflow; copy the production webhook URL into ThermalTrace outbound webhook.</li>
+        <li>Activate the workflow; copy the production webhook URL into ProbeHarbor outbound webhook.</li>
         <li>Replace <code>YOUR_GOOGLE_SHEET_ID</code>; sheet headers: <code>sent_at</code>, <code>kind</code>, <code>title</code>, <code>body</code>.</li>
       </ol>
       <p class="mb-0 text-sm text-[var(--color-text-muted)]">
@@ -105,7 +105,7 @@ const schema = [
       </p>
       <pre class="text-xs overflow-x-auto mb-2"><code>{`POST /api/inbound/gtw_…
 Content-Type: application/json
-X-ThermalTrace-Signature: <hmac-sha256-hex>
+X-ProbeHarbor-Signature: <hmac-sha256-hex>
 
 {"action":"snooze","hours":24}`}</code></pre>
       <p class="mb-0 text-sm text-[var(--color-text-muted)]">

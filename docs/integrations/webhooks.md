@@ -1,5 +1,5 @@
 ---
-description: "ThermalTrace outbound alert webhooks: the JSON payload each freeze, leak, or outage alert POSTs, and how to verify its HMAC signature."
+description: "ProbeHarbor outbound alert webhooks: the JSON payload each freeze, leak, or outage alert POSTs, and how to verify its HMAC signature."
 ---
 
 # Alert webhooks
@@ -30,21 +30,21 @@ Verify before acting on the payload (Home Assistant, Zapier code step, custom wo
 ## Reading webhooks
 
 Separately, Pro can POST **reading** payloads to a URL for every stored snapshot (high volume — use carefully).
-When a signing secret is set, requests include `X-ThermalTrace-Signature` (and the legacy `X-GarageTemp-Signature` alias) as `sha256=<hex>`.
+When a signing secret is set, requests include `X-ProbeHarbor-Signature` (and the legacy `X-ThermalTrace-Signature` and `X-GarageTemp-Signature` aliases) as `sha256=<hex>`.
 
 ## Home Assistant
 
-**Recommended:** install the [official HACS integration](https://thermaltrace.dev/integrations/home-assistant). Share-link tokens populate temperature, humidity, door, and leak entities; optional Pro **inbound webhooks** expose `thermaltrace.snooze`, `thermaltrace.vacation`, and `thermaltrace.status` services.
+**Recommended:** install the [official HACS integration](https://probeharbor.dev/integrations/home-assistant). Share-link tokens populate temperature, humidity, door, and leak entities; optional Pro **inbound webhooks** expose `thermaltrace.snooze`, `thermaltrace.vacation`, and `thermaltrace.status` services.
 
-For **alerts into HA** (ThermalTrace → Home Assistant), use a Pro **outbound webhook** URL in Dashboard → Alerts, or import the [ThermalTrace webhook blueprint](https://thermaltrace.dev/ha/thermaltrace_webhook.yaml). Verify HMAC with the same secret pattern as inbound calls when configured.
+For **alerts into HA** (ProbeHarbor → Home Assistant), use a Pro **outbound webhook** URL in Dashboard → Alerts, or import the [ProbeHarbor webhook blueprint](https://probeharbor.dev/ha/probeharbor_webhook.yaml). Verify HMAC with the same secret pattern as inbound calls when configured.
 
 ## Zapier / Make / IFTTT / n8n
 
 Use **Webhooks by Zapier → Catch Hook**, IFTTT Maker, or an n8n Webhook node as the outbound URL.
 Product recipes:
 
-- [IFTTT, n8n & Sheets](https://thermaltrace.dev/integrations/automation)
-- [Zapier & Make](https://thermaltrace.dev/about/zapier-make-recipes)
+- [IFTTT, n8n & Sheets](https://probeharbor.dev/integrations/automation)
+- [Zapier & Make](https://probeharbor.dev/about/zapier-make-recipes)
 
 ## Channels beyond webhooks
 

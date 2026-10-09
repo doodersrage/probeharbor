@@ -102,14 +102,14 @@ const MPLAB = "https://www.microchip.com/en-us/tools-resources/develop/mplab-x-i
     <li>
       On a LAN host:
       <pre><code>{`python3 sketches/relay/push_https_forward.py --listen 0.0.0.0:8080 \\
-  --upstream https://thermaltrace.dev`}</code></pre>
+  --upstream https://probeharbor.dev`}</code></pre>
     </li>
     <li>Set <code>INGEST_HOST</code> to that machine (dotted IPv4).</li>
     <li>
       Install
       <a class="text-link" href={MPLAB} target="_blank" rel="noreferrer">MPLAB X</a>
       + XC8. Open an MLA TCPIP Ethernet demo for PIC18F67J60, keep stack sources, add this module, call
-      <code>ThermalTraceAppInit</code> / <code>ThermalTraceAppTask</code> from the demo main loop next to
+      <code>ProbeHarborAppInit</code> / <code>ProbeHarborAppTask</code> from the demo main loop next to
       <code>StackTask()</code>, build, flash.
     </li>
     <li>UART 115200: link/DHCP ok, then POST through the relay. Sensor key <code>temp1</code> imports on first POST.</li>

@@ -15,8 +15,8 @@ describe("mobile OAuth return URLs", () => {
   });
 
   it("sends Chrome to an HTTPS App Link instead of a custom-scheme 302", () => {
-    expect(buildMobileOAuthHttpsUrl(token, "https://thermaltrace.dev")).toBe(
-      "https://thermaltrace.dev/app/oauth?exchange=payload.sig",
+    expect(buildMobileOAuthHttpsUrl(token, "https://probeharbor.dev")).toBe(
+      "https://probeharbor.dev/app/oauth?exchange=payload.sig",
     );
   });
 

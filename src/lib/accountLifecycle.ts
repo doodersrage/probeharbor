@@ -21,7 +21,7 @@ export async function cancelStripeSubscriptionForDeletedAccount(
   } catch (error) {
     const message = error instanceof Error ? error.message : "unknown error";
     await notifyOps(
-      "ThermalTrace: Stripe cancellation failed during account deletion",
+      "ProbeHarbor: Stripe cancellation failed during account deletion",
       `User ${userId} deleted their account but subscription ${subscription.stripe_subscription_id} could not be cancelled: ${message}. Cancel it manually in Stripe.`,
     );
   }

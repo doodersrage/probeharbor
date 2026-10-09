@@ -1,5 +1,5 @@
 /**
- * DS18B20 → ThermalTrace push ingest (WCH CH32V307 RISC-V).
+ * DS18B20 → ProbeHarbor push ingest (WCH CH32V307 RISC-V).
  *
  * Primary board: CH32V307V-EVT-R1 (onboard 10M Ethernet PHY).
  * Not Arduino, not Python, not Zephyr: MounRiver Studio + official EVT
@@ -397,7 +397,7 @@ int main(void)
 	SystemCoreClockUpdate();
 	Delay_Init();
 	USART_Printf_Init(115200);
-	printf("ThermalTrace CH32V307 DS18B20 ingest\r\n");
+	printf("ProbeHarbor CH32V307 DS18B20 ingest\r\n");
 	printf("SystemClk:%d\r\n", SystemCoreClock);
 	printf("ChipID:%08x\r\n", DBGMCU_GetCHIPID());
 	ow_init();
@@ -411,7 +411,7 @@ int main(void)
 
 	WCHNET_GetMacAddr(MACAddr);
 	TIM2_Init();
-	WCHNET_DHCPSetHostname("thermaltrace");
+	WCHNET_DHCPSetHostname("probeharbor");
 	i = ETH_LibInit(IPAddr, GWIPAddr, IPMask, MACAddr);
 	mStopIfError(i);
 	if (i == WCHNET_ERR_SUCCESS) {

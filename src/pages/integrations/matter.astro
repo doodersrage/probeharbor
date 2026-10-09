@@ -42,7 +42,7 @@ const schema = [
   <div class="page-shell page-stack">
     <PageHeader
       kicker="Matter bridge"
-      title="ThermalTrace in Apple Home"
+      title="ProbeHarbor in Apple Home"
       lede="Install the Matterbridge plugin on a Pi, NAS, or always-on PC, paste a family live share-link token (Free includes one), and get temperature, humidity, leak, door, power, and motion accessories in Apple Home, Google Home, or Alexa. Not CSA-certified. Probes stay on ESP/Arduino; this bridge only polls your share link."
     >
       <a slot="actions" class="btn-primary" href={MATTER_REPO_URL} target="_blank" rel="noreferrer">
@@ -58,10 +58,10 @@ const schema = [
     <section class="card">
       <h2 class="card-title">Why Matter instead of an iOS app?</h2>
       <p class="text-sm mb-0">
-        Household members who already live in the Home app get garage freeze and flood glance without a ThermalTrace login.
+        Household members who already live in the Home app get garage freeze and flood glance without a ProbeHarbor login.
         Same share-link contract as the
         <a class="text-link" href="/integrations/home-assistant">HACS integration</a>,
-        aimed at people who will never install Home Assistant. Critical freeze SMS still comes from ThermalTrace push ingest — this poll is for Home automations and glance.
+        aimed at people who will never install Home Assistant. Critical freeze SMS still comes from ProbeHarbor push ingest — this poll is for Home automations and glance.
       </p>
     </section>
 
@@ -88,7 +88,7 @@ const schema = [
       </ol>
       <p class="mb-0 text-sm text-[var(--color-text-muted)]">
         Full README and config schema:
-        <a class="text-link" href={MATTER_REPO_URL} target="_blank" rel="noreferrer">thermaltrace-matter ↗</a>
+        <a class="text-link" href={MATTER_REPO_URL} target="_blank" rel="noreferrer">probeharbor-matter ↗</a>
       </p>
     </section>
 
@@ -96,10 +96,10 @@ const schema = [
       <h2 class="card-title">Sensor map</h2>
       <div class="overflow-x-auto">
         <table class="plan-comparison-table">
-          <caption class="sr-only">ThermalTrace kinds mapped to Matter device types</caption>
+          <caption class="sr-only">ProbeHarbor kinds mapped to Matter device types</caption>
           <thead>
             <tr>
-              <th scope="col">ThermalTrace kind</th>
+              <th scope="col">ProbeHarbor kind</th>
               <th scope="col">Matter accessory</th>
             </tr>
           </thead>

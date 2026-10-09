@@ -13,7 +13,7 @@ import sentry from '@sentry/astro';
 
 import { buildPublicSitemapUrls } from './src/lib/sitemapPages.ts';
 
-const site = process.env.SITE_URL?.replace(/\/+$/, "") || "https://thermaltrace.dev";
+const site = process.env.SITE_URL?.replace(/\/+$/, "") || "https://probeharbor.dev";
 const sentryDsn = process.env.SENTRY_DSN?.trim() || process.env.PUBLIC_SENTRY_DSN?.trim() || "";
 const sentryAuthToken = process.env.SENTRY_AUTH_TOKEN?.trim() || "";
 const sentryOrg = process.env.SENTRY_ORG?.trim() || "thermaltracedev";

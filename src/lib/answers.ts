@@ -215,7 +215,7 @@ export const answers: Answer[] = [
         heading: "The weak spot: when Home Assistant is the thing that fails",
         paragraphs: [
           "A power cut or internet outage is often what lets a space get cold, and it also takes Home Assistant or its connection offline. The automation cannot warn you about the outage that disables it.",
-          "An off-site service covers that gap. ThermalTrace, for example, can receive the same readings from Home Assistant and alerts you both when it gets cold and when readings stop arriving. On Devices → Setup, choosing Home Assistant generates the YAML with your key.",
+          "An off-site service covers that gap. ProbeHarbor, for example, can receive the same readings from Home Assistant and alerts you both when it gets cold and when readings stop arriving. On Devices → Setup, choosing Home Assistant generates the YAML with your key.",
         ],
       },
     ],
@@ -232,7 +232,7 @@ export const answers: Answer[] = [
       },
     ],
     related: [
-      { label: "ThermalTrace Home Assistant integration", href: "/integrations/home-assistant" },
+      { label: "ProbeHarbor Home Assistant integration", href: "/integrations/home-assistant" },
       { label: "How do I build a freeze alert with ESPHome?", href: "/answers/esphome-freeze-alert" },
       { label: "Will a Wi-Fi freeze alarm work during a power outage?", href: "/answers/wifi-freeze-alarm-power-outage" },
       { label: "What temperature should a freeze alarm be set to?", href: "/answers/freeze-alarm-temperature-setting" },
@@ -244,9 +244,9 @@ export const answers: Answer[] = [
     path: "/answers/freeze-alarm-without-subscription",
     question: "Can I get a freeze alarm without a monthly subscription?",
     description:
-      "Yes. Temp Stick, Govee, Home Assistant, and ThermalTrace's free plan all alert without a subscription. What each costs and what you give up.",
+      "Yes. Temp Stick, Govee, Home Assistant, and ProbeHarbor's free plan all alert without a subscription. What each costs and what you give up.",
     shortAnswer:
-      "Yes. Temp Stick sells finished sensors ($149 and up) with free text, email, and app alerts. Govee's Wi-Fi sensors (about $35–50 with the gateway) send app alerts. Home Assistant is free if you run it yourself, and ThermalTrace's free plan sends email and chat alerts from a DIY sensor. SMS on ThermalTrace needs the Pro plan.",
+      "Yes. Temp Stick sells finished sensors ($149 and up) with free text, email, and app alerts. Govee's Wi-Fi sensors (about $35–50 with the gateway) send app alerts. Home Assistant is free if you run it yourself, and ProbeHarbor's free plan sends email and chat alerts from a DIY sensor. SMS on ProbeHarbor needs the Pro plan.",
     datePublished: "2026-09-28",
     sections: [
       {
@@ -255,7 +255,7 @@ export const answers: Answer[] = [
           "Temp Stick: a finished battery Wi-Fi sensor. The most expensive per sensor, but no setup and no fees, and it includes text alerts.",
           "Govee: cheap Wi-Fi gateway plus sensors with app notifications. Fine for a room; check that alerts reach you reliably away from home.",
           "Home Assistant: free and flexible if you already run it, but it depends on your home internet and power staying up (see the Home Assistant freeze alert answer).",
-          "ThermalTrace: about $25 of DIY parts per probe, free email, chat, and push alerts, leak contacts, and history. SMS and longer history are on paid plans.",
+          "ProbeHarbor: about $25 of DIY parts per probe, free email, chat, and push alerts, leak contacts, and history. SMS and longer history are on paid plans.",
         ],
       },
       {
@@ -272,14 +272,14 @@ export const answers: Answer[] = [
           "No. Temp Stick says monitoring, data history, and text, email, and app alerts are free for the life of the sensor.",
       },
       {
-        question: "Is ThermalTrace free?",
+        question: "Is ProbeHarbor free?",
         answer:
           "There is a free plan with email and chat alerts, a week of history, and up to two devices. Member and Pro add history, CSV export, forecast warnings, and SMS.",
       },
     ],
     related: [
-      { label: "ThermalTrace vs Temp Stick", href: "/compare/tempstick" },
-      { label: "ThermalTrace vs Govee", href: "/compare/govee" },
+      { label: "ProbeHarbor vs Temp Stick", href: "/compare/tempstick" },
+      { label: "ProbeHarbor vs Govee", href: "/compare/govee" },
       { label: "Plans and pricing", href: "/pricing" },
     ],
     sources: [
@@ -309,7 +309,7 @@ export const answers: Answer[] = [
         heading: "Estimate it from the cooling rate",
         paragraphs: [
           "If the air at the pipe is 44°F and falling 2°F an hour, it reaches 34°F in about five hours. That simple estimate, redone as new readings arrive, is more useful than a generic figure because it reflects your space on that night.",
-          "ThermalTrace shows this as a time-to-freeze clock on every plan: hours until your freeze threshold at the current cooling rate.",
+          "ProbeHarbor shows this as a time-to-freeze clock on every plan: hours until your freeze threshold at the current cooling rate.",
         ],
       },
       {
@@ -522,7 +522,7 @@ export const answers: Answer[] = [
       {
         heading: "Three ways to cover it",
         paragraphs: [
-          "Alert on silence. A hosted service can notice that readings stopped and tell you. ThermalTrace has an outage alert that fires when a device has been silent for a set number of hours (two by default).",
+          "Alert on silence. A hosted service can notice that readings stopped and tell you. ProbeHarbor has an outage alert that fires when a device has been silent for a set number of hours (two by default).",
           "Keep the network up. A small battery backup (UPS) on the modem, router, and sensor keeps readings flowing through short outages, as long as your internet provider's equipment outside the house stays powered.",
           "Skip the home network. A cellular sensor with a battery reports without Wi-Fi. It costs more and needs a data plan, but it is the right choice for a cabin or a house that loses power often.",
         ],
@@ -565,8 +565,8 @@ export const answers: Answer[] = [
       {
         heading: "Pick the connection first",
         paragraphs: [
-          "Wi-Fi: the cheapest route if the cabin keeps an internet connection through winter. A finished sensor such as a Temp Stick works out of the box; a DIY ESP32 probe costs about $25 in parts and reports to a service like ThermalTrace.",
-          "Cellular: for cabins with no internet or unreliable power. A battery-backed cellular board (ThermalTrace has a sketch for the Particle Boron) posts readings over the mobile network.",
+          "Wi-Fi: the cheapest route if the cabin keeps an internet connection through winter. A finished sensor such as a Temp Stick works out of the box; a DIY ESP32 probe costs about $25 in parts and reports to a service like ProbeHarbor.",
+          "Cellular: for cabins with no internet or unreliable power. A battery-backed cellular board (ProbeHarbor has a sketch for the Particle Boron) posts readings over the mobile network.",
         ],
       },
       {
@@ -693,7 +693,7 @@ sensor:
       {
         heading: "Option 2: post readings off-site",
         paragraphs: [
-          "ESPHome's http_request component can POST each reading to a hosted service, which then handles alerts, history, and noticing when the device goes silent. ThermalTrace publishes a ready-made snippet at thermaltrace.dev/esphome/thermaltrace.yaml: create a push device, put its ingest URL in secrets.yaml, and point the snippet at your sensor ID.",
+          "ESPHome's http_request component can POST each reading to a hosted service, which then handles alerts, history, and noticing when the device goes silent. ProbeHarbor publishes a ready-made snippet at probeharbor.dev/esphome/probeharbor.yaml: create a push device, put its ingest URL in secrets.yaml, and point the snippet at your sensor ID.",
           "You can do both: keep the device in Home Assistant for local automations and post to an off-site service for the alerts that have to reach you.",
         ],
       },
@@ -745,7 +745,7 @@ sensor:
         heading: "Mounting",
         paragraphs: [
           "The contacts must touch the floor, flat, at the low point. Pour a cup of water nearby once to see where it runs, and test the sensor with a damp cloth when you install it.",
-          "ThermalTrace treats a wet leak sensor as an alert on every plan, with no rule to set up.",
+          "ProbeHarbor treats a wet leak sensor as an alert on every plan, with no rule to set up.",
         ],
       },
     ],
@@ -795,7 +795,7 @@ sensor:
         heading: "Managing several properties",
         paragraphs: [
           "Keep each property separate so an alert names the address, and give your maintenance contact their own alerts. A record of readings and alerts is also useful evidence for an insurance claim if something does go wrong.",
-          "ThermalTrace's property management page describes how it handles multiple properties.",
+          "ProbeHarbor's property management page describes how it handles multiple properties.",
         ],
       },
     ],
@@ -812,7 +812,7 @@ sensor:
       },
     ],
     related: [
-      { label: "ThermalTrace for landlords and property managers", href: "/property-management" },
+      { label: "ProbeHarbor for landlords and property managers", href: "/property-management" },
       { label: "Claims evidence pack", href: "/claims-pack" },
       { label: "What temperature should I leave my house at in winter when I am away?", href: "/answers/vacant-house-winter-thermostat-setting" },
     ],
