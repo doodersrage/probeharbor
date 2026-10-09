@@ -259,7 +259,7 @@ export function buildClaimsPackHtml(data: ClaimsPackData): string {
     table { width: 100%; border-collapse: collapse; font-family: system-ui, sans-serif; font-size: 13px; }
     th, td { text-align: left; padding: 8px 10px; border-top: 1px solid #e5e7eb; vertical-align: top; }
     th { background: #f3f4f6; font-size: 11px; text-transform: uppercase; letter-spacing: 0.03em; color: #4b5563; }
-    .downloads { font-family: system-ui, sans-serif; margin: 16px 0; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; background: #fff7ed; }
+    .downloads { font-family: system-ui, sans-serif; margin: 16px 0; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; background: #e6f4fb; }
     .downloads a { color: #065a70; }
     .disclaimer { margin-top: 28px; padding-top: 12px; border-top: 1px solid #d1d5db; font-size: 12px; color: #4b5563; }
     .print-hint { font-family: system-ui, sans-serif; font-size: 12px; color: #6b7280; margin: 8px 0 0; }

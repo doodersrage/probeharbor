@@ -103,7 +103,7 @@ export function buildMonitoringCertificateHtml(data: MonitoringCertificateData):
     .hero {
       padding: 28px 28px 24px;
       background: #fff;
-      border-bottom: 3px solid #ea580c;
+      border-bottom: 3px solid #0a7c93;
     }
     .brand { font-family: system-ui, sans-serif; font-weight: 800; letter-spacing: -0.02em; margin: 0 0 12px; font-size: 13px; }
     .brand span.accent { color: #08708a; }
@@ -116,7 +116,7 @@ export function buildMonitoringCertificateHtml(data: MonitoringCertificateData):
       text-transform: uppercase;
       color: #065a70;
       background: rgba(255, 255, 255, 0.7);
-      border: 1px solid #fdba74;
+      border: 1px solid #7fcde0;
       border-radius: 999px;
       padding: 4px 10px;
       margin-bottom: 10px;
@@ -137,7 +137,7 @@ export function buildMonitoringCertificateHtml(data: MonitoringCertificateData):
     .pill-on { background: #ecfdf5; border-color: #6ee7b7; color: #047857; }
     .pill-off { background: #f9fafb; color: #6b7280; }
     .channels { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 0; font-family: system-ui, sans-serif; }
-    .channel { font-size: 12px; background: #fff7ed; border: 1px solid #fed7aa; color: #065a70; border-radius: 6px; padding: 3px 8px; }
+    .channel { font-size: 12px; background: #e6f4fb; border: 1px solid #b8e3f0; color: #065a70; border-radius: 6px; padding: 3px 8px; }
     .muted-inline { font-family: system-ui, sans-serif; font-size: 13px; color: #6b7280; }
     .account-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px 20px; font-family: system-ui, sans-serif; font-size: 13px; margin: 8px 0 0; }
     .account-grid dt { color: #6b7280; margin: 0; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; }

@@ -28,7 +28,7 @@ type ShotMeta = { image: ImageMetadata; alt: string; defaultCaption: string };
 const shots: Record<ProductShotId, ShotMeta> = {
   insights: {
     image: insightsImg,
-    alt: "ProbeHarbor Insights with seven-day probe curves, freeze threshold line, and nights-at-risk forecast",
+    alt: "ProbeHarbor Insights with 30-day probe curves, humidity and dew point, freeze threshold line, week-over-year comparison, and nights-at-risk forecast map",
     defaultCaption: "Insights: probe curves with your freeze threshold.",
   },
   history: {
@@ -38,27 +38,27 @@ const shots: Record<ProductShotId, ShotMeta> = {
   },
   "history-chart": {
     image: historyChartImg,
-    alt: "ProbeHarbor temperature trend with humidity percent, dew point overlay, house thermostat reference, and 34°F freeze line",
+    alt: "ProbeHarbor seven-day temperature trend with two probes, average, humidity percent, dew point overlay, alert markers, and 34°F freeze line",
     defaultCaption: "Temperature trend with humidity, dew point, and freeze guide.",
   },
   devices: {
     image: devicesImg,
-    alt: "ProbeHarbor Devices page showing Garage pull device health and connection options",
-    defaultCaption: "Devices. ESP push, pull feeds, MQTT, and Home Assistant.",
+    alt: "ProbeHarbor Devices page showing device health score, last seen, sensor count, and feed health",
+    defaultCaption: "Devices: health score, last seen, and feed status.",
   },
   "overview-cards": {
     image: overviewCardsImg,
-    alt: "ProbeHarbor Overview cards for freeze setup, connecting a device, and receiving live data",
-    defaultCaption: "Overview, from first device to live readings.",
+    alt: "ProbeHarbor Overview with a Looking good space status, quick actions, and a forecast-backed time-to-freeze card",
+    defaultCaption: "Overview: space status, quick actions, and time to freeze.",
   },
   "overview-status": {
     image: overviewStatusImg,
-    alt: "ProbeHarbor Overview Status strip with last reading, sensors, feeds, alerts, house, freeze hours, coldest margin, indoor−outdoor delta, probe spread, condensation, and feed health",
-    defaultCaption: "Overview Status: freeze margin, ΔT, probe spread, condensation, and feed health.",
+    alt: "ProbeHarbor Overview Status strip with last reading, fresh sensors, feeds online, alerts, and coldest margin above the freeze alert",
+    defaultCaption: "Overview Status: last reading, sensors, feeds, alerts, and freeze margin.",
   },
   portfolio: {
     image: portfolioImg,
-    alt: "ProbeHarbor Portfolio dashboard listing multiple properties with freeze-risk banner, min temperatures, device counts, and property-manager roles",
+    alt: "Illustrative ProbeHarbor Portfolio dashboard listing multiple example properties with freeze-risk banner, min temperatures, device counts, and property-manager roles",
     defaultCaption: "Illustrative example: every property’s freeze risk in one table.",
   },
   "claims-pack": {
