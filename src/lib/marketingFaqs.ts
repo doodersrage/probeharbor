@@ -39,6 +39,11 @@ export const marketingFaqs = {
         "A native Android app is available in early access on GitHub while Google Play review finishes. You can also use the full web dashboard or install the Progressive Web App. Companion clients (Android, Desktop, Bay Buddy, PWA) are listed at probeharbor.dev/apps. The phone and desktop apps do not sense temperature: they connect to your ProbeHarbor account.",
     },
     {
+      question: "Was ProbeHarbor called ThermalTrace?",
+      answer:
+        "Yes. ThermalTrace was renamed ProbeHarbor in October 2026 to avoid confusion with an unrelated product. Accounts, sensors, history, and alerts carried over unchanged. Old thermaltrace.dev links redirect here, and devices still posting to thermaltrace.dev ingest URLs keep working, though new setups should use probeharbor.dev.",
+    },
+    {
       question: "Where is ProbeHarbor hosted?",
       answer:
         "On Cloudflare’s edge network (Workers), so the site and ingest APIs run close to visitors without you maintaining a VPS. Live job and ingest health is on probeharbor.dev/system-status: we publish what we measure, not a marketing uptime percentage.",

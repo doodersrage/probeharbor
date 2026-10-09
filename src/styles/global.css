@@ -685,7 +685,7 @@
     animation: home-rise 520ms var(--motion-ease) both;
   }
 
-  /* Match public/logo.svg — icon + “Thermal” (light) + “Trace” (orange). */
+  /* Match public/logo.svg — icon + “Probe” (light) + “Harbor” (orange), no gap. */
   .brand-mark {
     display: inline;
     font-weight: inherit;
@@ -702,7 +702,6 @@
   }
 
   .brand-mark-harbor {
-    margin-left: 0.06em;
     color: var(--color-accent);
   }
 

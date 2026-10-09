@@ -33,6 +33,6 @@
     font-weight="800"
     letter-spacing="-0.03em"
   >
-    <tspan x="72" fill="#E8ECF0">Probe</tspan><tspan dx="2" fill="#FF7A00">Harbor</tspan>
+    <tspan x="72" fill="#E8ECF0">Probe</tspan><tspan fill="#FF7A00">Harbor</tspan>
   </text>
 </svg>
