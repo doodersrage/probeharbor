@@ -32,7 +32,7 @@ export const GET: APIRoute = async ({ url, cookies, redirect, request, site }) =
     return redirect(buildSignInRedirectUrl("oauth_failed"));
   }
 
-  setMobileOAuthCookie(cookies);
+  setMobileOAuthCookie(cookies, url.searchParams.get("app"));
   cookies.delete(OAUTH_NEXT_COOKIE, { path: "/" });
   cookies.delete(OAUTH_REF_COOKIE, { path: "/" });
 

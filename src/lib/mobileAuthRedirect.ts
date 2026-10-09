@@ -1,15 +1,24 @@
 import type { AstroCookies } from "astro";
 import { resolveConfiguredSiteUrl } from "./siteConfig";
 import {
+  ANDROID_APP_IDS,
   createMobileExchangeToken,
-  MOBILE_APP_SCHEME,
+  resolveAndroidAppId,
+  type AndroidAppId,
   MOBILE_OAUTH_COOKIE,
   MOBILE_OAUTH_HOST,
   MOBILE_OAUTH_HTTPS_PATH,
 } from "./mobileAuthExchange";
 
-export function setMobileOAuthCookie(cookies: AstroCookies): void {
-  cookies.set(MOBILE_OAUTH_COOKIE, "1", {
+/**
+ * Mark a native-app OAuth round trip. The value is the Android app ID when the
+ * app sent one, else "1" (legacy Android installs and desktop companions).
+ */
+export function setMobileOAuthCookie(cookies: AstroCookies, appId?: string | null): void {
+  const value = (ANDROID_APP_IDS as readonly string[]).includes(appId?.trim() ?? "")
+    ? appId!.trim()
+    : "1";
+  cookies.set(MOBILE_OAUTH_COOKIE, value, {
     path: "/",
     httpOnly: true,
     secure: import.meta.env.PROD,
@@ -19,7 +28,14 @@ export function setMobileOAuthCookie(cookies: AstroCookies): void {
 }
 
 export function hasMobileOAuthCookie(cookies: AstroCookies): boolean {
-  return cookies.get(MOBILE_OAUTH_COOKIE)?.value === "1";
+  const value = cookies.get(MOBILE_OAUTH_COOKIE)?.value;
+  return value === "1" || (ANDROID_APP_IDS as readonly string[]).includes(value ?? "");
+}
+
+/** Android app that started the round trip, or null when it didn't say. */
+function mobileOAuthAppId(cookies: AstroCookies): AndroidAppId | null {
+  const value = cookies.get(MOBILE_OAUTH_COOKIE)?.value;
+  return value && value !== "1" ? resolveAndroidAppId(value) : null;
 }
 
 export function consumeMobileOAuthCookie(cookies: AstroCookies): boolean {
@@ -28,19 +44,30 @@ export function consumeMobileOAuthCookie(cookies: AstroCookies): boolean {
   return value;
 }
 
-export function buildMobileOAuthCustomUrl(exchange: string): string {
-  return `${MOBILE_APP_SCHEME}://${MOBILE_OAUTH_HOST}?exchange=${encodeURIComponent(exchange)}`;
+export function buildMobileOAuthCustomUrl(
+  exchange: string,
+  appId: AndroidAppId = resolveAndroidAppId(null),
+): string {
+  return `${appId}://${MOBILE_OAUTH_HOST}?exchange=${encodeURIComponent(exchange)}`;
 }
 
-export function buildMobileOAuthHttpsUrl(exchange: string, siteUrl?: string | URL | null): string {
+export function buildMobileOAuthHttpsUrl(
+  exchange: string,
+  siteUrl?: string | URL | null,
+  appId?: AndroidAppId | null,
+): string {
   const origin = resolveConfiguredSiteUrl(siteUrl);
-  return `${origin}${MOBILE_OAUTH_HTTPS_PATH}?exchange=${encodeURIComponent(exchange)}`;
+  const app = appId ? `&app=${encodeURIComponent(appId)}` : "";
+  return `${origin}${MOBILE_OAUTH_HTTPS_PATH}?exchange=${encodeURIComponent(exchange)}${app}`;
 }
 
 /** Chrome-friendly intent URI; user taps or JS navigates here after YubiKey/WebAuthn. */
-export function buildMobileOAuthIntentUrl(exchange: string): string {
+export function buildMobileOAuthIntentUrl(
+  exchange: string,
+  appId: AndroidAppId = resolveAndroidAppId(null),
+): string {
   const encoded = encodeURIComponent(exchange);
-  return `intent://${MOBILE_OAUTH_HOST}?exchange=${encoded}#Intent;scheme=${MOBILE_APP_SCHEME};package=${MOBILE_APP_SCHEME};end`;
+  return `intent://${MOBILE_OAUTH_HOST}?exchange=${encoded}#Intent;scheme=${appId};package=${appId};end`;
 }
 
 /**
@@ -51,6 +78,7 @@ export async function redirectMobileOAuthComplete(
   accessToken: string,
   refreshToken: string,
   siteUrl?: string | URL | null,
+  appId?: AndroidAppId | null,
 ): Promise<Response | null> {
   const exchange = await createMobileExchangeToken(accessToken, refreshToken);
   if (!exchange) return null;
@@ -58,7 +86,7 @@ export async function redirectMobileOAuthComplete(
   return new Response(null, {
     status: 302,
     headers: {
-      Location: buildMobileOAuthHttpsUrl(exchange, siteUrl),
+      Location: buildMobileOAuthHttpsUrl(exchange, siteUrl, appId),
       "Cache-Control": "no-store",
     },
   });
@@ -76,7 +104,12 @@ export async function maybeRedirectMobileOAuth(
   siteUrl?: string | URL | null,
 ): Promise<Response | null> {
   if (!hasMobileOAuthCookie(cookies)) return null;
-  const redirect = await redirectMobileOAuthComplete(accessToken, refreshToken, siteUrl);
+  const redirect = await redirectMobileOAuthComplete(
+    accessToken,
+    refreshToken,
+    siteUrl,
+    mobileOAuthAppId(cookies),
+  );
   if (!redirect) return null;
   consumeMobileOAuthCookie(cookies);
   return redirect;

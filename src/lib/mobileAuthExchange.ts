@@ -137,8 +137,22 @@ export async function verifyMobileExchangeToken(
 }
 
 export const MOBILE_OAUTH_COOKIE = "mobile_oauth";
-export const MOBILE_APP_SCHEME = "dev.thermaltrace.android";
-/** Host for the custom-scheme return URI (`dev.thermaltrace.android://oauth`). */
+/** Android application ID; also the app's custom URL scheme. */
+export const ANDROID_APP_ID = "dev.probeharbor.android";
+/** Early-access installs from before the ProbeHarbor rename. They don't send `app`. */
+export const ANDROID_APP_ID_LEGACY = "dev.thermaltrace.android";
+export const ANDROID_APP_IDS = [ANDROID_APP_ID, ANDROID_APP_ID_LEGACY] as const;
+export type AndroidAppId = (typeof ANDROID_APP_IDS)[number];
+
+/** Known app ID from a request or cookie; anything else means a legacy install. */
+export function resolveAndroidAppId(value: string | null | undefined): AndroidAppId {
+  const id = value?.trim();
+  return (ANDROID_APP_IDS as readonly string[]).includes(id ?? "")
+    ? (id as AndroidAppId)
+    : ANDROID_APP_ID_LEGACY;
+}
+
+/** Host for the custom-scheme return URI (`<app id>://oauth`). */
 export const MOBILE_OAUTH_HOST = "oauth";
 /** HTTPS App Link path Chrome can open after Google/YubiKey (custom-scheme 302s are blocked). */
 export const MOBILE_OAUTH_HTTPS_PATH = "/app/oauth";

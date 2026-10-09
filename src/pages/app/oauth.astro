@@ -4,6 +4,7 @@ import {
   buildMobileOAuthCustomUrl,
   buildMobileOAuthIntentUrl,
 } from "../../lib/mobileAuthRedirect";
+import { resolveAndroidAppId } from "../../lib/mobileAuthExchange";
 import {
   buildBayBuddyOAuthCustomUrl,
   buildDesktopOAuthCustomUrl,
@@ -19,6 +20,7 @@ const client = (Astro.url.searchParams.get("client")?.trim().toLowerCase() ||
   "android") as CompanionClient;
 const isBayBuddy = client === "baybuddy";
 const isDesktop = client === "desktop";
+const androidAppId = resolveAndroidAppId(Astro.url.searchParams.get("app"));
 
 const loopback = exchange ? consumeCompanionLoopbackCookie(Astro.cookies) : null;
 if (exchange && loopback) {
@@ -29,13 +31,13 @@ Astro.response.headers.set("Cache-Control", "no-store");
 Astro.response.headers.set("Referrer-Policy", "no-referrer");
 
 const intentUrl =
-  exchange && !isBayBuddy && !isDesktop ? buildMobileOAuthIntentUrl(exchange) : "";
+  exchange && !isBayBuddy && !isDesktop ? buildMobileOAuthIntentUrl(exchange, androidAppId) : "";
 const customUrl = exchange
   ? isBayBuddy
     ? buildBayBuddyOAuthCustomUrl(exchange)
     : isDesktop
       ? buildDesktopOAuthCustomUrl(exchange)
-      : buildMobileOAuthCustomUrl(exchange)
+      : buildMobileOAuthCustomUrl(exchange, androidAppId)
   : "";
 const openHref = intentUrl || customUrl;
 
