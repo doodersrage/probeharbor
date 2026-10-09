@@ -11,6 +11,7 @@ import {
   sendEmail,
 } from "./mailer";
 import { buildUnsubscribeUrl, unsubscribeHeaders } from "./emailUnsubscribe";
+import { isEmailSuppressed } from "./emailSuppressions";
 
 export type DripStageId = "day1" | "day3" | "day7";
 /** Stage ids plus the variants sent to people who have no reading yet. */
@@ -263,6 +264,13 @@ export async function sendDripEmailsForAllUsers(
         return ageDays >= stage.day;
       });
       if (!nextStage) {
+        skipped += 1;
+        continue;
+      }
+
+      // Bounced or invalid addresses: the mailer would refuse anyway, and
+      // logging that as an error every hourly run hides real failures.
+      if (await isEmailSuppressed(user.email)) {
         skipped += 1;
         continue;
       }

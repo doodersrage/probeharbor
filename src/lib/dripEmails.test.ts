@@ -19,6 +19,11 @@ vi.mock("./mailer", () => ({
   partitionMailErrors: (...a: unknown[]) => mockPartitionMailErrors(...a),
 }));
 
+const mockIsEmailSuppressed = vi.fn();
+vi.mock("./emailSuppressions", () => ({
+  isEmailSuppressed: (...a: unknown[]) => mockIsEmailSuppressed(...a),
+}));
+
 const mockSelectEq = vi.fn();
 const mockSelect = vi.fn(() => ({ eq: mockSelectEq }));
 const mockUpdateEq = vi.fn();
@@ -35,6 +40,7 @@ beforeEach(() => {
   }));
   mockResolveSiteUrl.mockReset().mockReturnValue("https://probeharbor.dev");
   mockSendEmail.mockReset().mockResolvedValue(undefined);
+  mockIsEmailSuppressed.mockReset().mockResolvedValue(false);
   mockIsMailerRecipientNotAllowed.mockReset().mockReturnValue(false);
   mockPartitionMailErrors.mockReset().mockReturnValue({ hardErrors: [], restrictedErrors: [] });
   mockSelectEq.mockReset().mockResolvedValue({ data: [] });
@@ -125,6 +131,21 @@ describe("sendDripEmailsForAllUsers", () => {
 
     expect(result).toEqual({ sent: 0, skipped: 1, errors: [], restricted: 0 });
     expect(mockSendEmail).not.toHaveBeenCalled();
+  });
+
+  it("skips suppressed addresses instead of logging a send error every run", async () => {
+    mockSelectEq.mockResolvedValue({ data: [row()] });
+    mockGetUserById.mockResolvedValue({
+      data: { user: { email: "bounced@example.com", email_confirmed_at: "2024-06-01T00:00:00Z", created_at: "2024-06-15T10:00:00.000Z" } },
+    });
+    mockIsEmailSuppressed.mockResolvedValue(true);
+    const { sendDripEmailsForAllUsers } = await import("./dripEmails");
+
+    const result = await sendDripEmailsForAllUsers();
+
+    expect(result).toEqual({ sent: 0, skipped: 1, errors: [], restricted: 0 });
+    expect(mockSendEmail).not.toHaveBeenCalled();
+    expect(mockUpdate).not.toHaveBeenCalled();
   });
 
   it("sends the day1 stage once the account is at least an hour old", async () => {
