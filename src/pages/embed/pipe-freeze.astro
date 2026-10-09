@@ -21,6 +21,10 @@ if (coords) {
   toolUrl.searchParams.set("lon", coords.lon.toFixed(3));
   if (place) toolUrl.searchParams.set("place", place);
 }
+// Same page, opened at the email signup for this place.
+const alertsUrl = new URL(toolUrl);
+if (coords) alertsUrl.searchParams.set("signup", "1");
+
 const RISK_LABEL: Record<FreezeRisk, string> = { high: "High risk", watch: "Watch", low: "Low risk" };
 const nightName = (date: string, index: number) =>
   index === 0
@@ -51,6 +55,8 @@ Astro.response.headers.set("Cache-Control", "public, max-age=900");
       body { margin: 0; padding: 12px; background: var(--bg); color: var(--text); }
       h1 { font-size: 1rem; margin: 0 0 2px; }
       .sub { font-size: 0.75rem; color: var(--muted); margin: 0 0 10px; }
+      .alerts { margin: 10px 0 0; font-size: 14px; font-weight: 600; }
+      .alerts a { color: var(--link); }
       .nights { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
       .night { background: var(--card); border: 1px solid var(--border); border-left: 4px solid var(--low); border-radius: 8px; padding: 8px 10px; }
       .night.high { border-left-color: var(--high); }
@@ -89,6 +95,11 @@ Astro.response.headers.set("Cache-Control", "public, max-age=900");
           : result && !result.ok && result.error === "us_only"
             ? "The forecast covers US locations only."
             : "Forecast temporarily unavailable."}
+      </p>
+    )}
+    {coords && (
+      <p class="alerts">
+        <a href={alertsUrl.toString()} target="_blank" rel="noopener">Get free freeze alerts for {label} →</a>
       </p>
     )}
     <p class="credit">

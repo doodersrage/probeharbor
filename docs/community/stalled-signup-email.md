@@ -24,11 +24,13 @@ If you were hoping to watch a specific space (garage, crawlspace, cabin), tell m
 Thanks,
 Robert
 
+P.S. If you don't have a sensor yet, you can still get a free email the afternoon before a freezing night at https://probeharbor.dev/pipe-freeze-forecast (look up your ZIP, then sign up under the forecast). No hardware needed.
+
 ---
 
 ## What to do with replies
 
-- "No hardware": point them at `/about/esp32-freeze-kit`, and note it as a vote for a pre-flashed kit.
+- "No hardware": point them at the free ZIP freeze alerts on `/pipe-freeze-forecast` first, then `/about/esp32-freeze-kit`, and note it as a vote for a pre-flashed kit.
 - "Too much work": ask which step. This is the case the browser flasher is meant to fix.
 - "Already have sensors": ask which brand. Repeated answers tell you which integration to build first.
 - Keep a tally in this file or an issue so the pattern is visible after ten replies.

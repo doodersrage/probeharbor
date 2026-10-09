@@ -9,6 +9,7 @@ Tasks only **you** can complete — everything else in the HACS/integration pass
 - Kit SKU / pre-flash batch is outside this repo (BOM page is ready)
 
 ## Organic traffic (operator-only)
+- [ ] Spread the free ZIP freeze alerts before the first hard freeze, using the [outreach drafts](./freeze-alerts-outreach.md) (thread answers, HA/maker posts, widget emails to local sites, neighborhood posts)
 
 - [ ] Google Search Console: before the SEO branch deploys, note the last 28 days of impressions, clicks, and indexed pages as a baseline
 - [ ] Google Search Console: confirm `sitemap-index.xml` is submitted, then check Pages → "Crawled – currently not indexed" a few weeks after the 2026-10-01 noindex of web-stack About guides (`NOINDEX_ABOUT_SLUGS` in `src/lib/sitemapPages.ts`)

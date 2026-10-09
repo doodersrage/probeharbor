@@ -52,6 +52,14 @@ function FreezeAlertSignup({ place, siteKey }: { place: Place; siteKey?: string 
   const [submitting, setSubmitting] = useState(false);
   const widgetRef = useRef<HTMLDivElement>(null);
   const widgetId = useRef<string | null>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  // Arriving from an embed's "Get free freeze alerts" link: jump to the form.
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("signup") !== "1") return;
+    formRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    formRef.current?.querySelector<HTMLInputElement>('input[name="email"]')?.focus({ preventScroll: true });
+  }, []);
 
   // The Turnstile script only auto-renders widgets present at page load, so render this one explicitly.
   useEffect(() => {
@@ -99,7 +107,7 @@ function FreezeAlertSignup({ place, siteKey }: { place: Place; siteKey?: string 
   }
 
   return (
-    <form id="freeze-alerts" class="freeze-alert-signup mt-5" onSubmit={submit}>
+    <form id="freeze-alerts" ref={formRef} class="freeze-alert-signup mt-5" onSubmit={submit}>
       <h3 class="m-0 text-base font-semibold">Email me before freezing nights in {place.label}</h3>
       <p class="mt-1 mb-3 text-sm text-[var(--color-text-muted)]">
         Free, no hardware needed. One email the afternoon before the first freezing night of a cold spell, and before
