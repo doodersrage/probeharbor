@@ -33,7 +33,7 @@ Tasks only **you** can complete — everything else in the HACS/integration pass
 
 ## Waiting on HACS maintainers
 
-- [ ] **[hacs/default#10550](https://github.com/hacs/default/pull/10550)** — submitted 2026-09-01. On 2026-10-09 the entry was renamed to `doodersrage/probeharbor-home-assistant`; hacs-bot auto-closed the PR on that push, and authors can't reopen it. A comment asks maintainers to reopen it. If nobody does within ~2 weeks, open a fresh PR for `doodersrage/probeharbor-home-assistant` that links #10550. Don't push to the PR branch again.
+- [ ] **[hacs/default#11756](https://github.com/hacs/default/pull/11756)**: resubmitted 2026-10-09 as `doodersrage/probeharbor-home-assistant`, all checks green, waiting in the review queue. It replaces #10550 (filed 2026-09-01), which hacs-bot closed after the repo rename because its description still linked the old name. Don't push to the PR branch or comment unless a maintainer asks; any change makes the bot re-check the PR and can close it.
 - After merge: flip `HACS_BADGE_URL` in `src/lib/integrationsHub.ts` from Custom → Default badge
 
 ## Growth (copy/paste ready)
