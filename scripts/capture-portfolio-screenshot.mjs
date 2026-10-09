@@ -17,23 +17,24 @@ const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=block" />
   <style>
     :root {
-      --bg: #0f1419;
-      --surface: #151b24;
-      --border: #2a3444;
-      --text: #e8eef7;
-      --muted: #94a3b8;
-      --accent: #60a5fa;
-      --warning: #f59e0b;
-      --warning-text: #fbbf24;
+      --bg: #07111a;
+      --surface: #0f1f2c;
+      --border: #1e3a4d;
+      --text: #e3edf3;
+      --muted: #8aa0af;
+      --accent: #22b8d4;
+      --warning: #fbbf24;
+      --warning-text: #fcd34d;
     }
     * { box-sizing: border-box; }
     body {
       margin: 0;
       background: var(--bg);
       color: var(--text);
-      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      font-family: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
       padding: 28px 32px 36px;
       width: 1024px;
     }
@@ -167,6 +168,7 @@ const page = await browser.newPage({
   deviceScaleFactor: 1,
 });
 await page.setContent(html, { waitUntil: "networkidle" });
+await page.evaluate(() => document.fonts.ready);
 const body = page.locator("body");
 const box = await body.boundingBox();
 const buf = await page.screenshot({

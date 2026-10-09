@@ -404,8 +404,9 @@
     }
   }
 
-  /* Two wordmark files (light text / navy text); show the one for the theme. */
-  .logo-on-light,
+  /* Two wordmark files (light text / navy text); show the one for the theme.
+     The html prefix outranks .site-logo / .dashboard-sidebar-logo display rules. */
+  html .logo-on-light,
   html[data-theme="light"] .logo-on-dark {
     display: none;
   }
