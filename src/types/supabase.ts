@@ -760,6 +760,42 @@ export type Database = {
         }
         Relationships: []
       }
+      freeze_alert_subscriptions: {
+        Row: {
+          confirmed_at: string | null
+          created_at: string
+          email: string
+          id: string
+          last_alert_night: string | null
+          lat: number
+          lon: number
+          place_label: string
+          token: string
+        }
+        Insert: {
+          confirmed_at?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          last_alert_night?: string | null
+          lat: number
+          lon: number
+          place_label: string
+          token: string
+        }
+        Update: {
+          confirmed_at?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          last_alert_night?: string | null
+          lat?: number
+          lon?: number
+          place_label?: string
+          token?: string
+        }
+        Relationships: []
+      }
       freeze_map_snapshots: {
         Row: {
           avg_temp_f: number | null

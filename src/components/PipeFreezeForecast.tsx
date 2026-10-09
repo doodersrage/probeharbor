@@ -40,8 +40,98 @@ function headline(forecast: Forecast): string {
   return "No freezing nights in the forecast";
 }
 
+type TurnstileApi = {
+  render: (el: HTMLElement, options: { sitekey: string }) => string;
+  reset: (id?: string) => void;
+  remove: (id: string) => void;
+};
+
+/** Email + Turnstile form for hardware-free freeze alerts at the place just looked up. */
+function FreezeAlertSignup({ place, siteKey }: { place: Place; siteKey?: string }) {
+  const [status, setStatus] = useState<{ ok: boolean; message: string } | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const widgetRef = useRef<HTMLDivElement>(null);
+  const widgetId = useRef<string | null>(null);
+
+  // The Turnstile script only auto-renders widgets present at page load, so render this one explicitly.
+  useEffect(() => {
+    if (!siteKey) return;
+    let cancelled = false;
+    const tryRender = () => {
+      const api = (window as { turnstile?: TurnstileApi }).turnstile;
+      if (cancelled || !widgetRef.current) return;
+      if (!api) {
+        window.setTimeout(tryRender, 300);
+        return;
+      }
+      if (widgetId.current == null) widgetId.current = api.render(widgetRef.current, { sitekey: siteKey });
+    };
+    tryRender();
+    return () => {
+      cancelled = true;
+      const api = (window as { turnstile?: TurnstileApi }).turnstile;
+      if (api && widgetId.current != null) api.remove(widgetId.current);
+      widgetId.current = null;
+    };
+  }, [siteKey]);
+
+  async function submit(event: SubmitEvent) {
+    event.preventDefault();
+    setSubmitting(true);
+    setStatus(null);
+    const form = event.currentTarget as HTMLFormElement;
+    const data = new FormData(form);
+    data.set("lat", String(place.lat));
+    data.set("lon", String(place.lon));
+    data.set("label", place.label);
+    try {
+      const res = await fetch("/api/freeze-alerts/subscribe", { method: "POST", body: data });
+      const body = (await res.json()) as { ok?: boolean; message?: string };
+      setStatus({ ok: res.ok && body.ok === true, message: body.message ?? "Something went wrong. Please try again." });
+      if (res.ok && body.ok) form.reset();
+    } catch {
+      setStatus({ ok: false, message: "Something went wrong. Please try again." });
+    } finally {
+      const api = (window as { turnstile?: TurnstileApi }).turnstile;
+      if (api && widgetId.current != null) api.reset(widgetId.current);
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <form id="freeze-alerts" class="freeze-alert-signup mt-5" onSubmit={submit}>
+      <h3 class="m-0 text-base font-semibold">Email me before freezing nights in {place.label}</h3>
+      <p class="mt-1 mb-3 text-sm text-[var(--color-text-muted)]">
+        Free, no hardware needed. One email the afternoon before the first freezing night of a cold spell, and before
+        every night at 20°F or colder. Unsubscribe in one click.
+      </p>
+      <div class="pipe-freeze-search">
+        <label class="block grow">
+          <span class="form-label">Email</span>
+          <input class="form-input" type="email" name="email" required autoComplete="email" placeholder="you@example.com" />
+        </label>
+        <button class="btn-primary self-end" type="submit" disabled={submitting}>
+          {submitting ? "Sending…" : "Get freeze alerts"}
+        </button>
+      </div>
+      {/* Honeypot: hidden from people, filled by bots. */}
+      <input type="text" name="company" tabIndex={-1} autoComplete="off" aria-hidden="true" class="hidden" />
+      <div ref={widgetRef} class="mt-3"></div>
+      {status && (
+        <p class={`${status.ok ? "alert-success" : "alert-warning"} mt-3 mb-0`} role="status">
+          {status.message}
+        </p>
+      )}
+    </form>
+  );
+}
+
 /** Search a US city or ZIP and show the next few nights' pipe freeze outlook from the NWS forecast. */
-export default function PipeFreezeForecast() {
+/**
+ * `turnstileSiteKey` comes from the page as a prop: non-PUBLIC_ env vars are
+ * not available in browser code, so reading import.meta.env here is undefined.
+ */
+export default function PipeFreezeForecast({ turnstileSiteKey }: { turnstileSiteKey?: string }) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<Place[]>([]);
   const [place, setPlace] = useState<Place | null>(null);
@@ -186,6 +276,7 @@ export default function PipeFreezeForecast() {
                 </article>
               ))}
             </div>
+            {place && <FreezeAlertSignup place={place} siteKey={turnstileSiteKey} />}
             {place && (
               <details class="mt-4">
                 <summary class="cursor-pointer text-sm text-link">Embed this forecast on your site</summary>

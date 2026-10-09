@@ -42,6 +42,7 @@ const faqs = [
   },
 ];
 
+const alertsStatus = Astro.url.searchParams.get("alerts");
 const siteUrl = resolveSiteUrl(Astro.site);
 const pageUrl = resolvePageUrl(siteUrl, "/pipe-freeze-forecast");
 const schema = [
@@ -74,11 +75,21 @@ const schema = [
       title="Will my pipes freeze tonight?"
       lede="Check the next five nights for your area: the low, how many hours it stays below freezing, wind, and whether pipes in an unheated garage, crawlspace, or attic are at risk."
     >
-      <a slot="actions" class="btn-primary" href="/register?next=/dashboard/devices">Get freeze alerts free</a>
+      <a slot="actions" class="btn-primary" href="#pipe-freeze-tool-heading">Get free freeze alerts by email</a>
       <a slot="actions" class="btn-secondary" href="/answers/garage-pipe-freeze-temperature">When garage pipes freeze</a>
     </PageHeader>
 
-    <PipeFreezeForecast client:load />
+    {alertsStatus === "confirmed" && (
+      <p class="alert-success mb-0" role="status">
+        Freeze alerts are on. We'll email you the afternoon before a freezing night.
+      </p>
+    )}
+    {alertsStatus === "invalid" && (
+      <p class="alert-warning mb-0" role="status">
+        That confirmation link isn't valid anymore. Look up your area below and sign up again.
+      </p>
+    )}
+    <PipeFreezeForecast client:load turnstileSiteKey={import.meta.env.TURNSTILE_SITE_KEY} />
 
     <section class="card">
       <h2 class="card-title">How to read the risk levels</h2>

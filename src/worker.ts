@@ -15,6 +15,7 @@ import {
 } from "./lib/quarterlyReportEmails";
 import { sendTrialRemindersForAllUsers, trialJobShouldFail } from "./lib/trialEmails";
 import { dripJobShouldFail, sendDripEmailsForAllUsers } from "./lib/dripEmails";
+import { sendFreezeAlerts } from "./lib/freezeAlerts";
 import {
   finishJobRun,
   runSensorReadingRetention,
@@ -464,6 +465,20 @@ async function runHourlyMaintenanceJobs(env: WorkerEnv): Promise<void> {
           }
         } catch (error) {
           await finishJobRun(freezeDrillJobId, "error", {
+            message: error instanceof Error ? error.message : "Unknown error",
+          });
+        }
+
+        const freezeAlertsJobId = await startJobRun("freeze-alerts");
+        try {
+          const freezeAlerts = await sendFreezeAlerts();
+          await finishJobRun(
+            freezeAlertsJobId,
+            freezeAlerts.errors.length ? "error" : "success",
+            freezeAlerts,
+          );
+        } catch (error) {
+          await finishJobRun(freezeAlertsJobId, "error", {
             message: error instanceof Error ? error.message : "Unknown error",
           });
         }
