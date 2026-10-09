@@ -240,7 +240,7 @@ export function buildClaimsPackHtml(data: ClaimsPackData): string {
       margin: 0;
       padding: 32px 24px;
       background: #fff;
-      color: #111827;
+      color: #0b1a25;
       font-family: Georgia, "Times New Roman", serif;
       line-height: 1.5;
       font-size: 14px;
@@ -250,7 +250,7 @@ export function buildClaimsPackHtml(data: ClaimsPackData): string {
     h2 { font-size: 16px; margin: 28px 0 10px; border-bottom: 1px solid #d1d5db; padding-bottom: 6px; }
     .muted { color: #4b5563; margin: 0 0 16px; }
     .brand { font-family: system-ui, sans-serif; font-weight: 800; letter-spacing: -0.02em; margin: 0 0 16px; font-size: 13px; }
-    .brand span.accent { color: #c2410c; }
+    .brand span.accent { color: #08708a; }
     .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin: 16px 0 8px; }
     .stat { border: 1px solid #d1d5db; border-radius: 8px; padding: 12px; background: #f9fafb; }
     .stat-label { font-family: system-ui, sans-serif; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; color: #6b7280; }
@@ -260,7 +260,7 @@ export function buildClaimsPackHtml(data: ClaimsPackData): string {
     th, td { text-align: left; padding: 8px 10px; border-top: 1px solid #e5e7eb; vertical-align: top; }
     th { background: #f3f4f6; font-size: 11px; text-transform: uppercase; letter-spacing: 0.03em; color: #4b5563; }
     .downloads { font-family: system-ui, sans-serif; margin: 16px 0; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; background: #fff7ed; }
-    .downloads a { color: #9a3412; }
+    .downloads a { color: #065a70; }
     .disclaimer { margin-top: 28px; padding-top: 12px; border-top: 1px solid #d1d5db; font-size: 12px; color: #4b5563; }
     .print-hint { font-family: system-ui, sans-serif; font-size: 12px; color: #6b7280; margin: 8px 0 0; }
     @media print {

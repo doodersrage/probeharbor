@@ -45,18 +45,18 @@ const FONT =
   "-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif";
 
 const COLORS = {
-  bg: "#090b0f",
-  card: "#151b24",
-  border: "#2a3441",
+  bg: "#07111a",
+  card: "#0f1f2c",
+  border: "#1e3a4d",
   text: "#f8fafc",
   muted: "#94a3b8",
   steel: "#c5cbd3",
-  brand: "#ff7a00",
-  brandSoft: "#ff9e4a",
+  brand: "#22b8d4",
+  brandSoft: "#67d3e6",
   alert: "#f87171",
   success: "#22c55e",
   // Dark ink on every CTA: white on the orange/red/green accents is 2.3–3.6:1.
-  ctaInk: "#1a0d00",
+  ctaInk: "#03202e",
 } as const;
 
 export function escapeEmailHtml(value: string): string {
@@ -87,7 +87,7 @@ function calloutColors(tone: EmailCalloutTone): {
   if (tone === "muted") {
     return { bg: "#10151d", border: COLORS.border, title: COLORS.muted };
   }
-  return { bg: "#24180f", border: "#9a3412", title: COLORS.brandSoft };
+  return { bg: "#24180f", border: "#065a70", title: COLORS.brandSoft };
 }
 
 function emailSectionToText(section: EmailSection): string[] {
@@ -191,7 +191,7 @@ function renderEmailSections(sections: EmailSection[] | undefined): string {
 function linkifyPlainUrls(text: string): string {
   return escapeEmailHtml(text).replace(
     /(https?:\/\/[^\s<]+)/g,
-    '<a href="$1" style="color:#ff9e4a;text-decoration:underline">$1</a>',
+    '<a href="$1" style="color:#67d3e6;text-decoration:underline">$1</a>',
   );
 }
 

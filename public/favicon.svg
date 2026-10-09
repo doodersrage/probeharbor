@@ -1,27 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none" role="img" aria-labelledby="tt-icon-title">
-  <title id="tt-icon-title">ProbeHarbor</title>
-  <defs>
-    <linearGradient id="icon-steel" x1="16" y1="4" x2="16" y2="28" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#F4F6F8"/>
-      <stop offset="100%" stop-color="#A8B0BA"/>
-    </linearGradient>
-    <linearGradient id="icon-trace" x1="4" y1="12" x2="28" y2="20" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#FF7A00"/>
-      <stop offset="100%" stop-color="#FFC107"/>
-    </linearGradient>
-  </defs>
-  <rect width="32" height="32" rx="7" fill="#2F3A45"/>
-  <path
-    fill="url(#icon-steel)"
-    d="M6.5 7.2h19c1 0 1.8.8 1.8 1.8v2.2c0 1-.8 1.8-1.8 1.8h-7.2V24c0 1-.8 1.8-1.8 1.8h-1.4c-1 0-1.8-.8-1.8-1.8V13H6.5c-1 0-1.8-.8-1.8-1.8V9c0-1 .8-1.8 1.8-1.8z"
-  />
-  <path
-    d="M5.5 16.5h3.2l2.4-4.2 2.9 7.2 2.9-6 2.4 4 3.8-2"
-    stroke="url(#icon-trace)"
-    stroke-width="1.85"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-    fill="none"
-  />
-  <circle cx="26.2" cy="15.4" r="1.9" fill="#FFC107"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none" role="img" aria-labelledby="ph-title">
+  <title id="ph-title">ProbeHarbor</title>
+  <defs><clipPath id="fv"><path d="M64 7 L111 21 V64 C111 93 91 112 64 122 C37 112 17 93 17 64 V21 Z"/></clipPath></defs>
+  <g transform="scale(0.25)">
+    <path d="M64 7 L111 21 V64 C111 93 91 112 64 122 C37 112 17 93 17 64 V21 Z" fill="#0B3D5B" stroke="#0B3D5B" stroke-width="6" stroke-linejoin="round"/>
+    <g clip-path="url(#fv)"><path d="M0 86 C24 76 44 78 64 86 S104 94 128 82 V128 H0 Z" fill="#0EA5C0"/></g>
+    <g fill="#FFFFFF"><path d="M53 34 L64 22 L75 34 Z"/><rect x="54" y="34" width="20" height="16" rx="2"/><path d="M55 50 H73 L79 90 H49 Z"/></g>
+    <rect x="59" y="38" width="10" height="8" rx="1" fill="#0EA5C0"/>
+    <g fill="none" stroke="#0EA5C0" stroke-width="7" stroke-linecap="round"><path d="M40 28 A26 26 0 0 0 40 60"/><path d="M88 28 A26 26 0 0 1 88 60"/></g>
+  </g>
 </svg>

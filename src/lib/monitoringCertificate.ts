@@ -94,7 +94,7 @@ export function buildMonitoringCertificateHtml(data: MonitoringCertificateData):
       margin: 0;
       padding: 32px 24px;
       background: #fafafa;
-      color: #111827;
+      color: #0b1a25;
       font-family: Georgia, "Times New Roman", serif;
       line-height: 1.5;
       font-size: 14px;
@@ -106,7 +106,7 @@ export function buildMonitoringCertificateHtml(data: MonitoringCertificateData):
       border-bottom: 3px solid #ea580c;
     }
     .brand { font-family: system-ui, sans-serif; font-weight: 800; letter-spacing: -0.02em; margin: 0 0 12px; font-size: 13px; }
-    .brand span.accent { color: #c2410c; }
+    .brand span.accent { color: #08708a; }
     .cert-badge {
       display: inline-block;
       font-family: system-ui, sans-serif;
@@ -114,7 +114,7 @@ export function buildMonitoringCertificateHtml(data: MonitoringCertificateData):
       font-weight: 700;
       letter-spacing: 0.12em;
       text-transform: uppercase;
-      color: #9a3412;
+      color: #065a70;
       background: rgba(255, 255, 255, 0.7);
       border: 1px solid #fdba74;
       border-radius: 999px;
@@ -130,14 +130,14 @@ export function buildMonitoringCertificateHtml(data: MonitoringCertificateData):
     .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin: 4px 0 8px; }
     .stat { border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; background: #f9fafb; }
     .stat-label { font-family: system-ui, sans-serif; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: #6b7280; margin: 0; }
-    .stat-value { font-family: system-ui, sans-serif; font-size: 18px; font-weight: 600; margin: 4px 0 0; color: #111827; }
+    .stat-value { font-family: system-ui, sans-serif; font-size: 18px; font-weight: 600; margin: 4px 0 0; color: #0b1a25; }
     .stat-detail { font-family: system-ui, sans-serif; font-size: 11px; color: #6b7280; margin: 2px 0 0; }
     .pills { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 4px; font-family: system-ui, sans-serif; font-size: 12px; }
     .pill { border-radius: 999px; padding: 4px 10px; border: 1px solid #d1d5db; }
     .pill-on { background: #ecfdf5; border-color: #6ee7b7; color: #047857; }
     .pill-off { background: #f9fafb; color: #6b7280; }
     .channels { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 0; font-family: system-ui, sans-serif; }
-    .channel { font-size: 12px; background: #fff7ed; border: 1px solid #fed7aa; color: #9a3412; border-radius: 6px; padding: 3px 8px; }
+    .channel { font-size: 12px; background: #fff7ed; border: 1px solid #fed7aa; color: #065a70; border-radius: 6px; padding: 3px 8px; }
     .muted-inline { font-family: system-ui, sans-serif; font-size: 13px; color: #6b7280; }
     .account-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px 20px; font-family: system-ui, sans-serif; font-size: 13px; margin: 8px 0 0; }
     .account-grid dt { color: #6b7280; margin: 0; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; }
@@ -147,7 +147,7 @@ export function buildMonitoringCertificateHtml(data: MonitoringCertificateData):
     th { background: #f3f4f6; font-size: 11px; text-transform: uppercase; letter-spacing: 0.03em; color: #4b5563; border-top: none; }
     .disclaimer { margin-top: 24px; padding-top: 14px; border-top: 1px solid #e5e7eb; font-size: 12px; color: #4b5563; }
     .footer-links { font-family: system-ui, sans-serif; font-size: 11px; color: #6b7280; margin-top: 8px; }
-    .footer-links a { color: #c2410c; }
+    .footer-links a { color: #08708a; }
   </style>
 </head>
 <body>

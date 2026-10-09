@@ -1,26 +1,22 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" fill="none" role="img" aria-labelledby="tt-line-title">
-  <title id="tt-line-title">ProbeHarbor mark</title>
-  <defs>
-    <linearGradient id="tt-trace-line" x1="20" y1="40" x2="112" y2="72" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#FF7A00"/>
-      <stop offset="100%" stop-color="#FFC107"/>
-    </linearGradient>
-  </defs>
-  <!-- Concept 4   minimal line (stroke T) -->
-  <path
-    d="M28 40h72M64 40v64"
-    stroke="#2F3A45"
-    stroke-width="14"
-    stroke-linecap="round"
-    fill="none"
-  />
-  <path
-    d="M18 70h16l12-22 14 36 14-30 12 20 18-10"
-    stroke="url(#tt-trace-line)"
-    stroke-width="8"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-    fill="none"
-  />
-  <circle cx="108" cy="62" r="8" fill="#FFC107"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" fill="none" role="img" aria-labelledby="ph-title">
+  <title id="ph-title">ProbeHarbor mark</title>
+  <defs><clipPath id="l-clip"><path d="M64 7 L111 21 V64 C111 93 91 112 64 122 C37 112 17 93 17 64 V21 Z"/></clipPath></defs>
+  
+  <g clip-path="url(#l-clip)">
+    <path d="M0 84 C20 76 36 76 52 82 S86 92 104 84 S124 76 128 78 V128 H0 Z" fill="currentColor"/>
+    <path d="M0 98 C22 90 40 92 60 98 S96 106 128 94 V128 H0 Z" fill="currentColor"/>
+    <path d="M14 92 C30 86 44 87 58 92 S88 99 108 91" fill="none" stroke="none" stroke-width="4" stroke-linecap="round"/>
+  </g>
+  <g fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round">
+    <path d="M44 30 A22 22 0 0 0 44 56"/><path d="M36 23 A32 32 0 0 0 36 63"/>
+    <path d="M84 30 A22 22 0 0 1 84 56"/><path d="M92 23 A32 32 0 0 1 92 63"/>
+  </g>
+  <g fill="currentColor">
+    <path d="M55 33 L64 24 L73 33 Z"/>
+    <rect x="56" y="34" width="16" height="11" rx="1.5"/>
+    <rect x="51.5" y="45" width="25" height="4.5" rx="1.5"/>
+    <path d="M56 50 H72 L77 88 H51 Z"/>
+  </g>
+  <rect x="60" y="36.5" width="8" height="6" rx="1" fill="currentColor"/>
+  <path d="M64 7 L111 21 V64 C111 93 91 112 64 122 C37 112 17 93 17 64 V21 Z" fill="none" stroke="currentColor" stroke-width="8" stroke-linejoin="round"/>
 </svg>

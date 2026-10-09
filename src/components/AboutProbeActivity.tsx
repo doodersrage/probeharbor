@@ -8,12 +8,12 @@ import {
 } from "../lib/probeDemo";
 
 const COLORS = {
-  bgTop: "#0f1319",
-  bgBottom: "#090b0f",
-  surface: "#1a2230",
-  surfaceRaised: "#222b3a",
-  accent: "#ff7a00",
-  accentBright: "#ffc107",
+  bgTop: "#0a1823",
+  bgBottom: "#07111a",
+  surface: "#142a3a",
+  surfaceRaised: "#1a3346",
+  accent: "#22b8d4",
+  accentBright: "#67d3e6",
   text: "#f8fafc",
   textMuted: "#94a3b8",
   border: "rgba(255,255,255,0.12)",
@@ -273,7 +273,7 @@ export default function AboutProbeActivity() {
 
       const doorGrad = ctx!.createLinearGradient(doorX, doorY, doorX + doorW, doorY);
       doorGrad.addColorStop(0, lerpColor(doorAmount, "#2a3444", "#3d4d66"));
-      doorGrad.addColorStop(1, lerpColor(doorAmount, "#222b3a", "#334155"));
+      doorGrad.addColorStop(1, lerpColor(doorAmount, "#1a3346", "#334155"));
       ctx!.fillStyle = doorGrad;
       drawRoundedRect(ctx!, doorX, doorY, doorW, doorH - doorLift, 8);
       ctx!.fill();

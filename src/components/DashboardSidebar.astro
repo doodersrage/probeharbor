@@ -12,6 +12,7 @@ import CreditCard from "@lucide/astro/icons/credit-card";
 import Settings from "@lucide/astro/icons/settings";
 import Activity from "@lucide/astro/icons/activity";
 import logo from "../assets/gtm.svg";
+import logoLight from "../assets/gtm-light.svg";
 import { isAdminDashboardPath, mobileMonitorHrefs } from "../lib/dashboardNav";
 
 interface Props {
@@ -147,7 +148,8 @@ const mobileMonitor = mobileMonitorHrefs(showPortfolioInMonitor)
   <nav class="dashboard-sidebar-inner" aria-label="Dashboard" id="dashboard-nav">
     <div class="dashboard-sidebar-top">
       <a href="/dashboard" class="dashboard-sidebar-brand">
-        <Image src={logo} height={32} width={250} alt="ProbeHarbor" class="dashboard-sidebar-logo" />
+        <Image src={logo} height={32} width={162} alt="ProbeHarbor" class="dashboard-sidebar-logo logo-on-dark" />
+        <Image src={logoLight} height={32} width={162} alt="ProbeHarbor" class="dashboard-sidebar-logo logo-on-light" />
       </a>
       <div class="dashboard-sidebar-top-meta">
         {planLabel && <span class="plan-badge plan-badge--sidebar">{planLabel}</span>}

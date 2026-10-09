@@ -73,7 +73,7 @@ export const GET: APIRoute = async ({ params }) => {
     color = "#0369a1";
   } else if (minTemp != null && minTemp <= 34) {
     status = `${minTemp.toFixed(0)}°F risk`;
-    color = "#c2410c";
+    color = "#08708a";
   } else if (minTemp != null) {
     status = `${minTemp.toFixed(0)}°F`;
     color = "#0284c7";

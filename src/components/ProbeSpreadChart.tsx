@@ -100,7 +100,7 @@ export default function ProbeSpreadChart({
       const yFor = (v: number) => pad.top + innerH - ((v - min) / range) * innerH;
 
       g.clearRect(0, 0, width, height);
-      g.fillStyle = "#151b24";
+      g.fillStyle = "#0f1f2c";
       g.fillRect(0, 0, width, height);
 
       for (let i = 0; i <= 4; i++) {

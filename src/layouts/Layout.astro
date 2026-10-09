@@ -3,6 +3,7 @@ import { Image, Font } from 'astro:assets';
 import '../styles/global.css'
 const currentYear = new Date().getFullYear();
 import logo from '../assets/gtm.svg';
+import logoLight from '../assets/gtm-light.svg';
 import { getAuthFromCookies } from "../lib/auth";
 import { resolveTheme } from "../lib/userPreferences";
 import SchemaMarkup from "../components/SchemaMarkup.astro";
@@ -155,7 +156,7 @@ const registerServiceWorker =
 		<link rel="icon" href="/favicon.ico" />
 		<link rel="apple-touch-icon" href="/icon-192.png" />
 		<link rel="manifest" href="/manifest.webmanifest" />
-		<meta name="theme-color" content={resolvedTheme === "light" ? "#f4f7f8" : "#090b0f"} />
+		<meta name="theme-color" content={resolvedTheme === "light" ? "#f3f8fb" : "#07111a"} />
 		<link rel="canonical" href={pageUrl} />
 		<meta name="generator" content={Astro.generator} />
 		<link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap-index.xml" />
@@ -212,7 +213,8 @@ const registerServiceWorker =
 			<header class="site-header">
 				<div class="site-header-inner">
 					<a href="/" class="site-logo-link">
-						<Image src={logo} height={44} width={344} alt="ProbeHarbor" class="site-logo" />
+						<Image src={logo} height={44} width={223} alt="ProbeHarbor" class="site-logo logo-on-dark" />
+						<Image src={logoLight} height={44} width={223} alt="ProbeHarbor" class="site-logo logo-on-light" />
 					</a>
 					<button
 						type="button"

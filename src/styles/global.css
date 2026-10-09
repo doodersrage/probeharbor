@@ -2,34 +2,34 @@
 @import "tailwind-animations";
 
 @theme {
-  --color-bg: #090b0f;
-  --color-bg-elevated: #0f1319;
-  --color-surface: #151b24;
-  --color-surface-raised: #1a2230;
+  --color-bg: #07111a;
+  --color-bg-elevated: #0a1823;
+  --color-surface: #0f1f2c;
+  --color-surface-raised: #142a3a;
   /* Alias used by badges, toggles, and menus; follows the theme's raised surface. */
   --color-surface-elevated: var(--color-surface-raised);
 
-  /* Brand system (logo / T-trace / CTAs) */
-  --color-brand-charcoal: #2f3a45;
-  --color-brand-slate: #6b7c93;
-  --color-brand-orange: #ff7a00;
-  --color-brand-yellow: #ffc107;
+  /* Brand system (public/brand/README.md): Harbor Blue, Signal Teal, Sky, Slate */
+  --color-brand-navy: #0b3d5b;
+  --color-brand-teal: #0ea5c0;
+  --color-brand-sky: #e6f4fb;
+  --color-brand-slate: #64748b;
 
   /* Legacy names mapped to the brand palette for compatibility */
-  --color-cream: #090b0f;
-  --color-peach: #ff9e4a;
-  --color-terracotta: #ff7a00;
-  --color-plum: #e6e9ee;
+  --color-cream: #07111a;
+  --color-peach: #67d3e6;
+  --color-terracotta: #22b8d4;
+  --color-plum: #e3edf3;
   --color-sage: rgb(255 255 255 / 0.1);
 
-  --color-surface-muted: #1a2230;
+  --color-surface-muted: #142a3a;
   /* Alias for muted fills (read-only fields, save bars); follows the theme. */
   --color-bg-muted: var(--color-surface-muted);
   --color-border: rgb(255 255 255 / 0.08);
   --color-border-strong: rgb(255 255 255 / 0.14);
-  --color-text: #e6e9ee;
-  --color-text-secondary: #b8c2ce;
-  --color-text-muted: #8b97a8;
+  --color-text: #e3edf3;
+  --color-text-secondary: #b5c6d2;
+  --color-text-muted: #8aa0af;
 
   /* Dashboard token aliases (bg-card, text-foreground, etc.) */
   --color-card: var(--color-surface);
@@ -37,17 +37,17 @@
   --color-foreground: var(--color-text);
   --color-muted: var(--color-surface-muted);
   --color-muted-foreground: var(--color-text-muted);
-  /* Accent = CTAs / focus / brand action (orange). Info stays blue below. */
-  --color-accent: #ff7a00;
-  --color-accent-hover: #ff8f2e;
-  --color-accent-soft: rgb(255 122 0 / 0.14);
-  --color-accent-glow: rgb(255 122 0 / 0.35);
-  /* Dark ink on orange: white on #ff7a00 is only 2.6:1. */
-  --color-accent-contrast: #1a0d00;
-  --color-accent-muted: #ffa057;
-  /* Links stay in the text color with an accent underline, so orange means "act" or "alert", not "link". */
+  /* Accent = CTAs / focus / brand action (Signal Teal, brightened for dark UI). Info stays blue below. */
+  --color-accent: #22b8d4;
+  --color-accent-hover: #4cc9e0;
+  --color-accent-soft: rgb(34 184 212 / 0.14);
+  --color-accent-glow: rgb(34 184 212 / 0.35);
+  /* Dark ink on teal: 7.1:1. White on teal is under 3:1. */
+  --color-accent-contrast: #03202e;
+  --color-accent-muted: #67d3e6;
+  /* Links stay in the text color with an accent underline, so teal means "act", not "link". */
   --color-link: var(--color-text);
-  --color-link-underline: rgb(255 122 0 / 0.55);
+  --color-link-underline: rgb(34 184 212 / 0.55);
   --color-success: #22c55e;
   --color-success-soft: rgb(34 197 94 / 0.15);
   --color-success-bg: rgb(34 197 94 / 0.15);
@@ -58,7 +58,7 @@
   --color-info-bg: rgb(59 130 246 / 0.12);
   --color-info-border: rgb(59 130 246 / 0.35);
   --color-info-text: #93c5fd;
-  /* Warning / freeze urgency — deeper orange-red than accent */
+  /* Warning / freeze urgency: amber, distinct from the teal accent */
   --color-warning: #fbbf24;
   --color-warning-bg: rgb(251 191 36 / 0.12);
   --color-warning-border: rgb(251 191 36 / 0.45);
@@ -84,36 +84,36 @@
     --motion-ease: cubic-bezier(0.4, 0, 0.2, 1);
     --motion-duration: 220ms;
     --focus-ring-glow:
-      0 0 0 3px rgb(255 122 0 / 0.28),
-      0 0 18px rgb(255 122 0 / 0.18);
+      0 0 0 3px rgb(34 184 212 / 0.28),
+      0 0 18px rgb(34 184 212 / 0.18);
     --hover-wash: rgb(255 255 255 / 0.06);
     --hover-wash-strong: rgb(255 255 255 / 0.1);
     --inset-highlight: rgb(255 255 255 / 0.03);
 
     --bg-trace: rgb(203 213 225 / 0.2);
-    --bg-trace-accent: rgb(255 122 0 / 0.38);
+    --bg-trace-accent: rgb(34 184 212 / 0.38);
   }
 
   html[data-theme="light"] {
-    /* Cold technical field. White cards sit on #F4F7F8; burnt orange is the action color. */
-    --color-bg: #f4f7f8;
-    --color-bg-elevated: #eaf0f2;
+    /* Pale sky field. White cards sit on #f3f8fb; deep teal is the action color. */
+    --color-bg: #f3f8fb;
+    --color-bg-elevated: #e6f1f7;
     --color-surface: #ffffff;
-    --color-surface-raised: #eaf0f2;
-    --color-surface-muted: #eaf0f2;
-    --color-border: #d5e0e4;
-    --color-border-strong: #c3d2d8;
-    --color-text: #17252b;
-    --color-text-secondary: #52636a;
-    --color-text-muted: #52636a;
-    /* Same brand orange as dark mode, darkened so white text passes AA (5.2:1). */
-    --color-accent: #c2410c;
-    --color-accent-hover: #9a3412;
-    --color-accent-soft: rgb(194 65 12 / 0.1);
-    --color-accent-glow: rgb(194 65 12 / 0.2);
+    --color-surface-raised: #e6f1f7;
+    --color-surface-muted: #e6f1f7;
+    --color-border: #d3e3ec;
+    --color-border-strong: #bfd4e0;
+    --color-text: #0b2433;
+    --color-text-secondary: #4a6070;
+    --color-text-muted: #4a6070;
+    /* Signal Teal deepened so white text passes AA (5.7:1). */
+    --color-accent: #08708a;
+    --color-accent-hover: #065a70;
+    --color-accent-soft: rgb(8 112 138 / 0.1);
+    --color-accent-glow: rgb(8 112 138 / 0.2);
     --color-accent-contrast: #ffffff;
-    --color-accent-muted: #b2400a;
-    --color-link-underline: rgb(194 65 12 / 0.5);
+    --color-accent-muted: #0a7c93;
+    --color-link-underline: rgb(8 112 138 / 0.5);
     --color-success: #3d8b62;
     --color-success-bg: rgb(61 139 98 / 0.12);
     --color-success-text: #2f6e4c;
@@ -129,14 +129,14 @@
     --color-danger-bg: rgb(201 74 69 / 0.1);
     --color-danger-border: rgb(201 74 69 / 0.4);
     --shadow-card:
-      0 0 0 1px rgb(23 37 43 / 0.04),
-      0 8px 24px rgb(23 37 43 / 0.06);
-    --hover-wash: rgb(23 37 43 / 0.04);
-    --hover-wash-strong: rgb(23 37 43 / 0.07);
+      0 0 0 1px rgb(11 36 51 / 0.04),
+      0 8px 24px rgb(11 36 51 / 0.06);
+    --hover-wash: rgb(11 36 51 / 0.04);
+    --hover-wash-strong: rgb(11 36 51 / 0.07);
     --inset-highlight: rgb(255 255 255 / 0.7);
-    --focus-ring-glow: 0 0 0 3px rgb(194 65 12 / 0.28);
-    --bg-trace: rgb(23 37 43 / 0.2);
-    --bg-trace-accent: rgb(194 65 12 / 0.35);
+    --focus-ring-glow: 0 0 0 3px rgb(8 112 138 / 0.28);
+    --bg-trace: rgb(11 36 51 / 0.2);
+    --bg-trace-accent: rgb(8 112 138 / 0.35);
   }
 
   html {
@@ -404,8 +404,14 @@
     }
   }
 
-  html[data-theme="light"] .site-logo {
-    filter: brightness(0.32) contrast(1.15);
+  /* Two wordmark files (light text / navy text); show the one for the theme. */
+  .logo-on-light,
+  html[data-theme="light"] .logo-on-dark {
+    display: none;
+  }
+
+  html[data-theme="light"] .logo-on-light {
+    display: block;
   }
 
   .nav-link {
@@ -550,26 +556,26 @@
   }
 
   html[data-theme="light"] .btn-primary {
-    box-shadow: 0 1px 2px rgb(23 37 43 / 0.12);
+    box-shadow: 0 1px 2px rgb(11 36 51 / 0.12);
   }
 
   html[data-theme="light"] .btn-primary:hover {
-    box-shadow: 0 1px 2px rgb(23 37 43 / 0.16);
+    box-shadow: 0 1px 2px rgb(11 36 51 / 0.16);
   }
 
   html[data-theme="light"] .site-footer {
-    background-color: #17252b;
+    background-color: var(--color-brand-navy);
     border-top-color: transparent;
     color: #c5d0d4;
   }
 
   html[data-theme="light"] .site-footer .brand-mark-probe,
   html[data-theme="light"] .site-footer .site-footer-heading {
-    color: #f4f7f8;
+    color: #f3f8fb;
   }
 
   html[data-theme="light"] .site-footer .brand-mark-harbor {
-    color: #ff7a00;
+    color: #22b8d4;
   }
 
   html[data-theme="light"] .site-footer .brand-mark-tm,
@@ -582,7 +588,7 @@
   html[data-theme="light"] .site-footer .site-footer-links a,
   html[data-theme="light"] .site-footer .site-footer-hosting a,
   html[data-theme="light"] .site-footer .site-footer-legal a {
-    color: #d5e0e4;
+    color: #d3e3ec;
   }
 
   html[data-theme="light"] .site-footer .site-footer-links a:hover,
@@ -685,7 +691,7 @@
     animation: home-rise 520ms var(--motion-ease) both;
   }
 
-  /* Match public/logo.svg — icon + “Probe” (light) + “Harbor” (orange), no gap. */
+  /* Match public/logo.svg — icon + “Probe” (light) + “Harbor” (teal), no gap. */
   .brand-mark {
     display: inline;
     font-weight: inherit;
@@ -1756,7 +1762,7 @@
   }
 
   .ingest-waiting-callout {
-    border-color: rgb(255 122 0 / 0.35);
+    border-color: rgb(34 184 212 / 0.35);
     background: var(--color-accent-soft);
   }
 
@@ -1989,7 +1995,7 @@
   }
 
   .plan-tier-card-featured {
-    border-color: rgb(255 122 0 / 0.45);
+    border-color: rgb(34 184 212 / 0.45);
     background: var(--color-surface);
     position: relative;
   }
@@ -3281,7 +3287,7 @@
   .plan-badge--member,
   .plan-badge--pro,
   .plan-badge--admin {
-    border-color: rgb(255 122 0 / 0.35);
+    border-color: rgb(34 184 212 / 0.35);
     background: var(--color-accent-soft);
     color: var(--color-accent-muted);
   }
@@ -3462,10 +3468,6 @@
     width: auto;
     max-width: 100%;
     height: 2rem;
-  }
-
-  html[data-theme="light"] .dashboard-sidebar-logo {
-    filter: brightness(0.32) contrast(1.15);
   }
 
   .dashboard-nav-toggle {
@@ -3907,8 +3909,8 @@
 
   .history-chart-legend-btn {
     appearance: none;
-    border: 1px solid color-mix(in srgb, var(--legend-color, #ff7a00) 55%, transparent);
-    background: color-mix(in srgb, var(--legend-color, #ff7a00) 14%, transparent);
+    border: 1px solid color-mix(in srgb, var(--legend-color, #22b8d4) 55%, transparent);
+    background: color-mix(in srgb, var(--legend-color, #22b8d4) 14%, transparent);
     color: var(--color-text-secondary);
     border-radius: 999px;
     padding: 0.2rem 0.65rem;
@@ -3930,7 +3932,7 @@
     height: 0.55rem;
     border-radius: 999px;
     margin-right: 0.35rem;
-    background: var(--legend-color, #ff7a00);
+    background: var(--legend-color, #22b8d4);
     vertical-align: -0.05rem;
   }
 
@@ -4458,8 +4460,8 @@
   }
 
   .alert-settings-nav-link:hover {
-    border-color: rgb(255 122 0 / 0.35);
-    background-color: rgb(255 122 0 / 0.08);
+    border-color: rgb(34 184 212 / 0.35);
+    background-color: rgb(34 184 212 / 0.08);
     color: var(--color-text);
   }
 

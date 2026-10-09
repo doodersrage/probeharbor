@@ -119,7 +119,7 @@ export function buildMonthlyReportPlainText(data: MonthlyReportData): string {
 }
 
 function statBlock(label: string, value: string, detail?: string): string {
-  return `<div style="background:#151b24;border:1px solid #2a3441;border-radius:12px;padding:16px">
+  return `<div style="background:#0f1f2c;border:1px solid #1e3a4d;border-radius:12px;padding:16px">
     <div style="color:#94a3b8;font-size:12px;text-transform:uppercase;letter-spacing:0.04em">${escapeHtml(label)}</div>
     <div style="color:#f8fafc;font-size:24px;font-weight:600;margin-top:6px">${escapeHtml(value)}</div>
     ${detail ? `<div style="color:#64748b;font-size:12px;margin-top:4px">${escapeHtml(detail)}</div>` : ""}
@@ -134,10 +134,10 @@ export function buildMonthlyReportHtmlDocument(data: MonthlyReportData): string 
           .map(
             (probe) =>
               `<tr>
-                <td style="padding:10px 12px;border-top:1px solid #2a3441">${escapeHtml(probe.label)}</td>
-                <td style="padding:10px 12px;border-top:1px solid #2a3441">${probe.minF.toFixed(1)}–${probe.maxF.toFixed(1)}°F</td>
-                <td style="padding:10px 12px;border-top:1px solid #2a3441">${probe.avgHumidity.toFixed(0)}%</td>
-                <td style="padding:10px 12px;border-top:1px solid #2a3441">${probe.readingCount}</td>
+                <td style="padding:10px 12px;border-top:1px solid #1e3a4d">${escapeHtml(probe.label)}</td>
+                <td style="padding:10px 12px;border-top:1px solid #1e3a4d">${probe.minF.toFixed(1)}–${probe.maxF.toFixed(1)}°F</td>
+                <td style="padding:10px 12px;border-top:1px solid #1e3a4d">${probe.avgHumidity.toFixed(0)}%</td>
+                <td style="padding:10px 12px;border-top:1px solid #1e3a4d">${probe.readingCount}</td>
               </tr>`,
           )
           .join("");
@@ -149,9 +149,9 @@ export function buildMonthlyReportHtmlDocument(data: MonthlyReportData): string 
           .map(
             (night) =>
               `<tr>
-                <td style="padding:10px 12px;border-top:1px solid #2a3441">${escapeHtml(night.dateLabel)}</td>
-                <td style="padding:10px 12px;border-top:1px solid #2a3441">${night.minTempF.toFixed(0)}°F</td>
-                <td style="padding:10px 12px;border-top:1px solid #2a3441;color:${night.atRisk ? "#f87171" : "#4ade80"}">${night.atRisk ? "At risk" : "OK"}</td>
+                <td style="padding:10px 12px;border-top:1px solid #1e3a4d">${escapeHtml(night.dateLabel)}</td>
+                <td style="padding:10px 12px;border-top:1px solid #1e3a4d">${night.minTempF.toFixed(0)}°F</td>
+                <td style="padding:10px 12px;border-top:1px solid #1e3a4d;color:${night.atRisk ? "#f87171" : "#4ade80"}">${night.atRisk ? "At risk" : "OK"}</td>
               </tr>`,
           )
           .join("");
@@ -163,10 +163,10 @@ export function buildMonthlyReportHtmlDocument(data: MonthlyReportData): string 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>ProbeHarbor report — ${escapeHtml(data.monthLabel)}</title>
 </head>
-<body style="margin:0;padding:24px;background:#090b0f;color:#e2e8f0;font-family:system-ui,-apple-system,sans-serif;line-height:1.5">
+<body style="margin:0;padding:24px;background:#07111a;color:#e2e8f0;font-family:system-ui,-apple-system,sans-serif;line-height:1.5">
   <div style="max-width:720px;margin:0 auto">
     <header style="margin-bottom:24px">
-      <p style="margin:0 0 8px;font-size:13px;font-weight:800;letter-spacing:-0.02em"><span style="color:#c5cbd3">Probe</span><span style="color:#ff7a00">Harbor</span></p>
+      <p style="margin:0 0 8px;font-size:13px;font-weight:800;letter-spacing:-0.02em"><span style="color:#c5cbd3">Probe</span><span style="color:#22b8d4">Harbor</span></p>
       <h1 style="margin:0 0 8px;font-size:28px;color:#f8fafc">${escapeHtml(reportTitle(data))} — ${escapeHtml(data.monthLabel)}</h1>
       <p style="margin:0;color:#94a3b8">${escapeHtml(periodPhrase(data))} snapshot from your saved readings and forecast outlook.</p>
     </header>
@@ -182,9 +182,9 @@ export function buildMonthlyReportHtmlDocument(data: MonthlyReportData): string 
 
     <section style="margin-bottom:24px">
       <h2 style="margin:0 0 12px;font-size:18px;color:#f8fafc">By probe</h2>
-      <table style="width:100%;border-collapse:collapse;background:#111827;border:1px solid #2a3441;border-radius:12px;overflow:hidden">
+      <table style="width:100%;border-collapse:collapse;background:#0b1a25;border:1px solid #1e3a4d;border-radius:12px;overflow:hidden">
         <thead>
-          <tr style="background:#151b24;color:#94a3b8;text-align:left;font-size:12px">
+          <tr style="background:#0f1f2c;color:#94a3b8;text-align:left;font-size:12px">
             <th style="padding:10px 12px">Probe</th>
             <th style="padding:10px 12px">Range</th>
             <th style="padding:10px 12px">Avg humidity</th>
@@ -197,9 +197,9 @@ export function buildMonthlyReportHtmlDocument(data: MonthlyReportData): string 
 
     <section style="margin-bottom:24px">
       <h2 style="margin:0 0 12px;font-size:18px;color:#f8fafc">Forecast nights</h2>
-      <table style="width:100%;border-collapse:collapse;background:#111827;border:1px solid #2a3441;border-radius:12px;overflow:hidden">
+      <table style="width:100%;border-collapse:collapse;background:#0b1a25;border:1px solid #1e3a4d;border-radius:12px;overflow:hidden">
         <thead>
-          <tr style="background:#151b24;color:#94a3b8;text-align:left;font-size:12px">
+          <tr style="background:#0f1f2c;color:#94a3b8;text-align:left;font-size:12px">
             <th style="padding:10px 12px">Night</th>
             <th style="padding:10px 12px">Low</th>
             <th style="padding:10px 12px">Status</th>
@@ -209,11 +209,11 @@ export function buildMonthlyReportHtmlDocument(data: MonthlyReportData): string 
       </table>
     </section>
 
-    <footer style="border-top:1px solid #2a3441;padding-top:16px;color:#94a3b8;font-size:13px">
+    <footer style="border-top:1px solid #1e3a4d;padding-top:16px;color:#94a3b8;font-size:13px">
       <p style="margin:0 0 8px">
-        <a href="${escapeHtml(data.historyUrl)}" style="color:#ff9e4a">View history</a>
+        <a href="${escapeHtml(data.historyUrl)}" style="color:#67d3e6">View history</a>
         ·
-        <a href="${escapeHtml(data.alertsUrl)}" style="color:#ff9e4a">Manage alerts</a>
+        <a href="${escapeHtml(data.alertsUrl)}" style="color:#67d3e6">Manage alerts</a>
       </p>
       <p style="margin:0">Print this page (Ctrl/Cmd+P) to save as PDF.</p>
     </footer>
