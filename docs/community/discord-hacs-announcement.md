@@ -8,7 +8,7 @@ Post in your ProbeHarbor Discord `#announcements` (or similar) when ready. Short
 
 We shipped an official Home Assistant integration — install via HACS custom repository:
 
-`https://github.com/doodersrage/thermaltrace-home-assistant`
+`https://github.com/doodersrage/probeharbor-home-assistant`
 
 **What you get**
 - Share-link sensors (temp, humidity, doors, leaks, …) from a Free family live token (Pro expands scopes)

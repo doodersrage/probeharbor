@@ -57,7 +57,7 @@ Parts list with links: https://probeharbor.dev/about/esp32-freeze-kit
 2. Dashboard → Devices → add a push device
 3. Download the Arduino sketch. It comes with your device's ingest URL filled in.
 
-The same sketch is in the repo if you want to read it first: https://github.com/doodersrage/thermaltrace/tree/main/sketches/arduino/ds18b20_ingest
+The same sketch is in the repo if you want to read it first: https://github.com/doodersrage/probeharbor/tree/main/sketches/arduino/ds18b20_ingest
 
 ## Step 3: Flash it
 
@@ -95,11 +95,11 @@ The server stores the reading, compares it with your threshold, and estimates ho
 ## Going further
 
 - Add a second DS18B20 on the same pin (1‑Wire probes share a data line) to compare the pipe with the room air
-- Add a leak contact on the floor to catch the thaw: https://github.com/doodersrage/thermaltrace/tree/main/sketches/arduino/leak_contact_ingest
+- Add a leak contact on the floor to catch the thaw: https://github.com/doodersrage/probeharbor/tree/main/sketches/arduino/leak_contact_ingest
 - Already on ESPHome or Home Assistant? Post readings from there instead of flashing a sketch: https://probeharbor.dev/integrations/home-assistant
 - Work out how long you have on a cold night: https://probeharbor.dev/freeze-time-calculator
 
 ## Source
 
-- Sketches for ESP32, Pico W, Teensy, STM32, and more: https://github.com/doodersrage/thermaltrace/tree/main/sketches
-- Server and dashboard (MIT): https://github.com/doodersrage/thermaltrace
+- Sketches for ESP32, Pico W, Teensy, STM32, and more: https://github.com/doodersrage/probeharbor/tree/main/sketches
+- Server and dashboard (MIT): https://github.com/doodersrage/probeharbor

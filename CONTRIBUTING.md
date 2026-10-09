@@ -12,7 +12,7 @@ cp .env.example .env
 pnpm dev
 ```
 
-Details: [Local development](https://doodersrage.github.io/thermaltrace/guide/local-dev). Do not commit `.env` or secrets.
+Details: [Local development](https://doodersrage.github.io/probeharbor/guide/local-dev). Do not commit `.env` or secrets.
 
 ## Before you open a PR
 
@@ -38,5 +38,5 @@ The **import-guard** suite (`src/lib/astroImportGuard.test.ts`) fails if an Astr
 | Audience | Place |
 |----------|--------|
 | First-time clone | Root [README.md](./README.md) |
-| Env, cron, deploy | [Developer docs](https://doodersrage.github.io/thermaltrace/) (`docs/`) |
+| Env, cron, deploy | [Developer docs](https://doodersrage.github.io/probeharbor/) (`docs/`) |
 | Wiring and freeze playbooks | [Guides hub](https://probeharbor.dev/guides) |

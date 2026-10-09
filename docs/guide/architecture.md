@@ -68,7 +68,7 @@ Push ingest (`POST /api/ingest/<key>`): ~64KB max payload, ~60 req/min/device (p
 
 ## Conventions
 
-Cursor rules under [`.cursor/rules/`](https://github.com/doodersrage/thermaltrace/tree/main/.cursor/rules) cover Astro architecture, design tokens, dashboard hydration, and performance.
+Cursor rules under [`.cursor/rules/`](https://github.com/doodersrage/probeharbor/tree/main/.cursor/rules) cover Astro architecture, design tokens, dashboard hydration, and performance.
 
 An **import-guard** Vitest suite (`src/lib/astroImportGuard.test.ts`) fails CI if a page renders a component it never imports.
 

@@ -7,5 +7,5 @@ contact_links:
     url: https://probeharbor.dev/guides
     about: Hardware, freeze alerts, sharing, and ingest docs.
   - name: Developer docs
-    url: https://doodersrage.github.io/thermaltrace/
+    url: https://doodersrage.github.io/probeharbor/
     about: Local setup, architecture, deploy, API, and sketches.

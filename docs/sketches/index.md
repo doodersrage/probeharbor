@@ -6,7 +6,7 @@ description: "Ready-made ProbeHarbor firmware for DS18B20, MAX31855, and MAX6675
 
 Firmware samples live in the repo:
 
-**[`sketches/`](https://github.com/doodersrage/thermaltrace/tree/main/sketches)**
+**[`sketches/`](https://github.com/doodersrage/probeharbor/tree/main/sketches)**
 
 Each sketch POSTs to your push-device ingest URL. On **Dashboard → Devices**, create a push device and use **Download Arduino .ino** / **MicroPython .py** / **CircuitPython code.py** / **Zephyr main.c** / **CH32V main.c** / **AVR main.S** / **Teensy 4.1 .ino** / **PIC18 main.c** / **Particle Boron .ino** (URL or path pre-filled). Or copy a sketch from this folder and set `INGEST_URL` / `INGEST_PATH` yourself. Always set Wi-Fi credentials (ESP / Pico), `INGEST_HOST` / `INGEST_PATH` (Ethernet), or a Particle Console webhook (cellular) before flashing.
 
@@ -14,23 +14,23 @@ Each sketch POSTs to your push-device ingest URL. On **Dashboard → Devices**, 
 
 | Path | Sensor | Stack |
 |------|--------|-------|
-| [`arduino/ds18b20_ingest`](https://github.com/doodersrage/thermaltrace/tree/main/sketches/arduino/ds18b20_ingest) | DS18B20 (1-Wire) | Arduino: ESP32, ESP8266, Pico W (+ PlatformIO on ESP) |
-| [`arduino/ds18b20_wifimanager`](https://github.com/doodersrage/thermaltrace/tree/main/sketches/arduino/ds18b20_wifimanager) | DS18B20 + WiFiManager | Arduino / ESP32 |
-| [`arduino/ethernet_dht22_ingest`](https://github.com/doodersrage/thermaltrace/tree/main/sketches/arduino/ethernet_dht22_ingest) | Dual DHT22 + W5100 | Uno Ethernet (HTTP push + LAN pull) |
-| [`arduino/door_contact_ingest`](https://github.com/doodersrage/thermaltrace/tree/main/sketches/arduino/door_contact_ingest) | Door reed | Arduino / ESP32 |
-| [`arduino/leak_contact_ingest`](https://github.com/doodersrage/thermaltrace/tree/main/sketches/arduino/leak_contact_ingest) | Leak pads | Arduino / ESP32 |
-| [`arduino/power_sense_ingest`](https://github.com/doodersrage/thermaltrace/tree/main/sketches/arduino/power_sense_ingest) | Power sense | Arduino / ESP32 |
-| [`arduino/max31855_ingest`](https://github.com/doodersrage/thermaltrace/tree/main/sketches/arduino/max31855_ingest) | MAX31855 thermocouple | Arduino: ESP32 / Pico W |
-| [`arduino/max6675_ingest`](https://github.com/doodersrage/thermaltrace/tree/main/sketches/arduino/max6675_ingest) | MAX6675 thermocouple | Arduino: ESP32 / Pico W |
-| [`micropython/ds18b20_ingest.py`](https://github.com/doodersrage/thermaltrace/blob/main/sketches/micropython/ds18b20_ingest.py) | DS18B20 | MicroPython ESP32 or Pico W |
-| [`micropython/max31855_ingest.py`](https://github.com/doodersrage/thermaltrace/blob/main/sketches/micropython/max31855_ingest.py) | MAX31855 | MicroPython ESP32 |
-| [`circuitpython/ds18b20_ingest.py`](https://github.com/doodersrage/thermaltrace/blob/main/sketches/circuitpython/ds18b20_ingest.py) | DS18B20 | CircuitPython Pico W / Pico 2 W |
-| [`zephyr/ds18b20_ingest`](https://github.com/doodersrage/thermaltrace/tree/main/sketches/zephyr/ds18b20_ingest) | DS18B20 | Zephyr C / STM32 Nucleo-F767ZI |
-| [`wch/ch32v307_ds18b20_ingest`](https://github.com/doodersrage/thermaltrace/tree/main/sketches/wch/ch32v307_ds18b20_ingest) | DS18B20 | WCHNET C / CH32V307V-EVT |
-| [`avr/atmega328_w5100_ds18b20`](https://github.com/doodersrage/thermaltrace/tree/main/sketches/avr/atmega328_w5100_ds18b20) | DS18B20 | GNU AVR assembly / ATmega328P + W5100 |
-| [`teensy/teensy41_ds18b20_ingest`](https://github.com/doodersrage/thermaltrace/tree/main/sketches/teensy/teensy41_ds18b20_ingest) | DS18B20 | Teensyduino + QNEthernet / Teensy 4.1 |
-| [`microchip/pic18f67j60_ds18b20_ingest`](https://github.com/doodersrage/thermaltrace/tree/main/sketches/microchip/pic18f67j60_ds18b20_ingest) | DS18B20 | MPLAB X MLA TCP/IP / PIC18F67J60 |
-| [`particle/boron_ds18b20_ingest`](https://github.com/doodersrage/thermaltrace/tree/main/sketches/particle/boron_ds18b20_ingest) | DS18B20 | Particle Boron LTE + Console webhook |
+| [`arduino/ds18b20_ingest`](https://github.com/doodersrage/probeharbor/tree/main/sketches/arduino/ds18b20_ingest) | DS18B20 (1-Wire) | Arduino: ESP32, ESP8266, Pico W (+ PlatformIO on ESP) |
+| [`arduino/ds18b20_wifimanager`](https://github.com/doodersrage/probeharbor/tree/main/sketches/arduino/ds18b20_wifimanager) | DS18B20 + WiFiManager | Arduino / ESP32 |
+| [`arduino/ethernet_dht22_ingest`](https://github.com/doodersrage/probeharbor/tree/main/sketches/arduino/ethernet_dht22_ingest) | Dual DHT22 + W5100 | Uno Ethernet (HTTP push + LAN pull) |
+| [`arduino/door_contact_ingest`](https://github.com/doodersrage/probeharbor/tree/main/sketches/arduino/door_contact_ingest) | Door reed | Arduino / ESP32 |
+| [`arduino/leak_contact_ingest`](https://github.com/doodersrage/probeharbor/tree/main/sketches/arduino/leak_contact_ingest) | Leak pads | Arduino / ESP32 |
+| [`arduino/power_sense_ingest`](https://github.com/doodersrage/probeharbor/tree/main/sketches/arduino/power_sense_ingest) | Power sense | Arduino / ESP32 |
+| [`arduino/max31855_ingest`](https://github.com/doodersrage/probeharbor/tree/main/sketches/arduino/max31855_ingest) | MAX31855 thermocouple | Arduino: ESP32 / Pico W |
+| [`arduino/max6675_ingest`](https://github.com/doodersrage/probeharbor/tree/main/sketches/arduino/max6675_ingest) | MAX6675 thermocouple | Arduino: ESP32 / Pico W |
+| [`micropython/ds18b20_ingest.py`](https://github.com/doodersrage/probeharbor/blob/main/sketches/micropython/ds18b20_ingest.py) | DS18B20 | MicroPython ESP32 or Pico W |
+| [`micropython/max31855_ingest.py`](https://github.com/doodersrage/probeharbor/blob/main/sketches/micropython/max31855_ingest.py) | MAX31855 | MicroPython ESP32 |
+| [`circuitpython/ds18b20_ingest.py`](https://github.com/doodersrage/probeharbor/blob/main/sketches/circuitpython/ds18b20_ingest.py) | DS18B20 | CircuitPython Pico W / Pico 2 W |
+| [`zephyr/ds18b20_ingest`](https://github.com/doodersrage/probeharbor/tree/main/sketches/zephyr/ds18b20_ingest) | DS18B20 | Zephyr C / STM32 Nucleo-F767ZI |
+| [`wch/ch32v307_ds18b20_ingest`](https://github.com/doodersrage/probeharbor/tree/main/sketches/wch/ch32v307_ds18b20_ingest) | DS18B20 | WCHNET C / CH32V307V-EVT |
+| [`avr/atmega328_w5100_ds18b20`](https://github.com/doodersrage/probeharbor/tree/main/sketches/avr/atmega328_w5100_ds18b20) | DS18B20 | GNU AVR assembly / ATmega328P + W5100 |
+| [`teensy/teensy41_ds18b20_ingest`](https://github.com/doodersrage/probeharbor/tree/main/sketches/teensy/teensy41_ds18b20_ingest) | DS18B20 | Teensyduino + QNEthernet / Teensy 4.1 |
+| [`microchip/pic18f67j60_ds18b20_ingest`](https://github.com/doodersrage/probeharbor/tree/main/sketches/microchip/pic18f67j60_ds18b20_ingest) | DS18B20 | MPLAB X MLA TCP/IP / PIC18F67J60 |
+| [`particle/boron_ds18b20_ingest`](https://github.com/doodersrage/probeharbor/tree/main/sketches/particle/boron_ds18b20_ingest) | DS18B20 | Particle Boron LTE + Console webhook |
 
 ## What they send
 
@@ -66,7 +66,7 @@ Uno Ethernet samples send the classic `temp` object (`0` / `1` / `avg` with `c`,
 
 ## Uno + Ethernet shield
 
-The W5100 cannot TLS. Use [`ethernet_dht22_ingest`](https://github.com/doodersrage/thermaltrace/tree/main/sketches/arduino/ethernet_dht22_ingest) (DHT22 on A4/A5, HTTP POST + optional LAN pull on port 80) and run [`push_https_forward.py`](https://github.com/doodersrage/thermaltrace/blob/main/sketches/relay/push_https_forward.py) on a LAN host:
+The W5100 cannot TLS. Use [`ethernet_dht22_ingest`](https://github.com/doodersrage/probeharbor/tree/main/sketches/arduino/ethernet_dht22_ingest) (DHT22 on A4/A5, HTTP POST + optional LAN pull on port 80) and run [`push_https_forward.py`](https://github.com/doodersrage/probeharbor/blob/main/sketches/relay/push_https_forward.py) on a LAN host:
 
 ```bash
 python3 sketches/relay/push_https_forward.py --listen 0.0.0.0:8080 \

@@ -1,7 +1,7 @@
 /** Links for the ProbeHarbor Matter / HomeKit companion bridge. */
 
 export const MATTER_REPO_URL =
-  "https://github.com/doodersrage/thermaltrace-matter";
+  "https://github.com/doodersrage/probeharbor-matter";
 
 export const MATTER_INTEGRATION_PAGE = "/integrations/matter";
 

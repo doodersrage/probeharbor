@@ -6,7 +6,7 @@ ProbeHarbor ships in multiple repos. When onboarding UX changes in **this** repo
 
 ## probeharbor-home-assistant (HACS)
 
-**Repo:** [github.com/doodersrage/thermaltrace-home-assistant](https://github.com/doodersrage/thermaltrace-home-assistant)
+**Repo:** [github.com/doodersrage/probeharbor-home-assistant](https://github.com/doodersrage/probeharbor-home-assistant)
 
 **Status (2026-09-10):** README aligns with share-link + optional `thermaltrace.push` ingest service. No code change for web Overview/Live layout — HA users typically use share links or push via service.
 
@@ -20,7 +20,7 @@ ProbeHarbor ships in multiple repos. When onboarding UX changes in **this** repo
 
 ## probeharbor-bay-buddy
 
-**Repo:** [github.com/doodersrage/thermaltrace-bay-buddy](https://github.com/doodersrage/thermaltrace-bay-buddy)
+**Repo:** [github.com/doodersrage/probeharbor-bay-buddy](https://github.com/doodersrage/probeharbor-bay-buddy)
 
 **Status (2026-09-10):** Desktop mood glance (Tauri). Connects via `/api/auth/companion/start` + loopback / custom-scheme OAuth. Product page: [probeharbor.dev/bay-buddy](https://probeharbor.dev/bay-buddy). Claim puck UI claims/follows RP2040-Zero mood lights. Unaffected by web Live/Overview split.
 
@@ -32,7 +32,7 @@ ProbeHarbor ships in multiple repos. When onboarding UX changes in **this** repo
 
 ## probeharbor-desktop
 
-**Repo:** [github.com/doodersrage/thermaltrace-desktop](https://github.com/doodersrage/thermaltrace-desktop)
+**Repo:** [github.com/doodersrage/probeharbor-desktop](https://github.com/doodersrage/probeharbor-desktop)
 
 **Status (2026-09-10):** Full desktop companion dashboard (Tauri). Connects via `/api/auth/companion/start?client=desktop` + loopback OAuth. Product page: [probeharbor.dev/desktop](https://probeharbor.dev/desktop). Android-parity screens: Home, History, Alerts, Devices, Household, Share, Account, Portfolio. Home ≈ web Live; full Overview Status/Insights remain web-only.
 
@@ -44,7 +44,7 @@ ProbeHarbor ships in multiple repos. When onboarding UX changes in **this** repo
 
 ## probeharbor-claim-puck
 
-**Repo:** [github.com/doodersrage/thermaltrace-claim-puck](https://github.com/doodersrage/thermaltrace-claim-puck)
+**Repo:** [github.com/doodersrage/probeharbor-claim-puck](https://github.com/doodersrage/probeharbor-claim-puck)
 
 **Status (2026-09-10):** CircuitPython firmware + host CLI for RP2040-Zero presence key. Product page: [probeharbor.dev/claim-puck](https://probeharbor.dev/claim-puck). API: `/api/pucks/*` + `/api/bays/{bay}/mood`.
 
@@ -55,7 +55,7 @@ ProbeHarbor ships in multiple repos. When onboarding UX changes in **this** repo
 
 ## probeharbor-android
 
-**Repo:** [github.com/doodersrage/thermaltrace-android](https://github.com/doodersrage/thermaltrace-android) (sibling checkout)
+**Repo:** [github.com/doodersrage/probeharbor-android](https://github.com/doodersrage/probeharbor-android) (sibling checkout)
 
 **Status (2026-09-10):** Consumes live API (`/api/home/readings`, history, alerts, claims, `/api/user/home-insights`). Home shows `time_to_freeze` (hours, `hits_at`, confidence, source) plus heating/condensation insights. Full Overview Status strip and Insights cards remain on the **web** Overview (`/dashboard`); current probe cards on web are at `/dashboard/live`. No API change from the 2026-09 dashboard UX pass.
 
@@ -67,7 +67,7 @@ ProbeHarbor ships in multiple repos. When onboarding UX changes in **this** repo
 
 ## probeharbor-matter
 
-**Repo:** [github.com/doodersrage/thermaltrace-matter](https://github.com/doodersrage/thermaltrace-matter)
+**Repo:** [github.com/doodersrage/probeharbor-matter](https://github.com/doodersrage/probeharbor-matter)
 
 **Status (2026-09-10):** Matterbridge DynamicPlatform plugin. Polls `/api/share/{token}/readings`, maps temperature / humidity / flood / door / power / motion to Matter accessories. Optional Pro snooze via `/api/inbound/{token}` + HMAC. Product page: [probeharbor.dev/integrations/matter](https://probeharbor.dev/integrations/matter). Not CSA-certified; runs on LAN host only.
 

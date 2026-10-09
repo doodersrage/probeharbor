@@ -15,7 +15,7 @@ Tasks only **you** can complete — everything else in the HACS/integration pass
 - [ ] Bing Webmaster Tools: verify the site so IndexNow submissions (sent after each deploy) show up
 - [ ] Post one build write-up per platform (Hackster, Instructables, Arduino Project Hub) from the [draft](./build-writeup-esp32-freeze-probe.md), with your own photos
 - [ ] Ask for listings on awesome-home-assistant and ESPHome community device lists once the HACS default PR merges
-- [ ] After the first deploy that includes `/developers/`, open `https://probeharbor.dev/developers/` and one deep page, then update external links you control (HACS repo README, forum post) from `doodersrage.github.io/thermaltrace` to `probeharbor.dev/developers`
+- [ ] After the first deploy that includes `/developers/`, open `https://probeharbor.dev/developers/` and one deep page, then update external links you control (HACS repo README, forum post) from `doodersrage.github.io/probeharbor` to `probeharbor.dev/developers`
 
 - [ ] Email the signups who never added a device, by hand, using the [draft](./stalled-signup-email.md); tally the replies
 
@@ -55,7 +55,7 @@ Check what's missing locally: `pnpm operator:check`
 2. **Ecobee** — [Developer portal](https://www.ecobee.com/en-us/developer/) (signups often closed)  
    Redirect URI: `https://probeharbor.dev/api/integrations/ecobee/callback`  
    Secret: `ECOBEE_CLIENT_ID` (no client secret)  
-   **Workaround:** HA → ingest → **Indoor reference** on Dashboard → Devices (see [HA indoor temp guide](https://doodersrage.github.io/thermaltrace/integrations/home-assistant#indoor-temperature-indoor-temperature-ecobee--any-thermostat))
+   **Workaround:** HA → ingest → **Indoor reference** on Dashboard → Devices (see [HA indoor temp guide](https://doodersrage.github.io/probeharbor/integrations/home-assistant#indoor-temperature-indoor-temperature-ecobee--any-thermostat))
 
 3. Add values to `.env`, then: `pnpm secrets:push`
 
@@ -81,7 +81,7 @@ Check what's missing locally: `pnpm operator:check`
 
 ## Already done (no action)
 
-- HACS integration repo: [probeharbor-home-assistant](https://github.com/doodersrage/thermaltrace-home-assistant) v1.0.2
+- HACS integration repo: [probeharbor-home-assistant](https://github.com/doodersrage/probeharbor-home-assistant) v1.0.2
 - **Nest OAuth + SDM API** — live thermostat readings on Devices
 - **Ambient Weather** — `AMBIENT_APPLICATION_KEY` synced; users add station MAC + API key in Settings
 - **Ingest key vault** — `INGEST_KEY_ENCRYPTION_SECRET` for Reveal ingest key on Devices

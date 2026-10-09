@@ -1,7 +1,7 @@
 /** Links for the official Home Assistant HACS integration. */
 
 export const HACS_REPO_URL =
-  "https://github.com/doodersrage/thermaltrace-home-assistant";
+  "https://github.com/doodersrage/probeharbor-home-assistant";
 
 export const HA_INTEGRATION_PAGE = "/integrations/home-assistant";
 

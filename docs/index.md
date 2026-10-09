@@ -83,7 +83,7 @@ description: "Developer docs for ProbeHarbor: push ingest, the HTTP API, sensor 
 | Read product / DIY guides | [About hub](https://probeharbor.dev/about) |
 
 ::: tip Repo links
-Source: [github.com/doodersrage/thermaltrace](https://github.com/doodersrage/thermaltrace) ·  
+Source: [github.com/doodersrage/probeharbor](https://github.com/doodersrage/probeharbor) ·  
 This docs site: [probeharbor.dev/developers](https://probeharbor.dev/developers/) ·  
 Production app: [probeharbor.dev](https://probeharbor.dev)
 :::

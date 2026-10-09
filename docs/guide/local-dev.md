@@ -5,7 +5,7 @@ description: "Run ProbeHarbor locally: clone, install with pnpm, fill .env with 
 # Local development
 
 ```bash
-git clone https://github.com/doodersrage/thermaltrace.git
+git clone https://github.com/doodersrage/probeharbor.git
 cd probeharbor
 pnpm install
 cp .env.example .env   # fill Supabase, SITE_URL, etc.
@@ -39,7 +39,7 @@ Auth E2E signs in through the Supabase API (sets session cookies) so it does not
 
 ## Environment variables
 
-Configure in `.env` (local) and Cloudflare Worker secrets / vars (production). Full list: [`.env.example`](https://github.com/doodersrage/thermaltrace/blob/main/.env.example). Do **not** commit `.env`.
+Configure in `.env` (local) and Cloudflare Worker secrets / vars (production). Full list: [`.env.example`](https://github.com/doodersrage/probeharbor/blob/main/.env.example). Do **not** commit `.env`.
 
 | Variable | Purpose |
 |----------|---------|
@@ -66,7 +66,7 @@ Configure in `.env` (local) and Cloudflare Worker secrets / vars (production). F
 
 ## Database
 
-Apply SQL in [`supabase/migrations/`](https://github.com/doodersrage/thermaltrace/tree/main/supabase/migrations) **in order** (SQL editor or `pnpm db:push`). Enable RLS only after `SUPABASE_SERVICE_ROLE_KEY` is set in production.
+Apply SQL in [`supabase/migrations/`](https://github.com/doodersrage/probeharbor/tree/main/supabase/migrations) **in order** (SQL editor or `pnpm db:push`). Enable RLS only after `SUPABASE_SERVICE_ROLE_KEY` is set in production.
 
 Regenerate types after schema changes:
 

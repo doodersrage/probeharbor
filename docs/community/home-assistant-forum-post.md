@@ -22,7 +22,7 @@ Hi all — we run [ProbeHarbor](https://probeharbor.dev), a hosted dashboard for
 ### Install
 
 1. HACS → Integrations → Custom repositories → add  
-   `https://github.com/doodersrage/thermaltrace-home-assistant`
+   `https://github.com/doodersrage/probeharbor-home-assistant`
 2. Install **ProbeHarbor**, restart HA
 3. Create a **family live** share link at [probeharbor.dev](https://probeharbor.dev) (Free includes one; Pro adds broader scopes)
 4. Settings → Devices & services → Add integration → ProbeHarbor → paste token
@@ -32,7 +32,7 @@ Full guide: https://probeharbor.dev/integrations/home-assistant
 ### Beyond HACS (optional)
 
 - **Indoor reference via HA** — push `climate.*` current temperature on a schedule, then select it under Dashboard → Devices → Indoor reference (works when Ecobee developer signups are closed)
-- **MQTT → HTTP bridge** — mirror Mosquitto to ProbeHarbor without exposing your broker: [MQTT bridge docs](https://doodersrage.github.io/thermaltrace/integrations/mqtt-bridge) · import [Node-RED flow](https://probeharbor.dev/nodered/mqtt-to-probeharbor.json) (temp + garage door tabs)
+- **MQTT → HTTP bridge** — mirror Mosquitto to ProbeHarbor without exposing your broker: [MQTT bridge docs](https://doodersrage.github.io/probeharbor/integrations/mqtt-bridge) · import [Node-RED flow](https://probeharbor.dev/nodered/mqtt-to-probeharbor.json) (temp + garage door tabs)
 - **ESPHome / Shelly** — push ingest recipes if you do not want HA in the middle: https://probeharbor.dev/about/esphome-shelly-recipes
 - **Garage door + cold alerts** — combined rule when a bay door is open while temps drop: https://probeharbor.dev/about/garage-door-cold-playbook
 
@@ -55,7 +55,7 @@ automation:
 
 ### Links
 
-- HACS repo: https://github.com/doodersrage/thermaltrace-home-assistant
+- HACS repo: https://github.com/doodersrage/probeharbor-home-assistant
 - Product + docs: https://probeharbor.dev/integrations/home-assistant
 - Integrations hub: https://probeharbor.dev/integrations
 - OpenAPI: https://probeharbor.dev/openapi.yaml

@@ -1,6 +1,6 @@
 /** Desktop companion for ProbeHarbor (Tauri). */
 export const BAYBUDDY_REPO_URL =
-  "https://github.com/doodersrage/thermaltrace-bay-buddy";
+  "https://github.com/doodersrage/probeharbor-bay-buddy";
 
 export const BAYBUDDY_RELEASES_URL = `${BAYBUDDY_REPO_URL}/releases/latest`;
 

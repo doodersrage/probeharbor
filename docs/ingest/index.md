@@ -32,7 +32,7 @@ After the first successful POST, open **[Home](https://probeharbor.dev/)** while
 
 REST sensors, MQTT bridge, and inbound webhook examples: [Home Assistant integration](/ingest/home-assistant).
 
-**Product page:** [probeharbor.dev/integrations/home-assistant](https://probeharbor.dev/integrations/home-assistant) · **HACS:** [github.com/doodersrage/thermaltrace-home-assistant](https://github.com/doodersrage/thermaltrace-home-assistant)
+**Product page:** [probeharbor.dev/integrations/home-assistant](https://probeharbor.dev/integrations/home-assistant) · **HACS:** [github.com/doodersrage/probeharbor-home-assistant](https://github.com/doodersrage/probeharbor-home-assistant)
 
 ## curl smoke test
 
@@ -62,8 +62,8 @@ Simplest for ESP32 / Pico W sketches. Keys become sensor IDs on first POST.
 ### Classic Arduino `temp` object
 
 Matches the Ethernet garage firmware JSON shape. Sample sketch:
-[`ethernet_dht22_ingest`](https://github.com/doodersrage/thermaltrace/tree/main/sketches/arduino/ethernet_dht22_ingest)
-(Uno + W5100; HTTP only — use [`push_https_forward.py`](https://github.com/doodersrage/thermaltrace/blob/main/sketches/relay/push_https_forward.py) on a LAN host for TLS).
+[`ethernet_dht22_ingest`](https://github.com/doodersrage/probeharbor/tree/main/sketches/arduino/ethernet_dht22_ingest)
+(Uno + W5100; HTTP only — use [`push_https_forward.py`](https://github.com/doodersrage/probeharbor/blob/main/sketches/relay/push_https_forward.py) on a LAN host for TLS).
 
 ```json
 {
@@ -147,7 +147,7 @@ Recipes (Home Assistant + Node-RED import): [MQTT bridge](/integrations/mqtt-bri
 | `401` | Wrong or rotated device key |
 | Readings missing on Home | First POST not received yet, or device disabled |
 | No history | Need successful ingest **and** 15-minute poll / signed-in Home |
-| TLS failures on MCU | Use a local HTTPS relay ([python feeds](https://probeharbor.dev/about/python-feeds)). Uno + W5100: [`ethernet_dht22_ingest`](https://github.com/doodersrage/thermaltrace/tree/main/sketches/arduino/ethernet_dht22_ingest) + [`push_https_forward.py`](https://github.com/doodersrage/thermaltrace/blob/main/sketches/relay/push_https_forward.py) |
+| TLS failures on MCU | Use a local HTTPS relay ([python feeds](https://probeharbor.dev/about/python-feeds)). Uno + W5100: [`ethernet_dht22_ingest`](https://github.com/doodersrage/probeharbor/tree/main/sketches/arduino/ethernet_dht22_ingest) + [`push_https_forward.py`](https://github.com/doodersrage/probeharbor/blob/main/sketches/relay/push_https_forward.py) |
 | Can't recover key | Operator must set `INGEST_KEY_ENCRYPTION_SECRET`; older devices need one **Rotate key** |
 
 ## Related

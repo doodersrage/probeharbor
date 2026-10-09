@@ -3,7 +3,7 @@
 # Preferred: install the official HACS integration and paste a Pro share-link token.
 # Entities appear automatically under Devices → ProbeHarbor (sensor.* / binary_sensor.*).
 #
-# Custom repository: https://github.com/doodersrage/thermaltrace-home-assistant
+# Custom repository: https://github.com/doodersrage/probeharbor-home-assistant
 # Product guide: https://probeharbor.dev/integrations/home-assistant
 #
 # Example entity IDs (depend on your device + label names from the share link):

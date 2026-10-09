@@ -39,7 +39,7 @@ pnpm audit:stripe
 
 If the binding is locked with `destination_address`, mail to other inboxes fails with `email to … not allowed`. Drip cron treats that as **restricted** (job stays success) until Email Sending is enabled. The contact form still targets `SMTP_MAIL_TO`.
 
-Helpers: [`src/lib/mailer.ts`](https://github.com/doodersrage/thermaltrace/blob/main/src/lib/mailer.ts) (`sendPlainEmail`, `sendMailerRaw`).
+Helpers: [`src/lib/mailer.ts`](https://github.com/doodersrage/probeharbor/blob/main/src/lib/mailer.ts) (`sendPlainEmail`, `sendMailerRaw`).
 
 ## GitHub Actions deploy
 
@@ -51,7 +51,7 @@ One-time (Cloudflare API token with Workers edit):
 CLOUDFLARE_API_TOKEN=... pnpm setup:github-secrets
 ```
 
-That syncs `CLOUDFLARE_*` plus build secrets from `.env` into GitHub Actions secrets. Pushes to `main` then run [`.github/workflows/deploy.yml`](https://github.com/doodersrage/thermaltrace/blob/main/.github/workflows/deploy.yml). Without those secrets the workflow succeeds with a skip notice (use `pnpm deploy` locally).
+That syncs `CLOUDFLARE_*` plus build secrets from `.env` into GitHub Actions secrets. Pushes to `main` then run [`.github/workflows/deploy.yml`](https://github.com/doodersrage/probeharbor/blob/main/.github/workflows/deploy.yml). Without those secrets the workflow succeeds with a skip notice (use `pnpm deploy` locally).
 
 ## Custom domain
 

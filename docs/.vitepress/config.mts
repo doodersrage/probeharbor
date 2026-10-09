@@ -3,7 +3,7 @@ import { defineConfig } from "vitepress";
 const site = "https://probeharbor.dev";
 // GitHub Pages serves this site under /probeharbor/. The copy published on the
 // main domain is built with DOCS_BASE=/developers/ (see scripts/build-docs-site.mjs).
-const base = process.env.DOCS_BASE || "/thermaltrace/";
+const base = process.env.DOCS_BASE || "/probeharbor/";
 const onMainDomain = base === "/developers/";
 // Both builds name the main-domain copy as canonical, so links to either one
 // count toward probeharbor.dev.
@@ -50,7 +50,7 @@ export default defineConfig({
         items: [
           { text: "Live app", link: site },
           { text: "About & guides", link: `${site}/about` },
-          { text: "GitHub repo", link: "https://github.com/doodersrage/thermaltrace" },
+          { text: "GitHub repo", link: "https://github.com/doodersrage/probeharbor" },
           { text: "OpenAPI YAML", link: "/openapi.yaml" },
         ],
       },
@@ -104,7 +104,7 @@ export default defineConfig({
       ],
     },
     socialLinks: [
-      { icon: "github", link: "https://github.com/doodersrage/thermaltrace" },
+      { icon: "github", link: "https://github.com/doodersrage/probeharbor" },
     ],
     footer: {
       message:
@@ -114,7 +114,7 @@ export default defineConfig({
     search: { provider: "local" },
     editLink: {
       pattern:
-        "https://github.com/doodersrage/thermaltrace/edit/main/docs/:path",
+        "https://github.com/doodersrage/probeharbor/edit/main/docs/:path",
       text: "Edit on GitHub",
     },
     outline: { level: [2, 3] },

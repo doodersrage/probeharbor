@@ -4,7 +4,7 @@ description: "Send Home Assistant sensors to ProbeHarbor with the official HACS 
 
 # Home Assistant integration
 
-Install the official **[HACS custom integration](https://github.com/doodersrage/thermaltrace-home-assistant)** for automatic entities, or wire manually below.
+Install the official **[HACS custom integration](https://github.com/doodersrage/probeharbor-home-assistant)** for automatic entities, or wire manually below.
 
 **Product page:** [probeharbor.dev/integrations/home-assistant](https://probeharbor.dev/integrations/home-assistant)
 
@@ -12,7 +12,7 @@ ProbeHarbor works with Home Assistant via **HTTPS push ingest** (recommended), t
 
 ## Official HACS integration
 
-1. Add custom repo in HACS: `https://github.com/doodersrage/thermaltrace-home-assistant`
+1. Add custom repo in HACS: `https://github.com/doodersrage/probeharbor-home-assistant`
 2. Install **ProbeHarbor**
 3. Create a **live share link** under Dashboard → Share (Free includes one family live link; Pro adds history/metrics scopes)
 4. Add integration in HA and paste the share token
@@ -99,7 +99,7 @@ Pull feeds on ProbeHarbor are polled every **15 minutes** (`:00`, `:15`, `:30`, 
 
 ## More
 
-- [HACS integration](https://github.com/doodersrage/thermaltrace-home-assistant)
+- [HACS integration](https://github.com/doodersrage/probeharbor-home-assistant)
 - [Adding devices](https://probeharbor.dev/about/adding-devices)
 - [HTTP API overview](https://probeharbor.dev/docs/api)
 - [vs DIY MQTT stack](https://probeharbor.dev/compare/diy-mqtt)

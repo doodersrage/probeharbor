@@ -37,7 +37,7 @@ Member/Pro (or admin) required. Free accounts see an upgrade nudge instead.
 
 Site is published at the **project** base path:
 
-`https://doodersrage.github.io/thermaltrace/`
+`https://doodersrage.github.io/probeharbor/`
 
 Not at `https://doodersrage.github.io/` (user site).
 
@@ -49,4 +49,4 @@ Not at `https://doodersrage.github.io/` (user site).
 
 - [System status](https://probeharbor.dev/system-status)  
 - [Contact](https://probeharbor.dev/contact)  
-- [Open an issue](https://github.com/doodersrage/thermaltrace/issues)
+- [Open an issue](https://github.com/doodersrage/probeharbor/issues)

@@ -8,7 +8,7 @@ Runs in production at [probeharbor.dev](https://probeharbor.dev) with 15-minute 
 [![Live demo](https://img.shields.io/badge/demo-no%20account-0ea5e9)](https://probeharbor.dev/demo)
 [![Start free](https://img.shields.io/badge/start-free%20(no%20card)-22c55e)](https://probeharbor.dev/register?next=/dashboard/devices)
 [![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-0ea5e9)](https://probeharbor.dev/developers/)
-[![CI](https://github.com/doodersrage/thermaltrace/actions/workflows/ci.yml/badge.svg)](https://github.com/doodersrage/thermaltrace/actions/workflows/ci.yml)
+[![CI](https://github.com/doodersrage/probeharbor/actions/workflows/ci.yml/badge.svg)](https://github.com/doodersrage/probeharbor/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-slategray)](./LICENSE)
 
 | | |
@@ -88,7 +88,7 @@ Step-by-step: [Adding devices](https://probeharbor.dev/about/adding-devices) · 
 
 Pull feeds (HTTPS JSON we fetch): **Devices → Pull feeds** tab — add URL, **Save pull setup**, probes auto-import from the live feed.
 
-**Integrations:** [Home Assistant (HACS)](https://probeharbor.dev/integrations/home-assistant) · [Matter / Apple Home](https://probeharbor.dev/integrations/matter) · [Node-RED](https://probeharbor.dev/integrations/node-red) · [Influx / Telegraf](https://probeharbor.dev/integrations/influx) · [IFTTT / n8n](https://probeharbor.dev/integrations/automation) · [HACS repo](https://github.com/doodersrage/thermaltrace-home-assistant) · [Matterbridge plugin](https://github.com/doodersrage/thermaltrace-matter) · [Developer docs](https://probeharbor.dev/developers/)
+**Integrations:** [Home Assistant (HACS)](https://probeharbor.dev/integrations/home-assistant) · [Matter / Apple Home](https://probeharbor.dev/integrations/matter) · [Node-RED](https://probeharbor.dev/integrations/node-red) · [Influx / Telegraf](https://probeharbor.dev/integrations/influx) · [IFTTT / n8n](https://probeharbor.dev/integrations/automation) · [HACS repo](https://github.com/doodersrage/probeharbor-home-assistant) · [Matterbridge plugin](https://github.com/doodersrage/probeharbor-matter) · [Developer docs](https://probeharbor.dev/developers/)
 
 **Operator launch checklist:** [docs/community/operator-checklist.md](./docs/community/operator-checklist.md) (forum post, thermostat OAuth, HACS default PR status)
 
@@ -100,7 +100,7 @@ curl -X POST "https://your-domain/api/ingest/YOUR_KEY" \
 
 Guides: [Adding devices](https://probeharbor.dev/about/adding-devices) · [Push ingest](https://probeharbor.dev/developers/ingest/) · [Sketches](./sketches) · [Ingest & webhooks](https://probeharbor.dev/about/ingest-and-webhooks)
 
-Related repos: [arduino JSON probe](https://github.com/doodersrage/arduino-network-json-temperature-sever) · [Python relay](https://github.com/doodersrage/fast-api-relay) · [Home Assistant integration](https://github.com/doodersrage/thermaltrace-home-assistant) · [Matter / Apple Home](https://github.com/doodersrage/thermaltrace-matter) · [ProbeHarbor Desktop](https://github.com/doodersrage/thermaltrace-desktop) · [Bay Buddy (mood glance)](https://github.com/doodersrage/thermaltrace-bay-buddy) · [Claim puck (RP2040-Zero)](https://github.com/doodersrage/thermaltrace-claim-puck) · [Android app](https://github.com/doodersrage/thermaltrace-android)
+Related repos: [arduino JSON probe](https://github.com/doodersrage/arduino-network-json-temperature-sever) · [Python relay](https://github.com/doodersrage/fast-api-relay) · [Home Assistant integration](https://github.com/doodersrage/probeharbor-home-assistant) · [Matter / Apple Home](https://github.com/doodersrage/probeharbor-matter) · [ProbeHarbor Desktop](https://github.com/doodersrage/probeharbor-desktop) · [Bay Buddy (mood glance)](https://github.com/doodersrage/probeharbor-bay-buddy) · [Claim puck (RP2040-Zero)](https://github.com/doodersrage/probeharbor-claim-puck) · [Android app](https://github.com/doodersrage/probeharbor-android)
 
 ## Contributing
 

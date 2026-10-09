@@ -31,7 +31,7 @@ export function getOrganizationSchema(siteUrl: string) {
     image: `${siteUrl}/og-dashboard.jpg`,
     description: DEFAULT_DESCRIPTION,
     sameAs: [
-      "https://github.com/doodersrage/thermaltrace",
+      "https://github.com/doodersrage/probeharbor",
     ],
     contactPoint: {
       "@type": "ContactPoint",

@@ -47,7 +47,7 @@ export const GET: APIRoute = ({ site }) => {
 - Pro (${price(pro)}): ${PRO_MAX_DEVICES} devices per property, ${PRO_HISTORY_DAYS} days of history, SMS alerts, National Weather Service freeze warnings, webhooks, API keys, Nest/Ecobee context, insurance claims evidence packs. 14-day free trial.
 - Portfolio (${price(portfolio)}): Pro for landlords and property managers with many properties.
 - Compared with sealed Wi-Fi thermometers (TempStick, Govee): ${BRAND_NAME} uses your own sensors, so hardware is cheaper and you can put probes right on the pipes, but it needs a little setup.
-- Source code: https://github.com/doodersrage/thermaltrace
+- Source code: https://github.com/doodersrage/probeharbor
 
 ## Start here
 

@@ -4,7 +4,7 @@ description: "Expose ProbeHarbor sensors to Apple Home, Google Home, and Alexa t
 
 # Matter / Apple Home
 
-ProbeHarbor ships a **[Matterbridge plugin](https://github.com/doodersrage/thermaltrace-matter)** that polls a family live share link and exposes sensors to Apple Home, Google Home, Alexa, and other Matter controllers.
+ProbeHarbor ships a **[Matterbridge plugin](https://github.com/doodersrage/probeharbor-matter)** that polls a family live share link and exposes sensors to Apple Home, Google Home, Alexa, and other Matter controllers.
 
 Product landing page: [probeharbor.dev/integrations/matter](https://probeharbor.dev/integrations/matter).
 
@@ -17,7 +17,7 @@ Product landing page: [probeharbor.dev/integrations/matter](https://probeharbor.
 ## Install
 
 1. Install [Matterbridge](https://matterbridge.io/)
-2. Clone `https://github.com/doodersrage/thermaltrace-matter`, `npm install && npm run build`, then `matterbridge --add .`
+2. Clone `https://github.com/doodersrage/probeharbor-matter`, `npm install && npm run build`, then `matterbridge --add .`
 3. Create a **family live** share link under Dashboard → Share (Free includes one)
 4. Paste the token into plugin config (`host` defaults to `https://probeharbor.dev`)
 5. Pair the Matterbridge QR code in Apple Home / Google Home / Alexa
@@ -48,4 +48,4 @@ Skipped in v1: energy, level, air quality, time-to-freeze.
 
 - [Home Assistant (HACS)](/integrations/home-assistant) — same share link, HA entities
 - [Webhooks](/integrations/webhooks) — inbound signing details
-- Plugin README: [probeharbor-matter](https://github.com/doodersrage/thermaltrace-matter)
+- Plugin README: [probeharbor-matter](https://github.com/doodersrage/probeharbor-matter)

@@ -4,11 +4,11 @@ description: "Install the official ProbeHarbor HACS integration to bring garage 
 
 # Home Assistant
 
-ProbeHarbor ships an **official [HACS custom integration](https://github.com/doodersrage/thermaltrace-home-assistant)**. Product landing page: [probeharbor.dev/integrations/home-assistant](https://probeharbor.dev/integrations/home-assistant).
+ProbeHarbor ships an **official [HACS custom integration](https://github.com/doodersrage/probeharbor-home-assistant)**. Product landing page: [probeharbor.dev/integrations/home-assistant](https://probeharbor.dev/integrations/home-assistant).
 
 ## HACS (recommended)
 
-1. HACS → Integrations → Custom repositories → add `https://github.com/doodersrage/thermaltrace-home-assistant`
+1. HACS → Integrations → Custom repositories → add `https://github.com/doodersrage/probeharbor-home-assistant`
 2. Install **ProbeHarbor** and restart Home Assistant
 3. Create a **family live** share link under Dashboard → Share (Free includes one; Pro adds history/metrics scopes)
 4. Add integration → paste share token from `/share/YOUR_TOKEN`
@@ -25,7 +25,7 @@ ProbeHarbor does **not** run MQTT inside Cloudflare Workers. For **alerts into H
 2. Point it at HA: `https://<ha-host>/api/webhook/<id>`  
 3. Import the blueprint from the repo  
 
-**Blueprint:** [`public/ha/probeharbor_webhook.yaml`](https://github.com/doodersrage/thermaltrace/blob/main/public/ha/probeharbor_webhook.yaml)
+**Blueprint:** [`public/ha/probeharbor_webhook.yaml`](https://github.com/doodersrage/probeharbor/blob/main/public/ha/probeharbor_webhook.yaml)
 Also: [probeharbor.dev/ha/probeharbor_webhook.yaml](https://probeharbor.dev/ha/probeharbor_webhook.yaml)
 (Legacy URLs under `/ha/garage_temp_*.yaml` 301 to these paths.)
 
@@ -79,7 +79,7 @@ Keep Mosquitto on your LAN — mirror readings with [MQTT bridge](/integrations/
 
 ## Related
 
-- [HACS repo](https://github.com/doodersrage/thermaltrace-home-assistant)
+- [HACS repo](https://github.com/doodersrage/probeharbor-home-assistant)
 - [Ingest HA guide](/ingest/home-assistant)
 - [Alert webhooks](/integrations/webhooks)
 - [vs DIY MQTT](https://probeharbor.dev/compare/diy-mqtt)

@@ -17,7 +17,7 @@ Authorization: Bearer <api-key>
 2. Add a Prometheus data source (or use Infinity / scrape) pointing at the metrics URL with the Bearer header  
 3. Import the dashboard JSON:
 
-- Docs/repo path: [`public/grafana/probeharbor-dashboard.json`](https://github.com/doodersrage/thermaltrace/blob/main/public/grafana/probeharbor-dashboard.json)  
+- Docs/repo path: [`public/grafana/probeharbor-dashboard.json`](https://github.com/doodersrage/probeharbor/blob/main/public/grafana/probeharbor-dashboard.json)  
 - Download: [probeharbor.dev/grafana/probeharbor-dashboard.json](https://probeharbor.dev/grafana/probeharbor-dashboard.json)
 
 ## Example scrape config

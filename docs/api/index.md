@@ -40,7 +40,7 @@ Machine-readable contract:
 
 ## Claim puck
 
-Physical RP2040-Zero presence key. Product page: [probeharbor.dev/claim-puck](https://probeharbor.dev/claim-puck). Firmware: [probeharbor-claim-puck](https://github.com/doodersrage/thermaltrace-claim-puck).
+Physical RP2040-Zero presence key. Product page: [probeharbor.dev/claim-puck](https://probeharbor.dev/claim-puck). Firmware: [probeharbor-claim-puck](https://github.com/doodersrage/probeharbor-claim-puck).
 
 Auth matches Bay Buddy: `Authorization: Bearer <access>` + `X-SB-Refresh-Token: <refresh>`.
 

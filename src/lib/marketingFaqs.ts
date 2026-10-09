@@ -132,7 +132,7 @@ export const marketingFaqs = {
     {
       question: "Can I keep Home Assistant or MQTT and still use ProbeHarbor?",
       answer:
-        "Yes. Install the official HACS integration (github.com/doodersrage/thermaltrace-home-assistant) for automatic entities from a share link, or keep MQTT on your LAN and mirror with POST /api/ingest/mqtt. Many people dual-run: HA locally, ProbeHarbor for household freeze and leak SMS and history. See probeharbor.dev/integrations/home-assistant.",
+        "Yes. Install the official HACS integration (github.com/doodersrage/probeharbor-home-assistant) for automatic entities from a share link, or keep MQTT on your LAN and mirror with POST /api/ingest/mqtt. Many people dual-run: HA locally, ProbeHarbor for household freeze and leak SMS and history. See probeharbor.dev/integrations/home-assistant.",
     },
     {
       question: "Why does ProbeHarbor require an account?",
@@ -415,7 +415,7 @@ export const marketingFaqs = {
     {
       question: "Is there an official Home Assistant integration?",
       answer:
-        "Yes: a HACS custom integration at github.com/doodersrage/thermaltrace-home-assistant. It polls a share link and creates sensors/binary sensors automatically. Free includes one family live link; Pro adds history/metrics scopes and inbound snooze webhooks. Install guide: probeharbor.dev/integrations/home-assistant.",
+        "Yes: a HACS custom integration at github.com/doodersrage/probeharbor-home-assistant. It polls a share link and creates sensors/binary sensors automatically. Free includes one family live link; Pro adds history/metrics scopes and inbound snooze webhooks. Install guide: probeharbor.dev/integrations/home-assistant.",
     },
     {
       question: "Do I need Pro for the HACS integration?",
@@ -552,7 +552,7 @@ export const marketingFaqs = {
     {
       question: "When will ProbeHarbor be on Google Play?",
       answer:
-        "Google Play listing is in review. Build or sideload from github.com/doodersrage/thermaltrace-android, or use the web dashboard / PWA from Chrome on Android until the store link goes live.",
+        "Google Play listing is in review. Build or sideload from github.com/doodersrage/probeharbor-android, or use the web dashboard / PWA from Chrome on Android until the store link goes live.",
     },
     {
       question: "Will my web account work in the Android app?",
