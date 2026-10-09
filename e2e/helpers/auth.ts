@@ -56,7 +56,8 @@ export async function signIn(page: Page, next = "/dashboard/alerts"): Promise<vo
     );
   }
 
-  const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:4321";
+  // Only the host and scheme matter for the cookie; the local port comes from playwright.config.ts.
+  const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1";
   const domain = cookieDomainFromBaseUrl(baseURL);
   const secure = baseURL.startsWith("https://");
 
