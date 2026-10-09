@@ -6,7 +6,7 @@ import { FORMER_BRAND_NAME, FORMER_DOMAIN, shouldShowRenameNotice } from "../lib
 const show = shouldShowRenameNotice();
 ---
 {show && (
-  <div class="rename-notice" role="status" data-rename-notice>
+  <aside class="rename-notice" aria-label="Brand update" data-rename-notice>
     <p>
       <strong>{FORMER_BRAND_NAME} is now {BRAND_NAME}.</strong>
       {" "}Same app, same account, same sensors. Old {FORMER_DOMAIN} links and device
@@ -15,7 +15,7 @@ const show = shouldShowRenameNotice();
     <button type="button" class="rename-notice-close" aria-label="Dismiss notice" data-rename-dismiss>
       ×
     </button>
-  </div>
+  </aside>
   <script is:inline>
     (function () {
       var KEY = "probeharbor.renameNoticeDismissed";

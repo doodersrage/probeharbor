@@ -175,7 +175,7 @@ test.describe("public smoke", () => {
     await expect(page.getByRole("heading", { name: /This form/i })).toBeVisible();
     await expect(page.getByRole("heading", { name: /GitHub issues/i })).toBeVisible();
     const issues = page.getByRole("link", { name: /GitHub issues/i }).first();
-    await expect(issues).toHaveAttribute("href", /github.com\/doodersrage\/probeharbor\/issues/);
+    await expect(issues).toHaveAttribute("href", /github.com\/doodersrage\/thermaltrace\/issues/);
     await expect(page.getByLabel(/Name/i)).toBeVisible();
     await expect(page.getByText("Protected by Cloudflare Turnstile.")).toBeVisible();
     await page.getByRole("button", { name: /Send message/i }).click();
