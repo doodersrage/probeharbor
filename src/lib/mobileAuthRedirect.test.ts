@@ -1,10 +1,17 @@
 import type { AstroCookies } from "astro";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+vi.mock("./mobileAuthExchange", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("./mobileAuthExchange")>()),
+  createMobileExchangeToken: vi.fn(async () => "payload.sig"),
+}));
+
 import {
   buildMobileOAuthCustomUrl,
   buildMobileOAuthHttpsUrl,
   buildMobileOAuthIntentUrl,
   hasMobileOAuthCookie,
+  maybeRedirectMobileOAuth,
   setMobileOAuthCookie,
 } from "./mobileAuthRedirect";
 import { resolveAndroidAppId } from "./mobileAuthExchange";
@@ -69,5 +76,30 @@ describe("Android app ID", () => {
     setMobileOAuthCookie(legacy, "com.evil.app");
     expect(legacy.get("mobile_oauth")?.value).toBe("1");
     expect(hasMobileOAuthCookie(legacy)).toBe(true);
+  });
+});
+
+describe("iOS sign-in return", () => {
+  it("accepts the iOS bundle ID in the mobile cookie", () => {
+    const jar = cookieJar();
+    setMobileOAuthCookie(jar, "dev.probeharbor.ios");
+    expect(jar.get("mobile_oauth")?.value).toBe("dev.probeharbor.ios");
+    expect(hasMobileOAuthCookie(jar)).toBe(true);
+  });
+
+  it("redirects straight to the iOS scheme for ASWebAuthenticationSession", async () => {
+    const jar = cookieJar();
+    setMobileOAuthCookie(jar, "dev.probeharbor.ios");
+    const res = await maybeRedirectMobileOAuth(jar, "access", "refresh", "https://probeharbor.dev");
+    expect(res?.headers.get("Location")).toBe("dev.probeharbor.ios://oauth?exchange=payload.sig");
+  });
+
+  it("keeps Android on the HTTPS hand-off page", async () => {
+    const jar = cookieJar();
+    setMobileOAuthCookie(jar, "dev.probeharbor.android");
+    const res = await maybeRedirectMobileOAuth(jar, "access", "refresh", "https://probeharbor.dev");
+    expect(res?.headers.get("Location")).toBe(
+      "https://probeharbor.dev/app/oauth?exchange=payload.sig&app=dev.probeharbor.android",
+    );
   });
 });

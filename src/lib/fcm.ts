@@ -209,6 +209,43 @@ export async function releaseFcmTokenFromOtherUsers(
   await supabase.from("fcm_device_tokens").delete().eq("token", token).neq("user_id", userId);
 }
 
+/** FCM v1 message for one device: Android channel + iOS APNs category, with event_id for Acknowledge. */
+export function buildFcmMessage(token: string, payload: FcmPayload) {
+  return {
+    message: {
+      token,
+      notification: {
+        title: payload.title,
+        body: payload.body,
+      },
+      data: {
+        title: payload.title,
+        body: payload.body,
+        deep_link: "alerts",
+        click_action: "OPEN_ALERTS",
+        ...(payload.eventId != null
+          ? { event_id: String(payload.eventId) }
+          : {}),
+      },
+      android: {
+        priority: "HIGH",
+        notification: {
+          // Must match the channel the Android app creates (PushRegistrar.CHANNEL_ID).
+          channel_id: "thermaltrace_alerts",
+          click_action: "OPEN_ALERTS",
+        },
+      },
+      apns: {
+        headers: { "apns-priority": "10" },
+        payload: {
+          // PROBE_ALERT adds the iOS "Acknowledge" action when event_id is present.
+          aps: { sound: "default", category: "PROBE_ALERT" },
+        },
+      },
+    },
+  };
+}
+
 export async function sendFcmToUser(
   userId: string,
   payload: FcmPayload,
@@ -254,31 +291,7 @@ export async function sendFcmToUser(
           Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          message: {
-            token: row.token,
-            notification: {
-              title: payload.title,
-              body: payload.body,
-            },
-            data: {
-              title: payload.title,
-              body: payload.body,
-              deep_link: "alerts",
-              click_action: "OPEN_ALERTS",
-              ...(payload.eventId != null
-                ? { event_id: String(payload.eventId) }
-                : {}),
-            },
-            android: {
-              priority: "HIGH",
-              notification: {
-                channel_id: "probeharbor_alerts",
-                click_action: "OPEN_ALERTS",
-              },
-            },
-          },
-        }),
+        body: JSON.stringify(buildFcmMessage(row.token, payload)),
       });
 
       if (response.ok) {

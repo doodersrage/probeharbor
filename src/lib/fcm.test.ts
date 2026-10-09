@@ -100,3 +100,22 @@ describe("FCM_SERVICE_ACCOUNT_JSON parsing", () => {
     expect(getFcmConfigStatus()).toBe("missing");
   });
 });
+
+describe("buildFcmMessage", () => {
+  it("targets the Android app's channel and adds the iOS alert category", async () => {
+    const { buildFcmMessage } = await import("./fcm");
+    const { message } = buildFcmMessage("tok-1", { title: "Freeze", body: "Garage 31°F", eventId: 42 });
+
+    expect(message.token).toBe("tok-1");
+    expect(message.data).toMatchObject({ event_id: "42", deep_link: "alerts" });
+    expect(message.android.notification.channel_id).toBe("thermaltrace_alerts");
+    expect(message.apns.payload.aps).toEqual({ sound: "default", category: "PROBE_ALERT" });
+  });
+
+  it("omits event_id when the alert has no event", async () => {
+    const { buildFcmMessage } = await import("./fcm");
+    const { message } = buildFcmMessage("tok-1", { title: "Test", body: "Hello" });
+
+    expect(message.data).not.toHaveProperty("event_id");
+  });
+});

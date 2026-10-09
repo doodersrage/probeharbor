@@ -152,6 +152,15 @@ export function resolveAndroidAppId(value: string | null | undefined): AndroidAp
     : ANDROID_APP_ID_LEGACY;
 }
 
+/**
+ * iOS bundle ID; also its custom URL scheme. ASWebAuthenticationSession catches
+ * a redirect to that scheme, so iOS skips the /app/oauth hand-off page.
+ */
+export const IOS_APP_ID = "dev.probeharbor.ios";
+/** Every native app that can finish OAuth through /api/auth/mobile/start. */
+export const MOBILE_APP_IDS = [...ANDROID_APP_IDS, IOS_APP_ID] as const;
+export type MobileAppId = (typeof MOBILE_APP_IDS)[number];
+
 /** Host for the custom-scheme return URI (`<app id>://oauth`). */
 export const MOBILE_OAUTH_HOST = "oauth";
 /** HTTPS App Link path Chrome can open after Google/YubiKey (custom-scheme 302s are blocked). */

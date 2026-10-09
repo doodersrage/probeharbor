@@ -1,10 +1,12 @@
 import type { AstroCookies } from "astro";
 import { resolveConfiguredSiteUrl } from "./siteConfig";
 import {
-  ANDROID_APP_IDS,
   createMobileExchangeToken,
+  IOS_APP_ID,
+  MOBILE_APP_IDS,
   resolveAndroidAppId,
   type AndroidAppId,
+  type MobileAppId,
   MOBILE_OAUTH_COOKIE,
   MOBILE_OAUTH_HOST,
   MOBILE_OAUTH_HTTPS_PATH,
@@ -15,7 +17,7 @@ import {
  * app sent one, else "1" (legacy Android installs and desktop companions).
  */
 export function setMobileOAuthCookie(cookies: AstroCookies, appId?: string | null): void {
-  const value = (ANDROID_APP_IDS as readonly string[]).includes(appId?.trim() ?? "")
+  const value = (MOBILE_APP_IDS as readonly string[]).includes(appId?.trim() ?? "")
     ? appId!.trim()
     : "1";
   cookies.set(MOBILE_OAUTH_COOKIE, value, {
@@ -29,13 +31,14 @@ export function setMobileOAuthCookie(cookies: AstroCookies, appId?: string | nul
 
 export function hasMobileOAuthCookie(cookies: AstroCookies): boolean {
   const value = cookies.get(MOBILE_OAUTH_COOKIE)?.value;
-  return value === "1" || (ANDROID_APP_IDS as readonly string[]).includes(value ?? "");
+  return value === "1" || (MOBILE_APP_IDS as readonly string[]).includes(value ?? "");
 }
 
-/** Android app that started the round trip, or null when it didn't say. */
-function mobileOAuthAppId(cookies: AstroCookies): AndroidAppId | null {
+/** Native app that started the round trip, or null when it didn't say. */
+function mobileOAuthAppId(cookies: AstroCookies): MobileAppId | null {
   const value = cookies.get(MOBILE_OAUTH_COOKIE)?.value;
-  return value && value !== "1" ? resolveAndroidAppId(value) : null;
+  if (!value || value === "1") return null;
+  return value === IOS_APP_ID ? IOS_APP_ID : resolveAndroidAppId(value);
 }
 
 export function consumeMobileOAuthCookie(cookies: AstroCookies): boolean {
@@ -46,7 +49,7 @@ export function consumeMobileOAuthCookie(cookies: AstroCookies): boolean {
 
 export function buildMobileOAuthCustomUrl(
   exchange: string,
-  appId: AndroidAppId = resolveAndroidAppId(null),
+  appId: MobileAppId = resolveAndroidAppId(null),
 ): string {
   return `${appId}://${MOBILE_OAUTH_HOST}?exchange=${encodeURIComponent(exchange)}`;
 }
@@ -54,7 +57,7 @@ export function buildMobileOAuthCustomUrl(
 export function buildMobileOAuthHttpsUrl(
   exchange: string,
   siteUrl?: string | URL | null,
-  appId?: AndroidAppId | null,
+  appId?: MobileAppId | null,
 ): string {
   const origin = resolveConfiguredSiteUrl(siteUrl);
   const app = appId ? `&app=${encodeURIComponent(appId)}` : "";
@@ -78,7 +81,7 @@ export async function redirectMobileOAuthComplete(
   accessToken: string,
   refreshToken: string,
   siteUrl?: string | URL | null,
-  appId?: AndroidAppId | null,
+  appId?: MobileAppId | null,
 ): Promise<Response | null> {
   const exchange = await createMobileExchangeToken(accessToken, refreshToken);
   if (!exchange) return null;
@@ -86,7 +89,10 @@ export async function redirectMobileOAuthComplete(
   return new Response(null, {
     status: 302,
     headers: {
-      Location: buildMobileOAuthHttpsUrl(exchange, siteUrl, appId),
+      Location:
+        appId === IOS_APP_ID
+          ? buildMobileOAuthCustomUrl(exchange, IOS_APP_ID)
+          : buildMobileOAuthHttpsUrl(exchange, siteUrl, appId),
       "Cache-Control": "no-store",
     },
   });
