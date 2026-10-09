@@ -6,8 +6,9 @@
 import Stripe from "stripe";
 
 const renames = [
+  { match: /portfolio/i, name: "ProbeHarbor Portfolio" },
   { match: /garage|member/i, name: "ProbeHarbor Member" },
-  { match: /pro/i, name: "ProbeHarbor Pro" },
+  { match: /\bpro\b/i, name: "ProbeHarbor Pro" },
   { match: /free/i, name: "ProbeHarbor Free" },
 ];
 

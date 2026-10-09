@@ -6,6 +6,7 @@ export type FreezeHoursSummary = {
   degreeHoursBelow: number;
   readingsBelow34: number;
   totalReadings: number;
+  /** Coldest reading in the window, frozen or not (null only with no readings). */
   coldestF: number | null;
 };
 
@@ -35,6 +36,14 @@ function localDayLabel(dayKey: string): string {
   });
 }
 
+function coldestReading(points: ChartPoint[]): number | null {
+  let min: number | null = null;
+  for (const p of points) {
+    if (Number.isFinite(p.tempf) && (min == null || p.tempf < min)) min = p.tempf;
+  }
+  return min;
+}
+
 /** Estimate freeze exposure from chart points (readings below threshold). */
 export function computeFreezeHours(
   points: ChartPoint[],
@@ -47,7 +56,7 @@ export function computeFreezeHours(
       degreeHoursBelow: 0,
       readingsBelow34: below.length,
       totalReadings: points.length,
-      coldestF: below.length ? Math.min(...below.map((p) => p.tempf)) : null,
+      coldestF: coldestReading(points),
     };
   }
 
@@ -74,7 +83,7 @@ export function computeFreezeHours(
     degreeHoursBelow: degreeMs / (60 * 60 * 1000),
     readingsBelow34: below.length,
     totalReadings: points.length,
-    coldestF: below.length ? Math.min(...below.map((p) => p.tempf)) : null,
+    coldestF: coldestReading(points),
   };
 }
 

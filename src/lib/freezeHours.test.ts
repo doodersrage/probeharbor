@@ -12,6 +12,17 @@ describe("freeze hours", () => {
     expect(summary.coldestF).toBe(30);
   });
 
+  it("reports the coldest reading even when nothing reached the threshold", () => {
+    const summary = computeFreezeHours([
+      { timestamp: "2026-10-01T00:00:00Z", tempf: 68.2, humidity: 50, probeLabel: "A" },
+      { timestamp: "2026-10-01T01:00:00Z", tempf: 66.7, humidity: 50, probeLabel: "A" },
+      { timestamp: "2026-10-01T02:00:00Z", tempf: 70.1, humidity: 50, probeLabel: "A" },
+    ]);
+    expect(summary.readingsBelow34).toBe(0);
+    expect(summary.hoursBelow34).toBe(0);
+    expect(summary.coldestF).toBe(66.7);
+  });
+
   it("buckets freeze hours by local calendar day", () => {
     const daily = computeDailyFreezeHours(
       [
