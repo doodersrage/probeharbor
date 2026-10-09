@@ -16,14 +16,14 @@ const schema = [
 ---
 <Layout
   title="Privacy"
-  description={`${BRAND_NAME} privacy policy: what sensor and account data we store, retention windows, export, deletion, and analytics on marketing pages.`}
+  description={`${BRAND_NAME} privacy policy: what we store, who processes it, that we don't sell it, retention windows, export, and deletion.`}
   schema={schema}
 >
   <article class="card max-w-3xl mx-auto my-8">
     <h1 class="card-title">Privacy</h1>
     <p class="card-subtitle">
-      How ProbeHarbor handles your data (web and Android), retention, and account deletion.
-      Last updated September 2, 2026.
+      How ProbeHarbor handles your data (web and Android), who processes it, retention, and account deletion.
+      Last updated October 9, 2026.
     </p>
 
     <h2 class="text-lg font-semibold mt-6 mb-2">What we store</h2>
@@ -42,6 +42,28 @@ const schema = [
       </li>
     </ul>
 
+    <h2 class="text-lg font-semibold mt-6 mb-2">We don't sell your data</h2>
+    <p class="text-sm">
+      We don't sell or rent your personal information or sensor readings, and we don't share them for
+      advertising. We use the services below only to run ProbeHarbor.
+    </p>
+
+    <h2 class="text-lg font-semibold mt-6 mb-2">Services that process data for us</h2>
+    <ul class="list-disc pl-5 space-y-1 text-sm">
+      <li><strong>Supabase</strong>: database, sign-in, and account emails</li>
+      <li><strong>Cloudflare</strong>: hosting, alert and notice email delivery, bot checks (Turnstile), and file storage for history archives and shared chart images</li>
+      <li><strong>Stripe</strong>: billing, for paid plans</li>
+      <li><strong>Google Analytics</strong> and <strong>Ahrefs</strong>: traffic analytics on marketing pages only (see <a class="text-link" href="#analytics">Analytics</a>)</li>
+      <li><strong>Sentry</strong>: error reports so we can fix bugs</li>
+      <li><strong>Firebase Cloud Messaging</strong>: push notifications, if you turn them on</li>
+      <li><strong>OpenWeather</strong> and the <strong>National Weather Service</strong>: the city or ZIP you search and the location you pick, to look up places and forecasts</li>
+      <li>
+        Only if you set them up: the alert channels you choose (SMS through Twilio, Discord, Slack, Telegram,
+        Microsoft Teams, ntfy, Pushover, WhatsApp, or your own webhook) receive the alert messages, and
+        Google Nest or Ecobee when you connect a thermostat
+      </li>
+    </ul>
+
     <h2 class="text-lg font-semibold mt-6 mb-2">Android app</h2>
     <p class="text-sm">
       The ProbeHarbor Android app (`dev.probeharbor.android`; early-access builds use `dev.thermaltrace.android`) is a client for this website. It does
@@ -54,14 +76,21 @@ const schema = [
     <p class="text-sm">
       Raw sensor readings roll up and expire on a schedule (90 days default on Free; longer on paid plans).
       You can set a custom retention window under Dashboard → Settings. Archived snapshots may be stored in
-      cold storage for Pro households.
+      cold storage for Pro households and are deleted along with the household.
     </p>
 
     <h2 class="text-lg font-semibold mt-6 mb-2">Export & deletion</h2>
     <p class="text-sm">
       Export JSON anytime from <a class="text-link" href="/api/user/export">/api/user/export</a> while signed in.
-      Delete your account under Dashboard → Settings, this removes alert settings, push device tokens, and
-      sole-owned households. Account deletion on the website also applies to Android app access.
+      Delete your account under Dashboard → Settings. This removes your sign-in, alert settings, push device
+      tokens, and shared chart images, plus any household you own alone, with its devices, readings, and
+      cold-storage archives. In a shared household, ownership passes to another member and the household stays.
+      Account deletion on the website also applies to Android app access.
+    </p>
+    <p class="text-sm">
+      What stays elsewhere: Stripe keeps its own billing records for paid plans, as the law requires, and our
+      hosting providers may hold encrypted backups for a limited time under their own policies. We don't
+      restore deleted accounts from them.
     </p>
 
     <h2 class="text-lg font-semibold mt-6 mb-2">Push notifications</h2>
