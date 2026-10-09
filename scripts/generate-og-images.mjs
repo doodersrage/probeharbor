@@ -1,6 +1,6 @@
 /**
  * Renders the branded 1200x630 Open Graph cards into public/og-*.jpg.
- * Photo cards (og-android, og-story-freeze) are not generated here.
+ * The photo card og-story-freeze is not generated here.
  *
  * Usage: node scripts/generate-og-images.mjs
  * Needs network: Google Fonts, and the live /freeze-map for the map card.
@@ -17,6 +17,7 @@ const dataUri = async (file, type) =>
 
 const logo = await dataUri(pub("logo-on-dark.svg"), "image/svg+xml");
 const mark = await dataUri(pub("brand/mark-on-dark.svg"), "image/svg+xml");
+const appIcon = await dataUri(pub("brand/mark-dark.svg"), "image/svg+xml");
 const chartShot = await dataUri(
   path.join(root, "src/assets/marketing/probeharbor-dashboard-history-chart.jpg"),
   "image/jpeg",
@@ -101,6 +102,12 @@ POST /api/ingest/{key}</span></pre></div>`,
       <div class="plan"><div><b>Member</b><br><span>90-day history, forecasts</span></div><em>$4/mo</em></div>
       <div class="plan pro"><div><b>Pro</b><br><span>1-year history, NWS, SMS</span></div><em>$10/mo</em></div>
     </div></div>`,
+  },
+  "og-android.jpg": {
+    kicker: "Android app",
+    title: "ProbeHarbor for Android",
+    sub: "Live probe readings, freeze alerts, and push notifications on your phone.",
+    visual: `<img src="${appIcon}" width="300" style="justify-self:center;border-radius:66px;box-shadow:0 24px 60px rgb(0 0 0 / 0.5)" alt="">`,
   },
   "og-freeze-map.jpg": {
     kicker: "Public freeze map",
