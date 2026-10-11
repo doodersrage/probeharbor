@@ -4279,6 +4279,11 @@
     display: inline-flex;
     gap: 0.25rem;
     flex-shrink: 0;
+    /* fieldset reset */
+    margin: 0;
+    padding: 0;
+    border: 0;
+    min-width: 0;
   }
 
   .pipe-freeze-search {

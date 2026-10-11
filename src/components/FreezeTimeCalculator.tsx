@@ -96,7 +96,8 @@ export default function FreezeTimeCalculator() {
     <section class="card" aria-labelledby="freeze-calc-heading">
       <div class="flex items-center justify-between gap-3">
         <h2 id="freeze-calc-heading" class="card-title">Calculator</h2>
-        <div class="temp-unit-toggle" role="group" aria-label="Temperature unit">
+        <fieldset class="temp-unit-toggle">
+          <legend class="sr-only">Temperature unit</legend>
           {(["F", "C"] as const).map((option) => (
             <button
               key={option}
@@ -108,7 +109,7 @@ export default function FreezeTimeCalculator() {
               °{option}
             </button>
           ))}
-        </div>
+        </fieldset>
       </div>
       <div class="grid gap-4 sm:grid-cols-2 mb-4">
         {fields(unit).map((field) => (

@@ -238,7 +238,8 @@ export default function PipeFreezeForecast({ turnstileSiteKey }: { turnstileSite
     <section class="card" aria-labelledby="pipe-freeze-tool-heading">
       <div class="flex items-center justify-between gap-3">
         <h2 id="pipe-freeze-tool-heading" class="card-title">Check your area</h2>
-        <div class="temp-unit-toggle" role="group" aria-label="Temperature unit">
+        <fieldset class="temp-unit-toggle">
+          <legend class="sr-only">Temperature unit</legend>
           {(["F", "C"] as const).map((option) => (
             <button
               key={option}
@@ -250,7 +251,7 @@ export default function PipeFreezeForecast({ turnstileSiteKey }: { turnstileSite
               °{option}
             </button>
           ))}
-        </div>
+        </fieldset>
       </div>
       <form
         class="pipe-freeze-search"
