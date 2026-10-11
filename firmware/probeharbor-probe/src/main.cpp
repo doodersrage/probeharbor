@@ -21,7 +21,7 @@
 #include <WiFiManager.h>
 
 #ifndef FIRMWARE_VERSION
-#define FIRMWARE_VERSION "1.0.0"
+#define FIRMWARE_VERSION "1.0.1"
 #endif
 #ifndef INGEST_HOST
 #define INGEST_HOST "probeharbor.dev"
@@ -144,6 +144,9 @@ void checkResetButton() {
 }
 
 void postReadings() {
+  // Search the bus every time (a few ms) so a probe wired in, or added, after
+  // boot is picked up without a reset.
+  probes.begin();
   probes.requestTemperatures();
   uint8_t found = probes.getDeviceCount();
   if (found > MAX_PROBES) found = MAX_PROBES;
