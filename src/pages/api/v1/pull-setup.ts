@@ -110,6 +110,12 @@ export const POST: APIRoute = async ({ request }) => {
   const feedIds = new Set(feeds.map((feed) => feed.id));
   const probes = parseProbes(body, feedIds);
   const sanitizedFeeds = sanitizeTempFeeds(feeds);
+  if (sanitizedFeeds.length === 0) {
+    return new Response(JSON.stringify({ ok: false, error: "No valid feeds provided." }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
   const sanitizedProbes = sanitizeTempProbes(probes, sanitizedFeeds);
   const ownerUserId = await householdOwnerUserId(resolved.householdId);
   if (!ownerUserId) {

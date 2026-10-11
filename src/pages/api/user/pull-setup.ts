@@ -119,6 +119,13 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   }
 
   const sanitizedFeeds = sanitizeTempFeeds(feeds);
+  // The form may clear every row on purpose; an API call whose feeds are all invalid is an error.
+  if (isJson && sanitizedFeeds.length === 0) {
+    return new Response(JSON.stringify({ ok: false, error: "No valid feeds provided." }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
   const sanitizedProbes = sanitizeTempProbes(probes, sanitizedFeeds);
   const { error, discoveredProbes } = await saveUserPullSetup(
     user.id,

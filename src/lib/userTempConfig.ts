@@ -400,10 +400,7 @@ async function getCurrentTempConfig(userId: string): Promise<TempConfigRow> {
     return { feeds: stored.feeds, probes: stored.probes };
   }
 
-  return {
-    feeds: getDefaultTempFeeds(),
-    probes: getDefaultTempProbes(),
-  };
+  return { feeds: [], probes: [] };
 }
 
 /** Save pull feeds and probe labels in one step (feeds-only omits probe renames). */
@@ -413,7 +410,8 @@ export async function saveUserPullSetup(
   probes: TempProbeConfig[] | null,
 ): Promise<{ error: Error | null; discoveredProbes?: number }> {
   const current = await getCurrentTempConfig(userId);
-  const sanitizedFeeds = sanitizeTempFeeds(feeds.length > 0 ? feeds : getDefaultTempFeeds());
+  // An empty list is a real choice: never re-add the example feed behind the user's back.
+  const sanitizedFeeds = sanitizeTempFeeds(feeds);
   const baseProbes =
     probes ??
     current.probes.filter((probe) =>
@@ -438,11 +436,7 @@ export async function deleteUserTempFeed(
   const current = await getCurrentTempConfig(userId);
   const feeds = current.feeds.filter((feed) => feed.id !== feedId);
   const probes = current.probes.filter((probe) => probe.feedId !== feedId);
-
-  if (feeds.length === 0) {
-    return saveUserTempConfig(userId, getDefaultTempFeeds(), getDefaultTempProbes());
-  }
-
+  // Deleting the last feed leaves none (it used to re-create the example feed).
   return saveUserTempConfig(userId, feeds, probes);
 }
 
@@ -474,8 +468,8 @@ export async function getUserTempConfig(user: User): Promise<{
   const fromDevices = await getUserDevicesAsTempConfig(user.id, user.email);
   if (fromDevices.feeds.length > 0 || fromDevices.devices.length > 0) {
     return {
-      feeds: fromDevices.feeds.length > 0 ? fromDevices.feeds : getDefaultTempFeeds(),
-      probes: fromDevices.probes.length > 0 ? fromDevices.probes : getDefaultTempProbes(),
+      feeds: fromDevices.feeds,
+      probes: fromDevices.probes,
       error: fromDevices.error,
     };
   }
@@ -508,9 +502,6 @@ export async function getUserTempConfig(user: User): Promise<{
     };
   }
 
-  return {
-    feeds: getDefaultTempFeeds(),
-    probes: getDefaultTempProbes(),
-    error: null,
-  };
+  // No feeds yet: the example feed is offered explicitly ("Try demo feed"), never pre-filled.
+  return { feeds: [], probes: [], error: null };
 }

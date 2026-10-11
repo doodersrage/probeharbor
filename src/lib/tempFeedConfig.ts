@@ -262,7 +262,8 @@ export function sanitizeTempFeeds(feeds: unknown): TempFeedConfig[] {
     .map((feed, index) => sanitizeFeed(feed, index))
     .filter((feed): feed is TempFeedConfig => feed !== null);
 
-  return sanitized.length > 0 ? sanitized : getDefaultTempFeeds();
+  // An empty list means "no pull feeds" (e.g. the last one was deleted), not "use the example".
+  return sanitized;
 }
 
 export function sanitizeTempProbes(
