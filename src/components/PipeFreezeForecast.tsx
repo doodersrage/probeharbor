@@ -5,6 +5,7 @@ import {
   type FreezeNight,
   type FreezeRisk,
 } from "../lib/pipeFreezeForecast";
+import { formatTemp, loadTempUnit, saveTempUnit, type TempUnit } from "../lib/tempUnits";
 
 type Place = { label: string; lat: number; lon: number };
 type Forecast = {
@@ -31,11 +32,12 @@ function nightLabel(date: string, index: number): string {
   return `${d.toLocaleDateString(undefined, { weekday: "long" })} night`;
 }
 
-function headline(forecast: Forecast): string {
+function headline(forecast: Forecast, unit: TempUnit): string {
   const tonight = forecast.nights[0];
   if (!tonight) return "No forecast nights returned";
-  if (tonight.risk === "high") return `Tonight: high freeze risk for unheated spaces (low ${tonight.lowF}°F)`;
-  if (tonight.risk === "watch") return `Tonight: below freezing (low ${tonight.lowF}°F), watch exposed pipes`;
+  const low = formatTemp(tonight.lowF, unit);
+  if (tonight.risk === "high") return `Tonight: high freeze risk for unheated spaces (low ${low})`;
+  if (tonight.risk === "watch") return `Tonight: below freezing (low ${low}), watch exposed pipes`;
   if (forecast.worst !== "low") return "Tonight stays above freezing, but colder nights are coming";
   return "No freezing nights in the forecast";
 }
@@ -47,7 +49,7 @@ type TurnstileApi = {
 };
 
 /** Email + Turnstile form for hardware-free freeze alerts at the place just looked up. */
-function FreezeAlertSignup({ place, siteKey }: { place: Place; siteKey?: string }) {
+function FreezeAlertSignup({ place, siteKey, unit }: { place: Place; siteKey?: string; unit: TempUnit }) {
   const [status, setStatus] = useState<{ ok: boolean; message: string } | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const widgetRef = useRef<HTMLDivElement>(null);
@@ -111,7 +113,7 @@ function FreezeAlertSignup({ place, siteKey }: { place: Place; siteKey?: string 
       <h3 class="m-0 text-base font-semibold">Email me before freezing nights in {place.label}</h3>
       <p class="mt-1 mb-3 text-sm text-[var(--color-text-muted)]">
         Free, no hardware needed. One email the afternoon before the first freezing night of a cold spell, and before
-        every night at 20°F or colder. Unsubscribe in one click.
+        every night at {formatTemp(20, unit)} or colder. Unsubscribe in one click.
       </p>
       <div class="pipe-freeze-search">
         <label class="block grow">
@@ -147,7 +149,19 @@ export default function PipeFreezeForecast({ turnstileSiteKey }: { turnstileSite
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [unit, setUnit] = useState<TempUnit>("F");
   const searchTimer = useRef<number | undefined>(undefined);
+
+  // Server render is °F; after mount use ?unit= (from Celsius embeds), the saved choice, or the browser's locale.
+  useEffect(() => {
+    const fromUrl = new URLSearchParams(window.location.search).get("unit")?.toLowerCase();
+    setUnit(fromUrl === "c" ? "C" : fromUrl === "f" ? "F" : loadTempUnit());
+  }, []);
+
+  function chooseUnit(next: TempUnit) {
+    setUnit(next);
+    saveTempUnit(next);
+  }
 
   async function load(next: Place) {
     setPlace(next);
@@ -222,7 +236,22 @@ export default function PipeFreezeForecast({ turnstileSiteKey }: { turnstileSite
 
   return (
     <section class="card" aria-labelledby="pipe-freeze-tool-heading">
-      <h2 id="pipe-freeze-tool-heading" class="card-title">Check your area</h2>
+      <div class="flex items-center justify-between gap-3">
+        <h2 id="pipe-freeze-tool-heading" class="card-title">Check your area</h2>
+        <div class="temp-unit-toggle" role="group" aria-label="Temperature unit">
+          {(["F", "C"] as const).map((option) => (
+            <button
+              key={option}
+              type="button"
+              class={option === unit ? "btn-secondary btn-sm" : "btn-ghost btn-sm"}
+              aria-pressed={option === unit}
+              onClick={() => chooseUnit(option)}
+            >
+              °{option}
+            </button>
+          ))}
+        </div>
+      </div>
       <form
         class="pipe-freeze-search"
         onSubmit={(event) => {
@@ -262,7 +291,7 @@ export default function PipeFreezeForecast({ turnstileSiteKey }: { turnstileSite
         {error && <p class="alert-warning mt-4 mb-0">{error}</p>}
         {forecast && (
           <div class="mt-5">
-            <p class="pipe-freeze-headline">{headline(forecast)}</p>
+            <p class="pipe-freeze-headline">{headline(forecast, unit)}</p>
             <p class="mt-1 mb-4 text-sm text-[var(--color-text-muted)]">
               {[forecast.location.city, forecast.location.state].filter(Boolean).join(", ") || place?.label} · outdoor
               forecast from the National Weather Service
@@ -275,16 +304,16 @@ export default function PipeFreezeForecast({ turnstileSiteKey }: { turnstileSite
                     <h3 class="m-0 text-base font-semibold">{nightLabel(night.date, index)}</h3>
                     <span class="pipe-freeze-risk">{RISK_LABEL[night.risk]}</span>
                   </header>
-                  <p class="stat-value m-0 mt-2">{night.lowF}°F</p>
+                  <p class="stat-value m-0 mt-2">{formatTemp(night.lowF, unit)}</p>
                   <p class="m-0 text-xs text-[var(--color-text-muted)]">
-                    low · {night.hoursAtOrBelow32}h at or below 32°F
-                    {night.hoursAtOrBelow20 > 0 ? ` · ${night.hoursAtOrBelow20}h at or below 20°F` : ""}
+                    low · {night.hoursAtOrBelow32}h at or below {formatTemp(32, unit)}
+                    {night.hoursAtOrBelow20 > 0 ? ` · ${night.hoursAtOrBelow20}h at or below ${formatTemp(20, unit)}` : ""}
                   </p>
-                  <p class="m-0 mt-2 text-sm">{describeFreezeNight(night)}</p>
+                  <p class="m-0 mt-2 text-sm">{describeFreezeNight(night, unit)}</p>
                 </article>
               ))}
             </div>
-            {place && <FreezeAlertSignup place={place} siteKey={turnstileSiteKey} />}
+            {place && <FreezeAlertSignup place={place} siteKey={turnstileSiteKey} unit={unit} />}
             {place && (
               <details class="mt-4">
                 <summary class="cursor-pointer text-sm text-link">Embed this forecast on your site</summary>
@@ -293,14 +322,14 @@ export default function PipeFreezeForecast({ turnstileSiteKey }: { turnstileSite
                   the next two nights and updates on its own.
                 </p>
                 <textarea class="form-textarea font-mono text-xs w-full" rows={4} readOnly>
-                  {embedSnippet(window.location.origin, place)}
+                  {embedSnippet(window.location.origin, place, unit)}
                 </textarea>
                 <button
                   type="button"
                   class="btn-secondary btn-sm mt-2"
                   onClick={async () => {
                     try {
-                      await navigator.clipboard.writeText(embedSnippet(window.location.origin, place));
+                      await navigator.clipboard.writeText(embedSnippet(window.location.origin, place, unit));
                       setCopied(true);
                       window.setTimeout(() => setCopied(false), 2000);
                     } catch {

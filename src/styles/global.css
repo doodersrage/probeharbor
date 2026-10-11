@@ -4274,6 +4274,13 @@
   }
 
   /* Public /pipe-freeze-forecast tool */
+  /* °F / °C switch on the public freeze tools. */
+  .temp-unit-toggle {
+    display: inline-flex;
+    gap: 0.25rem;
+    flex-shrink: 0;
+  }
+
   .pipe-freeze-search {
     display: flex;
     flex-wrap: wrap;

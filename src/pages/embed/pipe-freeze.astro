@@ -2,6 +2,7 @@
 export const prerender = false;
 
 import { describeFreezeNight, type FreezeRisk } from "../../lib/pipeFreezeForecast";
+import { formatTemp, type TempUnit } from "../../lib/tempUnits";
 import { fetchPipeFreezeForecast, parseCoordinates } from "../../lib/pipeFreezeForecastFetch";
 
 /**
@@ -11,11 +12,14 @@ import { fetchPipeFreezeForecast, parseCoordinates } from "../../lib/pipeFreezeF
  */
 const coords = parseCoordinates(Astro.url.searchParams.get("lat"), Astro.url.searchParams.get("lon"));
 const place = Astro.url.searchParams.get("place")?.slice(0, 80) ?? null;
+// ?unit=c for sites whose readers use Celsius; everything else is °F.
+const unit: TempUnit = Astro.url.searchParams.get("unit")?.toLowerCase() === "c" ? "C" : "F";
 const result = coords ? await fetchPipeFreezeForecast(coords.lat, coords.lon, 3) : null;
 const forecast = result?.ok ? result.body : null;
 const label =
   place || [forecast?.location.city, forecast?.location.state].filter(Boolean).join(", ") || "This area";
 const toolUrl = new URL("/pipe-freeze-forecast", Astro.url.origin);
+if (unit === "C") toolUrl.searchParams.set("unit", "c");
 if (coords) {
   toolUrl.searchParams.set("lat", coords.lat.toFixed(3));
   toolUrl.searchParams.set("lon", coords.lon.toFixed(3));
@@ -77,13 +81,13 @@ Astro.response.headers.set("Cache-Control", "public, max-age=900");
         <p class="sub">Outdoor lows from the National Weather Service, rated for pipes in unheated spaces.</p>
         <div class="nights">
           {forecast.nights.map((night, index) => (
-            <div class={`night ${night.risk}`} title={describeFreezeNight(night)}>
+            <div class={`night ${night.risk}`} title={describeFreezeNight(night, unit)}>
               <div class="row">
                 <span>{nightName(night.date, index)}</span>
                 <span class="risk">{RISK_LABEL[night.risk]}</span>
               </div>
-              <p class="low-temp">{night.lowF}°F</p>
-              <p class="detail">{night.hoursAtOrBelow32}h at or below 32°F</p>
+              <p class="low-temp">{formatTemp(night.lowF, unit)}</p>
+              <p class="detail">{night.hoursAtOrBelow32}h at or below {formatTemp(32, unit)}</p>
             </div>
           ))}
         </div>

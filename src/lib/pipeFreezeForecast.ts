@@ -1,3 +1,5 @@
+import { formatTemp, formatWind, type TempUnit } from "./tempUnits";
+
 /**
  * Night-by-night pipe freeze outlook from the National Weather Service hourly
  * forecast (public domain, US only). Powers the public /pipe-freeze-forecast
@@ -106,22 +108,23 @@ export function worstRisk(nights: FreezeNight[]): FreezeRisk {
   );
 }
 
-/** One plain sentence per night, shown under its card. */
-export function describeFreezeNight(night: FreezeNight): string {
+/** One plain sentence per night, shown under its card (°F unless the visitor picked °C). */
+export function describeFreezeNight(night: FreezeNight, unit: TempUnit = "F"): string {
   const parts: string[] = [];
+  const low = formatTemp(night.lowF, unit);
   if (night.risk === "high") {
     parts.push(
-      `Low of ${night.lowF}°F, at or below the 20°F mark where pipes in unheated garages, crawlspaces, and attics are commonly at risk.`,
+      `Low of ${low}, at or below the ${formatTemp(HIGH_RISK_LOW_F, unit)} mark where pipes in unheated garages, crawlspaces, and attics are commonly at risk.`,
     );
   } else if (night.risk === "watch") {
     parts.push(
-      `Below freezing for about ${night.hoursAtOrBelow32} hour${night.hoursAtOrBelow32 === 1 ? "" : "s"}, low ${night.lowF}°F. Exposed pipes on exterior walls, near garage doors, or in vented crawlspaces can still freeze on a long or windy night.`,
+      `Below freezing for about ${night.hoursAtOrBelow32} hour${night.hoursAtOrBelow32 === 1 ? "" : "s"}, low ${low}. Exposed pipes on exterior walls, near garage doors, or in vented crawlspaces can still freeze on a long or windy night.`,
     );
   } else {
-    parts.push(`Stays above freezing (low ${night.lowF}°F).`);
+    parts.push(`Stays above freezing (low ${low}).`);
   }
   if (night.maxFreezingWindMph != null && night.maxFreezingWindMph >= WINDY_MPH) {
-    parts.push(`Wind up to ${night.maxFreezingWindMph} mph while below freezing pulls heat from exposed pipes faster.`);
+    parts.push(`Wind up to ${formatWind(night.maxFreezingWindMph, unit)} while below freezing pulls heat from exposed pipes faster.`);
   }
   if (night.staysBelowFreezingNextDay) {
     parts.push("The next day stays below freezing too, so unheated spaces won't warm back up.");
@@ -134,12 +137,17 @@ function escapeAttr(value: string): string {
 }
 
 /** iframe plus a plain attribution link: links inside an iframe don't count for the host page. */
-export function embedSnippet(origin: string, place: { label: string; lat: number; lon: number }): string {
+export function embedSnippet(
+  origin: string,
+  place: { label: string; lat: number; lon: number },
+  unit: TempUnit = "F",
+): string {
   const params = new URLSearchParams({
     lat: place.lat.toFixed(3),
     lon: place.lon.toFixed(3),
     place: place.label,
   });
+  if (unit === "C") params.set("unit", "c");
   return [
     `<iframe src="${origin}/embed/pipe-freeze?${params.toString().replace(/&/g, "&amp;")}" title="Pipe freeze forecast for ${escapeAttr(place.label)}" width="100%" height="200" style="border:0" loading="lazy"></iframe>`,
     `<p><a href="${origin}/pipe-freeze-forecast">Pipe freeze forecast</a> by ProbeHarbor</p>`,
