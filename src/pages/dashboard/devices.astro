@@ -684,22 +684,35 @@ const redirectTo =
         URL.revokeObjectURL(href);
       });
 
+      // Print from a hidden frame in this page. A popup opened with "noopener"
+      // hands back null, which left an empty window and nothing to print.
       document.getElementById("ingest-qr-print")?.addEventListener("click", () => {
-        const w = window.open("", "_blank", "noopener,noreferrer,width=480,height=640");
-        if (!w) return;
-        w.document.write(`<!doctype html><html><head><title>Ingest label</title>
+        const escape = (value) =>
+          String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        const frame = document.createElement("iframe");
+        frame.setAttribute("aria-hidden", "true");
+        frame.style.cssText = "position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden";
+        frame.srcdoc = `<!doctype html><html><head><title>Ingest label</title>
           <style>
             body { font-family: system-ui, sans-serif; padding: 1.5rem; text-align: center; }
             h1 { font-size: 1.1rem; margin: 0 0 1rem; }
             .qr { display: inline-block; margin: 0 auto 1rem; }
             .url { font-family: ui-monospace, monospace; font-size: 0.75rem; word-break: break-all; }
           </style></head><body>
-          <h1>${String(ingestKeyDeviceName).replace(/</g, "&lt;")}</h1>
+          <h1>${escape(ingestKeyDeviceName)}</h1>
           <div class="qr">${ingestQrSvg}</div>
-          <p class="url">${String(ingestUrl).replace(/</g, "&lt;")}</p>
-          <script>window.onload=()=>{window.print();};<\/script>
-          </body></html>`);
-        w.document.close();
+          <p class="url">${escape(ingestUrl)}</p>
+          </body></html>`;
+        frame.addEventListener("load", () => {
+          const win = frame.contentWindow;
+          if (!win) return;
+          win.addEventListener("afterprint", () => setTimeout(() => frame.remove(), 0));
+          win.focus();
+          win.print();
+          // Some browsers never fire afterprint; don't leave frames behind.
+          setTimeout(() => frame.remove(), 60_000);
+        });
+        document.body.append(frame);
       });
 
       document.getElementById("ingest-key-callout")?.scrollIntoView({
