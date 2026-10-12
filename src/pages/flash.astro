@@ -34,6 +34,11 @@ const faqs = [
       "Yes, up to four DS18B20 probes on the same pin. They report as temp1 to temp4 and can be renamed in the dashboard. A DHT22 is one sensor per board.",
   },
   {
+    question: "What else can I connect?",
+    answer:
+      "An I²C temperature and humidity sensor (BME280, SHT31, or AHT20, found automatically; a BME280 also reports air pressure), a leak or water contact for flood alerts, a magnetic door switch, and a battery through a 1:1 resistor divider for battery-life estimates. Tick the leak, door, and battery options when you send settings so the board knows they're wired.",
+  },
+  {
     question: "Does it work with a DHT22?",
     answer:
       "Yes. Wire it the same way (data to GPIO 4, 4.7kΩ to 3.3V). The firmware looks for DS18B20 probes first and, if there are none, reads a DHT22 or DHT11 on that pin, reporting temperature and humidity. A DS18B20 is the better choice against a pipe; a DHT22 suits room air and humidity in a crawlspace or basement.",
@@ -87,6 +92,24 @@ const schema = [
           Wire the sensor: power to 3.3V, ground to GND, data to GPIO 4, with a 4.7kΩ resistor between data and 3.3V
           (<a class="text-link" href="/about/esp32-freeze-kit">diagram</a>). That's the same for a DS18B20 probe (red, black,
           yellow wires) and a DHT22; the firmware detects which one is connected.
+        </li>
+        <li>
+          Optional extras, on these pins (each switch or contact goes between the pin and GND):
+          <div class="table-wrap mt-2">
+            <table class="data-table text-sm">
+              <thead>
+                <tr><th scope="col">Connect</th><th scope="col">ESP32</th><th scope="col">ESP32-S3</th><th scope="col">ESP32-C3</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>DS18B20 or DHT22 data</td><td>GPIO 4</td><td>GPIO 4</td><td>GPIO 4</td></tr>
+                <tr><td>I²C sensor SDA / SCL (BME280, SHT31, AHT20)</td><td>21 / 22</td><td>8 / 9</td><td>6 / 7</td></tr>
+                <tr><td>Leak / water contact</td><td>GPIO 27</td><td>GPIO 5</td><td>GPIO 5</td></tr>
+                <tr><td>Door reed switch</td><td>GPIO 26</td><td>GPIO 6</td><td>GPIO 10</td></tr>
+                <tr><td>Battery + through a 1:1 divider (2 × 100kΩ)</td><td>GPIO 35</td><td>GPIO 7</td><td>GPIO 3</td></tr>
+              </tbody>
+            </table>
+          </div>
+          I²C sensors are found automatically; tick leak, door, or battery below so the board knows they're wired.
         </li>
         <li>
           Add a push device under <a class="text-link" href="/dashboard/devices">Dashboard → Devices</a> and copy its

@@ -12,7 +12,20 @@
  * The pin is checked for DS18B20s first (up to four, reported as temp1..temp4);
  * if there are none it tries a DHT22 or DHT11 (reported as temp1 + humidity1).
  * Nothing to configure: the same wiring and image work for either sensor.
+ *
+ * Also, on each board's pins (see platformio.ini):
+ *   - I2C air sensor, auto-detected: SHT31 (0x44/0x45), BME280 (0x76/0x77),
+ *     or AHT20 (0x38) → temp_air, humidity_air (+ pressure_air for BME280).
+ *   - Leak contact (wet pulls LEAK_PIN to GND) → leak1, door reed switch
+ *     (closed pulls DOOR_PIN to GND) → door1 (true = open), battery through
+ *     a 1:1 divider on BATTERY_PIN → battery_pct. These three can't be
+ *     detected (an unwired pin reads "dry"/"open"), so they're reported only
+ *     when enabled: a TTEXTRAS<TAB>leak,door,battery line over USB (sent
+ *     by the flasher page before TTCFG) or the portal's "extras" box.
  */
+#include <Adafruit_AHTX0.h>
+#include <Adafruit_BME280.h>
+#include <Adafruit_SHT31.h>
 #include <Arduino.h>
 #include <DHTesp.h>
 #include <DallasTemperature.h>
@@ -22,9 +35,10 @@
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
 #include <WiFiManager.h>
+#include <Wire.h>
 
 #ifndef FIRMWARE_VERSION
-#define FIRMWARE_VERSION "1.1.1"
+#define FIRMWARE_VERSION "1.2.0"
 #endif
 #ifndef INGEST_HOST
 #define INGEST_HOST "probeharbor.dev"
@@ -35,6 +49,21 @@
 #ifndef RESET_PIN
 #define RESET_PIN 0
 #endif
+#ifndef I2C_SDA_PIN
+#define I2C_SDA_PIN 21
+#endif
+#ifndef I2C_SCL_PIN
+#define I2C_SCL_PIN 22
+#endif
+#ifndef LEAK_PIN
+#define LEAK_PIN 27
+#endif
+#ifndef DOOR_PIN
+#define DOOR_PIN 26
+#endif
+#ifndef BATTERY_PIN
+#define BATTERY_PIN 35
+#endif
 
 static const unsigned long POST_INTERVAL_MS = 60UL * 1000UL;
 static const unsigned long RESET_HOLD_MS = 5000UL;
@@ -44,6 +73,10 @@ static const unsigned long PORTAL_TIMEOUT_S = 180UL;
 static const unsigned long OFFLINE_RESTART_MS = 60UL * 1000UL;
 static const uint8_t MAX_PROBES = 4;
 static const size_t MAX_KEY_LEN = 128;
+static const size_t MAX_EXTRAS_LEN = 40;
+// With another sensor already reporting, only look for a DHT every Nth post:
+// each DHT search blocks for several seconds.
+static const uint8_t DHT_RETRY_EVERY = 10;
 
 OneWire oneWire(ONE_WIRE_PIN);
 DallasTemperature probes(&oneWire);
@@ -79,9 +112,67 @@ static bool detectDht(TempAndHumidity& out) {
   }
   return false;
 }
+uint8_t dhtRetryIn = 0;
+
+// I2C air sensor (auto-detected).
+enum AirKind { AIR_NONE, AIR_SHT31, AIR_BME280, AIR_AHT20 };
+AirKind air = AIR_NONE;
+Adafruit_SHT31 sht31;
+Adafruit_BME280 bme;
+Adafruit_AHTX0 aht;
+
+static bool i2cPresent(uint8_t address) {
+  Wire.beginTransmission(address);
+  return Wire.endTransmission() == 0;
+}
+
+static void detectAir() {
+  if ((i2cPresent(0x44) && sht31.begin(0x44)) || (i2cPresent(0x45) && sht31.begin(0x45))) {
+    air = AIR_SHT31;
+  } else if ((i2cPresent(0x76) && bme.begin(0x76, &Wire)) || (i2cPresent(0x77) && bme.begin(0x77, &Wire))) {
+    air = AIR_BME280;  // begin() rejects a BMP280 (no humidity) by chip id
+  } else if (i2cPresent(0x38) && aht.begin(&Wire)) {
+    air = AIR_AHT20;
+  } else {
+    air = AIR_NONE;
+    return;
+  }
+  const char* names[] = {"", "SHT31", "BME280", "AHT20"};
+  Serial.printf("TT sensor: %s on I2C (SDA %d, SCL %d)\n", names[air], I2C_SDA_PIN, I2C_SCL_PIN);
+}
+
+/** Read the I2C sensor; NaN pressure when the sensor has none. False drops it so it is re-detected. */
+static bool readAir(float& tempC, float& humidity, float& pressureHpa) {
+  pressureHpa = NAN;
+  if (air == AIR_SHT31) {
+    tempC = sht31.readTemperature();
+    humidity = sht31.readHumidity();
+  } else if (air == AIR_BME280) {
+    tempC = bme.readTemperature();
+    humidity = bme.readHumidity();
+    pressureHpa = bme.readPressure() / 100.0f;
+  } else if (air == AIR_AHT20) {
+    sensors_event_t h, t;
+    if (!aht.getEvent(&h, &t)) return false;
+    tempC = t.temperature;
+    humidity = h.relative_humidity;
+  } else {
+    return false;
+  }
+  return !isnan(tempC) && !isnan(humidity) && humidity >= 0.0f && humidity <= 100.0f &&
+         tempC > -40.0f && tempC < 85.0f;
+}
+
+// Contacts and battery the user said are wired (see the header comment).
+bool optLeak = false;
+bool optDoor = false;
+bool optBattery = false;
+String extras;
+
 Preferences prefs;
 WiFiManager wifiManager;
 WiFiManagerParameter keyParam("key", "Device key (Dashboard → Devices)", "", MAX_KEY_LEN);
+WiFiManagerParameter extrasParam("extras", "Also wired (any of: leak, door, battery)", "", MAX_EXTRAS_LEN);
 
 String deviceKey;
 String serialLine;
@@ -112,7 +203,32 @@ void saveKey(const String &raw) {
   Serial.println("TT key saved");
 }
 
-void onPortalParamsSaved() { saveKey(keyParam.getValue()); }
+/** "leak,door,battery" (any order, any subset); anything else is ignored. */
+void applyExtras(const String& raw) {
+  String lower = raw;
+  lower.toLowerCase();
+  optLeak = lower.indexOf("leak") >= 0;
+  optDoor = lower.indexOf("door") >= 0;
+  optBattery = lower.indexOf("batt") >= 0;
+  extras = "";
+  if (optLeak) extras += "leak,";
+  if (optDoor) extras += "door,";
+  if (optBattery) extras += "battery,";
+  if (extras.endsWith(",")) extras.remove(extras.length() - 1);
+  if (optLeak) pinMode(LEAK_PIN, INPUT_PULLUP);
+  if (optDoor) pinMode(DOOR_PIN, INPUT_PULLUP);
+}
+
+void saveExtras(const String& raw) {
+  applyExtras(raw);
+  prefs.putString("extras", extras);
+  Serial.println("TT extras: " + (extras.isEmpty() ? String("none") : extras));
+}
+
+void onPortalParamsSaved() {
+  saveKey(keyParam.getValue());
+  saveExtras(extrasParam.getValue());
+}
 
 /** TTCFG<TAB>ssid<TAB>password<TAB>key, sent by the flasher page over USB. */
 void handleConfigLine(const String &line) {
@@ -154,7 +270,9 @@ void readSerial() {
     char ch = (char)Serial.read();
     if (ch == '\r') continue;
     if (ch == '\n') {
-      if (serialLine.startsWith("TTCFG\t")) handleConfigLine(serialLine);
+      // TTEXTRAS<TAB>leak,door,battery comes just before TTCFG from the flasher page.
+      if (serialLine.startsWith("TTEXTRAS\t")) saveExtras(serialLine.substring(9));
+      else if (serialLine.startsWith("TTCFG\t")) handleConfigLine(serialLine);
       else if (serialLine == "TTSTATUS") postNow = true;
       serialLine = "";
     } else if (serialLine.length() < 400) {
@@ -199,6 +317,13 @@ void postReadings() {
     body += field;
     sent++;
   }
+  // I2C air sensor first: it decides whether a DHT search is worth its delay.
+  if (air == AIR_NONE) detectAir();
+  float airC = NAN, airRh = NAN, airHpa = NAN;
+  bool airOk = air != AIR_NONE && readAir(airC, airRh, airHpa);
+  if (air != AIR_NONE && !airOk) air = AIR_NONE;  // re-detect next time
+  bool otherSensors = airOk || optLeak || optDoor;
+
   if (sent == 0) {
     // No DS18B20 on the pin: try a DHT22/DHT11 on the same data line.
     TempAndHumidity th;
@@ -206,8 +331,11 @@ void postReadings() {
     if (dhtFound) {
       th = dht.getTempAndHumidity();
       ok = dhtReadingOk(th);
-    } else {
+    } else if (!otherSensors || dhtRetryIn == 0) {
       ok = detectDht(th);
+      dhtRetryIn = DHT_RETRY_EVERY;
+    } else {
+      dhtRetryIn--;
     }
     if (ok) {
       char field[64];
@@ -224,6 +352,32 @@ void postReadings() {
       dhtFound = false;
     }
   }
+  if (airOk) {
+    char field[96];
+    snprintf(field, sizeof(field), "\"temp_air\":%.2f,\"humidity_air\":%.1f,", airC * 9.0f / 5.0f + 32.0f, airRh);
+    body += field;
+    if (!isnan(airHpa)) {
+      snprintf(field, sizeof(field), "\"pressure_air\":%.1f,", airHpa);
+      body += field;
+    }
+    sent++;
+  }
+  if (optLeak) {
+    body += String("\"leak1\":") + (digitalRead(LEAK_PIN) == LOW ? "true" : "false") + ",";
+    sent++;
+  }
+  if (optDoor) {
+    // Reed switch closes (pulls low) when the magnet is next to it: door shut.
+    body += String("\"door1\":") + (digitalRead(DOOR_PIN) == HIGH ? "true" : "false") + ",";
+    sent++;
+  }
+  if (optBattery) {
+    // 1:1 divider, so the pin sees half the cell. Single-cell Li-ion: 3.3 V empty, 4.2 V full.
+    int cellMv = (int)analogReadMilliVolts(BATTERY_PIN) * 2;
+    int pct = constrain((cellMv - 3300) * 100 / (4200 - 3300), 0, 100);
+    body += "\"battery_pct\":" + String(pct) + ",";
+  }
+
   if (sent == 0) {
     Serial.println("TT no probe: check the wiring (DS18B20 or DHT22 data on GPIO " + String(ONE_WIRE_PIN) + ", 4.7k pull-up to 3.3V)");
     return;
@@ -255,11 +409,15 @@ void setup() {
   probes.begin();
   prefs.begin("probeharbor", false);
   deviceKey = prefs.getString("key", "");
+  applyExtras(prefs.getString("extras", ""));
+  extrasParam.setValue(extras.c_str(), MAX_EXTRAS_LEN);
+  Wire.begin(I2C_SDA_PIN, I2C_SCL_PIN);
 
   Serial.println();
   Serial.println("TT firmware " FIRMWARE_VERSION);
 
   wifiManager.addParameter(&keyParam);
+  wifiManager.addParameter(&extrasParam);
   wifiManager.setSaveParamsCallback(onPortalParamsSaved);
   wifiManager.setConfigPortalBlocking(false);
   wifiManager.setConfigPortalTimeout(PORTAL_TIMEOUT_S);

@@ -58,6 +58,18 @@ const { deviceKey = "", headingLevel: Heading = "h2" } = Astro.props;
             : "From Dashboard → Devices after you add a push device. Pasting the whole ingest URL works too."}
         </span>
       </label>
+      <fieldset class="sm:col-span-2 m-0 p-0 border-0">
+        <legend class="form-label">Also wired to this board (optional)</legend>
+        <div class="flex flex-wrap gap-x-5 gap-y-2">
+          <label class="checkbox-row mb-0"><input type="checkbox" name="extras" value="leak" /> Leak / water contact</label>
+          <label class="checkbox-row mb-0"><input type="checkbox" name="extras" value="door" /> Door reed switch</label>
+          <label class="checkbox-row mb-0"><input type="checkbox" name="extras" value="battery" /> Battery (1:1 divider)</label>
+        </div>
+        <span class="text-sm text-[var(--color-text-muted)]">
+          Tick only what you've connected: an unwired pin would read as "dry" or "open". Pins are in the table above.
+          DS18B20, DHT22 and I²C sensors (BME280, SHT31, AHT20) are found automatically.
+        </span>
+      </fieldset>
       <div class="sm:col-span-2">
         <button class="btn-primary" type="submit" data-flasher-send>Send settings over USB</button>
       </div>
@@ -132,7 +144,11 @@ const { deviceKey = "", headingLevel: Heading = "h2" } = Astro.props;
         await sleep(2500);
 
         const writer = port.writable!.getWriter();
-        const send = () => writer.write(new TextEncoder().encode(`TTCFG\t${ssid}\t${password}\t${key}\n`));
+        // Extras go on their own line first: firmware 1.2+ saves them, older firmware
+        // ignores unknown lines (a fifth TTCFG field would end up in its device key).
+        const extras = data.getAll("extras").map(String).join(",");
+        const send = () =>
+          writer.write(new TextEncoder().encode(`TTEXTRAS\t${extras}\nTTCFG\t${ssid}\t${password}\t${key}\n`));
         reader = port.readable!.getReader();
 
         const decoder = new TextDecoder();

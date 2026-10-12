@@ -68,12 +68,13 @@ function installFakeBoard(mode: BoardMode) {
   Object.defineProperty(navigator, "serial", { value: { requestPort }, configurable: true });
 }
 
-async function sendSettings(page: Page, mode: BoardMode, key = DEVICE_KEY) {
+async function sendSettings(page: Page, mode: BoardMode, key = DEVICE_KEY, extras: string[] = []) {
   await page.addInitScript(installFakeBoard, mode);
   await page.goto("/flash");
   await page.fill('input[name="ssid"]', "Home WiFi 2.4");
   await page.fill('input[name="password"]', " pass word ");
   await page.fill('input[name="key"]', key);
+  for (const extra of extras) await page.check(`input[name="extras"][value="${extra}"]`);
   const send = page.locator("[data-flasher-send]");
   await send.click();
   await expect(send).toBeEnabled({ timeout: 25_000 });
@@ -108,8 +109,15 @@ test.describe("browser flasher", () => {
     expect(board.closed).toBe(true);
     // Tab-separated; the password keeps its spaces.
     expect(board.frames).toEqual([
-      `TTCFG\tHome WiFi 2.4\t pass word \thttps://probeharbor.dev/api/ingest/${DEVICE_KEY}\n`,
+      `TTEXTRAS\t\nTTCFG\tHome WiFi 2.4\t pass word \thttps://probeharbor.dev/api/ingest/${DEVICE_KEY}\n`,
     ]);
+  });
+
+  test("sends the wired extras on their own line, ahead of the settings", async ({ page }) => {
+    const board = await sendSettings(page, "ok", DEVICE_KEY, ["leak", "battery"]);
+
+    await expect(page.locator("[data-flasher-status]")).toHaveText(/First reading delivered/);
+    expect(board.frames[0]).toBe(`TTEXTRAS\tleak,battery\nTTCFG\tHome WiFi 2.4\t pass word \t${DEVICE_KEY}\n`);
   });
 
   test("names a DHT22 when the board reports one", async ({ page }) => {

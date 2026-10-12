@@ -9,6 +9,9 @@ are set after flashing.
 |---|---|
 | Boards | ESP32, ESP32-S3, ESP32-C3 (one image per chip family) |
 | Sensor | Data on GPIO 4 with a 4.7kΩ pull-up. DS18B20s are tried first (up to four → `temp1`…`temp4`); with none, a DHT22 or DHT11 is auto-detected → `temp1` + `humidity1` |
+| I²C (auto-detected) | SHT31, BME280, or AHT20 on SDA/SCL → `temp_air`, `humidity_air` (+ `pressure_air` from a BME280) |
+| Leak / door / battery | Only when enabled (`TTEXTRAS<TAB>leak,door,battery` over USB, or the portal's extras box): `leak1` (wet = pin to GND), `door1` (true = open; reed switch to GND when shut), `battery_pct` (1:1 divider, 3.3–4.2 V) |
+| Pins | ESP32: I²C 21/22, leak 27, door 26, battery 35 · S3: I²C 8/9, leak 5, door 6, battery 7 · C3: I²C 6/7, leak 5, door 10, battery 3 |
 | Interval | One POST a minute to `/api/ingest/<device key>` |
 
 ## Setup after flashing
