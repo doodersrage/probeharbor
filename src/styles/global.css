@@ -3135,6 +3135,7 @@
   }
 
   body.is-kiosk .site-header,
+  body.is-kiosk aside[aria-label="Brand update"],
   body.is-kiosk .dashboard-sidebar,
   body.is-kiosk .dashboard-mobile-monitor,
   body.is-kiosk .site-footer {
@@ -3153,9 +3154,22 @@
   }
 
   body.is-kiosk .dashboard-topbar-meta,
-  body.is-kiosk .plan-badge,
-  body.is-kiosk .dashboard-topbar-tools {
+  body.is-kiosk .plan-badge {
     display: none;
+  }
+
+  /* Kiosk mode is entered from the sidebar menu; the real toggle only shows,
+     as a corner "Exit kiosk" button, while kiosk mode hides everything else. */
+  .dashboard-topbar-tools {
+    display: none;
+  }
+
+  body.is-kiosk .dashboard-topbar-tools {
+    display: block;
+    position: fixed;
+    top: 0.75rem;
+    right: 0.75rem;
+    z-index: 50;
   }
 
   .dashboard-stack {
