@@ -243,7 +243,7 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
       <p class="form-hint mb-0">Fires when a device goes silent, often more urgent than a slow temp drop.</p>
     </div>
 
-    <label class="checkbox-row mb-2">
+    <label class="checkbox-row mb-2" id="setting-forecast-freeze">
       <input
         type="checkbox"
         name="forecast_freeze_enabled"
@@ -273,7 +273,7 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
       <p class="form-hint mb-0">Window for outdoor cold-snap warnings (Member) and indoor time-to-freeze remaining-hours alerts.</p>
     </div>
 
-    <label class="checkbox-row mb-2">
+    <label class="checkbox-row mb-2" id="setting-runway">
       <input
         type="checkbox"
         name="runway_alert_enabled"
@@ -354,7 +354,7 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
       </div>
     </details>
 
-    <details class="alert-settings-nested mb-4">
+    <details class="alert-settings-nested mb-4" id="setting-nws">
       <summary>More triggers (humidity, rate, NWS)</summary>
       <div class="alert-settings-nested-body">
         <div class="config-row-grid mb-4">
@@ -1004,3 +1004,32 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
 {entitlements.canUsePush && vapidPublicKey && (
   <AlertSettingsPushScript vapidPublicKey={vapidPublicKey} />
 )}
+
+<script>
+  // Links like #setting-nws (from Property readiness) can point inside a closed
+  // <details>: open it, then scroll to and briefly highlight the setting.
+  function revealHashTarget() {
+    const id = decodeURIComponent(window.location.hash.slice(1));
+    if (!id) return;
+    const target = document.getElementById(id);
+    if (!target) return;
+    for (let el: HTMLElement | null = target; el; el = el.parentElement) {
+      if (el instanceof HTMLDetailsElement) el.open = true;
+    }
+    target.scrollIntoView({ block: "center" });
+    target.classList.add("setting-highlight");
+    window.setTimeout(() => target.classList.remove("setting-highlight"), 2500);
+  }
+  // After the browser's own jump-to-anchor, so the centered scroll sticks.
+  window.setTimeout(revealHashTarget, 50);
+  window.addEventListener("hashchange", revealHashTarget);
+</script>
+
+<style>
+  .setting-highlight {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 4px;
+    border-radius: 0.5rem;
+    transition: outline-color 0.6s ease;
+  }
+</style>

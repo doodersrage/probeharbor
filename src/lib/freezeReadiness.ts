@@ -9,6 +9,10 @@ export type ReadinessCheck = {
   label: string;
   ok: boolean;
   hint?: string;
+  /** Where to fix it: the exact setting, so the checklist is actionable. */
+  href?: string;
+  /** Link text for href, e.g. "Turn on". */
+  action?: string;
 };
 
 export type FreezeReadinessResult = {
@@ -74,24 +78,32 @@ export function computeFreezeReadiness(input: {
       hint: alertSettings.enabled
         ? undefined
         : "Turn alerts on under Dashboard → Alerts: flood/leak contacts notify automatically when wet.",
+      href: "/dashboard/alerts?tab=settings#alert-section-essentials",
+      action: "Turn on",
     },
     {
       id: "channel",
       label: "At least one alert channel configured",
       ok: channelOk,
       hint: channelOk ? undefined : "Enable email, SMS, or another channel with a destination.",
+      href: "/dashboard/alerts?tab=settings#alert-section-channels",
+      action: "Set up channels",
     },
     {
       id: "test_alert",
       label: "Test alert sent at least once",
       ok: hasSentAnyAlert,
       hint: hasSentAnyAlert ? undefined : "Send a test from Dashboard → Alerts before cold season.",
+      href: "/dashboard/alerts?tab=settings#send-test-alert",
+      action: "Send a test",
     },
     {
       id: "devices",
       label: "Push or pull device registered",
       ok: devices.length > 0,
-      hint: devices.length > 0 ? undefined : "Add a device under Dashboard → Temperature.",
+      hint: devices.length > 0 ? undefined : "Add a push device or pull feed under Dashboard → Devices.",
+      href: "/dashboard/devices?view=setup",
+      action: "Add a device",
     },
     {
       id: "flood_sensor",
@@ -99,7 +111,9 @@ export function computeFreezeReadiness(input: {
       ok: hasFloodSensor,
       hint: hasFloodSensor
         ? undefined
-        : "Add a wet/dry contact under a water heater, laundry, or sump: ingest kind flood auto-alerts when wet.",
+        : "This is a sensor, not a setting: add a wet/dry leak contact under a water heater, laundry, or sump. It alerts automatically when wet. On an ESP32, wire it and tick \"Leak\" in the web flasher.",
+      href: "/flash",
+      action: "Web flasher",
     },
     {
       id: "fresh",
@@ -109,6 +123,8 @@ export function computeFreezeReadiness(input: {
         stale.total === 0
           ? undefined
           : stale.bannerMessage ?? `${stale.total} probe(s) haven't reported recently.`,
+      href: "/dashboard/devices?view=ops",
+      action: "Check devices",
     },
     {
       id: "battery",
@@ -118,6 +134,8 @@ export function computeFreezeReadiness(input: {
         lowBattery.length === 0
           ? undefined
           : `${lowBattery.length} device(s) below ${alertSettings.batteryThresholdPct}% battery.`,
+      href: "/dashboard/devices?view=ops",
+      action: "Check batteries",
     },
     {
       id: "weather",
@@ -126,6 +144,8 @@ export function computeFreezeReadiness(input: {
       hint: weatherLocationConfigured
         ? undefined
         : "Set outdoor weather in Dashboard → Settings (OpenWeather city, Ambient station, or WeatherFlow).",
+      href: "/dashboard/settings",
+      action: "Set location",
     },
     {
       id: "runway",
@@ -134,6 +154,8 @@ export function computeFreezeReadiness(input: {
       hint: alertSettings.runwayAlertEnabled
         ? undefined
         : "Enable remaining-hours alerts so you hear before the probe crosses freeze.",
+      href: "/dashboard/alerts?tab=settings#setting-runway",
+      action: "Turn on",
     },
   ];
 
@@ -147,17 +169,21 @@ export function computeFreezeReadiness(input: {
           (rule.all ?? []).some((c) => c.type === "level_above"),
       ),
       hint: "Level sensors display on Overview; add a Rules → level_above condition if you want pump-failure early warning.",
+      href: "/dashboard/alerts?tab=settings#alert-section-automation",
+      action: "Add a rule",
     });
   }
 
   if (canUseForecast) {
     checks.push({
       id: "forecast",
-      label: "Forecast cold-risk alerts enabled",
+      label: "Forecast cold-risk alerts (Cold-snap mode)",
       ok: alertSettings.forecastFreezeEnabled,
       hint: alertSettings.forecastFreezeEnabled
         ? undefined
-        : "Member+ can enable forecast freeze warnings in alert settings.",
+        : "Turn on \"Cold-snap mode\" under Alerts → Settings → Essentials to hear when the outdoor forecast may hit freeze.",
+      href: "/dashboard/alerts?tab=settings#setting-forecast-freeze",
+      action: "Turn on",
     });
   }
 
@@ -168,7 +194,9 @@ export function computeFreezeReadiness(input: {
       ok: alertSettings.nwsFreezeAlertsEnabled,
       hint: alertSettings.nwsFreezeAlertsEnabled
         ? undefined
-        : "Pro can enable NWS freeze/cold alerts in alert settings.",
+        : "Turn on NWS freeze/cold alerts under Alerts → Settings → More triggers.",
+      href: "/dashboard/alerts?tab=settings#setting-nws",
+      action: "Turn on",
     });
   }
 

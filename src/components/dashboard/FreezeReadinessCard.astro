@@ -22,7 +22,15 @@ const failed = readiness.checks.filter((c) => !c.ok);
       <li class:list={[check.ok ? "text-[var(--color-text-muted)]" : ""]}>
         {check.ok ? "✓" : "○"} {check.label}
         {!check.ok && check.hint && (
-          <span class="block text-xs text-[var(--color-text-muted)] ml-4">{check.hint}</span>
+          <span class="block text-xs text-[var(--color-text-muted)] ml-4">
+            {check.hint}
+            {check.href && (
+              <>
+                {" "}
+                <a class="text-link" href={check.href}>{check.action ?? "Fix"} →</a>
+              </>
+            )}
+          </span>
         )}
       </li>
     ))}
