@@ -1,30 +1,28 @@
 ---
 import DashboardCard from "./DashboardCard.astro";
-import {
-  PINNABLE_OVERVIEW_METRICS,
-  PINNABLE_OVERVIEW_METRIC_LABELS,
-  PINNED_METRICS_MAX,
-  type PinnableOverviewMetric,
-} from "../../lib/dashboardComfort";
 
 interface Props {
-  pinnedMetrics: PinnableOverviewMetric[];
   quietUntil: string | null;
   quietActive: boolean;
   forceSimpleNote?: boolean;
   growthTipsDismissed?: boolean;
+  onboardingDismissed?: boolean;
 }
 
-const { pinnedMetrics, quietUntil, quietActive, forceSimpleNote = false, growthTipsDismissed = false } =
-  Astro.props;
-const pinnedSet = new Set(pinnedMetrics);
+const {
+  quietUntil,
+  quietActive,
+  forceSimpleNote = false,
+  growthTipsDismissed = false,
+  onboardingDismissed = false,
+} = Astro.props;
 ---
 
 <DashboardCard>
-  <h2 class="card-title">Dashboard comfort</h2>
+  <h2 class="card-title">Overview tips &amp; checklist</h2>
   <p class="card-subtitle mb-4">
-    Quiet recommendation noise, pin Status metrics (max {PINNED_METRICS_MAX}), and
-    keyboard shortcuts.
+    Choose what Overview suggests. Problems (stale probes, low battery, unhandled alerts) always show.
+    To pin numbers, tap ★ on a card under Overview → At a glance.
   </p>
 
   {forceSimpleNote && (
@@ -35,7 +33,7 @@ const pinnedSet = new Set(pinnedMetrics);
 
   <div class="space-y-4">
     <div>
-      <h3 class="text-sm font-semibold mb-2">Hide recommendations</h3>
+      <h3 class="text-sm font-semibold mb-2">Recommendations</h3>
       <p class="text-sm text-[var(--color-text-muted)] mb-2">
         Hides non-critical overview recommendations for 7 days. Low battery, stale
         sensors, and unacked alerts still appear. This is separate from
@@ -61,7 +59,7 @@ const pinnedSet = new Set(pinnedMetrics);
     </div>
 
     <div>
-      <h3 class="text-sm font-semibold mb-2">Companion tips</h3>
+      <h3 class="text-sm font-semibold mb-2">Companion app tips</h3>
       <p class="text-sm text-[var(--color-text-muted)] mb-2">
         Nest, PWA, Android, and Bay Buddy on Overview Tips. Also auto-hides 14 days after signup once you are live.
       </p>
@@ -74,27 +72,21 @@ const pinnedSet = new Set(pinnedMetrics);
       </form>
     </div>
 
-    <form action="/api/user/dashboard-pinned-metrics" method="post">
-      <input type="hidden" name="redirect" value="/dashboard/settings" />
-      <h3 class="text-sm font-semibold mb-2">Pinned Status metrics</h3>
-      <p class="text-sm text-[var(--color-text-muted)] mb-3">
-        Choose up to {PINNED_METRICS_MAX}. Others stay behind “Show all metrics”.
+    <div>
+      <h3 class="text-sm font-semibold mb-2">Getting started checklist</h3>
+      <p class="text-sm text-[var(--color-text-muted)] mb-2">
+        {onboardingDismissed
+          ? "Hidden on Overview."
+          : "Shows on Overview until setup is complete."}
       </p>
-      <div class="dashboard-comfort-metrics">
-        {PINNABLE_OVERVIEW_METRICS.map((id) => (
-          <label class="dashboard-comfort-metric">
-            <input
-              type="checkbox"
-              name="metrics"
-              value={id}
-              checked={pinnedSet.has(id)}
-            />
-            <span>{PINNABLE_OVERVIEW_METRIC_LABELS[id]}</span>
-          </label>
-        ))}
-      </div>
-      <button type="submit" class="btn-primary btn-sm mt-3">Save pinned metrics</button>
-    </form>
+      <form action="/api/user/onboarding" method="post">
+        <input type="hidden" name="action" value={onboardingDismissed ? "reset" : "dismiss"} />
+        <input type="hidden" name="redirect" value="/dashboard/settings" />
+        <button type="submit" class="btn-secondary btn-sm">
+          {onboardingDismissed ? "Show checklist on Overview" : "Hide checklist on Overview"}
+        </button>
+      </form>
+    </div>
 
     <div>
       <h3 class="text-sm font-semibold mb-2">Keyboard shortcuts</h3>
@@ -107,19 +99,6 @@ const pinnedSet = new Set(pinnedMetrics);
 </DashboardCard>
 
 <style>
-  .dashboard-comfort-metrics {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
-    gap: 0.5rem 1rem;
-  }
-
-  .dashboard-comfort-metric {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.875rem;
-  }
-
   kbd {
     font-size: 0.75rem;
     border: 1px solid var(--color-border);

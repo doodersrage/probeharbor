@@ -2,7 +2,6 @@
 import DashboardLayout from "../../layouts/DashboardLayout.astro";
 import DisplayPreferences from "../../components/DisplayPreferences.astro";
 import PwaInstallCard from "../../components/dashboard/PwaInstallCard.astro";
-import DashboardCard from "../../components/dashboard/DashboardCard.astro";
 import DashboardComfortCard from "../../components/dashboard/DashboardComfortCard.astro";
 import TenantRelayCard from "../../components/dashboard/TenantRelayCard.astro";
 import AccountSecurity from "../../components/AccountSecurity.astro";
@@ -20,7 +19,6 @@ import { getTenantNotifySettings } from "../../lib/tenantRelay";
 import {
   getDashboardGrowthTipsDismissed,
   getDashboardQuietUntil,
-  getPinnedOverviewMetrics,
   isDashboardQuietActive,
   shouldForceSimpleOverview,
 } from "../../lib/dashboardComfort";
@@ -66,7 +64,6 @@ const onboardingDismissed =
 const quietUntil = getDashboardQuietUntil(user);
 const quietActive = isDashboardQuietActive(user);
 const growthTipsDismissed = getDashboardGrowthTipsDismissed(user);
-const pinnedMetrics = getPinnedOverviewMetrics(user);
 const forceSimpleNote = shouldForceSimpleOverview(householdRole);
 const planLabel =
   entitlements.tier === "admin"
@@ -75,7 +72,7 @@ const planLabel =
 ---
 <DashboardLayout
   title="Settings"
-  subtitle="Live display and theme. Security, retention, and landlord relay live under Advanced."
+  subtitle="Display, what Overview suggests, and your account."
 >
   <div class="space-y-6">
     {(passwordUpdated || prefsSaved || prefsError || pinnedSaved || pinnedError || quietSaved || quietCleared || tipsHidden || tipsReset) && (
@@ -112,34 +109,18 @@ const planLabel =
 
     <div id="dashboard-comfort">
       <DashboardComfortCard
-        pinnedMetrics={pinnedMetrics}
         quietUntil={quietUntil}
         quietActive={quietActive}
         growthTipsDismissed={growthTipsDismissed}
         forceSimpleNote={forceSimpleNote}
+        onboardingDismissed={onboardingDismissed}
       />
     </div>
 
     <PwaInstallCard />
 
-    <DashboardCard>
-      <h2 class="card-title">Getting started checklist</h2>
-      <p class="card-subtitle mb-3">
-        {onboardingDismissed
-          ? "The overview checklist is currently hidden."
-          : "The overview checklist shows until setup is complete."}
-      </p>
-      <form action="/api/user/onboarding" method="post">
-        <input type="hidden" name="action" value={onboardingDismissed ? "reset" : "dismiss"} />
-        <input type="hidden" name="redirect" value="/dashboard/settings" />
-        <button type="submit" class="btn-secondary">
-          {onboardingDismissed ? "Show checklist on overview" : "Hide checklist on overview"}
-        </button>
-      </form>
-    </DashboardCard>
-
     <details class="card">
-      <summary class="card-title cursor-pointer">Advanced account</summary>
+      <summary class="card-title cursor-pointer">Account &amp; security</summary>
       <p class="card-subtitle mb-4">
         MFA, data retention, tenant relay, and account deletion: leave these alone unless you need them.
       </p>
