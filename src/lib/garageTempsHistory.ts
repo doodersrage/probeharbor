@@ -1,4 +1,5 @@
 import { createServerClient } from "./supabase";
+import { probePairingKey } from "./probePairing";
 import { escapeCsvField } from "./csvEscape";
 import { getUserHouseholdId } from "./households";
 import { applySensorOffset } from "./sensorCalibration";
@@ -37,7 +38,44 @@ export type ChartPoint = {
   tempf: number;
   humidity: number;
   probeLabel: string;
+  /** Device name, so equal sensor labels on different devices stay separate lines. */
+  device?: string;
 };
+
+/**
+ * Two devices can both have a sensor named "Temp1"; charts draw one line per
+ * label, so prefix the device name wherever a label is shared across devices.
+ */
+export function disambiguateChartLabels(points: ChartPoint[]): ChartPoint[] {
+  const devicesByLabel = new Map<string, Set<string>>();
+  for (const point of points) {
+    if (!point.device) continue;
+    const devices = devicesByLabel.get(point.probeLabel) ?? new Set<string>();
+    devices.add(point.device);
+    devicesByLabel.set(point.probeLabel, devices);
+  }
+  const shared = new Set(
+    [...devicesByLabel].filter(([, devices]) => devices.size > 1).map(([label]) => label),
+  );
+  if (shared.size === 0) return points;
+  return points.map((point) =>
+    point.device && shared.has(point.probeLabel)
+      ? { ...point, probeLabel: `${point.device} · ${point.probeLabel}` }
+      : point,
+  );
+}
+
+/** Rollups fill gaps without replacing raw points; one point per line per timestamp. */
+function mergeChartPoints(points: ChartPoint[], extra: ChartPoint[]): ChartPoint[] {
+  const key = (p: ChartPoint) => `${p.timestamp}|${p.device ?? ""}|${p.probeLabel}`;
+  const merged = new Map(points.map((p) => [key(p), p]));
+  for (const point of extra) {
+    if (!merged.has(key(point))) merged.set(key(point), point);
+  }
+  return [...merged.values()].sort((a, b) => Date.parse(a.timestamp) - Date.parse(b.timestamp));
+}
+
+
 
 type SensorRow = {
   recorded_at: string;
@@ -101,9 +139,12 @@ export function pairTempHumidityRows(
     const sensor = row.device_sensors;
     if (!sensor || row.value_num == null) continue;
     const deviceName = sensor.devices?.name ?? "Device";
-    const key = `${deviceName}::${sensor.key}::${row.recorded_at}`;
-    if (sensor.kind === "temperature") temps.set(key, row);
-    if (sensor.kind === "humidity") humidities.set(key, row);
+    if (sensor.kind === "temperature") {
+      temps.set(`${deviceName}::${sensor.key}::${row.recorded_at}`, row);
+    }
+    if (sensor.kind === "humidity") {
+      humidities.set(`${deviceName}::${probePairingKey(sensor.key)}::${row.recorded_at}`, row);
+    }
   }
 
   const readings: GarageTempReading[] = [];
@@ -112,7 +153,8 @@ export function pairTempHumidityRows(
   for (const [key, tempRow] of temps) {
     const sensor = tempRow.device_sensors!;
     const deviceName = sensor.devices?.name ?? "Device";
-    const humidityRow = humidities.get(key);
+    const humidityKey = `${deviceName}::${probePairingKey(sensor.key)}::${tempRow.recorded_at}`;
+    const humidityRow = humidities.get(humidityKey);
     const rawTempF = Number(tempRow.value_num);
     const tempOffset =
       typeof sensor.offset_num === "number" ? sensor.offset_num : 0;
@@ -144,7 +186,7 @@ export function pairTempHumidityRows(
       probe_key: sensor.key,
       user_id: userId,
     });
-    seen.add(key);
+    if (humidityRow) seen.add(humidityKey);
   }
 
   for (const [key, humidityRow] of humidities) {
@@ -550,6 +592,7 @@ export async function fetchGarageTempChartData(
     tempf: Number(row.tempf),
     humidity: Number(row.humidity),
     probeLabel: row.probe_label?.trim() || row.probe_key || "Probe",
+    device: row.feed_name ?? undefined,
   }));
 
   // For windows beyond raw retention, fill gaps from hourly rollups.
@@ -559,18 +602,11 @@ export async function fetchGarageTempChartData(
       ? await fetchRollupChartPointsForHousehold(householdId, sinceIso, filters)
       : [];
     if (rollupPoints.length > 0) {
-      const byTs = new Map(points.map((p) => [p.timestamp, p]));
-      for (const point of rollupPoints) {
-        if (!byTs.has(point.timestamp)) byTs.set(point.timestamp, point);
-      }
-      const merged = [...byTs.values()].sort(
-        (a, b) => Date.parse(a.timestamp) - Date.parse(b.timestamp),
-      );
-      return { points: merged, error: null };
+      return { points: disambiguateChartLabels(mergeChartPoints(points, rollupPoints)), error: null };
     }
   }
 
-  return { points, error: null };
+  return { points: disambiguateChartLabels(points), error: null };
 }
 
 async function fetchRollupChartPointsForHousehold(
@@ -631,6 +667,7 @@ async function fetchRollupChartPointsForHousehold(
       ),
       humidity: 0,
       probeLabel,
+      device: feedName,
     });
   }
   return points;
@@ -665,22 +702,17 @@ export async function fetchHouseholdChartData(
     tempf: Number(row.tempf),
     humidity: Number(row.humidity),
     probeLabel: row.probe_label?.trim() || row.probe_key || "Probe",
+    device: row.feed_name ?? undefined,
   }));
 
   if (points.length < 10) {
     const rollups = await fetchRollupChartPointsForHousehold(householdId, sinceIso);
     if (rollups.length > 0) {
-      const byTs = new Map(points.map((p) => [p.timestamp, p]));
-      for (const point of rollups) {
-        if (!byTs.has(point.timestamp)) byTs.set(point.timestamp, point);
-      }
-      points = [...byTs.values()].sort(
-        (a, b) => Date.parse(a.timestamp) - Date.parse(b.timestamp),
-      );
+      points = mergeChartPoints(points, rollups);
     }
   }
 
-  return { points, error: null };
+  return { points: disambiguateChartLabels(points), error: null };
 }
 
 /** Chart points from the same calendar window one year earlier (rollups + raw). */
@@ -713,6 +745,7 @@ export async function fetchGarageTempChartDataPriorYear(
     tempf: Number(row.tempf),
     humidity: Number(row.humidity),
     probeLabel: row.probe_label?.trim() || row.probe_key || "Probe",
+    device: row.feed_name ?? undefined,
   }));
 
   const householdId = await getUserHouseholdId(userId);
@@ -726,16 +759,10 @@ export async function fetchGarageTempChartDataPriorYear(
   const endMs = end.getTime();
   const filteredRollups = rollups.filter((p) => Date.parse(p.timestamp) <= endMs);
   if (filteredRollups.length > 0) {
-    const byTs = new Map(points.map((p) => [p.timestamp, p]));
-    for (const point of filteredRollups) {
-      if (!byTs.has(point.timestamp)) byTs.set(point.timestamp, point);
-    }
-    points = [...byTs.values()].sort(
-      (a, b) => Date.parse(a.timestamp) - Date.parse(b.timestamp),
-    );
+    points = mergeChartPoints(points, filteredRollups);
   }
 
-  return { points, error: null };
+  return { points: disambiguateChartLabels(points), error: null };
 }
 
 /** Earliest stored sensor reading for empty-state copy on YoY comparisons. */

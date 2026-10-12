@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  disambiguateChartLabels,
   limitPairedReadingsFairly,
   pairTempHumidityRows,
 } from "./garageTempsHistory";
@@ -43,6 +44,31 @@ function humidityRow(device: string, key: string, at: string, h: number): Sensor
 }
 
 describe("pairTempHumidityRows", () => {
+  it("pairs a DHT22's temp1 with its humidity1 instead of leaving humidity on its own", () => {
+    const at = "2026-10-12T10:56:27.950Z";
+    const paired = pairTempHumidityRows(
+      [tempRow("Workshop probe 2", "temp1", at, 39.92), humidityRow("Workshop probe 2", "humidity1", at, 22.5)],
+      "user-1",
+    );
+    expect(paired).toHaveLength(1);
+    expect(paired[0]?.tempf).toBe(39.92);
+    expect(paired[0]?.humidity).toBe(22.5);
+  });
+
+  it("never pairs across devices or merges two temperature sensors", () => {
+    const at = "2026-10-12T10:56:27.950Z";
+    const paired = pairTempHumidityRows(
+      [
+        tempRow("A", "temp1", at, 40),
+        tempRow("A", "temperature1", at, 41),
+        humidityRow("B", "humidity1", at, 50),
+      ],
+      "user-1",
+    );
+    expect(paired.filter((r) => r.tempf !== 0)).toHaveLength(2);
+    expect(paired.find((r) => r.feed_name === "A" && r.probe_key === "temp1")?.humidity).toBe(0);
+  });
+
   it("pairs temp and humidity at the same timestamp without mixing probes", () => {
     const paired = pairTempHumidityRows(
       [
@@ -114,5 +140,29 @@ describe("limitPairedReadingsFairly", () => {
     expect(limited.length).toBeLessThanOrEqual(100);
     expect(probes.has("0")).toBe(true);
     expect(probes.has("1")).toBe(true);
+  });
+});
+
+describe("disambiguateChartLabels", () => {
+  const point = (device: string, probeLabel: string) => ({
+    timestamp: "2026-10-12T10:00:00Z",
+    tempf: 40,
+    humidity: 0,
+    probeLabel,
+    device,
+  });
+
+  it("names the device when two devices share a sensor label", () => {
+    const labels = disambiguateChartLabels([
+      point("Workshop probe", "Temp1"),
+      point("Workshop probe 2", "Temp1"),
+      point("Workshop probe", "Attic"),
+    ]).map((p) => p.probeLabel);
+    expect(labels).toEqual(["Workshop probe · Temp1", "Workshop probe 2 · Temp1", "Attic"]);
+  });
+
+  it("leaves labels alone when they're already unique", () => {
+    const points = [point("A", "Garage"), point("B", "Attic")];
+    expect(disambiguateChartLabels(points)).toBe(points);
   });
 });

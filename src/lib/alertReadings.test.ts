@@ -142,3 +142,30 @@ describe("mergeAlertReadings", () => {
     expect(merged).toHaveLength(2);
   });
 });
+
+describe("DHT22 and same-named probes", () => {
+  it("pairs a push device's temp1 with humidity1 so humidity alerts can fire", () => {
+    const readings = buildAlertReadingsFromLatestSensors([
+      { sensor: sensor({ id: "t", device_id: "dht", key: "temp1", kind: "temperature", label: "Temp1" }), deviceName: "Workshop probe 2", value_num: 39.9 },
+      { sensor: sensor({ id: "h", device_id: "dht", key: "humidity1", kind: "humidity", label: "Humidity1" }), deviceName: "Workshop probe 2", value_num: 82 },
+    ]);
+    expect(readings).toEqual([{ label: "Temp1", tempf: 39.9, humidity: 82, space: null, sensorId: "t" }]);
+  });
+
+  it("keeps both devices' 'Temp1' probes when merging feed and stored readings", () => {
+    const stored = [
+      { label: "Temp1", tempf: 70, humidity: 0, sensorId: "ds18b20" },
+      { label: "Temp1", tempf: 30, humidity: 40, sensorId: "dht22" },
+    ];
+    const merged = mergeAlertReadings([], stored);
+    expect(merged.map((r) => r.sensorId).sort()).toEqual(["dht22", "ds18b20"]);
+  });
+
+  it("still lets a live feed reading replace the stored reading for the same sensor", () => {
+    const merged = mergeAlertReadings(
+      [{ label: "Probe 0", tempf: 31, humidity: 50, sensorId: "s0" }],
+      [{ label: "Probe 0", tempf: 35, humidity: 50, sensorId: "s0" }],
+    );
+    expect(merged).toEqual([{ label: "Probe 0", tempf: 31, humidity: 50, sensorId: "s0" }]);
+  });
+});

@@ -1,6 +1,7 @@
 import type { TempFeedResult, TempProbeConfig } from "./tempFeedConfig";
 import type { AlertReading } from "./alerts";
 import type { DeviceSensor, DeviceWithSensors } from "./devices";
+import { probePairingKey } from "./probePairing";
 import { applySensorOffset } from "./sensorCalibration";
 
 export function buildReadingsFromResults(
@@ -29,6 +30,7 @@ export function buildReadingsFromResults(
       tempf: applySensorOffset(data.f, tempSensor?.offset_num ?? 0),
       humidity: applySensorOffset(data.h, humiditySensor?.offset_num ?? 0),
       space: spaceByFeedId.get(probe.feedId) ?? null,
+      sensorId: tempSensor?.id,
     }];
   });
 }
@@ -66,10 +68,17 @@ export function buildAlertReadingsFromLatestSensors(
     sensorId?: string;
   };
   const byKey = new Map<string, Acc>();
+  // Humidity is matched to its temperature probe on the shared part of the key
+  // ("humidity1" ↔ "temp1"); temperatures keep their full key.
+  const humidityByPair = new Map<string, number>();
+  for (const row of latest) {
+    if (row.value_num == null || row.sensor.kind !== "humidity") continue;
+    humidityByPair.set(`${row.sensor.device_id}:${probePairingKey(row.sensor.key)}`, row.value_num);
+  }
 
   for (const row of latest) {
     if (row.value_num == null) continue;
-    if (row.sensor.kind !== "temperature" && row.sensor.kind !== "humidity") {
+    if (row.sensor.kind !== "temperature") {
       continue;
     }
 
@@ -79,13 +88,10 @@ export function buildAlertReadingsFromLatestSensors(
       space: row.deviceSpace ?? null,
     };
 
-    if (row.sensor.kind === "temperature") {
-      entry.tempf = row.value_num;
-      entry.label = row.sensor.label.replace(/\s+humidity$/i, "") || row.sensor.label;
-      entry.sensorId = row.sensor.id;
-    } else {
-      entry.humidity = row.value_num;
-    }
+    entry.tempf = row.value_num;
+    entry.label = row.sensor.label.replace(/\s+humidity$/i, "") || row.sensor.label;
+    entry.sensorId = row.sensor.id;
+    entry.humidity = humidityByPair.get(`${row.sensor.device_id}:${probePairingKey(row.sensor.key)}`);
 
     byKey.set(mapKey, entry);
   }
@@ -106,12 +112,15 @@ export function mergeAlertReadings(
   preferred: AlertReading[],
   fallback: AlertReading[],
 ): AlertReading[] {
-  const byLabel = new Map<string, AlertReading>();
+  // Key by sensor: two devices can both have a probe labeled "Temp1", and
+  // keying by label alone silently dropped one of them from alerts.
+  const key = (reading: AlertReading) => reading.sensorId ?? `label:${reading.label}`;
+  const merged = new Map<string, AlertReading>();
   for (const reading of fallback) {
-    byLabel.set(reading.label, reading);
+    merged.set(key(reading), reading);
   }
   for (const reading of preferred) {
-    byLabel.set(reading.label, reading);
+    merged.set(key(reading), reading);
   }
-  return [...byLabel.values()];
+  return [...merged.values()];
 }
