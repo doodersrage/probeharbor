@@ -6,16 +6,9 @@ import {
   upsertDeviceSensor,
 } from "../../../lib/devices";
 import { insertSensorReadings } from "../../../lib/sensorReadings";
-import {
-  inferSensorKind,
-  parseIngestPayload,
-} from "../../../lib/ingestPayload";
-import { parseTempFeedPayload } from "../../../lib/tempFeedConfig";
-import { discoverIngestPayload } from "../../../lib/feedDiscovery";
-import {
-  ensureDiscoveredPushSensors,
-  labelForPushSensorKey,
-} from "../../../lib/pushSensorDiscovery";
+import { interpretIngestPayload } from "../../../lib/ingestInterpret";
+import { detectIngestClient, ingestClientPatch } from "../../../lib/ingestClient";
+import { ensureDiscoveredPushSensors } from "../../../lib/pushSensorDiscovery";
 import {
   checkIngestRateLimit,
   readJsonBodyWithLimit,
@@ -31,19 +24,6 @@ async function sha256Hex(value: string): Promise<string> {
   return [...new Uint8Array(digest)]
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
-}
-
-/**
- * A number, or a numeric string. `Number()` alone would turn `null`, `""`,
- * and `false` into 0, which reads as a dead battery.
- */
-function numericField(value: unknown): number | null {
-  if (typeof value === "number") return Number.isFinite(value) ? value : null;
-  if (typeof value === "string" && value.trim() !== "") {
-    const parsed = Number(value);
-    return Number.isFinite(parsed) ? parsed : null;
-  }
-  return null;
 }
 
 export const POST: APIRoute = async ({ params, request }) => {
@@ -107,93 +87,35 @@ export const POST: APIRoute = async ({ params, request }) => {
   }
 
   const payload = body.payload;
-  const discovered = discoverIngestPayload(payload, device.name);
+  const interpreted = interpretIngestPayload(payload, device.name);
   const sensorSync = await ensureDiscoveredPushSensors(
     device.id,
-    discovered,
+    interpreted.discovered,
     device.sensors,
   );
   if (sensorSync.error) {
     console.error("Push sensor discovery failed:", sensorSync.error);
   }
 
-  const { tempProbes, typed } = parseIngestPayload(payload);
   const recordedAt = new Date().toISOString();
   const rows = [];
-
-  // Classic Arduino temp JSON
-  const classic =
-    Object.keys(tempProbes).length > 0
-      ? tempProbes
-      : (() => {
-          try {
-            return parseTempFeedPayload(payload);
-          } catch {
-            return {};
-          }
-        })();
-
-  for (const [key, reading] of Object.entries(classic)) {
-    const tempLabel =
-      labelForPushSensorKey(discovered, key, "temperature") ?? `Probe ${key}`;
-    const humidityLabel =
-      labelForPushSensorKey(discovered, key, "humidity") ?? `Probe ${key} humidity`;
-    const temp = await upsertDeviceSensor(
-      device.id,
-      key,
-      tempLabel,
-      "temperature",
-      "F",
-    );
-    const humidity = await upsertDeviceSensor(
-      device.id,
-      key,
-      humidityLabel,
-      "humidity",
-      "%",
-    );
-
-    if (temp.sensor) {
-      rows.push({
-        sensor_id: temp.sensor.id,
-        household_id: device.household_id,
-        recorded_at: recordedAt,
-        value_num: reading.f,
-        meta: { tempc: reading.c, tempf: reading.f },
-      });
-    }
-    if (humidity.sensor) {
-      rows.push({
-        sensor_id: humidity.sensor.id,
-        household_id: device.household_id,
-        recorded_at: recordedAt,
-        value_num: reading.h,
-        meta: { humidity: reading.h },
-      });
-    }
-  }
-
-  for (const item of typed) {
-    const kind = inferSensorKind(item.key, item);
-    const label =
-      item.label ?? labelForPushSensorKey(discovered, item.key, kind) ?? item.key;
+  for (const reading of interpreted.readings) {
     const sensor = await upsertDeviceSensor(
       device.id,
-      item.key,
-      label,
-      kind,
-      item.unit ?? null,
+      reading.key,
+      reading.label,
+      reading.kind,
+      reading.unit,
     );
     if (!sensor.sensor) continue;
-
     rows.push({
       sensor_id: sensor.sensor.id,
       household_id: device.household_id,
       recorded_at: recordedAt,
-      value_num: item.value ?? null,
-      value_bool: item.bool ?? null,
-      value_text: item.text ?? null,
-      meta: {},
+      value_num: reading.value_num,
+      value_bool: reading.value_bool,
+      value_text: reading.value_text,
+      meta: reading.meta,
     });
   }
 
@@ -219,16 +141,18 @@ export const POST: APIRoute = async ({ params, request }) => {
   }
 
   const metaPatch: Record<string, unknown> = {};
-  const fields = payload as Record<string, unknown>;
-  const battery = numericField(fields.battery ?? fields.battery_pct);
-  const rssi = numericField(fields.rssi);
-  if (battery != null) metaPatch.battery_pct = battery;
-  if (rssi != null) metaPatch.rssi = rssi;
-  // Browser-flasher firmware (1.2.1+) reports its version so Devices can offer updates.
-  const firmware = typeof fields.fw === "string" ? fields.fw.trim().slice(0, 24) : "";
-  if (/^\d+\.\d+\.\d+$/.test(firmware) && firmware !== device.meta?.firmware_version) {
+  if (interpreted.batteryPct != null) metaPatch.battery_pct = interpreted.batteryPct;
+  if (interpreted.rssi != null) metaPatch.rssi = interpreted.rssi;
+  const firmware = interpreted.firmwareVersion;
+  if (firmware && firmware !== device.meta?.firmware_version) {
     metaPatch.firmware_version = firmware;
   }
+  // Remember which integration feeds this device, for Share → Integrations diagnostics.
+  const client = ingestClientPatch(
+    device.meta?.ingest_client,
+    detectIngestClient(request.headers.get("user-agent"), recordedAt),
+  );
+  if (client) metaPatch.ingest_client = client;
 
   if (Object.keys(metaPatch).length > 0) {
     await updateDeviceMeta(

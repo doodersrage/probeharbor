@@ -62,6 +62,8 @@ const STATIC_PUBLIC_PATHS = [
   "/freeze-map",
   "/freeze-season",
   "/freeze-time-calculator",
+  "/payload-checker",
+  "/hardware",
   "/pipe-freeze-forecast",
   "/flash",
   "/claims-pack",

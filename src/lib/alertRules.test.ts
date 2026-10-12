@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { evaluateAlertRules, type AlertRule } from "./alertRules";
+import { evaluateAlertRules, parseAlertRulesFromForm, type AlertRule } from "./alertRules";
 import {
   DEFAULT_ALERT_SETTINGS,
   evaluateForecastFreeze,
@@ -112,6 +112,38 @@ describe("alert rules", () => {
       outageHours: 2,
     });
     expect(hit[0]).toContain("Door + cold");
+  });
+
+  it("fires an any-of rule on one condition and an outdoor condition only with known weather", () => {
+    const ctx = {
+      readings: [{ label: "Garage pipe", tempf: 37, humidity: 40 }],
+      boolSensors: [],
+      numericSensors: [],
+      doorOpenSessions: [],
+      rateDrops: [],
+      outages: [],
+      freezeThresholdF: 34,
+      humidityThreshold: 75,
+      rateChangeF: 15,
+      outageHours: 2,
+    };
+    const both: AlertRule = {
+      id: "o",
+      enabled: true,
+      name: "Pipe + hard freeze",
+      all: [{ type: "temp_below", value: 38, labelIncludes: "pipe" }, { type: "outdoor_below" }],
+    };
+    expect(evaluateAlertRules([both], { ...ctx, outdoorTempF: 25 })).toHaveLength(0);
+    expect(evaluateAlertRules([both], { ...ctx, outdoorTempF: 18 })[0]).toContain("temp below AND outdoor below");
+    expect(evaluateAlertRules([both], { ...ctx, outdoorTempF: null })).toHaveLength(0);
+
+    const either: AlertRule = { ...both, match: "any", all: [{ type: "door_open" }, { type: "temp_below", value: 38 }] };
+    expect(evaluateAlertRules([either], ctx)[0]).toContain("door open OR temp below");
+  });
+
+  it("keeps match when parsing the form", () => {
+    const parsed = parseAlertRulesFromForm(JSON.stringify([{ id: "a", name: "x", all: [], match: "any" }, { id: "b", name: "y", all: [] }]));
+    expect(parsed.map((r) => r.match)).toEqual(["any", "all"]);
   });
 
   it("matches co2_above against numeric sensors", () => {

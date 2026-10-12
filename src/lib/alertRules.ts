@@ -14,7 +14,8 @@ export type AlertConditionType =
   | "voc_above"
   | "level_above"
   | "energy_below"
-  | "motion_detected";
+  | "motion_detected"
+  | "outdoor_below";
 
 export type AlertCondition = {
   type: AlertConditionType;
@@ -28,8 +29,14 @@ export type AlertRule = {
   id: string;
   enabled: boolean;
   name: string;
+  /** The rule's conditions (named `all` from before "any" existed). */
   all: AlertCondition[];
+  /** "all" (default): every condition must hold. "any": one is enough. */
+  match?: "all" | "any";
 };
+
+/** Default for outdoor_below: a hard freeze outside. */
+export const OUTDOOR_COLD_F = 20;
 
 export type RuleEvalContext = {
   readings: Array<{ label: string; tempf: number; humidity: number }>;
@@ -46,6 +53,8 @@ export type RuleEvalContext = {
   humidityThreshold: number;
   rateChangeF: number;
   outageHours: number;
+  /** Current outdoor temperature from the weather source; null when unknown. */
+  outdoorTempF?: number | null;
 };
 
 /** Default for temp_above: hot enough to cook batteries, paint, and electronics. */
@@ -178,6 +187,11 @@ function evaluateCondition(
           matchesLabel(r.label, condition.labelIncludes) && r.dropF >= threshold,
       );
     }
+    case "outdoor_below": {
+      // Unknown weather never satisfies the condition: no guessing.
+      const threshold = condition.value ?? OUTDOOR_COLD_F;
+      return ctx.outdoorTempF != null && Number.isFinite(ctx.outdoorTempF) && ctx.outdoorTempF <= threshold;
+    }
     case "outage": {
       const threshold = condition.value ?? ctx.outageHours;
       return ctx.outages.some(
@@ -199,9 +213,12 @@ export function evaluateAlertRules(
 
   for (const rule of rules) {
     if (!rule.enabled || !rule.all?.length) continue;
-    const allMatch = rule.all.every((c) => evaluateCondition(c, ctx));
-    if (allMatch) {
-      const parts = rule.all.map((c) => c.type.replace(/_/g, " ")).join(" AND ");
+    const any = rule.match === "any";
+    const matched = any
+      ? rule.all.some((c) => evaluateCondition(c, ctx))
+      : rule.all.every((c) => evaluateCondition(c, ctx));
+    if (matched) {
+      const parts = rule.all.map((c) => c.type.replace(/_/g, " ")).join(any ? " OR " : " AND ");
       messages.push(`Rule "${rule.name}" matched (${parts}).`);
     }
   }
@@ -228,6 +245,7 @@ export function parseAlertRulesFromForm(raw: string | null | undefined): AlertRu
         id: rule.id,
         enabled: rule.enabled !== false,
         name: rule.name.slice(0, 80),
+        match: rule.match === "any" ? ("any" as const) : ("all" as const),
         all: rule.all.slice(0, 8).map((c) => ({
           type: c.type,
           value: typeof c.value === "number" ? c.value : undefined,
@@ -257,4 +275,5 @@ export const CONDITION_OPTIONS: Array<{ value: AlertConditionType; label: string
   { value: "level_above", label: "Water / sump level above (%)" },
   { value: "energy_below", label: "Energy below (W)" },
   { value: "motion_detected", label: "Motion detected" },
+  { value: "outdoor_below", label: `Outdoor temperature below (°F, default ${OUTDOOR_COLD_F})` },
 ];

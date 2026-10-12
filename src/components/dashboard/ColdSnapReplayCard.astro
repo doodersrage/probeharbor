@@ -1,0 +1,72 @@
+---
+import type { ColdSnapReplay } from "../../lib/coldSnapReplay";
+
+/**
+ * History → Chart: the most recent stretch below the freeze line, replayed
+ * step by step with the alerts that went out, so you can see how much warning
+ * you got and which spot runs coldest.
+ */
+interface Props {
+  replay: ColdSnapReplay;
+  thresholdF: number;
+  timeZone: string;
+}
+
+const { replay, thresholdF, timeZone } = Astro.props;
+
+function formatAt(iso: string): string {
+  const date = new Date(iso);
+  try {
+    return new Intl.DateTimeFormat("en-US", { timeZone, weekday: "short", hour: "numeric", minute: "2-digit" }).format(date);
+  } catch {
+    return date.toISOString().slice(0, 16).replace("T", " ");
+  }
+}
+
+function formatHours(hours: number): string {
+  if (hours < 1) return `${Math.max(1, Math.round(hours * 60))} min`;
+  return `${hours.toFixed(1)} h`;
+}
+
+const toneClass: Record<string, string> = {
+  cold: "text-[var(--color-info,var(--color-text))]",
+  alert: "text-[var(--color-warning)]",
+  ok: "text-[var(--color-success)]",
+  info: "text-[var(--color-text-muted)]",
+};
+const toneLabel: Record<string, string> = { cold: "Cold", alert: "Alert", ok: "Recovered", info: "Note" };
+---
+<section class="card" aria-labelledby="cold-snap-replay-title">
+  <h2 class="card-title" id="cold-snap-replay-title">Last cold snap in this window</h2>
+  <p class="card-subtitle mb-4">
+    {replay.probeLabel} was at or below {thresholdF}°F {replay.endAt ? "" : "and still is, "}starting {formatAt(replay.startAt)}.
+  </p>
+  <div class="stat-grid mb-4">
+    <article class="stat-item">
+      <span class="stat-label">Lowest</span>
+      <p class="stat-value">{replay.lowestF.toFixed(1)}°F</p>
+    </article>
+    <article class="stat-item">
+      <span class="stat-label">Time at or below {thresholdF}°F</span>
+      <p class="stat-value">{formatHours(replay.hoursBelow)}</p>
+    </article>
+    <article class="stat-item">
+      <span class="stat-label">Lowest to recovered</span>
+      <p class="stat-value">{replay.recoveryHours != null ? formatHours(replay.recoveryHours) : "Not yet"}</p>
+    </article>
+  </div>
+  <ol class="space-y-2 mb-0" aria-label="Cold snap timeline">
+    {replay.steps.map((step) => (
+      <li class="flex flex-wrap gap-x-3 text-sm">
+        <time class="tabular-nums text-[var(--color-text-muted)] min-w-[7.5rem]" datetime={step.at}>{formatAt(step.at)}</time>
+        <span class={`font-medium ${toneClass[step.tone]}`}>{toneLabel[step.tone]}</span>
+        <span class="flex-1 min-w-0">{step.text}</span>
+      </li>
+    ))}
+  </ol>
+  {replay.otherLows.length > 0 && (
+    <p class="form-hint mt-4 mb-0">
+      Other probes over the same stretch: {replay.otherLows.map((o) => `${o.probeLabel} ${o.lowestF.toFixed(1)}°F`).join(", ")}.
+    </p>
+  )}
+</section>

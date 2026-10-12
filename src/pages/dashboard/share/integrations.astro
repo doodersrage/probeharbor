@@ -5,6 +5,8 @@ import { formatHouseholdActivityAction } from "../../../lib/householdActivityLab
 import GrafanaWizard from "../../../components/GrafanaWizard.astro";
 import WebhookDeliveryLog from "../../../components/WebhookDeliveryLog.astro";
 import HaSetupCard from "../../../components/HaSetupCard.astro";
+import HaDiagnosticsCard from "../../../components/HaDiagnosticsCard.astro";
+import { listHouseholdDevices } from "../../../lib/devices";
 import LanSensorSetupCard from "../../../components/LanSensorSetupCard.astro";
 import NodeRedSetupCard from "../../../components/NodeRedSetupCard.astro";
 import ZapierSetupCard from "../../../components/ZapierSetupCard.astro";
@@ -24,7 +26,9 @@ const {
   inboundToken,
   notice,
   noticeIsError,
+  household,
 } = ctx;
+const haDevices = household.householdId ? (await listHouseholdDevices(household.householdId)).devices : [];
 ---
 <DashboardLayout title="Share" subtitle="Grafana, Home Assistant, Zapier, and webhook delivery.">
   <ShareNav active="integrations">
@@ -60,6 +64,8 @@ const {
           inboundToken ? `${siteUrl}/api/inbound/${inboundToken}` : null
         }
       />
+
+      <HaDiagnosticsCard devices={haDevices} />
 
       <LanSensorSetupCard />
 

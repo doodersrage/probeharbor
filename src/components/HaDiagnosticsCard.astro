@@ -1,0 +1,72 @@
+---
+import type { DeviceWithSensors } from "../lib/devices";
+import { readIngestClient } from "../lib/ingestClient";
+import { formatRelativeAge } from "../lib/relativeTime";
+import { HACS_REPO_URL } from "../lib/homeAssistantIntegration";
+
+/**
+ * Share → Integrations: is Home Assistant actually feeding us? Lists devices
+ * whose pushes came from Home Assistant (HACS push service or rest_command),
+ * with when it last pushed and which HA version. Only what the server saw.
+ */
+interface Props {
+  devices: DeviceWithSensors[];
+}
+
+const { devices } = Astro.props;
+const fed = devices
+  .map((device) => ({ device, client: readIngestClient(device.meta?.ingest_client) }))
+  .filter((row): row is { device: DeviceWithSensors; client: NonNullable<typeof row.client> } => row.client !== null)
+  .sort((a, b) => Date.parse(b.device.last_seen_at ?? "") - Date.parse(a.device.last_seen_at ?? ""));
+---
+<section class="card" aria-labelledby="ha-diagnostics-title">
+  <h2 class="card-title" id="ha-diagnostics-title">Home Assistant diagnostics</h2>
+  {fed.length === 0 ? (
+    <p class="mb-0">
+      No device has received readings from Home Assistant yet. After installing the
+      <a class="text-link" href={HACS_REPO_URL} target="_blank" rel="noreferrer">HACS integration</a>, add a device's
+      ingest key in the integration's options and call the <code>thermaltrace.push</code> service from an automation;
+      the device shows up here after its first push. (Reading data into Home Assistant through a share link isn't
+      tracked here.)
+    </p>
+  ) : (
+    <>
+      <p class="card-subtitle mb-3">Devices fed by Home Assistant, newest first. "Stale" means no push in over 2 hours.</p>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <caption class="sr-only">Devices receiving readings from Home Assistant</caption>
+          <thead>
+            <tr class="text-left">
+              <th scope="col" class="py-2 pr-3">Device</th>
+              <th scope="col" class="py-2 pr-3">Sensors</th>
+              <th scope="col" class="py-2 pr-3">Last push</th>
+              <th scope="col" class="py-2 pr-3">Home Assistant</th>
+            </tr>
+          </thead>
+          <tbody>
+            {fed.map(({ device, client }) => {
+              const age = formatRelativeAge(device.last_seen_at);
+              return (
+                <tr>
+                  <td class="py-2 pr-3">
+                    <a class="text-link" href={`/dashboard/devices?focus_device=${device.id}`}>{device.name}</a>
+                  </td>
+                  <td class="py-2 pr-3">{device.sensors.length}</td>
+                  <td class="py-2 pr-3">
+                    {age.label}
+                    {age.stale && <span class="text-[var(--color-warning)]"> · Stale</span>}
+                  </td>
+                  <td class="py-2 pr-3">{client.version ?? "version unknown"}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+      <p class="form-hint mt-3 mb-0">
+        A stale device usually means the automation calling <code>thermaltrace.push</code> stopped firing, or
+        Home Assistant itself is offline. The outage alert covers the second case.
+      </p>
+    </>
+  )}
+</section>

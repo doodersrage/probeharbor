@@ -1,0 +1,217 @@
+---
+import Layout from "../layouts/Layout.astro";
+import PageHeader from "../components/PageHeader.astro";
+import { getBreadcrumbSchema, resolvePageUrl, resolveSiteUrl } from "../lib/schemaMarkup";
+
+const title = "Sensor payload checker";
+const description =
+  "Paste the JSON your ESP32, Arduino, Node-RED flow, or script sends and see exactly which readings ProbeHarbor would store, before you point a live device at it.";
+
+const siteUrl = resolveSiteUrl(Astro.site);
+const pageUrl = resolvePageUrl(siteUrl, "/payload-checker");
+const schema = [
+  getBreadcrumbSchema(siteUrl, [
+    { name: "Home", path: "/" },
+    { name: title, path: "/payload-checker" },
+  ]),
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    name: title,
+    description,
+    url: pageUrl,
+    applicationCategory: "DeveloperApplication",
+    operatingSystem: "Any",
+    offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+  },
+].filter(Boolean) as Record<string, unknown>[];
+
+const examples = [
+  { id: "flat", label: "Flat keys", json: { temp1: 42.5, humidity1: 61, door1: false, battery: 87, rssi: -62 } },
+  { id: "classic", label: "Classic Arduino", json: { temp: { probe1: { c: 5.8, f: 42.4, h: 61 } } } },
+  {
+    id: "typed",
+    label: "Typed sensors",
+    json: { sensors: [{ key: "pipe", kind: "temperature", value: 38.2, label: "Garage pipe" }, { key: "leak1", kind: "flood", bool: false }] },
+  },
+];
+---
+<Layout title={title} description={description} schema={schema}>
+  <div class="page-shell page-stack">
+    <PageHeader
+      kicker="Tool"
+      title="Will ProbeHarbor understand my sensor?"
+      lede="Paste the JSON your device sends. You'll see each reading it becomes, the sensor type it's filed under, and anything that would be skipped or misread. Nothing is saved, and you don't need an account."
+    >
+      <a slot="actions" class="btn-secondary" href="/docs/api">Ingest API docs</a>
+      <a slot="actions" class="btn-ghost" href="/hardware">Which hardware works?</a>
+    </PageHeader>
+
+    <section class="card" aria-labelledby="payload-input-title">
+      <h2 class="card-title" id="payload-input-title">Your payload</h2>
+      <p class="form-hint mb-3">
+        Try an example:
+        {examples.map((example) => (
+          <button type="button" class="btn-ghost text-sm" data-example={JSON.stringify(example.json, null, 2)}>
+            {example.label}
+          </button>
+        ))}
+      </p>
+      <form id="payload-form">
+        <label class="form-label" for="payload-input">JSON body</label>
+        <textarea
+          id="payload-input"
+          class="form-input font-mono text-sm"
+          rows="10"
+          spellcheck="false"
+          autocomplete="off"
+        >{JSON.stringify(examples[0]!.json, null, 2)}</textarea>
+        <p class="mt-3 mb-0">
+          <button type="submit" class="btn-primary">Check payload</button>
+        </p>
+      </form>
+    </section>
+
+    <section class="card" aria-live="polite" aria-labelledby="payload-result-title" id="payload-result" hidden>
+      <h2 class="card-title" id="payload-result-title">Result</h2>
+      <p id="payload-verdict" class="mb-3"></p>
+      <ul id="payload-warnings" class="mb-3 space-y-2"></ul>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm" id="payload-table">
+          <caption class="sr-only">Readings this payload would store</caption>
+          <thead>
+            <tr class="text-left">
+              <th scope="col" class="py-2 pr-3">Key</th>
+              <th scope="col" class="py-2 pr-3">Stored as</th>
+              <th scope="col" class="py-2 pr-3">Type</th>
+              <th scope="col" class="py-2 pr-3">Value</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <p id="payload-device" class="form-hint mt-3 mb-0"></p>
+    </section>
+
+    <section class="card">
+      <h2 class="card-title">When it looks right</h2>
+      <p class="mb-0">
+        Create a device in the dashboard to get an ingest key, then POST the same body to
+        <code>/api/ingest/_</code> with an <code>X-Ingest-Key</code> header. The readings appear on the Devices tab
+        within seconds. No code at all? The <a class="text-link" href="/flash">web flasher</a> puts working firmware
+        on an ESP32 from your browser.
+      </p>
+    </section>
+  </div>
+</Layout>
+
+<script>
+  type Reading = {
+    key: string;
+    label: string;
+    kind: string;
+    unit: string | null;
+    value_num: number | null;
+    value_bool: boolean | null;
+    value_text: string | null;
+  };
+  type CheckResult = {
+    accepted: boolean;
+    readings: Reading[];
+    device: { batteryPct: number | null; rssi: number | null; firmwareVersion: string | null };
+    warnings: string[];
+    ignoredKeys: string[];
+  };
+
+  const form = document.getElementById("payload-form") as HTMLFormElement | null;
+  const input = document.getElementById("payload-input") as HTMLTextAreaElement | null;
+  const panel = document.getElementById("payload-result");
+  const verdict = document.getElementById("payload-verdict");
+  const warningList = document.getElementById("payload-warnings");
+  const tbody = document.querySelector("#payload-table tbody");
+  const table = document.getElementById("payload-table");
+  const deviceLine = document.getElementById("payload-device");
+
+  function cell(row: HTMLTableRowElement, text: string) {
+    const td = document.createElement("td");
+    td.className = "py-2 pr-3";
+    td.textContent = text;
+    row.appendChild(td);
+  }
+
+  function formatValue(reading: Reading): string {
+    if (reading.value_bool != null) return String(reading.value_bool);
+    if (reading.value_num != null) return `${reading.value_num}${reading.unit ? ` ${reading.unit}` : ""}`;
+    return reading.value_text ?? "—";
+  }
+
+  function show(message: string, warnings: string[], result?: CheckResult) {
+    if (!panel || !verdict || !warningList || !tbody || !table || !deviceLine) return;
+    panel.hidden = false;
+    verdict.textContent = message;
+    warningList.replaceChildren(
+      ...warnings.map((text) => {
+        const li = document.createElement("li");
+        li.textContent = `⚠ ${text}`;
+        return li;
+      }),
+    );
+    tbody.replaceChildren();
+    table.hidden = !result || result.readings.length === 0;
+    for (const reading of result?.readings ?? []) {
+      const row = document.createElement("tr");
+      cell(row, reading.key);
+      cell(row, reading.label);
+      cell(row, reading.kind);
+      cell(row, formatValue(reading));
+      tbody.appendChild(row);
+    }
+    const parts: string[] = [];
+    if (result?.device.batteryPct != null) parts.push(`battery ${result.device.batteryPct}%`);
+    if (result?.device.rssi != null) parts.push(`signal ${result.device.rssi} dBm`);
+    if (result?.device.firmwareVersion) parts.push(`firmware ${result.device.firmwareVersion}`);
+    if (result && result.ignoredKeys.length > 0) parts.push(`ignored: ${result.ignoredKeys.join(", ")}`);
+    deviceLine.textContent = parts.length > 0 ? `Device fields: ${parts.join(" · ")}` : "";
+  }
+
+  document.querySelectorAll<HTMLButtonElement>("[data-example]").forEach((button) => {
+    button.addEventListener("click", () => {
+      if (input) input.value = button.dataset.example ?? "";
+      form?.requestSubmit();
+    });
+  });
+
+  form?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const text = input?.value ?? "";
+    try {
+      JSON.parse(text);
+    } catch (error) {
+      show("That isn't valid JSON yet.", [error instanceof Error ? error.message : "Check quotes, commas, and brackets."]);
+      return;
+    }
+    try {
+      const response = await fetch("/api/payload-check", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: text,
+      });
+      const body = (await response.json()) as { error?: string } & Partial<CheckResult>;
+      if (!response.ok) {
+        show("Couldn't check that payload.", [body.error ?? `HTTP ${response.status}`]);
+        return;
+      }
+      const result = body as CheckResult;
+      const count = result.readings.length;
+      show(
+        result.accepted
+          ? `Accepted: ${count} reading${count === 1 ? "" : "s"} would be stored${result.warnings.length ? ", with notes below" : ""}.`
+          : "Rejected: the endpoint would answer 400.",
+        result.warnings,
+        result,
+      );
+    } catch {
+      show("Couldn't reach the checker. Try again in a moment.", []);
+    }
+  });
+</script>

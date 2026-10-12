@@ -53,7 +53,14 @@ const { initialRules = [] } = Astro.props;
             <input class="form-input flex-1" data-field="name" value="${(rule.name || "").replace(/"/g, "&quot;")}" placeholder="Rule name" />
             <button type="button" class="btn-secondary text-sm" data-remove-rule>Delete rule</button>
           </div>
-          <p class="text-sm text-[var(--color-text-muted)] mb-2">All of:</p>
+          <label class="text-sm text-[var(--color-text-muted)] mb-2 flex items-center gap-2">
+            <span>Fire when</span>
+            <select data-field="match" class="form-input" style="max-width:9rem">
+              <option value="all" ${rule.match !== "any" ? "selected" : ""}>all of</option>
+              <option value="any" ${rule.match === "any" ? "selected" : ""}>any of</option>
+            </select>
+            <span>these are true:</span>
+          </label>
           <div data-conditions>${conditionsHtml}</div>
           <button type="button" class="btn-secondary text-sm" data-add-cond>Add condition</button>
         `;
@@ -63,6 +70,10 @@ const { initialRules = [] } = Astro.props;
         });
         wrap.querySelector('[data-field="enabled"]')?.addEventListener("change", (e) => {
           rules[ruleIndex].enabled = e.target.checked;
+          syncRulesHidden();
+        });
+        wrap.querySelector('[data-field="match"]')?.addEventListener("change", (e) => {
+          rules[ruleIndex].match = e.target.value === "any" ? "any" : "all";
           syncRulesHidden();
         });
         wrap.querySelector('[data-field="name"]')?.addEventListener("input", (e) => {

@@ -704,6 +704,18 @@ export async function maybeSendRuleAlerts(
   if (isAlertCooldownActive(settings.lastRuleAlertAt)) return;
 
   const ctx = await buildRuleContext(settings, devices, readings, householdId);
+  // Weather costs an API call, so only look it up when a live rule needs it.
+  const needsOutdoor = settings.alertRules.some(
+    (rule) => rule.enabled && rule.all?.some((condition) => condition.type === "outdoor_below"),
+  );
+  if (needsOutdoor) {
+    try {
+      const snapshot = await fetchWeatherSnapshotForConfig(await getWeatherConfigForUser(userId));
+      ctx.outdoorTempF = snapshot && Number.isFinite(snapshot.temp) ? snapshot.temp : null;
+    } catch {
+      ctx.outdoorTempF = null;
+    }
+  }
   const messages = evaluateAlertRules(settings.alertRules, ctx);
   if (messages.length === 0) return;
 

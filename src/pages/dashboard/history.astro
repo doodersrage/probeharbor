@@ -29,6 +29,8 @@ import { getIndoorReferenceSensorId, findReferenceSensorLabel } from "../../lib/
 import { fetchHouseChartOverlay } from "../../lib/houseContext";
 import { listConnectionsForHousehold } from "../../lib/thermostatConnections";
 import { computeDailyFreezeHours, computeFreezeHours } from "../../lib/freezeHours";
+import { buildColdSnapReplay } from "../../lib/coldSnapReplay";
+import ColdSnapReplayCard from "../../components/dashboard/ColdSnapReplayCard.astro";
 import FreezeHoursChart from "../../components/FreezeHoursChart";
 import ProbeSpreadChart from "../../components/ProbeSpreadChart";
 import { buildProbeSpreadSeries } from "../../lib/probeSpread";
@@ -286,6 +288,8 @@ const indoorOutdoorSeries = outdoorDelta
   ? buildIndoorOutdoorSeries(chartData.points, outdoorDelta.outdoorF)
   : [];
 const freezeHours = computeFreezeHours(chartData.points, alertSettings.freezeThresholdF);
+const coldSnapReplay =
+  historyTab === "chart" ? buildColdSnapReplay(chartData.points, alertSettings.freezeThresholdF, alertEvents) : null;
 const dailyFreezeHours = computeDailyFreezeHours(
   chartData.points,
   alertSettings.freezeThresholdF,
@@ -510,6 +514,14 @@ const historyUpgradeFeature =
           highlightAlertId={highlightAlertId}
           canUseClaimsPack={entitlements.canUseClaimsPack}
         />
+
+        {coldSnapReplay && (
+          <ColdSnapReplayCard
+            replay={coldSnapReplay}
+            thresholdF={alertSettings.freezeThresholdF}
+            timeZone={alertSettings.quietHoursTimezone}
+          />
+        )}
 
         {historyTab === "chart" && showHistoryCompare && (
           <details class="card">
