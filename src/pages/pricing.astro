@@ -289,13 +289,13 @@ const schema = [
                 <form action="/api/stripe/checkout" method="post" class="checkout-form">
                   <input type="hidden" name="plan" value="member" />
                   <input type="hidden" name="interval" value={defaultInterval} data-interval-input />
-                  <button class="btn-primary" type="submit">Upgrade to Member</button>
+                  <button class="btn-secondary" type="submit">Upgrade to Member</button>
                 </form>
               ) : (
                 <p>Included in your plan</p>
               )
             ) : (
-              <a class="btn-primary" href="/signin?next=/pricing">Sign in to subscribe</a>
+              <a class="btn-secondary" href="/signin?next=/pricing">Sign in to subscribe</a>
             )}
           </div>
         </article>
@@ -421,15 +421,15 @@ const schema = [
                 <form action="/api/stripe/checkout" method="post" class="checkout-form">
                   <input type="hidden" name="plan" value="portfolio" />
                   <input type="hidden" name="interval" value={defaultInterval} data-interval-input />
-                  <button class="btn-primary" type="submit">Upgrade to Portfolio</button>
+                  <button class="btn-secondary" type="submit">Upgrade to Portfolio</button>
                 </form>
               ) : (
-                <a class="btn-primary" href="/contact">Contact us about Portfolio</a>
+                <a class="btn-secondary" href="/contact">Contact us about Portfolio</a>
               )
             ) : portfolioPricingConfigured ? (
-              <a class="btn-primary" href="/signin?next=/pricing">Sign in to subscribe</a>
+              <a class="btn-secondary" href="/signin?next=/pricing">Sign in to subscribe</a>
             ) : (
-              <a class="btn-primary" href="/contact">Contact us about Portfolio</a>
+              <a class="btn-secondary" href="/contact">Contact us about Portfolio</a>
             )}
           </div>
         </article>
@@ -458,7 +458,7 @@ const schema = [
           Keep MQTT on your LAN; use ProbeHarbor for household freeze and leak SMS, history, and off-site alerts.
         </p>
         <div class="flex flex-wrap gap-3">
-          <a class="btn-primary" href="/integrations">All integrations</a>
+          <a class="btn-secondary" href="/integrations">All integrations</a>
           <a class="btn-secondary" href="/integrations/home-assistant">HACS install guide</a>
           <a class="btn-secondary" href="/about/thermostat-oauth">Nest / Ecobee</a>
           <a class="btn-ghost" href="/docs/api">HTTP API</a>

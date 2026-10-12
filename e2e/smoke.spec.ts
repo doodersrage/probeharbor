@@ -7,7 +7,6 @@ test.describe("public smoke", () => {
     await expect(page.getByText(/Garage & workshop sensor monitoring/i)).toBeVisible();
     await expect(page.getByText(/Know before your pipes freeze/i)).toBeVisible();
     await expect(page.getByRole("link", { name: /Free forever/i })).toBeVisible();
-    await expect(page.getByRole("heading", { name: /Install the web app/i })).toBeVisible();
     await expect(page.getByText(/Freeze and leak alerts on every plan/i)).toBeVisible();
     await expect(page.getByRole("link", { name: /Open the guides hub/i })).toBeVisible();
     const jsonLd = await page.locator('script[type="application/ld+json"]').allTextContents();

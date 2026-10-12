@@ -1372,6 +1372,18 @@
     font-size: 0.8125rem;
   }
 
+  .home-steps-parts {
+    margin: 0;
+    font-size: 0.95rem;
+    color: var(--color-text-muted);
+  }
+
+  .home-guides-row {
+    font-size: 0.95rem;
+    color: var(--color-text-muted);
+    line-height: 1.8;
+  }
+
   .home-steps-actions {
     display: flex;
     flex-wrap: wrap;
@@ -1491,7 +1503,8 @@
 
   @media (min-width: 768px) {
     .home-features {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      /* Four cards: a 2×2 grid, not three plus an orphan. */
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 1.25rem;
     }
   }
