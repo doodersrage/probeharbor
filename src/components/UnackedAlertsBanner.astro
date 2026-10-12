@@ -2,12 +2,14 @@
 /** Handling alerts lives in Overview's Quick actions; this banner only links out. */
 interface Props {
   count: number;
+  /** Inside the Overview status card: a plain row instead of a warning box. */
+  embedded?: boolean;
 }
 
-const { count } = Astro.props;
+const { count, embedded = false } = Astro.props;
 ---
 <div
-  class:list={["alert-warning mb-4", count <= 0 && "hidden"]}
+  class:list={[embedded ? "garage-risk-row" : "alert-warning mb-4", count <= 0 && "hidden"]}
   role="status"
   data-unacked-banner
   data-unacked-count={String(count)}

@@ -13,6 +13,8 @@ export type GarageRiskLevel = "ok" | "watch" | "risk" | "offline";
 
 export type GarageRiskStatus = {
   level: GarageRiskLevel;
+  /** Set when the status itself is about stale probes, so pages can skip a duplicate stale notice. */
+  reason?: "stale";
   title: string;
   detail: string;
   actionLabel: string;
@@ -70,6 +72,7 @@ export function computeGarageRiskStatus(input: {
   if (input.staleSensorCount > 0) {
     return {
       level: "watch",
+      reason: "stale",
       title: "Probe may be unplugged",
       detail: staleProbeDetail(input.staleSensorCount),
       actionLabel: "Check devices",

@@ -44,6 +44,8 @@ interface Props {
   housePoints?: Point[];
   houseLegend?: string | null;
   title?: string;
+  /** The surrounding card already shows a title; keep this one for screen readers only. */
+  hideTitle?: boolean;
   /** Freeze / low alert line from account settings (°F). */
   freezeThresholdF?: number | null;
   /** Optional default high-temp warning (°F); user can override in the chart. */
@@ -126,6 +128,7 @@ export default function HistoryChart({
   housePoints = [],
   houseLegend = "House",
   title = "Temperature trend (last 7 days)",
+  hideTitle = false,
   freezeThresholdF = null,
   defaultHighTempF = null,
   defaultTargetAmbientF = null,
@@ -908,7 +911,7 @@ export default function HistoryChart({
         {...expandedChartDialogAttrs(expanded, title)}
       >
       <div class="history-chart-header">
-        <p class="history-chart-title">{title}</p>
+        <p class={hideTitle ? "sr-only" : "history-chart-title"}>{title}</p>
         {/* biome-ignore lint/a11y/useSemanticElements: button toolbar; <fieldset> would add form semantics and default borders */}
         <div class="history-chart-zoom" role="group" aria-label="Chart controls">
           <button
@@ -1052,12 +1055,6 @@ export default function HistoryChart({
         <p class="m-0 mb-2 text-xs text-[var(--color-text-muted)]">
           Loaded window is about{" "}
           {Math.max(1, Math.round((domain.maxTs - domain.minTs) / 36e5))}h.
-          {!guest && domain.maxTs - domain.minTs < 30 * 24 * 60 * 60 * 1000 - 36e5 && (
-            <>
-              {" "}
-              <a class="text-link" href="/dashboard/history">Open History</a> for 30-day views.
-            </>
-          )}
         </p>
       )}
       {(probeLabels.length > 0 || housePoints.length >= 2) && (
@@ -1103,7 +1100,8 @@ export default function HistoryChart({
           <span style={{ color: DEW_COLOR }}>dew point °F</span> (dashed)
         </p>
       )}
-      <p class="m-0 mb-2 text-xs text-[var(--color-text-muted)]">
+      <details class="history-chart-tips m-0 mb-2 text-xs text-[var(--color-text-muted)]">
+        <summary>Chart tips</summary>
         {expanded
           ? "Expanded view — drag to select a range, scroll to zoom, Esc or Close to exit."
           : "Drag to select a range (Shift+drag when zoomed), scroll to zoom, Link to copy this window, PNG to save."}
@@ -1112,7 +1110,7 @@ export default function HistoryChart({
           : ""}{" "}
         Trace turns <span style={{ color: COLOR_BELOW }}>cool</span> at/below freeze
         and <span style={{ color: COLOR_ABOVE }}>warm</span> at/above the high line.
-      </p>
+      </details>
       <div
         class="history-chart-canvas-wrap"
         onPointerLeave={() => {

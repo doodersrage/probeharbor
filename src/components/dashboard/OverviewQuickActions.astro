@@ -6,6 +6,8 @@ interface Props {
   spaceCheckedAt: string | null;
   householdId?: string | null;
   deviceSpaces?: string[];
+  /** Inside the Overview status card: no card chrome or heading of its own. */
+  embedded?: boolean;
 }
 
 const {
@@ -15,6 +17,7 @@ const {
   spaceCheckedAt,
   householdId = null,
   deviceSpaces = [],
+  embedded = false,
 } = Astro.props;
 const snoozeActive =
   snoozeUntil != null && Number.isFinite(Date.parse(snoozeUntil))
@@ -25,7 +28,7 @@ const spaces = deviceSpaces.filter(Boolean);
 
 {canEdit && (
   <section
-    class="card overview-quick-actions"
+    class:list={[!embedded && "card", "overview-quick-actions"]}
     aria-labelledby="overview-quick-actions-title"
     data-overview-quick-actions
     data-unacked={String(unackedCount)}
@@ -88,12 +91,16 @@ const spaces = deviceSpaces.filter(Boolean);
       </details>
     ) : (
       <>
-        <div class="overview-quick-actions-head">
-          <h2 class="card-title mb-0" id="overview-quick-actions-title">Quick actions</h2>
-          <p class="card-subtitle mb-0">
-            Acknowledge, snooze alerts, or mark that you checked a space.
-          </p>
-        </div>
+        {embedded ? (
+          <h3 class="sr-only" id="overview-quick-actions-title">Quick actions</h3>
+        ) : (
+          <div class="overview-quick-actions-head">
+            <h2 class="card-title mb-0" id="overview-quick-actions-title">Quick actions</h2>
+            <p class="card-subtitle mb-0">
+              Acknowledge, snooze alerts, or mark that you checked a space.
+            </p>
+          </div>
+        )}
         <p class="alert-success mt-0 mb-3 hidden" data-qa-status role="status"></p>
         <p class="alert-warning mt-0 mb-3 hidden" data-qa-error role="alert"></p>
         <div class="overview-quick-actions-row" data-qa-row>

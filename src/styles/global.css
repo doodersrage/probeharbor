@@ -2830,6 +2830,22 @@
     background: var(--color-danger-bg);
   }
 
+  /* A line inside the Overview status card (unhandled alerts, stale probes), not a separate banner. */
+  .garage-risk-row {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+  }
+
+  .garage-risk-row strong {
+    color: var(--color-warning, var(--color-text));
+  }
+
+  .history-chart-tips summary {
+    cursor: pointer;
+    width: fit-content;
+  }
+
   /* Wide tables scroll inside their card on phones instead of widening the page. */
   .table-wrap {
     /* Containing block for absolutely positioned children (e.g. sr-only labels), so they're clipped too. */

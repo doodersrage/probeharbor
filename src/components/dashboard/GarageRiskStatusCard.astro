@@ -61,6 +61,11 @@ const probeStale = coldestProbe ? formatRelativeAge(coldestProbe.recordedAt).sta
   >
     {status.actionLabel}
   </a>
+  {Astro.slots.has("default") && (
+    <div class="garage-risk-extras">
+      <slot />
+    </div>
+  )}
 </section>
 
 <style>
@@ -103,5 +108,17 @@ const probeStale = coldestProbe ? formatRelativeAge(coldestProbe.recordedAt).sta
   }
   .garage-risk-title {
     margin-bottom: 0.35rem;
+  }
+  /* Alerts, quick actions, and stale-probe notes that belong to this status, below a divider. */
+  .garage-risk-extras {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 1.25rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-border);
+  }
+  .garage-risk-extras:not(:has(> :not([hidden]))) {
+    display: none;
   }
 </style>
