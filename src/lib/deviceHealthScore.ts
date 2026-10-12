@@ -3,6 +3,7 @@ import type { LatestSensorRow } from "./sensorReadings";
 import { STALE_MS } from "./relativeTime";
 import { parseBatteryHistory } from "./batterySparkline";
 import { estimateBatteryDaysRemaining } from "./batteryTrend";
+import type { StuckSensor } from "./stuckSensors";
 
 export type DeviceHealthLabel = "healthy" | "watch" | "at_risk" | "offline";
 
@@ -31,6 +32,7 @@ export function scoreDeviceHealth(
   latest: LatestSensorRow[] = [],
   nowMs = Date.now(),
   rssiThreshold = -80,
+  stuck: StuckSensor[] = [],
 ): DeviceHealthScore {
   const batteryPct = readMetaNumber(device.meta, "battery_pct");
   const rssi = readMetaNumber(device.meta, "rssi");
@@ -96,6 +98,19 @@ export function scoreDeviceHealth(
       score: 45,
       label: "watch",
       detail: "Probe data stale, check power/Wi‑Fi",
+      batteryPct,
+      rssi,
+      daysRemaining,
+    };
+  }
+
+  // Fresh timestamps with a frozen value: reporting, but not telling you anything.
+  const stuckSensor = stuck.find((s) => device.sensors.some((sensor) => sensor.id === s.sensorId));
+  if (stuckSensor) {
+    return {
+      score: 40,
+      label: "watch",
+      detail: stuckSensor.detail,
       batteryPct,
       rssi,
       daysRemaining,

@@ -34,7 +34,9 @@ export type NotifyKind =
   | "flood"
   | "rule"
   | "battery"
-  | "rssi";
+  | "rssi"
+  | "stuck"
+  | "recovery";
 
 export type ChannelSeverityMap = Partial<Record<NotifyKind, AlertChannelName[]>>;
 
@@ -65,6 +67,8 @@ const NOTIFY_KINDS = new Set<NotifyKind>([
   "rule",
   "battery",
   "rssi",
+  "stuck",
+  "recovery",
 ]);
 
 export function parseChannelSeverity(raw: unknown): ChannelSeverityMap {

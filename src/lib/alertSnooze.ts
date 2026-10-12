@@ -11,6 +11,8 @@ const SNOOZE_BLOCKED: NotifyKind[] = [
   "rule",
   "battery",
   "rssi",
+  "stuck",
+  "recovery",
 ];
 
 /**

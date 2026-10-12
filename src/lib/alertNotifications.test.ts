@@ -13,7 +13,7 @@ vi.mock("./notify", () => ({
 }));
 
 const mockListRecentAlertEvents = vi.fn();
-const mockAutoResolveAlerts = vi.fn().mockResolvedValue(0);
+const mockAutoResolveAlerts = vi.fn().mockResolvedValue({ resolved: 0, channels: [] });
 vi.mock("./alertEvents", () => ({
   listRecentAlertEvents: (...args: unknown[]) => mockListRecentAlertEvents(...args),
   autoResolveAlerts: (...args: unknown[]) => mockAutoResolveAlerts(...args),
@@ -373,10 +373,52 @@ describe("alerts close themselves when the condition clears", () => {
     expect(mockAutoResolveAlerts).not.toHaveBeenCalled();
   });
 
+  it("tells people once, on the channels the alert reached", async () => {
+    mockAutoResolveAlerts.mockResolvedValueOnce({ resolved: 2, channels: ["email", "push"] });
+    const { sendThresholdAlertsIfNeeded } = await import("./alertNotifications");
+    await sendThresholdAlertsIfNeeded("user-1", "a@example.com", settings, [{ label: "Garage", tempf: 40, humidity: 40 }]);
+    const recovery = mockNotifyUser.mock.calls.find((call) => call[3]?.kind === "recovery");
+    expect(recovery?.[3]).toMatchObject({ title: "Recovered: temperatures are back to normal" });
+    expect(recovery?.[3].body).toContain("Garage 40.0°F (freeze line 32°F)");
+    expect(recovery?.[4]).toEqual({ channelFilter: ["email", "push"] });
+  });
+
+  it("sends nothing when no alert was open", async () => {
+    mockAutoResolveAlerts.mockResolvedValueOnce({ resolved: 0, channels: [] });
+    const { sendThresholdAlertsIfNeeded } = await import("./alertNotifications");
+    await sendThresholdAlertsIfNeeded("user-1", "a@example.com", settings, [{ label: "Garage", tempf: 40, humidity: 40 }]);
+    expect(mockNotifyUser).not.toHaveBeenCalled();
+  });
+
   it("closes flood alerts when nothing is wet", async () => {
     mockAutoResolveAlerts.mockClear();
     const { sendFloodAlertsIfNeeded } = await import("./alertNotifications");
     await sendFloodAlertsIfNeeded("user-1", "a@example.com", settings, []);
     expect(mockAutoResolveAlerts).toHaveBeenCalledWith("user-1", { kinds: ["flood"], reason: "recovered" });
+  });
+});
+
+describe("stuck probe alerts", () => {
+  const settings = { ...DEFAULT_ALERT_SETTINGS, enabled: true };
+  const stuck = [{ sensorId: "s1", label: "Crawlspace", message: "Crawlspace has reported exactly 41.0°F for 30 hours.", detail: "" }];
+
+  it("alerts on a stuck probe", async () => {
+    const { maybeSendStuckSensorAlerts } = await import("./alertNotifications");
+    await maybeSendStuckSensorAlerts("user-1", "a@example.com", settings, stuck);
+    expect(mockNotifyUser.mock.calls[0]?.[3]).toMatchObject({ kind: "stuck", title: "Check Crawlspace: readings look stuck" });
+  });
+
+  it("waits a day before repeating", async () => {
+    mockListRecentAlertEvents.mockResolvedValue([{ kind: "stuck", created_at: new Date(Date.now() - 3600_000).toISOString() }]);
+    const { maybeSendStuckSensorAlerts } = await import("./alertNotifications");
+    await maybeSendStuckSensorAlerts("user-1", "a@example.com", settings, stuck);
+    expect(mockNotifyUser).not.toHaveBeenCalled();
+  });
+
+  it("closes the alert once readings move again", async () => {
+    mockAutoResolveAlerts.mockClear();
+    const { maybeSendStuckSensorAlerts } = await import("./alertNotifications");
+    await maybeSendStuckSensorAlerts("user-1", "a@example.com", settings, []);
+    expect(mockAutoResolveAlerts).toHaveBeenCalledWith("user-1", { kinds: ["stuck"], reason: "recovered" });
   });
 });

@@ -12,6 +12,7 @@ import {
 } from "../../lib/deviceHealthScore";
 import ReadingAgeBadge from "./ReadingAgeBadge.astro";
 import { findWarmBoardSensors } from "../../lib/sensorPlacement";
+import type { StuckSensor } from "../../lib/stuckSensors";
 
 /**
  * Devices tab: device health table, latest sensor values grid, and pull-feed
@@ -21,9 +22,12 @@ interface Props {
   devices: DeviceWithSensors[];
   latest: LatestSensorRow[];
   feedHealth: { statuses: FeedHealthStatus[]; error: string | null };
+  /** Probes whose readings stopped changing (see stuckSensors.ts). */
+  stuck?: StuckSensor[];
 }
 
-const { devices, latest, feedHealth } = Astro.props;
+const { devices, latest, feedHealth, stuck = [] } = Astro.props;
+const scoreHealth = (device: DeviceWithSensors) => scoreDeviceHealth(device, latest, Date.now(), -80, stuck);
 
 const kindLabels = SENSOR_KIND_LABELS;
 const warmSensors = findWarmBoardSensors(latest);
@@ -75,8 +79,8 @@ const healthLabels: Record<string, string> = {
 };
 
 const rankedDevices = [...devices].sort((a, b) => {
-  const ha = scoreDeviceHealth(a, latest);
-  const hb = scoreDeviceHealth(b, latest);
+  const ha = scoreHealth(a);
+  const hb = scoreHealth(b);
   const rankDiff = (healthRank[ha.label] ?? 9) - (healthRank[hb.label] ?? 9);
   if (rankDiff !== 0) return rankDiff;
   if (ha.score !== hb.score) return ha.score - hb.score;
@@ -85,7 +89,7 @@ const rankedDevices = [...devices].sort((a, b) => {
 
 // Columns that are empty for every device just add width; hide them.
 const showEtaColumn = rankedDevices.some(
-  (device) => scoreDeviceHealth(device, latest).daysRemaining != null,
+  (device) => scoreHealth(device).daysRemaining != null,
 );
 const showRssiColumn = rankedDevices.some((device) => formatDeviceRssi(device.meta) !== "—");
 ---
@@ -114,7 +118,7 @@ const showRssiColumn = rankedDevices.some((device) => formatDeviceRssi(device.me
           const rssi = formatDeviceRssi(device.meta);
           const sparkPath = batterySparklinePath(parseBatteryHistory(device.meta));
           const pullHealth = feedHealth.statuses.find((f) => f.feedId === device.id);
-          const health = scoreDeviceHealth(device, latest);
+          const health = scoreHealth(device);
           return (
             <article class="rounded-lg border border-[var(--color-border)] p-3 text-sm">
               <div class="flex flex-wrap items-baseline justify-between gap-2">
@@ -177,7 +181,7 @@ const showRssiColumn = rankedDevices.some((device) => formatDeviceRssi(device.me
             const rssi = formatDeviceRssi(device.meta);
             const sparkPath = batterySparklinePath(parseBatteryHistory(device.meta));
             const pullHealth = feedHealth.statuses.find((f) => f.feedId === device.id);
-            const health = scoreDeviceHealth(device, latest);
+            const health = scoreHealth(device);
             return (
               <tr class="border-t border-[var(--color-border)]">
                 <td class="py-2 pr-3">

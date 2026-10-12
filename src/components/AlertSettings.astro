@@ -789,7 +789,7 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
         <p class="form-hint mb-3">Leave empty to use global channel checkboxes. Otherwise only selected channels fire for that kind.</p>
         <input type="hidden" name="channel_severity_json" id="channel_severity_json" value={JSON.stringify(settings.channelSeverity ?? {})} />
         <div class="space-y-3" id="severity-routing">
-          {(["threshold", "flood", "forecast", "rate", "outage", "rule", "battery", "rssi"] as const).map((kind) => {
+          {(["threshold", "flood", "forecast", "rate", "outage", "rule", "battery", "rssi", "stuck", "recovery"] as const).map((kind) => {
             const selected = settings.channelSeverity?.[kind] ?? [];
             return (
               <div class="form-field mb-0">

@@ -18,7 +18,7 @@ vi.mock("./supabase", () => ({
     from: () => ({
       select: (...args: unknown[]) => {
         calls.push({ op: "select", args });
-        return chain({ data: [{ id: 7, meta: { probeLabel: "Garage" } }], error: null });
+        return chain({ data: [{ id: 7, meta: { probeLabel: "Garage" }, channels_sent: ["email", "push"] }], error: null });
       },
       update: (values: Record<string, unknown>) => {
         const u: { values: Record<string, unknown>; id?: unknown } = { values };
@@ -38,8 +38,8 @@ vi.mock("./supabase", () => ({
 describe("autoResolveAlerts", () => {
   it("closes only open, delivered alerts of the given kinds, keeping their details", async () => {
     const { autoResolveAlerts } = await import("./alertEvents");
-    const n = await autoResolveAlerts("user-1", { kinds: ["threshold"], reason: "recovered" });
-    expect(n).toBe(1);
+    const result = await autoResolveAlerts("user-1", { kinds: ["threshold"], reason: "recovered" });
+    expect(result).toEqual({ resolved: 1, channels: ["email", "push"] });
     expect(calls).toContainEqual({ op: "is", args: ["acknowledged_at", null] });
     expect(calls).toContainEqual({ op: "in", args: ["kind", ["threshold"]] });
     expect(updates[0]?.id).toBe(7);

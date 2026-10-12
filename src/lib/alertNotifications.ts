@@ -13,21 +13,58 @@ import {
   evaluateRssiHealth,
   isAlertCooldownActive,
   type AlertReading,
+  type AlertChannelName,
   type AlertSettings,
   type FloodAlertReading,
 } from "./alerts";
-import { autoResolveAlerts, listRecentAlertEvents } from "./alertEvents";
+import { autoResolveAlerts, listRecentAlertEvents, type AutoResolveResult } from "./alertEvents";
 
 const RECOVERY_MARGIN_F = 2;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 /** Closing alerts must never get in the way of sending them. */
-async function safeAutoResolve(...args: Parameters<typeof autoResolveAlerts>): Promise<void> {
+async function safeAutoResolve(...args: Parameters<typeof autoResolveAlerts>): Promise<AutoResolveResult> {
   try {
-    await autoResolveAlerts(...args);
+    return await autoResolveAlerts(...args);
   } catch (error) {
     console.error("auto-resolve alerts failed:", error);
+    return { resolved: 0, channels: [] };
   }
+}
+
+/**
+ * Close recovered alerts and say so once, on the channels the alert itself
+ * reached (no SMS for an alert that only went by email). Nothing is sent
+ * when nothing was open, so this is quiet on every later reading.
+ */
+async function resolveAndAnnounceRecovery(
+  userId: string,
+  email: string | null | undefined,
+  settings: AlertSettings,
+  kind: "threshold" | "flood" | "outage" | "stuck",
+  notice: { title: string; body: string },
+): Promise<void> {
+  const { resolved, channels } = await safeAutoResolve(userId, { kinds: [kind], reason: "recovered" });
+  if (resolved === 0 || channels.length === 0) return;
+  try {
+    await notifyUser(
+      userId,
+      email,
+      settings,
+      { ...notice, kind: "recovery", meta: { recoveredKind: kind } },
+      { channelFilter: channels as AlertChannelName[] },
+    );
+  } catch (error) {
+    console.error("recovery notice failed:", error);
+  }
+}
+
+/** "Back to normal: Garage pipe 38.2°F, Attic 41.0°F (freeze line 32°F). …" */
+export function formatFreezeRecoveryBody(settings: AlertSettings, readings: AlertReading[]): string {
+  const closed = "The alert is closed; nothing to do.";
+  if (readings.length === 0) return `Back to normal. ${closed}`;
+  const temps = readings.map((reading) => `${reading.label} ${reading.tempf.toFixed(1)}°F`).join(", ");
+  return `Back to normal: ${temps} (freeze line ${settings.freezeThresholdF}°F). ${closed}`;
 }
 import { freezeThresholdForReading, readingIncludedInThresholdAlerts } from "./thresholdSensorScope";
 import { evaluateAlertRules, type RuleEvalContext } from "./alertRules";
@@ -70,6 +107,7 @@ import { buildSiteUrl } from "./siteUrl";
 import { computeDoorOpenSessions } from "./doorDuration";
 import { persistDoorSessions } from "./doorEvents";
 import { createAdminClient } from "./supabase";
+import type { StuckSensor } from "./stuckSensors";
 import { getUserEntitlements } from "./entitlements";
 import { buildFreezeAlertContext } from "./alertContext";
 import {
@@ -194,12 +232,18 @@ export async function sendThresholdAlertsIfNeeded(
   const details = evaluateAlertDetails(settings, readings, { dwellSamplesBySensorId });
   const messages = details.map(formatThresholdAlertDetail);
   const title = thresholdAlertTitle(details);
+  const inScope = readings.filter((reading) =>
+    readingIncludedInThresholdAlerts(settings.thresholdSensorScope, reading),
+  );
   const recovered =
     details.length === 0 &&
-    readings
-      .filter((reading) => readingIncludedInThresholdAlerts(settings.thresholdSensorScope, reading))
-      .every((reading) => reading.tempf >= freezeThresholdForReading(settings, reading) + RECOVERY_MARGIN_F);
-  if (recovered) await safeAutoResolve(userId, { kinds: ["threshold"], reason: "recovered" });
+    inScope.every((reading) => reading.tempf >= freezeThresholdForReading(settings, reading) + RECOVERY_MARGIN_F);
+  if (recovered) {
+    await resolveAndAnnounceRecovery(userId, email, settings, "threshold", {
+      title: "Recovered: temperatures are back to normal",
+      body: formatFreezeRecoveryBody(settings, inScope),
+    });
+  }
   if (messages.length > 0 && settings.escalationEnabled && settings.channelSms) {
     const lastAlert = settings.lastAlertSentAt
       ? Date.parse(settings.lastAlertSentAt)
@@ -297,7 +341,10 @@ export async function sendFloodAlertsIfNeeded(
   wetSensors: FloodAlertReading[],
 ): Promise<void> {
   if (settings.enabled && wetSensors.length === 0) {
-    await safeAutoResolve(userId, { kinds: ["flood"], reason: "recovered" });
+    await resolveAndAnnounceRecovery(userId, email, settings, "flood", {
+      title: "Recovered: leak sensors are dry",
+      body: "No leak sensor reads wet anymore. The alert is closed; check the spot once to be sure.",
+    });
   }
   if (!settings.enabled || wetSensors.length === 0) return;
   if (isAlertCooldownActive(settings.lastFloodAlertAt)) return;
@@ -689,7 +736,10 @@ export async function maybeSendRateAndOutageAlerts(
   }
 
   if (outageMessages.length === 0 && stillOutCount === 0) {
-    await safeAutoResolve(userId, { kinds: ["outage"], reason: "recovered" });
+    await resolveAndAnnounceRecovery(userId, email, settings, "outage", {
+      title: "Recovered: devices are reporting again",
+      body: "Every device has checked in again. The outage alert is closed.",
+    });
   }
 
   if (outageMessages.length > 0 && !isAlertCooldownActive(settings.lastOutageAlertAt)) {
@@ -739,14 +789,49 @@ export async function maybeSendRateAndOutageAlerts(
   );
 }
 
+/** One stuck-probe alert a day at most; it stays open until the readings move again. */
+const STUCK_ALERT_COOLDOWN_MS = DAY_MS;
+
+export async function maybeSendStuckSensorAlerts(
+  userId: string,
+  email: string | null | undefined,
+  settings: AlertSettings,
+  stuck: StuckSensor[],
+): Promise<void> {
+  if (!settings.enabled) return;
+  if (stuck.length === 0) {
+    await resolveAndAnnounceRecovery(userId, email, settings, "stuck", {
+      title: "Recovered: probe readings are changing again",
+      body: "The probe that looked stuck is reporting changing temperatures again. The alert is closed.",
+    });
+    return;
+  }
+  const events = await listRecentAlertEvents(userId, 50).catch(() => []);
+  const recentlySent = events.some(
+    (event) => event.kind === "stuck" && Date.now() - Date.parse(event.created_at) < STUCK_ALERT_COOLDOWN_MS,
+  );
+  if (recentlySent) return;
+
+  const title =
+    stuck.length === 1 ? `Check ${stuck[0]!.label}: readings look stuck` : `Check ${stuck.length} probes: readings look stuck`;
+  await notifyUser(userId, email, settings, {
+    title,
+    body: stuck.map((sensor) => sensor.message).join("\n"),
+    kind: "stuck",
+    meta: { probeLabel: stuck[0]!.label },
+  });
+}
+
 export async function maybeSendDeviceHealthAlerts(
   userId: string,
   email: string | null | undefined,
   devices: DeviceWithSensors[],
   settings: AlertSettings,
   siteBaseUrl?: string,
+  stuck?: StuckSensor[],
 ): Promise<void> {
   if (!settings.enabled) return;
+  if (stuck) await maybeSendStuckSensorAlerts(userId, email, settings, stuck);
 
   const health = deviceHealthFromDevices(devices);
   const base = siteBaseUrl ?? buildSiteUrl();

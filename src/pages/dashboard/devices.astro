@@ -20,6 +20,7 @@ import { fetchThermostatContextWithStatus } from "../../lib/thermostatCorrelatio
 import { listConfiguredThermostatProviders } from "../../lib/thermostatOAuth";
 import { getUserEntitlements } from "../../lib/entitlements";
 import { fetchLatestSensorValues } from "../../lib/sensorReadings";
+import { findStuckSensors } from "../../lib/stuckSensors";
 import { latestFromShell } from "../../lib/dashboardShell";
 import UpgradeNudge from "../../components/UpgradeNudge.astro";
 import { renderIngestQrSvg } from "../../lib/qrSvg";
@@ -113,6 +114,8 @@ const latest = shellLatest
   : household.householdId
     ? await fetchLatestSensorValues(household.householdId)
     : [];
+// Never let a slow or failed check hold up the Devices page.
+const stuckSensors = await findStuckSensors(devices).catch(() => []);
 
 const ingestKey = peekSecretFlash(Astro.cookies, FLASH_INGEST_KEY);
 const tabParam = Astro.url.searchParams.get("tab");
@@ -345,7 +348,7 @@ const redirectTo =
     />
 
     {devicesView === "ops" && showPowerFeatures && !showDeviceWizard && (
-      <DeviceHealthPanel devices={devices} latest={latest} feedHealth={feedHealth} />
+      <DeviceHealthPanel devices={devices} latest={latest} feedHealth={feedHealth} stuck={stuckSensors} />
     )}
 
 

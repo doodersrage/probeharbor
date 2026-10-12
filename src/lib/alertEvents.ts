@@ -15,6 +15,8 @@ export type AlertEventMeta = {
   reasonSummary?: string;
   /** Closed by the system because the condition cleared (or aged out), not by a person. */
   autoResolved?: "recovered" | "expired";
+  /** On a recovery notice: the kind of alert that cleared. */
+  recoveredKind?: string;
 };
 
 export type AlertEventRow = {
@@ -184,14 +186,20 @@ export async function acknowledgeAllUnackedAlerts(
  * means "needs attention now" instead of growing forever. Marks them handled
  * with meta.autoResolved so the Alerts page can say "Recovered".
  */
+export type AutoResolveResult = {
+  resolved: number;
+  /** Channels the closed alerts reached, so a recovery notice goes to the same places. */
+  channels: string[];
+};
+
 export async function autoResolveAlerts(
   userId: string,
   options: { kinds?: string[]; olderThanMs?: number; reason?: "recovered" | "expired" } = {},
-): Promise<number> {
+): Promise<AutoResolveResult> {
   const supabase = createServerClient();
   let query = supabase
     .from("alert_events")
-    .select("id, meta")
+    .select("id, meta, channels_sent")
     .eq("user_id", userId)
     .is("acknowledged_at", null)
     .not("channels_sent", "eq", "{}")
@@ -202,20 +210,23 @@ export async function autoResolveAlerts(
     query = query.lt("created_at", new Date(Date.now() - options.olderThanMs).toISOString());
   }
   const { data, error } = await query;
-  if (error || !data?.length) return 0;
+  if (error || !data?.length) return { resolved: 0, channels: [] };
 
   const resolvedAt = new Date().toISOString();
   let resolved = 0;
-  for (const row of data as Array<{ id: number; meta: unknown }>) {
+  const channels = new Set<string>();
+  for (const row of data as Array<{ id: number; meta: unknown; channels_sent?: string[] | null }>) {
     const meta = parseAlertEventMeta(row.meta);
     const { error: updateError } = await supabase
       .from("alert_events")
       .update({ acknowledged_at: resolvedAt, meta: { ...meta, autoResolved: options.reason ?? "recovered" } })
       .eq("id", row.id)
       .is("acknowledged_at", null);
-    if (!updateError) resolved += 1;
+    if (updateError) continue;
+    resolved += 1;
+    for (const channel of row.channels_sent ?? []) channels.add(channel);
   }
-  return resolved;
+  return { resolved, channels: [...channels] };
 }
 
 export async function listRecentAlertEventsFiltered(
@@ -362,10 +373,10 @@ export async function hasDeliveredAnyAlert(userId: string): Promise<boolean> {
 
 /**
  * Sends that inform rather than demand action: test alerts, digests and
- * reports, freeze drills, and playbook follow-ups (the original event is
- * the one to acknowledge). They never count as "unhandled".
+ * reports, freeze drills, playbook follow-ups (the original event is
+ * the one to acknowledge), and "back to normal" recovery notices. They never count as "unhandled".
  */
-export const INFORMATIONAL_ALERT_KINDS = ["generic", "digest"] as const;
+export const INFORMATIONAL_ALERT_KINDS = ["generic", "digest", "recovery"] as const;
 const INFORMATIONAL_KIND_FILTER = `(${INFORMATIONAL_ALERT_KINDS.join(",")})`;
 
 export function isActionableAlertKind(kind: string): boolean {

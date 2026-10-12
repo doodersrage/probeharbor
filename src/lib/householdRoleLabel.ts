@@ -9,6 +9,8 @@ export function householdRoleLabel(role: string | null | undefined): string {
       return "Viewer";
     case "alert_only":
       return "Alert only";
+    case "property_manager":
+      return "Property manager";
     default:
       return role ? role.replace(/_/g, " ") : "";
   }

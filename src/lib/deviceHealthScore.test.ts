@@ -25,6 +25,15 @@ describe("deviceHealthScore", () => {
     expect(health.score).toBeGreaterThan(80);
   });
 
+  it("watches a reporting device whose probe reading is stuck", () => {
+    const sensor = { id: "s1", device_id: "d1", key: "temp1", label: "Crawlspace", kind: "temperature" as const, unit: null, visible: true, sort_order: 0, offset_num: 0 };
+    const health = scoreDeviceHealth(device({ id: "d1", name: "Probe", sensors: [sensor] }), [], Date.now(), -80, [
+      { sensorId: "s1", label: "Crawlspace", message: "", detail: "Crawlspace stuck at 41.0°F for 30 hours" },
+    ]);
+    expect(health.label).toBe("watch");
+    expect(health.detail).toBe("Crawlspace stuck at 41.0°F for 30 hours");
+  });
+
   it("flags disabled devices offline", () => {
     const health = scoreDeviceHealth(
       device({ id: "d1", name: "Probe", enabled: false }),

@@ -13,6 +13,7 @@ import {
 } from "./alertNotifications";
 import { getAlertSettingsForUser } from "./notify";
 import { collectThermostatSnapshotsForAllHouseholds } from "./thermostatSnapshots";
+import { findStuckSensors } from "./stuckSensors";
 
 export type FeedHealthStatus = {
   feedId: string;
@@ -151,6 +152,9 @@ export async function collectHistoryForAllUsers(): Promise<{
         sendAlerts: false,
       });
 
+      // Once per household, not per member: it's a handful of queries per probe.
+      const stuck = await findStuckSensors(config.devices).catch(() => undefined);
+
       const members = await listHouseholdMembers(config.householdId || householdId);
       for (const member of members.members) {
         // Isolate each member so one failure can't skip the rest of the household.
@@ -184,6 +188,8 @@ export async function collectHistoryForAllUsers(): Promise<{
             memberUser?.email,
             config.devices,
             settings,
+            undefined,
+            stuck,
           );
           usersProcessed += 1;
         } catch (memberError) {

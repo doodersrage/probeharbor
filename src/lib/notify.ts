@@ -81,10 +81,14 @@ function alertEmailEyebrow(kind?: NotifyKind): string {
       return "Rate of change";
     case "rssi":
       return "Signal";
+    case "stuck":
+      return "Sensor check";
     case "rule":
       return "Rule";
     case "threshold":
       return "Freeze / threshold";
+    case "recovery":
+      return "All clear";
     default:
       return "Alert";
   }
@@ -624,7 +628,7 @@ export async function notifyUser(
     : null;
   const routedSet = routedChannels ? new Set(routedChannels) : null;
   const baseUrl = buildSiteUrl();
-  const ackUrl = await buildUserAckUrl(baseUrl, userId);
+  const ackUrl = kind === "recovery" ? null : await buildUserAckUrl(baseUrl, userId);
   const footerLines: string[] = [];
   if (options?.snoozeUrl) footerLines.push(`Snooze 24h: ${options.snoozeUrl}`);
   if (ackUrl) footerLines.push(`Mark as handled: ${ackUrl}`);
