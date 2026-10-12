@@ -22,7 +22,9 @@ export type ProductEvent =
   | "demo_pull_started"
   | "mfa_enrolled"
   | "account_deleted"
-  | "portfolio_view";
+  | "portfolio_view"
+  | "flasher_settings_sent"
+  | "flasher_first_reading";
 
 export function trackProductEvent(
   name: ProductEvent,

@@ -87,6 +87,7 @@ const { deviceKey = "", headingLevel: Heading = "h2" } = Astro.props;
 <script>
   // The pre-bundled build: the package source imports @material/web internals that newer releases no longer export.
   import "esp-web-tools/dist/web/install-button.js";
+  import { trackProductEvent } from "../lib/productAnalytics";
 
   type SerialPortLike = {
     open(options: { baudRate: number }): Promise<void>;
@@ -183,6 +184,8 @@ const { deviceKey = "", headingLevel: Heading = "h2" } = Astro.props;
             if (line === "TT key saved") {
               acknowledged = true;
               status.textContent = "Settings received. Joining Wi‑Fi…";
+              // Funnel: device created → settings on the board → first reading.
+              trackProductEvent("flasher_settings_sent");
             } else if (line === "TT wifi ok") {
               status.textContent = "On Wi‑Fi. Sending the first reading…";
             } else if (line.startsWith("TT sensor: ")) {
@@ -205,6 +208,7 @@ const { deviceKey = "", headingLevel: Heading = "h2" } = Astro.props;
 
         writer.releaseLock();
         if (outcome === "ok") {
+          trackProductEvent("flasher_first_reading", sensorName ? { sensor: sensorName } : undefined);
           status.textContent = sensorName
             ? `First reading delivered from your ${sensorName}, with humidity. It's live: you can unplug it and mount it.`
             : "First reading delivered. The probe is live: you can unplug it and mount it.";

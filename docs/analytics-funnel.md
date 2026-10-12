@@ -9,6 +9,8 @@ Product events are sent client-side via `gtag` when `GA_MEASUREMENT_ID` is set a
 | `demo_pull_started` | Example pull feed quick-start completes |
 | `pull_setup_saved` | Pull feeds + probes saved |
 | `device_created` | Push device created (flash key callout) |
+| `flasher_settings_sent` | Web flasher: the board acknowledged Wi‑Fi + device key |
+| `flasher_first_reading` | Web flasher: first reading delivered (`sensor` = DHT22/DHT11/I2C name when detected) |
 | `first_ingest` | First live reading on Devices or Overview |
 | `sensors_renamed` | Inline push sensor rename batch saved |
 | `onboarding_step_complete` | Overview milestones (`devices`, `sensors`, `history`, `alerts`, `alert_test`) |
