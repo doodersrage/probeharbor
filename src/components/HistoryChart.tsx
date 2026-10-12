@@ -1183,6 +1183,9 @@ export default function HistoryChart({
       <p class="sr-only" aria-live="polite">
         {hoverLive}
       </p>
+      {/* Display-only guide lines (saved in this browser), folded so the chart stays the focus. */}
+      <details class="history-chart-tips m-0 mt-2 text-xs text-[var(--color-text-muted)]">
+      <summary>Chart options: guide lines{showHumidity && humidityPoints.length >= 2 ? ", humidity" : ""}</summary>
       <form
         class="chart-threshold-controls"
         onSubmit={(e) => e.preventDefault()}
@@ -1233,6 +1236,7 @@ export default function HistoryChart({
           </p>
         )}
       </form>
+      </details>
       </div>
     </>
   );

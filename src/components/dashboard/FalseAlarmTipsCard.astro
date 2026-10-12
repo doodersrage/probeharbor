@@ -1,5 +1,4 @@
 ---
-import DashboardCard from "./DashboardCard.astro";
 import { FALSE_ALARM_TIPS, FLOOD_FALSE_ALARM_TIPS } from "../../lib/falseAlarmHints";
 
 interface Props {
@@ -9,9 +8,10 @@ interface Props {
 const { show = true } = Astro.props;
 if (!show) return null;
 ---
-<DashboardCard id="false-alarm-tips">
-  <h2 class="card-title">Cutting false alarms</h2>
-  <p class="card-subtitle mb-3">
+{/* Reference material: folded so the alert list stays the focus of the page. */}
+<details class="card" id="false-alarm-tips">
+  <summary class="card-title cursor-pointer">Getting too many alerts? Tips for cutting false alarms</summary>
+  <p class="card-subtitle mt-3 mb-3">
     Freeze noise is usually placement or threshold. Flood noise is splash, condensation, or sump cycles: wet contacts still fire during snooze.
   </p>
   <h3 class="text-sm font-semibold mb-2">Freeze</h3>
@@ -38,4 +38,4 @@ if (!show) return null;
       </li>
     ))}
   </ul>
-</DashboardCard>
+</details>
