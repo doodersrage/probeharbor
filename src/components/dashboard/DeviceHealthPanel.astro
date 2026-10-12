@@ -11,6 +11,7 @@ import {
   scoreDeviceHealth,
 } from "../../lib/deviceHealthScore";
 import ReadingAgeBadge from "./ReadingAgeBadge.astro";
+import { findWarmBoardSensors } from "../../lib/sensorPlacement";
 
 /**
  * Devices tab: device health table, latest sensor values grid, and pull-feed
@@ -25,6 +26,7 @@ interface Props {
 const { devices, latest, feedHealth } = Astro.props;
 
 const kindLabels = SENSOR_KIND_LABELS;
+const warmSensors = findWarmBoardSensors(latest);
 
 function formatDeviceBattery(meta: unknown): string {
   if (!meta || typeof meta !== "object" || Array.isArray(meta)) return "—";
@@ -92,6 +94,12 @@ const showRssiColumn = rankedDevices.some((device) => formatDeviceRssi(device.me
   <p class="card-subtitle mb-4">
     Health score, last seen, battery ETA, and optional RSSI from ingest payloads. Worst first.
   </p>
+  {warmSensors.map((hint) => (
+    <p class="alert-warning mt-0 mb-4 text-sm" role="note">
+      <strong>{hint.label}</strong> reads {hint.gapF}°F warmer than your other probes. If that sensor sits right next to
+      its board, move it a few inches away on its wires: ESP32 boards run warm and skew the reading.
+    </p>
+  ))}
   {rankedDevices.length === 0 ? (
     <p class="mb-0 text-sm text-[var(--color-text-muted)]">
       Health appears after you create a device.

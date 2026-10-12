@@ -102,6 +102,20 @@ const householdActivity =
   manageId && canManage
     ? await listHouseholdActivity(manageId, 15)
     : [];
+// Consecutive identical entries ("Alert settings saved: alerts on" ×15) show once with a count.
+const activityGroups = householdActivity.reduce<Array<{ row: (typeof householdActivity)[number]; count: number; oldest: string }>>(
+  (groups, row) => {
+    const last = groups[groups.length - 1];
+    if (last && last.row.action === row.action && (last.row.detail ?? "") === (row.detail ?? "")) {
+      last.count += 1;
+      last.oldest = row.created_at;
+    } else {
+      groups.push({ row, count: 1, oldest: row.created_at });
+    }
+    return groups;
+  },
+  [],
+);
 const myMembership = membersWithEmail.find((m) => m.user_id === user.id);
 const digestOptInRow =
   active.householdId && active.householdId !== manageId
@@ -122,6 +136,7 @@ const digestError = Astro.url.searchParams.get("digest_error");
   subtitle="Share devices and history. Invite by email — recipients don’t need an account yet."
 >
   <div class="space-y-6">
+    {/* People first (members, invites); property settings after; activity last. */}
     {(notice || errorMessage || digestSaved || digestError) && (
       <div class="dashboard-flash">
         {notice && <p class="alert-success mt-0 mb-0">{notice}</p>}
@@ -135,51 +150,165 @@ const digestError = Astro.url.searchParams.get("digest_error");
       </div>
     )}
 
-    {active.householdId && (
+    {householdsResult.households.length > 1 && (
       <DashboardCard>
-        <h2 class="card-title">Weekly digest</h2>
-        <p class="card-subtitle mb-4">
-          When the property owner has digests enabled, opt in to receive the same weekly probe summary.
-        </p>
-        <form action="/api/user/digest-opt-in" method="post" class="flex flex-wrap items-center gap-3">
-          <input type="hidden" name="redirect" value="/dashboard/household" />
-          <input type="hidden" name="digest_opt_in" value="0" />
-          <label class="checkbox-row mb-0">
-            <input type="checkbox" name="digest_opt_in" value="1" checked={digestOptIn} />
-            <span>Email me the weekly household digest</span>
-          </label>
-          <button type="submit" class="btn-secondary btn-sm">Save</button>
-        </form>
+        <h2 class="card-title">Active household</h2>
+        <p class="card-subtitle">Choose which household’s devices and history you see.</p>
+        <ul class="space-y-3">
+          {householdsResult.households.map((h) => (
+            <li class="flex items-center justify-between gap-4">
+              <div>
+                <strong>{h.name}</strong>
+                <span class="text-sm text-[var(--color-text-muted)]">
+                  {" · "}
+                  {householdRoleLabel(h.role)}
+                </span>
+                {h.household_id === active.householdId && (
+                  <span class="feed-health-ok ml-2">Active</span>
+                )}
+              </div>
+              {h.household_id !== active.householdId && (
+                <form action="/api/household" method="post">
+                  <input type="hidden" name="action" value="switch" />
+                  <input type="hidden" name="household_id" value={h.household_id} />
+                  <input type="hidden" name="redirect" value="/dashboard/household" />
+                  <button class="btn-secondary" type="submit">Switch</button>
+                </form>
+              )}
+            </li>
+          ))}
+        </ul>
       </DashboardCard>
     )}
 
     <DashboardCard>
-    {canCreateProperty ? (
-    <form action="/api/household" method="post">
-      <input type="hidden" name="action" value="create_property" />
-      <input type="hidden" name="redirect" value="/dashboard/household" />
-      <h2 class="card-title">Add another property</h2>
-      <p class="card-subtitle mb-4">
-        Create a second household (vacation home, rental, etc.) and switch between them from the dashboard.
-      </p>
-      <div class="form-field">
-        <label class="form-label" for="property-name">Property name</label>
-        <input class="form-input" id="property-name" name="name" placeholder="Lake house" required />
-      </div>
-      <button class="btn-secondary mt-2" type="submit">Create property</button>
-    </form>
-    ) : (
-      <>
-        <h2 class="card-title">Add another property</h2>
-        <p class="card-subtitle mb-4">
-          Your plan allows {entitlements.maxOwnedHouseholds} owned
-          {entitlements.maxOwnedHouseholds === 1 ? " household" : " households"}
-          ({ownedCount} in use). Upgrade to Pro for multiple properties.
-        </p>
-        <UpgradeNudge feature="multi_property" tier={entitlements.tier} />
-      </>
-    )}
+      <h2 class="card-title">Members</h2>
+      <ul class="space-y-3">
+        {membersWithEmail.map((member) => (
+          <li class="flex items-center justify-between gap-4">
+            <div>
+              <strong>{member.email}</strong>
+              <span class="text-sm text-[var(--color-text-muted)]">
+                {" · "}
+                {householdRoleLabel(member.role)}
+              </span>
+            </div>
+            {member.role !== "owner" && ownedId === manageId && (
+              <form
+                action="/api/household"
+                method="post"
+                onsubmit="return confirm('Remove this member from the household?');"
+              >
+                <input type="hidden" name="action" value="remove" />
+                <input type="hidden" name="user_id" value={member.user_id} />
+                <input type="hidden" name="redirect" value="/dashboard/household" />
+                <button class="btn-ghost" type="submit">Remove</button>
+              </form>
+            )}
+          </li>
+        ))}
+      </ul>
+      {canLeaveActive && active.householdId && (
+        <form
+          action="/api/household"
+          method="post"
+          class="mt-6 border-t border-[var(--color-border)] pt-4"
+          onsubmit="return confirm('Leave this household? You will lose access to its shared devices and history.');"
+        >
+          <input type="hidden" name="action" value="leave" />
+          <input type="hidden" name="household_id" value={active.householdId} />
+          <input type="hidden" name="redirect" value="/dashboard/household" />
+          <p class="card-subtitle mb-3">
+            You are a member of this household. Leaving removes your access to its devices and history.
+          </p>
+          <button class="btn-ghost" type="submit">Leave household</button>
+        </form>
+      )}
     </DashboardCard>
+
+    {canManage ? (
+      <DashboardCard>
+        <form method="POST" id="household-invite-form" data-invite-form>
+          <input type="hidden" name="action" value="invite" />
+          <input type="hidden" name="redirect" value="/dashboard/household" />
+          <h2 class="card-title">Invite by email</h2>
+          <p class="card-subtitle mb-4">
+            Invites go to your owned household{householdRow.data?.name ? ` (${householdRow.data.name})` : ""}.
+          </p>
+          <p class="alert-success mt-0 mb-4 hidden" id="invite-status" role="status"></p>
+          <p class="alert-warning mt-0 mb-4 hidden" id="invite-error" role="alert"></p>
+          <div class="form-field">
+            <label class="form-label" for="email">Invitee email</label>
+            <input class="form-input" type="email" id="email" name="email" required />
+          </div>
+          <div class="form-field">
+            <label class="form-label" for="invite_role">Role</label>
+            <select class="form-input" id="invite_role" name="role">
+              <option value="member">Editor (can edit devices & alerts)</option>
+              {canInvitePropertyManager ? (
+                <option value="property_manager">Property manager (devices & alerts only)</option>
+              ) : null}
+              <option value="viewer">Viewer (read-only dashboard)</option>
+              <option value="alert_only">Alert only (notifications, read-only)</option>
+            </select>
+            {!canInvitePropertyManager && (
+              <p class="form-hint mb-0 mt-2">
+                <a class="text-link" href="/pricing#portfolio">Portfolio</a>
+                {" "}adds property-manager logins for on-site staff (no billing access).
+              </p>
+            )}
+          </div>
+          <button class="btn-primary" type="submit" id="invite-submit">Send invite link</button>
+        </form>
+      </DashboardCard>
+    ) : (
+      <DashboardCard>
+        <h2 class="card-title">Invites</h2>
+        <p class="mb-0 text-sm text-[var(--color-text-muted)]">
+          Only the household owner can send invites.
+        </p>
+      </DashboardCard>
+    )}
+
+    {canManage && (invitesResult.invites ?? []).length > 0 && (
+      <DashboardCard>
+        <h2 class="card-title">Pending invites</h2>
+        <ul class="space-y-3">
+          {invitesResult.invites.map((invite) => {
+            const href = `${siteOrigin}/invite/${invite.token}`;
+            return (
+              <li class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <strong>{invite.email}</strong>
+                  <p class="m-0 text-sm break-all text-[var(--color-text-muted)]">{href}</p>
+                  <p class="m-0 text-sm">Expires {new Date(invite.expires_at).toLocaleString()}</p>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    class="btn-secondary shrink-0"
+                    data-copy={href}
+                    data-copy-label="Copy link"
+                  >
+                    Copy link
+                  </button>
+                  <form
+                    action="/api/household"
+                    method="post"
+                    onsubmit="return confirm('Cancel this invite?');"
+                  >
+                    <input type="hidden" name="action" value="revoke_invite" />
+                    <input type="hidden" name="invite_id" value={invite.id} />
+                    <input type="hidden" name="redirect" value="/dashboard/household" />
+                    <button class="btn-ghost" type="submit">Cancel</button>
+                  </form>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      </DashboardCard>
+    )}
 
     {isOwner && (
       <DashboardCard>
@@ -200,6 +329,24 @@ const digestError = Astro.url.searchParams.get("digest_error");
             />
           </div>
           <button class="btn-secondary" type="submit" data-form-submit>Save name</button>
+        </form>
+      </DashboardCard>
+    )}
+
+    {active.householdId && (
+      <DashboardCard>
+        <h2 class="card-title">Weekly digest</h2>
+        <p class="card-subtitle mb-4">
+          When the property owner has digests enabled, opt in to receive the same weekly probe summary.
+        </p>
+        <form action="/api/user/digest-opt-in" method="post" class="flex flex-wrap items-center gap-3">
+          <input type="hidden" name="redirect" value="/dashboard/household" />
+          <input type="hidden" name="digest_opt_in" value="0" />
+          <label class="checkbox-row mb-0">
+            <input type="checkbox" name="digest_opt_in" value="1" checked={digestOptIn} />
+            <span>Email me the weekly household digest</span>
+          </label>
+          <button type="submit" class="btn-secondary btn-sm">Save</button>
         </form>
       </DashboardCard>
     )}
@@ -340,164 +487,32 @@ const digestError = Astro.url.searchParams.get("digest_error");
       </DashboardCard>
     )}
 
-    {householdsResult.households.length > 1 && (
-      <DashboardCard>
-        <h2 class="card-title">Active household</h2>
-        <p class="card-subtitle">Choose which household’s devices and history you see.</p>
-        <ul class="space-y-3">
-          {householdsResult.households.map((h) => (
-            <li class="flex items-center justify-between gap-4">
-              <div>
-                <strong>{h.name}</strong>
-                <span class="text-sm text-[var(--color-text-muted)]">
-                  {" · "}
-                  {householdRoleLabel(h.role)}
-                </span>
-                {h.household_id === active.householdId && (
-                  <span class="feed-health-ok ml-2">Active</span>
-                )}
-              </div>
-              {h.household_id !== active.householdId && (
-                <form action="/api/household" method="post">
-                  <input type="hidden" name="action" value="switch" />
-                  <input type="hidden" name="household_id" value={h.household_id} />
-                  <input type="hidden" name="redirect" value="/dashboard/household" />
-                  <button class="btn-secondary" type="submit">Switch</button>
-                </form>
-              )}
-            </li>
-          ))}
-        </ul>
-      </DashboardCard>
-    )}
-
-    {canManage ? (
-      <DashboardCard>
-        <form method="POST" id="household-invite-form" data-invite-form>
-          <input type="hidden" name="action" value="invite" />
-          <input type="hidden" name="redirect" value="/dashboard/household" />
-          <h2 class="card-title">Invite by email</h2>
-          <p class="card-subtitle mb-4">
-            Invites go to your owned household{householdRow.data?.name ? ` (${householdRow.data.name})` : ""}.
-          </p>
-          <p class="alert-success mt-0 mb-4 hidden" id="invite-status" role="status"></p>
-          <p class="alert-warning mt-0 mb-4 hidden" id="invite-error" role="alert"></p>
-          <div class="form-field">
-            <label class="form-label" for="email">Invitee email</label>
-            <input class="form-input" type="email" id="email" name="email" required />
-          </div>
-          <div class="form-field">
-            <label class="form-label" for="invite_role">Role</label>
-            <select class="form-input" id="invite_role" name="role">
-              <option value="member">Editor (can edit devices & alerts)</option>
-              {canInvitePropertyManager ? (
-                <option value="property_manager">Property manager (devices & alerts only)</option>
-              ) : null}
-              <option value="viewer">Viewer (read-only dashboard)</option>
-              <option value="alert_only">Alert only (notifications, read-only)</option>
-            </select>
-            {!canInvitePropertyManager && (
-              <p class="form-hint mb-0 mt-2">
-                <a class="text-link" href="/pricing#portfolio">Portfolio</a>
-                {" "}adds property-manager logins for on-site staff (no billing access).
-              </p>
-            )}
-          </div>
-          <button class="btn-primary" type="submit" id="invite-submit">Send invite link</button>
-        </form>
-      </DashboardCard>
-    ) : (
-      <DashboardCard>
-        <h2 class="card-title">Invites</h2>
-        <p class="mb-0 text-sm text-[var(--color-text-muted)]">
-          Only the household owner can send invites.
-        </p>
-      </DashboardCard>
-    )}
-
-    {canManage && (invitesResult.invites ?? []).length > 0 && (
-      <DashboardCard>
-        <h2 class="card-title">Pending invites</h2>
-        <ul class="space-y-3">
-          {invitesResult.invites.map((invite) => {
-            const href = `${siteOrigin}/invite/${invite.token}`;
-            return (
-              <li class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                  <strong>{invite.email}</strong>
-                  <p class="m-0 text-sm break-all text-[var(--color-text-muted)]">{href}</p>
-                  <p class="m-0 text-sm">Expires {new Date(invite.expires_at).toLocaleString()}</p>
-                </div>
-                <div class="flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    class="btn-secondary shrink-0"
-                    data-copy={href}
-                    data-copy-label="Copy link"
-                  >
-                    Copy link
-                  </button>
-                  <form
-                    action="/api/household"
-                    method="post"
-                    onsubmit="return confirm('Cancel this invite?');"
-                  >
-                    <input type="hidden" name="action" value="revoke_invite" />
-                    <input type="hidden" name="invite_id" value={invite.id} />
-                    <input type="hidden" name="redirect" value="/dashboard/household" />
-                    <button class="btn-ghost" type="submit">Cancel</button>
-                  </form>
-                </div>
-              </li>
-            );
-          })}
-        </ul>
-      </DashboardCard>
-    )}
-
     <DashboardCard>
-      <h2 class="card-title">Members</h2>
-      <ul class="space-y-3">
-        {membersWithEmail.map((member) => (
-          <li class="flex items-center justify-between gap-4">
-            <div>
-              <strong>{member.email}</strong>
-              <span class="text-sm text-[var(--color-text-muted)]">
-                {" · "}
-                {householdRoleLabel(member.role)}
-              </span>
-            </div>
-            {member.role !== "owner" && ownedId === manageId && (
-              <form
-                action="/api/household"
-                method="post"
-                onsubmit="return confirm('Remove this member from the household?');"
-              >
-                <input type="hidden" name="action" value="remove" />
-                <input type="hidden" name="user_id" value={member.user_id} />
-                <input type="hidden" name="redirect" value="/dashboard/household" />
-                <button class="btn-ghost" type="submit">Remove</button>
-              </form>
-            )}
-          </li>
-        ))}
-      </ul>
-      {canLeaveActive && active.householdId && (
-        <form
-          action="/api/household"
-          method="post"
-          class="mt-6 border-t border-[var(--color-border)] pt-4"
-          onsubmit="return confirm('Leave this household? You will lose access to its shared devices and history.');"
-        >
-          <input type="hidden" name="action" value="leave" />
-          <input type="hidden" name="household_id" value={active.householdId} />
-          <input type="hidden" name="redirect" value="/dashboard/household" />
-          <p class="card-subtitle mb-3">
-            You are a member of this household. Leaving removes your access to its devices and history.
-          </p>
-          <button class="btn-ghost" type="submit">Leave household</button>
-        </form>
-      )}
+    {canCreateProperty ? (
+    <form action="/api/household" method="post">
+      <input type="hidden" name="action" value="create_property" />
+      <input type="hidden" name="redirect" value="/dashboard/household" />
+      <h2 class="card-title">Add another property</h2>
+      <p class="card-subtitle mb-4">
+        Create a second household (vacation home, rental, etc.) and switch between them from the dashboard.
+      </p>
+      <div class="form-field">
+        <label class="form-label" for="property-name">Property name</label>
+        <input class="form-input" id="property-name" name="name" placeholder="Lake house" required />
+      </div>
+      <button class="btn-secondary mt-2" type="submit">Create property</button>
+    </form>
+    ) : (
+      <>
+        <h2 class="card-title">Add another property</h2>
+        <p class="card-subtitle mb-4">
+          Your plan allows {entitlements.maxOwnedHouseholds} owned
+          {entitlements.maxOwnedHouseholds === 1 ? " household" : " households"}
+          ({ownedCount} in use). Upgrade to Pro for multiple properties.
+        </p>
+        <UpgradeNudge feature="multi_property" tier={entitlements.tier} />
+      </>
+    )}
     </DashboardCard>
 
     {canManage && (
@@ -510,13 +525,15 @@ const digestError = Astro.url.searchParams.get("digest_error");
           <p class="text-sm text-[var(--color-text-muted)]">No activity yet.</p>
         ) : (
           <ul class="space-y-2 text-sm">
-            {householdActivity.map((row) => (
+            {activityGroups.map(({ row, count, oldest }) => (
               <li>
                 <strong>{formatHouseholdActivityAction(row.action)}</strong>
                 {row.detail ? `: ${row.detail}` : ""}
+                {count > 1 && <span> ×{count}</span>}
                 <span class="text-[var(--color-text-muted)]">
                   {" "}
                   · {new Date(row.created_at).toLocaleString()}
+                  {count > 1 && ` (back to ${new Date(oldest).toLocaleString()})`}
                 </span>
               </li>
             ))}

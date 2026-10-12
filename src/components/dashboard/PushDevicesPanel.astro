@@ -54,6 +54,14 @@ function deviceHasRecoverableKey(meta: unknown): boolean {
 function sensorNeedsRename(label: string): boolean {
   return /^Probe \d+$/.test(label.trim());
 }
+// Devices that haven't reported in 30+ days (or never, if created that long ago).
+const SILENT_MS = 30 * 24 * 60 * 60 * 1000;
+const silentIds = pushDevices
+  .filter((device) => {
+    const last = Date.parse(device.last_seen_at ?? "") || 0;
+    return last > 0 ? Date.now() - last > SILENT_MS : false;
+  })
+  .map((device) => device.id);
 ---
     <section
       class:list={["card", (activeTab !== "push" || (canEdit && pushDevices.length === 0 && devices.length === 0)) && "hidden"]}
@@ -132,6 +140,11 @@ function sensorNeedsRename(label: string): boolean {
               <input type="text" name="space" class="block mt-1" placeholder="Garage" />
             </label>
             <button type="button" class="btn-ghost btn-sm" id="bulk-select-all">Select all</button>
+            {silentIds.length > 0 && (
+              <button type="button" class="btn-ghost btn-sm" id="bulk-select-silent" data-ids={silentIds.join(",")}>
+                Select {silentIds.length} silent 30+ days
+              </button>
+            )}
             <button type="submit" class="btn-secondary btn-sm" id="bulk-apply-btn">Apply to selected</button>
           </div>
           <div class="bulk-devices-checks space-y-1">
@@ -153,6 +166,14 @@ function sensorNeedsRename(label: string): boolean {
           const form = document.getElementById("bulk-devices-form");
           const selectAll = document.getElementById("bulk-select-all");
           const opSelect = document.getElementById("bulk-op-select");
+          // Old test boards pile up: tick the ones that haven't reported in 30 days, then pick Delete.
+          document.getElementById("bulk-select-silent")?.addEventListener("click", (event) => {
+            const ids = new Set(((event.currentTarget as HTMLElement).dataset.ids ?? "").split(","));
+            form?.querySelectorAll(".bulk-device-id").forEach((el) => {
+              if (el instanceof HTMLInputElement) el.checked = ids.has(el.value);
+            });
+            if (opSelect instanceof HTMLSelectElement) opSelect.value = "delete";
+          });
           selectAll?.addEventListener("click", () => {
             form?.querySelectorAll(".bulk-device-id").forEach((el) => {
               if (el instanceof HTMLInputElement) el.checked = true;

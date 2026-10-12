@@ -93,7 +93,6 @@ import AlertMomentUpgradeCard from "../components/dashboard/AlertMomentUpgradeCa
 import { toChartAlertMarkers } from "../lib/chartAlertMarkers";
 import LowBatteryBanner from "../components/dashboard/LowBatteryBanner.astro";
 import DashboardMultiPropertyNudge from "../components/dashboard/DashboardMultiPropertyNudge.astro";
-import DashboardOverviewToggle from "../components/dashboard/DashboardOverviewToggle.astro";
 import AttentionNeededStrip from "../components/dashboard/AttentionNeededStrip.astro";
 import OverviewQuickActions from "../components/dashboard/OverviewQuickActions.astro";
 import { getDashboardOverviewMode } from "../lib/dashboardOverviewMode";
@@ -819,9 +818,7 @@ const onboardingProps = {
   subtitle="Is everything OK? Status, alerts to handle, and the temperature trend."
   liveLagging={staleSensorCount > 0 || (newestReading != null && lastAge.lagging)}
 >
-  {!firstRunFocus && !forceSimple && (
-    <DashboardOverviewToggle slot="topbar-actions" mode={overviewMode} />
-  )}
+
   <ProductAnalyticsTracker events={analyticsEvents} />
   <div class="dashboard-stack">
     <OverviewFlash
@@ -953,7 +950,7 @@ const onboardingProps = {
       </div>
     </AttentionNeededStrip>
 
-    <section class="dashboard-section" aria-label="Temperature trend">
+    <section class="dashboard-section" aria-label="Temperature trend" id="insights">
       <div class:list={["dashboard-insights", showInsights && "dashboard-insights--with-side"]}>
         <div class="dashboard-insights-primary">
           <DashboardWeekChart
@@ -1010,6 +1007,14 @@ const onboardingProps = {
           </aside>
         )}
       </div>
+      {!firstRunFocus && !forceSimple && (
+        <form action="/api/user/dashboard-overview-mode" method="post" class="m-0">
+          <input type="hidden" name="redirect" value="/dashboard#insights" />
+          <button type="submit" name="mode" value={showInsights ? "simple" : "insights"} class="btn-ghost btn-sm">
+            {showInsights ? "Hide insights" : "Show insights: freeze outlook, week over week, heating"}
+          </button>
+        </form>
+      )}
     </section>
 
     <section class="dashboard-section" id="status" aria-labelledby="status-heading">
