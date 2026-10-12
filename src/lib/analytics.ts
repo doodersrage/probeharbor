@@ -1,7 +1,7 @@
 import { isDashboardConversionPath } from "./productAnalytics";
 
 /** Default GA4 measurement ID — override with GA_MEASUREMENT_ID in env. */
-export const DEFAULT_GA_MEASUREMENT_ID = "G-5N69L42SGB";
+export const DEFAULT_GA_MEASUREMENT_ID = "G-1TLGYJZEQ9";
 
 /**
  * Third-party script hosts used by marketing analytics.
