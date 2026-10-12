@@ -190,11 +190,6 @@ const showVerifyIngest =
   Boolean(Astro.url.searchParams.get("sensor_added")) ||
   neverSeenWithSensors ||
   waitingPushNoSensors.length > 0;
-const showReceivingData =
-  !showAddSensorNudge &&
-  pushDevices.some((d) => Boolean(d.last_seen_at)) &&
-  latest.length > 0 &&
-  !neverSeenWithSensors;
 const kindLabels = SENSOR_KIND_LABELS;
 
 const waitingSensors = waitingPushDevices.flatMap((d) =>
@@ -315,8 +310,12 @@ const redirectTo =
   title="Devices"
   subtitle={
     devicesView === "ops"
-      ? "Health and last-seen for this property."
-      : "Create a push device or pull feed, then confirm the first reading."
+      ? "Is each device reporting? Health, battery, and signal."
+      : activeTab === "pull"
+        ? "HTTPS JSON feeds we fetch on a schedule."
+        : activeTab === "thermostat"
+          ? "Your house thermostat and indoor reference, for context next to your probes."
+          : "Add and manage devices that send readings."
   }
 >
   <ProductAnalyticsTracker events={analyticsEvents} />
@@ -453,19 +452,6 @@ const redirectTo =
           sensors={firmwareSensors}
           presetsOpen={!viaSnippet}
         />
-      </section>
-    )}
-
-    {devicesView === "ops" && showReceivingData && !postSetupFunnel && !showFirstAlertSetup && (
-      <section class="card alert-success" id="receiving-data">
-        <h2 class="card-title">Receiving data</h2>
-        <p class="mb-4">
-          Ingest looks healthy: readings are showing up.
-        </p>
-        <div class="flex flex-wrap gap-3">
-          <a class="btn-primary" href="/dashboard">Overview</a>
-          <a class="btn-secondary" href="/dashboard/live">Open Live</a>
-        </div>
       </section>
     )}
 
