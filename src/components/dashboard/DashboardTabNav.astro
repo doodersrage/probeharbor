@@ -24,3 +24,13 @@ const { tabs, activeId, ariaLabel } = Astro.props;
     </a>
   ))}
 </nav>
+
+<script>
+  // On phones the tab row scrolls sideways: keep the current tab visible.
+  document.querySelectorAll<HTMLElement>(".dashboard-tab-nav .dashboard-tab-nav-link.is-active").forEach((tab) => {
+    const nav = tab.parentElement;
+    if (nav && nav.scrollWidth > nav.clientWidth) {
+      nav.scrollLeft = tab.offsetLeft - (nav.clientWidth - tab.offsetWidth) / 2;
+    }
+  });
+</script>

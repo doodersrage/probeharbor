@@ -3229,7 +3229,10 @@
 
   .dashboard-tab-nav {
     display: flex;
-    flex-wrap: wrap;
+    /* One row on phones: scroll sideways rather than wrap a lone tab onto a second line. */
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
     gap: 0.375rem;
     padding: 0.25rem;
     border-radius: 0.75rem;
@@ -3237,7 +3240,13 @@
     border: 1px solid var(--color-border);
   }
 
+  .dashboard-tab-nav::-webkit-scrollbar {
+    display: none;
+  }
+
   .dashboard-tab-nav-link {
+    flex-shrink: 0;
+    white-space: nowrap;
     display: inline-flex;
     align-items: center;
     padding: 0.4375rem 0.875rem;

@@ -185,6 +185,11 @@ const [
 
 const activeHouseholdId = household.householdId;
 const chartWindowDays = Math.min(30, Math.max(7, entitlements.historyDays));
+// The 30-day chart is the slowest query and needs only the user and window, so it
+// starts now and overlaps the device/member queries below instead of waiting on them.
+// (Brand-new accounts in first-run focus don't show it; their query is tiny.)
+const chartDataEarly = fetchGarageTempChartData(user.id, chartWindowDays);
+chartDataEarly.catch(() => {});
 const roleFromShell =
   shell?.households.find((row) => row.household_id === activeHouseholdId)?.role ?? null;
 
@@ -269,7 +274,7 @@ const weatherPromise = loadHeavyWeather
   ? fetchWeatherSnapshotForConfig(weatherConfig)
   : Promise.resolve(null);
 const chartPromise = loadChart
-  ? fetchGarageTempChartData(user.id, chartWindowDays)
+  ? chartDataEarly
   : Promise.resolve({
       points: [] as Awaited<ReturnType<typeof fetchGarageTempChartData>>["points"],
       error: null as string | null,

@@ -158,10 +158,10 @@ export default function WeatherMap({
 
   return (
     <figure class="weather-map mb-6">
-      <div
+      {/* A labelled region, not role="img": Leaflet adds zoom buttons and links inside, and an img can't contain controls. */}
+      <section
         id={containerId}
         class="weather-map-frame freeze-map-frame"
-        role="img"
         aria-label={`Weather map of ${label}`}
       />
       <figcaption class="weather-map-caption">
