@@ -124,7 +124,10 @@ export async function collectHistoryForAllUsers(): Promise<{
     try {
       const { data: userData } = await admin.auth.admin.getUserById(ownerUserId);
       const authUser = userData.user;
-      const config = await getUserDevicesAsTempConfig(ownerUserId, authUser?.email);
+      // Account deleted after the household list was read: nothing to collect,
+      // and looking it up would try to recreate a household for a missing user.
+      if (!authUser) continue;
+      const config = await getUserDevicesAsTempConfig(ownerUserId, authUser.email);
 
       if (config.error) {
         errors.push(`${ownerUserId}: ${config.error}`);

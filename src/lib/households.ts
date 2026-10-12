@@ -62,6 +62,8 @@ export async function getOrCreateHouseholdForUser(
   });
 
   if (memberError) {
+    // Don't leave a household with no owner behind (e.g. the user was deleted meanwhile).
+    await supabase.from("households").delete().eq("id", household.id);
     return { householdId: "", error: memberError.message };
   }
 
