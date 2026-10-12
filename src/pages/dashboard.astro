@@ -738,7 +738,11 @@ const showNestInDigest = showGrowthTips && showNestConnectNudge;
 const showPwaInDigest = showGrowthTips && showOverviewPwaNudge;
 const showAndroidInDigest = showGrowthTips && showAndroidNudge;
 const showBayBuddyInDigest = showGrowthTips && showBayBuddyNudge;
-const attentionOpsCount = secondaryOpsBannerIds.length;
+// Alert setup and test alert are already steps in the Next steps checklist while it's showing.
+const checklistCoversSetup = !onboardingDismissed;
+const attentionOpsCount = secondaryOpsBannerIds.filter(
+  (id) => !(checklistCoversSetup && (id === "alertSetup" || id === "testAlert")),
+).length;
 const tipsCount =
   secondaryTipBannerIds.length +
   (showNestInDigest ? 1 : 0) +
@@ -916,11 +920,11 @@ const onboardingProps = {
             hasAlertsEnabled={hasAlertsEnabled}
             hasEmailAlerts={hasEmailAlerts}
             canEdit={canEdit}
-            show={secondaryBannerIds.has("alertSetup")}
+            show={secondaryBannerIds.has("alertSetup") && !checklistCoversSetup}
           />
           <TestAlertNudge
             canEdit={canEdit}
-            show={secondaryBannerIds.has("testAlert")}
+            show={secondaryBannerIds.has("testAlert") && !checklistCoversSetup}
           />
           {secondaryBannerIds.has("freezeReadiness") && (
             <FreezeReadinessCard readiness={freezeReadiness} />
