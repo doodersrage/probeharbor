@@ -67,14 +67,15 @@ const createFor = (via: SetupVia) => ({
     <div class="devices-path" role="listitem" id="first-run-have-board">
       <h3 class="devices-path-title">I have a board to flash</h3>
       <p class="devices-path-copy">
-        ESP32, Pico W, or Arduino with a DS18B20 or DHT22. We pre-fill a sketch with your ingest URL; sensors auto-import on the first POST.
+        An ESP32 with a DS18B20, DHT22, or I²C sensor: install the firmware from this browser over USB, no Arduino IDE.
+        Pico W and Arduino get a pre-filled sketch instead.
       </p>
       {canCreate && (
         <form action="/api/devices" method="post">
           <input type="hidden" name="action" value="create_push" />
           <input type="hidden" name="redirect" value={createFor("esp").redirect} />
           <input type="hidden" name="name" value={createFor("esp").name} />
-          <button class="btn-primary" type="submit">Create device &amp; get sketch</button>
+          <button class="btn-primary" type="submit">Create device &amp; flash it</button>
         </form>
       )}
       <details class="devices-other-boards mt-2">

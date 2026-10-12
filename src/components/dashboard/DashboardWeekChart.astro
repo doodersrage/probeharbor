@@ -59,21 +59,9 @@ const exportCsvHref = exportParams.toString()
     )}
   </div>
   {points.length < 2 ? (
-    <div class="empty-state mt-4 mb-0 text-left">
-      <p class="mb-3">
-        No probe curves yet. Connect hardware, confirm a reading on Home, then this chart fills from hourly snapshots.
-      </p>
-      <ol class="mb-4 pl-5 text-sm text-[var(--color-text-muted)] space-y-1">
-        <li>
-          <a class="text-link" href="/dashboard/devices">Add a push device or pull feed</a>
-        </li>
-        <li>Verify ingest (or wait for the next pull)</li>
-        <li>
-          <a class="text-link" href="/dashboard/live">Open Live</a> to confirm live values
-        </li>
-      </ol>
-      <a class="btn-primary" href="/dashboard/devices">Go to Devices</a>
-    </div>
+    <p class="mt-4 mb-0 text-sm text-[var(--color-text-muted)]">
+      The chart fills in as readings arrive: give it an hour or two after your first reading.
+    </p>
   ) : (
     <div class="relative mt-4 history-chart-host">
       <HistoryChart

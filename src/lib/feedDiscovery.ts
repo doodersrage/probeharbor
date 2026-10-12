@@ -1,3 +1,4 @@
+import { probePairingKey } from "./probePairing";
 import {
   isHomeAssistantStatePayload,
   isSenMLPayload,
@@ -229,14 +230,49 @@ function ingestLabelHints(payload: unknown): Map<string, string> {
   ]);
 }
 
+/**
+ * Default names come from the device, not the key: two boards that both send
+ * "temp1" used to get two sensors called "Temp1", indistinguishable in charts
+ * and alerts. One temperature probe takes the device name ("Workshop probe 2");
+ * several get the device name plus their number ("Workshop probe 1"); humidity
+ * follows its temperature probe. Labels from the payload (SenML, Home
+ * Assistant, sensors[].label) always win.
+ */
+function applyDeviceNames(
+  discovered: DiscoveredPushSensor[],
+  explicitlyNamed: Set<string>,
+  deviceName: string,
+): void {
+  const temps = discovered.filter(
+    (d) => d.kind === "temperature" && d.key !== "avg" && !explicitlyNamed.has(`${d.key}::temperature`),
+  );
+  const nameFor = (key: string): string => {
+    if (temps.length === 1) return deviceName;
+    const suffix = probePairingKey(key).replace(/^[_-]+/, "") || key;
+    return `${deviceName} ${suffix}`;
+  };
+  const tempNameByPair = new Map<string, string>();
+  for (const temp of temps) {
+    temp.label = nameFor(temp.key);
+    tempNameByPair.set(probePairingKey(temp.key), temp.label);
+  }
+  for (const item of discovered) {
+    if (item.kind !== "humidity" || explicitlyNamed.has(`${item.key}::humidity`)) continue;
+    const tempName = tempNameByPair.get(probePairingKey(item.key));
+    if (tempName) item.label = `${tempName} humidity`;
+  }
+}
+
 /** Discover push-ingest sensors with suggested labels (temp pairs, typed, flat keys). */
-export function discoverIngestPayload(payload: unknown): DiscoveredPushSensor[] {
+export function discoverIngestPayload(payload: unknown, deviceName?: string | null): DiscoveredPushSensor[] {
   const { tempProbes, typed } = parseIngestPayload(payload);
   const hints = ingestLabelHints(payload);
   const discovered: DiscoveredPushSensor[] = [];
   const seen = new Set<string>();
+  const explicitlyNamed = new Set<string>();
 
   for (const [key, reading] of Object.entries(tempProbes)) {
+    if (hints.has(key)) explicitlyNamed.add(`${key}::temperature`);
     const label = hints.get(key) ?? humanizeProbeKey(key);
     discovered.push({
       key,
@@ -254,6 +290,7 @@ export function discoverIngestPayload(payload: unknown): DiscoveredPushSensor[] 
     if (seen.has(dedupeKey)) continue;
     if (kind === "humidity" && seen.has(`${item.key}::temperature`)) continue;
 
+    if (item.label || hints.has(item.key)) explicitlyNamed.add(dedupeKey);
     discovered.push({
       key: item.key,
       label: item.label ?? hints.get(item.key) ?? humanizeProbeKey(item.key),
@@ -264,6 +301,8 @@ export function discoverIngestPayload(payload: unknown): DiscoveredPushSensor[] 
     seen.add(dedupeKey);
   }
 
+  const name = deviceName?.trim();
+  if (name) applyDeviceNames(discovered, explicitlyNamed, name);
   return discovered;
 }
 

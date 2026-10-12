@@ -81,8 +81,9 @@ export async function loadDashboardShellForUser(
   if (includeLiveLag && activeHouseholdId) {
     latest = await fetchLatestSensorValues(activeHouseholdId);
     lastReadingAt = newestRecordedAt(latest);
+    // No readings yet isn't "lagging": a brand-new account shouldn't get a warning dot.
     liveLagging =
-      latest.length === 0 ||
+      latest.length > 0 &&
       latest.some((row) => {
         if (!row.recorded_at) return true;
         return formatRelativeAge(row.recorded_at).lagging;

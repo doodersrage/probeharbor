@@ -107,7 +107,7 @@ export const POST: APIRoute = async ({ params, request }) => {
   }
 
   const payload = body.payload;
-  const discovered = discoverIngestPayload(payload);
+  const discovered = discoverIngestPayload(payload, device.name);
   const sensorSync = await ensureDiscoveredPushSensors(
     device.id,
     discovered,

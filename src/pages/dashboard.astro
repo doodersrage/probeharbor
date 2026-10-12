@@ -817,7 +817,7 @@ const onboardingProps = {
 <DashboardLayout
   title="Overview"
   subtitle="Is everything OK? Status, alerts to handle, and the temperature trend."
-  liveLagging={staleSensorCount > 0 || lastAge.lagging}
+  liveLagging={staleSensorCount > 0 || (newestReading != null && lastAge.lagging)}
 >
   {!firstRunFocus && !forceSimple && (
     <DashboardOverviewToggle slot="topbar-actions" mode={overviewMode} />
@@ -857,21 +857,24 @@ const onboardingProps = {
           <a href="/about/debugging-stale-readings" class="text-link">Debug guide</a>
         </div>
       )}
-      <OverviewQuickActions
-        embedded
-        canEdit={canEdit}
-        unackedCount={unackedAlertCount}
-        snoozeUntil={alertSettings.snoozeUntil ?? null}
-        spaceCheckedAt={spaceCheckedAtForHousehold}
-        householdId={household.householdId}
-        deviceSpaces={[
-          ...new Set(
-            devices
-              .map((device) => device.space?.trim())
-              .filter((space): space is string => Boolean(space)),
-          ),
-        ].sort((a, b) => a.localeCompare(b))}
-      />
+      {/* Nothing to acknowledge or check before the first device. */}
+      {hasDevices && (
+        <OverviewQuickActions
+          embedded
+          canEdit={canEdit}
+          unackedCount={unackedAlertCount}
+          snoozeUntil={alertSettings.snoozeUntil ?? null}
+          spaceCheckedAt={spaceCheckedAtForHousehold}
+          householdId={household.householdId}
+          deviceSpaces={[
+            ...new Set(
+              devices
+                .map((device) => device.space?.trim())
+                .filter((space): space is string => Boolean(space)),
+            ),
+          ].sort((a, b) => a.localeCompare(b))}
+        />
+      )}
     </GarageRiskStatusCard>
     <div id="overview-offline-banner" class="alert-warning mb-0" role="status" hidden>
       Showing last-known dashboard status (offline or stale cache).
