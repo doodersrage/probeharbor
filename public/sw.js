@@ -1,5 +1,6 @@
 /* ProbeHarbor PWA service worker */
-const CACHE = "probeharbor-v5";
+// Bump to drop every older cache on activate (v6: stop serving stale firmware and scripts).
+const CACHE = "probeharbor-v6";
 const PRECACHE = [
   "/manifest.webmanifest",
   "/favicon.svg",
@@ -47,11 +48,13 @@ self.addEventListener("fetch", (event) => {
   // Never intercept third-party requests (Cloudflare Insights, fonts, etc.)
   if (url.origin !== self.location.origin) return;
 
-  // Let the browser handle Astro islands / build assets directly
+  // Let the browser handle Astro islands / build assets directly, and never
+  // cache firmware: the flasher must always get the current manifest and images.
   if (
     url.pathname.startsWith("/_server-islands/") ||
     url.pathname.startsWith("/_astro/") ||
-    url.pathname.startsWith("/src/")
+    url.pathname.startsWith("/src/") ||
+    url.pathname.startsWith("/firmware/")
   ) {
     return;
   }
@@ -102,20 +105,19 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Cache-first for same-origin static assets
+  // Network-first for other same-origin files (icons, unhashed scripts): their
+  // URLs don't change between deploys, so cache-first kept old copies forever.
+  // The cached copy is only the offline fallback.
   event.respondWith(
-    caches.match(request).then((cached) => {
-      if (cached) return cached;
-      return fetch(request)
-        .then((response) => {
-          if (response.ok) {
-            const copy = response.clone();
-            caches.open(CACHE).then((cache) => cache.put(request, copy));
-          }
-          return response;
-        })
-        .catch(() => Response.error());
-    }),
+    fetch(request)
+      .then((response) => {
+        if (response.ok) {
+          const copy = response.clone();
+          caches.open(CACHE).then((cache) => cache.put(request, copy));
+        }
+        return response;
+      })
+      .catch(() => caches.match(request).then((cached) => cached || Response.error())),
   );
 });
 

@@ -21,7 +21,7 @@ const { vapidPublicKey } = Astro.props;
     let autoSubscribeAttempted = false;
 
     async function ensureServiceWorker() {
-      await navigator.serviceWorker.register("/sw.js?v=3");
+      await navigator.serviceWorker.register("/sw.js?v=6");
       return navigator.serviceWorker.ready;
     }
 
