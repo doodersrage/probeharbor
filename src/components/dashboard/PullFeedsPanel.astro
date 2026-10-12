@@ -95,18 +95,21 @@ const {
           </p>
         </div>
 
-        <ExampleFeedCard />
-
-        <PullFetchButton client:visible feedIds={pullFeedIds} autoFetch={demoPullStarted && pullSaved} />
-
+        {/* Your feeds, their probe names, then one Save and an optional immediate fetch. */}
         <TempFeedsSettings feeds={preferences.tempFeeds} />
-        <PullFeedSaveBar client:visible hasFeeds={pullFeedIds.length > 0} />
         <PullProbeMapper
           client:visible
           feeds={preferences.tempFeeds}
           probes={preferences.tempProbes}
           redirectTo={redirectTo}
         />
+        <PullFeedSaveBar client:visible hasFeeds={pullFeedIds.length > 0} />
+        <PullFetchButton client:visible feedIds={pullFeedIds} autoFetch={demoPullStarted && pullSaved} />
+
+        <details class="example-feed-details" open={pullFeedIds.length === 0}>
+          <summary class="cursor-pointer text-sm font-semibold">No feed of your own yet? Try the example feed</summary>
+          <ExampleFeedCard class="mt-3" />
+        </details>
       </section>
     ) : (
       <section class="card">

@@ -9,6 +9,7 @@ import {
 import { formatAlertChannelList } from "../../lib/alertChannelLabels";
 import { isActionableAlertKind, type AlertEventRow } from "../../lib/alertEvents";
 import AlertAckActions from "./AlertAckActions.astro";
+import { groupAlertEvents } from "../../lib/alertEventGroups";
 
 interface Props {
   events: AlertEventRow[];
@@ -25,6 +26,22 @@ const {
   hasOutboundWebhook,
   canUseOutboundWebhook,
 } = Astro.props;
+
+// Runs of look-alike alerts show the newest row plus "Show N more like this".
+const items = groupAlertEvents(events).flatMap((group, groupIndex) => {
+  const groupId = `alert-group-${groupIndex}`;
+  const oldest = group.rest[group.rest.length - 1];
+  return [
+    {
+      event: group.lead,
+      groupId,
+      folded: false,
+      moreCount: group.rest.length,
+      oldestLabel: oldest ? formatRelativeAge(oldest.created_at).label : "",
+    },
+    ...group.rest.map((event) => ({ event, groupId, folded: true, moreCount: 0, oldestLabel: "" })),
+  ];
+});
 
 function tipForEvent(event: AlertEventRow): FalseAlarmHint | null {
   const tipId = event.meta?.suggestedTipId;
@@ -43,12 +60,17 @@ function tipForEvent(event: AlertEventRow): FalseAlarmHint | null {
 ) : (
   <>
     <div class="alert-activity-mobile space-y-3">
-      {events.map((event) => {
+      {items.map(({ event, groupId, folded, moreCount, oldestLabel }) => {
         const age = formatRelativeAge(event.created_at);
         const why = formatAlertWhyMeta(event.meta ?? {});
         const tip = tipForEvent(event);
         return (
-          <article class="rounded-lg border border-[var(--color-border)] p-3 text-sm">
+          <>
+          <article
+            class="rounded-lg border border-[var(--color-border)] p-3 text-sm"
+            data-alert-group-member={folded ? groupId : undefined}
+            hidden={folded}
+          >
             <div class="flex flex-wrap items-baseline justify-between gap-2">
               <strong>{event.title}</strong>
               <span class="text-xs text-[var(--color-text-muted)]">{age.label}</span>
@@ -106,6 +128,12 @@ function tipForEvent(event: AlertEventRow): FalseAlarmHint | null {
               )}
             </div>
           </article>
+          {moreCount > 0 && (
+            <button type="button" class="btn-ghost btn-sm" data-alert-group-toggle={groupId} aria-expanded="false">
+              Show {moreCount} more like this (back to {oldestLabel})
+            </button>
+          )}
+          </>
         );
       })}
     </div>
@@ -125,12 +153,17 @@ function tipForEvent(event: AlertEventRow): FalseAlarmHint | null {
           </tr>
         </thead>
         <tbody>
-          {events.map((event) => {
+          {items.map(({ event, groupId, folded, moreCount, oldestLabel }) => {
             const age = formatRelativeAge(event.created_at);
             const why = formatAlertWhyMeta(event.meta ?? {});
             const tip = tipForEvent(event);
             return (
-              <tr class="border-t border-[var(--color-border)] align-top">
+              <>
+              <tr
+                class="border-t border-[var(--color-border)] align-top"
+                data-alert-group-member={folded ? groupId : undefined}
+                hidden={folded}
+              >
                 <td class="py-2 pr-3 whitespace-nowrap">{age.label}</td>
                 <td class="py-2 pr-3">{event.kind}</td>
                 <td class="py-2 pr-3">{event.title}</td>
@@ -181,6 +214,16 @@ function tipForEvent(event: AlertEventRow): FalseAlarmHint | null {
                   )}
                 </td>
               </tr>
+              {moreCount > 0 && (
+                <tr>
+                  <td colspan="7" class="pb-2">
+                    <button type="button" class="btn-ghost btn-sm" data-alert-group-toggle={groupId} aria-expanded="false">
+                      Show {moreCount} more like this (back to {oldestLabel})
+                    </button>
+                  </td>
+                </tr>
+              )}
+              </>
             );
           })}
         </tbody>
@@ -188,6 +231,25 @@ function tipForEvent(event: AlertEventRow): FalseAlarmHint | null {
     </div>
   </>
 )}
+
+<script>
+  // Expand or fold a run of look-alike alerts (mobile cards and desktop rows share group ids).
+  document.addEventListener("click", (event) => {
+    const button = (event.target as HTMLElement | null)?.closest<HTMLButtonElement>("[data-alert-group-toggle]");
+    if (!button) return;
+    const groupId = button.dataset.alertGroupToggle;
+    const container = button.closest(".alert-activity-mobile, .alert-activity-desktop");
+    if (!groupId || !container) return;
+    const open = button.getAttribute("aria-expanded") !== "true";
+    container.querySelectorAll<HTMLElement>(`[data-alert-group-member="${groupId}"]`).forEach((el) => {
+      el.hidden = !open;
+    });
+    button.setAttribute("aria-expanded", String(open));
+    const count = button.textContent?.match(/\d+/)?.[0] ?? "";
+    button.dataset.label ??= button.textContent ?? "";
+    button.textContent = open ? `Hide ${count} similar` : button.dataset.label;
+  });
+</script>
 
 <style>
   .alert-activity-desktop {

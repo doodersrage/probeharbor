@@ -23,7 +23,8 @@ const canAddMore = existingFeeds.length < MAX_TEMP_FEEDS;
     </p>
   </div>
 
-  {existingFeeds.length > 0 && (
+  {/* Bulk tools only help with two or more feeds; a single feed has its own Delete and Enabled. */}
+  {existingFeeds.length > 1 && (
     <form
       id="bulk-pull-form"
       action="/api/user/pull-setup/bulk"
@@ -52,6 +53,7 @@ const canAddMore = existingFeeds.length < MAX_TEMP_FEEDS;
       <div class="sensor-map-row">
         <input type="hidden" name={`feed_${index}_id`} value={feed.id} />
         <div class="sensor-map-primary">
+          {existingFeeds.length > 1 && (
           <label class="checkbox-row mb-0 self-start mt-2">
             <input
               type="checkbox"
@@ -62,6 +64,7 @@ const canAddMore = existingFeeds.length < MAX_TEMP_FEEDS;
             />
             <span class="sr-only">Select {feed.name || feed.id}</span>
           </label>
+          )}
           <div class="form-field mb-0">
             <label class="form-label" for={`feed_${index}_name`}>Name</label>
             <input

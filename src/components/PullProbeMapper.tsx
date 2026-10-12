@@ -428,8 +428,9 @@ export default function PullProbeMapper({
       )}
 
       <div class="flex flex-wrap items-center gap-3">
-        <button type="submit" class="btn-primary" id="pull-setup-save-btn" disabled={saving}>
-          {saving ? "Saving…" : "Save pull setup"}
+        {/* Saving is the "Save pull setup" bar below; this keeps Enter-to-save in the form. */}
+        <button type="submit" class="sr-only" id="pull-setup-save-btn" disabled={saving} tabIndex={-1}>
+          Save pull setup
         </button>
         {probes.length > 0 ? (
           <button type="button" class="btn-secondary" onClick={acceptSuggestedNames}>
