@@ -5,6 +5,7 @@ import {
   DEFAULT_PINNED_OVERVIEW_METRICS,
   PINNABLE_OVERVIEW_METRICS,
   PINNED_METRICS_MAX,
+  countPinnedOverviewMetricsInput,
   getPinnedOverviewMetrics,
   parsePinnedOverviewMetricsInput,
   updatePinnedOverviewMetrics,
@@ -74,6 +75,12 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
           metrics = [...current, id];
         }
       } else if (Array.isArray(body.metrics)) {
+        if (countPinnedOverviewMetricsInput(body.metrics.map(String)) > PINNED_METRICS_MAX) {
+          return new Response(
+            JSON.stringify({ error: `You can pin up to ${PINNED_METRICS_MAX} Status metrics.`, atMax: true }),
+            { status: 400, headers: { "Content-Type": "application/json" } },
+          );
+        }
         metrics = parsePinnedOverviewMetricsInput(body.metrics.map(String));
       }
     } catch {
@@ -98,6 +105,10 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
       }
     } else {
       const raw = formData.getAll("metrics").map((v) => String(v));
+      // Refuse rather than keep the first five: dropping the newest pick looked like a save that didn't take.
+      if (countPinnedOverviewMetricsInput(raw) > PINNED_METRICS_MAX) {
+        return redirect(withQuery(redirectTo, { pinned_error: "max" }));
+      }
       metrics = parsePinnedOverviewMetricsInput(raw);
     }
   }

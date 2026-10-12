@@ -105,6 +105,7 @@ import {
   shouldShowOverviewGrowthTips,
   PINNABLE_OVERVIEW_METRICS,
   PINNABLE_OVERVIEW_METRIC_LABELS,
+  PINNED_METRICS_MAX,
   type PinnableOverviewMetric,
 } from "../lib/dashboardComfort";
 import { buildOverviewBannerQueue, partitionOverviewBanners } from "../lib/overviewBanners";
@@ -437,6 +438,13 @@ const hasHouseholdMembers = members.members.length > 1;
 
 const passwordUpdated = Astro.url.searchParams.get("password") === "updated";
 const prefsSaved = Astro.url.searchParams.get("prefs_saved");
+const pinnedFlash = Astro.url.searchParams.get("pinned_saved")
+  ? "saved"
+  : Astro.url.searchParams.get("pinned_error") === "max"
+    ? "max"
+    : Astro.url.searchParams.get("pinned_error")
+      ? "error"
+      : null;
 const checkedSaved = Astro.url.searchParams.get("checked_saved") === "1";
 const checkedError = Astro.url.searchParams.get("checked_error") === "1";
 const ackOk = Astro.url.searchParams.get("ack_ok") === "1";
@@ -1018,12 +1026,17 @@ const onboardingProps = {
           )}
         </div>
         {!firstRunFocus && canEdit && (
-          <details class="status-pin-picker">
+          <details class="status-pin-picker" open={pinnedFlash === "max" || pinnedFlash === "error"}>
             <summary class="text-sm text-link cursor-pointer">Pin metrics</summary>
+            <p class="mt-3 mb-0 text-sm text-[var(--color-text-muted)]" data-pin-count>
+              {pinnedMetricSet.size} of {PINNED_METRICS_MAX} pinned. Untick one to make room for another.
+            </p>
             <form
               action="/api/user/dashboard-pinned-metrics"
               method="post"
               class="mt-3 flex flex-wrap gap-3 items-end"
+              data-pin-form
+              data-pin-max={PINNED_METRICS_MAX}
             >
               <input type="hidden" name="redirect" value="/dashboard" />
               {PINNABLE_OVERVIEW_METRICS.map((id) => (
@@ -1042,6 +1055,15 @@ const onboardingProps = {
           </details>
         )}
       </div>
+      {pinnedFlash && (
+        <p class:list={[pinnedFlash === "saved" ? "alert-success" : "alert-warning", "mt-0 mb-0"]} role="status">
+          {pinnedFlash === "saved"
+            ? "Pinned metrics saved."
+            : pinnedFlash === "max"
+              ? `You can pin up to ${PINNED_METRICS_MAX}. Untick one, then pick the new one.`
+              : "Couldn't save pinned metrics. Try again."}
+        </p>
+      )}
       <DashboardMetricGrid>
         {(canEdit || showPinnedMetric("last_reading")) && (
           <MetricCard
@@ -1330,7 +1352,26 @@ const onboardingProps = {
         "vacation",
         "vacation_cleared",
         "vacation_error",
+        "pinned_saved",
+        "pinned_error",
       ];
+
+      // Pin picker: at the limit, the unticked boxes are disabled instead of a sixth pick being dropped.
+      document.querySelectorAll<HTMLFormElement>("[data-pin-form]").forEach(function (form) {
+        var max = Number(form.getAttribute("data-pin-max") || "5");
+        var count = form.parentElement?.querySelector<HTMLElement>("[data-pin-count]");
+        var boxes = Array.from(form.querySelectorAll<HTMLInputElement>('input[name="metrics"]'));
+        function sync() {
+          var picked = boxes.filter(function (box) { return box.checked; }).length;
+          boxes.forEach(function (box) { box.disabled = !box.checked && picked >= max; });
+          if (count) {
+            count.textContent =
+              picked + " of " + max + " pinned." + (picked >= max ? " Untick one to make room for another." : "");
+          }
+        }
+        boxes.forEach(function (box) { box.addEventListener("change", sync); });
+        sync();
+      });
 
       function stripFlashParams() {
         var url = new URL(window.location.href);

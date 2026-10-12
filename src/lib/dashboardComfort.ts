@@ -94,6 +94,12 @@ export function getPinnedOverviewMetrics(
   return pinned.length > 0 ? pinned : [...DEFAULT_PINNED_OVERVIEW_METRICS];
 }
 
+/** How many distinct, valid metric ids were submitted (to refuse more than the max, not drop them). */
+export function countPinnedOverviewMetricsInput(values: string[]): number {
+  const allowed = new Set<string>(PINNABLE_OVERVIEW_METRICS);
+  return new Set(values.map((value) => value.trim()).filter((id) => allowed.has(id))).size;
+}
+
 export function parsePinnedOverviewMetricsInput(
   values: string[],
 ): PinnableOverviewMetric[] {
