@@ -16,7 +16,12 @@ export const marketingFaqs = {
     {
       question: "How do I connect ESP32, Pico W, or Arduino sensors?",
       answer:
-        "Create a push device under Dashboard → Devices, copy the ingest key from the callout (or use Reveal ingest key later), POST JSON to /api/ingest/<key>, and sensors auto-import on first POST. ESP32, Pico W, and Arduino Ethernet samples live on probeharbor.dev/about/adding-devices. No hardware? Try the demo pull quick start on Overview.",
+        "For an ESP32, the quickest path is the web flasher at probeharbor.dev/flash: plug the board into USB, install the firmware from Chrome or Edge, and send it your Wi-Fi and device key. It reads DS18B20 probes, a DHT22, or an I²C sensor (BME280, SHT31, AHT20), plus optional leak, door, and battery inputs. For other boards, create a push device under Dashboard → Devices and POST JSON to /api/ingest/<key>; sensors auto-import on first POST. Pico W and Arduino samples live on probeharbor.dev/about/adding-devices. No hardware? Try the demo pull quick start on Overview.",
+    },
+    {
+      question: "Do I need to know how to code?",
+      answer:
+        "No. With an ESP32, the web flasher installs prebuilt firmware from your browser and sends it your Wi-Fi and device key over the USB cable, so there's no Arduino IDE and nothing to edit. The firmware is open source if you'd rather read or change it, and the sample sketches are still there for other boards.",
     },
     {
       question: "Does ProbeHarbor send freeze alerts?",
@@ -257,7 +262,7 @@ export const marketingFaqs = {
     {
       question: "Do accessories replace a freeze probe?",
       answer:
-        "No. Accessories are companions (mood lights, claim presence) or contact sensors (door, leak, power) and kit pieces (labels, mounts, cases). Temperature still needs a DS18B20 path such as the ESP32 freeze kit.",
+        "No. Accessories are companions (mood lights, claim presence) or contact sensors (door, leak, power) and kit pieces (labels, mounts, cases). Temperature still needs a probe such as the ESP32 freeze kit (DS18B20, DHT22, or an I²C sensor), installed from the web flasher at probeharbor.dev/flash.",
     },
     {
       question: "Which accessory should I buy first?",

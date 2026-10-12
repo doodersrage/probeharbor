@@ -57,7 +57,7 @@ export const GET: APIRoute = ({ site }) => {
 - Pipe freeze time calculator: ${siteUrl}/freeze-time-calculator
 - Create a free account: ${siteUrl}/register
 - ESP32 freeze kit parts list: ${siteUrl}/about/esp32-freeze-kit
-- Browser flasher (no IDE; ESP32 + DS18B20): ${siteUrl}/flash
+- Browser flasher (no IDE; ESP32/S3/C3 with DS18B20, DHT22, or I2C BME280/SHT31/AHT20, plus optional leak, door, battery): ${siteUrl}/flash
 - Home Assistant (HACS integration and push): ${siteUrl}/integrations/home-assistant
 - Comparisons (TempStick, YoLink, SensorPush, Shelly H&T, Govee, Nest, Ecobee, Tempest, DIY MQTT): ${siteUrl}/compare
 - Guides: ${siteUrl}/guides
