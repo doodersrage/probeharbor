@@ -28,8 +28,8 @@ describe("dashboardDeepLinks", () => {
   it("opens Devices Status vs Setup", () => {
     expect(devicesOpsPath()).toBe("/dashboard/devices?view=ops");
     expect(devicesSetupPath()).toBe("/dashboard/devices?view=setup");
-    expect(devicesSetupPath({ tab: "pull", hash: "indoor-reference" })).toBe(
-      "/dashboard/devices?view=setup&tab=pull#indoor-reference",
+    expect(devicesSetupPath({ tab: "thermostat", hash: "indoor-reference" })).toBe(
+      "/dashboard/devices?view=setup&tab=thermostat#indoor-reference",
     );
   });
 });

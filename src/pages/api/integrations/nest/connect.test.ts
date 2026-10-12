@@ -115,7 +115,7 @@ describe("GET /api/integrations/nest/connect", () => {
     await GET(context);
 
     expect(context.redirect).toHaveBeenCalledWith(
-      "/dashboard/devices?view=all&tab=pull&thermostat_error=not_configured#thermostat-connect",
+      "/dashboard/devices?view=setup&tab=thermostat&thermostat_error=not_configured#thermostat-connect",
     );
   });
 

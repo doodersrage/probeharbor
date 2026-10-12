@@ -115,12 +115,9 @@ const latest = shellLatest
     : [];
 
 const ingestKey = peekSecretFlash(Astro.cookies, FLASH_INGEST_KEY);
-const activeTab =
-  Astro.url.searchParams.get("tab") === "pull"
-    ? "pull"
-    : Astro.url.searchParams.get("tab") === "push"
-      ? "push"
-      : "push";
+const tabParam = Astro.url.searchParams.get("tab");
+const activeTab: "push" | "pull" | "thermostat" =
+  tabParam === "pull" ? "pull" : tabParam === "thermostat" ? "thermostat" : "push";
 const focusDevice = Astro.url.searchParams.get("focus_device") ?? "";
 const atDeviceLimit =
   devices.filter((d) => d.source === "push").length >= entitlements.maxDevices;
@@ -300,8 +297,9 @@ const firmwareSensors =
     ? waitingSensors.map((s) => ({ key: s.key, kind: s.kind }))
     : [{ key: "temp1", kind: "temperature" }];
 const viewParam = Astro.url.searchParams.get("view");
+// An explicit tab (old links, form redirects) always opens that tab, not the Status view.
 const devicesView =
-  viewParam === "setup" || viewParam === "all"
+  viewParam === "setup" || viewParam === "all" || (viewParam == null && tabParam != null)
     ? "setup"
     : viewParam === "ops"
       ? "ops"
@@ -309,7 +307,7 @@ const devicesView =
         ? "ops"
         : "setup";
 const devicesSetupHref =
-  activeTab === "pull" ? "/dashboard/devices?view=setup&tab=pull" : "/dashboard/devices?view=setup";
+  activeTab === "push" ? "/dashboard/devices?view=setup" : `/dashboard/devices?view=setup&tab=${activeTab}`;
 const redirectTo =
   devicesView === "ops" ? "/dashboard/devices?view=ops" : devicesSetupHref;
 ---
@@ -335,12 +333,15 @@ const redirectTo =
       </p>
     )}
 
+    {/* One flat row: what each tab holds is in its name. */}
     <DashboardTabNav
       tabs={[
         { id: "ops", label: "Status", href: "/dashboard/devices?view=ops" },
-        { id: "setup", label: "Setup", href: devicesSetupHref },
+        { id: "push", label: "Devices", href: "/dashboard/devices?view=setup&tab=push" },
+        { id: "pull", label: "Pull feeds", href: "/dashboard/devices?view=setup&tab=pull" },
+        { id: "thermostat", label: "Thermostat", href: "/dashboard/devices?view=setup&tab=thermostat" },
       ]}
-      activeId={devicesView}
+      activeId={devicesView === "ops" ? "ops" : activeTab}
       ariaLabel="Device sections"
     />
 
@@ -348,12 +349,6 @@ const redirectTo =
       <DeviceHealthPanel devices={devices} latest={latest} feedHealth={feedHealth} />
     )}
 
-    {devicesView === "ops" && (
-      <p class="form-hint mb-0">
-        Need a new ingest URL or pull feed?
-        <a class="text-link" href={devicesSetupHref}>Open Setup</a>
-      </p>
-    )}
 
     {devicesView === "setup" && activeTab === "push" && devices.length === 0 && (
       <DevicesFirstRunCard
@@ -362,29 +357,6 @@ const redirectTo =
         redirectTo={redirectTo}
         nestEntitled={entitlements.canUseThermostatIntegration}
       />
-    )}
-
-    {devicesView === "setup" && (activeTab === "push" ? devices.length > 0 && (
-      <p class="form-hint mb-0">
-        Prefer a scheduled HTTPS JSON feed or thermostat?
-        <a class="text-link" href="/dashboard/devices?view=setup&tab=pull">Other ways to connect</a>
-      </p>
-    ) : (
-      <nav class="flex flex-wrap gap-2" aria-label="Device source">
-        <a class="btn-secondary" href="/dashboard/devices?view=setup&tab=push">
-          ← Back to push devices
-        </a>
-        <a
-          class:list={["btn-secondary", "ring-2 ring-[var(--color-accent)]"]}
-          href="/dashboard/devices?view=setup&tab=pull"
-        >
-          Pull feeds & thermostats
-        </a>
-      </nav>
-    ))}
-
-    {devicesView === "setup" && activeTab === "push" && devices.length > 0 && (
-      <DeviceIntegrationsStrip />
     )}
 
     {devicesView === "setup" && (
@@ -621,6 +593,11 @@ const redirectTo =
       ingestKey={ingestKey}
       transferTargets={transferTargets}
     />
+    )}
+
+    {/* Other hardware paths, after the user's own devices rather than before them. */}
+    {devicesView === "setup" && activeTab === "push" && devices.length > 0 && (
+      <DeviceIntegrationsStrip />
     )}
 
     {devicesView === "setup" && (

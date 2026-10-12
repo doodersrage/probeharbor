@@ -20,7 +20,7 @@ export function devicesOpsPath(hash?: string): string {
 }
 
 export function devicesSetupPath(opts?: {
-  tab?: "push" | "pull";
+  tab?: "push" | "pull" | "thermostat";
   hash?: string;
 }): string {
   const params = new URLSearchParams({ view: "setup" });

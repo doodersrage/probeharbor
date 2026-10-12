@@ -2846,6 +2846,50 @@
     width: fit-content;
   }
 
+  /* Devices → one line per device; "Manage" opens its settings and sensors. */
+  .device-row-summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .device-row-summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .device-row-space {
+    margin-left: 0.5rem;
+    padding: 0.05rem 0.5rem;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+  }
+
+  .device-row-toggle {
+    font-size: 0.875rem;
+    color: var(--color-accent);
+    white-space: nowrap;
+  }
+
+  .device-row-toggle::after {
+    content: " ▾";
+  }
+
+  .device-row[open] .device-row-toggle::after {
+    content: " ▴";
+  }
+
+  .device-row-body {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-border);
+  }
+
   /* Wide tables scroll inside their card on phones instead of widening the page. */
   .table-wrap {
     /* Containing block for absolutely positioned children (e.g. sr-only labels), so they're clipped too. */

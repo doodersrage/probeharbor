@@ -82,7 +82,7 @@ describe("POST /api/integrations/[provider]/disconnect", () => {
 
     const response = await POST(makeContext({ provider: "honeywell" }));
 
-    expect(response.headers.get("Location")).toBe("/dashboard/devices?view=all&tab=pull&thermostat_error=1#thermostat-connect");
+    expect(response.headers.get("Location")).toBe("/dashboard/devices?view=setup&tab=thermostat&thermostat_error=1#thermostat-connect");
     expect(mockDeleteConnection).not.toHaveBeenCalled();
   });
 
