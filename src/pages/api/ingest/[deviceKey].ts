@@ -224,6 +224,11 @@ export const POST: APIRoute = async ({ params, request }) => {
   const rssi = numericField(fields.rssi);
   if (battery != null) metaPatch.battery_pct = battery;
   if (rssi != null) metaPatch.rssi = rssi;
+  // Browser-flasher firmware (1.2.1+) reports its version so Devices can offer updates.
+  const firmware = typeof fields.fw === "string" ? fields.fw.trim().slice(0, 24) : "";
+  if (/^\d+\.\d+\.\d+$/.test(firmware) && firmware !== device.meta?.firmware_version) {
+    metaPatch.firmware_version = firmware;
+  }
 
   if (Object.keys(metaPatch).length > 0) {
     await updateDeviceMeta(

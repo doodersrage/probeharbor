@@ -38,7 +38,7 @@
 #include <Wire.h>
 
 #ifndef FIRMWARE_VERSION
-#define FIRMWARE_VERSION "1.2.0"
+#define FIRMWARE_VERSION "1.2.1"
 #endif
 #ifndef INGEST_HOST
 #define INGEST_HOST "probeharbor.dev"
@@ -382,7 +382,8 @@ void postReadings() {
     Serial.println("TT no probe: check the wiring (DS18B20 or DHT22 data on GPIO " + String(ONE_WIRE_PIN) + ", 4.7k pull-up to 3.3V)");
     return;
   }
-  body += "\"rssi\":" + String(WiFi.RSSI()) + "}";
+  // The dashboard compares this with /flash's current version to offer updates.
+  body += "\"fw\":\"" FIRMWARE_VERSION "\",\"rssi\":" + String(WiFi.RSSI()) + "}";
 
   // Same trust model as the sample sketches: TLS without certificate pinning.
   WiFiClientSecure client;

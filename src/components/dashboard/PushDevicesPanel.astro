@@ -1,4 +1,5 @@
 ---
+import { firmwareUpdateAvailable, LATEST_FIRMWARE_VERSION } from "../../lib/firmwareVersion";
 import type { DeviceWithSensors } from "../../lib/devices";
 import { SENSOR_KIND_LABELS } from "../../lib/devices";
 import type { UserHousehold } from "../../lib/households";
@@ -226,6 +227,17 @@ function sensorNeedsRename(label: string): boolean {
                         ? "never seen"
                         : freshnessDetail(seen)}
                     </span>
+                    {typeof device.meta?.firmware_version === "string" && (
+                      <>
+                        {" · "}firmware {device.meta.firmware_version}
+                        {firmwareUpdateAvailable(device.meta.firmware_version) && (
+                          <>
+                            {" · "}
+                            <a class="text-link" href="/flash">Update to {LATEST_FIRMWARE_VERSION}</a>
+                          </>
+                        )}
+                      </>
+                    )}
                   </p>
                   {showRenameHint && (
                     <p class="m-0 mt-1 text-sm text-[var(--color-text-muted)]">

@@ -19,6 +19,7 @@ const FLAT_INGEST_SKIP = new Set([
   "battery",
   "battery_pct",
   "rssi",
+  "fw",
   "meta",
   "e",
   "records",
