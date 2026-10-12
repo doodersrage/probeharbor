@@ -24,7 +24,7 @@
 #include <WiFiManager.h>
 
 #ifndef FIRMWARE_VERSION
-#define FIRMWARE_VERSION "1.1.0"
+#define FIRMWARE_VERSION "1.1.1"
 #endif
 #ifndef INGEST_HOST
 #define INGEST_HOST "probeharbor.dev"
@@ -51,6 +51,34 @@ DHTesp dht;
 // Once a DHT answers, stop scanning for DS18B20s: the 1-Wire reset pulse on the
 // shared pin can look like a DHT start signal and spoil the next read.
 bool dhtFound = false;
+
+/** A reading only counts if the sensor answered and the numbers are physically possible. */
+static bool dhtReadingOk(const TempAndHumidity& th) {
+  return dht.getStatus() == DHTesp::ERROR_NONE && !isnan(th.temperature) && !isnan(th.humidity) &&
+         th.humidity >= 0.0f && th.humidity <= 100.0f && th.temperature > -40.0f && th.temperature < 80.0f;
+}
+
+/**
+ * Find a DHT on the pin and take a first reading. The library's AUTO_DETECT
+ * falls back to DHT11 for good after a single timeout, and a DHT22 decoded as a
+ * DHT11 gives plausible-looking but wrong values (seen in the field: 50% RH
+ * read as 25). So try DHT22 decoding first, a few times, and accept only
+ * possible values; a real DHT11 read as a DHT22 reports humidity far above
+ * 100% and falls through to DHT11.
+ */
+static bool detectDht(TempAndHumidity& out) {
+  const DHTesp::DHT_MODEL_t models[] = {DHTesp::DHT22, DHTesp::DHT11};
+  const int attempts[] = {3, 2};
+  for (int m = 0; m < 2; m++) {
+    dht.setup(ONE_WIRE_PIN, models[m]);
+    for (int i = 0; i < attempts[m]; i++) {
+      delay(dht.getMinimumSamplingPeriod());  // also lets the line settle after the 1-Wire scan
+      out = dht.getTempAndHumidity();
+      if (dhtReadingOk(out)) return true;
+    }
+  }
+  return false;
+}
 Preferences prefs;
 WiFiManager wifiManager;
 WiFiManagerParameter keyParam("key", "Device key (Dashboard → Devices)", "", MAX_KEY_LEN);
@@ -173,12 +201,15 @@ void postReadings() {
   }
   if (sent == 0) {
     // No DS18B20 on the pin: try a DHT22/DHT11 on the same data line.
-    if (!dhtFound) {
-      dht.setup(ONE_WIRE_PIN, DHTesp::AUTO_DETECT);
-      delay(dht.getMinimumSamplingPeriod());  // let it settle after the 1-Wire scan
+    TempAndHumidity th;
+    bool ok = false;
+    if (dhtFound) {
+      th = dht.getTempAndHumidity();
+      ok = dhtReadingOk(th);
+    } else {
+      ok = detectDht(th);
     }
-    TempAndHumidity th = dht.getTempAndHumidity();
-    if (dht.getStatus() == DHTesp::ERROR_NONE && !isnan(th.temperature) && !isnan(th.humidity)) {
+    if (ok) {
       char field[64];
       snprintf(field, sizeof(field), "\"temp1\":%.2f,\"humidity1\":%.1f,",
                th.temperature * 9.0f / 5.0f + 32.0f, th.humidity);
