@@ -25,6 +25,7 @@ import {
   requireHouseholdEditor,
 } from "../../../lib/householdAuth";
 import { recordHouseholdActivity } from "../../../lib/householdActivity";
+import { uniqueDeviceName } from "../../../lib/uniqueDeviceName";
 import { formRedirectPath, withQuery } from "../../../lib/siteUrl";
 import { FLASH_INGEST_KEY, setSecretFlash } from "../../../lib/secretFlash";
 import { persistEncryptedIngestKey } from "../../../lib/persistIngestKey";
@@ -361,7 +362,10 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     return redirect(withQuery(redirectTo, { error: "device_limit" }));
   }
 
-  const name = formData.get("name")?.toString().trim() || "Workshop probe";
+  const name = uniqueDeviceName(
+    formData.get("name")?.toString().trim() || "Workshop probe",
+    existing.devices.map((d) => d.name),
+  );
   const rawKey = randomKey();
   const hash = await sha256Hex(rawKey);
   const prefix = rawKey.slice(0, 8);
