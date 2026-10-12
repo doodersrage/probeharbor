@@ -6,7 +6,7 @@ import { test, expect, type Page } from "@playwright/test";
  * (firmware/probeharbor-probe). No hardware: this covers the page's side of
  * the conversation only.
  */
-type BoardMode = "ok" | "reset-first" | "wifi-fail" | "bad-key" | "no-probe";
+type BoardMode = "ok" | "dht" | "reset-first" | "wifi-fail" | "bad-key" | "no-probe";
 
 const DEVICE_KEY = "0123456789abcdef0123456789abcdef0123456789abcdef";
 
@@ -53,7 +53,10 @@ function installFakeBoard(mode: BoardMode) {
             say("TT post 401 probes=1", 700);
             say("TT key rejected: copy the device key again from Dashboard → Devices", 750);
           } else if (mode === "no-probe") {
-            say("TT no probe: check the DS18B20 wiring and the 4.7k pull-up on GPIO 4", 700);
+            say("TT no probe: check the wiring (DS18B20 or DHT22 data on GPIO 4, 4.7k pull-up to 3.3V)", 700);
+          } else if (mode === "dht") {
+            say("TT sensor: DHT22 on GPIO 4", 650);
+            say("TT post 200 probes=1", 700);
           } else {
             say("TT post 200 probes=1", 700);
           }
@@ -109,6 +112,12 @@ test.describe("browser flasher", () => {
     ]);
   });
 
+  test("names a DHT22 when the board reports one", async ({ page }) => {
+    await sendSettings(page, "dht");
+
+    await expect(page.locator("[data-flasher-status]")).toHaveText(/First reading delivered from your DHT22, with humidity/);
+  });
+
   test("resends when the board resets on connect and answers late", async ({ page }) => {
     const board = await sendSettings(page, "reset-first");
 
@@ -120,7 +129,7 @@ test.describe("browser flasher", () => {
   for (const [mode, message] of [
     ["wifi-fail", /Wifi failed: check the network name and password/],
     ["bad-key", /Key rejected: copy the device key again/],
-    ["no-probe", /No probe: check the DS18B20 wiring/],
+    ["no-probe", /No probe: check the wiring \(DS18B20 or DHT22/],
   ] as const) {
     test(`reports a ${mode} board`, async ({ page }) => {
       const board = await sendSettings(page, mode);

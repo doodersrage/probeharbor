@@ -21,7 +21,7 @@ const faqs = [
   {
     question: "What do I need?",
     answer:
-      "An ESP32, ESP32-S3, or ESP32-C3 board, a waterproof DS18B20 probe with a 4.7kΩ pull-up resistor on GPIO 4, a USB data cable, and Chrome or Edge on a desktop or laptop.",
+      "An ESP32, ESP32-S3, or ESP32-C3 board, a waterproof DS18B20 probe or a DHT22 (or DHT11) temperature and humidity sensor with a 4.7kΩ pull-up resistor on GPIO 4, a USB data cable, and Chrome or Edge on a desktop or laptop.",
   },
   {
     question: "Do I need the Arduino IDE?",
@@ -31,7 +31,12 @@ const faqs = [
   {
     question: "Can I add more than one probe?",
     answer:
-      "Yes, up to four DS18B20 probes on the same pin. They report as temp1 to temp4 and can be renamed in the dashboard.",
+      "Yes, up to four DS18B20 probes on the same pin. They report as temp1 to temp4 and can be renamed in the dashboard. A DHT22 is one sensor per board.",
+  },
+  {
+    question: "Does it work with a DHT22?",
+    answer:
+      "Yes. Wire it the same way (data to GPIO 4, 4.7kΩ to 3.3V). The firmware looks for DS18B20 probes first and, if there are none, reads a DHT22 or DHT11 on that pin, reporting temperature and humidity. A DS18B20 is the better choice against a pipe; a DHT22 suits room air and humidity in a crawlspace or basement.",
   },
   {
     question: "How do I move the board to another network?",
@@ -65,7 +70,7 @@ const schema = [
     <PageHeader
       kicker="Setup · Beta"
       title="Flash a freeze sensor from your browser"
-      lede="No Arduino IDE, no editing code. Wire a DS18B20 probe to an ESP32, install the firmware from this page, then send it your Wi‑Fi and device key over the same USB cable."
+      lede="No Arduino IDE, no editing code. Wire a DS18B20 probe or a DHT22 to an ESP32, install the firmware from this page, then send it your Wi‑Fi and device key over the same USB cable."
     >
       <a
         slot="actions"
@@ -79,8 +84,9 @@ const schema = [
       <h2 class="card-title">Before you start</h2>
       <ol class="text-sm space-y-2 pl-5 list-decimal mb-0">
         <li>
-          Wire the probe: red to 3.3V, black to GND, data to GPIO 4, with a 4.7kΩ resistor between data and 3.3V
-          (<a class="text-link" href="/about/esp32-freeze-kit">diagram</a>).
+          Wire the sensor: power to 3.3V, ground to GND, data to GPIO 4, with a 4.7kΩ resistor between data and 3.3V
+          (<a class="text-link" href="/about/esp32-freeze-kit">diagram</a>). That's the same for a DS18B20 probe (red, black,
+          yellow wires) and a DHT22; the firmware detects which one is connected.
         </li>
         <li>
           Add a push device under <a class="text-link" href="/dashboard/devices">Dashboard → Devices</a> and copy its

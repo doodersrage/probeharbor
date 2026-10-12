@@ -8,7 +8,7 @@ are set after flashing.
 | | |
 |---|---|
 | Boards | ESP32, ESP32-S3, ESP32-C3 (one image per chip family) |
-| Sensor | DS18B20 on GPIO 4 with a 4.7kΩ pull-up; up to four probes → `temp1`…`temp4` |
+| Sensor | Data on GPIO 4 with a 4.7kΩ pull-up. DS18B20s are tried first (up to four → `temp1`…`temp4`); with none, a DHT22 or DHT11 is auto-detected → `temp1` + `humidity1` |
 | Interval | One POST a minute to `/api/ingest/<device key>` |
 
 ## Setup after flashing

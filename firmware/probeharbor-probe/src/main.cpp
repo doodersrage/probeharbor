@@ -1,5 +1,5 @@
 /**
- * ProbeHarbor probe: DS18B20 → push ingest, configured after flashing.
+ * ProbeHarbor probe: DS18B20 or DHT22/DHT11 → push ingest, configured after flashing.
  *
  * Unlike the sketches under sketches/, nothing is compiled in. The Wi-Fi
  * network and the device key are set either:
@@ -8,10 +8,13 @@
  * Hold the BOOT button for 5 seconds to erase both and start over.
  *
  * Every line the device prints for the flasher page starts with "TT ".
- * Wiring: DS18B20 data on ONE_WIRE_PIN (GPIO 4) with a 4.7k pull-up to 3.3V.
- * Up to four probes on the bus report as temp1..temp4.
+ * Wiring: sensor data on SENSOR_PIN (GPIO 4) with a 4.7k pull-up to 3.3V.
+ * The pin is checked for DS18B20s first (up to four, reported as temp1..temp4);
+ * if there are none it tries a DHT22 or DHT11 (reported as temp1 + humidity1).
+ * Nothing to configure: the same wiring and image work for either sensor.
  */
 #include <Arduino.h>
+#include <DHTesp.h>
 #include <DallasTemperature.h>
 #include <HTTPClient.h>
 #include <OneWire.h>
@@ -21,7 +24,7 @@
 #include <WiFiManager.h>
 
 #ifndef FIRMWARE_VERSION
-#define FIRMWARE_VERSION "1.0.1"
+#define FIRMWARE_VERSION "1.1.0"
 #endif
 #ifndef INGEST_HOST
 #define INGEST_HOST "probeharbor.dev"
@@ -44,6 +47,10 @@ static const size_t MAX_KEY_LEN = 128;
 
 OneWire oneWire(ONE_WIRE_PIN);
 DallasTemperature probes(&oneWire);
+DHTesp dht;
+// Once a DHT answers, stop scanning for DS18B20s: the 1-Wire reset pulse on the
+// shared pin can look like a DHT start signal and spoil the next read.
+bool dhtFound = false;
 Preferences prefs;
 WiFiManager wifiManager;
 WiFiManagerParameter keyParam("key", "Device key (Dashboard → Devices)", "", MAX_KEY_LEN);
@@ -145,11 +152,14 @@ void checkResetButton() {
 
 void postReadings() {
   // Search the bus every time (a few ms) so a probe wired in, or added, after
-  // boot is picked up without a reset.
-  probes.begin();
-  probes.requestTemperatures();
-  uint8_t found = probes.getDeviceCount();
-  if (found > MAX_PROBES) found = MAX_PROBES;
+  // boot is picked up without a reset -- unless a DHT is already answering.
+  uint8_t found = 0;
+  if (!dhtFound) {
+    probes.begin();
+    probes.requestTemperatures();
+    found = probes.getDeviceCount();
+    if (found > MAX_PROBES) found = MAX_PROBES;
+  }
 
   String body = "{";
   uint8_t sent = 0;
@@ -162,7 +172,29 @@ void postReadings() {
     sent++;
   }
   if (sent == 0) {
-    Serial.println("TT no probe: check the DS18B20 wiring and the 4.7k pull-up on GPIO " + String(ONE_WIRE_PIN));
+    // No DS18B20 on the pin: try a DHT22/DHT11 on the same data line.
+    if (!dhtFound) {
+      dht.setup(ONE_WIRE_PIN, DHTesp::AUTO_DETECT);
+      delay(dht.getMinimumSamplingPeriod());  // let it settle after the 1-Wire scan
+    }
+    TempAndHumidity th = dht.getTempAndHumidity();
+    if (dht.getStatus() == DHTesp::ERROR_NONE && !isnan(th.temperature) && !isnan(th.humidity)) {
+      char field[64];
+      snprintf(field, sizeof(field), "\"temp1\":%.2f,\"humidity1\":%.1f,",
+               th.temperature * 9.0f / 5.0f + 32.0f, th.humidity);
+      body += field;
+      sent = 1;
+      if (!dhtFound) {
+        Serial.printf("TT sensor: %s on GPIO %d\n", dht.getModel() == DHTesp::DHT11 ? "DHT11" : "DHT22", ONE_WIRE_PIN);
+      }
+      dhtFound = true;
+    } else {
+      // Scan for DS18B20s again next time, in case the sensor was swapped.
+      dhtFound = false;
+    }
+  }
+  if (sent == 0) {
+    Serial.println("TT no probe: check the wiring (DS18B20 or DHT22 data on GPIO " + String(ONE_WIRE_PIN) + ", 4.7k pull-up to 3.3V)");
     return;
   }
   body += "\"rssi\":" + String(WiFi.RSSI()) + "}";

@@ -139,6 +139,7 @@ const { deviceKey = "", headingLevel: Heading = "h2" } = Astro.props;
         const startedAt = Date.now();
         let lastSent = 0;
         let acknowledged = false;
+        let sensorName: string | null = null;
         let buffer = "";
         let outcome: "ok" | "failed" | "timeout" = "timeout";
         // One read stays pending across loop passes: starting a new read each
@@ -168,6 +169,9 @@ const { deviceKey = "", headingLevel: Heading = "h2" } = Astro.props;
               status.textContent = "Settings received. Joining Wi‑Fi…";
             } else if (line === "TT wifi ok") {
               status.textContent = "On Wi‑Fi. Sending the first reading…";
+            } else if (line.startsWith("TT sensor: ")) {
+              // e.g. "TT sensor: DHT22 on GPIO 4" (firmware 1.1+; DS18B20s are the default and not announced)
+              sensorName = line.slice("TT sensor: ".length).split(" on ")[0] ?? null;
             } else if (/^TT post 2\d\d /.test(line)) {
               outcome = "ok";
             } else if (
@@ -185,11 +189,13 @@ const { deviceKey = "", headingLevel: Heading = "h2" } = Astro.props;
 
         writer.releaseLock();
         if (outcome === "ok") {
-          status.textContent = "First reading delivered. The probe is live: you can unplug it and mount it.";
+          status.textContent = sensorName
+            ? `First reading delivered from your ${sensorName}, with humidity. It's live: you can unplug it and mount it.`
+            : "First reading delivered. The probe is live: you can unplug it and mount it.";
           root.dispatchEvent(new CustomEvent("probeharbor:probe-live", { bubbles: true }));
         } else if (outcome === "timeout") {
           status.textContent = acknowledged
-            ? "The board has the settings but no reading arrived yet. Check the probe wiring, then try again."
+            ? "The board has the settings but no reading arrived yet. Check the sensor wiring (data to GPIO 4, 4.7kΩ to 3.3V), then try again."
             : "No answer from the board. Make sure the firmware install finished, then try again.";
         }
       } catch (error) {
