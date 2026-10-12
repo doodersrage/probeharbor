@@ -1,6 +1,9 @@
 import type { TempFeedConfig, TempFeedResult, TempProbeConfig } from "./tempFeedConfig";
 import {
   evaluateAlerts,
+  evaluateAlertDetails,
+  formatThresholdAlertDetail,
+  thresholdAlertTitle,
   evaluateBatteryHealth,
   evaluateFloodAlerts,
   evaluateForecastFreeze,
@@ -176,7 +179,9 @@ export async function sendThresholdAlertsIfNeeded(
     dwellSamplesBySensorId = Object.fromEntries(pairs);
   }
 
-  const messages = evaluateAlerts(settings, readings, { dwellSamplesBySensorId });
+  const details = evaluateAlertDetails(settings, readings, { dwellSamplesBySensorId });
+  const messages = details.map(formatThresholdAlertDetail);
+  const title = thresholdAlertTitle(details);
   if (messages.length > 0 && settings.escalationEnabled && settings.channelSms) {
     const lastAlert = settings.lastAlertSentAt
       ? Date.parse(settings.lastAlertSentAt)
@@ -198,7 +203,7 @@ export async function sendThresholdAlertsIfNeeded(
         email,
         settings,
         {
-          title: "Escalated: Temperature alert",
+          title: `Escalated: ${title}`,
           body: messages.join("\n"),
           kind: "threshold",
         },
@@ -245,7 +250,7 @@ export async function sendThresholdAlertsIfNeeded(
     ),
   );
   const delivery = await notifyUser(userId, email, settings, {
-    title: "Temperature alert",
+    title,
     body,
     kind: "threshold",
     meta: {

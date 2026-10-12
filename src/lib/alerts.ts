@@ -578,6 +578,41 @@ export function meetsFreezeDwell(
   return relevant.every((sample) => sample.tempF <= freezeThresholdF);
 }
 
+/** One threshold breach, before it's worded for a message or a title. */
+export type ThresholdAlertDetail =
+  | { kind: "freeze"; label: string; tempF: number; thresholdF: number; dwellMinutes: number }
+  | { kind: "humidity"; label: string; humidity: number; threshold: number };
+
+export function formatThresholdAlertDetail(detail: ThresholdAlertDetail): string {
+  if (detail.kind === "freeze") {
+    const dwellNote = detail.dwellMinutes > 0 ? ` for ${detail.dwellMinutes}+ min` : "";
+    return `${detail.label} is ${detail.tempF.toFixed(1)}°F (at or below freeze threshold ${detail.thresholdF}°F${dwellNote}).`;
+  }
+  return `${detail.label} humidity is ${detail.humidity.toFixed(0)}% (above threshold ${detail.threshold}%).`;
+}
+
+/**
+ * A title that says what happened, e.g. "Freeze: Garage pipe 31.2°F" or
+ * "Freeze: Garage pipe 31.2°F (+2 more)", so alert lists and notifications
+ * can be read without opening each one.
+ */
+export function thresholdAlertTitle(details: ThresholdAlertDetail[]): string {
+  const freezes = details.filter((d) => d.kind === "freeze");
+  const humid = details.filter((d) => d.kind === "humidity");
+  if (freezes.length > 0) {
+    const coldest = freezes.reduce((min, d) => (d.tempF < min.tempF ? d : min));
+    const more = freezes.length > 1 ? ` (+${freezes.length - 1} more)` : "";
+    const humidNote = humid.length > 0 ? ", high humidity" : "";
+    return `Freeze: ${coldest.label} ${coldest.tempF.toFixed(1)}°F${more}${humidNote}`;
+  }
+  if (humid.length > 0) {
+    const wettest = humid.reduce((max, d) => (d.humidity > max.humidity ? d : max));
+    const more = humid.length > 1 ? ` (+${humid.length - 1} more)` : "";
+    return `High humidity: ${wettest.label} ${wettest.humidity.toFixed(0)}%${more}`;
+  }
+  return "Temperature alert";
+}
+
 export function evaluateAlerts(
   settings: AlertSettings,
   readings: AlertReading[],
@@ -586,11 +621,22 @@ export function evaluateAlerts(
     nowMs?: number;
   },
 ): string[] {
+  return evaluateAlertDetails(settings, readings, options).map(formatThresholdAlertDetail);
+}
+
+export function evaluateAlertDetails(
+  settings: AlertSettings,
+  readings: AlertReading[],
+  options?: {
+    dwellSamplesBySensorId?: Record<string, Array<{ at: string; tempF: number }>>;
+    nowMs?: number;
+  },
+): ThresholdAlertDetail[] {
   if (!settings.enabled) {
     return [];
   }
 
-  const messages: string[] = [];
+  const messages: ThresholdAlertDetail[] = [];
   const nowMs = options?.nowMs ?? Date.now();
   const dwellSamples = options?.dwellSamplesBySensorId ?? {};
 
@@ -613,20 +659,23 @@ export function evaluateAlerts(
         nowMs,
       )
     ) {
-      const dwellNote =
-        settings.freezeDwellMinutes > 0
-          ? ` for ${settings.freezeDwellMinutes}+ min`
-          : "";
-      messages.push(
-        `${reading.label} is ${reading.tempf.toFixed(1)}°F (at or below freeze threshold ${freezeThreshold}°F${dwellNote}).`,
-      );
+      messages.push({
+        kind: "freeze",
+        label: reading.label,
+        tempF: reading.tempf,
+        thresholdF: freezeThreshold,
+        dwellMinutes: settings.freezeDwellMinutes,
+      });
     }
 
     const humidityThreshold = humidityThresholdForReading(settings, reading);
     if (reading.humidity >= humidityThreshold) {
-      messages.push(
-        `${reading.label} humidity is ${reading.humidity.toFixed(0)}% (above threshold ${humidityThreshold}%).`,
-      );
+      messages.push({
+        kind: "humidity",
+        label: reading.label,
+        humidity: reading.humidity,
+        threshold: humidityThreshold,
+      });
     }
   }
 

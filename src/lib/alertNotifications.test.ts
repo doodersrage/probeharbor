@@ -295,7 +295,9 @@ describe("sendThresholdAlertsIfNeeded after \"I'm on it\"", () => {
   const ackedAt = new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString();
   const withSensor: AlertReading[] = [{ label: "Garage", tempf: 30, humidity: 40, sensorId: "s1" }];
   const sentTemperatureAlerts = () =>
-    mockNotifyUser.mock.calls.filter((call) => call[3]?.title === "Temperature alert");
+    mockNotifyUser.mock.calls.filter(
+      (call) => call[3]?.kind === "threshold" && !String(call[3]?.title).startsWith("Escalated"),
+    );
 
   it("stays quiet while an acknowledged freeze continues", async () => {
     mockListRecentAlertEvents.mockResolvedValue([{ kind: "threshold", acknowledged_at: ackedAt }]);

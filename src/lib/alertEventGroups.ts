@@ -11,7 +11,8 @@ function similarityKey(event: AlertEventRow): string | null {
   if (event.meta?.feedback || event.meta?.suggestedTipId) return null;
   return [
     event.kind,
-    event.title,
+    // Titles carry readings ("Freeze: Garage 31.2°F"); the same probe at a new temperature is still a repeat.
+    event.title.replace(/-?\d+(?:\.\d+)?/g, "#"),
     [...event.channels_sent].sort().join(","),
     [...event.channels_skipped].sort().join(","),
     event.acknowledged_at ? "handled" : "open",

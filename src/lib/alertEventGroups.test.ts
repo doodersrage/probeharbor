@@ -27,6 +27,16 @@ describe("groupAlertEvents", () => {
     expect(groups[0]!.rest.map((e) => e.id)).toEqual(events.slice(1).map((e) => e.id));
   });
 
+  it("treats the same probe at different temperatures as repeats, but not a different probe", () => {
+    const events = [
+      ev({ title: "Freeze: Garage 31.2°F" }),
+      ev({ title: "Freeze: Garage 30.8°F" }),
+      ev({ title: "Freeze: Garage 29°F" }),
+      ev({ title: "Freeze: Attic 30°F" }),
+    ];
+    expect(groupAlertEvents(events).map((g) => g.rest.length)).toEqual([2, 0]);
+  });
+
   it("leaves runs of two as separate rows", () => {
     expect(groupAlertEvents([ev(), ev()]).every((g) => g.rest.length === 0)).toBe(true);
   });
