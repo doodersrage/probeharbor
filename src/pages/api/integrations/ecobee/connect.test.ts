@@ -115,7 +115,7 @@ describe("GET /api/integrations/ecobee/connect", () => {
     await GET(context);
 
     expect(context.redirect).toHaveBeenCalledWith(
-      "/dashboard/devices?thermostat_error=not_configured",
+      "/dashboard/devices?view=all&tab=pull&thermostat_error=not_configured#thermostat-connect",
     );
   });
 

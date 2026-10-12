@@ -4,6 +4,7 @@ import { requireHouseholdManager, redirectUnlessManager } from "../../../../lib/
 import { getUserEntitlements } from "../../../../lib/entitlements";
 import { buildEcobeeAuthorizeUrl } from "../../../../lib/thermostatOAuth";
 import { buildSiteUrl, THERMOSTAT_OAUTH_STATE_COOKIE } from "../../../../lib/siteUrl";
+import { thermostatReturnUrl } from "../../../../lib/thermostatReturn";
 
 function randomState(): string {
   const bytes = crypto.getRandomValues(new Uint8Array(24));
@@ -37,7 +38,7 @@ export const GET: APIRoute = async ({ request, cookies, redirect }) => {
   const redirectUri = `${buildSiteUrl(request)}/api/integrations/ecobee/callback`;
   const authorizeUrl = buildEcobeeAuthorizeUrl(state, redirectUri);
   if (!authorizeUrl) {
-    return redirect("/dashboard/devices?thermostat_error=not_configured");
+    return redirect(thermostatReturnUrl({ thermostat_error: "not_configured" }));
   }
 
   return redirect(authorizeUrl);

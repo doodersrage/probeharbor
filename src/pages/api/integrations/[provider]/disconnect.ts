@@ -7,6 +7,7 @@ import {
 } from "../../../../lib/householdAuth";
 import { deleteConnection, type ThermostatProvider } from "../../../../lib/thermostatConnections";
 import { formRedirectPath } from "../../../../lib/siteUrl";
+import { THERMOSTAT_CARD_PATH, thermostatReturnUrl } from "../../../../lib/thermostatReturn";
 
 function isThermostatProvider(value: string | undefined): value is ThermostatProvider {
   return value === "nest" || value === "ecobee";
@@ -19,7 +20,7 @@ export const POST: APIRoute = async ({ params, request, cookies, redirect }) => 
   }
 
   if (!isThermostatProvider(params.provider)) {
-    return redirect("/dashboard/devices?thermostat_error=1");
+    return redirect(thermostatReturnUrl({ thermostat_error: "1" }));
   }
 
   const manager = await requireHouseholdManager(user.id);
@@ -28,9 +29,11 @@ export const POST: APIRoute = async ({ params, request, cookies, redirect }) => 
   const ctx = householdManagerCtx(manager);
 
   const formData = await request.formData();
-  const redirectTo = formRedirectPath(formData, "/dashboard/devices");
+  const redirectTo = formRedirectPath(formData, THERMOSTAT_CARD_PATH);
 
   await deleteConnection(ctx.householdId, params.provider);
 
-  return redirect(`${redirectTo}${redirectTo.includes("?") ? "&" : "?"}thermostat_disconnected=${params.provider}`);
+  return redirect(
+    `${redirectTo}${redirectTo.includes("?") ? "&" : "?"}thermostat_disconnected=${params.provider}#thermostat-connect`,
+  );
 };

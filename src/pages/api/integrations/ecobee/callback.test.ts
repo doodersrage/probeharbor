@@ -124,7 +124,7 @@ describe("GET /api/integrations/ecobee/callback", () => {
     await GET(context);
 
     expect(context.redirect).toHaveBeenCalledWith(
-      "/dashboard/devices?thermostat_error=state_mismatch",
+      "/dashboard/devices?view=all&tab=pull&thermostat_error=state_mismatch#thermostat-connect",
     );
   });
 
@@ -137,7 +137,7 @@ describe("GET /api/integrations/ecobee/callback", () => {
 
     await GET(context);
 
-    expect(context.redirect).toHaveBeenCalledWith("/dashboard/devices?thermostat_error=denied");
+    expect(context.redirect).toHaveBeenCalledWith("/dashboard/devices?view=all&tab=pull&thermostat_error=denied#thermostat-connect");
   });
 
   it("redirects to plans when the plan cannot use thermostat integrations", async () => {
@@ -179,7 +179,7 @@ describe("GET /api/integrations/ecobee/callback", () => {
     await GET(context);
 
     expect(context.redirect).toHaveBeenCalledWith(
-      "/dashboard/devices?thermostat_error=not_configured",
+      "/dashboard/devices?view=all&tab=pull&thermostat_error=not_configured#thermostat-connect",
     );
   });
 
@@ -194,7 +194,7 @@ describe("GET /api/integrations/ecobee/callback", () => {
     await GET(context);
 
     expect(context.redirect).toHaveBeenCalledWith(
-      "/dashboard/devices?thermostat_error=exchange_failed",
+      "/dashboard/devices?view=all&tab=pull&thermostat_error=exchange_failed#thermostat-connect",
     );
   });
 
@@ -209,7 +209,7 @@ describe("GET /api/integrations/ecobee/callback", () => {
     await GET(context);
 
     expect(context.redirect).toHaveBeenCalledWith(
-      "/dashboard/devices?thermostat_error=save_failed",
+      "/dashboard/devices?view=all&tab=pull&thermostat_error=save_failed#thermostat-connect",
     );
   });
 
@@ -237,7 +237,7 @@ describe("GET /api/integrations/ecobee/callback", () => {
       }),
     );
     expect(context.redirect).toHaveBeenCalledWith(
-      "/dashboard/devices?thermostat_connected=ecobee",
+      "/dashboard/devices?view=all&tab=pull&thermostat_connected=ecobee#thermostat-connect",
     );
   });
 });

@@ -1,4 +1,5 @@
 ---
+import { THERMOSTAT_CARD_PATH } from "../lib/thermostatReturn";
 import DashboardCard from "./dashboard/DashboardCard.astro";
 import UpgradeNudge from "./UpgradeNudge.astro";
 import type { PlanTier } from "../lib/entitlements";
@@ -141,7 +142,7 @@ const showCard = entitled
               {canManage ? (
                 connection ? (
                   <form action={`/api/integrations/${provider}/disconnect`} method="post">
-                    <input type="hidden" name="redirect" value="/dashboard/devices" />
+                    <input type="hidden" name="redirect" value={THERMOSTAT_CARD_PATH} />
                     <button type="submit" class="btn-secondary">Disconnect</button>
                   </form>
                 ) : canConnect ? (

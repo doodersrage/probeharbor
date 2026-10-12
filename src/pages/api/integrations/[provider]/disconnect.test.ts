@@ -82,7 +82,7 @@ describe("POST /api/integrations/[provider]/disconnect", () => {
 
     const response = await POST(makeContext({ provider: "honeywell" }));
 
-    expect(response.headers.get("Location")).toBe("/dashboard/devices?thermostat_error=1");
+    expect(response.headers.get("Location")).toBe("/dashboard/devices?view=all&tab=pull&thermostat_error=1#thermostat-connect");
     expect(mockDeleteConnection).not.toHaveBeenCalled();
   });
 
@@ -105,7 +105,7 @@ describe("POST /api/integrations/[provider]/disconnect", () => {
 
     expect(mockDeleteConnection).toHaveBeenCalledWith("house-1", "ecobee");
     expect(response.headers.get("Location")).toBe(
-      "/dashboard/devices?thermostat_disconnected=ecobee",
+      "/dashboard/devices?thermostat_disconnected=ecobee#thermostat-connect",
     );
   });
 
@@ -116,7 +116,7 @@ describe("POST /api/integrations/[provider]/disconnect", () => {
     const response = await POST(makeContext({ provider: "nest" }));
 
     expect(response.headers.get("Location")).toBe(
-      "/dashboard/devices?tab=integrations&thermostat_disconnected=nest",
+      "/dashboard/devices?tab=integrations&thermostat_disconnected=nest#thermostat-connect",
     );
   });
 });
