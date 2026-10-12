@@ -2830,6 +2830,15 @@
     background: var(--color-danger-bg);
   }
 
+  /* Wide tables scroll inside their card on phones instead of widening the page. */
+  .table-wrap {
+    /* Containing block for absolutely positioned children (e.g. sr-only labels), so they're clipped too. */
+    position: relative;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
   .data-table {
     @apply w-full min-w-[36rem] text-left text-sm;
     border-collapse: collapse;
