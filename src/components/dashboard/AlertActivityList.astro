@@ -43,6 +43,13 @@ const items = groupAlertEvents(events).flatMap((group, groupIndex) => {
   ];
 });
 
+/** Who closed it: a person ("Handled") or the system once the condition cleared. */
+function handledLabel(event: AlertEventRow): string {
+  if (event.meta?.autoResolved === "recovered") return "Recovered";
+  if (event.meta?.autoResolved === "expired") return "Expired";
+  return "Handled";
+}
+
 function tipForEvent(event: AlertEventRow): FalseAlarmHint | null {
   const tipId = event.meta?.suggestedTipId;
   if (!tipId) return null;
@@ -116,7 +123,7 @@ function tipForEvent(event: AlertEventRow): FalseAlarmHint | null {
             )}
             <div class="mt-3">
               {event.acknowledged_at ? (
-                <span class="text-xs text-[var(--color-text-muted)]">Handled</span>
+                <span class="text-xs text-[var(--color-text-muted)]">{handledLabel(event)}</span>
               ) : event.channels_sent.length > 0 && canEdit && isActionableAlertKind(event.kind) ? (
                 <AlertAckActions
                   eventId={event.id}
@@ -201,7 +208,7 @@ function tipForEvent(event: AlertEventRow): FalseAlarmHint | null {
                 <td class="py-2 pr-3">{formatAlertChannelList(event.channels_skipped) || "—"}</td>
                 <td class="py-2">
                   {event.acknowledged_at ? (
-                    <span class="text-[var(--color-text-muted)]">Handled</span>
+                    <span class="text-[var(--color-text-muted)]">{handledLabel(event)}</span>
                   ) : event.channels_sent.length > 0 && canEdit && isActionableAlertKind(event.kind) ? (
                     <AlertAckActions
                       eventId={event.id}

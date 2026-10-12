@@ -16,7 +16,19 @@ import {
   type AlertSettings,
   type FloodAlertReading,
 } from "./alerts";
-import { listRecentAlertEvents } from "./alertEvents";
+import { autoResolveAlerts, listRecentAlertEvents } from "./alertEvents";
+
+const RECOVERY_MARGIN_F = 2;
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/** Closing alerts must never get in the way of sending them. */
+async function safeAutoResolve(...args: Parameters<typeof autoResolveAlerts>): Promise<void> {
+  try {
+    await autoResolveAlerts(...args);
+  } catch (error) {
+    console.error("auto-resolve alerts failed:", error);
+  }
+}
 import { freezeThresholdForReading, readingIncludedInThresholdAlerts } from "./thresholdSensorScope";
 import { evaluateAlertRules, type RuleEvalContext } from "./alertRules";
 import {
@@ -182,6 +194,12 @@ export async function sendThresholdAlertsIfNeeded(
   const details = evaluateAlertDetails(settings, readings, { dwellSamplesBySensorId });
   const messages = details.map(formatThresholdAlertDetail);
   const title = thresholdAlertTitle(details);
+  const recovered =
+    details.length === 0 &&
+    readings
+      .filter((reading) => readingIncludedInThresholdAlerts(settings.thresholdSensorScope, reading))
+      .every((reading) => reading.tempf >= freezeThresholdForReading(settings, reading) + RECOVERY_MARGIN_F);
+  if (recovered) await safeAutoResolve(userId, { kinds: ["threshold"], reason: "recovered" });
   if (messages.length > 0 && settings.escalationEnabled && settings.channelSms) {
     const lastAlert = settings.lastAlertSentAt
       ? Date.parse(settings.lastAlertSentAt)
@@ -278,6 +296,9 @@ export async function sendFloodAlertsIfNeeded(
   settings: AlertSettings,
   wetSensors: FloodAlertReading[],
 ): Promise<void> {
+  if (settings.enabled && wetSensors.length === 0) {
+    await safeAutoResolve(userId, { kinds: ["flood"], reason: "recovered" });
+  }
   if (!settings.enabled || wetSensors.length === 0) return;
   if (isAlertCooldownActive(settings.lastFloodAlertAt)) return;
 
@@ -516,6 +537,8 @@ export async function maybeSendThresholdAlerts(
   await maybeSendForecastFreezeAlert(userId, email, settings);
   await maybeSendRunwayAlert(userId, email, settings, householdId, latest);
   await maybeSendNwsFreezeAlert(userId, email, settings);
+  await safeAutoResolve(userId, { kinds: ["forecast", "nws", "runway", "rate"], olderThanMs: DAY_MS, reason: "expired" });
+  await safeAutoResolve(userId, { olderThanMs: 7 * DAY_MS, reason: "expired" });
 }
 
 async function buildRuleContext(
@@ -663,6 +686,10 @@ export async function maybeSendRateAndOutageAlerts(
     // Report each outage once; devices already reported stay quiet until they recover.
     if (isNewOutage(settings, device.last_seen_at)) outageMessages.push(msg);
     else stillOutCount += 1;
+  }
+
+  if (outageMessages.length === 0 && stillOutCount === 0) {
+    await safeAutoResolve(userId, { kinds: ["outage"], reason: "recovered" });
   }
 
   if (outageMessages.length > 0 && !isAlertCooldownActive(settings.lastOutageAlertAt)) {

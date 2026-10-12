@@ -13,8 +13,10 @@ vi.mock("./notify", () => ({
 }));
 
 const mockListRecentAlertEvents = vi.fn();
+const mockAutoResolveAlerts = vi.fn().mockResolvedValue(0);
 vi.mock("./alertEvents", () => ({
   listRecentAlertEvents: (...args: unknown[]) => mockListRecentAlertEvents(...args),
+  autoResolveAlerts: (...args: unknown[]) => mockAutoResolveAlerts(...args),
 }));
 
 const mockEvaluateAlertRules = vi.fn();
@@ -350,5 +352,31 @@ describe("sendThresholdAlertsIfNeeded after \"I'm on it\"", () => {
     ]);
 
     expect(sentTemperatureAlerts()).toHaveLength(1);
+  });
+});
+
+describe("alerts close themselves when the condition clears", () => {
+  const settings = { ...DEFAULT_ALERT_SETTINGS, enabled: true, freezeThresholdF: 32 };
+
+  it("closes open freeze alerts once every probe is back above freeze by the margin", async () => {
+    mockAutoResolveAlerts.mockClear();
+    mockListRecentAlertEvents.mockResolvedValue([]);
+    const { sendThresholdAlertsIfNeeded } = await import("./alertNotifications");
+    await sendThresholdAlertsIfNeeded("user-1", "a@example.com", settings, [{ label: "Garage", tempf: 40, humidity: 40 }]);
+    expect(mockAutoResolveAlerts).toHaveBeenCalledWith("user-1", { kinds: ["threshold"], reason: "recovered" });
+  });
+
+  it("leaves them open while a probe is still at or just above the line", async () => {
+    mockAutoResolveAlerts.mockClear();
+    const { sendThresholdAlertsIfNeeded } = await import("./alertNotifications");
+    await sendThresholdAlertsIfNeeded("user-1", "a@example.com", settings, [{ label: "Garage", tempf: 33, humidity: 40 }]);
+    expect(mockAutoResolveAlerts).not.toHaveBeenCalled();
+  });
+
+  it("closes flood alerts when nothing is wet", async () => {
+    mockAutoResolveAlerts.mockClear();
+    const { sendFloodAlertsIfNeeded } = await import("./alertNotifications");
+    await sendFloodAlertsIfNeeded("user-1", "a@example.com", settings, []);
+    expect(mockAutoResolveAlerts).toHaveBeenCalledWith("user-1", { kinds: ["flood"], reason: "recovered" });
   });
 });

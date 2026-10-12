@@ -13,6 +13,8 @@ export type AlertEventMeta = {
   feedbackAt?: string;
   suggestedTipId?: string;
   reasonSummary?: string;
+  /** Closed by the system because the condition cleared (or aged out), not by a person. */
+  autoResolved?: "recovered" | "expired";
 };
 
 export type AlertEventRow = {
@@ -175,6 +177,45 @@ export async function acknowledgeAllUnackedAlerts(
 
   if (error) return { ok: false, count: 0, error: error.message };
   return { ok: true, count: ids.length };
+}
+
+/**
+ * Close still-open alerts whose condition has cleared, so the unhandled count
+ * means "needs attention now" instead of growing forever. Marks them handled
+ * with meta.autoResolved so the Alerts page can say "Recovered".
+ */
+export async function autoResolveAlerts(
+  userId: string,
+  options: { kinds?: string[]; olderThanMs?: number; reason?: "recovered" | "expired" } = {},
+): Promise<number> {
+  const supabase = createServerClient();
+  let query = supabase
+    .from("alert_events")
+    .select("id, meta")
+    .eq("user_id", userId)
+    .is("acknowledged_at", null)
+    .not("channels_sent", "eq", "{}")
+    .not("kind", "in", INFORMATIONAL_KIND_FILTER)
+    .limit(200);
+  if (options.kinds?.length) query = query.in("kind", options.kinds);
+  if (options.olderThanMs) {
+    query = query.lt("created_at", new Date(Date.now() - options.olderThanMs).toISOString());
+  }
+  const { data, error } = await query;
+  if (error || !data?.length) return 0;
+
+  const resolvedAt = new Date().toISOString();
+  let resolved = 0;
+  for (const row of data as Array<{ id: number; meta: unknown }>) {
+    const meta = parseAlertEventMeta(row.meta);
+    const { error: updateError } = await supabase
+      .from("alert_events")
+      .update({ acknowledged_at: resolvedAt, meta: { ...meta, autoResolved: options.reason ?? "recovered" } })
+      .eq("id", row.id)
+      .is("acknowledged_at", null);
+    if (!updateError) resolved += 1;
+  }
+  return resolved;
 }
 
 export async function listRecentAlertEventsFiltered(
