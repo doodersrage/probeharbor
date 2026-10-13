@@ -1932,6 +1932,10 @@ export type Database = {
         Args: { caller_id: string; group_filter?: string | null; search_text?: string | null }
         Returns: number
       }
+      replace_device_sensor: {
+        Args: { p_household_id: string; p_old_sensor_id: string; p_new_sensor_id: string }
+        Returns: Json
+      }
       get_user_household_id: {
         Args: { target_user_id: string }
         Returns: string

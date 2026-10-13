@@ -1,6 +1,7 @@
 const ACTIVITY_LABELS: Record<string, string> = {
   ingest_key_revealed: "Ingest key revealed",
   device_transfer: "Device transferred",
+  sensor_replaced: "Sensor replaced",
   alert_settings_saved: "Alert settings saved",
   share_link_created: "Share link created",
   api_key_created: "API key created",

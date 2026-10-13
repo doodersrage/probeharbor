@@ -21,6 +21,7 @@ const mockDefaultUnitForKind = vi.fn();
 const mockIsSensorKind = vi.fn();
 const mockListHouseholdDevices = vi.fn();
 const mockRenamePushDevice = vi.fn();
+const mockReplaceDeviceSensor = vi.fn();
 const mockRotatePushDeviceKey = vi.fn();
 const mockTransferDeviceToHousehold = vi.fn();
 const mockUpdateDeviceSensor = vi.fn();
@@ -32,6 +33,7 @@ vi.mock("../../../lib/devices", () => ({
   isSensorKind: (...a: unknown[]) => mockIsSensorKind(...a),
   listHouseholdDevices: (...a: unknown[]) => mockListHouseholdDevices(...a),
   renamePushDevice: (...a: unknown[]) => mockRenamePushDevice(...a),
+  replaceDeviceSensor: (...a: unknown[]) => mockReplaceDeviceSensor(...a),
   rotatePushDeviceKey: (...a: unknown[]) => mockRotatePushDeviceKey(...a),
   transferDeviceToHousehold: (...a: unknown[]) => mockTransferDeviceToHousehold(...a),
   updateDeviceSensor: (...a: unknown[]) => mockUpdateDeviceSensor(...a),
@@ -431,6 +433,41 @@ describe("POST /api/devices", () => {
 
     expect(mockDeleteDeviceSensor).toHaveBeenCalledWith("s1", "d1");
     expect(context.redirect).toHaveBeenCalledWith("/dashboard/devices?sensor_deleted=1");
+  });
+
+  it("replaces a sensor, logs it, and reports how many readings moved", async () => {
+    mockListHouseholdDevices.mockResolvedValue({
+      devices: [
+        { id: "d1", name: "Old board", source: "push", sensors: [{ id: "s-old", key: "t1", label: "Garage pipe" }] },
+        { id: "d2", name: "New board", source: "push", sensors: [{ id: "s-new", key: "temp1", label: "temp1" }] },
+      ],
+    });
+    mockReplaceDeviceSensor.mockResolvedValue({ movedReadings: 1200, error: null });
+    const { POST } = await import("./index");
+    const context = makeContext({ action: "replace_sensor", old_sensor_id: "s-old", new_sensor_id: "s-new" });
+
+    await POST(context);
+
+    expect(mockReplaceDeviceSensor).toHaveBeenCalledWith(expect.any(String), "s-old", "s-new");
+    expect(mockRecordHouseholdActivity).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: "sensor_replaced",
+        detail: "Old board · Garage pipe → New board · temp1 (1200 readings moved)",
+      }),
+    );
+    expect(context.redirect).toHaveBeenCalledWith("/dashboard/devices?sensor_replaced=1200");
+  });
+
+  it("redirects with an error code, not the raw database error, when replacement fails", async () => {
+    mockListHouseholdDevices.mockResolvedValue({ devices: [] });
+    mockReplaceDeviceSensor.mockResolvedValue({ movedReadings: 0, error: 'P0001: kind_mismatch' });
+    const { POST } = await import("./index");
+    const context = makeContext({ action: "replace_sensor", old_sensor_id: "a", new_sensor_id: "b" });
+
+    await POST(context);
+
+    expect(mockRecordHouseholdActivity).not.toHaveBeenCalled();
+    expect(context.redirect).toHaveBeenCalledWith("/dashboard/devices?replace_error=kind_mismatch");
   });
 
   it("blocks device creation past the plan's device limit", async () => {

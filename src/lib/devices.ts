@@ -626,6 +626,26 @@ export async function savePullDevicesForHousehold(
   return { error: null };
 }
 
+/**
+ * Moves a retired sensor's history and settings onto its replacement and
+ * deletes the retired sensor (see replace_device_sensor migration).
+ */
+export async function replaceDeviceSensor(
+  householdId: string,
+  oldSensorId: string,
+  newSensorId: string,
+): Promise<{ movedReadings: number; error: string | null }> {
+  const supabase = createServerClient();
+  const { data, error } = await supabase.rpc("replace_device_sensor", {
+    p_household_id: householdId,
+    p_old_sensor_id: oldSensorId,
+    p_new_sensor_id: newSensorId,
+  });
+  if (error) return { movedReadings: 0, error: error.message };
+  const moved = (data as { moved_readings?: unknown } | null)?.moved_readings;
+  return { movedReadings: typeof moved === "number" ? moved : 0, error: null };
+}
+
 export async function transferDeviceToHousehold(
   deviceId: string,
   fromHouseholdId: string,

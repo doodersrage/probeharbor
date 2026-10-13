@@ -12,6 +12,7 @@ import {
   isSensorKind,
   listHouseholdDevices,
   renamePushDevice,
+  replaceDeviceSensor,
   rotatePushDeviceKey,
   transferDeviceToHousehold,
   updateDeviceSensor,
@@ -26,6 +27,7 @@ import {
 } from "../../../lib/householdAuth";
 import { recordHouseholdActivity } from "../../../lib/householdActivity";
 import { uniqueDeviceName } from "../../../lib/uniqueDeviceName";
+import { replacementErrorCode } from "../../../lib/sensorReplacement";
 import { formRedirectPath, withQuery } from "../../../lib/siteUrl";
 import { FLASH_INGEST_KEY, setSecretFlash } from "../../../lib/secretFlash";
 import { persistEncryptedIngestKey } from "../../../lib/persistIngestKey";
@@ -353,6 +355,31 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
 
     await deleteDeviceSensor(sensorId, deviceId);
     return redirect(withQuery(redirectTo, { sensor_deleted: "1" }));
+  }
+
+  if (action === "replace_sensor") {
+    const oldSensorId = formData.get("old_sensor_id")?.toString();
+    const newSensorId = formData.get("new_sensor_id")?.toString();
+    if (!oldSensorId || !newSensorId) {
+      return redirect(withQuery(redirectTo, { replace_error: "failed" }));
+    }
+    const owned = await listHouseholdDevices(householdId);
+    const sensors = owned.devices.flatMap((d) => d.sensors.map((s) => ({ ...s, deviceName: d.name })));
+    const oldSensor = sensors.find((s) => s.id === oldSensorId);
+    const newSensor = sensors.find((s) => s.id === newSensorId);
+    const result = await replaceDeviceSensor(householdId, oldSensorId, newSensorId);
+    if (result.error) {
+      return redirect(withQuery(redirectTo, { replace_error: replacementErrorCode(result.error) }));
+    }
+    await recordHouseholdActivity({
+      householdId,
+      userId: user.id,
+      action: "sensor_replaced",
+      detail: `${oldSensor ? `${oldSensor.deviceName} · ${oldSensor.label}` : "sensor"} → ${
+        newSensor ? `${newSensor.deviceName} · ${newSensor.key}` : "new sensor"
+      } (${result.movedReadings} readings moved)`,
+    });
+    return redirect(withQuery(redirectTo, { sensor_replaced: String(result.movedReadings) }));
   }
 
   // create_push only — enforce device limit here

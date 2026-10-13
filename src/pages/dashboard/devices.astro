@@ -5,6 +5,7 @@ import IngestFirmwarePanel from "../../components/dashboard/IngestFirmwarePanel.
 import DevicesFirstRunCard from "../../components/dashboard/DevicesFirstRunCard.astro";
 import DeviceHealthPanel from "../../components/dashboard/DeviceHealthPanel.astro";
 import ProtectionCoverageCard from "../../components/dashboard/ProtectionCoverageCard.astro";
+import SensorReplaceCard from "../../components/dashboard/SensorReplaceCard.astro";
 import DashboardTabNav from "../../components/dashboard/DashboardTabNav.astro";
 import PushDevicesPanel from "../../components/dashboard/PushDevicesPanel.astro";
 import PullFeedsPanel from "../../components/dashboard/PullFeedsPanel.astro";
@@ -23,6 +24,7 @@ import { getUserEntitlements } from "../../lib/entitlements";
 import { fetchLatestSensorValues } from "../../lib/sensorReadings";
 import { findStuckSensors } from "../../lib/stuckSensors";
 import { buildProtectionCoverage } from "../../lib/protectionCoverage";
+import { replacementErrorMessage } from "../../lib/sensorReplacement";
 import { latestFromShell } from "../../lib/dashboardShell";
 import UpgradeNudge from "../../components/UpgradeNudge.astro";
 import { renderIngestQrSvg } from "../../lib/qrSvg";
@@ -130,8 +132,14 @@ const atDeviceLimit =
 const noticeParam = Astro.url.searchParams.get("error");
 const bulkDeleted = Astro.url.searchParams.get("bulk_deleted");
 const bulkUpdated = Astro.url.searchParams.get("bulk_updated");
+const sensorReplaced = Astro.url.searchParams.get("sensor_replaced");
+const replaceError = Astro.url.searchParams.get("replace_error");
 const deviceNotice =
-  Astro.url.searchParams.get("device_deleted")
+  sensorReplaced
+    ? `Sensor replaced: ${Number(sensorReplaced).toLocaleString("en-US")} reading${sensorReplaced === "1" ? "" : "s"} of history moved to the new sensor.`
+    : replaceError
+      ? replacementErrorMessage(replaceError)
+  : Astro.url.searchParams.get("device_deleted")
     ? "Device deleted."
     : bulkDeleted
       ? `Deleted ${bulkDeleted} item${bulkDeleted === "1" ? "" : "s"}.`
@@ -174,6 +182,7 @@ const deviceNotice =
 
 const noticeIsError =
   Astro.url.searchParams.has("error") ||
+  Boolean(replaceError) ||
   Boolean(Astro.url.searchParams.get("feeds_error")) ||
   Boolean(Astro.url.searchParams.get("probes_error")) ||
   Boolean(Astro.url.searchParams.get("bulk_error"));
@@ -587,6 +596,10 @@ const redirectTo =
     />
     )}
 
+    {devicesView === "setup" && activeTab === "push" && canEdit && (
+      <SensorReplaceCard devices={devices} redirectTo={redirectTo} />
+    )}
+
     {/* Other hardware paths, after the user's own devices rather than before them. */}
     {devicesView === "setup" && activeTab === "push" && devices.length > 0 && (
       <DeviceIntegrationsStrip />
@@ -897,6 +910,8 @@ const redirectTo =
     "sensor_added",
     "sensor_updated",
     "sensor_deleted",
+    "sensor_replaced",
+    "replace_error",
     "feeds_saved",
     "pull_saved",
     "probes_discovered",

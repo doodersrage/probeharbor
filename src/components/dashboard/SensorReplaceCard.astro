@@ -1,0 +1,94 @@
+---
+import DashboardCard from "./DashboardCard.astro";
+import type { DeviceWithSensors } from "../../lib/devices";
+import { replacementOptionsByKind } from "../../lib/sensorReplacement";
+
+/**
+ * Swap a failed probe for a new one: history, name, thresholds, and indoor
+ * reference move to the new sensor; the old sensor is removed.
+ */
+interface Props {
+  devices: DeviceWithSensors[];
+  redirectTo: string;
+}
+
+const { devices, redirectTo } = Astro.props;
+const groups = replacementOptionsByKind(devices);
+---
+{groups.length > 0 && (
+  <DashboardCard id="replace-sensor">
+    <h2 class="card-title">Replace a sensor</h2>
+    <p class="card-subtitle mb-3">
+      Swapped a dead probe or a whole board? Once the new sensor has posted a reading, move the old one's history
+      onto it so charts, reports, and alerts carry on as one sensor.
+    </p>
+    <form
+      action="/api/devices"
+      method="post"
+      class="space-y-3"
+      data-sensor-replace-form
+      onsubmit="return confirm('Move all history from the old sensor to the new one and delete the old sensor? This can\'t be undone.');"
+    >
+      <input type="hidden" name="action" value="replace_sensor" />
+      <input type="hidden" name="redirect" value={redirectTo} />
+      <div class="grid gap-3 sm:grid-cols-2">
+        <div class="form-field mb-0">
+          <label class="form-label" for="replace-old-sensor">Old sensor (retired)</label>
+          <select class="form-input" id="replace-old-sensor" name="old_sensor_id" required>
+            <option value="">Choose…</option>
+            {groups.map((group) => (
+              <optgroup label={group.kindLabel}>
+                {group.options.map((option) => (
+                  <option value={option.sensorId} data-kind={option.kind}>{option.label}</option>
+                ))}
+              </optgroup>
+            ))}
+          </select>
+        </div>
+        <div class="form-field mb-0">
+          <label class="form-label" for="replace-new-sensor">New sensor</label>
+          <select class="form-input" id="replace-new-sensor" name="new_sensor_id" required>
+            <option value="">Choose…</option>
+            {groups.map((group) => (
+              <optgroup label={group.kindLabel}>
+                {group.options.map((option) => (
+                  <option value={option.sensorId} data-kind={option.kind}>{option.label}</option>
+                ))}
+              </optgroup>
+            ))}
+          </select>
+        </div>
+      </div>
+      <ul class="m-0 pl-5 text-sm text-[var(--color-text-muted)] list-disc">
+        <li>The new sensor takes the old one's name, so rules that match by name keep working.</li>
+        <li>Per-sensor thresholds, the indoor reference, and door history follow it.</li>
+        <li>
+          Each probe keeps its own calibration offset; old readings are adjusted so past charts look exactly the
+          same.
+        </li>
+        <li>The old sensor is deleted. If it posts again, it comes back as a new, empty sensor.</li>
+      </ul>
+      <button class="btn-secondary" type="submit">Replace sensor</button>
+    </form>
+  </DashboardCard>
+)}
+
+<script>
+  // Only offer replacements of the same type, and never the sensor itself.
+  document.querySelectorAll<HTMLFormElement>("[data-sensor-replace-form]").forEach((form) => {
+    const oldSelect = form.querySelector('select[name="old_sensor_id"]');
+    const newSelect = form.querySelector('select[name="new_sensor_id"]');
+    if (!(oldSelect instanceof HTMLSelectElement) || !(newSelect instanceof HTMLSelectElement)) return;
+    const sync = () => {
+      const chosen = oldSelect.selectedOptions[0];
+      const kind = chosen?.dataset.kind ?? "";
+      for (const option of Array.from(newSelect.options)) {
+        if (!option.value) continue;
+        option.disabled = Boolean(kind) && (option.dataset.kind !== kind || option.value === oldSelect.value);
+      }
+      if (newSelect.selectedOptions[0]?.disabled) newSelect.value = "";
+    };
+    oldSelect.addEventListener("change", sync);
+    sync();
+  });
+</script>
