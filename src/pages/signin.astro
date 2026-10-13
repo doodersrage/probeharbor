@@ -35,6 +35,7 @@ const errorMessage = getSignInErrorMessage(errorCode);
 const oauthDetail = Astro.url.searchParams.get("oauth_detail")?.trim() ?? "";
 const registered = Astro.url.searchParams.get("registered") === "1";
 const confirmed = Astro.url.searchParams.get("confirmed") === "1";
+const signedOutAll = Astro.url.searchParams.get("signed_out") === "all";
 const emailValue = Astro.url.searchParams.get("email") ?? "";
 const nextPath = Astro.url.searchParams.get("next") ?? "";
 const safeNext =
@@ -73,6 +74,11 @@ const registerHref = buildRegisterHref({ next: safeNext || REGISTER_NEXT_DEVICES
             Email confirmed. Sign in to finish setup: next stop is <strong>Devices</strong>,
             where you connect your first sensor.
           </p>
+        </div>
+      )}
+      {signedOutAll && (
+        <div class="alert-success mb-4" role="status">
+          <p class="m-0">Signed out on every device. Sign in again here when you're ready.</p>
         </div>
       )}
       {errorMessage && (

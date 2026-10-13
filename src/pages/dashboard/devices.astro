@@ -4,6 +4,7 @@ import DeviceSetupWizard from "../../components/DeviceSetupWizard.astro";
 import IngestFirmwarePanel from "../../components/dashboard/IngestFirmwarePanel.astro";
 import DevicesFirstRunCard from "../../components/dashboard/DevicesFirstRunCard.astro";
 import DeviceHealthPanel from "../../components/dashboard/DeviceHealthPanel.astro";
+import ProtectionCoverageCard from "../../components/dashboard/ProtectionCoverageCard.astro";
 import DashboardTabNav from "../../components/dashboard/DashboardTabNav.astro";
 import PushDevicesPanel from "../../components/dashboard/PushDevicesPanel.astro";
 import PullFeedsPanel from "../../components/dashboard/PullFeedsPanel.astro";
@@ -21,6 +22,7 @@ import { listConfiguredThermostatProviders } from "../../lib/thermostatOAuth";
 import { getUserEntitlements } from "../../lib/entitlements";
 import { fetchLatestSensorValues } from "../../lib/sensorReadings";
 import { findStuckSensors } from "../../lib/stuckSensors";
+import { buildProtectionCoverage } from "../../lib/protectionCoverage";
 import { latestFromShell } from "../../lib/dashboardShell";
 import UpgradeNudge from "../../components/UpgradeNudge.astro";
 import { renderIngestQrSvg } from "../../lib/qrSvg";
@@ -349,6 +351,7 @@ const redirectTo =
 
     {devicesView === "ops" && showPowerFeatures && !showDeviceWizard && (
       <DeviceHealthPanel devices={devices} latest={latest} feedHealth={feedHealth} stuck={stuckSensors} />
+      <ProtectionCoverageCard coverage={buildProtectionCoverage(devices, latest)} />
     )}
 
 

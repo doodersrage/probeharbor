@@ -42,6 +42,21 @@ export type TimeToFreezeProjection = {
   params: SpaceThermalParams | null;
   lookAheadHours: number;
   message: string;
+  /**
+   * Earliest and latest plausible hit times around `hitsAtIso`. `latestIso`
+   * null means the mild case doesn't reach the threshold inside the look-ahead.
+   * Also set when the likely case misses but a colder-than-forecast night hits.
+   */
+  window?: TimeToFreezeWindow | null;
+  /** Plain-language inputs behind the estimate, so a changed clock can be read. */
+  reasons?: string[];
+};
+
+export type TimeToFreezeWindow = {
+  earliestIso: string;
+  earliestLabel: string;
+  latestIso: string | null;
+  latestLabel: string | null;
 };
 
 export const DEFAULT_COUPLING_PER_HOUR = 0.22;
@@ -50,6 +65,13 @@ const MAX_COUPLING_PER_HOUR = 1.6;
 const PAIR_MAX_GAP_MS = 90 * 60 * 1000;
 const STEP_HOURS = 0.25;
 const DOOR_OPEN_COUPLING_MULT = 1.75;
+/**
+ * How far colder or milder than the fitted offset the window's edges assume
+ * (°F): outdoor forecast error plus how well this space's lag is known.
+ */
+const WINDOW_BAND_F: Record<TimeToFreezeConfidence, number> = { high: 3, medium: 5, low: 7 };
+/** Trend-only window: the cooling rate running this much faster or slower. */
+const TREND_WINDOW_RATE_SPREAD = 0.3;
 
 export function outdoorPointsFromHourly(
   points: Array<{ timestamp: string; tempF?: number; tempf?: number }>,
@@ -325,6 +347,38 @@ export function buildTimeToFreezeProjection(input: {
     });
     const source: TimeToFreezeSource = "forecast_model";
     const confidence = confidenceFor(source, params, null);
+    const band = WINDOW_BAND_F[confidence];
+    const scenario = (offsetDeltaF: number) =>
+      projectWithForecast({
+        currentTempF: input.currentTempF,
+        freezeThresholdF: input.freezeThresholdF,
+        params: { ...params, offsetF: params.offsetF + offsetDeltaF },
+        outdoorForecast,
+        doorOpenNearby: input.doorOpenNearby === true,
+        nowMs,
+        lookAheadHours,
+      });
+    const early = scenario(-band);
+    const late = scenario(band);
+    const label = (iso: string) => formatHitsAtLabel(iso, timeZone, new Date(nowMs));
+    const window: TimeToFreezeWindow | null = early.hitsAtIso
+      ? {
+          earliestIso: early.hitsAtIso,
+          earliestLabel: label(early.hitsAtIso),
+          latestIso: late.hitsAtIso,
+          latestLabel: late.hitsAtIso ? label(late.hitsAtIso) : null,
+        }
+      : null;
+    const reasons = forecastReasons({
+      params,
+      outdoorForecast,
+      nowMs,
+      lookAheadHours,
+      timeZone,
+      rateFPerHour: trend.rateFPerHour,
+      doorOpenNearby: input.doorOpenNearby === true,
+      band,
+    });
     if (projected.hours != null && projected.hitsAtIso) {
       const hitsAtLabel = formatHitsAtLabel(
         projected.hitsAtIso,
@@ -346,6 +400,8 @@ export function buildTimeToFreezeProjection(input: {
         params,
         lookAheadHours,
         message: `Hits ${thresholdLabel} around ${hitsAtLabel} (about ${formatDurationHours(projected.hours)}). Forecast-backed from this space's lag vs outdoor.${doorNote}`,
+        window,
+        reasons,
       };
     }
 
@@ -360,7 +416,11 @@ export function buildTimeToFreezeProjection(input: {
       rateFPerHour: trend.rateFPerHour,
       params,
       lookAheadHours,
-      message: `No freeze in the next ${lookAheadHours}h at this space's typical lag vs the outdoor forecast.`,
+      message: `No freeze in the next ${lookAheadHours}h at this space's typical lag vs the outdoor forecast.${
+        window ? ` A night ${band}°F colder than expected would reach it around ${window.earliestLabel}.` : ""
+      }`,
+      window,
+      reasons,
     };
   }
 
@@ -376,6 +436,17 @@ export function buildTimeToFreezeProjection(input: {
   if (trend.hours != null && trend.hours > 0) {
     const hitsAtIso = new Date(nowMs + trend.hours * 60 * 60 * 1000).toISOString();
     const hitsAtLabel = formatHitsAtLabel(hitsAtIso, timeZone, new Date(nowMs));
+    const atHours = (hours: number) => new Date(nowMs + hours * 60 * 60 * 1000).toISOString();
+    const earliestIso = atHours(trend.hours / (1 + TREND_WINDOW_RATE_SPREAD));
+    const latestIso = atHours(trend.hours / (1 - TREND_WINDOW_RATE_SPREAD));
+    const reasons = [
+      trend.rateFPerHour != null
+        ? `Cooling about ${Math.abs(trend.rateFPerHour).toFixed(1)}°F/hr${
+            elapsedHours != null ? ` over the last ${formatDurationHours(elapsedHours)}` : ""
+          }.`
+        : null,
+      "No outdoor forecast for this space yet, so this assumes the current cooling rate holds.",
+    ].filter((r): r is string => r != null);
     return {
       hours: trend.hours,
       hitsAtIso,
@@ -388,6 +459,13 @@ export function buildTimeToFreezeProjection(input: {
       params,
       lookAheadHours,
       message: `${trend.message} Around ${hitsAtLabel} if this cooling rate holds.`,
+      window: {
+        earliestIso,
+        earliestLabel: formatHitsAtLabel(earliestIso, timeZone, new Date(nowMs)),
+        latestIso,
+        latestLabel: formatHitsAtLabel(latestIso, timeZone, new Date(nowMs)),
+      },
+      reasons,
     };
   }
 
@@ -404,6 +482,48 @@ export function buildTimeToFreezeProjection(input: {
     lookAheadHours,
     message: trend.message,
   };
+}
+
+function forecastReasons(input: {
+  params: SpaceThermalParams;
+  outdoorForecast: OutdoorHourlyPoint[];
+  nowMs: number;
+  lookAheadHours: number;
+  timeZone: string;
+  rateFPerHour: number | null;
+  doorOpenNearby: boolean;
+  band: number;
+}): string[] {
+  const reasons: string[] = [];
+  const horizonMs = input.nowMs + input.lookAheadHours * 60 * 60 * 1000;
+  const ahead = input.outdoorForecast.filter((p) => p.atMs >= input.nowMs && p.atMs <= horizonMs);
+  const low = ahead.reduce<OutdoorHourlyPoint | null>((min, p) => (!min || p.tempF < min.tempF ? p : min), null);
+  if (low) {
+    reasons.push(
+      `Outdoor forecast low of ${Math.round(low.tempF)}°F around ${formatHitsAtLabel(
+        new Date(low.atMs).toISOString(),
+        input.timeZone,
+        new Date(input.nowMs),
+      )}.`,
+    );
+  }
+  const offset = Math.round(input.params.offsetF);
+  reasons.push(
+    offset === 0
+      ? "This space usually sits right at the outdoor temperature."
+      : `This space usually runs about ${Math.abs(offset)}°F ${offset > 0 ? "warmer" : "colder"} than outdoors.`,
+  );
+  reasons.push(
+    input.params.fittedCoupling
+      ? `How fast it follows outdoor air is learned from ${input.params.sampleCount} paired readings.`
+      : `How fast it follows outdoor air is a default until there's more history (${input.params.sampleCount} paired readings so far).`,
+  );
+  if (input.rateFPerHour != null && input.rateFPerHour < -0.05) {
+    reasons.push(`Cooling about ${Math.abs(input.rateFPerHour).toFixed(1)}°F/hr right now.`);
+  }
+  if (input.doorOpenNearby) reasons.push("A door is open nearby, so it's assumed to lose heat faster.");
+  reasons.push(`The window assumes the space runs up to ${input.band}°F colder or milder than usual.`);
+  return reasons;
 }
 
 export function shouldAlertOnRunway(
@@ -448,5 +568,8 @@ export function timeToFreezeApiPayload(projection: TimeToFreezeProjection) {
     current_temp_f: projection.currentTempF,
     offset_f: projection.params?.offsetF ?? null,
     coupling_per_hour: projection.params?.couplingPerHour ?? null,
+    window_earliest: projection.window?.earliestIso ?? null,
+    window_latest: projection.window?.latestIso ?? null,
+    reasons: projection.reasons ?? [],
   };
 }

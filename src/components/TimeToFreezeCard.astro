@@ -32,6 +32,15 @@ const clock =
     : projection.hitsAtLabel
       ? `Hits ${thresholdLabel} around ${projection.hitsAtLabel}`
       : null;
+const freezeWindow = projection.window ?? null;
+const windowLine = !freezeWindow
+  ? null
+  : projection.hours != null
+    ? freezeWindow.latestLabel
+      ? `Window: ${freezeWindow.earliestLabel} to ${freezeWindow.latestLabel}`
+      : `Window: as early as ${freezeWindow.earliestLabel}; a milder night may not reach it`
+    : null;
+const reasons = projection.reasons ?? [];
 ---
 <DashboardCard id="time-to-freeze">
   <h2 class="card-title">Time to freeze</h2>
@@ -41,7 +50,19 @@ const clock =
   {clock ? (
     <p class="time-to-freeze-clock mb-2">{clock}</p>
   ) : null}
+  {windowLine ? <p class="mb-2 text-sm font-medium">{windowLine}</p> : null}
   <p class="mb-0 text-sm">{projection.message}</p>
+  {reasons.length > 0 ? (
+    <details class="mt-2 text-sm">
+      <summary class="cursor-pointer text-link">What this is based on</summary>
+      <ul class="mt-1 mb-0 list-disc pl-5 text-[var(--color-text-muted)]">
+        {reasons.map((reason) => <li>{reason}</li>)}
+      </ul>
+      <p class="mt-1 mb-0 text-xs text-[var(--color-text-muted)]">
+        An estimate from this space's history and the outdoor forecast, not a measurement.
+      </p>
+    </details>
+  ) : null}
   <p class="mt-2 mb-0 text-xs text-[var(--color-text-muted)]">
     {confidenceLabel}
     {projection.rateFPerHour != null && projection.rateFPerHour < -0.05

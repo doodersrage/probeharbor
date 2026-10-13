@@ -8,4 +8,14 @@ import MfaEnroll from "./MfaEnroll.tsx";
     Add an authenticator app (TOTP) or register a YubiKey OTP for two-factor sign-in.
   </p>
   <MfaEnroll client:visible />
+
+  <h3 class="mt-6 mb-1 text-base font-semibold">Sign out everywhere</h3>
+  <p class="mt-0 mb-3 text-sm text-[var(--color-text-muted)]">
+    Ends every signed-in session for this account: other browsers, phones, and the desktop app, plus this one.
+    Use it after a lost phone or a shared computer. API keys and device ingest keys are separate and keep working;
+    rotate those from their own pages.
+  </p>
+  <form method="post" action="/api/auth/signout-everywhere">
+    <button type="submit" class="btn-secondary">Sign out on all devices</button>
+  </form>
 </DashboardCard>

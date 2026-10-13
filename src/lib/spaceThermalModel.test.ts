@@ -232,3 +232,67 @@ describe("time to freeze trend helper", () => {
     expect(result.rateFPerHour).toBeLessThan(0);
   });
 });
+
+describe("time-to-freeze window", () => {
+  const indoorSamples = Array.from({ length: 12 }, (_, hour) => ({
+    at: new Date(nowMs - (12 - hour) * 3600_000).toISOString(),
+    tempF: 44 - hour * 0.5,
+  }));
+  const outdoorPast = hourlyOutdoor(nowMs - 12 * 3600_000, Array.from({ length: 13 }, (_, i) => 30 - i));
+
+  it("brackets a forecast hit with earlier and later edges and says why", () => {
+    const projection = buildTimeToFreezeProjection({
+      currentTempF: 38,
+      freezeThresholdF: 32,
+      indoorSamples,
+      outdoorPast,
+      outdoorForecast: hourlyOutdoor(nowMs, [18, 15, 12, 10, 8, 6, 5, 4, 4, 5, 8, 12, 16]),
+      nowMs,
+      timeZone: "UTC",
+      lookAheadHours: 12,
+    });
+    expect(projection.hitsAtIso).not.toBeNull();
+    const { earliestIso, latestIso } = projection.window!;
+    expect(Date.parse(earliestIso)).toBeLessThan(Date.parse(projection.hitsAtIso!));
+    if (latestIso) expect(Date.parse(latestIso)).toBeGreaterThan(Date.parse(projection.hitsAtIso!));
+    expect(projection.reasons?.[0]).toMatch(/Outdoor forecast low of 4°F/);
+    expect(projection.reasons?.some((r) => /warmer than outdoors/.test(r))).toBe(true);
+  });
+
+  it("warns when only a colder-than-forecast night would reach the threshold", () => {
+    const flat = Array.from({ length: 12 }, (_, hour) => ({
+      at: new Date(nowMs - (12 - hour) * 3600_000).toISOString(),
+      tempF: 36,
+    }));
+    const projection = buildTimeToFreezeProjection({
+      currentTempF: 36,
+      freezeThresholdF: 32,
+      indoorSamples: flat,
+      outdoorPast: hourlyOutdoor(nowMs - 12 * 3600_000, Array(13).fill(30)),
+      outdoorForecast: hourlyOutdoor(nowMs, Array(16).fill(28)),
+      nowMs,
+      timeZone: "UTC",
+      lookAheadHours: 12,
+    });
+    expect(projection.hours).toBeNull();
+    expect(projection.window?.earliestLabel).toBeTruthy();
+    expect(projection.window?.latestIso).toBeNull();
+    expect(projection.message).toMatch(/colder than expected would reach it/);
+  });
+
+  it("gives a trend-only clock a window and says there's no forecast", () => {
+    const projection = buildTimeToFreezeProjection({
+      currentTempF: 40,
+      freezeThresholdF: 32,
+      indoorSamples: [
+        { at: "2026-01-15T00:00:00.000Z", tempF: 44 },
+        { at: "2026-01-15T04:00:00.000Z", tempF: 40 },
+      ],
+      nowMs: Date.parse("2026-01-15T04:00:00.000Z"),
+      timeZone: "UTC",
+    });
+    expect(projection.window?.earliestLabel).toBeTruthy();
+    expect(projection.window?.latestLabel).toBeTruthy();
+    expect(projection.reasons?.at(-1)).toMatch(/No outdoor forecast/);
+  });
+});

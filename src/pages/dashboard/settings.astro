@@ -48,6 +48,7 @@ const [preferences, entitlements, alertSettings, tenantNotify] = await Promise.a
 const prefsSaved = Astro.url.searchParams.get("prefs_saved");
 const prefsError = Astro.url.searchParams.get("prefs_error");
 const passwordUpdated = Astro.url.searchParams.get("password") === "updated";
+const signOutAllFailed = Astro.url.searchParams.get("signout_all") === "failed";
 const deleteError = Astro.url.searchParams.get("delete_error");
 const retentionSaved = Astro.url.searchParams.get("retention_saved");
 const tenantSaved = Astro.url.searchParams.get("tenant_saved");
@@ -75,10 +76,15 @@ const planLabel =
   subtitle="Display, what Overview suggests, and your account."
 >
   <div class="space-y-6">
-    {(passwordUpdated || prefsSaved || prefsError || pinnedSaved || pinnedError || quietSaved || quietCleared || tipsHidden || tipsReset) && (
+    {(passwordUpdated || signOutAllFailed || prefsSaved || prefsError || pinnedSaved || pinnedError || quietSaved || quietCleared || tipsHidden || tipsReset) && (
       <div class="dashboard-flash">
       {passwordUpdated && (
         <p class="alert-success mt-0 mb-0" role="status">Password updated.</p>
+      )}
+      {signOutAllFailed && (
+        <p class="alert-warning mt-0 mb-0" role="alert">
+          Could not sign out other devices. You're still signed in here; try again in a minute.
+        </p>
       )}
       {prefsSaved && (
         <p class="alert-success mt-0 mb-0" role="status">Display preferences saved.</p>
@@ -119,7 +125,7 @@ const planLabel =
 
     <PwaInstallCard />
 
-    <details class="card">
+    <details class="card" id="account-security" open={signOutAllFailed}>
       <summary class="card-title cursor-pointer">Account &amp; security</summary>
       <p class="card-subtitle mb-4">
         MFA, data retention, tenant relay, and account deletion: leave these alone unless you need them.
