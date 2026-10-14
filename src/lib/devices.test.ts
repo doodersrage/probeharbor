@@ -431,3 +431,18 @@ describe("updateDeviceDetails", () => {
     expect((await updateDeviceDetails("house-1", "x", { space: null })).error).toMatch(/not found/);
   });
 });
+
+describe("updateDeviceMeta", () => {
+  it("stamps last_seen_at for readings but not for bookkeeping writes", async () => {
+    const { updateDeviceMeta } = await import("./devices");
+    for (const [options, expectSeen] of [[{}, true], [{ touchLastSeen: false }, false]] as const) {
+      const read = mockQuery({ data: { meta: { battery_pct: 80 } }, error: null });
+      const write = mockQuery({ data: null, error: null });
+      mockFrom.mockReturnValueOnce(read).mockReturnValueOnce(write);
+      await updateDeviceMeta("d1", { ingest_key_enc: "x" }, options);
+      const patch = (write.update as ReturnType<typeof vi.fn>).mock.calls[0]?.[0] as Record<string, unknown>;
+      expect(patch.meta).toEqual({ battery_pct: 80, ingest_key_enc: "x" });
+      expect("last_seen_at" in patch).toBe(expectSeen);
+    }
+  });
+});

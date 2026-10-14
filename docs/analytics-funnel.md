@@ -15,7 +15,7 @@ Product events are sent client-side via `gtag` when `GA_MEASUREMENT_ID` is set a
 | `sensors_renamed` | Inline push sensor rename batch saved |
 | `onboarding_step_complete` | Overview milestones (`devices`, `sensors`, `history`, `alerts`, `alert_test`) |
 | `first_alert_test` | Test alert sent from Alerts |
-| `alert_essentials_saved` | Alert settings saved (Essentials path) |
+| `alert_essentials_saved` | Alert settings saved (Alerts → Settings, or the first-alert card on Devices) |
 | `family_share_created` | Family / share live link created |
 
 ## Recommended GA4 funnel

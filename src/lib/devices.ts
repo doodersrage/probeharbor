@@ -213,9 +213,16 @@ export async function touchDeviceLastSeen(deviceId: string): Promise<void> {
     .eq("id", deviceId);
 }
 
+/**
+ * Merge into devices.meta. By default this also stamps last_seen_at, because
+ * callers are reporting a reading; pass touchLastSeen: false for bookkeeping
+ * writes (storing the encrypted ingest key) so a new device still reads as
+ * "never seen" until its first upload.
+ */
 export async function updateDeviceMeta(
   deviceId: string,
   patch: Record<string, unknown>,
+  options: { touchLastSeen?: boolean } = {},
 ): Promise<void> {
   const supabase = createServerClient();
   const { data } = await supabase
@@ -231,7 +238,7 @@ export async function updateDeviceMeta(
     .from("devices")
     .update({
       meta: { ...existing, ...patch } as Json,
-      last_seen_at: new Date().toISOString(),
+      ...(options.touchLastSeen === false ? {} : { last_seen_at: new Date().toISOString() }),
       updated_at: new Date().toISOString(),
     })
     .eq("id", deviceId);
