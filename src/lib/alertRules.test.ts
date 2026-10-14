@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { evaluateAlertRules, parseAlertRulesFromForm, type AlertRule } from "./alertRules";
+import { evaluateAlertRules, explainAlertRules, parseAlertRulesFromForm, type AlertRule, type RuleEvalContext } from "./alertRules";
 import {
   DEFAULT_ALERT_SETTINGS,
   evaluateForecastFreeze,
@@ -262,5 +262,67 @@ describe("year over year", () => {
       ],
     );
     expect(insight?.detail).toContain("+10.0");
+  });
+});
+
+describe("explainAlertRules", () => {
+  const ctx: RuleEvalContext = {
+    readings: [
+      { label: "Garage pipe", tempf: 36, humidity: 50 },
+      { label: "Attic", tempf: 44, humidity: 40 },
+    ],
+    boolSensors: [{ label: "Garage door", kind: "door", value: false }],
+    numericSensors: [],
+    doorOpenSessions: [],
+    rateDrops: [{ label: "Garage pipe", dropF: 2 }],
+    outages: [],
+    freezeThresholdF: 34,
+    humidityThreshold: 75,
+    rateChangeF: 5,
+    outageHours: 2,
+    outdoorTempF: null,
+  };
+
+  it("says which condition held it back and how close it came", () => {
+    const [result] = explainAlertRules(
+      [{ id: "r1", enabled: true, name: "Garage cold", all: [{ type: "temp_below", labelIncludes: "garage" }, { type: "door_open" }] }],
+      ctx,
+    );
+    expect(result?.matched).toBe(false);
+    expect(result?.conditions[0]?.detail).toBe("Closest: Garage pipe at 36°F; needs ≤ 34°F.");
+    expect(result?.conditions[1]?.detail).toBe("None of 1 door sensor reads open.");
+  });
+
+  it("names the reading that satisfied a condition", () => {
+    const [result] = explainAlertRules(
+      [{ id: "r2", enabled: true, name: "Any", match: "any", all: [{ type: "temp_below", value: 40 }, { type: "flood" }] }],
+      ctx,
+    );
+    expect(result?.matched).toBe(true);
+    expect(result?.conditions[0]?.detail).toBe("Garage pipe at 36°F (≤ 40°F).");
+    expect(result?.conditions[1]?.detail).toBe("No leak sensor reporting.");
+  });
+
+  it("flags label filters that match nothing, unknown weather, and disabled rules", () => {
+    const [scoped, weather] = explainAlertRules(
+      [
+        { id: "r3", enabled: false, name: "Shed", all: [{ type: "temp_below", labelIncludes: "shed" }] },
+        { id: "r4", enabled: true, name: "Outdoor", all: [{ type: "outdoor_below" }, { type: "rate_drop" }] },
+      ],
+      ctx,
+    );
+    expect(scoped?.matched).toBe(false);
+    expect(scoped?.conditions[0]?.detail).toBe('No temperature probe with "shed" in its name.');
+    expect(weather?.conditions[0]?.detail).toMatch(/unknown/);
+    expect(weather?.conditions[1]?.detail).toBe("Biggest: Garage pipe dropped 2°F in the last hour; needs 5°F.");
+  });
+
+  it("agrees with evaluateAlertRules", () => {
+    const rules = [
+      { id: "a", enabled: true, name: "A", all: [{ type: "temp_below" as const, value: 40 }] },
+      { id: "b", enabled: true, name: "B", all: [{ type: "door_open" as const }] },
+    ];
+    const explained = explainAlertRules(rules, ctx).filter((r) => r.matched).map((r) => r.name);
+    expect(evaluateAlertRules(rules, ctx).map((m) => m.match(/"(.+)"/)?.[1])).toEqual(explained);
   });
 });

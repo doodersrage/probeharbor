@@ -29,6 +29,7 @@ import {
 } from "../lib/historyUrls";
 import { expandedChartDialogAttrs } from "../lib/chartLightbox";
 import { temperatureScale } from "../lib/chartScale";
+import { findSharedGaps, gapThresholdMs } from "../lib/chartGaps";
 
 type Point = {
   timestamp: string;
@@ -595,9 +596,11 @@ export default function HistoryChart({
         const ordered = [...series].sort(
           (a, b) => Date.parse(a.timestamp) - Date.parse(b.timestamp),
         );
+        const gapMs = gapThresholdMs(ordered.map((p) => Date.parse(p.timestamp)));
         for (let i = 1; i < ordered.length; i++) {
           const a = ordered[i - 1]!;
           const b = ordered[i]!;
+          if (Date.parse(b.timestamp) - Date.parse(a.timestamp) > gapMs) continue;
           const mid = (a.tempf + b.tempf) / 2;
           g.strokeStyle = segmentColor(mid, freezeThresholdF, highTempF, baseColor);
           g.lineWidth = 2;
@@ -605,6 +608,20 @@ export default function HistoryChart({
           g.moveTo(xFor(Date.parse(a.timestamp)), yFor(a.tempf));
           g.lineTo(xFor(Date.parse(b.timestamp)), yFor(b.tempf));
           g.stroke();
+        }
+      }
+
+      /** Path through the points, lifting the pen across stretches with no data. */
+      function traceBrokenAtGaps(ordered: Point[], yOf: (point: Point) => number) {
+        const gapMs = gapThresholdMs(ordered.map((p) => Date.parse(p.timestamp)));
+        let prevTs: number | null = null;
+        for (const point of ordered) {
+          const ts = Date.parse(point.timestamp);
+          const x = xFor(ts);
+          const y = yOf(point);
+          if (prevTs == null || ts - prevTs > gapMs) g.moveTo(x, y);
+          else g.lineTo(x, y);
+          prevTs = ts;
         }
       }
 
@@ -616,12 +633,7 @@ export default function HistoryChart({
         g.strokeStyle = color;
         g.lineWidth = 2;
         g.beginPath();
-        ordered.forEach((point, i) => {
-          const x = xFor(Date.parse(point.timestamp));
-          const y = yFor(point.tempf);
-          if (i === 0) g.moveTo(x, y);
-          else g.lineTo(x, y);
-        });
+        traceBrokenAtGaps(ordered, (point) => yFor(point.tempf));
         g.stroke();
       }
 
@@ -635,13 +647,27 @@ export default function HistoryChart({
         g.lineWidth = 2;
         g.setLineDash([6, 4]);
         g.beginPath();
-        ordered.forEach((point, i) => {
-          const x = xFor(Date.parse(point.timestamp));
-          const y = yFor(point.tempf);
-          if (i === 0) g.moveTo(x, y);
-          else g.lineTo(x, y);
-        });
+        traceBrokenAtGaps(ordered, (point) => yFor(point.tempf));
         g.stroke();
+        g.restore();
+      }
+
+      const visibleSeriesMs = [...byProbe.entries()]
+        .filter(([label]) => visibleProbes.has(label))
+        .map(([, series]) => series.map((p) => Date.parse(p.timestamp)).sort((a, b) => a - b));
+      for (const gap of findSharedGaps(visibleSeriesMs)) {
+        const x0 = Math.max(pad.left, xFor(gap.startMs));
+        const x1 = Math.min(width - pad.right, xFor(gap.endMs));
+        if (x1 - x0 < 2) continue;
+        g.save();
+        g.fillStyle = "rgba(148, 163, 184, 0.10)";
+        g.fillRect(x0, pad.top, x1 - x0, innerH);
+        if (x1 - x0 >= 44) {
+          g.fillStyle = "#94a3b8";
+          g.font = "10px system-ui, sans-serif";
+          g.textAlign = "center";
+          g.fillText("No data", (x0 + x1) / 2, pad.top + 12);
+        }
         g.restore();
       }
 
@@ -667,30 +693,16 @@ export default function HistoryChart({
         g.lineWidth = 1.5;
         g.globalAlpha = 0.9;
         g.beginPath();
-        orderedHum.forEach((point, i) => {
-          const x = xFor(Date.parse(point.timestamp));
-          const y = yForRh(point.humidity);
-          if (i === 0) g.moveTo(x, y);
-          else g.lineTo(x, y);
-        });
+        traceBrokenAtGaps(orderedHum, (point) => yForRh(point.humidity));
         g.stroke();
 
         g.strokeStyle = DEW_COLOR;
         g.setLineDash([4, 3]);
         g.beginPath();
-        let dewStarted = false;
-        for (const point of orderedHum) {
-          const dew = dewPointF(point.tempf, point.humidity);
-          if (dew == null) continue;
-          const x = xFor(Date.parse(point.timestamp));
-          const y = yFor(dew);
-          if (!dewStarted) {
-            g.moveTo(x, y);
-            dewStarted = true;
-          } else {
-            g.lineTo(x, y);
-          }
-        }
+        traceBrokenAtGaps(
+          orderedHum.filter((point) => dewPointF(point.tempf, point.humidity) != null),
+          (point) => yFor(dewPointF(point.tempf, point.humidity)!),
+        );
         g.stroke();
         g.restore();
       }

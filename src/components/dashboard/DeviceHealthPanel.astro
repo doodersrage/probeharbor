@@ -134,6 +134,10 @@ const showRssiColumn = rankedDevices.some((device) => formatDeviceRssi(device.me
                 {device.source === "push" ? "Push" : "Pull"}
                 {pullHealth ? ` · ${pullHealth.ok ? "Reachable" : pullHealth.message}` : ""}
                 {" · "}
+                <a class="text-link" href={`/api/devices/diagnostics?device_id=${device.id}`} download>
+                  Diagnostics
+                </a>
+                {" · "}
                 {device.sensors.length} sensor{device.sensors.length === 1 ? "" : "s"}
               </p>
               <p class="m-0 mt-2">
@@ -191,6 +195,14 @@ const showRssiColumn = rankedDevices.some((device) => formatDeviceRssi(device.me
                       key {device.ingest_key_prefix}…
                     </span>
                   )}
+                  <a
+                    class="text-link block text-xs"
+                    href={`/api/devices/diagnostics?device_id=${device.id}`}
+                    download
+                    title="Redacted JSON for a bug report or support email"
+                  >
+                    Download diagnostics
+                  </a>
                 </td>
                 <td class="py-2 pr-3">
                   <span class:list={["font-semibold", healthTone[health.label]]}>

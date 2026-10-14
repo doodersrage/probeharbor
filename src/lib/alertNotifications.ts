@@ -12,6 +12,7 @@ import {
   evaluateRateChange,
   evaluateRssiHealth,
   isAlertCooldownActive,
+  ALERT_COOLDOWN_MS,
   type AlertReading,
   type AlertChannelName,
   type AlertSettings,
@@ -67,7 +68,7 @@ export function formatFreezeRecoveryBody(settings: AlertSettings, readings: Aler
   return `Back to normal: ${temps} (freeze line ${settings.freezeThresholdF}°F). ${closed}`;
 }
 import { freezeThresholdForReading, readingIncludedInThresholdAlerts } from "./thresholdSensorScope";
-import { evaluateAlertRules, type RuleEvalContext } from "./alertRules";
+import { evaluateAlertRules, explainAlertRules, type RuleEvalContext, type RuleExplanation } from "./alertRules";
 import {
   getAlertSettingsForUser,
   markCooldown,
@@ -593,6 +594,8 @@ async function buildRuleContext(
   devices: DeviceWithSensors[],
   readings: AlertReading[],
   householdId?: string | null,
+  /** False for read-only checks (rule debugger): don't write door sessions. */
+  persist = true,
 ): Promise<RuleEvalContext> {
   const boolSensors: RuleEvalContext["boolSensors"] = [];
   const numericSensors: RuleEvalContext["numericSensors"] = [];
@@ -641,7 +644,7 @@ async function buildRuleContext(
       }
     }
 
-    try {
+    if (persist) try {
       await persistDoorSessions(householdId, doorOpenSessions as import("./doorDuration").DoorOpenSession[], sensorIdByLabel);
     } catch (err) {
       console.error("persistDoorSessions failed:", err);
@@ -691,6 +694,55 @@ async function buildRuleContext(
   };
 }
 
+async function attachOutdoorTemp(userId: string, settings: AlertSettings, ctx: RuleEvalContext): Promise<void> {
+  // Weather costs an API call, so only look it up when a live rule needs it.
+  const needsOutdoor = settings.alertRules.some(
+    (rule) => rule.enabled && rule.all?.some((condition) => condition.type === "outdoor_below"),
+  );
+  if (!needsOutdoor) return;
+  try {
+    const snapshot = await fetchWeatherSnapshotForConfig(await getWeatherConfigForUser(userId));
+    ctx.outdoorTempF = snapshot && Number.isFinite(snapshot.temp) ? snapshot.temp : null;
+  } catch {
+    ctx.outdoorTempF = null;
+  }
+}
+
+export type RuleCheckReport = {
+  checkedAt: string;
+  alertsEnabled: boolean;
+  /** When the rule cooldown ends, if one is running (rules send at most every 4h). */
+  cooldownUntil: string | null;
+  rules: RuleExplanation[];
+};
+
+/**
+ * Read-only: evaluate the saved rules against the latest stored readings and
+ * say why each one would or wouldn't fire right now. Sends nothing.
+ */
+export async function explainRulesForUser(
+  userId: string,
+  settings: AlertSettings,
+  householdId: string,
+  devices: DeviceWithSensors[],
+): Promise<RuleCheckReport> {
+  const latest = await fetchLatestSensorValues(householdId);
+  const readings = buildAlertReadingsFromLatestSensors(latest);
+  const ctx = await buildRuleContext(settings, devices, readings, householdId, false);
+  await attachOutdoorTemp(userId, settings, ctx);
+  const lastSent = settings.lastRuleAlertAt ? Date.parse(settings.lastRuleAlertAt) : NaN;
+  const cooldownUntil =
+    isAlertCooldownActive(settings.lastRuleAlertAt) && Number.isFinite(lastSent)
+      ? new Date(lastSent + ALERT_COOLDOWN_MS).toISOString()
+      : null;
+  return {
+    checkedAt: new Date().toISOString(),
+    alertsEnabled: settings.enabled,
+    cooldownUntil,
+    rules: explainAlertRules(settings.alertRules, ctx),
+  };
+}
+
 export async function maybeSendRuleAlerts(
   userId: string,
   email: string | null | undefined,
@@ -704,18 +756,7 @@ export async function maybeSendRuleAlerts(
   if (isAlertCooldownActive(settings.lastRuleAlertAt)) return;
 
   const ctx = await buildRuleContext(settings, devices, readings, householdId);
-  // Weather costs an API call, so only look it up when a live rule needs it.
-  const needsOutdoor = settings.alertRules.some(
-    (rule) => rule.enabled && rule.all?.some((condition) => condition.type === "outdoor_below"),
-  );
-  if (needsOutdoor) {
-    try {
-      const snapshot = await fetchWeatherSnapshotForConfig(await getWeatherConfigForUser(userId));
-      ctx.outdoorTempF = snapshot && Number.isFinite(snapshot.temp) ? snapshot.temp : null;
-    } catch {
-      ctx.outdoorTempF = null;
-    }
-  }
+  await attachOutdoorTemp(userId, settings, ctx);
   const messages = evaluateAlertRules(settings.alertRules, ctx);
   if (messages.length === 0) return;
 

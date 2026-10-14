@@ -65,144 +65,174 @@ function matchesLabel(label: string, includes?: string): boolean {
   return label.toLowerCase().includes(includes.toLowerCase());
 }
 
-function evaluateCondition(
-  condition: AlertCondition,
+/** One condition's outcome against the current readings, in words. */
+export type ConditionCheck = { matched: boolean; detail: string };
+
+export type RuleExplanation = {
+  ruleId: string;
+  name: string;
+  enabled: boolean;
+  match: "all" | "any";
+  matched: boolean;
+  conditions: Array<ConditionCheck & { condition: AlertCondition }>;
+};
+
+type Candidate = { label: string; value: number };
+
+function fmt(value: number, unit: string): string {
+  return `${Number.isInteger(value) ? value : value.toFixed(1)}${unit}`;
+}
+
+function scopeNote(noun: string, includes?: string): string {
+  return includes ? `No ${noun} with "${includes}" in its name.` : `No ${noun} reporting.`;
+}
+
+/** Threshold check over matching candidates; reports the hit or the closest miss. */
+function compareCheck(
+  items: Candidate[],
+  op: "<=" | ">=",
+  threshold: number,
+  unit: string,
+  noun: string,
+  includes?: string,
+): ConditionCheck {
+  const scoped = items.filter((item) => matchesLabel(item.label, includes));
+  if (scoped.length === 0) return { matched: false, detail: scopeNote(noun, includes) };
+  const passes = (v: number) => (op === "<=" ? v <= threshold : v >= threshold);
+  const want = `${op === "<=" ? "≤" : "≥"} ${fmt(threshold, unit)}`;
+  const hit = scoped.find((item) => passes(item.value));
+  if (hit) return { matched: true, detail: `${hit.label} at ${fmt(hit.value, unit)} (${want}).` };
+  const closest = scoped.reduce((best, item) =>
+    Math.abs(item.value - threshold) < Math.abs(best.value - threshold) ? item : best,
+  );
+  return { matched: false, detail: `Closest: ${closest.label} at ${fmt(closest.value, unit)}; needs ${want}.` };
+}
+
+function boolCheck(
   ctx: RuleEvalContext,
-): boolean {
+  kind: string,
+  wanted: boolean,
+  noun: string,
+  stateWord: string,
+  includes?: string,
+): ConditionCheck {
+  const scoped = ctx.boolSensors.filter((s) => s.kind === kind && matchesLabel(s.label, includes));
+  if (scoped.length === 0) return { matched: false, detail: scopeNote(noun, includes) };
+  const hit = scoped.find((s) => s.value === wanted);
+  return hit
+    ? { matched: true, detail: `${hit.label} reads ${stateWord}.` }
+    : { matched: false, detail: `None of ${scoped.length} ${noun}${scoped.length === 1 ? "" : "s"} reads ${stateWord}.` };
+}
+
+function numericKind(ctx: RuleEvalContext, kind: string): Candidate[] {
+  return ctx.numericSensors.filter((s) => s.kind === kind);
+}
+
+export function explainCondition(condition: AlertCondition, ctx: RuleEvalContext): ConditionCheck {
+  const inc = condition.labelIncludes;
+  const temps = ctx.readings.map((r) => ({ label: r.label, value: r.tempf }));
   switch (condition.type) {
-    case "temp_below": {
-      const threshold = condition.value ?? ctx.freezeThresholdF;
-      return ctx.readings.some(
-        (r) => matchesLabel(r.label, condition.labelIncludes) && r.tempf <= threshold,
+    case "temp_below":
+      return compareCheck(temps, "<=", condition.value ?? ctx.freezeThresholdF, "°F", "temperature probe", inc);
+    case "temp_above":
+      return compareCheck(temps, ">=", condition.value ?? HEAT_THRESHOLD_F, "°F", "temperature probe", inc);
+    case "humidity_above":
+      return compareCheck(
+        ctx.readings.map((r) => ({ label: r.label, value: r.humidity })),
+        ">=",
+        condition.value ?? ctx.humidityThreshold,
+        "%",
+        "humidity reading",
+        inc,
       );
-    }
-    case "temp_above": {
-      const threshold = condition.value ?? HEAT_THRESHOLD_F;
-      return ctx.readings.some(
-        (r) => matchesLabel(r.label, condition.labelIncludes) && r.tempf >= threshold,
-      );
-    }
-    case "humidity_above": {
-      const threshold = condition.value ?? ctx.humidityThreshold;
-      return ctx.readings.some(
-        (r) =>
-          matchesLabel(r.label, condition.labelIncludes) && r.humidity >= threshold,
-      );
-    }
     case "door_open":
-      return ctx.boolSensors.some(
-        (s) =>
-          s.kind === "door" &&
-          s.value === true &&
-          matchesLabel(s.label, condition.labelIncludes),
-      );
+      return boolCheck(ctx, "door", true, "door sensor", "open", inc);
     case "door_open_duration": {
       const minMinutes = condition.value ?? 30;
-      const minMs = minMinutes * 60 * 1000;
-      return ctx.doorOpenSessions.some((session) => {
-        if (!matchesLabel(session.label, condition.labelIncludes)) return false;
-        if (session.stillOpen) return true;
-        return (session.durationMs ?? 0) >= minMs;
-      });
+      const sessions = ctx.doorOpenSessions.filter((session) => matchesLabel(session.label, inc));
+      if (sessions.length === 0) {
+        return { matched: false, detail: `No door openings in the last 24h${inc ? ` for "${inc}"` : ""}.` };
+      }
+      const hit = sessions.find((session) => session.stillOpen || (session.durationMs ?? 0) >= minMinutes * 60 * 1000);
+      if (hit) {
+        return {
+          matched: true,
+          detail: hit.stillOpen
+            ? `${hit.label} is open now.`
+            : `${hit.label} was open ${Math.round((hit.durationMs ?? 0) / 60000)} min (≥ ${minMinutes} min).`,
+        };
+      }
+      const longest = Math.max(...sessions.map((session) => session.durationMs ?? 0));
+      return { matched: false, detail: `Longest opening in 24h: ${Math.round(longest / 60000)} min; needs ${minMinutes}.` };
     }
     case "flood":
-      return ctx.boolSensors.some(
-        (s) =>
-          s.kind === "flood" &&
-          s.value === true &&
-          matchesLabel(s.label, condition.labelIncludes),
-      );
+      return boolCheck(ctx, "flood", true, "leak sensor", "wet", inc);
     case "power_off":
-      return ctx.boolSensors.some(
-        (s) =>
-          s.kind === "power" &&
-          s.value === false &&
-          matchesLabel(s.label, condition.labelIncludes),
-      );
-    case "co2_above": {
-      const threshold = condition.value ?? 1000;
-      return ctx.numericSensors.some(
-        (s) =>
-          s.kind === "co2" &&
-          matchesLabel(s.label, condition.labelIncludes) &&
-          s.value >= threshold,
-      );
-    }
-    case "pressure_below": {
-      const threshold = condition.value ?? 980;
-      return ctx.numericSensors.some(
-        (s) =>
-          s.kind === "pressure" &&
-          matchesLabel(s.label, condition.labelIncludes) &&
-          s.value <= threshold,
-      );
-    }
-    case "pm25_above": {
-      const threshold = condition.value ?? 35;
-      return ctx.numericSensors.some(
-        (s) =>
-          s.kind === "pm25" &&
-          matchesLabel(s.label, condition.labelIncludes) &&
-          s.value >= threshold,
-      );
-    }
-    case "voc_above": {
-      const threshold = condition.value ?? 400;
-      return ctx.numericSensors.some(
-        (s) =>
-          s.kind === "voc" &&
-          matchesLabel(s.label, condition.labelIncludes) &&
-          s.value >= threshold,
-      );
-    }
-    case "level_above": {
-      const threshold = condition.value ?? 80;
-      return ctx.numericSensors.some(
-        (s) =>
-          s.kind === "level" &&
-          matchesLabel(s.label, condition.labelIncludes) &&
-          s.value >= threshold,
-      );
-    }
-    case "energy_below": {
-      const threshold = condition.value ?? 10;
-      return ctx.numericSensors.some(
-        (s) =>
-          s.kind === "energy" &&
-          matchesLabel(s.label, condition.labelIncludes) &&
-          s.value <= threshold,
-      );
-    }
+      return boolCheck(ctx, "power", false, "power sensor", "off", inc);
+    case "co2_above":
+      return compareCheck(numericKind(ctx, "co2"), ">=", condition.value ?? 1000, " ppm", "CO₂ sensor", inc);
+    case "pressure_below":
+      return compareCheck(numericKind(ctx, "pressure"), "<=", condition.value ?? 980, " hPa", "pressure sensor", inc);
+    case "pm25_above":
+      return compareCheck(numericKind(ctx, "pm25"), ">=", condition.value ?? 35, " µg/m³", "PM2.5 sensor", inc);
+    case "voc_above":
+      return compareCheck(numericKind(ctx, "voc"), ">=", condition.value ?? 400, " ppb", "VOC sensor", inc);
+    case "level_above":
+      return compareCheck(numericKind(ctx, "level"), ">=", condition.value ?? 80, "%", "level sensor", inc);
+    case "energy_below":
+      return compareCheck(numericKind(ctx, "energy"), "<=", condition.value ?? 10, " W", "energy sensor", inc);
     case "motion_detected":
-      return ctx.boolSensors.some(
-        (s) =>
-          s.kind === "motion" &&
-          s.value === true &&
-          matchesLabel(s.label, condition.labelIncludes),
-      );
+      return boolCheck(ctx, "motion", true, "motion sensor", "motion", inc);
     case "rate_drop": {
       const threshold = condition.value ?? ctx.rateChangeF;
-      return ctx.rateDrops.some(
-        (r) =>
-          matchesLabel(r.label, condition.labelIncludes) && r.dropF >= threshold,
-      );
+      const drops = ctx.rateDrops.filter((r) => matchesLabel(r.label, inc));
+      if (drops.length === 0) return { matched: false, detail: scopeNote("probe cooling in the last hour", inc) };
+      const biggest = drops.reduce((best, r) => (r.dropF > best.dropF ? r : best));
+      const matched = drops.some((r) => r.dropF >= threshold);
+      return {
+        matched,
+        detail: `${matched ? "" : "Biggest: "}${biggest.label} dropped ${fmt(biggest.dropF, "°F")} in the last hour${
+          matched ? "" : `; needs ${fmt(threshold, "°F")}`
+        }.`,
+      };
     }
     case "outdoor_below": {
       // Unknown weather never satisfies the condition: no guessing.
       const threshold = condition.value ?? OUTDOOR_COLD_F;
-      return ctx.outdoorTempF != null && Number.isFinite(ctx.outdoorTempF) && ctx.outdoorTempF <= threshold;
+      if (ctx.outdoorTempF == null || !Number.isFinite(ctx.outdoorTempF)) {
+        return { matched: false, detail: "Outdoor temperature unknown, so this never matches." };
+      }
+      return compareCheck([{ label: "Outdoor", value: ctx.outdoorTempF }], "<=", threshold, "°F", "outdoor reading");
     }
-    case "outage": {
-      const threshold = condition.value ?? ctx.outageHours;
-      return ctx.outages.some(
-        (o) =>
-          matchesLabel(o.deviceName, condition.labelIncludes) &&
-          o.hoursSilent >= threshold,
+    case "outage":
+      return compareCheck(
+        ctx.outages.map((o) => ({ label: o.deviceName, value: o.hoursSilent })),
+        ">=",
+        condition.value ?? ctx.outageHours,
+        "h silent",
+        "device",
+        inc,
       );
-    }
     default:
-      return false;
+      return { matched: false, detail: "Unknown condition type." };
   }
+}
+
+function evaluateCondition(condition: AlertCondition, ctx: RuleEvalContext): boolean {
+  return explainCondition(condition, ctx).matched;
+}
+
+/** Every rule, matched or not, with the reason for each condition. */
+export function explainAlertRules(rules: AlertRule[], ctx: RuleEvalContext): RuleExplanation[] {
+  return rules.map((rule) => {
+    const match = rule.match === "any" ? "any" : "all";
+    const conditions = (rule.all ?? []).map((condition) => ({ condition, ...explainCondition(condition, ctx) }));
+    const matched =
+      rule.enabled &&
+      conditions.length > 0 &&
+      (match === "any" ? conditions.some((c) => c.matched) : conditions.every((c) => c.matched));
+    return { ruleId: rule.id, name: rule.name, enabled: rule.enabled, match, matched, conditions };
+  });
 }
 
 export function evaluateAlertRules(
