@@ -149,11 +149,11 @@ export function computeFreezeReadiness(input: {
     },
     {
       id: "runway",
-      label: "Time-to-freeze remaining-hours alerts",
+      label: "Time-to-freeze warning on",
       ok: alertSettings.runwayAlertEnabled,
       hint: alertSettings.runwayAlertEnabled
         ? undefined
-        : "Enable remaining-hours alerts so you hear before the probe crosses freeze.",
+        : "Turn on the time-to-freeze warning so you hear before a probe crosses freeze, while there's still time to act.",
       href: "/dashboard/alerts?tab=settings#setting-runway",
       action: "Turn on",
     },
@@ -177,11 +177,11 @@ export function computeFreezeReadiness(input: {
   if (canUseForecast) {
     checks.push({
       id: "forecast",
-      label: "Forecast cold-risk alerts (Cold-snap mode)",
+      label: "Forecast freeze warning on",
       ok: alertSettings.forecastFreezeEnabled,
       hint: alertSettings.forecastFreezeEnabled
         ? undefined
-        : "Turn on \"Cold-snap mode\" under Alerts → Settings → Essentials to hear when the outdoor forecast may hit freeze.",
+        : "Turn on \"Warn when the outdoor forecast drops below freezing\" under Alerts → Settings → When to alert.",
       href: "/dashboard/alerts?tab=settings#setting-forecast-freeze",
       action: "Turn on",
     });
@@ -194,7 +194,7 @@ export function computeFreezeReadiness(input: {
       ok: alertSettings.nwsFreezeAlertsEnabled,
       hint: alertSettings.nwsFreezeAlertsEnabled
         ? undefined
-        : "Turn on NWS freeze/cold alerts under Alerts → Settings → More triggers.",
+        : "Turn on official freeze warnings under Alerts → Settings → When to alert → Humidity, fast drops, and official freeze warnings.",
       href: "/dashboard/alerts?tab=settings#setting-nws",
       action: "Turn on",
     });

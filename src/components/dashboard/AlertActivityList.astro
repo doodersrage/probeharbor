@@ -10,6 +10,7 @@ import { formatAlertChannelList } from "../../lib/alertChannelLabels";
 import { isActionableAlertKind, type AlertEventRow } from "../../lib/alertEvents";
 import AlertAckActions from "./AlertAckActions.astro";
 import { groupAlertEvents } from "../../lib/alertEventGroups";
+import { formatAlertKind } from "../../lib/alertKindLabels";
 
 interface Props {
   events: AlertEventRow[];
@@ -83,7 +84,7 @@ function tipForEvent(event: AlertEventRow): FalseAlarmHint | null {
               <span class="text-xs text-[var(--color-text-muted)]">{age.label}</span>
             </div>
             <p class="m-0 mt-1 text-xs text-[var(--color-text-muted)]">
-              {event.kind}
+              {formatAlertKind(event.kind)}
               {" · "}
               Sent {formatAlertChannelList(event.channels_sent) || "—"}
               {event.channels_skipped.length > 0 && (
@@ -172,7 +173,7 @@ function tipForEvent(event: AlertEventRow): FalseAlarmHint | null {
                 hidden={folded}
               >
                 <td class="py-2 pr-3 whitespace-nowrap">{age.label}</td>
-                <td class="py-2 pr-3">{event.kind}</td>
+                <td class="py-2 pr-3">{formatAlertKind(event.kind)}</td>
                 <td class="py-2 pr-3">{event.title}</td>
                 <td class="py-2 pr-3 max-w-xs">
                   {why ? (

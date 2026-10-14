@@ -68,6 +68,8 @@ function alertEmailEyebrow(kind?: NotifyKind): string {
   switch (kind) {
     case "flood":
       return "Leak alert";
+    case "power":
+      return "Power off";
     case "outage":
       return "Outage";
     case "forecast":
@@ -448,7 +450,8 @@ export async function markCooldown(
     | "last_battery_trend_alert_at"
     | "last_rssi_alert_at"
     | "last_nws_alert_at"
-    | "last_flood_alert_at",
+    | "last_flood_alert_at"
+    | "last_power_alert_at",
 ): Promise<void> {
   const supabase = createServerClient();
   const now = new Date().toISOString();
@@ -464,6 +467,7 @@ export async function markCooldown(
     last_rssi_alert_at?: string;
     last_nws_alert_at?: string;
     last_flood_alert_at?: string;
+    last_power_alert_at?: string;
     updated_at: string;
   };
 
@@ -501,6 +505,7 @@ export function alertSettingsHaveDeliveryTimestamp(settings: AlertSettings): boo
       settings.lastForecastAlertAt ||
       settings.lastRunwayAlertAt ||
       settings.lastFloodAlertAt ||
+      settings.lastPowerAlertAt ||
       settings.lastNwsAlertAt ||
       settings.lastBatteryAlertAt ||
       settings.lastBatteryTrendAlertAt ||

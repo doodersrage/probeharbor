@@ -422,3 +422,34 @@ describe("stuck probe alerts", () => {
     expect(mockAutoResolveAlerts).toHaveBeenCalledWith("user-1", { kinds: ["stuck"], reason: "recovered" });
   });
 });
+
+describe("power-off alerts", () => {
+  const settings = { ...DEFAULT_ALERT_SETTINGS, enabled: true };
+  const off = [{ label: "Garage outlet", space: "Garage" }];
+
+  it("alerts when a power sensor reads off, routed to its space", async () => {
+    mockNotifyUser.mockClear();
+    mockMarkCooldown.mockClear();
+    const { sendPowerAlertsIfNeeded } = await import("./alertNotifications");
+    await sendPowerAlertsIfNeeded("user-1", "a@example.com", settings, off);
+    expect(mockNotifyUser.mock.calls[0]?.[3]).toMatchObject({ kind: "power", title: "Power off" });
+    expect(String(mockNotifyUser.mock.calls[0]?.[3]?.body)).toContain("Garage outlet reports the power is off.");
+    expect(mockNotifyUser.mock.calls[0]?.[4]).toEqual({ space: "Garage" });
+    expect(mockMarkCooldown).toHaveBeenCalledWith("user-1", "last_power_alert_at");
+  });
+
+  it("stays quiet when turned off or inside the cooldown", async () => {
+    mockNotifyUser.mockClear();
+    const { sendPowerAlertsIfNeeded } = await import("./alertNotifications");
+    await sendPowerAlertsIfNeeded("user-1", "a@example.com", { ...settings, powerAlertsEnabled: false }, off);
+    await sendPowerAlertsIfNeeded("user-1", "a@example.com", { ...settings, lastPowerAlertAt: new Date().toISOString() }, off);
+    expect(mockNotifyUser).not.toHaveBeenCalled();
+  });
+
+  it("closes the alert when power is back", async () => {
+    mockAutoResolveAlerts.mockClear();
+    const { sendPowerAlertsIfNeeded } = await import("./alertNotifications");
+    await sendPowerAlertsIfNeeded("user-1", "a@example.com", settings, []);
+    expect(mockAutoResolveAlerts).toHaveBeenCalledWith("user-1", { kinds: ["power"], reason: "recovered" });
+  });
+});

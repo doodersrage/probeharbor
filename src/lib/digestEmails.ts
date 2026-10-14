@@ -350,7 +350,7 @@ export function buildWeeklyDigestParts(input: {
     },
     tone: "brand",
     footerNote:
-      "Weekly digests can be turned off under Dashboard → Alerts → Essentials.",
+      "Weekly digests can be turned off under Dashboard → Alerts → Settings → Summary emails.",
     unsubscribeUrl: input.unsubscribeUrl,
   });
 

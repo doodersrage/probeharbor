@@ -29,6 +29,7 @@ import {
   requireHouseholdEditor,
 } from "../lib/householdAuth";
 import { recordHouseholdActivity } from "../lib/householdActivity";
+import { recordAlertSettingsChange } from "../lib/alertSettingsHistory";
 import {
   getOwnedHouseholdId,
   getOrCreateHouseholdForUser,
@@ -203,6 +204,8 @@ export const server = {
           message: error.message || "Could not save alert settings.",
         });
       }
+
+      await recordAlertSettingsChange(user.id, existing, settings);
 
       const householdId = await getUserHouseholdId(user.id);
       if (householdId) {

@@ -50,6 +50,8 @@ export type TimeToFreezeProjection = {
   window?: TimeToFreezeWindow | null;
   /** Plain-language inputs behind the estimate, so a changed clock can be read. */
   reasons?: string[];
+  /** Lowest outdoor forecast inside the look-ahead (forecast-backed estimates only). */
+  forecastLowF?: number | null;
 };
 
 export type TimeToFreezeWindow = {
@@ -369,6 +371,7 @@ export function buildTimeToFreezeProjection(input: {
           latestLabel: late.hitsAtIso ? label(late.hitsAtIso) : null,
         }
       : null;
+    const forecastLowF = lowestForecastF(outdoorForecast, nowMs, lookAheadHours);
     const reasons = forecastReasons({
       params,
       outdoorForecast,
@@ -402,6 +405,7 @@ export function buildTimeToFreezeProjection(input: {
         message: `Hits ${thresholdLabel} around ${hitsAtLabel} (about ${formatDurationHours(projected.hours)}). Forecast-backed from this space's lag vs outdoor.${doorNote}`,
         window,
         reasons,
+        forecastLowF,
       };
     }
 
@@ -421,6 +425,7 @@ export function buildTimeToFreezeProjection(input: {
       }`,
       window,
       reasons,
+      forecastLowF,
     };
   }
 
@@ -482,6 +487,12 @@ export function buildTimeToFreezeProjection(input: {
     lookAheadHours,
     message: trend.message,
   };
+}
+
+function lowestForecastF(forecast: OutdoorHourlyPoint[], nowMs: number, lookAheadHours: number): number | null {
+  const horizonMs = nowMs + lookAheadHours * 60 * 60 * 1000;
+  const ahead = forecast.filter((p) => p.atMs >= nowMs && p.atMs <= horizonMs);
+  return ahead.length > 0 ? Math.min(...ahead.map((p) => p.tempF)) : null;
 }
 
 function forecastReasons(input: {

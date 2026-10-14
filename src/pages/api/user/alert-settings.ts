@@ -15,6 +15,7 @@ import {
 } from "../../../lib/householdAuth";
 import { recordHouseholdActivity } from "../../../lib/householdActivity";
 import { getUserHouseholdId } from "../../../lib/households";
+import { recordAlertSettingsChange } from "../../../lib/alertSettingsHistory";
 import { formRedirectPath, withQuery } from "../../../lib/siteUrl";
 
 export const POST: APIRoute = async ({ request, cookies, redirect }) => {
@@ -59,6 +60,8 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   if (error) {
     return redirect(withQuery(redirectTo, { alert_error: "1" }));
   }
+
+  await recordAlertSettingsChange(user.id, existing, settings);
 
   const householdId = await getUserHouseholdId(user.id);
   if (householdId) {

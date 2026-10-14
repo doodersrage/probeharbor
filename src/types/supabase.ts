@@ -78,6 +78,48 @@ export type Database = {
         }
         Relationships: []
       }
+      freeze_estimate_snapshots: {
+        Row: {
+          data: Json
+          household_id: string
+          updated_at: string
+        }
+        Insert: {
+          data: Json
+          household_id: string
+          updated_at?: string
+        }
+        Update: {
+          data?: Json
+          household_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      alert_settings_history: {
+        Row: {
+          changes: string[]
+          id: number
+          saved_at: string
+          settings: Json
+          user_id: string
+        }
+        Insert: {
+          changes?: string[]
+          id?: number
+          saved_at?: string
+          settings: Json
+          user_id: string
+        }
+        Update: {
+          changes?: string[]
+          id?: number
+          saved_at?: string
+          settings?: Json
+          user_id?: string
+        }
+        Relationships: []
+      }
       alert_settings: {
         Row: {
           alert_playbooks: Json
@@ -121,6 +163,8 @@ export type Database = {
           last_escalation_at: string | null
           last_feed_uptime_alert_at: string | null
           last_flood_alert_at: string | null
+          last_power_alert_at: string | null
+          power_alerts_enabled: boolean
           last_forecast_alert_at: string | null
           last_freeze_drill_at: string | null
           last_monthly_report_at: string | null
@@ -212,6 +256,8 @@ export type Database = {
           last_escalation_at?: string | null
           last_feed_uptime_alert_at?: string | null
           last_flood_alert_at?: string | null
+          last_power_alert_at?: string | null
+          power_alerts_enabled?: boolean
           last_forecast_alert_at?: string | null
           last_freeze_drill_at?: string | null
           last_monthly_report_at?: string | null
@@ -303,6 +349,8 @@ export type Database = {
           last_escalation_at?: string | null
           last_feed_uptime_alert_at?: string | null
           last_flood_alert_at?: string | null
+          last_power_alert_at?: string | null
+          power_alerts_enabled?: boolean
           last_forecast_alert_at?: string | null
           last_freeze_drill_at?: string | null
           last_monthly_report_at?: string | null

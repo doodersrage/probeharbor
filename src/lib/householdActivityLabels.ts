@@ -3,6 +3,7 @@ const ACTIVITY_LABELS: Record<string, string> = {
   device_transfer: "Device transferred",
   sensor_replaced: "Sensor replaced",
   alert_settings_saved: "Alert settings saved",
+  alert_settings_restored: "Alert settings restored",
   share_link_created: "Share link created",
   api_key_created: "API key created",
   checkout_started: "Checkout started",

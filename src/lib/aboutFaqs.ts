@@ -138,7 +138,7 @@ export const aboutFaqsBySlug: Record<string, AboutFaqItem[]> = {
     {
       question: "Where do I turn time-to-freeze on?",
       answer:
-        "Dashboard → Alerts → Essentials: set a freeze threshold, enable alerts and a delivery channel, then keep alerts on so remaining-hours warnings can fire. Send a test alert while awake.",
+        "Dashboard → Alerts → When to alert: set a freeze threshold, enable alerts and a delivery channel, then keep alerts on so time-to-freeze warnings can fire. Send a test alert while awake.",
     },
   ],
   "alert-channel-cookbook": [
@@ -169,7 +169,7 @@ export const aboutFaqsBySlug: Record<string, AboutFaqItem[]> = {
     {
       question: "What should I configure after creating an account?",
       answer:
-        "Create a push device (Workshop probe by default), POST so sensors auto-import, set freeze °F + email under Alerts → Essentials (or inline on Devices after first ingest), invite household members, and optionally share a free family live link. Start a Pro trial when you need SMS, push, or expanded share scopes.",
+        "Create a push device (Workshop probe by default), POST so sensors auto-import, set freeze °F + email under Alerts → When to alert (or inline on Devices after first ingest), invite household members, and optionally share a free family live link. Start a Pro trial when you need SMS, push, or expanded share scopes.",
     },
   ],
   "ingest-and-webhooks": [

@@ -1,14 +1,17 @@
 ---
 import DashboardCard from "./dashboard/DashboardCard.astro";
 import type { TimeToFreezeProjection } from "../lib/spaceThermalModel";
+import type { FreezeEstimateChange } from "../lib/freezeEstimateChange";
 
 interface Props {
   projection: TimeToFreezeProjection;
+  /** How the estimate moved since an hour or more ago, if it moved meaningfully. */
+  change?: FreezeEstimateChange | null;
   freezeThresholdF: number;
   useCelsius?: boolean;
 }
 
-const { projection, freezeThresholdF, useCelsius = false } = Astro.props;
+const { projection, change = null, freezeThresholdF, useCelsius = false } = Astro.props;
 const thresholdLabel = useCelsius
   ? `${(((freezeThresholdF - 32) * 5) / 9).toFixed(0)}°C`
   : `${freezeThresholdF}°F`;
@@ -52,6 +55,14 @@ const reasons = projection.reasons ?? [];
   ) : null}
   {windowLine ? <p class="mb-2 text-sm font-medium">{windowLine}</p> : null}
   <p class="mb-0 text-sm">{projection.message}</p>
+  {change ? (
+    <div class="time-to-freeze-change mt-2 text-sm" role="note">
+      <p class="m-0 font-medium">{change.headline}</p>
+      <ul class="m-0 mt-1 pl-5 list-disc text-[var(--color-text-muted)]">
+        {change.reasons.map((reason) => <li>{reason}</li>)}
+      </ul>
+    </div>
+  ) : null}
   {reasons.length > 0 ? (
     <details class="mt-2 text-sm">
       <summary class="cursor-pointer text-link">What this is based on</summary>
@@ -75,6 +86,10 @@ const reasons = projection.reasons ?? [];
 </DashboardCard>
 
 <style>
+  .time-to-freeze-change {
+    border-left: 2px solid var(--color-accent);
+    padding-left: 0.6rem;
+  }
   .time-to-freeze-clock {
     margin: 0;
     font-size: 1.25rem;

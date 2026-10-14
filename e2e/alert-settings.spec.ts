@@ -15,10 +15,11 @@ test.describe("alert settings", () => {
 
     await signIn(page, "/dashboard/alerts?tab=settings");
     await expect(page.getByRole("heading", { name: /Alerts/i }).first()).toBeVisible();
-    await expect(page.getByRole("navigation", { name: /Alert settings sections/i })).toBeVisible();
-    await expect(page.locator("#alert-section-essentials")).toBeVisible();
-    await expect(page.locator("#alert-section-channels")).toBeVisible();
-    await expect(page.locator("#alert-section-advanced")).toBeVisible();
+    // When to alert → How you're told → Pausing → Summary emails → Rules → Advanced.
+    for (const id of ["essentials", "channels", "quiet", "reports", "automation", "advanced"]) {
+      await expect(page.locator(`#alert-section-${id}`)).toBeVisible();
+    }
+    await expect(page.locator("#alert-section-essentials")).toContainText("When to alert");
   });
 
   test("freeze threshold persists after save", async ({ page }) => {

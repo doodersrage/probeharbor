@@ -169,3 +169,19 @@ describe("DHT22 and same-named probes", () => {
     expect(merged).toEqual([{ label: "Probe 0", tempf: 31, humidity: 50, sensorId: "s0" }]);
   });
 });
+
+describe("buildPowerOffReadingsFromLatestSensors", () => {
+  it("returns power sensors that read off, with their space", async () => {
+    const { buildPowerOffReadingsFromLatestSensors } = await import("./alertReadings");
+    const sensor = (id: string, kind: "power" | "flood") => ({
+      id, device_id: "d", key: id, label: id, kind, unit: null, visible: true, sort_order: 0, offset_num: 0,
+    });
+    expect(
+      buildPowerOffReadingsFromLatestSensors([
+        { sensor: sensor("mains", "power"), deviceSpace: "Garage", value_bool: false },
+        { sensor: sensor("ups", "power"), deviceSpace: null, value_bool: true },
+        { sensor: sensor("sump", "flood"), deviceSpace: null, value_bool: false },
+      ]),
+    ).toEqual([{ label: "mains", space: "Garage" }]);
+  });
+});

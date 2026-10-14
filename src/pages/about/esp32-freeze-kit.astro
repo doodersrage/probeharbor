@@ -51,7 +51,7 @@ const freezeKitHowTo = getHowToSchema({
     },
     {
       name: "Enable freeze alerts",
-      text: "Set freeze threshold and email under Alerts → Essentials, send a test alert, and optionally enable time-to-freeze remaining-hours warnings.",
+      text: "Set freeze threshold and email under Alerts → When to alert, send a test alert, and optionally turn on the time-to-freeze warning.",
       url: `${siteUrl}/dashboard/alerts?tab=settings#alert-section-essentials`,
     },
   ],
@@ -189,8 +189,8 @@ const freezeKitHowTo = getHowToSchema({
     </li>
     <li>
       Set freeze threshold + email under
-      <a class="text-link" href="/dashboard/alerts?tab=settings#alert-section-essentials">Alerts → Essentials</a>
-      and enable time-to-freeze remaining-hours if you want a clock before the probe crosses freeze.
+      <a class="text-link" href="/dashboard/alerts?tab=settings#alert-section-essentials">Alerts → When to alert</a>
+      and turn on the time-to-freeze warning if you want a heads-up before the probe crosses freeze.
     </li>
   </ol>
 

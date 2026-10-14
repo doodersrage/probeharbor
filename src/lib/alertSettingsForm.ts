@@ -50,6 +50,7 @@ const ALERT_SETTINGS_CHECKBOXES = [
   "battery_trend_alerts_enabled",
   "rssi_alerts_enabled",
   "feed_uptime_alerts_enabled",
+  "power_alerts_enabled",
   "portfolio_alerts_enabled",
   "freeze_drill_enabled",
   "escalation_enabled",
@@ -175,6 +176,8 @@ export function buildAlertSettingsFromFormData(
       entitlements.canUseNwsAlerts,
     lastNwsAlertAt: existing.lastNwsAlertAt,
     lastFloodAlertAt: existing.lastFloodAlertAt,
+    powerAlertsEnabled: formCheckbox(formData, "power_alerts_enabled"),
+    lastPowerAlertAt: existing.lastPowerAlertAt,
     forecastHoursAhead: formNumber(
       formData,
       "forecast_hours_ahead",

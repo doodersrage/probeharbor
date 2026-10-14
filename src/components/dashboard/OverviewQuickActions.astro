@@ -106,14 +106,41 @@ const spaces = deviceSpaces.filter(Boolean);
         <div class="overview-quick-actions-row" data-qa-row>
           <div data-qa-ack-slot class="inline-flex flex-wrap items-center gap-2">
             {unackedCount > 0 ? (
-              <>
-                <button
-                  type="button"
-                  class="btn-secondary btn-sm"
-                  data-qa-action="ack_latest"
-                >
-                  Acknowledge latest
-                </button>
+              <button type="button" class="btn-secondary btn-sm" data-qa-action="ack_latest">Acknowledge latest</button>
+            ) : (
+              <a class="btn-ghost btn-sm" href="/dashboard/alerts" data-qa-alerts-clear>Alerts clear</a>
+            )}
+          </div>
+
+          <div data-qa-snooze-slot class="inline-flex">
+            {snoozeActive ? (
+              <button type="button" class="btn-ghost btn-sm" id="overview-snooze-action" data-qa-snooze="clear_snooze">
+                Clear snooze
+              </button>
+            ) : (
+              <details class="qa-menu">
+                <summary class="btn-ghost btn-sm">Snooze ▾</summary>
+                <div class="qa-menu-pop">
+                  {[1, 4, 24].map((hours) => (
+                    <button
+                      type="button"
+                      class="btn-ghost btn-sm"
+                      id={hours === 24 ? "overview-snooze-action" : undefined}
+                      data-qa-snooze="snooze"
+                      data-qa-hours={String(hours)}
+                    >
+                      {hours === 24 ? "24 hours" : `${hours} hour${hours === 1 ? "" : "s"}`}
+                    </button>
+                  ))}
+                </div>
+              </details>
+            )}
+          </div>
+
+          <details class="qa-menu">
+            <summary class="btn-ghost btn-sm">More ▾</summary>
+            <div class="qa-menu-pop">
+              <div data-qa-ackall-slot>
                 {unackedCount > 1 && (
                   <button
                     type="button"
@@ -121,59 +148,24 @@ const spaces = deviceSpaces.filter(Boolean);
                     data-qa-action="ack_all"
                     data-qa-confirm={`Mark all ${unackedCount} unhandled alerts as handled?`}
                   >
-                    Handle remaining (<span data-overview-field="unackedCount">{unackedCount}</span>)
+                    Handle all {" "}<span data-overview-field="unackedCount">{unackedCount}</span>
                   </button>
                 )}
-              </>
-            ) : (
-              <a class="btn-ghost btn-sm" href="/dashboard/alerts" data-qa-alerts-clear>Alerts clear</a>
-            )}
-          </div>
-
-          <div data-qa-snooze-slot class="inline-flex flex-wrap items-center gap-1">
-            {snoozeActive ? (
-              <button
-                type="button"
-                class="btn-ghost btn-sm"
-                id="overview-snooze-action"
-                data-qa-snooze="clear_snooze"
-              >
-                Clear snooze
+              </div>
+              {householdId && <input type="hidden" data-qa-household value={householdId} />}
+              {spaces.length > 0 && (
+                <select class="form-input text-sm py-1" data-qa-space aria-label="Space checked">
+                  <option value="">Whole property</option>
+                  {spaces.map((space) => (
+                    <option value={space}>{space}</option>
+                  ))}
+                </select>
+              )}
+              <button type="button" class="btn-ghost btn-sm" id="overview-checked-space" data-qa-checked>
+                I checked the space
               </button>
-            ) : (
-              <>
-                <span class="text-sm text-[var(--color-text-muted)]">Snooze</span>
-                {[1, 4, 24].map((hours) => (
-                  <button
-                    type="button"
-                    class="btn-secondary btn-sm"
-                    id={hours === 24 ? "overview-snooze-action" : undefined}
-                    data-qa-snooze="snooze"
-                    data-qa-hours={String(hours)}
-                  >
-                    {hours}h
-                  </button>
-                ))}
-              </>
-            )}
-          </div>
-
-          <div class="inline-flex flex-wrap items-center gap-2">
-            {householdId && (
-              <input type="hidden" data-qa-household value={householdId} />
-            )}
-            {spaces.length > 0 && (
-              <select class="form-input text-sm py-1" data-qa-space aria-label="Space checked">
-                <option value="">Whole property</option>
-                {spaces.map((space) => (
-                  <option value={space}>{space}</option>
-                ))}
-              </select>
-            )}
-            <button type="button" class="btn-ghost btn-sm" id="overview-checked-space" data-qa-checked>
-              I checked the space
-            </button>
-          </div>
+            </div>
+          </details>
           <span
             class="overview-checked-status text-sm text-[var(--color-text-muted)]"
             id="overview-checked-status"
@@ -305,6 +297,10 @@ const spaces = deviceSpaces.filter(Boolean);
   document.addEventListener("click", (event) => {
     const target = event.target;
     if (!(target instanceof HTMLElement)) return;
+    // Close any open menu unless the click was inside it (the space picker needs to stay open).
+    document.querySelectorAll<HTMLDetailsElement>("details.qa-menu[open]").forEach((menu) => {
+      if (!menu.contains(target) || target.closest("button")) menu.open = false;
+    });
     const btn = target.closest("button[data-qa-action], button[data-qa-snooze], button[data-qa-checked]");
     if (!(btn instanceof HTMLButtonElement) || btn.disabled) return;
     void handleQuickAction(btn);
@@ -336,5 +332,44 @@ const spaces = deviceSpaces.filter(Boolean);
 
   .overview-quick-actions-summary::-webkit-details-marker {
     display: none;
+  }
+
+</style>
+
+<style is:global>
+  /* Global: the Overview soft refresh rebuilds these menus from HTML strings. */
+  /* Small dropdowns so the status card shows one primary action, not six. */
+  .qa-menu {
+    position: relative;
+  }
+  .qa-menu > summary {
+    list-style: none;
+    cursor: pointer;
+  }
+  .qa-menu > summary::-webkit-details-marker {
+    display: none;
+  }
+  .qa-menu-pop {
+    position: absolute;
+    z-index: 20;
+    top: calc(100% + 0.25rem);
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.25rem;
+    min-width: 11rem;
+    padding: 0.5rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.75rem;
+    background: var(--color-surface, #0f1f2c);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  }
+  .qa-menu-pop > button,
+  .qa-menu-pop [data-qa-ackall-slot] > button {
+    justify-content: flex-start;
+    text-align: left;
+    white-space: nowrap;
+    width: 100%;
   }
 </style>

@@ -28,6 +28,8 @@ test.describe("happy path essentials", () => {
     await expect(
       page.locator('input[name="outage_alerts_enabled"]'),
     ).toBeVisible();
+    // The weekly digest lives under Summary emails, collapsed by default.
+    await page.locator("#alert-section-reports > summary").click();
     await expect(page.locator('input[name="digest_enabled"]')).toBeVisible();
     await expect(page.locator("#send-test-alert")).toBeVisible();
   });

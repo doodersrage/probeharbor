@@ -750,13 +750,13 @@ export const expandedAboutContent: Record<string, AboutContentBlock[]> = {
   "cold-snap-playbook": [
       { type: "p", html: "A freeze alert only helps if someone knows what to do next. This playbook covers the night before a cold snap, the moment an alert fires, and the morning after, so ProbeHarbor becomes a response loop, not just a chart." },
       { type: "h2", text: "Before the cold snap" },
-      { type: "ol", items: ["Confirm the <a class=\"text-link\" href=\"/about/freeze-protection-thresholds\">freeze threshold</a> matches your coldest zone (often a few degrees above hard freeze).","Enable email under <a class=\"text-link\" href=\"/dashboard/alerts?tab=settings#alert-section-essentials\">Alerts → Essentials</a> (plus push, and SMS on Pro), see the <a class=\"text-link\" href=\"/about/alert-channel-cookbook\">channel cookbook</a>.","Turn on forecast / NWS freeze inputs so you get warning before indoor air drops.","Send a <strong>test alert</strong> from Essentials or Devices while you are awake."] },
+      { type: "ol", items: ["Confirm the <a class=\"text-link\" href=\"/about/freeze-protection-thresholds\">freeze threshold</a> matches your coldest zone (often a few degrees above hard freeze).","Enable email under <a class=\"text-link\" href=\"/dashboard/alerts?tab=settings#alert-section-essentials\">Alerts → When to alert</a> (plus push, and SMS on Pro), see the <a class=\"text-link\" href=\"/about/alert-channel-cookbook\">channel cookbook</a>.","Turn on forecast / NWS freeze inputs so you get warning before indoor air drops.","Send a <strong>test alert</strong> from Alerts or Devices while you are awake."] },
       { type: "h2", text: "When an alert fires" },
       { type: "ul", items: ["**Acknowledge** it (“I’m on it”): repeat alerts stop until the space warms back above your threshold, and escalations pause if you use playbooks.","Check the coldest probe and whether a door has been open.","If you cannot respond, escalate to SMS/household members.","Keep quiet-hours bypass on for freeze/forecast so overnight alerts still arrive."] },
       { type: "h2", text: "After the snap" },
       { type: "p", html: "Review history for overnight lows, adjust the threshold if you were warned too late or too often, and read the <a class=\"text-link\" href=\"/about/temperature-probe-case-study\">probe case study</a> for placement lessons. Invite family with the <a class=\"text-link\" href=\"/about/household-sharing-walkthrough\">household sharing walkthrough</a> so one person is not the only responder. Watch melt and drip risk with the <a class=\"text-link\" href=\"/about/freeze-thaw-flood-playbook\">freeze → thaw flood playbook</a>." },
       { type: "h2", text: "Product checklist" },
-      { type: "ul", items: ["Dashboard → Alerts → Essentials (freeze °F + email)","Dashboard → Alerts → Send a test now","Optional: playbook steps if unacked after N minutes","Optional: household invites + free family live share link","Optional: enable the <a class=\"text-link\" href=\"/about/time-to-freeze\">time-to-freeze</a> runway before sleep or travel"] }
+      { type: "ul", items: ["Dashboard → Alerts → When to alert (freeze °F + email)","Dashboard → Alerts → Send a test now","Optional: playbook steps if unacked after N minutes","Optional: household invites + free family live share link","Optional: enable the <a class=\"text-link\" href=\"/about/time-to-freeze\">time-to-freeze</a> runway before sleep or travel"] }
   ],
 
   "alert-channel-cookbook": [
@@ -764,7 +764,7 @@ export const expandedAboutContent: Record<string, AboutContentBlock[]> = {
       { type: "h2", text: "Free vs Pro channels" },
       { type: "ul", items: ["**Free:** email, browser and Android push, Discord, Telegram, Slack, Teams, ntfy, Pushover.","**Pro:** SMS, WhatsApp, outbound webhooks, timed playbooks."] },
       { type: "h2", text: "Setup pattern" },
-      { type: "ol", items: ["Start with <strong>Alerts → Essentials</strong>: freeze °F + email, then open advanced channels if you need chat apps.","Fill each destination (email, phone, webhook URL, chat id).","Save alert settings.","Click <strong>Send test now</strong> and confirm delivery.","Add a second channel for escalation if the first is ignored."] },
+      { type: "ol", items: ["Start with <strong>Alerts → When to alert</strong>: freeze °F + email, then open advanced channels if you need chat apps.","Fill each destination (email, phone, webhook URL, chat id).","Save alert settings.","Click <strong>Send test now</strong> and confirm delivery.","Add a second channel for escalation if the first is ignored."] },
       { type: "h2", text: "Skipped channels" },
       { type: "p", html: "A checked channel with an empty destination is skipped when alerts fire. The save flow warns when destinations are incomplete: fix them before trusting overnight coverage. For automation into Zapier or Make, see <a class=\"text-link\" href=\"/about/zapier-make-recipes\">Zapier and Make recipes</a>." },
       { type: "h2", text: "Suggested starter stack" },
@@ -829,7 +829,7 @@ export const expandedAboutContent: Record<string, AboutContentBlock[]> = {
       { type: "h2", text: "When a pad goes wet" },
       { type: "ol", items: ["Acknowledge the alert so playbook escalations pause if you use them.","Shut the nearest supply valve; check the water heater T&amp;P and any ice-dam drip path.","Photograph the wet area and export a claims pack from history if you need carrier evidence: <a class=\"text-link\" href=\"/claims-pack\">claims pack</a>.","Reseat or dry the pad only after the leak is stopped so you do not clear the sensor while water is still flowing."] },
       { type: "h2", text: "Product checklist" },
-      { type: "ul", items: ["Dashboard → Alerts enabled (freeze + auto flood)","At least one flood/leak key reporting Dry on Home","Test alert from Essentials while pads are dry","Optional: household SMS/push for overnight wet events","Optional: <a class=\"text-link\" href=\"/about/time-to-freeze\">time-to-freeze</a> so freeze runway and flood share the same channels"] }
+      { type: "ul", items: ["Dashboard → Alerts enabled (freeze + auto flood)","At least one flood/leak key reporting Dry on Home","Test alert from Alerts while pads are dry","Optional: household SMS/push for overnight wet events","Optional: <a class=\"text-link\" href=\"/about/time-to-freeze\">time-to-freeze</a> so freeze runway and flood share the same channels"] }
   ],
 
   "time-to-freeze": [
@@ -839,7 +839,7 @@ export const expandedAboutContent: Record<string, AboutContentBlock[]> = {
       { type: "h2", text: "What the lag model uses" },
       { type: "p", html: "The clock compares indoor probe history to outdoor context and estimates how fast this garage, crawlspace, or shop cools toward your threshold. Short door openings and sensor blips can move the estimate; treat it as a runway, not a stopwatch. Pair placement lessons with <a class=\"text-link\" href=\"/about/freeze-protection-thresholds\">freeze thresholds</a> and the <a class=\"text-link\" href=\"/about/cold-snap-playbook\">cold-snap playbook</a>." },
       { type: "h2", text: "How to enable in Alerts" },
-      { type: "ol", items: ["Open <a class=\"text-link\" href=\"/dashboard/alerts\">Dashboard → Alerts → Essentials</a>.","Confirm a freeze threshold (°F) and at least one delivery channel (email on Free).","Keep alerts enabled so remaining-hours warnings can fire before the probe crosses freeze.","Send a <strong>test alert</strong> while awake so the household trusts the channel stack."] },
+      { type: "ol", items: ["Open <a class=\"text-link\" href=\"/dashboard/alerts\">Dashboard → Alerts → When to alert</a>.","Confirm a freeze threshold (°F) and at least one delivery channel (email on Free).","Keep alerts enabled so time-to-freeze warnings can fire before the probe crosses freeze.","Send a <strong>test alert</strong> while awake so the household trusts the channel stack."] },
       { type: "h2", text: "When to act on the runway" },
       { type: "ul", items: ["**Under ~4 hours**: treat like an imminent freeze: drip faucets, close doors, escalate SMS/household.","**Under ~12 hours**: prep before sleep or travel: verify channels, check the coldest zone.","**Longer runway**: useful planning signal; still confirm thresholds match the coldest pipe-adjacent probe."] },
       { type: "h2", text: "Related" },

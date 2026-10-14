@@ -36,6 +36,7 @@ export type NotifyKind =
   | "battery"
   | "rssi"
   | "stuck"
+  | "power"
   | "recovery";
 
 export type ChannelSeverityMap = Partial<Record<NotifyKind, AlertChannelName[]>>;
@@ -134,6 +135,9 @@ export type AlertSettings = {
   nwsFreezeAlertsEnabled: boolean;
   lastNwsAlertAt: string | null;
   lastFloodAlertAt: string | null;
+  /** Built-in: a power sensor reading "off" alerts like a wet leak sensor. */
+  powerAlertsEnabled: boolean;
+  lastPowerAlertAt: string | null;
   forecastHoursAhead: number;
   quietHoursEnabled: boolean;
   quietHoursStart: string;
@@ -232,6 +236,8 @@ export const DEFAULT_ALERT_SETTINGS: AlertSettings = {
   nwsFreezeAlertsEnabled: false,
   lastNwsAlertAt: null,
   lastFloodAlertAt: null,
+  powerAlertsEnabled: true,
+  lastPowerAlertAt: null,
   forecastHoursAhead: 12,
   quietHoursEnabled: false,
   quietHoursStart: "22:00",
@@ -415,6 +421,9 @@ export function rowToAlertSettings(row: Record<string, unknown> | null | undefin
       typeof row.last_nws_alert_at === "string" ? row.last_nws_alert_at : null,
     lastFloodAlertAt:
       typeof row.last_flood_alert_at === "string" ? row.last_flood_alert_at : null,
+    powerAlertsEnabled: row.power_alerts_enabled !== false,
+    lastPowerAlertAt:
+      typeof row.last_power_alert_at === "string" ? row.last_power_alert_at : null,
     forecastHoursAhead:
       typeof row.forecast_hours_ahead === "number"
         ? row.forecast_hours_ahead
@@ -702,6 +711,12 @@ export function evaluateFloodAlerts(
   );
 }
 
+/** Power sensors reading "off" notify when alerts and power alerts are on. */
+export function evaluatePowerAlerts(settings: AlertSettings, offSensors: FloodAlertReading[]): string[] {
+  if (!settings.enabled || !settings.powerAlertsEnabled) return [];
+  return offSensors.map((sensor) => `${sensor.label} reports the power is off.`);
+}
+
 export function evaluateForecastFreeze(
   settings: AlertSettings,
   forecastMinF: number | null,
@@ -857,6 +872,8 @@ export function serializeAlertSettings(settings: AlertSettings): Record<string, 
     nws_freeze_alerts_enabled: settings.nwsFreezeAlertsEnabled,
     last_nws_alert_at: settings.lastNwsAlertAt,
     last_flood_alert_at: settings.lastFloodAlertAt,
+    power_alerts_enabled: settings.powerAlertsEnabled,
+    last_power_alert_at: settings.lastPowerAlertAt,
     forecast_hours_ahead: settings.forecastHoursAhead,
     quiet_hours_enabled: settings.quietHoursEnabled,
     quiet_hours_start: settings.quietHoursStart,

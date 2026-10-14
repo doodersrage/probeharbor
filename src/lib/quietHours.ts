@@ -66,7 +66,8 @@ export function isCriticalNotifyKind(kind: NotifyKind | undefined): boolean {
     kind === "forecast" ||
     kind === "runway" ||
     kind === "nws" ||
-    kind === "flood"
+    kind === "flood" ||
+    kind === "power"
   );
 }
 

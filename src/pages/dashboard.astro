@@ -30,6 +30,7 @@ import {
   type HouseholdRole,
 } from "../lib/households";
 import TimeToFreezeCard from "../components/TimeToFreezeCard.astro";
+import { compareAndStoreFreezeEstimate, snapshotFromProjection } from "../lib/freezeEstimateChange";
 import WeekCompareCard from "../components/WeekCompareCard.astro";
 import UpgradeNudge from "../components/UpgradeNudge.astro";
 import { nextUpgradeTier } from "../lib/planComparison";
@@ -295,7 +296,6 @@ const [weatherSnapshot, nightsAtRisk, chartWeek] = await Promise.all([
   chartPromise,
 ]);
 
-const canExportCsv = entitlements.canDownloadCsv;
 const hasHistory = loadChart ? chartWeek.points.length > 0 : latest.length > 0;
 
 const chartMarkerTimes = chartWeek.points
@@ -574,10 +574,6 @@ const regionalBenchmark =
       })
     : null;
 
-const exportToDate = new Date();
-const exportFromDate = new Date(exportToDate.getTime() - 7 * 24 * 60 * 60 * 1000);
-const exportFrom = exportFromDate.toISOString().slice(0, 10);
-const exportTo = exportToDate.toISOString().slice(0, 10);
 
 const useCelsius = preferences.useCelsius;
 const outdoorSplit = splitOpenMeteoPastAndForecast(outdoorHourly);
@@ -602,6 +598,15 @@ const timeToFreeze = buildTimeToFreezeProjection({
   lookAheadHours: alertSettings.forecastHoursAhead,
   useCelsius,
 });
+// Only when the card is on screen: compare with the estimate from an hour or more ago.
+const timeToFreezeChange =
+  showInsights && household.householdId && (hasDevices || chartWeek.points.length > 0)
+    ? await compareAndStoreFreezeEstimate(
+        household.householdId,
+        snapshotFromProjection(timeToFreeze),
+        alertSettings.quietHoursTimezone || "UTC",
+      )
+    : null;
 const doorOpenMinutes = doorOpenMinutesFromSessions(doorSessions);
 const doorTempSummary = showInsights
   ? buildDoorTempSummary(
@@ -908,6 +913,7 @@ const onboardingProps = {
     {showInsights && (hasDevices || chartWeek.points.length > 0) && (
       <TimeToFreezeCard
         projection={timeToFreeze}
+        change={timeToFreezeChange}
         freezeThresholdF={alertSettings.freezeThresholdF}
         useCelsius={useCelsius}
       />
@@ -923,7 +929,7 @@ const onboardingProps = {
 
     <AttentionNeededStrip
       count={attentionOpsCount}
-      title="Attention needed"
+      title={secondaryBannerIds.has("freezeReadiness") ? `Winter readiness ${freezeReadiness.score}% · Attention needed` : "Attention needed"}
       storageKey="tt-attention-ops-collapsed"
       defaultOpen={attentionOpsCount > 0 && prioritizeFirstRun}
       showQuietControls={false}
@@ -969,9 +975,6 @@ const onboardingProps = {
                   : "House"
             }
             freezeThresholdF={alertSettings.freezeThresholdF}
-            canExport={canExportCsv}
-            exportFrom={exportFrom}
-            exportTo={exportTo}
             days={chartWindowDays}
             alertMarkers={chartAlertMarkers}
           />
@@ -1028,7 +1031,7 @@ const onboardingProps = {
           <h2 id="status-heading" class="dashboard-section-title">At a glance</h2>
           {firstRunFocus && (
             <p class="dashboard-section-desc mb-0">
-              Essentials only until freeze + email + a test alert are done.
+              Just the basics until freeze + email + a test alert are done.
             </p>
           )}
           {!firstRunFocus && (
@@ -1460,22 +1463,21 @@ const onboardingProps = {
 
         var ackSlot = document.querySelector("[data-qa-ack-slot]");
         if (ackSlot) {
-          if (n > 0) {
-            var ackHtml =
-              '<button type="button" class="btn-secondary btn-sm" data-qa-action="ack_latest">Acknowledge latest</button>';
-            if (n > 1) {
-              ackHtml +=
-                '<button type="button" class="btn-ghost btn-sm" data-qa-action="ack_all" data-qa-confirm="Mark all ' +
+          ackSlot.innerHTML =
+            n > 0
+              ? '<button type="button" class="btn-secondary btn-sm" data-qa-action="ack_latest">Acknowledge latest</button>'
+              : '<a class="btn-ghost btn-sm" href="/dashboard/alerts" data-qa-alerts-clear>Alerts clear</a>';
+        }
+        var ackAllSlot = document.querySelector("[data-qa-ackall-slot]");
+        if (ackAllSlot) {
+          ackAllSlot.innerHTML =
+            n > 1
+              ? '<button type="button" class="btn-ghost btn-sm" data-qa-action="ack_all" data-qa-confirm="Mark all ' +
                 n +
-                ' unhandled alerts as handled?">Handle remaining (<span data-overview-field="unackedCount">' +
+                ' unhandled alerts as handled?">Handle all <span data-overview-field="unackedCount">' +
                 n +
-                "</span>)</button>";
-            }
-            ackSlot.innerHTML = ackHtml;
-          } else {
-            ackSlot.innerHTML =
-              '<a class="btn-ghost btn-sm" href="/dashboard/alerts" data-qa-alerts-clear>Alerts clear</a>';
-          }
+                "</span></button>"
+              : "";
         }
       }
 
@@ -1489,20 +1491,21 @@ const onboardingProps = {
             '<button type="button" class="btn-ghost btn-sm" id="overview-snooze-action" data-qa-snooze="clear_snooze">Clear snooze</button>';
         } else {
           slot.innerHTML =
-            '<span class="text-sm text-[var(--color-text-muted)]">Snooze</span>' +
+            '<details class="qa-menu"><summary class="btn-ghost btn-sm">Snooze ▾</summary><div class="qa-menu-pop">' +
             [1, 4, 24]
               .map(function (hours) {
                 return (
-                  '<button type="button" class="btn-secondary btn-sm"' +
+                  '<button type="button" class="btn-ghost btn-sm"' +
                   (hours === 24 ? ' id="overview-snooze-action"' : "") +
                   ' data-qa-snooze="snooze" data-qa-hours="' +
                   hours +
                   '">' +
-                  hours +
-                  "h</button>"
+                  (hours === 24 ? "24 hours" : hours + (hours === 1 ? " hour" : " hours")) +
+                  "</button>"
                 );
               })
-              .join("");
+              .join("") +
+            "</div></details>";
         }
       }
 

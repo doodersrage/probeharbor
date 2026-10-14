@@ -51,6 +51,19 @@ export function buildFloodReadingsFromLatestSensors(
     }));
 }
 
+/** Power sensors whose latest value is "off". */
+export function buildPowerOffReadingsFromLatestSensors(
+  latest: Array<{
+    sensor: DeviceSensor;
+    deviceSpace?: string | null;
+    value_bool?: boolean | null;
+  }>,
+): Array<{ label: string; space?: string | null }> {
+  return latest
+    .filter((row) => row.sensor.kind === "power" && row.value_bool === false)
+    .map((row) => ({ label: row.sensor.label, space: row.deviceSpace ?? null }));
+}
+
 /** Build freeze/humidity alert readings from latest DB sensor values (push + pull). */
 export function buildAlertReadingsFromLatestSensors(
   latest: Array<{

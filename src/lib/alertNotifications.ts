@@ -6,6 +6,7 @@ import {
   thresholdAlertTitle,
   evaluateBatteryHealth,
   evaluateFloodAlerts,
+  evaluatePowerAlerts,
   evaluateForecastFreeze,
   evaluateOutage,
   isNewOutage,
@@ -42,7 +43,7 @@ async function resolveAndAnnounceRecovery(
   userId: string,
   email: string | null | undefined,
   settings: AlertSettings,
-  kind: "threshold" | "flood" | "outage" | "stuck",
+  kind: "threshold" | "flood" | "outage" | "stuck" | "power",
   notice: { title: string; body: string },
 ): Promise<void> {
   const { resolved, channels } = await safeAutoResolve(userId, { kinds: [kind], reason: "recovered" });
@@ -97,6 +98,7 @@ import {
 import {
   buildAlertReadingsFromLatestSensors,
   buildFloodReadingsFromLatestSensors,
+  buildPowerOffReadingsFromLatestSensors,
   buildReadingsFromResults,
   mergeAlertReadings,
 } from "./alertReadings";
@@ -368,6 +370,38 @@ export async function sendFloodAlertsIfNeeded(
   await markCooldown(userId, "last_flood_alert_at");
 }
 
+export async function sendPowerAlertsIfNeeded(
+  userId: string,
+  email: string | null | undefined,
+  settings: AlertSettings,
+  offSensors: FloodAlertReading[],
+): Promise<void> {
+  if (settings.enabled && offSensors.length === 0) {
+    await resolveAndAnnounceRecovery(userId, email, settings, "power", {
+      title: "Recovered: power is back",
+      body: "Every power sensor reads on again. The alert is closed; check that heaters and pumps restarted.",
+    });
+  }
+  if (!settings.enabled || !settings.powerAlertsEnabled || offSensors.length === 0) return;
+  if (isAlertCooldownActive(settings.lastPowerAlertAt)) return;
+
+  const messages = evaluatePowerAlerts(settings, offSensors);
+  if (messages.length === 0) return;
+  const alertSpace = offSensors.find((sensor) => sensor.space)?.space ?? null;
+  await notifyUser(
+    userId,
+    email,
+    settings,
+    {
+      title: "Power off",
+      body: `${messages.join("\n")}\nHeaters, heat tape, and sump pumps on that circuit may be off too.`,
+      kind: "power",
+    },
+    { space: alertSpace },
+  );
+  await markCooldown(userId, "last_power_alert_at");
+}
+
 async function getWeatherConfigForUser(userId: string): Promise<import("./personalWeatherStations").PersonalWeatherConfig> {
   try {
     const admin = createAdminClient();
@@ -565,10 +599,12 @@ export async function maybeSendThresholdAlerts(
 
   let sensorReadings: AlertReading[] = [];
   let floodReadings: FloodAlertReading[] = [];
+  let powerOffReadings: FloodAlertReading[] = [];
   if (householdId) {
     const latest = await fetchLatestSensorValues(householdId);
     sensorReadings = buildAlertReadingsFromLatestSensors(latest);
     floodReadings = buildFloodReadingsFromLatestSensors(latest);
+    powerOffReadings = buildPowerOffReadingsFromLatestSensors(latest);
   }
 
   const readings = mergeAlertReadings(feedReadings, sensorReadings);
@@ -582,6 +618,7 @@ export async function maybeSendThresholdAlerts(
     latestSensors: latest,
   });
   await sendFloodAlertsIfNeeded(userId, email, settings, floodReadings);
+  await sendPowerAlertsIfNeeded(userId, email, settings, powerOffReadings);
   await maybeSendForecastFreezeAlert(userId, email, settings);
   await maybeSendRunwayAlert(userId, email, settings, householdId, latest);
   await maybeSendNwsFreezeAlert(userId, email, settings);
