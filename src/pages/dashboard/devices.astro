@@ -3,9 +3,8 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
 import DeviceSetupWizard from "../../components/DeviceSetupWizard.astro";
 import IngestFirmwarePanel from "../../components/dashboard/IngestFirmwarePanel.astro";
 import DevicesFirstRunCard from "../../components/dashboard/DevicesFirstRunCard.astro";
-import DeviceHealthPanel from "../../components/dashboard/DeviceHealthPanel.astro";
+import DeviceListCard from "../../components/dashboard/DeviceListCard.astro";
 import ProtectionCoverageCard from "../../components/dashboard/ProtectionCoverageCard.astro";
-import SensorReplaceCard from "../../components/dashboard/SensorReplaceCard.astro";
 import DashboardTabNav from "../../components/dashboard/DashboardTabNav.astro";
 import PushDevicesPanel from "../../components/dashboard/PushDevicesPanel.astro";
 import PullFeedsPanel from "../../components/dashboard/PullFeedsPanel.astro";
@@ -135,7 +134,11 @@ const bulkUpdated = Astro.url.searchParams.get("bulk_updated");
 const sensorReplaced = Astro.url.searchParams.get("sensor_replaced");
 const replaceError = Astro.url.searchParams.get("replace_error");
 const deviceNotice =
-  sensorReplaced
+  Astro.url.searchParams.get("device_transferred")
+    ? "Device moved to the other property."
+    : noticeParam === "device_not_found"
+      ? "That device isn't in this property anymore."
+  : sensorReplaced
     ? `Sensor replaced: ${Number(sensorReplaced).toLocaleString("en-US")} reading${sensorReplaced === "1" ? "" : "s"} of history moved to the new sensor.`
     : replaceError
       ? replacementErrorMessage(replaceError)
@@ -324,12 +327,12 @@ const redirectTo =
   title="Devices"
   subtitle={
     devicesView === "ops"
-      ? "Is each device reporting? Health, battery, and signal."
+      ? "Every device, worst first. Open one to manage it."
       : activeTab === "pull"
         ? "HTTPS JSON feeds we fetch on a schedule."
         : activeTab === "thermostat"
           ? "Your house thermostat and indoor reference, for context next to your probes."
-          : "Add and manage devices that send readings."
+          : "Connect a new device, or finish setting one up."
   }
 >
   <ProductAnalyticsTracker events={analyticsEvents} />
@@ -349,8 +352,8 @@ const redirectTo =
     {/* One flat row: what each tab holds is in its name. */}
     <DashboardTabNav
       tabs={[
-        { id: "ops", label: "Status", href: "/dashboard/devices?view=ops" },
-        { id: "push", label: "Devices", href: "/dashboard/devices?view=setup&tab=push" },
+        { id: "ops", label: "Devices", href: "/dashboard/devices?view=ops" },
+        { id: "push", label: "Add device", href: "/dashboard/devices?view=setup&tab=push" },
         { id: "pull", label: "Pull feeds", href: "/dashboard/devices?view=setup&tab=pull" },
         { id: "thermostat", label: "Thermostat", href: "/dashboard/devices?view=setup&tab=thermostat" },
       ]}
@@ -359,7 +362,15 @@ const redirectTo =
     />
 
     {devicesView === "ops" && showPowerFeatures && !showDeviceWizard && (
-      <DeviceHealthPanel devices={devices} latest={latest} feedHealth={feedHealth} stuck={stuckSensors} />
+      <DeviceListCard
+        devices={devices}
+        latest={latest}
+        stuck={stuckSensors}
+        feedStatuses={feedHealth.statuses}
+        canEdit={canEdit}
+        redirectTo={redirectTo}
+        addHref="/dashboard/devices?view=setup&tab=push"
+      />
       <ProtectionCoverageCard coverage={buildProtectionCoverage(devices, latest)} />
     )}
 
@@ -594,10 +605,6 @@ const redirectTo =
       ingestKey={ingestKey}
       transferTargets={transferTargets}
     />
-    )}
-
-    {devicesView === "setup" && activeTab === "push" && canEdit && (
-      <SensorReplaceCard devices={devices} redirectTo={redirectTo} />
     )}
 
     {/* Other hardware paths, after the user's own devices rather than before them. */}
@@ -912,6 +919,7 @@ const redirectTo =
     "sensor_deleted",
     "sensor_replaced",
     "replace_error",
+    "device_transferred",
     "feeds_saved",
     "pull_saved",
     "probes_discovered",

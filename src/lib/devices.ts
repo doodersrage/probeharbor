@@ -267,6 +267,7 @@ export async function createPushDevice(
   name: string,
   ingestKeyHash: string,
   ingestKeyPrefix: string,
+  space?: string | null,
 ): Promise<{ device: Device | null; error: string | null }> {
   const supabase = createServerClient();
   const { data, error } = await supabase
@@ -278,6 +279,7 @@ export async function createPushDevice(
       ingest_key_hash: ingestKeyHash,
       ingest_key_prefix: ingestKeyPrefix,
       enabled: true,
+      space: space?.trim() || null,
     })
     .select(DEVICE_SELECT)
     .single();
@@ -335,6 +337,38 @@ export async function updateDeviceSpace(
     return { error: error?.message ?? "Failed to update space" };
   }
   return { error: null };
+}
+
+/**
+ * Device page "Save": name and on/off (push devices only; pull feeds own
+ * theirs in Pull feeds settings) plus space, in one update.
+ */
+export async function updateDeviceDetails(
+  householdId: string,
+  deviceId: string,
+  patch: { name?: string; space: string | null; enabled?: boolean },
+): Promise<{ error: string | null }> {
+  const supabase = createServerClient();
+  const { data: existing } = await supabase
+    .from("devices")
+    .select("source")
+    .eq("id", deviceId)
+    .eq("household_id", householdId)
+    .maybeSingle();
+  if (!existing) return { error: "Device not found" };
+  const name = patch.name?.trim();
+  if (existing.source === "push" && patch.name !== undefined && !name) return { error: "Name is required" };
+  const { error } = await supabase
+    .from("devices")
+    .update({
+      // Pull devices are synced from Pull feeds settings, which own their name and on/off.
+      ...(existing.source === "push" ? { enabled: patch.enabled, ...(name ? { name } : {}) } : {}),
+      space: patch.space?.trim() || null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", deviceId)
+    .eq("household_id", householdId);
+  return { error: error?.message ?? null };
 }
 
 export async function rotatePushDeviceKey(

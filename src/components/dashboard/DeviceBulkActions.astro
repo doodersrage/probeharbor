@@ -1,0 +1,108 @@
+---
+import type { DeviceWithSensors } from "../../lib/devices";
+
+/**
+ * "Select several": enable, disable, set space, or delete push devices in
+ * one go. Pull feeds are managed in Pull feeds settings, so they're left out.
+ */
+interface Props {
+  pushDevices: DeviceWithSensors[];
+  redirectTo: string;
+  spaces: string[];
+}
+
+const { pushDevices, redirectTo, spaces } = Astro.props;
+// Devices that haven't reported in 30+ days.
+const SILENT_MS = 30 * 24 * 60 * 60 * 1000;
+const silentIds = pushDevices
+  .filter((device) => {
+    const last = Date.parse(device.last_seen_at ?? "") || 0;
+    return last > 0 && Date.now() - last > SILENT_MS;
+  })
+  .map((device) => device.id);
+---
+{pushDevices.length > 1 && (
+  <details class="device-bulk" id="device-bulk">
+    <summary class="cursor-pointer text-sm font-semibold">Select several…</summary>
+    <form action="/api/devices" method="post" class="mt-3" id="bulk-devices-form">
+      <input type="hidden" name="action" value="bulk" />
+      <input type="hidden" name="redirect" value={redirectTo} />
+      <div class="flex flex-wrap items-end gap-3 mb-3">
+        <label class="text-sm">
+          Do this
+          <select name="bulk_op" class="form-input block mt-1" id="bulk-op-select">
+            <option value="set_space">Set space</option>
+            <option value="enable">Enable</option>
+            <option value="disable">Disable</option>
+            <option value="delete">Delete</option>
+          </select>
+        </label>
+        <label class="text-sm" id="bulk-space-field">
+          Space
+          <input type="text" name="space" class="form-input block mt-1" placeholder="Garage" list="bulk-space-suggestions" />
+        </label>
+        <datalist id="bulk-space-suggestions">
+          {spaces.map((space) => <option value={space} />)}
+        </datalist>
+        <button type="submit" class="btn-secondary" id="bulk-apply-btn">Apply to selected</button>
+      </div>
+      <div class="flex flex-wrap gap-2 mb-2">
+        <button type="button" class="btn-ghost btn-sm" id="bulk-select-all">Select all</button>
+        <button type="button" class="btn-ghost btn-sm" id="bulk-select-unplaced">Select ones with no space</button>
+        {silentIds.length > 0 && (
+          <button type="button" class="btn-ghost btn-sm" id="bulk-select-silent" data-ids={silentIds.join(",")}>
+            Select {silentIds.length} silent 30+ days
+          </button>
+        )}
+      </div>
+      <div class="bulk-devices-checks">
+        {pushDevices.map((device) => (
+          <label class="flex items-center gap-2 text-sm">
+            <input type="checkbox" name="ids" value={device.id} class="bulk-device-id" data-unplaced={device.space?.trim() ? "0" : "1"} />
+            <span>
+              {device.name}
+              <span class="text-[var(--color-text-muted)]">
+                {device.space ? ` · ${device.space}` : " · no space"}
+                {!device.enabled && " · disabled"}
+              </span>
+            </span>
+          </label>
+        ))}
+      </div>
+    </form>
+  </details>
+)}
+
+<script>
+  const form = document.getElementById("bulk-devices-form");
+  const opSelect = document.getElementById("bulk-op-select");
+  const spaceField = document.getElementById("bulk-space-field");
+  const boxes = () => Array.from(form?.querySelectorAll(".bulk-device-id") ?? []).filter((el) => el instanceof HTMLInputElement);
+  const syncSpaceField = () => {
+    if (opSelect instanceof HTMLSelectElement && spaceField) spaceField.hidden = opSelect.value !== "set_space";
+  };
+  opSelect?.addEventListener("change", syncSpaceField);
+  syncSpaceField();
+  document.getElementById("bulk-select-all")?.addEventListener("click", () => {
+    for (const box of boxes()) box.checked = true;
+  });
+  document.getElementById("bulk-select-unplaced")?.addEventListener("click", () => {
+    for (const box of boxes()) box.checked = box.dataset.unplaced === "1";
+    if (opSelect instanceof HTMLSelectElement) opSelect.value = "set_space";
+    syncSpaceField();
+  });
+  // Old test boards pile up: tick the ones that haven't reported in 30 days, then Delete.
+  document.getElementById("bulk-select-silent")?.addEventListener("click", (event) => {
+    const ids = new Set(((event.currentTarget as HTMLElement).dataset.ids ?? "").split(","));
+    for (const box of boxes()) box.checked = ids.has(box.value);
+    if (opSelect instanceof HTMLSelectElement) opSelect.value = "delete";
+    syncSpaceField();
+  });
+  form?.addEventListener("submit", (event) => {
+    if (!(opSelect instanceof HTMLSelectElement) || opSelect.value !== "delete") return;
+    const checked = boxes().filter((box) => box.checked).length;
+    if (checked > 0 && !confirm(`Delete ${checked} device${checked === 1 ? "" : "s"}? This cannot be undone.`)) {
+      event.preventDefault();
+    }
+  });
+</script>

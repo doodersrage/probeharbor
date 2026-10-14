@@ -10,15 +10,22 @@ import { replacementOptionsByKind } from "../../lib/sensorReplacement";
 interface Props {
   devices: DeviceWithSensors[];
   redirectTo: string;
+  /** Collapsed "Replace a sensor…" inside another card (the device page). */
+  collapsed?: boolean;
 }
 
-const { devices, redirectTo } = Astro.props;
+const { devices, redirectTo, collapsed = false } = Astro.props;
+const Wrapper = collapsed ? "details" : DashboardCard;
 const groups = replacementOptionsByKind(devices);
 ---
 {groups.length > 0 && (
-  <DashboardCard id="replace-sensor">
-    <h2 class="card-title">Replace a sensor</h2>
-    <p class="card-subtitle mb-3">
+  <Wrapper id="replace-sensor" class={collapsed ? "mt-4" : undefined}>
+    {collapsed ? (
+      <summary class="cursor-pointer text-sm font-semibold">Replace a sensor…</summary>
+    ) : (
+      <h2 class="card-title">Replace a sensor</h2>
+    )}
+    <p class:list={["card-subtitle mb-3", collapsed && "mt-2"]}>
       Swapped a dead probe or a whole board? Once the new sensor has posted a reading, move the old one's history
       onto it so charts, reports, and alerts carry on as one sensor.
     </p>
@@ -70,7 +77,7 @@ const groups = replacementOptionsByKind(devices);
       </ul>
       <button class="btn-secondary" type="submit">Replace sensor</button>
     </form>
-  </DashboardCard>
+  </Wrapper>
 )}
 
 <script>

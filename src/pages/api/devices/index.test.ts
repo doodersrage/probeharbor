@@ -25,6 +25,7 @@ const mockReplaceDeviceSensor = vi.fn();
 const mockRotatePushDeviceKey = vi.fn();
 const mockTransferDeviceToHousehold = vi.fn();
 const mockUpdateDeviceSensor = vi.fn();
+const mockUpdateDeviceDetails = vi.fn();
 const mockUpdateDeviceSpace = vi.fn();
 vi.mock("../../../lib/devices", () => ({
   createPushDevice: (...a: unknown[]) => mockCreatePushDevice(...a),
@@ -37,6 +38,7 @@ vi.mock("../../../lib/devices", () => ({
   rotatePushDeviceKey: (...a: unknown[]) => mockRotatePushDeviceKey(...a),
   transferDeviceToHousehold: (...a: unknown[]) => mockTransferDeviceToHousehold(...a),
   updateDeviceSensor: (...a: unknown[]) => mockUpdateDeviceSensor(...a),
+  updateDeviceDetails: (...a: unknown[]) => mockUpdateDeviceDetails(...a),
   updateDeviceSpace: (...a: unknown[]) => mockUpdateDeviceSpace(...a),
 }));
 
@@ -126,6 +128,7 @@ beforeEach(() => {
   mockTransferDeviceToHousehold.mockReset().mockResolvedValue({ error: null });
   mockUpdateDeviceSensor.mockReset().mockResolvedValue({ error: null });
   mockUpdateDeviceSpace.mockReset().mockResolvedValue({ error: null });
+  mockUpdateDeviceDetails.mockReset().mockResolvedValue({ error: null });
   mockGetUserEntitlements.mockReset().mockResolvedValue({ maxDevices: 5 });
   mockFrom.mockReset().mockImplementation(() => mockQuery());
   mockCreateServerClient.mockClear();
@@ -470,6 +473,89 @@ describe("POST /api/devices", () => {
     expect(context.redirect).toHaveBeenCalledWith("/dashboard/devices?replace_error=kind_mismatch");
   });
 
+  it("saves name, space, and enabled together from the device page", async () => {
+    const { POST } = await import("./index");
+    const context = makeContext({ action: "update_device", device_id: "d1", name: "Garage pipe", space: "Garage" });
+
+    await POST(context);
+
+    expect(mockUpdateDeviceDetails).toHaveBeenCalledWith("house-1", "d1", { name: "Garage pipe", space: "Garage", enabled: false });
+    expect(context.redirect).toHaveBeenCalledWith("/dashboard/devices?device_saved=1");
+  });
+
+  it("saves only the sensors that changed in one submit", async () => {
+    mockListHouseholdDevices.mockResolvedValue({
+      devices: [
+        {
+          id: "d1",
+          source: "push",
+          sensors: [
+            { id: "s1", key: "temp1", label: "temp1", kind: "temperature", unit: "F", visible: true, offset_num: 0 },
+            { id: "s2", key: "hum1", label: "Humidity", kind: "humidity", unit: "F", visible: true, offset_num: 0 },
+          ],
+        },
+      ],
+    });
+    const { POST } = await import("./index");
+    const context = makeContext({
+      action: "update_sensors",
+      device_id: "d1",
+      "label:s1": "Garage pipe",
+      "kind:s1": "temperature",
+      "key:s1": "temp1",
+      "offset:s1": "-0.5",
+      "visible:s1": "true",
+      "label:s2": "Humidity",
+      "kind:s2": "humidity",
+      "key:s2": "hum1",
+      "offset:s2": "0",
+      "visible:s2": "true",
+    });
+
+    await POST(context);
+
+    expect(mockUpdateDeviceSensor).toHaveBeenCalledTimes(1);
+    expect(mockUpdateDeviceSensor).toHaveBeenCalledWith("s1", "d1", {
+      key: "temp1",
+      label: "Garage pipe",
+      kind: "temperature",
+      unit: "F",
+      offsetNum: -0.5,
+      visible: true,
+    });
+    expect(context.redirect).toHaveBeenCalledWith("/dashboard/devices?sensor_updated=1");
+  });
+
+  it("deletes just the sensor whose Delete button was pressed", async () => {
+    mockListHouseholdDevices.mockResolvedValue({
+      devices: [{ id: "d1", source: "push", sensors: [{ id: "s1" }, { id: "s2" }] }],
+    });
+    const { POST } = await import("./index");
+    const context = makeContext({ action: "update_sensors", device_id: "d1", delete_sensor_id: "s2", "label:s1": "x" });
+
+    await POST(context);
+
+    expect(mockDeleteDeviceSensor).toHaveBeenCalledWith("s2", "d1");
+    expect(mockUpdateDeviceSensor).not.toHaveBeenCalled();
+    expect(context.redirect).toHaveBeenCalledWith("/dashboard/devices?sensor_deleted=1");
+  });
+
+  it("won't touch sensors on a device outside the property", async () => {
+    const { POST } = await import("./index");
+    const context = makeContext({ action: "update_sensors", device_id: "elsewhere", delete_sensor_id: "s1" });
+
+    await POST(context);
+
+    expect(mockDeleteDeviceSensor).not.toHaveBeenCalled();
+    expect(context.redirect).toHaveBeenCalledWith("/dashboard/devices?error=1");
+  });
+
+  it("creates a device with the space it was given", async () => {
+    const { POST } = await import("./index");
+    await POST(makeContext({ action: "create_push", name: "Attic probe", space: "Attic" }));
+    expect(mockCreatePushDevice).toHaveBeenCalledWith("house-1", "Attic probe", expect.any(String), expect.any(String), "Attic");
+  });
+
   it("blocks device creation past the plan's device limit", async () => {
     mockGetUserEntitlements.mockResolvedValue({ maxDevices: 1 });
     const { POST } = await import("./index");
@@ -492,6 +578,7 @@ describe("POST /api/devices", () => {
       "New probe",
       expect.any(String),
       expect.any(String),
+      null,
     );
     expect(mockSetSecretFlash).toHaveBeenCalledWith(context.cookies, "ingest_key", expect.any(String));
     expect(context.redirect).toHaveBeenCalledWith(

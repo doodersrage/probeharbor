@@ -21,7 +21,16 @@ test.describe("device ingest", () => {
 
     await signIn(page, "/dashboard/devices?view=setup&tab=push");
 
-    await page.getByRole("button", { name: /Create push device|Create device & flash it/i }).click();
+    const deviceName = `E2E probe ${Date.now()}`;
+    const nameInput = page.locator("#create-name");
+    if (await nameInput.count()) {
+      await nameInput.fill(deviceName);
+      await page.locator("#create-space").fill("E2E bench");
+      await page.getByRole("button", { name: "Create device", exact: true }).click();
+    } else {
+      // Empty account: the first-run card creates the device in one click.
+      await page.getByRole("button", { name: /Create device & flash it/i }).click();
+    }
 
     // Device creation stores the key in a flash cookie — not the URL.
     await page.waitForURL(/view=setup.*device_created=1.*focus_device=.+/, {
@@ -31,46 +40,35 @@ test.describe("device ingest", () => {
     const deviceId = url.searchParams.get("focus_device");
     expect(deviceId).toBeTruthy();
 
-    await expect(page.locator("#ingest-key-value")).toBeVisible({ timeout: 10_000 });
-    const ingestKey = (await page.locator("#ingest-key-value").textContent())?.trim();
-    expect(ingestKey).toBeTruthy();
-
     try {
+      await expect(page.locator("#ingest-key-value")).toBeVisible({ timeout: 10_000 });
+      const ingestKey = (await page.locator("#ingest-key-value").textContent())?.trim();
+      expect(ingestKey).toBeTruthy();
+
       // This is the core product loop: probe posts JSON, dashboard reflects it.
       const ingestRes = await page.request.post(`/api/ingest/${ingestKey}`, {
         data: { temp1: 41.2, battery: 90 },
       });
       expect(ingestRes.ok()).toBeTruthy();
-      const ingestJson = await ingestRes.json().catch(() => null);
-      if (ingestJson && typeof ingestJson === "object") {
-        expect(ingestJson).toEqual(
-          expect.objectContaining({
-            ok: expect.anything(),
-          }),
-        );
-      }
 
-      // Stay on Setup: after the first POST the default Devices view can flip to Status.
-      await page.goto(
-        `/dashboard/devices?view=setup&tab=push&focus_device=${encodeURIComponent(deviceId!)}`,
-      );
-      const deviceRow = page.locator(`#device-${deviceId}`);
-      await expect(deviceRow).toBeVisible({ timeout: 15_000 });
-      await expect(deviceRow.getByText(/No POSTs yet/i)).toHaveCount(0);
+      // The device page lists the auto-imported sensor with its reading.
+      await page.goto(`/dashboard/devices/${encodeURIComponent(deviceId!)}`);
+      await expect(page.getByRole("heading", { name: /Sensors \(1\)/ })).toBeVisible({ timeout: 15_000 });
+      await expect(page.locator(".device-sensor-reading")).toContainText("41.2");
+
+      // And the Devices list links to it.
+      await page.goto("/dashboard/devices?view=ops");
+      await expect(page.locator(`[data-device-row="${deviceId}"]`)).toBeVisible();
     } finally {
       // Always remove the device this test created, even if an assertion above failed.
-      page.once("dialog", (dialog) => dialog.accept());
-      const deleteButton = page
-        .locator('form[action="/api/devices"]', {
-          has: page.locator(`input[name="device_id"][value="${deviceId}"]`),
-        })
-        .filter({ has: page.locator('input[name="action"][value="delete"]') })
-        .getByRole("button", { name: "Delete" })
-        .first();
-      if (await deleteButton.count()) {
-        await deleteButton.click();
-        await page.waitForLoadState("networkidle").catch(() => {});
-      }
+      // Posted straight to the API so a changed or collapsed UI can't leave it behind.
+      const origin = new URL(page.url()).origin;
+      const res = await page.request.post("/api/devices", {
+        form: { action: "delete", device_id: deviceId!, redirect: "/dashboard/devices" },
+        headers: { Origin: origin },
+        maxRedirects: 0,
+      });
+      expect([302, 303]).toContain(res.status());
     }
   });
 });

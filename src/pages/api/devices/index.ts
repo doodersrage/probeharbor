@@ -15,6 +15,7 @@ import {
   replaceDeviceSensor,
   rotatePushDeviceKey,
   transferDeviceToHousehold,
+  updateDeviceDetails,
   updateDeviceSensor,
   updateDeviceSpace,
 } from "../../../lib/devices";
@@ -357,6 +358,65 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     return redirect(withQuery(redirectTo, { sensor_deleted: "1" }));
   }
 
+  if (action === "update_device") {
+    const deviceId = formData.get("device_id")?.toString();
+    if (!deviceId) return redirect(withQuery(redirectTo, { error: "1" }));
+    const name = formData.get("name")?.toString();
+    const result = await updateDeviceDetails(householdId, deviceId, {
+      name: name === undefined ? undefined : name,
+      space: formData.get("space")?.toString() ?? null,
+      enabled: formData.get("enabled") === "true",
+    });
+    if (result.error) return redirect(withQuery(redirectTo, { error: "1" }));
+    return redirect(withQuery(redirectTo, { device_saved: "1" }));
+  }
+
+  if (action === "update_sensors") {
+    const deviceId = formData.get("device_id")?.toString();
+    if (!deviceId) return redirect(withQuery(redirectTo, { error: "1" }));
+    const owned = await listHouseholdDevices(householdId);
+    const device = owned.devices.find((d) => d.id === deviceId);
+    if (!device) return redirect(withQuery(redirectTo, { error: "1" }));
+
+    // A Delete button inside the sensors form names the one sensor to remove.
+    const deleteId = formData.get("delete_sensor_id")?.toString();
+    if (deleteId) {
+      if (!device.sensors.some((s) => s.id === deleteId)) return redirect(withQuery(redirectTo, { error: "1" }));
+      await deleteDeviceSensor(deleteId, deviceId);
+      return redirect(withQuery(redirectTo, { sensor_deleted: "1" }));
+    }
+
+    for (const sensor of device.sensors) {
+      const field = (name: string) => formData.get(`${name}:${sensor.id}`)?.toString();
+      if (field("label") === undefined) continue;
+      const kindRaw = field("kind") ?? sensor.kind;
+      const kind = isSensorKind(kindRaw) ? kindRaw : sensor.kind;
+      const offsetNum = Number.parseFloat(field("offset") ?? String(sensor.offset_num ?? 0));
+      const label = field("label")?.trim() || sensor.label;
+      const key = field("key")?.trim() || sensor.key;
+      const unit = field("unit")?.trim() || defaultUnitForKind(kind);
+      const visible = formData.has(`visible:${sensor.id}`);
+      const unchanged =
+        label === sensor.label &&
+        key === sensor.key &&
+        kind === sensor.kind &&
+        unit === sensor.unit &&
+        visible === sensor.visible &&
+        (Number.isFinite(offsetNum) ? offsetNum : 0) === (sensor.offset_num ?? 0);
+      if (unchanged) continue;
+      const result = await updateDeviceSensor(sensor.id, deviceId, {
+        key,
+        label,
+        kind,
+        unit,
+        offsetNum: Number.isFinite(offsetNum) ? offsetNum : 0,
+        visible,
+      });
+      if (result.error) return redirect(withQuery(redirectTo, { error: "1" }));
+    }
+    return redirect(withQuery(redirectTo, { sensor_updated: "1" }));
+  }
+
   if (action === "replace_sensor") {
     const oldSensorId = formData.get("old_sensor_id")?.toString();
     const newSensorId = formData.get("new_sensor_id")?.toString();
@@ -402,6 +462,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     name,
     hash,
     prefix,
+    formData.get("space")?.toString() ?? null,
   );
 
   if (error || !device) {

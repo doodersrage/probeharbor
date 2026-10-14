@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { devicesToTempConfig, type DeviceWithSensors } from "./devices";
+import { devicesToTempConfig, updateDeviceDetails, type DeviceWithSensors } from "./devices";
 
 function mockQuery(result: { data?: unknown; error?: unknown }) {
   const builder: Record<string, unknown> = {};
@@ -398,5 +398,36 @@ describe("touchDeviceLastSeen / updateDeviceMeta", () => {
     expect(updateBuilder.update).toHaveBeenCalledWith(
       expect.objectContaining({ meta: { newKey: "added" } }),
     );
+  });
+});
+
+describe("updateDeviceDetails", () => {
+  function setup(source: "push" | "pull_url") {
+    const lookup = mockQuery({ data: { source }, error: null });
+    const update = mockQuery({ data: null, error: null });
+    mockFrom.mockReturnValueOnce(lookup).mockReturnValueOnce(update);
+    return update;
+  }
+
+  it("saves name, space, and enabled for a push device", async () => {
+    const update = setup("push");
+    expect(await updateDeviceDetails("house-1", "d1", { name: " Attic ", space: " Attic ", enabled: false })).toEqual({ error: null });
+    expect(update.update).toHaveBeenCalledWith(expect.objectContaining({ name: "Attic", space: "Attic", enabled: false }));
+  });
+
+  it("only changes the space of a pull feed, which owns its own name and on/off", async () => {
+    const update = setup("pull_url");
+    await updateDeviceDetails("house-1", "d1", { name: "Renamed", space: "", enabled: false });
+    const patch = (update.update as ReturnType<typeof vi.fn>).mock.calls[0]?.[0] as Record<string, unknown>;
+    expect(patch).not.toHaveProperty("name");
+    expect(patch).not.toHaveProperty("enabled");
+    expect(patch.space).toBeNull();
+  });
+
+  it("refuses a blank name and devices from other properties", async () => {
+    setup("push");
+    expect((await updateDeviceDetails("house-1", "d1", { name: "  ", space: null })).error).toMatch(/Name/);
+    mockFrom.mockReturnValueOnce(mockQuery({ data: null, error: null }));
+    expect((await updateDeviceDetails("house-1", "x", { space: null })).error).toMatch(/not found/);
   });
 });

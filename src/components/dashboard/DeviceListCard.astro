@@ -1,0 +1,189 @@
+---
+import ReadingAgeBadge from "./ReadingAgeBadge.astro";
+import DeviceBulkActions from "./DeviceBulkActions.astro";
+import type { DeviceWithSensors } from "../../lib/devices";
+import type { FeedHealthStatus } from "../../lib/collectHistory";
+import type { LatestSensorRow } from "../../lib/sensorReadings";
+import type { StuckSensor } from "../../lib/stuckSensors";
+import { buildDeviceListRows, countDevicesWithoutSpace, spaceSuggestions } from "../../lib/deviceList";
+import { findWarmBoardSensors } from "../../lib/sensorPlacement";
+
+/**
+ * Devices tab: every device, push and pull, one row each, worst first. A row
+ * opens that device's page, where everything about it is edited.
+ */
+interface Props {
+  devices: DeviceWithSensors[];
+  latest: LatestSensorRow[];
+  stuck: StuckSensor[];
+  feedStatuses: FeedHealthStatus[];
+  canEdit: boolean;
+  redirectTo: string;
+  addHref: string;
+}
+
+const { devices, latest, stuck, feedStatuses, canEdit, redirectTo, addHref } = Astro.props;
+const rows = buildDeviceListRows({ devices, latest, stuck, feedStatuses });
+const unplaced = countDevicesWithoutSpace(devices);
+const warmSensors = findWarmBoardSensors(latest);
+const pushDevices = devices.filter((d) => d.source === "push");
+const healthLabel = { healthy: "Healthy", watch: "Watch", at_risk: "At risk", offline: "Offline" } as const;
+const healthTone = {
+  healthy: "text-[var(--color-success)]",
+  watch: "text-[var(--color-warning)]",
+  at_risk: "text-[var(--color-danger)]",
+  offline: "text-[var(--color-text-muted)]",
+} as const;
+---
+<section class="card" id="device-health" aria-labelledby="device-list-title">
+  <div class="device-list-head">
+    <div>
+      <h2 class="card-title" id="device-list-title">Devices ({rows.length})</h2>
+      <p class="card-subtitle mb-0">Worst first. Open a device to rename it, set its space, or fix its sensors.</p>
+    </div>
+    {canEdit && <a class="btn-primary" href={addHref}>Add device</a>}
+  </div>
+
+  {warmSensors.map((hint) => (
+    <p class="alert-warning mt-4 mb-0 text-sm" role="note">
+      <strong>{hint.label}</strong> reads {hint.gapF}°F warmer than your other probes. If that sensor sits right next to
+      its board, move it a few inches away on its wires: ESP32 boards run warm and skew the reading.
+    </p>
+  ))}
+
+  {canEdit && unplaced > 0 && rows.length > 0 && (
+    <p class="mt-4 mb-0 text-sm" role="note">
+      {unplaced} device{unplaced === 1 ? " has" : "s have"} no space set, so coverage and alerts can't say where
+      {unplaced === 1 ? " it is" : " they are"}.
+      {pushDevices.length > 1 ? " Use Select several below to place a batch at once." : " Open it to set one."}
+    </p>
+  )}
+
+  {rows.length === 0 ? (
+    <p class="mt-4 mb-0 text-sm text-[var(--color-text-muted)]">
+      No devices yet. <a class="text-link" href={addHref}>Connect your first sensor</a>
+    </p>
+  ) : (
+    <ul class="device-list" role="list">
+      {rows.map((row) => (
+        <li>
+          <a class="device-list-row" href={row.href} data-device-row={row.id}>
+            <span class="device-list-name">
+              <strong>{row.name}</strong>
+              <span class="device-list-meta">
+                {row.space ?? <span class="device-list-unplaced">No space</span>}
+                {" · "}
+                {row.source === "push" ? "Push" : "Pull feed"}
+                {!row.enabled && " · Disabled"}
+              </span>
+            </span>
+            <span class="device-list-health">
+              <span class:list={["font-semibold", healthTone[row.health.label]]}>{healthLabel[row.health.label]}</span>
+              <span class="device-list-meta">{row.feedIssue ?? row.health.detail}</span>
+            </span>
+            <span class="device-list-reading">
+              {row.headline ?? <span class="text-[var(--color-text-muted)]">No reading</span>}
+              {row.firmwareUpdate && <span class="device-list-meta">Firmware update available</span>}
+            </span>
+            <span class="device-list-seen">
+              <ReadingAgeBadge iso={row.lastSeenAt} emptyLabel="Never" />
+              {row.health.batteryPct != null && <span class="device-list-meta">{row.health.batteryPct}% battery</span>}
+            </span>
+            <span class="device-list-chevron" aria-hidden="true">›</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  )}
+
+  {canEdit && (
+    <div class="mt-4">
+      <DeviceBulkActions pushDevices={pushDevices} redirectTo={redirectTo} spaces={spaceSuggestions(devices)} />
+    </div>
+  )}
+</section>
+
+<style>
+  .device-list-head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  .device-list {
+    list-style: none;
+    margin: 1rem 0 0;
+    padding: 0;
+    border-top: 1px solid var(--color-border);
+  }
+  .device-list-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.25rem 0.75rem;
+    padding: 0.75rem 0.5rem;
+    border-bottom: 1px solid var(--color-border);
+    color: inherit;
+    text-decoration: none;
+    font-size: 0.875rem;
+  }
+  .device-list-row:hover,
+  .device-list-row:focus-visible {
+    background: color-mix(in srgb, var(--color-accent) 8%, transparent);
+  }
+  .device-list-name,
+  .device-list-health,
+  .device-list-reading,
+  .device-list-seen {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+  .device-list-name {
+    grid-column: 1;
+  }
+  .device-list-chevron {
+    grid-column: 2;
+    grid-row: 1 / span 4;
+    align-self: center;
+    font-size: 1.25rem;
+    color: var(--color-text-muted);
+  }
+  .device-list-health,
+  .device-list-reading,
+  .device-list-seen {
+    grid-column: 1;
+  }
+  .device-list-seen {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+  }
+  .device-list-meta {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+  }
+  .device-list-unplaced {
+    color: var(--color-warning);
+  }
+  @media (min-width: 768px) {
+    .device-list-row {
+      grid-template-columns: minmax(10rem, 1.4fr) minmax(9rem, 1.3fr) minmax(8rem, 1fr) minmax(7rem, auto) 1rem;
+      align-items: center;
+    }
+    .device-list-name,
+    .device-list-health,
+    .device-list-reading,
+    .device-list-seen,
+    .device-list-chevron {
+      grid-column: auto;
+      grid-row: auto;
+    }
+    .device-list-seen {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.15rem;
+    }
+  }
+</style>
