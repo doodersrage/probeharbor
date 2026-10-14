@@ -45,6 +45,11 @@ vi.mock("../../../lib/householdActivity", () => ({
   recordHouseholdActivity: (...a: unknown[]) => mockRecordHouseholdActivity(...a),
 }));
 
+const mockRecordAlertSettingsChange = vi.fn();
+vi.mock("../../../lib/alertSettingsHistory", () => ({
+  recordAlertSettingsChange: (...a: unknown[]) => mockRecordAlertSettingsChange(...a),
+}));
+
 const mockGetUserHouseholdId = vi.fn();
 vi.mock("../../../lib/households", () => ({
   getUserHouseholdId: (...a: unknown[]) => mockGetUserHouseholdId(...a),
@@ -143,6 +148,7 @@ describe("POST /api/user/alert-settings", () => {
       "user-1",
       settings,
     );
+    expect(mockRecordAlertSettingsChange).toHaveBeenCalledTimes(1);
     expect(mockRecordHouseholdActivity).toHaveBeenCalledWith({
       householdId: "house-1",
       userId: "user-1",
