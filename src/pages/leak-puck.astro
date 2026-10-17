@@ -4,7 +4,6 @@ import { commerceLinkRel } from "../lib/affiliateLinks";
 import { BOM } from "../lib/bomLinks";
 import { BRAND_NAME } from "../lib/brand";
 
-const LEAK = BOM.adafruitLeak;
 const ESP32 = BOM.adafruitEsp32;
 ---
 <AccessoryProduct
@@ -63,7 +62,7 @@ const ESP32 = BOM.adafruitEsp32;
             <th scope="row">Leak / moisture probes</th>
             <td>Two conductors on the floor; GPIO4 with pull-up, wet pulls low.</td>
             <td>
-              <a class="text-link" href={LEAK} target="_blank" rel={commerceLinkRel(LEAK)}>Adafruit leak sensor</a>
+              No part needed: two bare wires or stainless screws about 5&nbsp;mm apart, one to the pin and one to GND.
             </td>
           </tr>
         </tbody>

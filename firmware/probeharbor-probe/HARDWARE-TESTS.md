@@ -14,7 +14,7 @@ Buy links are on [/flash](https://probeharbor.dev/flash#what-to-buy) (source: `s
 
 - Test 4: an ESP32-S3-DevKitC-1 and an ESP32-C3-DevKitM-1.
 - Test 5: one of SHT31-D, BME280, or AHT20.
-- Test 6: a water leak sensor, a magnetic door switch, two 100kΩ resistors, and a
+- Test 6: two bare wires for the leak contact (nothing to buy), a magnetic door switch, two 100kΩ resistors, and a
   single Li-ion cell.
 - Test 8: an Adafruit HUZZAH32 or ESP32 Feather V2 (plus a STEMMA QT sensor for
   the I2C step).

@@ -91,7 +91,6 @@ const buyGroups = [
   {
     label: "Optional extras",
     items: [
-      { name: "Water leak sensor", href: BOM.adafruitLeak, vendor: "Adafruit" },
       { name: "Magnetic door switch", href: BOM.adafruitReed, vendor: "Adafruit" },
       { name: "100kΩ resistors (battery divider)", href: BOM.adafruitResistor100k, vendor: "Adafruit" },
     ],
@@ -192,6 +191,11 @@ const schema = [
           </div>
         ))}
       </dl>
+      <p class="text-sm">
+        The leak contact needs no part: two bare wires (or stainless screws) about 5&nbsp;mm apart on the floor, one to
+        the leak pin and one to GND. Water between them reads as wet. Powered "water sensor" boards don't work
+        here, because they drive their output high when wet.
+      </p>
       <p class="text-xs text-[var(--color-text-muted)] mb-0">{AFFILIATE_DISCLOSURE}</p>
     </section>
 
