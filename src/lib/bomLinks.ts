@@ -22,7 +22,7 @@ export const BOM = {
   // Adafruit / vendor product pages (primary references)
   adafruitDs18b20: affiliateHref("https://www.adafruit.com/product/381"),
   adafruitDs18b20HighTemp: affiliateHref("https://www.adafruit.com/product/642"),
-  adafruitEsp32S3Feather: affiliateHref("https://www.adafruit.com/product/5400"),
+  adafruitEsp32FeatherV2: affiliateHref("https://www.adafruit.com/product/5400"), // classic ESP32, not S3
   adafruitHuzzah32: affiliateHref("https://www.adafruit.com/product/3591"),
   adafruitUno: affiliateHref("https://www.adafruit.com/product/50"),
   adafruitEthShield: affiliateHref("https://www.adafruit.com/product/201"),
@@ -38,7 +38,7 @@ export const BOM = {
   adafruitButton: affiliateHref("https://www.adafruit.com/product/1119"),
   adafruitDiffuser: affiliateHref("https://www.adafruit.com/product/4749"),
   adafruitFoamTape: affiliateHref("https://www.adafruit.com/product/5019"),
-  // Boards the prebuilt /flash firmware targets (Espressif dev kits)
+  // Boards the prebuilt /flash firmware targets (Espressif dev kits; Adafruit stock comes and goes)
   adafruitEsp32S3DevKitC: affiliateHref("https://www.adafruit.com/product/5336"),
   adafruitEsp32C3DevKitM: affiliateHref("https://www.adafruit.com/product/5337"),
   // I2C temperature + humidity sensors the firmware detects

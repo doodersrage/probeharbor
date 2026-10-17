@@ -33,7 +33,7 @@ The probe posts readings to ProbeHarbor, an open-source (MIT) dashboard I wrote 
 
 | Part | Notes |
 |------|-------|
-| ESP32 board with Wi‑Fi | Any ESP32 DevKit, Adafruit HUZZAH32, or ESP32-S3 Feather |
+| ESP32 board with Wi‑Fi | Any ESP32 DevKit, Adafruit HUZZAH32, or Adafruit ESP32 Feather V2 |
 | Waterproof DS18B20 probe | Rated −55°C to 125°C; the sealed tip can sit under pipe insulation |
 | 4.7 kΩ resistor | Pull-up on the data line (some probe packs include one) |
 | USB power supply | 5 V, 500 mA or more |

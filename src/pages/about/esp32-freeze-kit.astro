@@ -18,7 +18,7 @@ const pageUrl = resolvePageUrl(siteUrl, `/about/${page.slug}`);
 
 const ADAFRUIT_DS18B20 = BOM.adafruitDs18b20;
 const ADAFRUIT_DS18B20_HIGH_TEMP = BOM.adafruitDs18b20HighTemp;
-const ADAFRUIT_ESP32_S3_FEATHER = BOM.adafruitEsp32S3Feather;
+const ADAFRUIT_ESP32_FEATHER_V2 = BOM.adafruitEsp32FeatherV2;
 const ADAFRUIT_HUZZAH32 = BOM.adafruitHuzzah32;
 const AMAZON_ESP32 = BOM.amazonEsp32DevKit;
 const AMAZON_DS18B20 = BOM.amazonDs18b20;
@@ -101,7 +101,7 @@ const freezeKitHowTo = getHowToSchema({
           <th scope="row">ESP32 board</th>
           <td>HTTPS push ingest over Wi‑Fi (TLS on-chip)</td>
           <td>
-            <a class="text-link" href={ADAFRUIT_ESP32_S3_FEATHER} target="_blank" rel={commerceLinkRel(ADAFRUIT_ESP32_S3_FEATHER)}>Adafruit ESP32-S3 Feather</a>
+            <a class="text-link" href={ADAFRUIT_ESP32_FEATHER_V2} target="_blank" rel={commerceLinkRel(ADAFRUIT_ESP32_FEATHER_V2)}>Adafruit ESP32 Feather V2</a>
             ·
             <a class="text-link" href={ADAFRUIT_HUZZAH32} target="_blank" rel={commerceLinkRel(ADAFRUIT_HUZZAH32)}>HUZZAH32</a>
             ·
@@ -162,6 +162,10 @@ const freezeKitHowTo = getHowToSchema({
     <li><strong>Yellow / white</strong> (data) → GPIO 4 (sample sketch default; any free digital GPIO works if you change the pin)</li>
     <li>4.7&nbsp;kΩ between data and 3.3&nbsp;V</li>
   </ul>
+  <p>
+    On an Adafruit Feather (HUZZAH32 or ESP32 Feather V2), GPIO 4 is the pin labelled <strong>A5</strong>. See the
+    <a class="text-link" href="/flash#feather-pins">Feather notes on the flasher page</a> for the extras.
+  </p>
   <p>
     Strap the stainless probe to the coldest pipe or north wall with a cable tie, then wrap foam insulation
     over probe + a short pipe segment so you read pipe temperature, not room air.
