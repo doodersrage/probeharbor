@@ -3,7 +3,7 @@ DS18B20 → ProbeHarbor push ingest (CircuitPython).
 
 Primary target: Raspberry Pi Pico W / Pico 2 W (RP2040 / RP2350).
 Also runs on other CircuitPython boards with Wi‑Fi and a GP4, IO4, or D4 pin
-(for example ESP32-S2 or ESP32-S3 boards running CircuitPython)..
+(for example ESP32-S2 or ESP32-S3 boards running CircuitPython).
 
 1. Flash a CircuitPython UF2 for your board.
 2. Install libraries on CIRCUITPY/lib (circup or the Adafruit bundle):
