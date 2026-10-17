@@ -14,7 +14,7 @@ Buy links are on [/flash](https://probeharbor.dev/flash#what-to-buy) (source: `s
 
 - Test 4: an ESP32-S3-DevKitC-1 and an ESP32-C3-DevKitM-1.
 - Test 5: one of SHT31-D, BME280, or AHT20.
-- Test 6: two bare wires for the leak contact (nothing to buy), a magnetic door switch, two 100kΩ resistors, and a
+- Test 6: an LM393 "rain / water sensor" module plus two bare wires for the leak contact, a magnetic door switch, two 100kΩ resistors, and a
   single Li-ion cell.
 - Test 8: an Adafruit HUZZAH32 or ESP32 Feather V2 (plus a STEMMA QT sensor for
   the I2C step).
@@ -72,6 +72,11 @@ Turn them on in `/flash` ("extras") or the portal's extras box before saving.
 - **Leak:** two bare wires on the leak pin and GND. Touch them with a wet finger or
   put them in water: `leak1` should read Wet and send a leak alert. Dry them: the
   alert closes with a "leak sensors are dry" notice.
+  - Also try the bare wires ~5 mm apart in a thin puddle of clean tap water. The
+    pin's internal pull-up (~45k) needs the water path under roughly 15k, so this
+    may not trip. If it doesn't, note it: the fix is an analog read of the leak pin.
+  - Then the LM393 module (VCC 3.3V, GND, DO → leak pin): set its dial so a drop
+    of water reads Wet and dry reads Dry.
 - **Door:** reed switch between the door pin and GND. Magnet away = Open.
 - **Battery:** a single Li-ion cell through a 1:1 divider (two equal resistors, e.g.
   100k + 100k) to the battery pin. `battery_pct` should track a multimeter reading.

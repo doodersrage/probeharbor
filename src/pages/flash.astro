@@ -192,9 +192,11 @@ const schema = [
         ))}
       </dl>
       <p class="text-sm">
-        The leak contact needs no part: two bare wires (or stainless screws) about 5&nbsp;mm apart on the floor, one to
-        the leak pin and one to GND. Water between them reads as wet. Powered "water sensor" boards don't work
-        here, because they drive their output high when wet.
+        <strong>Leak sensor:</strong> the most reliable choice is an LM393 "rain / water sensor" module (sold by many
+        shops): VCC to 3.3V, GND to GND, DO to the leak pin, and turn its dial until the pad reads wet with a drop of
+        water. Two bare wires (or stainless screws) about 5&nbsp;mm apart, one to the leak pin and one to GND, also
+        work for a free test but may miss a thin puddle of clean water. Boards whose output goes high when wet, such
+        as Adafruit's water sensor, don't work with this input.
       </p>
       <p class="text-xs text-[var(--color-text-muted)] mb-0">{AFFILIATE_DISCLOSURE}</p>
     </section>
