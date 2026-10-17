@@ -8,6 +8,15 @@ Keep the board on USB with the serial console open in `/flash` (or any serial
 monitor at 115200 baud). Lines starting `TT` are the ones to watch. Write the
 result and the firmware line (`TT … 1.2.1`) next to each test.
 
+## Parts to order
+
+Buy links are on [/flash](https://probeharbor.dev/flash#what-to-buy) (source: `src/lib/bomLinks.ts`).
+
+- Test 4: an ESP32-S3-DevKitC-1 and an ESP32-C3-DevKitM-1.
+- Test 5: one of SHT31-D, BME280, or AHT20.
+- Test 6: a water leak sensor, a magnetic door switch, two 100kΩ resistors, and a
+  single Li-ion cell.
+
 ## 1. Setup portal (no USB settings)
 
 1. Hold BOOT for 5 seconds to erase saved Wi-Fi and key. Expect a reset.

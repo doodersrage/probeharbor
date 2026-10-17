@@ -38,6 +38,14 @@ export const BOM = {
   adafruitButton: affiliateHref("https://www.adafruit.com/product/1119"),
   adafruitDiffuser: affiliateHref("https://www.adafruit.com/product/4749"),
   adafruitFoamTape: affiliateHref("https://www.adafruit.com/product/5019"),
+  // Boards the prebuilt /flash firmware targets (Espressif dev kits)
+  adafruitEsp32S3DevKitC: affiliateHref("https://www.adafruit.com/product/5336"),
+  adafruitEsp32C3DevKitM: affiliateHref("https://www.adafruit.com/product/5337"),
+  // I2C temperature + humidity sensors the firmware detects
+  adafruitSht31: affiliateHref("https://www.adafruit.com/product/2857"),
+  adafruitBme280: affiliateHref("https://www.adafruit.com/product/2652"),
+  adafruitAht20: affiliateHref("https://www.adafruit.com/product/4566"),
+  adafruitResistor100k: affiliateHref("https://www.adafruit.com/product/2787"), // 25-pack, battery divider
   pjrcTeensy41: affiliateHref("https://www.pjrc.com/store/teensy41.html"),
   pjrcEthKit: affiliateHref("https://www.pjrc.com/store/ethernet_kit.html"),
 

@@ -10,6 +10,8 @@ import {
   resolveSiteUrl,
 } from "../lib/schemaMarkup";
 import { getAuthFromCookies } from "../lib/auth";
+import { BOM } from "../lib/bomLinks";
+import { AFFILIATE_DISCLOSURE, commerceLinkRel } from "../lib/affiliateLinks";
 
 const { user } = await getAuthFromCookies(Astro.cookies);
 
@@ -52,6 +54,40 @@ const faqs = [
     question: "Is the firmware open source?",
     answer:
       "Yes. The source is in the ProbeHarbor repository under firmware/probeharbor-probe, alongside sketches you can edit and flash yourself.",
+  },
+];
+
+const buyGroups = [
+  {
+    label: "Board (pick one)",
+    items: [
+      { name: "ESP32 DevKit", href: BOM.amazonEsp32DevKit, vendor: "Amazon" },
+      { name: "ESP32-S3-DevKitC-1", href: BOM.adafruitEsp32S3DevKitC, vendor: "Adafruit" },
+      { name: "ESP32-C3-DevKitM-1", href: BOM.adafruitEsp32C3DevKitM, vendor: "Adafruit" },
+    ],
+  },
+  {
+    label: "Sensor on GPIO 4",
+    items: [
+      { name: "Waterproof DS18B20 probe", href: BOM.adafruitDs18b20, vendor: "Adafruit" },
+      { name: "4.7kΩ resistors", href: BOM.amazonResistor4k7, vendor: "Amazon" },
+    ],
+  },
+  {
+    label: "Or an I²C air sensor (no resistor needed)",
+    items: [
+      { name: "SHT31-D", href: BOM.adafruitSht31, vendor: "Adafruit" },
+      { name: "BME280 (adds air pressure)", href: BOM.adafruitBme280, vendor: "Adafruit" },
+      { name: "AHT20", href: BOM.adafruitAht20, vendor: "Adafruit" },
+    ],
+  },
+  {
+    label: "Optional extras",
+    items: [
+      { name: "Water leak sensor", href: BOM.adafruitLeak, vendor: "Adafruit" },
+      { name: "Magnetic door switch", href: BOM.adafruitReed, vendor: "Adafruit" },
+      { name: "100kΩ resistors (battery divider)", href: BOM.adafruitResistor100k, vendor: "Adafruit" },
+    ],
   },
 ];
 
@@ -116,6 +152,31 @@ const schema = [
           device key. The free plan includes two devices.
         </li>
       </ol>
+    </section>
+
+    <section class="card" id="what-to-buy">
+      <h2 class="card-title">What to buy</h2>
+      <p class="text-sm">
+        Parts that match the pins above. Any ESP32, ESP32-S3, or ESP32-C3 dev board works; the S3 and C3 links are
+        Espressif's own boards, which the firmware is built for.
+      </p>
+      <dl class="text-sm space-y-3 mb-3">
+        {buyGroups.map((group) => (
+          <div>
+            <dt class="font-semibold">{group.label}</dt>
+            <dd class="m-0">
+              {group.items.map((item, i) => (
+                <>
+                  {i > 0 && " · "}
+                  <a class="text-link" href={item.href} target="_blank" rel={commerceLinkRel(item.href)}>{item.name}</a>
+                  <span class="text-[var(--color-text-muted)]"> ({item.vendor})</span>
+                </>
+              ))}
+            </dd>
+          </div>
+        ))}
+      </dl>
+      <p class="text-xs text-[var(--color-text-muted)] mb-0">{AFFILIATE_DISCLOSURE}</p>
     </section>
 
     <BrowserFlasher />
