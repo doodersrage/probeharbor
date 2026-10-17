@@ -192,11 +192,13 @@ const schema = [
         ))}
       </dl>
       <p class="text-sm">
-        <strong>Leak sensor:</strong> the most reliable choice is an LM393 "rain / water sensor" module (sold by many
-        shops): VCC to 3.3V, GND to GND, DO to the leak pin, and turn its dial until the pad reads wet with a drop of
-        water. Two bare wires (or stainless screws) about 5&nbsp;mm apart, one to the leak pin and one to GND, also
-        work for a free test but may miss a thin puddle of clean water. Boards whose output goes high when wet, such
-        as Adafruit's water sensor, don't work with this input.
+        <strong>Leak sensor:</strong> the easiest low-cost option is an LM393 "rain / water sensor" module (sold by
+        many shops): VCC to the board's 3.3V pin (never 5V, so its output stays safe for the ESP32), GND to GND, DO to
+        the leak pin. Turn its dial until a drop of water reads Wet, then check it reads Dry again. Its exposed pads
+        corrode if left wet, so treat it as a starter part. For a longer-lasting install, use two stainless screws or
+        probes about 5&nbsp;mm apart, one to the leak pin and one to GND. Either way, test with your own water: very
+        clean water or a thin film may not trip it. Sensors whose output goes high when wet, such as Adafruit's
+        water sensor, need a different input and don't work with this firmware.
       </p>
       <p class="text-xs text-[var(--color-text-muted)] mb-0">{AFFILIATE_DISCLOSURE}</p>
     </section>

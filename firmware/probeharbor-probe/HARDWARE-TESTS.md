@@ -75,8 +75,9 @@ Turn them on in `/flash` ("extras") or the portal's extras box before saving.
   - Also try the bare wires ~5 mm apart in a thin puddle of clean tap water. The
     pin's internal pull-up (~45k) needs the water path under roughly 15k, so this
     may not trip. If it doesn't, note it: the fix is an analog read of the leak pin.
-  - Then the LM393 module (VCC 3.3V, GND, DO → leak pin): set its dial so a drop
-    of water reads Wet and dry reads Dry.
+  - Then the LM393 module (VCC 3.3V only, GND, DO → leak pin). Before wiring DO,
+    measure it with a multimeter: about 3.3V dry, near 0V wet. Set its dial so a
+    drop of water reads Wet and dry reads Dry.
 - **Door:** reed switch between the door pin and GND. Magnet away = Open.
 - **Battery:** a single Li-ion cell through a 1:1 divider (two equal resistors, e.g.
   100k + 100k) to the battery pin. `battery_pct` should track a multimeter reading.
