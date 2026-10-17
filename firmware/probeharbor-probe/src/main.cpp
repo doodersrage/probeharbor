@@ -16,6 +16,8 @@
  * Also, on each board's pins (see platformio.ini):
  *   - I2C air sensor, auto-detected: SHT31 (0x44/0x45), BME280 (0x76/0x77),
  *     or AHT20 (0x38) → temp_air, humidity_air (+ pressure_air for BME280).
+ *     On the ESP32 build, if nothing answers on the default pins at boot, the
+ *     Adafruit Feather pins are tried too (HUZZAH32, ESP32 Feather V2).
  *   - Leak contact (wet pulls LEAK_PIN to GND) → leak1, door reed switch
  *     (closed pulls DOOR_PIN to GND) → door1 (true = open), battery through
  *     a 1:1 divider on BATTERY_PIN → battery_pct. These three can't be
@@ -38,7 +40,7 @@
 #include <Wire.h>
 
 #ifndef FIRMWARE_VERSION
-#define FIRMWARE_VERSION "1.2.1"
+#define FIRMWARE_VERSION "1.2.2"
 #endif
 #ifndef INGEST_HOST
 #define INGEST_HOST "probeharbor.dev"
@@ -126,6 +128,11 @@ static bool i2cPresent(uint8_t address) {
   return Wire.endTransmission() == 0;
 }
 
+// I2C pins in use. Starts at the board defaults; boot detection may move it to a
+// Feather's pins (see detectAirAtBoot).
+int i2cSda = I2C_SDA_PIN;
+int i2cScl = I2C_SCL_PIN;
+
 static void detectAir() {
   if ((i2cPresent(0x44) && sht31.begin(0x44)) || (i2cPresent(0x45) && sht31.begin(0x45))) {
     air = AIR_SHT31;
@@ -138,7 +145,48 @@ static void detectAir() {
     return;
   }
   const char* names[] = {"", "SHT31", "BME280", "AHT20"};
-  Serial.printf("TT sensor: %s on I2C (SDA %d, SCL %d)\n", names[air], I2C_SDA_PIN, I2C_SCL_PIN);
+  Serial.printf("TT sensor: %s on I2C (SDA %d, SCL %d)\n", names[air], i2cSda, i2cScl);
+}
+
+#ifdef FEATHER_I2C_FALLBACK
+// Adafruit Feathers put SDA/SCL (and the STEMMA QT port) on other pins:
+//   HUZZAH32:         SDA 23, SCL 22
+//   ESP32 Feather V2: SDA 22, SCL 20, port powered by GPIO 2
+// Tried only at boot and only if nothing answered on the default pins, so a
+// DevKit with no I2C sensor just sees a short blink on its GPIO 2 LED.
+struct I2cPins {
+  int sda, scl, powerPin;
+};
+static const I2cPins FEATHER_I2C[] = {{23, 22, -1}, {22, 20, 2}};
+
+static void useI2c(int sda, int scl) {
+  Wire.end();
+  Wire.begin(sda, scl);
+  i2cSda = sda;
+  i2cScl = scl;
+}
+#endif
+
+static void detectAirAtBoot() {
+  detectAir();
+#ifdef FEATHER_I2C_FALLBACK
+  for (const I2cPins& pins : FEATHER_I2C) {
+    if (air != AIR_NONE) return;
+    if (pins.powerPin >= 0) {
+      pinMode(pins.powerPin, OUTPUT);
+      digitalWrite(pins.powerPin, HIGH);
+      delay(10);  // let the sensor power up
+    }
+    useI2c(pins.sda, pins.scl);
+    detectAir();
+    if (air == AIR_NONE && pins.powerPin >= 0) {
+      digitalWrite(pins.powerPin, LOW);
+      pinMode(pins.powerPin, INPUT);
+    }
+  }
+  // Nothing anywhere: back to the defaults so later retries use the documented pins.
+  if (air == AIR_NONE) useI2c(I2C_SDA_PIN, I2C_SCL_PIN);
+#endif
 }
 
 /** Read the I2C sensor; NaN pressure when the sensor has none. False drops it so it is re-detected. */
@@ -413,6 +461,7 @@ void setup() {
   applyExtras(prefs.getString("extras", ""));
   extrasParam.setValue(extras.c_str(), MAX_EXTRAS_LEN);
   Wire.begin(I2C_SDA_PIN, I2C_SCL_PIN);
+  detectAirAtBoot();
 
   Serial.println();
   Serial.println("TT firmware " FIRMWARE_VERSION);

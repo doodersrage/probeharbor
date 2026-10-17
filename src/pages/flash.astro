@@ -157,8 +157,8 @@ const schema = [
             <strong>Adafruit Feather (HUZZAH32 or ESP32 Feather V2):</strong> use the ESP32 column. Probe data
             (GPIO 4) is the pin labelled A5, the door switch (GPIO 26) is A0, and the leak contact goes on pin 27. The
             battery divider is already on the board: plug a LiPo into the battery connector and tick battery, no
-            resistors needed. The STEMMA QT port and the SDA/SCL pins don't line up with this firmware, so use a
-            DevKit board for an I²C sensor. Feathers have no BOOT button on GPIO 0, so the 5-second reset won't work; to
+            resistors needed. An I²C sensor goes on the Feather's own SDA/SCL pins or
+            its STEMMA QT port; the firmware finds it there at startup (power-cycle after plugging one in). Feathers have no BOOT button on GPIO 0, so the 5-second reset won't work; to
             change Wi-Fi, send new settings from this page instead.
           </p>
         </li>

@@ -1,4 +1,4 @@
-# Hardware tests still open (firmware 1.2.1)
+# Hardware tests still open (firmware 1.2.2)
 
 Verified so far, on a plain ESP32: browser flash → USB settings → Wi-Fi → first
 reading, with a DS18B20 (1.0.1) and with a DHT22 (1.1.1). Everything below has
@@ -6,7 +6,7 @@ only been compiled.
 
 Keep the board on USB with the serial console open in `/flash` (or any serial
 monitor at 115200 baud). Lines starting `TT` are the ones to watch. Write the
-result and the firmware line (`TT … 1.2.1`) next to each test.
+result and the firmware line (`TT … 1.2.2`) next to each test.
 
 ## Parts to order
 
@@ -16,6 +16,8 @@ Buy links are on [/flash](https://probeharbor.dev/flash#what-to-buy) (source: `s
 - Test 5: one of SHT31-D, BME280, or AHT20.
 - Test 6: a water leak sensor, a magnetic door switch, two 100kΩ resistors, and a
   single Li-ion cell.
+- Test 8: an Adafruit HUZZAH32 or ESP32 Feather V2 (plus a STEMMA QT sensor for
+  the I2C step).
 
 ## 1. Setup portal (no USB settings)
 
@@ -80,3 +82,27 @@ Any device posting a `power` sensor as `false` should now raise a "Power off" al
 and "Recovered: power is back" once it posts `true`. A quick check without
 hardware: in the payload checker, a key named `power1` with `true`/`false` should
 come out as a Power sensor.
+
+## 8. Adafruit Feather (HUZZAH32 or ESP32 Feather V2)
+
+Same firmware as a plain ESP32. Feather pin labels:
+
+| | HUZZAH32 | Feather V2 |
+|---|---|---|
+| Probe data (GPIO 4) | A5 | A5 |
+| Door (GPIO 26) | A0 | A0 |
+| Leak (GPIO 27) | 27 | 27 |
+| I2C (found at boot) | SDA / SCL pads (23 / 22) | SDA / SCL or STEMMA QT (22 / 20) |
+| Battery | built in (GPIO 35) | built in (GPIO 35) |
+
+1. Flash from `/flash`, DS18B20 on A5: expect the usual first reading.
+2. I2C sensor on the Feather's SDA/SCL (V2: the STEMMA QT port), power-cycle.
+   Expect `TT sensor: <name> on I2C (SDA 23, SCL 22)` on a HUZZAH32 or
+   `(SDA 22, SCL 20)` on a V2. On the V2 the STEMMA port is powered from GPIO 2,
+   which the firmware turns on; if the sensor's LED stays dark, note it.
+3. LiPo in the battery connector, battery ticked in extras: `battery_pct` should
+   track the cell (the board's divider is 1:2, same math as the DIY divider).
+4. Regression on a plain ESP32 DevKit with no I2C sensor: boots as before; its
+   GPIO 2 LED may blink once at startup.
+5. The 5-second BOOT reset isn't expected to work on Feathers (no button on
+   GPIO 0); resend settings from `/flash` instead.
