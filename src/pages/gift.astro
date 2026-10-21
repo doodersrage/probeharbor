@@ -8,51 +8,50 @@ import {
   resolveSiteUrl,
 } from "../lib/schemaMarkup";
 import { getAuthFromCookies } from "../lib/auth";
+import { getLocale, localizePath } from "../i18n";
+import { giftMessages } from "../i18n/messages/gift";
 
 const { user } = await getAuthFromCookies(Astro.cookies);
+const locale = getLocale(Astro);
+const t = giftMessages(locale);
 const siteUrl = resolveSiteUrl(Astro.site);
 const schema = [
   getBreadcrumbSchema(siteUrl, [
-    { name: "Home", path: "/" },
-    { name: "Gift a winter of monitoring", path: "/gift" },
+    { name: t.breadcrumbHome, path: localizePath("/", locale) },
+    { name: t.title, path: localizePath("/gift", locale) },
   ]),
 ];
 ---
 <Layout
-  title="Gift a winter of monitoring"
-  description="Share ProbeHarbor with a friend or cabin owner: they get extra Pro trial days when they sign up with your link; you earn bonus trial days when they subscribe."
+  title={t.title}
+  description={t.description}
   schema={schema}
   speakableSelectors={[".page-header-title", ".page-header-lede"]}
 >
   <div class="page-shell page-stack">
     <PageHeader
-      kicker="Referrals"
-      title="Gift a winter of monitoring"
-      lede="Freeze and flood risk is easier with a second set of eyes. Share your invite link: new signups get 7 extra days on Pro trial, and you earn +7 trial days when a referred friend subscribes."
+      kicker={t.kicker}
+      title={t.title}
+      lede={t.lede}
     >
       {user ? (
-        <a slot="actions" class="btn-primary" href="/dashboard/alerts?tab=settings#referral-card">Copy your invite link</a>
+        <a slot="actions" class="btn-primary" href="/dashboard/alerts?tab=settings#referral-card">{t.copyLink}</a>
       ) : (
-        <a slot="actions" class="btn-primary" href="/register?next=/dashboard/alerts">Create a free account</a>
+        <a slot="actions" class="btn-primary" href="/register?next=/dashboard/alerts">{t.createAccount}</a>
       )}
-      <a slot="actions" class="btn-secondary" href="/pricing">See plans</a>
+      <a slot="actions" class="btn-secondary" href="/pricing">{t.seePlans}</a>
     </PageHeader>
 
     <section class="card">
-      <h2 class="card-title">How gifting works</h2>
+      <h2 class="card-title">{t.howTitle}</h2>
       <ol class="text-sm space-y-2 mb-0">
-        <li>Sign in and copy your referral link from Dashboard → Alerts (or Plans after you upgrade).</li>
-        <li>Send it to a cabin owner, landlord, or neighbor watching pipes and leak pads.</li>
-        <li>They register with your link and get <strong>7 extra Pro trial days</strong>.</li>
-        <li>When they subscribe to Pro, you earn <strong>+7 bonus trial days</strong> (capped).</li>
+        {t.howStepsHtml.map((item) => <li set:html={item} />)}
       </ol>
     </section>
 
     <section class="card">
-      <h2 class="card-title">What they get on Free</h2>
-      <p class="card-subtitle mb-0">
-        Two devices, seven days of history, email freeze and leak alerts, and family live share links, enough to prove the path before cold nights or a wet pad. Upgrade paths stay on <a class="text-link" href="/pricing">Pricing</a>.
-      </p>
+      <h2 class="card-title">{t.freeTitle}</h2>
+      <p class="card-subtitle mb-0" set:html={t.freeHtml} />
     </section>
   </div>
 </Layout>

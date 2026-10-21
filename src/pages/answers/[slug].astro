@@ -1,7 +1,9 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import FaqSection from "../../components/FaqSection.astro";
-import { getAnswer } from "../../lib/answers";
+import { getLocale } from "../../i18n";
+import { getLocalizedAnswer } from "../../i18n/content/answers";
+import { answersMessages } from "../../i18n/messages/answers";
 import {
   getArticleSchema,
   getBreadcrumbSchema,
@@ -10,7 +12,8 @@ import {
   resolveSiteUrl,
 } from "../../lib/schemaMarkup";
 
-const answer = getAnswer(Astro.params.slug ?? "");
+const t = answersMessages(getLocale(Astro));
+const answer = getLocalizedAnswer(Astro.params.slug ?? "", getLocale(Astro));
 if (!answer) {
   return Astro.rewrite("/404");
 }
@@ -25,13 +28,13 @@ const schema = [
     pageUrl,
     headline: answer.question,
     description: answer.description,
-    articleSection: "Answers",
+    articleSection: t.articleSection,
     datePublished: answer.datePublished,
     dateModified: answer.dateModified,
   }),
   getBreadcrumbSchema(siteUrl, [
-    { name: "Home", path: "/" },
-    { name: "Answers", path: "/answers" },
+    { name: t.breadcrumbHome, path: "/" },
+    { name: t.breadcrumbAnswers, path: "/answers" },
     { name: answer.question, path: answer.path },
   ]),
   getFaqPageSchema(pageUrl, faqs),
@@ -44,13 +47,13 @@ const schema = [
   ogType="article"
   ogPublishedTime={answer.datePublished}
   ogModifiedTime={answer.dateModified}
-  ogSection="Answers"
+  ogSection={t.articleSection}
   speakableSelectors={[".answer-question", ".answer-short", ".faq-answer"]}
 >
   <article class="page-shell page-stack">
     <section class="card">
       <p class="text-sm text-[var(--color-text-muted)] mb-2">
-        <a class="text-link" href="/answers">Answers</a>
+        <a class="text-link" href="/answers">{t.answer.backLink}</a>
       </p>
       <h1 class="card-title answer-question">{answer.question}</h1>
       <p class="answer-short mb-0">{answer.shortAnswer}</p>
@@ -71,7 +74,7 @@ const schema = [
     <FaqSection faqs={answer.faqs} />
 
     <section class="card">
-      <h2 class="card-title">Related</h2>
+      <h2 class="card-title">{t.answer.related}</h2>
       <ul class="text-sm space-y-1 mb-0">
         {answer.related.map((link) => (
           <li><a class="text-link" href={link.href}>{link.label}</a></li>
@@ -79,7 +82,7 @@ const schema = [
       </ul>
       {answer.sources && (
         <>
-          <h3 class="text-base font-semibold mt-4 mb-2">Sources</h3>
+          <h3 class="text-base font-semibold mt-4 mb-2">{t.answer.sources}</h3>
           <ul class="text-sm space-y-1 mb-0">
             {answer.sources.map((link) => (
               <li><a class="text-link" href={link.url} rel="noopener noreferrer" target="_blank">{link.label}</a></li>
@@ -90,15 +93,12 @@ const schema = [
     </section>
 
     <section class="card">
-      <h2 class="card-title">Get a freeze alert for your space</h2>
-      <p class="mb-4">
-        ProbeHarbor watches probes in garages, crawlspaces, and cabins and alerts you before pipes freeze. The free plan
-        includes email alerts; bring an ESP32 probe or connect Home Assistant.
-      </p>
+      <h2 class="card-title">{t.answer.ctaTitle}</h2>
+      <p class="mb-4">{t.answer.ctaCopy}</p>
       <p class="mb-0">
-        <a class="btn-primary" href="/register?next=/dashboard/devices">Start free</a>
+        <a class="btn-primary" href="/register?next=/dashboard/devices">{t.answer.startFree}</a>
         {" "}
-        <a class="btn-secondary" href="/demo">See the live demo</a>
+        <a class="btn-secondary" href="/demo">{t.answer.seeDemo}</a>
       </p>
     </section>
   </article>

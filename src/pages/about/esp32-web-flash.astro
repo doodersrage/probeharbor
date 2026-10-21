@@ -1,10 +1,14 @@
 ---
 import AboutArticle from "../../components/AboutArticle.astro";
-import { getAboutPage } from "../../lib/aboutPages";
-import { getAboutHeroPhoto } from "../../lib/aboutPhotos";
+import { getLocale } from "../../i18n";
+import { getLocalizedAboutPage } from "../../i18n/content/aboutPages";
+import { getLocalizedAboutHeroPhoto } from "../../i18n/content/aboutPhotos";
+import { esp32WebFlashMessages } from "../../i18n/messages/about-pages/esp32-web-flash";
 
-const page = getAboutPage("esp32-web-flash")!;
-const hero = getAboutHeroPhoto(page.slug);
+const locale = getLocale(Astro);
+const t = esp32WebFlashMessages(locale);
+const page = getLocalizedAboutPage("esp32-web-flash", locale)!;
+const hero = getLocalizedAboutHeroPhoto(page.slug, locale);
 ---
 <AboutArticle
   slug={page.slug}
@@ -16,58 +20,33 @@ const hero = getAboutHeroPhoto(page.slug);
   heroCredit={hero?.credit}
   heroCreditHref={hero?.sourceUrl}
 >
-  <p>
-    The quickest path is the <a class="text-link" href="/flash">browser flasher</a> (beta): it installs prebuilt
-    firmware over USB and sends the board your Wi‑Fi and device key, with no IDE. It works with DS18B20 probes (up to
-    four) or a DHT22/DHT11 for temperature and humidity, all wired to GPIO 4. If you want to read or change the
-    code, create a push device → <strong>download a pre-filled sketch</strong> → flash with a tool you already trust.
-  </p>
+  <p set:html={t.introHtml} />
 
-  <h2>1. Download from Devices (recommended)</h2>
+  <h2>{t.devicesTitle}</h2>
   <ol>
-    <li>Open <a class="text-link" href="/dashboard/devices">Dashboard → Devices</a> and create a push device.</li>
-    <li>
-      On the ingest callout, download <strong>Arduino .ino</strong>, <strong>MicroPython .py</strong>,
-      <strong>CircuitPython code.py</strong> (Pico W), or
-      <strong>ESPHome</strong>: the ingest URL is already filled; set Wi‑Fi only.
-    </li>
-    <li>Follow the ESP32 checklist on that card (board package, libraries, Serial 115200 → <code>POST 200</code>).</li>
+    <li set:html={t.devicesStep1Html} />
+    <li set:html={t.devicesStep2Html} />
+    <li set:html={t.devicesStep3Html} />
   </ol>
 
-  <h2>2. Arduino IDE</h2>
+  <h2>{t.arduinoTitle}</h2>
   <ul>
-    <li>Install <strong>ESP32</strong> board support (Espressif), not the Uno Ethernet garage-LCD path.</li>
-    <li>Libraries: <code>OneWire</code>, <code>DallasTemperature</code> (Library Manager).</li>
-    <li>Open the downloaded <code>.ino</code>, set <code>WIFI_*</code>, select the port, flash.</li>
+    <li set:html={t.arduinoItem1Html} />
+    <li set:html={t.arduinoItem2Html} />
+    <li set:html={t.arduinoItem3Html} />
   </ul>
 
-  <h2>3. PlatformIO</h2>
-  <p>
-    Repo sample
-    <a
-      class="text-link"
-      href="https://github.com/doodersrage/probeharbor/tree/main/sketches/arduino/ds18b20_ingest"
-      target="_blank"
-      rel="noreferrer"
-    ><code>sketches/arduino/ds18b20_ingest/</code></a>
-    includes a <code>platformio.ini</code> with pinned libs and <code>monitor_speed = 115200</code>.
-    Pass ingest URL via build flags or paste the Devices-generated sketch into <code>src/main.cpp</code>.
-  </p>
+  <h2>{t.pioTitle}</h2>
+  <p set:html={t.pioBodyHtml} />
   <pre><code>{`cd sketches/arduino/ds18b20_ingest
 pio run -t upload
 pio device monitor`}</code></pre>
 
-  <h2>4. MicroPython (Thonny / mpremote)</h2>
-  <p>
-    Flash a MicroPython image once, then copy the downloaded <code>main.py</code> (ingest URL pre-filled).
-    No Arduino board package required.
-  </p>
+  <h2>{t.microTitle}</h2>
+  <p set:html={t.microBodyHtml} />
 
-  <h2>5. Browser esptool (when you already have a .bin)</h2>
-  <p>
-    If you build a binary locally (PlatformIO <code>pio run</code>), you can flash it from Chrome/Edge with
-    Espressif’s Web Serial tool: useful on locked-down PCs without a full IDE:
-  </p>
+  <h2>{t.esptoolTitle}</h2>
+  <p set:html={t.esptoolBodyHtml} />
   <p>
     <a
       class="text-link"
@@ -76,41 +55,28 @@ pio device monitor`}</code></pre>
       rel="noreferrer"
     >espressif.github.io/esptool-js ↗</a>
   </p>
-  <p class="text-sm text-[var(--color-text-muted)]">
-    That tool flashes bits you provide; it does not know your ProbeHarbor key. Keep using the Devices
-    download to bake the URL into source before you build.
-  </p>
+  <p class="text-sm text-[var(--color-text-muted)]">{t.esptoolNote}</p>
 
-  <h2>6. Wi‑Fi via captive portal</h2>
-  <p>
-    Avoid baking SSID/password into source with the
-    <a
-      class="text-link"
-      href="https://github.com/doodersrage/probeharbor/tree/main/sketches/arduino/ds18b20_wifimanager"
-      target="_blank"
-      rel="noreferrer"
-    >WiFiManager sample</a>
-    join the config AP once, then the probe stores credentials. Still set <code>INGEST_URL</code> from
-    Devices (or download and merge).
-  </p>
+  <h2>{t.portalTitle}</h2>
+  <p set:html={t.portalBodyHtml} />
 
-  <h2>Related</h2>
+  <h2>{t.relatedTitle}</h2>
   <ul>
-    <li><a class="text-link" href="/about/esp32-freeze-kit">ESP32 freeze kit parts list</a></li>
-    <li><a class="text-link" href="/about/pico-w-ingest">Raspberry Pi Pico W ingest</a></li>
-    <li><a class="text-link" href="/about/stm32-zephyr-ingest">STM32 Zephyr ingest</a></li>
-    <li><a class="text-link" href="/about/ch32v-riscv-ingest">CH32V RISC-V ingest</a></li>
-    <li><a class="text-link" href="/about/avr-asm-ingest">AVR assembly ingest</a></li>
-    <li><a class="text-link" href="/about/adding-devices">Adding devices</a></li>
-    <li><a class="text-link" href="/about/esp32-ota-firmware">OTA and battery / RSSI</a></li>
-    <li><a class="text-link" href="/about/kit-qr-onboarding">Kit QR</a></li>
+    <li><a class="text-link" href="/about/esp32-freeze-kit">{t.related.kit}</a></li>
+    <li><a class="text-link" href="/about/pico-w-ingest">{t.related.pico}</a></li>
+    <li><a class="text-link" href="/about/stm32-zephyr-ingest">{t.related.stm32}</a></li>
+    <li><a class="text-link" href="/about/ch32v-riscv-ingest">{t.related.ch32v}</a></li>
+    <li><a class="text-link" href="/about/avr-asm-ingest">{t.related.avr}</a></li>
+    <li><a class="text-link" href="/about/adding-devices">{t.related.adding}</a></li>
+    <li><a class="text-link" href="/about/esp32-ota-firmware">{t.related.ota}</a></li>
+    <li><a class="text-link" href="/about/kit-qr-onboarding">{t.related.qr}</a></li>
     <li>
       <a
         class="text-link"
         href="https://github.com/doodersrage/probeharbor/tree/main/sketches"
         target="_blank"
         rel="noreferrer"
-      >All sketches ↗</a>
+      >{t.related.sketches}</a>
     </li>
   </ul>
 </AboutArticle>

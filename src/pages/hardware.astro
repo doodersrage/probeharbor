@@ -2,50 +2,51 @@
 import Layout from "../layouts/Layout.astro";
 import PageHeader from "../components/PageHeader.astro";
 import { getBreadcrumbSchema, resolveSiteUrl } from "../lib/schemaMarkup";
-import {
-  HARDWARE_RECIPES,
-  RECIPE_GOAL_LABELS,
-  RECIPE_STATUS_LABELS,
-  type RecipeGoal,
-} from "../lib/hardwareRecipes";
+import type { RecipeGoal } from "../lib/hardwareRecipes";
+import { getLocale, localizePath } from "../i18n";
+import { hardwareMessages } from "../i18n/messages/hardware";
+import { getLocalizedHardwareRecipes } from "../i18n/content/hardwareRecipes";
 
-const title = "Which sensor hardware works with ProbeHarbor";
-const description =
-  "Pick what you want to watch (freeze, humidity, leaks, doors) and see the boards, sensors, and setup paths that work, with honest testing status for each.";
+const locale = getLocale(Astro);
+const t = hardwareMessages(locale);
+const recipes = getLocalizedHardwareRecipes(locale);
+const title = t.title;
+const description = t.description;
 
 const siteUrl = resolveSiteUrl(Astro.site);
 const schema = [
   getBreadcrumbSchema(siteUrl, [
-    { name: "Home", path: "/" },
-    { name: "Hardware", path: "/hardware" },
+    { name: t.breadcrumbHome, path: localizePath("/", locale) },
+    { name: t.breadcrumbHardware, path: localizePath("/hardware", locale) },
   ]),
 ].filter(Boolean) as Record<string, unknown>[];
 
-const goals = Object.entries(RECIPE_GOAL_LABELS) as Array<[RecipeGoal, string]>;
+const goals = Object.entries(t.goalLabels) as Array<[RecipeGoal, string]>;
 const statusTone: Record<string, string> = {
   verified: "text-[var(--color-success)]",
   "built-in": "text-[var(--color-warning)]",
   guide: "text-[var(--color-text-muted)]",
 };
+const countText = { none: t.countNone, one: t.countOne, many: t.countMany };
 ---
 <Layout title={title} description={description} schema={schema}>
   <div class="page-shell page-stack">
     <PageHeader
-      kicker="Hardware"
-      title="What can I connect?"
-      lede="ProbeHarbor is software: it works with sensors you buy or already own. Choose what you want to watch, and whether you'd rather not write code."
+      kicker={t.kicker}
+      title={t.heading}
+      lede={t.lede}
     >
-      <a slot="actions" class="btn-primary" href="/flash">Flash an ESP32</a>
-      <a slot="actions" class="btn-secondary" href="/payload-checker">Check a payload</a>
+      <a slot="actions" class="btn-primary" href="/flash">{t.flashCta}</a>
+      <a slot="actions" class="btn-secondary" href="/payload-checker">{t.checkerCta}</a>
     </PageHeader>
 
     <section class="card" aria-labelledby="hardware-filter-title">
-      <h2 class="card-title" id="hardware-filter-title">Filter</h2>
+      <h2 class="card-title" id="hardware-filter-title">{t.filterTitle}</h2>
       <fieldset class="mb-3">
-        <legend class="form-label">I want to watch</legend>
+        <legend class="form-label">{t.watchLegend}</legend>
         <div class="flex flex-wrap gap-3">
           <label class="checkbox-row mb-0">
-            <input type="radio" name="hardware-goal" value="" checked /> <span>Anything</span>
+            <input type="radio" name="hardware-goal" value="" checked /> <span>{t.anything}</span>
           </label>
           {goals.map(([value, label]) => (
             <label class="checkbox-row mb-0">
@@ -55,20 +56,20 @@ const statusTone: Record<string, string> = {
         </div>
       </fieldset>
       <label class="checkbox-row mb-0">
-        <input type="checkbox" id="hardware-no-code" /> <span>No coding</span>
+        <input type="checkbox" id="hardware-no-code" /> <span>{t.noCode}</span>
       </label>
-      <p class="form-hint mt-3 mb-0" id="hardware-count" aria-live="polite"></p>
+      <p class="form-hint mt-3 mb-0" id="hardware-count" aria-live="polite" data-count-text={JSON.stringify(countText)}></p>
     </section>
 
     <ul class="grid gap-4 md:grid-cols-2 list-none p-0 m-0" id="hardware-list">
-      {HARDWARE_RECIPES.map((recipe) => (
+      {recipes.map((recipe) => (
         <li class="card mb-0" data-goals={recipe.goals.join(" ")} data-no-code={recipe.noCode ? "1" : "0"}>
           <h2 class="card-title">{recipe.title}</h2>
-          <p class={`text-sm font-medium mb-2 ${statusTone[recipe.status]}`}>{RECIPE_STATUS_LABELS[recipe.status]}</p>
+          <p class={`text-sm font-medium mb-2 ${statusTone[recipe.status]}`}>{t.statusLabels[recipe.status]}</p>
           <dl class="text-sm mb-3 space-y-1">
-            <div><dt class="inline font-medium">Hardware: </dt><dd class="inline">{recipe.hardware}</dd></div>
-            <div><dt class="inline font-medium">Setup: </dt><dd class="inline">{recipe.path}</dd></div>
-            <div><dt class="inline font-medium">Watches: </dt><dd class="inline">{recipe.goals.map((g) => RECIPE_GOAL_LABELS[g]).join(", ")}</dd></div>
+            <div><dt class="inline font-medium">{t.hardwareLabel}</dt><dd class="inline">{recipe.hardware}</dd></div>
+            <div><dt class="inline font-medium">{t.setupLabel}</dt><dd class="inline">{recipe.path}</dd></div>
+            <div><dt class="inline font-medium">{t.watchesLabel}</dt><dd class="inline">{recipe.goals.map((g) => t.goalLabels[g]).join(", ")}</dd></div>
           </dl>
           <p class="text-sm mb-3">{recipe.notes}</p>
           <p class="mb-0 flex flex-wrap gap-3 text-sm">
@@ -81,11 +82,11 @@ const statusTone: Record<string, string> = {
     </ul>
 
     <section class="card">
-      <h2 class="card-title">What the labels mean</h2>
+      <h2 class="card-title">{t.labelsTitle}</h2>
       <ul class="mb-0 space-y-2 text-sm">
-        <li><strong>{RECIPE_STATUS_LABELS.verified}:</strong> we've run this combination on a real board and seen readings arrive.</li>
-        <li><strong>{RECIPE_STATUS_LABELS["built-in"]}:</strong> the flasher firmware supports it, but we haven't wired one up ourselves yet. Tell us if it works for you.</li>
-        <li><strong>{RECIPE_STATUS_LABELS.guide}:</strong> a documented path where you adapt example code or configuration. Anything that can send JSON over HTTPS can report.</li>
+        <li><strong>{t.statusLabels.verified}:</strong> {t.verifiedExplain}</li>
+        <li><strong>{t.statusLabels["built-in"]}:</strong> {t.builtInExplain}</li>
+        <li><strong>{t.statusLabels.guide}:</strong> {t.guideExplain}</li>
       </ul>
     </section>
   </div>
@@ -95,6 +96,7 @@ const statusTone: Record<string, string> = {
   const list = document.getElementById("hardware-list");
   const noCode = document.getElementById("hardware-no-code") as HTMLInputElement | null;
   const count = document.getElementById("hardware-count");
+  const text = JSON.parse(count?.dataset.countText ?? "{}") as { none: string; one: string; many: string };
 
   function apply() {
     const goal = (document.querySelector('input[name="hardware-goal"]:checked') as HTMLInputElement | null)?.value ?? "";
@@ -105,7 +107,7 @@ const statusTone: Record<string, string> = {
       item.hidden = !visible;
       if (visible) shown += 1;
     });
-    if (count) count.textContent = shown === 0 ? "Nothing matches; try another filter." : `${shown} setup${shown === 1 ? "" : "s"} shown.`;
+    if (count) count.textContent = shown === 0 ? text.none : shown === 1 ? text.one : text.many.replace("{n}", String(shown));
   }
 
   document.querySelectorAll('input[name="hardware-goal"]').forEach((input) => input.addEventListener("change", apply));

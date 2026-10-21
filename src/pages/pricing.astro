@@ -16,7 +16,6 @@ import {
   PRO_MAX_DEVICES,
   PRO_MAX_OWNED_HOUSEHOLDS,
   PORTFOLIO_MAX_OWNED_HOUSEHOLDS,
-  formatHistoryRetention,
 } from "../lib/entitlements";
 import { normalizeComparisonTier } from "../lib/planComparison";
 import {
@@ -31,8 +30,18 @@ import {
   resolvePageUrl,
   resolveSiteUrl,
 } from "../lib/schemaMarkup";
-import { getMarketingFaqs, getMarketingFaqSchema } from "../lib/marketingFaqs";
 import ProductScreenshot from "../components/ProductScreenshot.astro";
+import { getLocale, localizePath } from "../i18n";
+import {
+  getLocalizedMarketingFaqs,
+  getLocalizedMarketingFaqSchema,
+} from "../i18n/content/marketingFaqs";
+import { pricingMessages } from "../i18n/messages/pricing";
+
+const locale = getLocale(Astro);
+const t = pricingMessages(locale);
+const tb = t.billing;
+const tc = t.cards;
 
 const { user } = await getAuthFromCookies(Astro.cookies);
 const entitlements = user ? await getUserEntitlements(user.id) : null;
@@ -57,27 +66,27 @@ function priceForInterval(
   interval: "monthly" | "annual",
 ): { amount: string; period: string; sub: string } {
   if (interval === "monthly") {
-    const amount = prices.monthly ?? "Contact us";
+    const amount = prices.monthly ?? tb.contactUs;
     return {
       amount,
-      period: prices.monthly ? "/mo" : "",
-      sub: "Billed monthly",
+      period: prices.monthly ? tb.perMonth : "",
+      sub: tb.billedMonthly,
     };
   }
   if (prices.annual) {
     return {
       amount: prices.annual,
-      period: "/yr",
+      period: tb.perYear,
       sub: prices.annualMonthlyEquivalent
-        ? `${prices.annualMonthlyEquivalent}/mo billed annually`
-        : "Billed annually",
+        ? tb.perMonthBilledAnnually(prices.annualMonthlyEquivalent)
+        : tb.billedAnnually,
     };
   }
   // Don't reuse monthly under the annual toggle -- that looks like a bug.
   return {
-    amount: "Contact us",
+    amount: tb.contactUs,
     period: "",
-    sub: "Annual pricing not configured",
+    sub: tb.annualNotConfigured,
   };
 }
 
@@ -85,10 +94,10 @@ function savingsForInterval(
   pct: number | null,
   interval: "monthly" | "annual",
 ): string {
-  const label = pct != null && pct > 0 ? `${pct}%` : "~20%";
+  const label = pct != null && pct > 0 ? tb.percent(pct) : tb.approxTwenty;
   return interval === "annual"
-    ? `Save ${label} vs monthly`
-    : `Switch to annual to save ${label}`;
+    ? tb.saveVsMonthly(label)
+    : tb.switchToAnnual(label);
 }
 
 const memberMonthly = priceForInterval(memberPrices, "monthly");
@@ -100,8 +109,8 @@ const portfolioAnnual = priceForInterval(portfolioPrices, "annual");
 if (!portfolioPricingConfigured) {
   // Avoid "Billed monthly" / "Save ~20%" placeholder copy sitting under a
   // "Contact us" price before you've set the Stripe price + display env vars.
-  portfolioMonthly.sub = "Custom pricing";
-  portfolioAnnual.sub = "Custom pricing";
+  portfolioMonthly.sub = tb.customPricing;
+  portfolioAnnual.sub = tb.customPricing;
 }
 const maxAnnualSavings = Math.max(
   memberPrices.annualSavingsPct ?? 0,
@@ -109,7 +118,7 @@ const maxAnnualSavings = Math.max(
   portfolioPrices.annualSavingsPct ?? 0,
 );
 const annualSavingsLabel =
-  maxAnnualSavings > 0 ? `Save up to ${maxAnnualSavings}%` : "Save ~20%";
+  maxAnnualSavings > 0 ? tb.saveUpTo(tb.percent(maxAnnualSavings)) : tb.saveApprox;
 const memberSavingsMonthly = savingsForInterval(memberPrices.annualSavingsPct, "monthly");
 const memberSavingsAnnual = savingsForInterval(memberPrices.annualSavingsPct, "annual");
 const proSavingsMonthly = savingsForInterval(proPrices.annualSavingsPct, "monthly");
@@ -120,82 +129,88 @@ const portfolioSavingsMonthly = portfolioPricingConfigured
 const portfolioSavingsAnnual = portfolioPricingConfigured
   ? savingsForInterval(portfolioPrices.annualSavingsPct, "annual")
   : "";
-const monthlyHint = `You’re viewing monthly prices. Annual locks in ${maxAnnualSavings > 0 ? `${maxAnnualSavings}%` : "about 20%"} off (${memberAnnual.amount} / ${proAnnual.amount} per year).`;
-const annualHint = `You’re viewing yearly totals. Toggle Monthly to see ${memberMonthly.amount} / ${proMonthly.amount} per month.`;
+const monthlyHint = tb.monthlyHint(
+  maxAnnualSavings > 0 ? tb.percent(maxAnnualSavings) : tb.aboutTwenty,
+  memberAnnual.amount,
+  proAnnual.amount,
+);
+const annualHint = tb.annualHint(memberMonthly.amount, proMonthly.amount);
+const proSubMonthly = tb.withTrial(proMonthly.sub);
+const proSubAnnual = tb.withTrial(proAnnual.sub);
 
 const siteUrl = resolveSiteUrl(Astro.site);
-const pageUrl = resolvePageUrl(siteUrl, "/pricing");
-const pricingFaqs = getMarketingFaqs("pricing");
+const pageUrl = resolvePageUrl(siteUrl, localizePath("/pricing", locale));
+const pricingFaqs = getLocalizedMarketingFaqs("pricing", locale);
 const schema = [
   getBreadcrumbSchema(siteUrl, [
-    { name: "Home", path: "/" },
-    { name: "Pricing", path: "/pricing" },
+    { name: t.meta.breadcrumbHome, path: localizePath("/", locale) },
+    { name: t.meta.breadcrumbPricing, path: localizePath("/pricing", locale) },
   ]),
-  getMarketingFaqSchema(pageUrl, "pricing"),
+  getLocalizedMarketingFaqSchema(pageUrl, "pricing", locale),
 ].filter(Boolean) as Record<string, unknown>[];
 ---
 <Layout
-  title="Plans & pricing"
-  description="Compare ProbeHarbor Free, Member, Pro, and Portfolio: devices, history, freeze and flood alerts, NWS warnings, and annual billing. Start free."
+  title={t.meta.title}
+  description={t.meta.description}
   schema={schema}
   speakableSelectors={[".page-header-title", ".page-header-lede", ".faq-answer"]}
 >
   <div class="page-shell page-stack">
     <PageHeader
-      kicker="Pricing"
-      title="Plans that grow with your probes"
-      lede="Start free to see if ProbeHarbor fits. Upgrade to Member for a full cold season of history, or Pro when you want serious freeze and flood alerts, thermostat context, and automation. Need more than a handful of properties or on-site manager logins? Portfolio is below."
+      kicker={t.header.kicker}
+      title={t.header.title}
+      lede={t.header.lede}
     >
       {user ? (
         <p class="page-header-meta">
-          Signed in as <strong>{user.email}</strong>
+          {t.header.signedInAs} <strong>{user.email}</strong>
           {currentTier && (
             <>
               {" · "}
-              Current plan: <strong class="capitalize">{currentTier}</strong>
+              {t.header.currentPlan} <strong class="capitalize">{currentTier}</strong>
             </>
           )}
           {" · "}
-          <a class="text-link" href="/dashboard">Dashboard</a>
+          <a class="text-link" href="/dashboard">{t.header.dashboard}</a>
         </p>
       ) : (
         <>
-          <a slot="actions" class="btn-primary" href="/register?next=/dashboard/devices">Create free account</a>
-          <a slot="actions" class="btn-secondary" href="/signin">Sign in</a>
+          <a slot="actions" class="btn-primary" href="/register?next=/dashboard/devices">{t.header.createAccount}</a>
+          <a slot="actions" class="btn-secondary" href="/signin">{t.header.signIn}</a>
         </>
       )}
     </PageHeader>
 
-    <section class="pricing-ladder" aria-label="Plan ladder">
+    <section class="pricing-ladder" aria-label={t.ladder.label}>
       <ul class="pricing-ladder-list">
         <li>
           <strong>Free</strong>
-          <span>See if ProbeHarbor works for you: live curves, freeze and leak alerts, one family live share.</span>
+          <span>{t.ladder.free}</span>
         </li>
         <li>
           <strong>Member</strong>
-          <span>Track a whole cold season, or a wet basement season: 90-day history, CSV, more devices, and forecast freeze warnings.</span>
+          <span>{t.ladder.member}</span>
         </li>
         <li>
           <strong>Pro</strong>
-          <span>Serious alerts and automation. NWS, SMS, Nest/Ecobee house context, claims pack, 14-day trial. Up to {PRO_MAX_OWNED_HOUSEHOLDS} properties.</span>
+          <span>{t.ladder.pro(PRO_MAX_OWNED_HOUSEHOLDS)}</span>
         </li>
         <li>
           <strong>Portfolio</strong>
-          <span>Larger multi-property ops: up to {PORTFOLIO_MAX_OWNED_HOUSEHOLDS} owned properties, cross-property freeze/flood risk view, property-manager logins without billing access.</span>
+          <span>{t.ladder.portfolio(PORTFOLIO_MAX_OWNED_HOUSEHOLDS)}</span>
         </li>
       </ul>
     </section>
 
     <section class="plan-tier-section">
-      <div class="billing-interval-toggle" role="group" aria-label="Billing interval">
+      <div class="billing-interval-toggle" role="group" aria-label={tb.label}>
         <button
           type="button"
           class="billing-interval-btn"
           data-interval="monthly"
           aria-pressed={defaultInterval === "monthly" ? "true" : "false"}
         >
-          Monthly
+          {tb.monthly}
         </button>
         <button
           type="button"
@@ -203,7 +218,7 @@ const schema = [
           data-interval="annual"
           aria-pressed={defaultInterval === "annual" ? "true" : "false"}
         >
-          Annual
+          {tb.annual}
           <span class="billing-interval-badge">{annualSavingsLabel}</span>
         </button>
       </div>
@@ -224,27 +239,27 @@ const schema = [
             <p class="plan-tier-savings">&nbsp;</p>
             <p class="plan-tier-sub">&nbsp;</p>
           </div>
-          <p class="plan-tier-tagline">Live monitoring for one property, no credit card</p>
+          <p class="plan-tier-tagline">{tc.free.tagline}</p>
           <ul class="plan-tier-list">
-            <li>{FREE_MAX_DEVICES} push devices per property</li>
-            <li>{formatHistoryRetention(FREE_HISTORY_DAYS)} of history</li>
-            <li>Threshold freeze and leak alerts</li>
-            <li>Email, push, and chat-app alerts</li>
+            <li>{tc.devices(FREE_MAX_DEVICES)}</li>
+            <li>{tc.history(FREE_HISTORY_DAYS)}</li>
+            <li>{tc.free.freezeLeak}</li>
+            <li>{tc.free.channels}</li>
           </ul>
           <div class="plan-tier-footer">
             {!user ? (
-              <a class="btn-secondary" href="/register?next=/dashboard/devices">Get started</a>
+              <a class="btn-secondary" href="/register?next=/dashboard/devices">{tc.free.getStarted}</a>
             ) : currentTier === "free" ? (
-              <p>Current plan</p>
+              <p>{tc.currentPlan}</p>
             ) : (
-              <p>Included in your plan</p>
+              <p>{tc.includedInPlan}</p>
             )}
           </div>
         </article>
 
         <article class="plan-tier-card plan-tier-card-featured" id="member" aria-labelledby="plan-member-name">
           <div class="plan-tier-badge-slot">
-            <span class="plan-tier-badge">Most popular</span>
+            <span class="plan-tier-badge">{tc.member.badge}</span>
           </div>
           <h2 class="plan-tier-name" id="plan-member-name">Member</h2>
           <p class="plan-tier-price" aria-live="polite">
@@ -276,12 +291,12 @@ const schema = [
               {defaultInterval === "annual" ? memberAnnual.sub : memberMonthly.sub}
             </p>
           </div>
-          <p class="plan-tier-tagline">History export, more headroom, and forecast freeze</p>
+          <p class="plan-tier-tagline">{tc.member.tagline}</p>
           <ul class="plan-tier-list">
-            <li>{MEMBER_MAX_DEVICES} push devices per property</li>
-            <li>{formatHistoryRetention(MEMBER_HISTORY_DAYS)} of history</li>
-            <li>Forecast freeze warnings</li>
-            <li>CSV history export</li>
+            <li>{tc.devices(MEMBER_MAX_DEVICES)}</li>
+            <li>{tc.history(MEMBER_HISTORY_DAYS)}</li>
+            <li>{tc.member.forecast}</li>
+            <li>{tc.member.csv}</li>
           </ul>
           <div class="plan-tier-footer">
             {user ? (
@@ -289,13 +304,13 @@ const schema = [
                 <form action="/api/stripe/checkout" method="post" class="checkout-form">
                   <input type="hidden" name="plan" value="member" />
                   <input type="hidden" name="interval" value={defaultInterval} data-interval-input />
-                  <button class="btn-secondary" type="submit">Upgrade to Member</button>
+                  <button class="btn-secondary" type="submit">{tc.member.upgrade}</button>
                 </form>
               ) : (
-                <p>Included in your plan</p>
+                <p>{tc.includedInPlan}</p>
               )
             ) : (
-              <a class="btn-secondary" href="/signin?next=/pricing">Sign in to subscribe</a>
+              <a class="btn-secondary" href="/signin?next=/pricing">{tc.signInToSubscribe}</a>
             )}
           </div>
         </article>
@@ -326,49 +341,44 @@ const schema = [
             </p>
             <p
               class="plan-tier-sub"
-              data-sub-monthly={`${proMonthly.sub} · 14-day free trial`}
-              data-sub-annual={`${proAnnual.sub} · 14-day free trial`}
+              data-sub-monthly={proSubMonthly}
+              data-sub-annual={proSubAnnual}
             >
-              {defaultInterval === "annual"
-                ? `${proAnnual.sub} · 14-day free trial`
-                : `${proMonthly.sub} · 14-day free trial`}
+              {defaultInterval === "annual" ? proSubAnnual : proSubMonthly}
             </p>
           </div>
-          <p class="plan-tier-tagline">Official NWS alerts, Nest/Ecobee house context, <a class="text-link" href="/claims-pack">claims pack</a></p>
+          <p class="plan-tier-tagline" set:html={tc.pro.taglineHtml} />
           <ul class="plan-tier-list">
-            <li>{PRO_MAX_DEVICES} push devices per property</li>
-            <li>{formatHistoryRetention(PRO_HISTORY_DAYS)}+ of history</li>
-            <li>Forecast freeze warnings + official NWS alerts</li>
-            <li><a class="text-link" href="/about/thermostat-oauth">Nest / Ecobee</a> thermostat connection (house vs probe)</li>
-            <li><a class="text-link" href="/claims-pack">Claims / insurance evidence pack</a></li>
-            <li>
-              SMS, webhooks, Pro share scopes &amp;
-              <a class="text-link" href="/docs/api">API keys</a>
-            </li>
-            <li>Up to {PRO_MAX_OWNED_HOUSEHOLDS} owned properties (vacation home, rental, workshop)</li>
+            <li>{tc.devices(PRO_MAX_DEVICES)}</li>
+            <li>{tc.historyPlus(PRO_HISTORY_DAYS)}</li>
+            <li>{tc.pro.forecastNws}</li>
+            <li set:html={tc.pro.thermostatHtml} />
+            <li set:html={tc.pro.claimsHtml} />
+            <li set:html={tc.pro.automationHtml} />
+            <li>{tc.pro.properties(PRO_MAX_OWNED_HOUSEHOLDS)}</li>
           </ul>
           <div class="plan-tier-footer">
             {user ? (
               rawTier === "portfolio" || rawTier === "admin" ? (
-                <p>Included in your plan</p>
+                <p>{tc.includedInPlan}</p>
               ) : rawTier !== "pro" ? (
                 <form action="/api/stripe/checkout" method="post" class="checkout-form">
                   <input type="hidden" name="plan" value="pro" />
                   <input type="hidden" name="interval" value={defaultInterval} data-interval-input />
-                  <button class="btn-primary" type="submit">Start Pro trial</button>
+                  <button class="btn-primary" type="submit">{tc.pro.startTrial}</button>
                 </form>
               ) : (
-                <p>You're on Pro</p>
+                <p>{tc.pro.onPro}</p>
               )
             ) : (
-              <a class="btn-primary" href="/signin?next=/pricing">Sign in for Pro trial</a>
+              <a class="btn-primary" href="/signin?next=/pricing">{tc.pro.signInForTrial}</a>
             )}
           </div>
         </article>
 
         <article class="plan-tier-card" id="portfolio">
           <div class="plan-tier-badge-slot">
-            <span class="plan-tier-badge">For portfolios</span>
+            <span class="plan-tier-badge">{tc.portfolio.badge}</span>
           </div>
           <h2 class="plan-tier-name">Portfolio</h2>
           <p class="plan-tier-price" aria-live="polite">
@@ -401,42 +411,39 @@ const schema = [
             </p>
           </div>
           <p class="plan-tier-tagline">
-            For ops past Pro’s {PRO_MAX_OWNED_HOUSEHOLDS}-property ceiling: managers without billing access
+            {tc.portfolio.tagline(PRO_MAX_OWNED_HOUSEHOLDS)}
           </p>
           <ul class="plan-tier-list">
-            <li>Everything in Pro, plus: </li>
-            <li>Up to {PORTFOLIO_MAX_OWNED_HOUSEHOLDS} owned properties (Pro already covers up to {PRO_MAX_OWNED_HOUSEHOLDS})</li>
-            <li>Cross-property freeze-risk dashboard</li>
-            <li>Property-manager logins (devices &amp; alerts only, no billing or other properties)</li>
+            <li>{tc.portfolio.everythingInPro}</li>
+            <li>{tc.portfolio.properties(PORTFOLIO_MAX_OWNED_HOUSEHOLDS, PRO_MAX_OWNED_HOUSEHOLDS)}</li>
+            <li>{tc.portfolio.crossProperty}</li>
+            <li>{tc.portfolio.managers}</li>
           </ul>
-          <p class="text-sm text-[var(--color-text-muted)] mt-3 mb-0">
-            A few rentals or a vacation place usually stay on Pro. Portfolio is priced for larger landlords and property-management teams: see
-            <a class="text-link" href="/property-management">property management</a>.
-          </p>
+          <p class="text-sm text-[var(--color-text-muted)] mt-3 mb-0" set:html={tc.portfolio.noteHtml} />
           <div class="plan-tier-footer">
             {user ? (
               rawTier === "portfolio" || rawTier === "admin" ? (
-                <p>You're on Portfolio</p>
+                <p>{tc.portfolio.onPortfolio}</p>
               ) : portfolioPricingConfigured ? (
                 <form action="/api/stripe/checkout" method="post" class="checkout-form">
                   <input type="hidden" name="plan" value="portfolio" />
                   <input type="hidden" name="interval" value={defaultInterval} data-interval-input />
-                  <button class="btn-secondary" type="submit">Upgrade to Portfolio</button>
+                  <button class="btn-secondary" type="submit">{tc.portfolio.upgrade}</button>
                 </form>
               ) : (
-                <a class="btn-secondary" href="/contact">Contact us about Portfolio</a>
+                <a class="btn-secondary" href="/contact">{tc.portfolio.contact}</a>
               )
             ) : portfolioPricingConfigured ? (
-              <a class="btn-secondary" href="/signin?next=/pricing">Sign in to subscribe</a>
+              <a class="btn-secondary" href="/signin?next=/pricing">{tc.signInToSubscribe}</a>
             ) : (
-              <a class="btn-secondary" href="/contact">Contact us about Portfolio</a>
+              <a class="btn-secondary" href="/contact">{tc.portfolio.contact}</a>
             )}
           </div>
         </article>
       </div>
       {user && hasBilling && (
         <form action="/api/stripe/portal" method="post" class="mt-4">
-          <button class="btn-secondary" type="submit">Manage billing</button>
+          <button class="btn-secondary" type="submit">{tc.manageBilling}</button>
         </form>
       )}
     </section>
@@ -444,68 +451,43 @@ const schema = [
     <div class="product-shot-row">
       <ProductScreenshot
         shot="history-chart"
-        caption="Member and Pro keep longer curves. Free still shows live readings plus threshold freeze and leak alerts."
+        caption={t.screenshotCaption}
       />
       <section class="card" id="integrations">
-        <h2 class="card-title">Integrations on Pro</h2>
-        <p class="card-subtitle mb-4">
-          Free already includes one family live share link. Pro unlocks history/metrics scopes, never-expire links,
-          inbound snooze webhooks, outbound alert hooks, and the
-          <a class="text-link" href="/integrations/home-assistant">official Home Assistant HACS integration</a>
-          at full power. Connect <a class="text-link" href="/about/thermostat-oauth">Nest or Ecobee</a> for house
-          ambient and setpoint beside your garage probes, or push any indoor climate sensor as an
-          <a class="text-link" href="/dashboard/devices?view=setup&tab=thermostat#indoor-reference">indoor reference</a>.
-          Keep MQTT on your LAN; use ProbeHarbor for household freeze and leak SMS, history, and off-site alerts.
-        </p>
+        <h2 class="card-title">{t.integrations.title}</h2>
+        <p class="card-subtitle mb-4" set:html={t.integrations.bodyHtml} />
         <div class="flex flex-wrap gap-3">
-          <a class="btn-secondary" href="/integrations">All integrations</a>
-          <a class="btn-secondary" href="/integrations/home-assistant">HACS install guide</a>
-          <a class="btn-secondary" href="/about/thermostat-oauth">Nest / Ecobee</a>
-          <a class="btn-ghost" href="/docs/api">HTTP API</a>
+          <a class="btn-secondary" href="/integrations">{t.integrations.all}</a>
+          <a class="btn-secondary" href="/integrations/home-assistant">{t.integrations.hacsGuide}</a>
+          <a class="btn-secondary" href="/about/thermostat-oauth">{t.integrations.nestEcobee}</a>
+          <a class="btn-ghost" href="/docs/api">{t.integrations.httpApi}</a>
         </div>
       </section>
     </div>
 
     <section class="card" id="plan-matrix">
-      <h2 class="card-title">Full feature comparison</h2>
-      <p class="card-subtitle mb-4">
-        Canonical plan matrix for Free / Member / Pro / Portfolio: device counts, retention, freeze and leak alerts, thermostat, and manager logins.
-        Comparing ProbeHarbor against MQTT, Govee, or a weather station?
-        {" "}<a class="text-link" href="/compare">See alternatives</a>
-        {" "}(competitor guides, not a second copy of this table).
-      </p>
-      <p class="text-sm text-[var(--color-text-muted)] mb-4">
-        Portfolio includes everything under Pro, then raises the owned-property ceiling (Pro already allows up to {PRO_MAX_OWNED_HOUSEHOLDS}; Portfolio up to {PORTFOLIO_MAX_OWNED_HOUSEHOLDS}) and adds property-manager logins: see the Portfolio card above and
-        <a class="text-link" href="/property-management">property management</a>.
-      </p>
+      <h2 class="card-title">{t.matrix.title}</h2>
+      <p class="card-subtitle mb-4" set:html={t.matrix.subtitleHtml} />
+      <p
+        class="text-sm text-[var(--color-text-muted)] mb-4"
+        set:html={t.matrix.noteHtml(PRO_MAX_OWNED_HOUSEHOLDS, PORTFOLIO_MAX_OWNED_HOUSEHOLDS)}
+      />
       <PlanComparisonTable highlightTier={currentTier} />
     </section>
 
     <section class="card">
-      <h2 class="card-title">Hosted on Cloudflare’s edge</h2>
-      <p class="mb-0 text-sm">
-        Dashboards and ingest APIs run on Cloudflare Workers, no home server for you to keep online.
-        For live job and ingest health (not a borrowed uptime badge), see
-        <a class="text-link" href="/system-status">system status</a>.
-      </p>
+      <h2 class="card-title">{t.hosted.title}</h2>
+      <p class="mb-0 text-sm" set:html={t.hosted.bodyHtml} />
     </section>
 
     <FaqSection
       faqs={pricingFaqs}
-      lede="Plan limits, upgrades, and billing: answered for freeze-season shoppers."
+      lede={t.faqLede}
     />
 
     <section class="card">
-      <h2 class="card-title">Still deciding?</h2>
-      <p class="mb-0">
-        Read the <a class="text-link" href="/stories/garage-freeze-alert">garage heater failure scenario</a>,
-        build from the <a class="text-link" href="/about/esp32-freeze-kit">ESP32 freeze kit</a>
-        or <a class="text-link" href="/accessories">hardware accessories</a>
-        (including the <a class="text-link" href="/claim-puck">claim puck</a>),
-        compare against <a class="text-link" href="/compare">DIY MQTT, Govee, or Tempest</a>,
-        see the <a class="text-link" href="/about/accounts-and-dashboard">accounts guide</a>,
-        or <a class="text-link" href="/contact">contact us</a> if you're unsure which tier fits.
-      </p>
+      <h2 class="card-title">{t.deciding.title}</h2>
+      <p class="mb-0" set:html={t.deciding.bodyHtml} />
     </section>
   </div>
 

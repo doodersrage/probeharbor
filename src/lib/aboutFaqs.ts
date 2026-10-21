@@ -609,10 +609,10 @@ export function getAboutFaqs(slug: string): AboutFaqItem[] {
 }
 
 /** Convert FAQ items into AboutContentBlock list for article footers. */
-export function aboutFaqsToBlocks(faqs: AboutFaqItem[]): AboutContentBlock[] {
+export function aboutFaqsToBlocks(faqs: AboutFaqItem[], heading = "FAQ"): AboutContentBlock[] {
   if (faqs.length === 0) return [];
   return [
-    { type: "h2", text: "FAQ" },
+    { type: "h2", text: heading },
     ...faqs.flatMap((faq) => [
       {
         type: "p" as const,

@@ -1,9 +1,42 @@
 import { useCallback, useEffect, useState } from "preact/hooks";
 import type { WeatherSnapshot } from "../lib/FetchWeather";
 import { LIVE_REFRESH_EVENT } from "../lib/liveDashboardChrome";
-import WeatherMap from "./WeatherMap";
+import WeatherMap, { WEATHER_MAP_TEXT_EN } from "./WeatherMap";
+
+/**
+ * Visible copy. Plain strings only (island props are serialized). English is
+ * the default; marketing pages pass a translation from
+ * `src/i18n/messages/demoIslands.ts`.
+ */
+export const WEATHER_PANEL_TEXT_EN = {
+  loading: "Loading outdoor weather…",
+  title: "Current weather",
+  loadError: "Unable to load weather",
+  rateLimited: "Too many requests",
+  locationUnavailable: "Unable to load weather for this location.",
+  retry: "Retry",
+  guestCta: "Create account to set location",
+  changeLocation: "Change location",
+  temperature: "Temperature",
+  humidity: "Humidity",
+  feelsLike: "Feels Like",
+  windSpeed: "Wind Speed",
+  windGusts: "Wind Gusts",
+  cloudCover: "Cloud Cover",
+  condition: "Condition",
+  refreshNote: "Outdoor weather refreshes every few minutes.",
+  refreshNow: "Refresh now",
+  mapLabel: WEATHER_MAP_TEXT_EN.mapLabel,
+  mapOpenLarger: WEATHER_MAP_TEXT_EN.openLarger,
+  mapAttribution: WEATHER_MAP_TEXT_EN.attribution,
+};
+
+export type WeatherPanelText = typeof WEATHER_PANEL_TEXT_EN;
 
 interface Props {
+  text?: WeatherPanelText;
+  /** BCP 47 tag for number formatting. Omitted or English keeps the °F/mph layout. */
+  locale?: string;
   cityId?: string | null;
   intervalMs?: number;
   /** Guest marketing home — avoid dashboard-only CTAs */
@@ -14,7 +47,11 @@ export default function WeatherPanel({
   cityId = null,
   intervalMs = 300000,
   guest = false,
+  text = WEATHER_PANEL_TEXT_EN,
+  locale,
 }: Props) {
+  // Non-English pages read °C and km/h first, with the US units in parentheses.
+  const localized = locale != null && !locale.toLowerCase().startsWith("en");
   const [weather, setWeather] = useState<WeatherSnapshot | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -34,7 +71,15 @@ export default function WeatherPanel({
       };
       if (signal?.aborted) return;
       if (!response.ok) {
-        throw new Error(payload.error ?? "Unable to load weather");
+        throw new Error(
+          response.status === 429
+            ? text.rateLimited
+            : response.status === 502
+              ? text.locationUnavailable
+              : localized
+                ? text.loadError
+                : (payload.error ?? text.loadError),
+        );
       }
       setWeather(payload.weather ?? null);
       setError(null);
@@ -42,11 +87,13 @@ export default function WeatherPanel({
       if (signal?.aborted || (e instanceof DOMException && e.name === "AbortError")) {
         return;
       }
-      setError(e instanceof Error ? e.message : "Unable to load weather");
+      setError(
+        e instanceof Error && (!localized || !(e instanceof TypeError)) ? e.message : text.loadError,
+      );
     } finally {
       if (!signal?.aborted) setLoading(false);
     }
-  }, [cityId]);
+  }, [cityId, localized, text]);
 
   useEffect(() => {
     const ac = new AbortController();
@@ -71,7 +118,7 @@ export default function WeatherPanel({
     return (
       <section class="card animate-slide-in-right">
         <div class="loading-state">
-          <p class="m-0">Loading outdoor weather…</p>
+          <p class="m-0">{text.loading}</p>
         </div>
       </section>
     );
@@ -81,22 +128,22 @@ export default function WeatherPanel({
     return (
       <section class="card animate-slide-in-right">
         <div class="empty-state">
-          <h2 class="card-title">Current weather</h2>
+          <h2 class="card-title">{text.title}</h2>
           <p class="mb-4">{error}</p>
           <div class="flex flex-wrap justify-center gap-3">
             <button type="button" class="btn-secondary" onClick={() => {
               setLoading(true);
               void load();
             }}>
-              Retry
+              {text.retry}
             </button>
             {guest ? (
               <a class="btn-ghost" href="/register?next=/dashboard/devices">
-                Create account to set location
+                {text.guestCta}
               </a>
             ) : (
               <a class="btn-ghost" href="/dashboard#weather">
-                Change location
+                {text.changeLocation}
               </a>
             )}
           </div>
@@ -119,24 +166,31 @@ export default function WeatherPanel({
     Number.isFinite(weather.lat) &&
     Number.isFinite(weather.lon);
   // Providers return hundredths; whole units match what a forecast shows.
-  const whole = (n: number) => String(Math.round(n));
-  const stats: Array<{ label: string; value: string; detail?: boolean }> = [
-    { label: "Temperature", value: `${whole(weather.temp)}°F` },
-    { label: "Humidity", value: `${whole(weather.humidity)}%` },
-    { label: "Feels Like", value: `${whole(weather.feelsLike)}°F` },
-    { label: "Wind Speed", value: `${whole(weather.windSpeed)} mph` },
+  const whole = (n: number) =>
+    localized ? new Intl.NumberFormat(locale, { maximumFractionDigits: 0 }).format(Math.round(n)) : String(Math.round(n));
+  const pct = (n: number) =>
+    localized
+      ? new Intl.NumberFormat(locale, { style: "percent", maximumFractionDigits: 0 }).format(Math.round(n) / 100)
+      : `${whole(n)}%`;
+  const temp = (f: number) => (localized ? `${whole(((f - 32) * 5) / 9)} °C (${whole(f)} °F)` : `${whole(f)}°F`);
+  const wind = (mph: number) => (localized ? `${whole(mph * 1.609344)} km/h (${whole(mph)} mph)` : `${whole(mph)} mph`);
+  const stats: Array<{ key: string; label: string; value: string; detail?: boolean }> = [
+    { key: "temperature", label: text.temperature, value: temp(weather.temp) },
+    { key: "humidity", label: text.humidity, value: pct(weather.humidity) },
+    { key: "feelsLike", label: text.feelsLike, value: temp(weather.feelsLike) },
+    { key: "windSpeed", label: text.windSpeed, value: wind(weather.windSpeed) },
   ];
   if (weather.windGust != null) {
-    stats.push({ label: "Wind Gusts", value: `${whole(weather.windGust)} mph` });
+    stats.push({ key: "windGusts", label: text.windGusts, value: wind(weather.windGust) });
   }
   stats.push(
-    { label: "Cloud Cover", value: `${whole(weather.cloudCover)}%` },
-    { label: "Condition", value: weather.description, detail: true },
+    { key: "cloudCover", label: text.cloudCover, value: pct(weather.cloudCover) },
+    { key: "condition", label: text.condition, value: weather.description, detail: true },
   );
 
   return (
     <section class="card animate-slide-in-right">
-      <h2 class="card-title">Current weather</h2>
+      <h2 class="card-title">{text.title}</h2>
       <p class="card-subtitle">{locationLabel}</p>
       {error && (
         <div class="alert-warning mb-4">
@@ -147,7 +201,7 @@ export default function WeatherPanel({
               class="text-link bg-transparent border-0 p-0 cursor-pointer"
               onClick={() => void load()}
             >
-              Retry
+              {text.retry}
             </button>
           </p>
         </div>
@@ -157,11 +211,12 @@ export default function WeatherPanel({
           lat={weather.lat!}
           lon={weather.lon!}
           label={locationLabel}
+          text={{ mapLabel: text.mapLabel, openLarger: text.mapOpenLarger, attribution: text.mapAttribution }}
         />
       )}
       <div class="stat-grid">
-        {stats.map(({ label, value, detail }) => (
-          <article class="stat-item" key={label}>
+        {stats.map(({ key, label, value, detail }) => (
+          <article class="stat-item" key={key}>
             <span class="stat-label">{label}</span>
             {detail ? (
               <p class="stat-value stat-value-text capitalize">{value}</p>
@@ -172,14 +227,14 @@ export default function WeatherPanel({
         ))}
       </div>
       <p class="live-refresh-note">
-        Outdoor weather refreshes every few minutes.
+        {text.refreshNote}
         {" "}
         <button
           type="button"
           class="text-link bg-transparent border-0 p-0 cursor-pointer text-sm"
           onClick={() => void load()}
         >
-          Refresh now
+          {text.refreshNow}
         </button>
       </p>
     </section>

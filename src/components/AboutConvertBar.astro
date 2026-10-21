@@ -1,16 +1,16 @@
 ---
+import { getLocale } from "../i18n";
+import { aboutArticleMessages } from "../i18n/messages/aboutArticle";
 import { buildRegisterHref } from "../lib/registerUrl";
 
 const registerHref = buildRegisterHref();
+const t = aboutArticleMessages(getLocale(Astro)).convertBar;
 ---
 
-<aside class="about-convert-bar" aria-label="Try ProbeHarbor">
-  <p class="about-convert-bar-copy">
-    <strong>Live demo</strong>, no account.
-    Ready to connect probes? Free forever, no card.
-  </p>
+<aside class="about-convert-bar" aria-label={t.label}>
+  <p class="about-convert-bar-copy" set:html={t.copyHtml} />
   <div class="about-convert-bar-actions">
-    <a class="btn-secondary" href="/demo">Try live demo</a>
-    <a class="btn-primary" href={registerHref}>Start free</a>
+    <a class="btn-secondary" href="/demo">{t.demo}</a>
+    <a class="btn-primary" href={registerHref}>{t.startFree}</a>
   </div>
 </aside>

@@ -1,3 +1,4 @@
+import { Fragment, type ComponentChildren } from "preact";
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import {
   CHART_VIEW_PRESETS,
@@ -30,6 +31,96 @@ import {
 import { expandedChartDialogAttrs } from "../lib/chartLightbox";
 import { temperatureScale } from "../lib/chartScale";
 import { findSharedGaps, gapThresholdMs } from "../lib/chartGaps";
+
+/**
+ * Every visible string, aria-label and title. Plain strings only (island props
+ * are serialized); `{name}` marks a placeholder. English is the default;
+ * marketing pages pass a translation from `src/i18n/messages/demoIslands.ts`.
+ */
+export const HISTORY_CHART_UI_EN = {
+  defaultTitle: "Temperature trend (last 7 days)",
+  probe: "Probe",
+  house: "House",
+  comparisonOverlay: "Gray = comparison overlay",
+  notEnough: "Not enough readings yet for a chart.",
+  emptySteps: "{addDevice} → verify ingest → {openLive} so snapshots can collect.",
+  emptyAddDevice: "Add a device",
+  emptyOpenLive: "open Live",
+  summaryLatest: "Latest reading {temp}°F.",
+  summaryRange: "Range over this period: {min}°F to {max}°F.",
+  summaryBelow: "Dropped to or below the {freeze}°F freeze line in {below} of {total} readings.",
+  summaryAbove: "Stayed above the {freeze}°F freeze line the whole period.",
+  hoverAlert: "Alert: {title}",
+  guideFreeze: "Freeze",
+  guideTarget: "Target",
+  guideHigh: "High",
+  noData: "No data",
+  shareFailed: "Share failed",
+  shareLinkCopied: "Share link copied",
+  closeExpandedAria: "Close expanded chart",
+  controlsAria: "Chart controls",
+  zoomInAria: "Zoom in",
+  zoomOutAria: "Zoom out",
+  resetZoomAria: "Reset zoom",
+  reset: "Reset",
+  downloadPngAria: "Download chart PNG",
+  png: "PNG",
+  copyLinkAria: "Copy link to this chart window",
+  copied: "Copied",
+  link: "Link",
+  shareAria: "Share chart snapshot",
+  shared: "Shared",
+  share: "Share",
+  upgradeShareAria: "Upgrade to share chart snapshots",
+  upgradeShareTitle: "Chart share is on Member+",
+  claimsAria: "Download claims pack PDF for this chart window",
+  claims: "Claims",
+  close: "Close",
+  expandAria: "Expand chart",
+  expand: "Expand",
+  presetsAria: "Time range presets",
+  presetLabels: { "24h": "24h", "7d": "7d", "30d": "30d" } as Record<string, string>,
+  presetShowLast: "Show last {label}",
+  presetAlreadyShowing: "Already showing about {label} of loaded data",
+  presetOnlyLoaded: "Only {hours}h loaded here — open History for a longer range",
+  presetAll: "All",
+  loadedWindow: "Loaded window is about {hours}h.",
+  seriesAria: "Series visibility",
+  humidityPct: "Humidity %",
+  dewPointF: "dew point °F",
+  dashed: " (dashed)",
+  chartTips: "Chart tips",
+  tipsExpanded: "Expanded view — drag to select a range, scroll to zoom, Esc or Close to exit.",
+  tipsDefault: "Drag to select a range (Shift+drag when zoomed), scroll to zoom, Link to copy this window, PNG to save.",
+  tipsAlerts: " Colored ticks mark alerts — hover near a tick for details.",
+  tipsTrace: "Trace turns {cool} at/below freeze and {warm} at/above the high line.",
+  tipsCool: "cool",
+  tipsWarm: "warm",
+  canvasAria: "Interactive line chart of {title}. Drag to select a range, scroll to zoom, expand for a larger view.",
+  tooltipAlert: "Alert",
+  tooltipDew: "dew",
+  optionsSummary: "Chart options: guide lines",
+  optionsSummaryHumidity: ", humidity",
+  targetAmbient: "Target ambient (°F)",
+  highWarning: "High warning (°F)",
+  optional: "Optional",
+  humidityDew: "Humidity + dew",
+  freezeLineFromAlerts: "Freeze line from alerts: {temp}°F",
+};
+
+export type HistoryChartUi = typeof HISTORY_CHART_UI_EN;
+
+/** Replace `{name}` placeholders with plain values. */
+function fill(template: string, vars: Record<string, string | number>): string {
+  return template.replace(/\{(\w+)\}/g, (m, k: string) => (k in vars ? String(vars[k]) : m));
+}
+
+/** Replace `{name}` placeholders with nodes (links, colored spans). */
+function fillNodes(template: string, nodes: Record<string, ComponentChildren>): ComponentChildren {
+  return template.split(/\{(\w+)\}/).map((part, i) =>
+    i % 2 === 1 ? <Fragment key={i}>{nodes[part] ?? `{${part}}`}</Fragment> : part,
+  );
+}
 
 type Point = {
   timestamp: string;
@@ -65,6 +156,8 @@ interface Props {
   canShareChart?: boolean;
   /** Signed-out page (demo): hide link/share controls and dashboard links. */
   guest?: boolean;
+  /** Translated UI strings; anything missing falls back to English. */
+  ui?: Partial<HistoryChartUi>;
 }
 
 // Series avoid blue/orange (freeze/high guides and below/above segments) and
@@ -127,8 +220,8 @@ export default function HistoryChart({
   priorYearPoints = [],
   priorYearLegend = null,
   housePoints = [],
-  houseLegend = "House",
-  title = "Temperature trend (last 7 days)",
+  houseLegend: houseLegendProp,
+  title: titleProp,
   hideTitle = false,
   freezeThresholdF = null,
   defaultHighTempF = null,
@@ -139,7 +232,19 @@ export default function HistoryChart({
   canUseClaimsPack = false,
   canShareChart = false,
   guest = false,
+  ui,
 }: Props) {
+  const t = useMemo<HistoryChartUi>(() => {
+    const merged = { ...HISTORY_CHART_UI_EN };
+    if (ui) {
+      for (const [key, value] of Object.entries(ui)) {
+        if (value != null) (merged as Record<string, unknown>)[key] = value;
+      }
+    }
+    return merged;
+  }, [ui]);
+  const title = titleProp ?? t.defaultTitle;
+  const houseLegend = houseLegendProp === undefined ? t.house : houseLegendProp;
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   // Created before the interaction hook so hover handlers can close over it.
@@ -148,8 +253,8 @@ export default function HistoryChart({
   const dragActiveRef = useRef(false);
 
   const probeLabels = useMemo(
-    () => [...new Set(points.map((p) => p.probeLabel || "Probe"))],
-    [points],
+    () => [...new Set(points.map((p) => p.probeLabel || t.probe))],
+    [points, t.probe],
   );
 
   const [highTempF, setHighTempF] = useState<number | null>(defaultHighTempF);
@@ -179,29 +284,29 @@ export default function HistoryChart({
   const byProbe = useMemo(() => {
     const map = new Map<string, Point[]>();
     for (const point of points) {
-      const label = point.probeLabel || "Probe";
+      const label = point.probeLabel || t.probe;
       const list = map.get(label) ?? [];
       list.push(point);
       map.set(label, list);
     }
     return map;
-  }, [points]);
+  }, [points, t.probe]);
 
   const humidityPoints = useMemo(() => {
     if (!showHumidity) return [] as Point[];
     const labeled = probeLabels.find((label) =>
       points.some(
         (p) =>
-          (p.probeLabel || "Probe") === label &&
+          (p.probeLabel || t.probe) === label &&
           Number.isFinite(p.humidity) &&
           p.humidity > 0,
       ),
     );
     const source = labeled
-      ? points.filter((p) => (p.probeLabel || "Probe") === labeled)
+      ? points.filter((p) => (p.probeLabel || t.probe) === labeled)
       : points;
     return source.filter((p) => Number.isFinite(p.humidity) && p.humidity > 0);
-  }, [points, probeLabels, showHumidity]);
+  }, [points, probeLabels, showHumidity, t.probe]);
 
   useEffect(() => {
     const prefs = readHistoryChartPrefs();
@@ -381,7 +486,7 @@ export default function HistoryChart({
   }, [isPanning, isBrushing]);
 
   const chartSummary = useMemo(() => {
-    if (points.length < 2) return "Not enough readings yet for a chart.";
+    if (points.length < 2) return t.notEnough;
     let min = points[0]!;
     let max = points[0]!;
     let below = 0;
@@ -392,23 +497,23 @@ export default function HistoryChart({
     }
     const latest = points[points.length - 1]!;
     const parts = [
-      `Latest reading ${latest.tempf.toFixed(1)}°F.`,
-      `Range over this period: ${min.tempf.toFixed(1)}°F to ${max.tempf.toFixed(1)}°F.`,
+      fill(t.summaryLatest, { temp: latest.tempf.toFixed(1) }),
+      fill(t.summaryRange, { min: min.tempf.toFixed(1), max: max.tempf.toFixed(1) }),
     ];
     if (freezeThresholdF != null) {
       parts.push(
         below > 0
-          ? `Dropped to or below the ${freezeThresholdF}°F freeze line in ${below} of ${points.length} readings.`
-          : `Stayed above the ${freezeThresholdF}°F freeze line the whole period.`,
+          ? fill(t.summaryBelow, { freeze: freezeThresholdF, below, total: points.length })
+          : fill(t.summaryAbove, { freeze: freezeThresholdF }),
       );
     }
     return parts.join(" ");
-  }, [points, freezeThresholdF]);
+  }, [points, freezeThresholdF, t]);
 
   const hoverLive = useMemo(() => {
     const parts: string[] = [];
     if (hoverMarker) {
-      parts.push(`Alert: ${hoverMarker.title}`);
+      parts.push(fill(t.hoverAlert, { title: hoverMarker.title }));
     }
     if (hoverHits.length) {
       const when = formatHoverTime(hoverHits[0]!.timestamp);
@@ -417,7 +522,7 @@ export default function HistoryChart({
       );
     }
     return parts.join(". ");
-  }, [hoverHits, hoverMarker]);
+  }, [hoverHits, hoverMarker, t]);
 
   useEffect(() => {
     const canvasEl = canvasRef.current;
@@ -464,7 +569,7 @@ export default function HistoryChart({
       ].filter((v): v is number => v != null && Number.isFinite(v));
 
       const visiblePoints = points.filter((p) =>
-        visibleProbes.has(p.probeLabel || "Probe"),
+        visibleProbes.has(p.probeLabel || t.probe),
       );
       const houseForScale =
         houseVisible && housePoints.length >= 2 ? housePoints : [];
@@ -582,9 +687,9 @@ export default function HistoryChart({
         g.restore();
       }
 
-      drawGuide(freezeThresholdF, "rgba(56, 189, 248, 0.9)", "Freeze", [6, 4]);
-      drawGuide(targetAmbientF, "rgba(167, 139, 250, 0.85)", "Target", [2, 4]);
-      drawGuide(highTempF, "rgba(251, 146, 60, 0.9)", "High", [6, 4]);
+      drawGuide(freezeThresholdF, "rgba(56, 189, 248, 0.9)", t.guideFreeze, [6, 4]);
+      drawGuide(targetAmbientF, "rgba(167, 139, 250, 0.85)", t.guideTarget, [2, 4]);
+      drawGuide(highTempF, "rgba(251, 146, 60, 0.9)", t.guideHigh, [6, 4]);
 
       g.save();
       g.beginPath();
@@ -666,7 +771,7 @@ export default function HistoryChart({
           g.fillStyle = "#94a3b8";
           g.font = "10px system-ui, sans-serif";
           g.textAlign = "center";
-          g.fillText("No data", (x0 + x1) / 2, pad.top + 12);
+          g.fillText(t.noData, (x0 + x1) / 2, pad.top + 12);
         }
         g.restore();
       }
@@ -793,6 +898,7 @@ export default function HistoryChart({
     alertMarkers,
     highlightAlertId,
     bindWheelZoom,
+    t,
   ]);
 
   function shareRangeDates(): { from: string; to: string } | null {
@@ -837,18 +943,18 @@ export default function HistoryChart({
       });
       const data = (await res.json()) as { url?: string; error?: string };
       if (!res.ok || !data.url) {
-        setShareMessage(data.error ?? "Share failed");
+        setShareMessage(data.error ?? t.shareFailed);
         return;
       }
       try {
         await navigator.clipboard.writeText(data.url);
-        setShareMessage("Share link copied");
+        setShareMessage(t.shareLinkCopied);
       } catch {
         setShareMessage(data.url);
       }
       window.setTimeout(() => setShareMessage(null), 4000);
     } catch {
-      setShareMessage("Share failed");
+      setShareMessage(t.shareFailed);
     } finally {
       setShareBusy(false);
     }
@@ -880,15 +986,13 @@ export default function HistoryChart({
       <div class="history-chart-wrap">
         <p class="history-chart-title m-0">{title}</p>
         <p class="m-0 text-sm text-[var(--color-text-muted)]">
-          Not enough readings yet for a chart.
+          {t.notEnough}
         </p>
         <p class="mt-3 mb-0 text-sm">
-          <a class="text-link" href="/dashboard/devices">Add a device</a>
-          {" → "}
-          verify ingest
-          {" → "}
-          <a class="text-link" href="/dashboard/live">open Live</a>
-          {" "}so snapshots can collect.
+          {fillNodes(t.emptySteps, {
+            addDevice: <a class="text-link" href="/dashboard/devices">{t.emptyAddDevice}</a>,
+            openLive: <a class="text-link" href="/dashboard/live">{t.emptyOpenLive}</a>,
+          })}
         </p>
       </div>
     );
@@ -913,7 +1017,7 @@ export default function HistoryChart({
         <button
           type="button"
           class="history-chart-lightbox-scrim"
-          aria-label="Close expanded chart"
+          aria-label={t.closeExpandedAria}
           onClick={closeLightbox}
         />
       )}
@@ -925,11 +1029,11 @@ export default function HistoryChart({
       <div class="history-chart-header">
         <p class={hideTitle ? "sr-only" : "history-chart-title"}>{title}</p>
         {/* biome-ignore lint/a11y/useSemanticElements: button toolbar; <fieldset> would add form semantics and default borders */}
-        <div class="history-chart-zoom" role="group" aria-label="Chart controls">
+        <div class="history-chart-zoom" role="group" aria-label={t.controlsAria}>
           <button
             type="button"
             class="history-chart-zoom-btn"
-            aria-label="Zoom in"
+            aria-label={t.zoomInAria}
             onClick={() => applyZoom(1 / 1.35)}
           >
             +
@@ -937,7 +1041,7 @@ export default function HistoryChart({
           <button
             type="button"
             class="history-chart-zoom-btn"
-            aria-label="Zoom out"
+            aria-label={t.zoomOutAria}
             onClick={() => applyZoom(1.35)}
             disabled={!zoomed}
           >
@@ -946,57 +1050,57 @@ export default function HistoryChart({
           <button
             type="button"
             class="history-chart-zoom-btn"
-            aria-label="Reset zoom"
+            aria-label={t.resetZoomAria}
             onClick={resetZoom}
             disabled={!zoomed}
           >
-            Reset
+            {t.reset}
           </button>
           <button
             type="button"
             class="history-chart-zoom-btn history-chart-expand-btn"
-            aria-label="Download chart PNG"
+            aria-label={t.downloadPngAria}
             onClick={exportPng}
           >
-            PNG
+            {t.png}
           </button>
           {!guest && (
           <button
             type="button"
             class="history-chart-zoom-btn history-chart-expand-btn"
-            aria-label="Copy link to this chart window"
+            aria-label={t.copyLinkAria}
             onClick={() => void copyChartLink()}
           >
-            {linkCopied ? "Copied" : "Link"}
+            {linkCopied ? t.copied : t.link}
           </button>
           )}
           {guest ? null : canShareChart ? (
             <button
               type="button"
               class="history-chart-zoom-btn history-chart-expand-btn"
-              aria-label="Share chart snapshot"
+              aria-label={t.shareAria}
               disabled={shareBusy}
               onClick={() => void shareChartSnapshot()}
             >
-              {shareBusy ? "…" : shareMessage ? "Shared" : "Share"}
+              {shareBusy ? "…" : shareMessage ? t.shared : t.share}
             </button>
           ) : (
             <a
               class="history-chart-zoom-btn history-chart-expand-btn"
               href="/dashboard/plans"
-              aria-label="Upgrade to share chart snapshots"
-              title="Chart share is on Member+"
+              aria-label={t.upgradeShareAria}
+              title={t.upgradeShareTitle}
             >
-              Share
+              {t.share}
             </a>
           )}
           {claimsPackHrefForView() && (
             <a
               class="history-chart-zoom-btn history-chart-expand-btn"
               href={claimsPackHrefForView()!}
-              aria-label="Download claims pack PDF for this chart window"
+              aria-label={t.claimsAria}
             >
-              Claims
+              {t.claims}
             </a>
           )}
           {expanded ? (
@@ -1004,27 +1108,27 @@ export default function HistoryChart({
               ref={closeBtnRef}
               type="button"
               class="history-chart-zoom-btn history-chart-expand-btn"
-              aria-label="Close expanded chart"
+              aria-label={t.closeExpandedAria}
               onClick={closeLightbox}
             >
-              Close
+              {t.close}
             </button>
           ) : (
             <button
               ref={expandBtnRef}
               type="button"
               class="history-chart-zoom-btn history-chart-expand-btn"
-              aria-label="Expand chart"
+              aria-label={t.expandAria}
               aria-haspopup="dialog"
               onClick={openLightbox}
             >
-              Expand
+              {t.expand}
             </button>
           )}
         </div>
       </div>
       {/* biome-ignore lint/a11y/useSemanticElements: button toolbar; <fieldset> would add form semantics and default borders */}
-      <div class="history-chart-presets" role="group" aria-label="Time range presets">
+      <div class="history-chart-presets" role="group" aria-label={t.presetsAria}>
         {CHART_VIEW_PRESETS.map((preset) => {
           const domainSpan = domain ? domain.maxTs - domain.minTs : 0;
           const canNarrow = domain ? presetNarrowsDomain(domain, preset.spanMs) : false;
@@ -1032,6 +1136,7 @@ export default function HistoryChart({
             !canNarrow &&
             domain != null &&
             Math.abs(domainSpan - preset.spanMs) <= 2 * 60 * 60 * 1000;
+          const presetLabel = t.presetLabels[preset.id] ?? preset.label;
           return (
             <button
               key={preset.id}
@@ -1043,14 +1148,14 @@ export default function HistoryChart({
                 !domain
                   ? undefined
                   : canNarrow
-                    ? `Show last ${preset.label}`
+                    ? fill(t.presetShowLast, { label: presetLabel })
                     : isCurrentWindow
-                      ? `Already showing about ${preset.label} of loaded data`
-                      : `Only ${Math.max(1, Math.round(domainSpan / 36e5))}h loaded here — open History for a longer range`
+                      ? fill(t.presetAlreadyShowing, { label: presetLabel })
+                      : fill(t.presetOnlyLoaded, { hours: Math.max(1, Math.round(domainSpan / 36e5)) })
               }
               onClick={() => applyPreset(preset.spanMs)}
             >
-              {preset.label}
+              {presetLabel}
             </button>
           );
         })}
@@ -1060,18 +1165,17 @@ export default function HistoryChart({
           aria-pressed={activePreset === "all"}
           onClick={() => applyPreset(null)}
         >
-          All
+          {t.presetAll}
         </button>
       </div>
       {domain && !presetNarrowsDomain(domain, 7 * 24 * 60 * 60 * 1000) && (
         <p class="m-0 mb-2 text-xs text-[var(--color-text-muted)]">
-          Loaded window is about{" "}
-          {Math.max(1, Math.round((domain.maxTs - domain.minTs) / 36e5))}h.
+          {fill(t.loadedWindow, { hours: Math.max(1, Math.round((domain.maxTs - domain.minTs) / 36e5)) })}
         </p>
       )}
       {(probeLabels.length > 0 || housePoints.length >= 2) && (
         // biome-ignore lint/a11y/useSemanticElements: button toolbar; <fieldset> would add form semantics and default borders
-        <div class="history-chart-legend" role="group" aria-label="Series visibility">
+        <div class="history-chart-legend" role="group" aria-label={t.seriesAria}>
           {probeLabels.map((label, i) => {
             const on = visibleProbes.has(label);
             return (
@@ -1095,33 +1199,31 @@ export default function HistoryChart({
               aria-pressed={houseVisible}
               onClick={() => setHouseVisible((v) => !v)}
             >
-              {houseLegend ?? "House"}
+              {houseLegend ?? t.house}
             </button>
           )}
         </div>
       )}
       {priorYearPoints.length >= 2 && (
         <p class="m-0 mb-2 text-xs text-[var(--color-text-muted)]">
-          {priorYearLegend ?? "Gray = comparison overlay"}
+          {priorYearLegend ?? t.comparisonOverlay}
         </p>
       )}
       {humidityOn && humidityPoints.length >= 2 && (
         <p class="m-0 mb-2 text-xs text-[var(--color-text-muted)]">
-          <span style={{ color: HUMIDITY_COLOR }}>Humidity %</span>
+          <span style={{ color: HUMIDITY_COLOR }}>{t.humidityPct}</span>
           {" · "}
-          <span style={{ color: DEW_COLOR }}>dew point °F</span> (dashed)
+          <span style={{ color: DEW_COLOR }}>{t.dewPointF}</span>{t.dashed}
         </p>
       )}
       <details class="history-chart-tips m-0 mb-2 text-xs text-[var(--color-text-muted)]">
-        <summary>Chart tips</summary>
-        {expanded
-          ? "Expanded view — drag to select a range, scroll to zoom, Esc or Close to exit."
-          : "Drag to select a range (Shift+drag when zoomed), scroll to zoom, Link to copy this window, PNG to save."}
-        {alertMarkers.length > 0
-          ? " Colored ticks mark alerts — hover near a tick for details."
-          : ""}{" "}
-        Trace turns <span style={{ color: COLOR_BELOW }}>cool</span> at/below freeze
-        and <span style={{ color: COLOR_ABOVE }}>warm</span> at/above the high line.
+        <summary>{t.chartTips}</summary>
+        {expanded ? t.tipsExpanded : t.tipsDefault}
+        {alertMarkers.length > 0 ? t.tipsAlerts : ""}{" "}
+        {fillNodes(t.tipsTrace, {
+          cool: <span style={{ color: COLOR_BELOW }}>{t.tipsCool}</span>,
+          warm: <span style={{ color: COLOR_ABOVE }}>{t.tipsWarm}</span>,
+        })}
       </details>
       <div
         class="history-chart-canvas-wrap"
@@ -1138,7 +1240,7 @@ export default function HistoryChart({
           ref={canvasRef}
           class={`w-full history-chart-canvas${zoomed ? " is-zoomed" : ""}${isPanning ? " is-panning" : ""}${isBrushing ? " is-brushing" : ""}`}
           role="img"
-          aria-label={`Interactive line chart of ${title}. Drag to select a range, scroll to zoom, expand for a larger view.`}
+          aria-label={fill(t.canvasAria, { title })}
           aria-describedby="history-chart-summary"
           onPointerDown={onPointerDown}
           onPointerMove={onPointerMove}
@@ -1163,7 +1265,7 @@ export default function HistoryChart({
                     class="history-chart-tooltip-swatch"
                     style={{ background: alertMarkerColor(hoverMarker.kind) }}
                   />
-                  <span class="history-chart-tooltip-label">Alert</span>
+                  <span class="history-chart-tooltip-label">{t.tooltipAlert}</span>
                   <span class="history-chart-tooltip-value">
                     {hoverMarker.title}
                   </span>
@@ -1183,7 +1285,7 @@ export default function HistoryChart({
                       hit.humidity > 0 &&
                       ` · ${hit.humidity.toFixed(0)}%`}
                     {hit.dewPointF != null &&
-                      ` · dew ${hit.dewPointF.toFixed(1)}°F`}
+                      ` · ${t.tooltipDew} ${hit.dewPointF.toFixed(1)}°F`}
                   </span>
                 </li>
               ))}
@@ -1197,19 +1299,19 @@ export default function HistoryChart({
       </p>
       {/* Display-only guide lines (saved in this browser), folded so the chart stays the focus. */}
       <details class="history-chart-tips m-0 mt-2 text-xs text-[var(--color-text-muted)]">
-      <summary>Chart options: guide lines{showHumidity && humidityPoints.length >= 2 ? ", humidity" : ""}</summary>
+      <summary>{t.optionsSummary}{showHumidity && humidityPoints.length >= 2 ? t.optionsSummaryHumidity : ""}</summary>
       <form
         class="chart-threshold-controls"
         onSubmit={(e) => e.preventDefault()}
       >
         <label class="chart-threshold-field">
-          <span>Target ambient (°F)</span>
+          <span>{t.targetAmbient}</span>
           <input
             type="number"
             step="0.5"
             class="form-input"
             value={targetAmbientF ?? ""}
-            placeholder="Optional"
+            placeholder={t.optional}
             onInput={(e) => {
               const v = (e.target as HTMLInputElement).value;
               setTargetAmbientF(v === "" ? null : Number(v));
@@ -1217,13 +1319,13 @@ export default function HistoryChart({
           />
         </label>
         <label class="chart-threshold-field">
-          <span>High warning (°F)</span>
+          <span>{t.highWarning}</span>
           <input
             type="number"
             step="0.5"
             class="form-input"
             value={highTempF ?? ""}
-            placeholder="Optional"
+            placeholder={t.optional}
             onInput={(e) => {
               const v = (e.target as HTMLInputElement).value;
               setHighTempF(v === "" ? null : Number(v));
@@ -1232,7 +1334,7 @@ export default function HistoryChart({
         </label>
         {showHumidity && humidityPoints.length >= 2 && (
           <label class="chart-threshold-field chart-threshold-check">
-            <span>Humidity + dew</span>
+            <span>{t.humidityDew}</span>
             <input
               type="checkbox"
               checked={humidityOn}
@@ -1244,7 +1346,7 @@ export default function HistoryChart({
         )}
         {freezeThresholdF != null && (
           <p class="chart-threshold-note mb-0">
-            Freeze line from alerts: {freezeThresholdF}°F
+            {fill(t.freezeLineFromAlerts, { temp: freezeThresholdF })}
           </p>
         )}
       </form>

@@ -1,7 +1,9 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import PageHeader from "../../components/PageHeader.astro";
-import { answers } from "../../lib/answers";
+import { getLocale } from "../../i18n";
+import { getLocalizedAnswers } from "../../i18n/content/answers";
+import { answersMessages } from "../../i18n/messages/answers";
 import {
   getBreadcrumbSchema,
   getItemListSchema,
@@ -9,15 +11,17 @@ import {
   resolveSiteUrl,
 } from "../../lib/schemaMarkup";
 
-const title = "Freeze alarm answers";
-const description =
-  "Straight answers about freezing pipes and freeze alarms: when garage pipes freeze, where to put a sensor, what temperature to alert at, and your options.";
+const locale = getLocale(Astro);
+const t = answersMessages(locale);
+const answers = getLocalizedAnswers(locale);
+const title = t.hub.title;
+const description = t.hub.description;
 const siteUrl = resolveSiteUrl(Astro.site);
 const pageUrl = resolvePageUrl(siteUrl, "/answers");
 const schema = [
   getBreadcrumbSchema(siteUrl, [
-    { name: "Home", path: "/" },
-    { name: "Answers", path: "/answers" },
+    { name: t.breadcrumbHome, path: "/" },
+    { name: t.breadcrumbAnswers, path: "/answers" },
   ]),
   getItemListSchema({
     pageUrl,
@@ -30,9 +34,9 @@ const schema = [
 <Layout title={title} description={description} schema={schema}>
   <div class="page-shell page-stack">
     <PageHeader
-      kicker="Answers"
-      title="Freezing pipes and freeze alarms, answered"
-      lede="Short, direct answers first, then the detail. Sources are linked where a number comes from research or a vendor."
+      kicker={t.hub.kicker}
+      title={t.hub.heading}
+      lede={t.hub.lede}
     />
     <div class="page-grid">
       {answers.map((a) => (

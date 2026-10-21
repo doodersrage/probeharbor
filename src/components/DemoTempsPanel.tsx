@@ -15,11 +15,58 @@ type FeedGroup = {
   probes: ProbeReading[];
 };
 
+/**
+ * Visible copy. Plain strings only (island props are serialized), with
+ * `{name}` placeholders. English is the default; marketing pages pass a
+ * translation from `src/i18n/messages/demoIslands.ts`.
+ */
+export const DEMO_TEMPS_TEXT_EN = {
+  loading: "Loading probe temperatures…",
+  title: "Live demo readings",
+  subtitle: "Public probe temperatures — free account (no card) to connect your own sensors.",
+  loadError: "Unable to load probe temperatures",
+  rateLimited: "Too many requests",
+  retry: "Retry now",
+  empty: "No temperature feeds are available yet.",
+  emptyCta: "Create free account — connect probes",
+  disabled: "Disabled",
+  noProbes: "No probes are assigned to this feed yet.",
+  noReading: 'No reading available for key "{key}"',
+  updated: "Updated {time}. Next refresh in {seconds}s.",
+  nextRefresh: "Next refresh in {seconds}s.",
+  footerCta: "Free account — connect your probes",
+  humidity: "humidity",
+  /** Display names for API feed ids / probe keys; missing keys show the API's English label. */
+  feedNames: {} as Record<string, string>,
+  probeLabels: {} as Record<string, string>,
+};
+
+export type DemoTempsText = typeof DEMO_TEMPS_TEXT_EN;
+
 interface Props {
   intervalMs?: number;
+  text?: DemoTempsText;
+  /** BCP 47 tag for number/time formatting. Omitted or English keeps the °F-first English layout. */
+  locale?: string;
 }
 
-export default function DemoTempsPanel({ intervalMs = 90000 }: Props) {
+function fill(template: string, values: Record<string, string | number>): string {
+  return template.replace(/\{(\w+)\}/g, (match, key: string) =>
+    key in values ? String(values[key]) : match,
+  );
+}
+
+export default function DemoTempsPanel({ intervalMs = 90000, text = DEMO_TEMPS_TEXT_EN, locale }: Props) {
+  // Non-English pages read °C first with °F after, with locale decimals.
+  const localized = locale != null && !locale.toLowerCase().startsWith("en");
+  const decimal = (n: number, digits: number) =>
+    Number.isFinite(n)
+      ? new Intl.NumberFormat(locale, { minimumFractionDigits: digits, maximumFractionDigits: digits }).format(n)
+      : "—";
+  const percent = (n: number) =>
+    Number.isFinite(n)
+      ? new Intl.NumberFormat(locale, { style: "percent", maximumFractionDigits: 0 }).format(n / 100)
+      : "—";
   const [groups, setGroups] = useState<FeedGroup[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -39,7 +86,13 @@ export default function DemoTempsPanel({ intervalMs = 90000 }: Props) {
       };
       if (signal?.aborted) return;
       if (!response.ok) {
-        throw new Error(payload.error ?? "Unable to load probe temperatures");
+        throw new Error(
+          response.status === 429
+            ? text.rateLimited
+            : localized
+              ? text.loadError
+              : (payload.error ?? text.loadError),
+        );
       }
       setGroups(payload.groups ?? []);
       setUpdatedAt(payload.updatedAt ?? null);
@@ -49,11 +102,13 @@ export default function DemoTempsPanel({ intervalMs = 90000 }: Props) {
       if (signal?.aborted || (e instanceof DOMException && e.name === "AbortError")) {
         return;
       }
-      setError(e instanceof Error ? e.message : "Unable to load probe temperatures");
+      setError(
+        e instanceof Error && (!localized || !(e instanceof TypeError)) ? e.message : text.loadError,
+      );
     } finally {
       if (!signal?.aborted) setLoading(false);
     }
-  }, [intervalMs]);
+  }, [intervalMs, localized, text]);
 
   useEffect(() => {
     const ac = new AbortController();
@@ -79,7 +134,7 @@ export default function DemoTempsPanel({ intervalMs = 90000 }: Props) {
     return (
       <section class="card animate-slide-in-left">
         <div class="loading-state">
-          <p class="m-0">Loading probe temperatures…</p>
+          <p class="m-0">{text.loading}</p>
         </div>
       </section>
     );
@@ -87,23 +142,23 @@ export default function DemoTempsPanel({ intervalMs = 90000 }: Props) {
 
   return (
     <section class="card animate-slide-in-left">
-      <h2 class="card-title">Live demo readings</h2>
-      <p class="card-subtitle">Public probe temperatures — free account (no card) to connect your own sensors.</p>
+      <h2 class="card-title">{text.title}</h2>
+      <p class="card-subtitle">{text.subtitle}</p>
 
       {error && (
         <div class="alert-warning mb-4">
           <p class="m-0">{error}</p>
           <button type="button" class="btn-secondary mt-3" onClick={() => void load()}>
-            Retry now
+            {text.retry}
           </button>
         </div>
       )}
 
       {!error && groups.length === 0 ? (
         <div class="empty-state">
-          <p class="mb-4">No temperature feeds are available yet.</p>
+          <p class="mb-4">{text.empty}</p>
           <a class="btn-primary" href="/register?next=/dashboard/devices">
-            Create free account — connect probes
+            {text.emptyCta}
           </a>
         </div>
       ) : (
@@ -111,8 +166,8 @@ export default function DemoTempsPanel({ intervalMs = 90000 }: Props) {
           {groups.map((group) => (
             <section class="feed-group" key={group.feedId}>
               <div class="feed-group-header">
-                <h3 class="feed-group-title">{group.feedName}</h3>
-                {!group.enabled && <span class="feed-group-badge">Disabled</span>}
+                <h3 class="feed-group-title">{text.feedNames[group.feedId] ?? group.feedName}</h3>
+                {!group.enabled && <span class="feed-group-badge">{text.disabled}</span>}
               </div>
 
               {group.error && (
@@ -122,21 +177,25 @@ export default function DemoTempsPanel({ intervalMs = 90000 }: Props) {
               )}
 
               {group.probes.length === 0 ? (
-                <p class="stat-detail m-0">No probes are assigned to this feed yet.</p>
+                <p class="stat-detail m-0">{text.noProbes}</p>
               ) : (
                 <div class="stat-grid">
                   {group.probes.map((probe) => (
                     <article class="stat-item" key={probe.key}>
-                      <span class="stat-label">{probe.label}</span>
+                      <span class="stat-label">{text.probeLabels[probe.key] ?? probe.label}</span>
                       {probe.data ? (
                         <>
-                          <p class="stat-value">{formatLiveTempF(probe.data.f)}</p>
+                          <p class="stat-value">
+                            {localized ? `${decimal(probe.data.c, 1)} °C` : formatLiveTempF(probe.data.f)}
+                          </p>
                           <p class="stat-detail">
-                            {formatLiveTempDetail(probe.data.c, probe.data.h)}
+                            {localized
+                              ? `${decimal(probe.data.f, 1)} °F · ${percent(probe.data.h)} ${text.humidity}`
+                              : formatLiveTempDetail(probe.data.c, probe.data.h)}
                           </p>
                         </>
                       ) : (
-                        <p class="stat-detail">No reading available for key "{probe.key}"</p>
+                        <p class="stat-detail">{fill(text.noReading, { key: probe.key })}</p>
                       )}
                     </article>
                   ))}
@@ -149,11 +208,14 @@ export default function DemoTempsPanel({ intervalMs = 90000 }: Props) {
 
       <p class="live-refresh-note">
         {updatedAt
-          ? `Updated ${new Date(updatedAt).toLocaleTimeString()}. Next refresh in ${countdown}s.`
-          : `Next refresh in ${countdown}s.`}
+          ? fill(text.updated, {
+              time: new Date(updatedAt).toLocaleTimeString(localized ? locale : undefined),
+              seconds: countdown,
+            })
+          : fill(text.nextRefresh, { seconds: countdown })}
         {" "}
         <a class="text-link" href="/register?next=/dashboard/devices">
-          Free account — connect your probes
+          {text.footerCta}
         </a>
       </p>
     </section>

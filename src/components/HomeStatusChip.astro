@@ -1,5 +1,7 @@
 ---
 import type { AppStatusSummary } from "../lib/appStatus";
+import { getLocale } from "../i18n";
+import { systemStatusMessages } from "../i18n/messages/systemStatus";
 
 interface Props {
   status: AppStatusSummary | null;
@@ -8,11 +10,12 @@ interface Props {
 const { status } = Astro.props;
 const known = status != null;
 const healthy = status?.healthy === true;
+const chip = systemStatusMessages(getLocale(Astro)).chip;
 const label = !known
-  ? "System status"
+  ? chip.unknown
   : healthy
-    ? "All systems operational"
-    : "Degraded, see status";
+    ? chip.healthy
+    : chip.degraded;
 ---
 <a
   class:list={["home-status", known && !healthy && "home-status-warn"]}

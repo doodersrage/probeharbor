@@ -1,15 +1,17 @@
 ---
-import { getFeaturedAboutPages } from "../lib/aboutNavigation";
+import { getLocale } from "../i18n";
+import { aboutArticleMessages } from "../i18n/messages/aboutArticle";
+import { getLocalizedFeaturedAboutPages } from "../i18n/content/aboutNavigation";
 
-const featured = getFeaturedAboutPages();
+const locale = getLocale(Astro);
+const t = aboutArticleMessages(locale).quickStart;
+const featured = getLocalizedFeaturedAboutPages(locale);
 ---
 <section class="card about-quick-start" aria-labelledby="about-quick-start-title">
   <div class="about-quick-start-header">
     <div>
-      <h2 class="about-quick-start-title" id="about-quick-start-title">Start here</h2>
-      <p class="about-quick-start-lead">
-        Popular entry points: playbooks, demo, ingest, channels, and household sharing.
-      </p>
+      <h2 class="about-quick-start-title" id="about-quick-start-title">{t.title}</h2>
+      <p class="about-quick-start-lead">{t.lead}</p>
     </div>
   </div>
   <ul class="about-quick-start-grid">

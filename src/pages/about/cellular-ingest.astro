@@ -2,11 +2,15 @@
 import AboutArticle from "../../components/AboutArticle.astro";
 import { affiliateHref, commerceLinkRel } from "../../lib/affiliateLinks";
 import { BOM } from "../../lib/bomLinks";
-import { getAboutPage } from "../../lib/aboutPages";
-import { getAboutHeroPhoto } from "../../lib/aboutPhotos";
+import { getLocale } from "../../i18n";
+import { getLocalizedAboutPage } from "../../i18n/content/aboutPages";
+import { getLocalizedAboutHeroPhoto } from "../../i18n/content/aboutPhotos";
+import { cellularIngestMessages } from "../../i18n/messages/about-pages/cellular-ingest";
 
-const page = getAboutPage("cellular-ingest")!;
-const hero = getAboutHeroPhoto(page.slug);
+const locale = getLocale(Astro);
+const t = cellularIngestMessages(locale);
+const page = getLocalizedAboutPage("cellular-ingest", locale)!;
+const hero = getLocalizedAboutHeroPhoto(page.slug, locale);
 
 const PARTICLE_BORON = affiliateHref("https://www.particle.io/wifi/#boron");
 const ADAFRUIT_DS18B20 = BOM.adafruitDs18b20;
@@ -25,39 +29,31 @@ const BLUES_NOTECARD = affiliateHref("https://blues.io/products/notecard/");
   heroCreditHref={hero?.sourceUrl}
   commerceDisclosure
 >
-  <p>
-    Cabins, wells, and outbuildings often have power but no garage Wi‑Fi. A
-    <strong>Particle Boron</strong> (or B-Series) LTE board POSTs the same ingest JSON through a
-    <strong>Particle Console webhook</strong>. Cellular dropouts are normal: ProbeHarbor already
-    marks probes stale when posts stop, so you do not need an aggressive on-device retry storm.
-  </p>
-  <p>
-    Prefer Blues? A <strong>Notecard</strong> + Notehub route can forward the same JSON; the Boron
-    sketch is the first-class download from Devices.
-  </p>
+  <p set:html={t.introHtml} />
+  <p set:html={t.bluesHtml} />
 
-  <h2>Parts</h2>
+  <h2>{t.partsTitle}</h2>
   <div class="overflow-x-auto mb-6">
     <table class="plan-comparison-table">
-      <caption class="sr-only">Parts for a cellular freeze probe</caption>
+      <caption class="sr-only">{t.partsCaption}</caption>
       <thead>
         <tr>
-          <th scope="col">Part</th>
-          <th scope="col">Why</th>
-          <th scope="col">Buy</th>
+          <th scope="col">{t.colPart}</th>
+          <th scope="col">{t.colWhy}</th>
+          <th scope="col">{t.colBuy}</th>
         </tr>
       </thead>
       <tbody>
         <tr>
           <th scope="row">Particle Boron / B-Series</th>
-          <td>LTE-M / NB-IoT (region SKU). Nano-SIM or Particle SIM plan required.</td>
+          <td>{t.boronWhy}</td>
           <td>
             <a class="text-link" href={PARTICLE_BORON} target="_blank" rel={commerceLinkRel(PARTICLE_BORON)}>Particle Boron</a>
           </td>
         </tr>
         <tr>
-          <th scope="row">Waterproof DS18B20</th>
-          <td>Pipe / crawlspace probe. Data on <strong>D2</strong>.</td>
+          <th scope="row">{t.probePart}</th>
+          <td set:html={t.probeWhyHtml} />
           <td>
             <a class="text-link" href={ADAFRUIT_DS18B20} target="_blank" rel={commerceLinkRel(ADAFRUIT_DS18B20)}>Adafruit DS18B20</a>
             ·
@@ -65,20 +61,20 @@ const BLUES_NOTECARD = affiliateHref("https://blues.io/products/notecard/");
           </td>
         </tr>
         <tr>
-          <th scope="row">4.7kΩ resistor</th>
-          <td>Pull-up from DS18B20 data to 3.3V.</td>
+          <th scope="row">{t.resistorPart}</th>
+          <td>{t.resistorWhy}</td>
           <td>
             <a class="text-link" href={AMAZON_RESISTOR} target="_blank" rel={commerceLinkRel(AMAZON_RESISTOR)}>Amazon 4.7k</a>
           </td>
         </tr>
         <tr>
-          <th scope="row">Cellular plan</th>
-          <td>Particle cloud + carrier data. Budget for remote sites that only wake hourly.</td>
-          <td>Particle Console billing or your own nano-SIM where the SKU allows it.</td>
+          <th scope="row">{t.planPart}</th>
+          <td>{t.planWhy}</td>
+          <td>{t.planBuy}</td>
         </tr>
         <tr>
-          <th scope="row">Optional: Blues Notecard</th>
-          <td>Alternate cellular path via Notehub webhook route (same ingest URL).</td>
+          <th scope="row">{t.bluesPart}</th>
+          <td>{t.bluesWhy}</td>
           <td>
             <a class="text-link" href={BLUES_NOTECARD} target="_blank" rel={commerceLinkRel(BLUES_NOTECARD)}>Blues Notecard</a>
           </td>
@@ -87,37 +83,17 @@ const BLUES_NOTECARD = affiliateHref("https://blues.io/products/notecard/");
     </table>
   </div>
 
-  <h2>Wiring</h2>
+  <h2>{t.wiringTitle}</h2>
   <ul>
-    <li>DS18B20 VDD → Boron <strong>3V3</strong></li>
-    <li>DS18B20 GND → GND</li>
-    <li>DS18B20 data → <strong>D2</strong>, 4.7k to 3V3</li>
-    <li>USB for flash and 115200 serial; antenna attached before field deploy</li>
+    {t.wiringHtml.map((item) => <li set:html={item} />)}
   </ul>
 
-  <h2>Flash and webhook</h2>
+  <h2>{t.flashTitle}</h2>
   <ol>
-    <li>
-      Open
-      <a class="text-link" href="/dashboard/devices">Dashboard → Devices</a>
-      and download <strong>Particle Boron .ino</strong> plus the webhook JSON (ingest URL filled in).
-    </li>
-    <li>
-      Flash with Particle Workbench or Web IDE (Device OS 5+). Libraries:
-      <code>OneWire</code>, <code>spark-dallas-temperature</code>.
-    </li>
-    <li>
-      Console → Integrations → Webhook: event <code>probeharbor_ingest</code>, POST to your ingest URL,
-      use the downloaded webhook JSON (or set the body to the Particle event value), Content-Type
-      <code>application/json</code>.
-    </li>
-    <li>
-      Serial 115200: <code>publish ok</code>. Webhook history should show HTTP 200. Sensor key
-      <code>temp1</code> imports on first successful POST.
-    </li>
+    {t.stepsHtml.map((item) => <li set:html={item} />)}
   </ol>
   <p>
-    Repo listing:
+    {t.repoLead}
     <a
       class="text-link"
       href="https://github.com/doodersrage/probeharbor/tree/main/sketches/particle/boron_ds18b20_ingest"
@@ -126,27 +102,22 @@ const BLUES_NOTECARD = affiliateHref("https://blues.io/products/notecard/");
     ><code>sketches/particle/boron_ds18b20_ingest/</code></a>
   </p>
 
-  <h2>Dropouts and stale probes</h2>
-  <p>
-    LTE will miss intervals in weather, roaming, or prepaid outages. Keep posting about once a minute when
-    connected; let
-    <a class="text-link" href="/about/debugging-stale-readings">stale-reading detection</a>
-    and freeze alerts cover silence. Do not burn battery on tight reconnect loops.
-  </p>
+  <h2>{t.dropoutsTitle}</h2>
+  <p set:html={t.dropoutsHtml} />
 
-  <h2>Related</h2>
+  <h2>{t.relatedTitle}</h2>
   <ul>
-    <li><a class="text-link" href="/about/adding-devices">Adding devices</a></li>
-    <li><a class="text-link" href="/about/debugging-stale-readings">Debugging stale readings</a></li>
-    <li><a class="text-link" href="/about/teensy41-ingest">Teensy 4.1 Ethernet</a></li>
-    <li><a class="text-link" href="/about/pic18-ethernet-ingest">PIC18F67J60 Ethernet</a></li>
+    <li><a class="text-link" href="/about/adding-devices">{t.related.addingDevices}</a></li>
+    <li><a class="text-link" href="/about/debugging-stale-readings">{t.related.stale}</a></li>
+    <li><a class="text-link" href="/about/teensy41-ingest">{t.related.teensy}</a></li>
+    <li><a class="text-link" href="/about/pic18-ethernet-ingest">{t.related.pic18}</a></li>
     <li>
       <a
         class="text-link"
         href="https://github.com/doodersrage/probeharbor/tree/main/sketches"
         target="_blank"
         rel="noreferrer"
-      >All sketches ↗</a>
+      >{t.related.allSketches}</a>
     </li>
   </ul>
 </AboutArticle>

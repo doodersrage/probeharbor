@@ -32,11 +32,24 @@ declare global {
   }
 }
 
+/**
+ * Visible copy. Plain strings only (island props are serialized); `{label}`
+ * is the place name. Marketing pages pass a translation through WeatherPanel.
+ */
+export const WEATHER_MAP_TEXT_EN = {
+  mapLabel: "Weather map of {label}",
+  openLarger: "Open larger map",
+  attribution: "· © OpenStreetMap · weather © OpenWeather",
+};
+
+export type WeatherMapText = typeof WEATHER_MAP_TEXT_EN;
+
 interface Props {
   lat: number;
   lon: number;
   label: string;
   zoom?: number;
+  text?: Partial<WeatherMapText>;
 }
 
 const LEAFLET_CSS = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
@@ -79,7 +92,13 @@ export default function WeatherMap({
   lon,
   label,
   zoom = 10,
+  text,
 }: Props) {
+  const t: WeatherMapText = {
+    mapLabel: text?.mapLabel ?? WEATHER_MAP_TEXT_EN.mapLabel,
+    openLarger: text?.openLarger ?? WEATHER_MAP_TEXT_EN.openLarger,
+    attribution: text?.attribution ?? WEATHER_MAP_TEXT_EN.attribution,
+  };
   const mapId = useId().replace(/:/g, "");
   const containerId = `weather-map-${mapId}`;
   const mapRef = useRef<LeafletMap | null>(null);
@@ -162,7 +181,7 @@ export default function WeatherMap({
       <section
         id={containerId}
         class="weather-map-frame freeze-map-frame"
-        aria-label={`Weather map of ${label}`}
+        aria-label={t.mapLabel.replace("{label}", label)}
       />
       <figcaption class="weather-map-caption">
         <a
@@ -171,11 +190,11 @@ export default function WeatherMap({
           target="_blank"
           rel="noreferrer"
         >
-          Open larger map
+          {t.openLarger}
         </a>
         <span class="text-[var(--color-text-muted)]">
           {" "}
-          · © OpenStreetMap · weather © OpenWeather
+          {t.attribution}
         </span>
       </figcaption>
     </figure>

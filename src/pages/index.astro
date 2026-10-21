@@ -5,9 +5,10 @@ import DemoTempsPanel from '../components/DemoTempsPanel';
 import WeatherPanel from '../components/WeatherPanel';
 import FaqSection from '../components/FaqSection.astro';
 import ProductScreenshot from '../components/ProductScreenshot.astro';
-import { getLocale, localizePath } from '../i18n';
+import { getLocale, LOCALE_META, localizePath } from '../i18n';
 import { brandMessages } from '../i18n/messages/brand';
 import { homeMessages } from '../i18n/messages/home';
+import { demoIslandMessages } from '../i18n/messages/demoIslands';
 import {
   getLocalizedMarketingFaqs,
   getLocalizedMarketingFaqSchema,
@@ -165,8 +166,8 @@ const guideJobs = [
 						<a class="btn-ghost" href="/demo">{t.live.demoFeed}</a>
 					</p>
 					<div class="home-live" aria-label={t.live.readingsLabel}>
-						<DemoTempsPanel client:visible />
-						<WeatherPanel client:visible cityId={null} guest />
+						<DemoTempsPanel client:visible text={demoIslandMessages(locale).temps} locale={LOCALE_META[locale].intl} />
+						<WeatherPanel client:visible cityId={null} guest text={demoIslandMessages(locale).weather} locale={LOCALE_META[locale].intl} />
 					</div>
 				</section>
 

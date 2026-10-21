@@ -1,11 +1,15 @@
 ---
 
 import AboutArticle from "../../components/AboutArticle.astro";
-import { getAboutPage } from "../../lib/aboutPages";
-import { getAboutPhoto } from "../../lib/aboutPhotos";
+import { getLocale } from "../../i18n";
+import { getLocalizedAboutPage } from "../../i18n/content/aboutPages";
+import { getLocalizedAboutPhoto } from "../../i18n/content/aboutPhotos";
+import { ingestAndWebhooksMessages } from "../../i18n/messages/about-pages/ingest-and-webhooks";
 
-const page = getAboutPage("ingest-and-webhooks")!;
-const hero = getAboutPhoto("ethernet-cable");
+const locale = getLocale(Astro);
+const t = ingestAndWebhooksMessages(locale);
+const page = getLocalizedAboutPage("ingest-and-webhooks", locale)!;
+const hero = getLocalizedAboutPhoto("ethernet-cable", locale);
 ---
 <AboutArticle
   slug={page.slug}
@@ -17,25 +21,14 @@ const hero = getAboutPhoto("ethernet-cable");
   heroCredit={hero.credit}
   heroCreditHref={hero.sourceUrl}
 >
-  <p>
-    In addition to pulling HTTPS JSON feeds, ProbeHarbor accepts
-    push ingest from ESP32, Pico W, or Arduino devices and can fan alert notifications out to
-    Discord, SMS, web push, and generic HTTPS webhooks for IFTTT or Home Assistant.
-    For endpoint summaries and OpenAPI download, see the
-    <a class="text-link" href="/docs/api">HTTP API reference</a>.
-  </p>
+  <p set:html={t.introHtml} />
 
-  <h2>Push ingest</h2>
-  <p>
-    From <strong>Dashboard → Devices</strong>, create a push device and copy the ingest key from the callout
-    (30 minutes, survives refresh). Sensors <strong>auto-import on first POST</strong>; manual mapping under Advanced is optional. Full walkthrough:
-    <a class="text-link" href="/about/adding-devices">Adding push and pull devices</a>.
-    Send readings with:
-  </p>
+  <h2>{t.push.title}</h2>
+  <p set:html={t.push.bodyHtml} />
   <pre><code>POST /api/ingest/&lt;device-key&gt;
 Content-Type: application/json</code></pre>
 
-  <h3>Classic Arduino JSON</h3>
+  <h3>{t.classicTitle}</h3>
   <pre><code>{`{
   "temp": {
     "0": { "c": 18.5, "f": 65.3, "h": 42 },
@@ -43,7 +36,7 @@ Content-Type: application/json</code></pre>
   }
 }`}</code></pre>
 
-  <h3>Typed multi-sensor payload</h3>
+  <h3>{t.typed.title}</h3>
   <pre><code>{`{
   "sensors": [
     { "key": "garage_temp", "kind": "temperature", "value": 65.3, "unit": "F" },
@@ -56,42 +49,19 @@ Content-Type: application/json</code></pre>
   "battery": 87,
   "rssi": -62
 }`}</code></pre>
-  <p>
-    Supported kinds: <code>temperature</code>, <code>humidity</code>, <code>co2</code>,
-    <code>pressure</code>, <code>pm25</code>, <code>voc</code>, <code>level</code>,
-    <code>energy</code>, <code>door</code>, <code>power</code>, <code>flood</code>,
-    <code>motion</code>, <code>generic</code>.
-    Optional top-level <code>battery</code> / <code>battery_pct</code> and <code>rssi</code> update device health metadata.
-    Sample CircuitPython, MicroPython, Arduino, Zephyr C, WCHNET C, and GNU AVR assembly sketches for DS18B20 / MAX31855 / MAX6675, plus Uno + W5100
-    (<code>ethernet_dht22_ingest</code>, classic <code>temp</code> JSON):
-    <a class="text-link" href="https://github.com/doodersrage/probeharbor/tree/main/sketches" target="_blank" rel="noreferrer">sketches/</a>.
-    The Ethernet shield cannot TLS: pair it with
-    <a class="text-link" href="https://github.com/doodersrage/probeharbor/blob/main/sketches/relay/push_https_forward.py" target="_blank" rel="noreferrer"><code>push_https_forward.py</code></a>
-    on a LAN host.
-  </p>
+  <p set:html={t.typed.kindsHtml} />
 
-  <h3>SenML (RFC 8428)</h3>
-  <p>
-    If your firmware or gateway already publishes SenML JSON, POST the array directly, no wrapper object required.
-    ProbeHarbor auto-detects SenML when native <code>temp</code> / <code>sensors[]</code> shapes are absent.
-    Temperature uses unit <code>Cel</code> or <code>degF</code>; humidity uses <code>%RH</code>. Probe keys come from the SenML name (last path segment).
-  </p>
+  <h3>{t.senml.title}</h3>
+  <p set:html={t.senml.bodyHtml} />
   <pre><code>{`[
   { "bn": "probeharbor/garage/", "n": "0", "u": "Cel", "v": 18.5 },
   { "n": "0", "u": "%RH", "v": 42 },
   { "n": "door", "vb": true }
 ]`}</code></pre>
-  <p>
-    Live sample:
-    <a class="text-link" href="/api/feeds/example?format=senml">example SenML feed</a>.
-    Pull feeds accept the same array when the configured JSON root is missing.
-  </p>
+  <p set:html={t.senml.liveHtml} />
 
-  <h3>Home Assistant REST sensor JSON</h3>
-  <p>
-    A single REST sensor response: <code>state</code> plus <code>attributes.unit_of_measurement</code>: is also auto-detected on push ingest and pull feeds.
-    Map probe key <code>state</code> (or the entity suffix for multi-entity payloads) on Devices.
-  </p>
+  <h3>{t.ha.title}</h3>
+  <p set:html={t.ha.bodyHtml} />
   <pre><code>{`{
   "state": "65.3",
   "attributes": {
@@ -99,39 +69,21 @@ Content-Type: application/json</code></pre>
     "friendly_name": "Garage temperature"
   }
 }`}</code></pre>
-  <p>
-    Live sample:
-    <a class="text-link" href="/api/feeds/example?format=homeassistant">example HA REST feed</a>.
-    For full HA setup (HACS, MQTT bridge, indoor reference), see
-    <a class="text-link" href="/integrations/home-assistant">Home Assistant integration</a>.
-  </p>
+  <p set:html={t.ha.liveHtml} />
 
-  <h2>Outbound alert webhooks</h2>
-  <p>
-    Pro accounts can enable an outbound webhook in alert settings. Each alert POSTs JSON:
-  </p>
+  <h2>{t.webhooks.title}</h2>
+  <p set:html={t.webhooks.introHtml} />
   <pre><code>{`{
   "title": "Garage temperature alert",
   "body": "Probe 1 is 31.2°F …",
   "kind": "threshold",
   "sent_at": "2026-08-25T12:00:00.000Z"
 }`}</code></pre>
-  <p>
-    <code>kind</code> may be <code>threshold</code>, <code>rate</code>, <code>outage</code>,
-    <code>forecast</code>, <code>rule</code>, <code>digest</code>, or <code>generic</code>.
-    When a webhook secret is set, the request includes
-    <code>X-Signature</code> as a hex HMAC-SHA256 of the raw body. Use that in Home Assistant
-    or IFTTT Webhooks to verify authenticity.
-  </p>
+  <p set:html={t.webhooks.kindsHtml} />
 
-  <h2>Home Assistant</h2>
-  <p>
-    Install the official <a class="text-link" href="/integrations/home-assistant">HACS integration</a> for share-link sensors and snooze/vacation services. For <strong>alerts into HA</strong>, use the outbound HTTPS webhook (Pro) or import the blueprint. For <strong>MQTT readings into ProbeHarbor</strong>, see the
-    <a class="text-link" href="/about/mqtt-bridge">MQTT bridge recipe</a>.
-  </p>
-  <p>
-    <a class="text-link" href="/ha/probeharbor_webhook.yaml" download>Download HA blueprint (YAML)</a>
-  </p>
+  <h2>{t.homeAssistant.title}</h2>
+  <p set:html={t.homeAssistant.bodyHtml} />
+  <p set:html={t.homeAssistant.blueprintHtml} />
   <pre><code>{`automation:
   - alias: ProbeHarbor webhook
     trigger:
@@ -145,65 +97,26 @@ Content-Type: application/json</code></pre>
         data:
           title: "{{ trigger.json.title }}"
           message: "{{ trigger.json.body }}"`}</code></pre>
-  <p>
-    Point your ProbeHarbor outbound webhook URL at
-    <code>https://&lt;your-ha-host&gt;/api/webhook/probeharbor_alerts</code>
-    (or a Cloudflare Tunnel / Nabu Casa URL). Verify <code>X-Signature</code> in a template condition if you set a secret.
-  </p>
-  <p>
-    For MQTT, have Home Assistant (or Node-RED) receive the webhook and publish to your broker, that keeps MQTT local
-    while ProbeHarbor stays on HTTPS. The blueprint includes an optional MQTT topic input for that path.
-  </p>
+  <p set:html={t.homeAssistant.pointHtml} />
+  <p set:html={t.homeAssistant.mqttHtml} />
 
-  <h2>Grafana / Prometheus metrics</h2>
-  <p>
-    Pro accounts can create dashboard API keys (Dashboard → Share) and scrape:
-  </p>
+  <h2>{t.metrics.title}</h2>
+  <p set:html={t.metrics.introHtml} />
   <pre><code>GET /api/v1/metrics
 Authorization: Bearer gtm_…</code></pre>
-  <p>
-    Or use a Pro share link with the <strong>Metrics</strong> scope:
-  </p>
+  <p set:html={t.metrics.shareHtml} />
   <pre><code>GET /api/share/&lt;token&gt;/readings?format=prometheus</code></pre>
-  <p>
-    Or <code>?format=grafana</code> for a simple JSON datapoints array. History share scope returns a 7-day chart on the public page.
-  </p>
+  <p set:html={t.metrics.grafanaHtml} />
 
-  <h2>Alert channels</h2>
+  <h2>{t.channels.title}</h2>
   <ul>
-    <li>Email and Discord (all plans)</li>
-    <li>Telegram bot token + chat id (your credentials)</li>
-    <li>Slack Incoming Webhook URL (your credentials)</li>
-    <li>Browser and Android push (every plan)</li>
-    <li>Twilio SMS, outbound webhook (Pro)</li>
+    {t.channels.items.map((item) => <li>{item}</li>)}
   </ul>
-  <p>
-    Alerts also support forecast freeze risk, quiet hours, and composite AND rules
-    (for example door open + temperature drop). See Dashboard → Alerts.
-  </p>
-  <p>
-    Email alerts remain available on all plans. Weekly digests can be enabled independently
-    of freeze/humidity threshold alerts. Opt-in city aggregates appear on
-    <a href="/freeze-map">/freeze-map</a>.
-  </p>
+  <p set:html={t.channels.rulesHtml} />
+  <p set:html={t.channels.emailHtml} />
 
-  <h2>Related guides</h2>
+  <h2>{t.related.title}</h2>
   <ul>
-    <li>
-      <a class="text-link" href="/docs/api">HTTP API documentation</a>
-      OpenAPI download, ingest, metrics, and inbound webhooks
-    </li>
-    <li>
-      <a class="text-link" href="/about/kit-qr-onboarding">Kit QR onboarding</a>
-      encode your ingest URL on a hardware sticker
-    </li>
-    <li>
-      <a class="text-link" href="/about/esp32-ota-firmware">ESP32 OTA and battery reporting</a>
-      firmware updates plus <code>battery</code> / <code>rssi</code> fields
-    </li>
-    <li>
-      <a class="text-link" href="/about/zapier-make-recipes">Zapier and Make.com recipes</a>
-      outbound alert webhooks and inbound snooze automations
-    </li>
+    {t.related.itemsHtml.map((html) => <li set:html={html} />)}
   </ul>
 </AboutArticle>

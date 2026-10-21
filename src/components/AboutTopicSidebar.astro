@@ -1,12 +1,16 @@
 ---
-import { getTopicContext } from "../lib/aboutNavigation";
+import { getLocale } from "../i18n";
+import { aboutArticleMessages } from "../i18n/messages/aboutArticle";
+import { getLocalizedTopicContext } from "../i18n/content/aboutNavigation";
 
 interface Props {
   slug: string;
 }
 
 const { slug } = Astro.props;
-const context = getTopicContext(slug);
+const locale = getLocale(Astro);
+const t = aboutArticleMessages(locale).sidebar;
+const context = getLocalizedTopicContext(slug, locale);
 
 if (!context) {
   return null;
@@ -15,14 +19,14 @@ if (!context) {
 const { core, guides, current } = context;
 const isCorePage = current.slug === core.slug;
 ---
-<aside class="about-topic-sidebar card" aria-label="Guides in this topic">
-  <p class="about-topic-sidebar-label">In this topic</p>
+<aside class="about-topic-sidebar card" aria-label={t.label}>
+  <p class="about-topic-sidebar-label">{t.inThisTopic}</p>
   <a class="about-topic-sidebar-core" href={`/about/${core.slug}`}>
     {core.title}
   </a>
 
   {guides.length > 0 && (
-    <nav aria-label="Related guides">
+    <nav aria-label={t.relatedLabel}>
       <ul class="about-topic-sidebar-list">
         {guides.map((guide) => (
           <li>
@@ -44,16 +48,16 @@ const isCorePage = current.slug === core.slug;
 
   {!isCorePage && (
     <a class="text-link about-topic-sidebar-back" href={`/about/${core.slug}`}>
-      ← Back to overview
+      {t.backToOverview}
     </a>
   )}
 
   <div class="about-topic-sidebar-hubs">
     <a class="text-link about-topic-sidebar-hub" href="/guides">
-      Guides hub
+      {t.guidesHub}
     </a>
     <a class="text-link about-topic-sidebar-hub" href="/about">
-      All articles
+      {t.allArticles}
     </a>
   </div>
 </aside>

@@ -10,10 +10,19 @@ const overlays = collectKeyedOverlays<{ alt?: string; caption?: string }>(
   import.meta.glob("./*/*.ts", { eager: true }),
 );
 
+const PHOTO_PREFIX: Record<Exclude<Locale, "en">, string> = {
+  es: "Foto:",
+  fr: "Photo :",
+  de: "Foto:",
+  "pt-br": "Foto:",
+};
+
 export function getLocalizedAboutPhoto(id: AboutPhotoId, locale: Locale): AboutPhoto {
   const base = aboutPhotos[id];
   if (locale === "en") return base;
-  return mergeTranslation(base, overlays[locale]?.[id]);
+  const photo = mergeTranslation(base, overlays[locale]?.[id]);
+  // Credit names and license codes stay as licensed; only the "Photo:" label changes.
+  return { ...photo, credit: photo.credit.replace(/^Photo:/, PHOTO_PREFIX[locale]) };
 }
 
 export function getLocalizedAboutHeroPhoto(slug: string, locale: Locale): AboutPhoto | undefined {

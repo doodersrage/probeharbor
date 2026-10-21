@@ -1,4 +1,6 @@
 ---
+import { getLocale } from "../i18n";
+import { exampleFeedCardMessages } from "../i18n/messages/about-pages/example-feed-card";
 import { getExampleFeedDocumentUrl, getExampleFeedUrl } from "../lib/exampleFeed";
 
 interface Props {
@@ -8,37 +10,30 @@ interface Props {
 const { class: className = "" } = Astro.props;
 const feedUrl = getExampleFeedUrl(Astro.site);
 const docUrl = getExampleFeedDocumentUrl(Astro.site);
+const t = exampleFeedCardMessages(getLocale(Astro));
 ---
 <aside class:list={["card", className]} id="example-feed">
-  <h2 class="card-title">Example weather-based feed</h2>
-  <p class="card-subtitle mb-4">
-    Public HTTPS JSON driven by live outdoor weather: three simulated shop probes plus
-    <code>avg</code>. Use it to test pull feeds before your hardware is online, or copy the
-    push payload for curl smoke tests.
-  </p>
+  <h2 class="card-title">{t.title}</h2>
+  <p class="card-subtitle mb-4" set:html={t.introHtml} />
   <div class="flex flex-col gap-3">
     <div>
-      <p class="form-label mb-1">Pull feed URL</p>
+      <p class="form-label mb-1">{t.pullUrl}</p>
       <code class="text-xs break-all">{feedUrl}</code>
     </div>
     <div class="flex flex-wrap gap-2">
       <a class="btn-secondary" href={feedUrl} target="_blank" rel="noreferrer">
-        Open pull JSON
+        {t.openPull}
       </a>
       <a class="btn-ghost" href={`${feedUrl}?format=ingest`} target="_blank" rel="noreferrer">
-        Push sample JSON
+        {t.pushSample}
       </a>
       <a class="btn-ghost" href={`${feedUrl}?format=senml`} target="_blank" rel="noreferrer">
-        SenML JSON
+        {t.senml}
       </a>
       <a class="btn-ghost" href={docUrl} target="_blank" rel="noreferrer">
-        Setup document
+        {t.setupDoc}
       </a>
     </div>
-    <p class="mb-0 text-sm text-[var(--color-text-muted)]">
-      Map probe keys <code>0</code>, <code>1</code>, <code>2</code>, and <code>avg</code> under JSON root
-      <code>temp</code>, or use <code>?format=senml</code> / <code>?format=homeassistant</code> for industry-style JSON.
-      Optional query params: <code>cityId</code>, <code>door=1</code>, <code>sun=80</code>.
-    </p>
+    <p class="mb-0 text-sm text-[var(--color-text-muted)]" set:html={t.mappingHtml} />
   </div>
 </aside>

@@ -2,11 +2,15 @@
 import AboutArticle from "../../components/AboutArticle.astro";
 import { affiliateHref, commerceLinkRel } from "../../lib/affiliateLinks";
 import { BOM } from "../../lib/bomLinks";
-import { getAboutPage } from "../../lib/aboutPages";
-import { getAboutHeroPhoto } from "../../lib/aboutPhotos";
+import { getLocale } from "../../i18n";
+import { getLocalizedAboutPage } from "../../i18n/content/aboutPages";
+import { getLocalizedAboutHeroPhoto } from "../../i18n/content/aboutPhotos";
+import { pic18EthernetIngestMessages } from "../../i18n/messages/about-pages/pic18-ethernet-ingest";
 
-const page = getAboutPage("pic18-ethernet-ingest")!;
-const hero = getAboutHeroPhoto(page.slug);
+const locale = getLocale(Astro);
+const t = pic18EthernetIngestMessages(locale);
+const page = getLocalizedAboutPage("pic18-ethernet-ingest", locale)!;
+const hero = getLocalizedAboutHeroPhoto(page.slug, locale);
 
 const MICROCHIP_PIC = affiliateHref(
   "https://www.microchip.com/en-us/product/pic18f67j60",
@@ -27,41 +31,31 @@ const MPLAB = "https://www.microchip.com/en-us/tools-resources/develop/mplab-x-i
   heroCreditHref={hero?.sourceUrl}
   commerceDisclosure
 >
-  <p>
-    Microchip <strong>PIC18F67J60</strong> has an onboard Ethernet MAC and 10BASE-T PHY. This sample is
-    <strong>MPLAB X + XC8</strong> C on the classic Microchip TCP/IP Stack (MLA Ethernet demo)—not Arduino,
-    not Python, not Zephyr. Same ingest JSON over the LAN HTTP→HTTPS relay.
-  </p>
-  <p>
-    The MLA stack does not ship a maintained HTTPS client for Cloudflare. Keep the MCU on HTTP to a Pi/NAS
-    relay, same pattern as
-    <a class="text-link" href="/about/arduino-sketches">Uno + W5100</a>
-    and
-    <a class="text-link" href="/about/stm32-zephyr-ingest">STM32 Zephyr</a>.
-  </p>
+  <p set:html={t.introHtml} />
+  <p set:html={t.relayHtml} />
 
-  <h2>Parts</h2>
+  <h2>{t.partsTitle}</h2>
   <div class="overflow-x-auto mb-6">
     <table class="plan-comparison-table">
-      <caption class="sr-only">Parts for a PIC18 Ethernet freeze probe</caption>
+      <caption class="sr-only">{t.partsCaption}</caption>
       <thead>
         <tr>
-          <th scope="col">Part</th>
-          <th scope="col">Why</th>
-          <th scope="col">Buy</th>
+          <th scope="col">{t.colPart}</th>
+          <th scope="col">{t.colWhy}</th>
+          <th scope="col">{t.colBuy}</th>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <th scope="row">PIC18F67J60 board</th>
-          <td>Onboard MAC + PHY + RJ45. PICkit / ICD for flash.</td>
+          <th scope="row">{t.boardPart}</th>
+          <td>{t.boardWhy}</td>
           <td>
             <a class="text-link" href={MICROCHIP_PIC} target="_blank" rel={commerceLinkRel(MICROCHIP_PIC)}>Microchip PIC18F67J60</a>
           </td>
         </tr>
         <tr>
-          <th scope="row">Waterproof DS18B20</th>
-          <td>Default sample pin <strong>RD0</strong> (change if your demo uses it).</td>
+          <th scope="row">{t.probePart}</th>
+          <td set:html={t.probeWhyHtml} />
           <td>
             <a class="text-link" href={ADAFRUIT_DS18B20} target="_blank" rel={commerceLinkRel(ADAFRUIT_DS18B20)}>Adafruit DS18B20</a>
             ·
@@ -69,53 +63,40 @@ const MPLAB = "https://www.microchip.com/en-us/tools-resources/develop/mplab-x-i
           </td>
         </tr>
         <tr>
-          <th scope="row">4.7kΩ resistor</th>
-          <td>Pull-up to the board’s 1-Wire VDD (level-shift if IO is 5V-only).</td>
+          <th scope="row">{t.resistorPart}</th>
+          <td>{t.resistorWhy}</td>
           <td>
             <a class="text-link" href={AMAZON_RESISTOR} target="_blank" rel={commerceLinkRel(AMAZON_RESISTOR)}>Amazon 4.7k</a>
           </td>
         </tr>
         <tr>
-          <th scope="row">Ethernet drop</th>
-          <td>DHCP or static IP in the MLA demo. Relay host on the same LAN.</td>
-          <td>Cat5e to your switch.</td>
+          <th scope="row">{t.ethernetPart}</th>
+          <td>{t.ethernetWhy}</td>
+          <td>{t.ethernetBuy}</td>
         </tr>
       </tbody>
     </table>
   </div>
 
-  <h2>Wiring</h2>
+  <h2>{t.wiringTitle}</h2>
   <ul>
-    <li>DS18B20 VDD → board logic VDD (often 3.3V; check the demo schematic)</li>
-    <li>DS18B20 GND → GND</li>
-    <li>DS18B20 data → <strong>RD0</strong>, 4.7k pull-up (edit <code>OW_*</code> macros if needed)</li>
-    <li>RJ45 → LAN. PICkit for flash; UART for 115200 logs</li>
+    {t.wiringHtml.map((item) => <li set:html={item} />)}
   </ul>
 
-  <h2>Build and flash</h2>
+  <h2>{t.buildTitle}</h2>
   <ol>
+    <li set:html={t.stepDownloadHtml} />
     <li>
-      Open
-      <a class="text-link" href="/dashboard/devices">Dashboard → Devices</a>
-      and download <strong>PIC18 main.c</strong> (ingest path filled in).
-    </li>
-    <li>
-      On a LAN host:
+      {t.stepRelayLead}
       <pre><code>{`python3 sketches/relay/push_https_forward.py --listen 0.0.0.0:8080 \\
   --upstream https://probeharbor.dev`}</code></pre>
     </li>
-    <li>Set <code>INGEST_HOST</code> to that machine (dotted IPv4).</li>
-    <li>
-      Install
-      <a class="text-link" href={MPLAB} target="_blank" rel="noreferrer">MPLAB X</a>
-      + XC8. Open an MLA TCPIP Ethernet demo for PIC18F67J60, keep stack sources, add this module, call
-      <code>ProbeHarborAppInit</code> / <code>ProbeHarborAppTask</code> from the demo main loop next to
-      <code>StackTask()</code>, build, flash.
-    </li>
-    <li>UART 115200: link/DHCP ok, then POST through the relay. Sensor key <code>temp1</code> imports on first POST.</li>
+    <li set:html={t.stepHostHtml} />
+    <li set:html={t.stepMplabHtml(MPLAB)} />
+    <li set:html={t.stepSerialHtml} />
   </ol>
   <p>
-    Repo drop-in:
+    {t.repoLead}
     <a
       class="text-link"
       href="https://github.com/doodersrage/probeharbor/tree/main/sketches/microchip/pic18f67j60_ds18b20_ingest"
@@ -124,12 +105,12 @@ const MPLAB = "https://www.microchip.com/en-us/tools-resources/develop/mplab-x-i
     ><code>sketches/microchip/pic18f67j60_ds18b20_ingest/</code></a>
   </p>
 
-  <h2>Related</h2>
+  <h2>{t.relatedTitle}</h2>
   <ul>
-    <li><a class="text-link" href="/about/adding-devices">Adding devices</a></li>
-    <li><a class="text-link" href="/about/teensy41-ingest">Teensy 4.1 ingest</a></li>
-    <li><a class="text-link" href="/about/ch32v-riscv-ingest">CH32V RISC-V ingest</a></li>
-    <li><a class="text-link" href="/about/stm32-zephyr-ingest">STM32 Zephyr ingest</a></li>
-    <li><a class="text-link" href="/about/python-feeds">Python HTTPS relay</a></li>
+    <li><a class="text-link" href="/about/adding-devices">{t.related.addingDevices}</a></li>
+    <li><a class="text-link" href="/about/teensy41-ingest">{t.related.teensy}</a></li>
+    <li><a class="text-link" href="/about/ch32v-riscv-ingest">{t.related.ch32v}</a></li>
+    <li><a class="text-link" href="/about/stm32-zephyr-ingest">{t.related.stm32}</a></li>
+    <li><a class="text-link" href="/about/python-feeds">{t.related.relay}</a></li>
   </ul>
 </AboutArticle>

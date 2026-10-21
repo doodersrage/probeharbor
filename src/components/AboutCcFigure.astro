@@ -1,6 +1,8 @@
 ---
 import { Image } from "astro:assets";
-import { getAboutPhoto, type AboutPhotoId } from "../lib/aboutPhotos";
+import type { AboutPhotoId } from "../lib/aboutPhotos";
+import { getLocale } from "../i18n";
+import { getLocalizedAboutPhoto } from "../i18n/content/aboutPhotos";
 
 interface Props {
   photoId: AboutPhotoId;
@@ -12,7 +14,7 @@ interface Props {
 }
 
 const { photoId, class: className, variant = "default", caption } = Astro.props;
-const photo = getAboutPhoto(photoId);
+const photo = getLocalizedAboutPhoto(photoId, getLocale(Astro));
 const isAside = variant === "aside";
 const captionText = caption ?? photo.caption;
 ---

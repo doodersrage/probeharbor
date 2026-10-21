@@ -9,74 +9,67 @@ import {
   resolvePageUrl,
   resolveSiteUrl,
 } from "../lib/schemaMarkup";
-import { getMarketingFaqs, getMarketingFaqSchema } from "../lib/marketingFaqs";
+import { getLocale, localizePath } from "../i18n";
+import { contactMessages } from "../i18n/messages/contact";
+import {
+  getLocalizedMarketingFaqs,
+  getLocalizedMarketingFaqSchema,
+} from "../i18n/content/marketingFaqs";
 
+const locale = getLocale(Astro);
+const t = contactMessages(locale);
 const siteUrl = resolveSiteUrl(Astro.site);
-const pageUrl = resolvePageUrl(siteUrl, "/contact");
-const contactFaqs = getMarketingFaqs("contact");
+const pageUrl = resolvePageUrl(siteUrl, localizePath("/contact", locale));
+const contactFaqs = getLocalizedMarketingFaqs("contact", locale);
 const schema = [
   getBreadcrumbSchema(siteUrl, [
-    { name: "Home", path: "/" },
-    { name: "Contact", path: "/contact" },
+    { name: t.breadcrumbHome, path: localizePath("/", locale) },
+    { name: t.title, path: localizePath("/contact", locale) },
   ]),
-  getMarketingFaqSchema(pageUrl, "contact"),
+  getLocalizedMarketingFaqSchema(pageUrl, "contact", locale),
 ].filter(Boolean) as Record<string, unknown>[];
 
 const githubIssues = "https://github.com/doodersrage/probeharbor/issues";
 ---
 
 <Layout
-  title="Contact"
-  description="Contact ProbeHarbor about account or billing questions, or open a GitHub issue for bugs. Guides cover probes, ingest, and alerts."
+  title={t.title}
+  description={t.description}
   schema={schema}
   speakableSelectors={[".page-header-title", ".page-header-lede", ".faq-answer"]}
 >
   <div class="page-shell page-stack">
     <PageHeader
-      kicker="Contact"
-      title="Get in touch"
-      lede="Account and billing questions go here. Bugs and feature ideas belong on GitHub. We usually reply within 1–2 business days."
+      kicker={t.kicker}
+      title={t.heading}
+      lede={t.lede}
     >
-      <a slot="actions" class="btn-secondary" href="/guides">Browse the guides</a>
-      <a slot="actions" class="btn-secondary" href={githubIssues} target="_blank" rel="noreferrer">GitHub issues</a>
+      <a slot="actions" class="btn-secondary" href="/guides">{t.browseGuides}</a>
+      <a slot="actions" class="btn-secondary" href={githubIssues} target="_blank" rel="noreferrer">{t.githubIssues}</a>
     </PageHeader>
 
     <div class="page-grid items-start">
       <div class="page-stack page-stack-tight">
         <section class="card">
-          <h2 class="card-title">This form</h2>
-          <p class="card-subtitle">Use it for account, billing, and household questions, plus anything the guides do not cover.</p>
+          <h2 class="card-title">{t.formTitle}</h2>
+          <p class="card-subtitle">{t.formCopy}</p>
           <ul class="grid gap-2 pl-5 leading-relaxed [list-style:disc] mb-0">
-            <li>Account, billing, or household access</li>
-            <li>Dashboard setup, history, freeze/flood alerts, or CSV export</li>
-            <li>Android / Play listing questions or a launch-note request</li>
-            <li>Ingest or probe questions after checking the guides</li>
+            {t.formTopics.map((topic) => <li>{topic}</li>)}
           </ul>
         </section>
 
         <section class="card">
-          <h2 class="card-title">GitHub issues</h2>
-          <p class="card-subtitle mb-0">
-            Bugs, firmware patches, and feature ideas belong in
-            <a class="text-link" href={githubIssues} target="_blank" rel="noreferrer">GitHub issues</a>
-            so other builders can follow along. Prefer not to use a web form? That is the best public path.
-          </p>
+          <h2 class="card-title">{t.issuesTitle}</h2>
+          <p class="card-subtitle mb-0" set:html={t.issuesHtml(githubIssues)} />
         </section>
 
         <section class="card">
-          <h2 class="card-title">Before you write</h2>
-          <p class="card-subtitle mb-0">
-            Many answers are already in the
-            <a class="text-link" href="/guides">guides hub</a>,
-            <a class="text-link" href="/about">about library</a>,
-            <a class="text-link" href="/about/probe-demo">probe demo</a>, and
-            <a class="text-link" href="/about/arduino-sketches">Arduino sketches</a>.
-            Useful details for a reply: board, sensors, expected vs observed readings, and any feed URLs.
-          </p>
+          <h2 class="card-title">{t.beforeTitle}</h2>
+          <p class="card-subtitle mb-0" set:html={t.beforeHtml} />
         </section>
       </div>
 
-      <ContactForm client:visible />
+      <ContactForm client:visible text={t.form} localSuccessMessage={locale !== "en"} />
     </div>
 
     <FaqSection faqs={contactFaqs} />

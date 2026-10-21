@@ -2,58 +2,61 @@
 import AccessoryProduct from "../layouts/AccessoryProduct.astro";
 import { commerceLinkRel } from "../lib/affiliateLinks";
 import { BOM } from "../lib/bomLinks";
-import { BRAND_NAME } from "../lib/brand";
+import { getLocale } from "../i18n";
+import { accessoriesMessages } from "../i18n/messages/accessories";
+
+const m = accessoriesMessages(getLocale(Astro));
+const c = m.common;
+const t = m.kitLabels;
 
 const NFC = BOM.adafruitNfcNtag213;
 ---
 <AccessoryProduct
   accessoryId="kit-labels"
   faqKey="kitLabels"
-  title="Kit QR & NFC labels"
-  description={`Printable QR stickers and optional NFC tags encoding your ${BRAND_NAME} push ingest URL — onboard firmware without typing the key.`}
-  kicker="Kit / merch"
+  title={t.title}
+  description={t.description}
+  kicker={c.kitKicker}
 >
-  <a slot="actions" class="btn-primary" href="/about/kit-qr-onboarding">Kit QR guide</a>
-  <a slot="actions" class="btn-secondary" href="/dashboard/devices">Devices</a>
-  <a slot="actions" class="btn-ghost" href="/claims-pack">Claims pack</a>
+  <a slot="actions" class="btn-primary" href="/about/kit-qr-onboarding">{t.kitQrGuide}</a>
+  <a slot="actions" class="btn-secondary" href="/dashboard/devices">{c.devices}</a>
+  <a slot="actions" class="btn-ghost" href="/claims-pack">{t.claimsPack}</a>
 
   <section class="card">
-    <h2 class="card-title">What it is</h2>
+    <h2 class="card-title">{c.whatItIs}</h2>
     <ul class="text-sm space-y-2 mb-0">
       <li>
-        <strong>Does:</strong> Puts the full ingest URL on a sticker (QR) or NFC tag (NTAG213/215 URL record) so phone
-        or laptop can scan during flash / HA setup.
+        <strong>{c.does}</strong> <Fragment set:html={t.doesHtml} />
       </li>
       <li>
-        <strong>Does not:</strong> Sell branded drop-ship labels from ProbeHarbor. Print from the Devices QR callout
-        (SVG download) or write NFC with any NDEF URL writer. Rotate the key if a sticker is lost.
+        <strong>{c.doesNot}</strong> <Fragment set:html={t.doesNotHtml} />
       </li>
     </ul>
   </section>
 
   <section class="card">
-    <h2 class="card-title">Parts</h2>
+    <h2 class="card-title">{c.parts}</h2>
     <div class="overflow-x-auto">
       <table class="plan-comparison-table">
-        <caption class="sr-only">Kit label parts</caption>
+        <caption class="sr-only">{t.caption}</caption>
         <thead>
           <tr>
-            <th scope="col">Part</th>
-            <th scope="col">Why</th>
-            <th scope="col">Buy</th>
+            <th scope="col">{c.colPart}</th>
+            <th scope="col">{c.colWhy}</th>
+            <th scope="col">{c.colBuy}</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <th scope="row">Waterproof label stock</th>
-            <td>Garage / utility room stickers for device name + QR.</td>
-            <td>Outdoor-rated sticker stock; print from the Devices QR SVG.</td>
+            <th scope="row">{t.stockPart}</th>
+            <td>{t.stockWhy}</td>
+            <td>{t.stockBuy}</td>
           </tr>
           <tr>
-            <th scope="row">NFC NTAG stickers</th>
-            <td>Optional tap-to-open ingest URL on Android / iPhone.</td>
+            <th scope="row">{t.nfcPart}</th>
+            <td>{t.nfcWhy}</td>
             <td>
-              <a class="text-link" href={NFC} target="_blank" rel={commerceLinkRel(NFC)}>Adafruit NTAG213 sticker</a>
+              <a class="text-link" href={NFC} target="_blank" rel={commerceLinkRel(NFC)}>{t.nfcBuy}</a>
             </td>
           </tr>
         </tbody>
@@ -62,22 +65,9 @@ const NFC = BOM.adafruitNfcNtag213;
   </section>
 
   <section class="card">
-    <h2 class="card-title">Setup</h2>
+    <h2 class="card-title">{c.setup}</h2>
     <ol class="text-sm space-y-2 pl-5 list-decimal mb-0">
-      <li>
-        Create or rotate a push key on
-        <a class="text-link" href="/dashboard/devices">Devices</a>
-        — QR is visible about 30 minutes.
-      </li>
-      <li>Download the SVG or print device name + QR + URL on waterproof stock.</li>
-      <li>
-        Optional: write the same HTTPS ingest URL as an NDEF URI record on an NFC tag. Keep tags with the kit, not on a
-        public door.
-      </li>
-      <li>
-        Full walkthrough:
-        <a class="text-link" href="/about/kit-qr-onboarding">Kit QR onboarding</a>.
-      </li>
+      {t.stepsHtml.map((step) => <li set:html={step} />)}
     </ol>
   </section>
 </AccessoryProduct>

@@ -1,4 +1,6 @@
 ---
+import { getLocale } from "../i18n";
+import { aboutArticleMessages } from "../i18n/messages/aboutArticle";
 import { buildRegisterHref } from "../lib/registerUrl";
 
 interface Props {
@@ -7,63 +9,22 @@ interface Props {
 
 const { slug } = Astro.props;
 const registerHref = buildRegisterHref();
+const t = aboutArticleMessages(getLocale(Astro)).productCta;
 
-const productCtas: Record<
-  string,
-  { title: string; body: string; href: string; label: string }
-> = {
-  "cold-snap-playbook": {
-    title: "Put the playbook into practice",
-    body: "Set freeze °F + email under Alerts → When to alert, or finish the inline card on Devices after first ingest.",
-    href: "/dashboard/alerts?tab=settings#alert-section-essentials",
-    label: "Open alert settings",
-  },
-  "alert-channel-cookbook": {
-    title: "Wire your channels",
-    body: "Start with email under Alerts → How you're told, then add chat apps or Pro SMS when you need louder overnight coverage.",
-    href: "/dashboard/alerts?tab=settings#alert-section-essentials",
-    label: "Open alert settings",
-  },
-  "household-sharing-walkthrough": {
-    title: "Invite your household",
-    body: "Share live probes with invites, or send a free family live link to anyone without an account.",
-    href: "/dashboard/share/links",
-    label: "Open share links",
-  },
-  "freeze-protection-thresholds": {
-    title: "Set your freeze threshold",
-    body: "Start monitoring with a threshold that matches your coldest zone.",
-    href: "/dashboard/alerts?tab=settings#alert-section-essentials",
-    label: "Set threshold",
-  },
-  "ingest-and-webhooks": {
-    title: "Add a device key",
-    body: "Create push ingest credentials on the Devices page and post a test reading.",
-    href: "/dashboard/devices?view=setup",
-    label: "Open devices",
-  },
-  "adding-devices": {
-    title: "Create your free device key",
-    body: "Free forever, no credit card: land on Devices, create a push key, and POST a test reading.",
-    href: registerHref,
-    label: "Start free",
-  },
-  "dht22-sensor-overview": {
-    title: "See it on a live dashboard",
-    body: "Create a free account (no card), map your probe keys, and watch freeze and leak risk overnight.",
-    href: registerHref,
-    label: "Start free",
-  },
+/** Destinations per slug; copy lives in `aboutArticleMessages().productCta`. */
+const productCtaHrefs: Record<string, string> = {
+  "cold-snap-playbook": "/dashboard/alerts?tab=settings#alert-section-essentials",
+  "alert-channel-cookbook": "/dashboard/alerts?tab=settings#alert-section-essentials",
+  "household-sharing-walkthrough": "/dashboard/share/links",
+  "freeze-protection-thresholds": "/dashboard/alerts?tab=settings#alert-section-essentials",
+  "ingest-and-webhooks": "/dashboard/devices?view=setup",
+  "adding-devices": registerHref,
+  "dht22-sensor-overview": registerHref,
 };
 
-const fallback = {
-  title: "Set this up in ProbeHarbor",
-  body: "Free forever, no credit card: track probes, freeze and leak alerts, and history without running your own server.",
-  href: registerHref,
-  label: "Create free account",
-};
-
-const cta = productCtas[slug] ?? fallback;
+const href = productCtaHrefs[slug];
+const copy = href ? (t.bySlug[slug] ?? t.fallback) : t.fallback;
+const cta = { ...copy, href: href ?? registerHref };
 const showDemo = cta.href.startsWith("/register");
 ---
 <aside class="card about-product-cta" role="note">
@@ -74,9 +35,9 @@ const showDemo = cta.href.startsWith("/register");
   <div class="about-product-cta-actions">
     <a class="btn-primary" href={cta.href}>{cta.label}</a>
     {showDemo ? (
-      <a class="btn-secondary" href="/demo">Live demo</a>
+      <a class="btn-secondary" href="/demo">{t.liveDemo}</a>
     ) : (
-      <a class="btn-secondary" href="/pricing">See plans</a>
+      <a class="btn-secondary" href="/pricing">{t.seePlans}</a>
     )}
   </div>
 </aside>

@@ -1,6 +1,9 @@
 ---
 import { Image } from "astro:assets";
-import { getAboutPhoto, type AboutPhotoId } from "../lib/aboutPhotos";
+import type { AboutPhotoId } from "../lib/aboutPhotos";
+import { getLocale } from "../i18n";
+import { getLocalizedAboutPhoto } from "../i18n/content/aboutPhotos";
+import { aboutMediaMessages } from "../i18n/messages/aboutMedia";
 import "../styles/about.css";
 
 interface Props {
@@ -13,14 +16,16 @@ interface Props {
 }
 
 const { photoIds, labels = [], hrefs = [], class: className } = Astro.props;
+const locale = getLocale(Astro);
+const t = aboutMediaMessages(locale);
 const photos = photoIds.map((id, index) => ({
-  ...getAboutPhoto(id),
+  ...getLocalizedAboutPhoto(id, locale),
   label: labels[index],
   href: hrefs[index],
 }));
 ---
 
-<section class:list={["editorial-photo-strip", className]} aria-label="Editorial photos">
+<section class:list={["editorial-photo-strip", className]} aria-label={t.photoStripLabel}>
   <div class="editorial-photo-strip-grid">
     {
       photos.map((photo) => (

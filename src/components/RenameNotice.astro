@@ -2,16 +2,20 @@
 /** Dismissible site-wide notice for the ThermalTrace → ProbeHarbor rename. */
 import { BRAND_NAME } from "../lib/brand";
 import { FORMER_BRAND_NAME, FORMER_DOMAIN, shouldShowRenameNotice } from "../lib/rebrand";
+import { getLocale } from "../i18n";
+import { layoutMessages } from "../i18n/messages/layout";
+
+const t = layoutMessages(getLocale(Astro)).renameNotice;
 
 const show = shouldShowRenameNotice();
 ---
 {show && (
-  <aside class="rename-notice" aria-label="Brand update" data-rename-notice>
+  <aside class="rename-notice" aria-label={t.label} data-rename-notice>
     <p>
-      <strong>{FORMER_BRAND_NAME} is now {BRAND_NAME}.</strong>
-      {" "}Same account and sensors; old {FORMER_DOMAIN} links and ingest URLs still work.
+      <strong>{t.headline(FORMER_BRAND_NAME, BRAND_NAME)}</strong>
+      {" "}{t.body(FORMER_DOMAIN)}
     </p>
-    <button type="button" class="rename-notice-close" aria-label="Dismiss notice" data-rename-dismiss>
+    <button type="button" class="rename-notice-close" aria-label={t.dismiss} data-rename-dismiss>
       ×
     </button>
   </aside>

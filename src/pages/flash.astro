@@ -11,55 +11,22 @@ import {
 } from "../lib/schemaMarkup";
 import { getAuthFromCookies } from "../lib/auth";
 import { BOM } from "../lib/bomLinks";
-import { AFFILIATE_DISCLOSURE, commerceLinkRel } from "../lib/affiliateLinks";
+import { commerceLinkRel } from "../lib/affiliateLinks";
+import { getLocale, localizePath } from "../i18n";
+import { flashMessages } from "../i18n/messages/flash";
+import { aboutMediaMessages } from "../i18n/messages/aboutMedia";
 
 const { user } = await getAuthFromCookies(Astro.cookies);
 
-const title = "Flash an ESP32 freeze sensor from your browser";
-const description =
-  "Turn an ESP32 and a DS18B20 probe into a freeze sensor without installing an IDE: flash from the browser, enter Wi-Fi and a device key, done.";
-
-const faqs = [
-  {
-    question: "What do I need?",
-    answer:
-      "An ESP32, ESP32-S3, or ESP32-C3 board, a waterproof DS18B20 probe or a DHT22 (or DHT11) temperature and humidity sensor with a 4.7kΩ pull-up resistor on GPIO 4, a USB data cable, and Chrome or Edge on a desktop or laptop.",
-  },
-  {
-    question: "Do I need the Arduino IDE?",
-    answer:
-      "No. The firmware is prebuilt and installed by the browser. Wi-Fi and your device key are sent to the board after flashing, so nothing has to be compiled.",
-  },
-  {
-    question: "Can I add more than one probe?",
-    answer:
-      "Yes, up to four DS18B20 probes on the same pin. They report as temp1 to temp4 and can be renamed in the dashboard. A DHT22 is one sensor per board.",
-  },
-  {
-    question: "What else can I connect?",
-    answer:
-      "An I²C temperature and humidity sensor (BME280, SHT31, or AHT20, found automatically; a BME280 also reports air pressure), a leak or water contact for flood alerts, a magnetic door switch, and a battery through a 1:1 resistor divider for battery-life estimates. Tick the leak, door, and battery options when you send settings so the board knows they're wired.",
-  },
-  {
-    question: "Does it work with a DHT22?",
-    answer:
-      "Yes. Wire it the same way (data to GPIO 4, 4.7kΩ to 3.3V). The firmware looks for DS18B20 probes first and, if there are none, reads a DHT22 or DHT11 on that pin, reporting temperature and humidity. A DS18B20 is the better choice against a pipe; a DHT22 suits room air and humidity in a crawlspace or basement.",
-  },
-  {
-    question: "How do I move the board to another network?",
-    answer:
-      "Hold the BOOT button for five seconds to erase the saved Wi-Fi and device key, then send new settings from this page or through the ProbeHarbor-Setup network.",
-  },
-  {
-    question: "Is the firmware open source?",
-    answer:
-      "Yes. The source is in the ProbeHarbor repository under firmware/probeharbor-probe, alongside sketches you can edit and flash yourself.",
-  },
-];
+const locale = getLocale(Astro);
+const t = flashMessages(locale);
+const title = t.title;
+const description = t.description;
+const faqs = t.faqs;
 
 const buyGroups = [
   {
-    label: "Board (pick one)",
+    label: t.buy.board,
     items: [
       { name: "ESP32 DevKit", href: BOM.amazonEsp32DevKit, vendor: "Amazon" },
       { name: "HUZZAH32 Feather", href: BOM.adafruitHuzzah32, vendor: "Adafruit" },
@@ -67,42 +34,42 @@ const buyGroups = [
     ],
   },
   {
-    label: "Or an S3 / C3 board (stock varies)",
+    label: t.buy.s3c3,
     items: [
       { name: "ESP32-S3-DevKitC-1", href: BOM.adafruitEsp32S3DevKitC, vendor: "Adafruit" },
       { name: "ESP32-C3-DevKitM-1", href: BOM.adafruitEsp32C3DevKitM, vendor: "Adafruit" },
     ],
   },
   {
-    label: "Sensor on GPIO 4",
+    label: t.buy.sensor,
     items: [
-      { name: "Waterproof DS18B20 probe", href: BOM.adafruitDs18b20, vendor: "Adafruit" },
-      { name: "4.7kΩ resistors", href: BOM.amazonResistor4k7, vendor: "Amazon" },
+      { name: t.buy.ds18b20, href: BOM.adafruitDs18b20, vendor: "Adafruit" },
+      { name: t.buy.resistor4k7, href: BOM.amazonResistor4k7, vendor: "Amazon" },
     ],
   },
   {
-    label: "Or an I²C air sensor (no resistor needed)",
+    label: t.buy.i2c,
     items: [
       { name: "SHT31-D", href: BOM.adafruitSht31, vendor: "Adafruit" },
-      { name: "BME280 (adds air pressure)", href: BOM.adafruitBme280, vendor: "Adafruit" },
+      { name: t.buy.bme280, href: BOM.adafruitBme280, vendor: "Adafruit" },
       { name: "AHT20", href: BOM.adafruitAht20, vendor: "Adafruit" },
     ],
   },
   {
-    label: "Optional extras",
+    label: t.buy.extras,
     items: [
-      { name: "Magnetic door switch", href: BOM.adafruitReed, vendor: "Adafruit" },
-      { name: "100kΩ resistors (battery divider)", href: BOM.adafruitResistor100k, vendor: "Adafruit" },
+      { name: t.buy.reed, href: BOM.adafruitReed, vendor: "Adafruit" },
+      { name: t.buy.resistor100k, href: BOM.adafruitResistor100k, vendor: "Adafruit" },
     ],
   },
 ];
 
 const siteUrl = resolveSiteUrl(Astro.site);
-const pageUrl = resolvePageUrl(siteUrl, "/flash");
+const pageUrl = resolvePageUrl(siteUrl, localizePath("/flash", locale));
 const schema = [
   getBreadcrumbSchema(siteUrl, [
-    { name: "Home", path: "/" },
-    { name: "Browser flasher", path: "/flash" },
+    { name: t.breadcrumbHome, path: localizePath("/", locale) },
+    { name: t.breadcrumbFlash, path: localizePath("/flash", locale) },
   ]),
   getFaqPageSchema(pageUrl, faqs),
 ].filter(Boolean) as Record<string, unknown>[];
@@ -115,66 +82,48 @@ const schema = [
 >
   <div class="page-shell page-stack">
     <PageHeader
-      kicker="Setup · Beta"
-      title="Flash a freeze sensor from your browser"
-      lede="No Arduino IDE, no editing code. Wire a DS18B20 probe or a DHT22 to an ESP32, install the firmware from this page, then send it your Wi‑Fi and device key over the same USB cable."
+      kicker={t.kicker}
+      title={t.heading}
+      lede={t.lede}
     >
       <a
         slot="actions"
         class="btn-primary"
         href={user ? "/dashboard/devices" : "/register?next=/dashboard/devices"}
-      >{user ? "Get a device key" : "Start free → get a device key"}</a>
-      <a slot="actions" class="btn-secondary" href="/about/esp32-freeze-kit">Parts list and wiring</a>
+      >{user ? t.getKey : t.startFreeGetKey}</a>
+      <a slot="actions" class="btn-secondary" href="/about/esp32-freeze-kit">{t.partsAndWiring}</a>
     </PageHeader>
 
     <section class="card">
-      <h2 class="card-title">Before you start</h2>
+      <h2 class="card-title">{t.beforeTitle}</h2>
       <ol class="text-sm space-y-2 pl-5 list-decimal mb-0">
+        <li set:html={t.wireHtml} />
         <li>
-          Wire the sensor: power to 3.3V, ground to GND, data to GPIO 4, with a 4.7kΩ resistor between data and 3.3V
-          (<a class="text-link" href="/about/esp32-freeze-kit">diagram</a>). That's the same for a DS18B20 probe (red, black,
-          yellow wires) and a DHT22; the firmware detects which one is connected.
-        </li>
-        <li>
-          Optional extras, on these pins (each switch or contact goes between the pin and GND):
+          {t.extrasIntro}
           <div class="table-wrap mt-2">
             <table class="data-table text-sm">
               <thead>
-                <tr><th scope="col">Connect</th><th scope="col">ESP32</th><th scope="col">ESP32-S3</th><th scope="col">ESP32-C3</th></tr>
+                <tr><th scope="col">{t.pinTable.connect}</th><th scope="col">ESP32</th><th scope="col">ESP32-S3</th><th scope="col">ESP32-C3</th></tr>
               </thead>
               <tbody>
-                <tr><td>DS18B20 or DHT22 data</td><td>GPIO 4</td><td>GPIO 4</td><td>GPIO 4</td></tr>
-                <tr><td>I²C sensor SDA / SCL (BME280, SHT31, AHT20)</td><td>21 / 22</td><td>8 / 9</td><td>6 / 7</td></tr>
-                <tr><td>Leak / water contact</td><td>GPIO 27</td><td>GPIO 5</td><td>GPIO 5</td></tr>
-                <tr><td>Door reed switch</td><td>GPIO 26</td><td>GPIO 6</td><td>GPIO 10</td></tr>
-                <tr><td>Battery + through a 1:1 divider (2 × 100kΩ)</td><td>GPIO 35</td><td>GPIO 7</td><td>GPIO 3</td></tr>
+                <tr><td>{t.pinTable.data}</td><td>GPIO 4</td><td>GPIO 4</td><td>GPIO 4</td></tr>
+                <tr><td>{t.pinTable.i2c}</td><td>21 / 22</td><td>8 / 9</td><td>6 / 7</td></tr>
+                <tr><td>{t.pinTable.leak}</td><td>GPIO 27</td><td>GPIO 5</td><td>GPIO 5</td></tr>
+                <tr><td>{t.pinTable.door}</td><td>GPIO 26</td><td>GPIO 6</td><td>GPIO 10</td></tr>
+                <tr><td>{t.pinTable.battery}</td><td>GPIO 35</td><td>GPIO 7</td><td>GPIO 3</td></tr>
               </tbody>
             </table>
           </div>
-          I²C sensors are found automatically; tick leak, door, or battery below so the board knows they're wired.
-          <p class="mt-2 mb-0" id="feather-pins">
-            <strong>Adafruit Feather (HUZZAH32 or ESP32 Feather V2):</strong> use the ESP32 column. Probe data
-            (GPIO 4) is the pin labelled A5, the door switch (GPIO 26) is A0, and the leak contact goes on pin 27. The
-            battery divider is already on the board: plug a LiPo into the battery connector and tick battery, no
-            resistors needed. An I²C sensor goes on the Feather's own SDA/SCL pins or
-            its STEMMA QT port; the firmware finds it there at startup (power-cycle after plugging one in). Feathers have no BOOT button on GPIO 0, so the 5-second reset won't work; to
-            change Wi-Fi, send new settings from this page instead.
-          </p>
+          {t.i2cNote}
+          <p class="mt-2 mb-0" id="feather-pins" set:html={t.featherHtml} />
         </li>
-        <li>
-          Add a push device under <a class="text-link" href="/dashboard/devices">Dashboard → Devices</a> and copy its
-          device key. The free plan includes two devices.
-        </li>
+        <li set:html={t.deviceKeyHtml} />
       </ol>
     </section>
 
     <section class="card" id="what-to-buy">
-      <h2 class="card-title">What to buy</h2>
-      <p class="text-sm">
-        Parts that match the pins above. A plain ESP32 is the tested choice and does everything here. The S3 and C3
-        links are Espressif's own dev boards, which the firmware is built for; when they're sold out, another
-        ESP32-S3-DevKitC-1 or ESP32-C3-DevKitM-1 board (or a clone with the same pinout) works too.
-      </p>
+      <h2 class="card-title">{t.buyTitle}</h2>
+      <p class="text-sm">{t.buyIntro}</p>
       <dl class="text-sm space-y-3 mb-3">
         {buyGroups.map((group) => (
           <div>
@@ -191,30 +140,15 @@ const schema = [
           </div>
         ))}
       </dl>
-      <p class="text-sm">
-        <strong>Leak sensor:</strong> the easiest low-cost option is an LM393 "rain / water sensor" module (sold by
-        many shops): VCC to the board's 3.3V pin (never 5V, so its output stays safe for the ESP32), GND to GND, DO to
-        the leak pin. Turn its dial until a drop of water reads Wet, then check it reads Dry again. Its exposed pads
-        corrode if left wet, so treat it as a starter part. For a longer-lasting install, use two stainless screws or
-        probes about 5&nbsp;mm apart, one to the leak pin and one to GND. Either way, test with your own water: very
-        clean water or a thin film may not trip it. Sensors whose output goes high when wet, such as Adafruit's
-        water sensor, need a different input and don't work with this firmware.
-      </p>
-      <p class="text-xs text-[var(--color-text-muted)] mb-0">{AFFILIATE_DISCLOSURE}</p>
+      <p class="text-sm" set:html={t.leakHtml} />
+      <p class="text-xs text-[var(--color-text-muted)] mb-0">{aboutMediaMessages(locale).affiliateDisclosure}</p>
     </section>
 
     <BrowserFlasher />
 
     <section class="card">
-      <h2 class="card-title">After it is live</h2>
-      <p class="mb-0">
-        Readings arrive once a minute. Mount the probe against the coldest pipe, set a freeze threshold of 34–38°F under
-        <a class="text-link" href="/dashboard/alerts">Dashboard → Alerts</a>, and send a test alert. See
-        <a class="text-link" href="/answers/crawlspace-freeze-sensor-placement">where to put the sensor</a> and
-        <a class="text-link" href="/answers/freeze-alarm-temperature-setting">what temperature to alert at</a>.
-        Prefer to edit the code yourself? The <a class="text-link" href="/about/esp32-web-flash">other flashing options</a>
-        cover Arduino, PlatformIO, MicroPython, and ESPHome.
-      </p>
+      <h2 class="card-title">{t.afterTitle}</h2>
+      <p class="mb-0" set:html={t.afterHtml} />
     </section>
 
     <FaqSection faqs={faqs} />

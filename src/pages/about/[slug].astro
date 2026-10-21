@@ -1,9 +1,10 @@
 ---
 import AboutArticle from "../../components/AboutArticle.astro";
 import AboutPageSections from "../../components/AboutPageSections.astro";
-import { getAboutPage } from "../../lib/aboutPages";
-import { getExpandedAboutContent } from "../../lib/aboutExpandedContent";
-import { getAboutHeroPhoto } from "../../lib/aboutPhotos";
+import { getLocale } from "../../i18n";
+import { getLocalizedAboutPage } from "../../i18n/content/aboutPages";
+import { getLocalizedExpandedAboutContent } from "../../i18n/content/aboutExpanded";
+import { getLocalizedAboutHeroPhoto } from "../../i18n/content/aboutPhotos";
 
 const { slug } = Astro.params;
 
@@ -11,14 +12,15 @@ if (!slug) {
   return Astro.redirect("/about");
 }
 
-const page = getAboutPage(slug);
-const sections = getExpandedAboutContent(slug);
+const locale = getLocale(Astro);
+const page = getLocalizedAboutPage(slug, locale);
+const sections = getLocalizedExpandedAboutContent(slug, locale);
 
 if (!page || !sections) {
   return Astro.rewrite("/404");
 }
 
-const hero = getAboutHeroPhoto(slug);
+const hero = getLocalizedAboutHeroPhoto(slug, locale);
 ---
 <AboutArticle
   slug={page.slug}

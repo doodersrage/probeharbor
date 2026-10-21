@@ -1,10 +1,14 @@
 ---
 import AboutArticle from "../../components/AboutArticle.astro";
-import { getAboutPage } from "../../lib/aboutPages";
-import { getAboutPhoto } from "../../lib/aboutPhotos";
+import { getLocale } from "../../i18n";
+import { getLocalizedAboutPage } from "../../i18n/content/aboutPages";
+import { getLocalizedAboutHeroPhoto } from "../../i18n/content/aboutPhotos";
+import { mqttBridgeMessages } from "../../i18n/messages/about-pages/mqtt-bridge";
 
-const page = getAboutPage("mqtt-bridge")!;
-const hero = getAboutPhoto("ethernet-cable");
+const locale = getLocale(Astro);
+const t = mqttBridgeMessages(locale);
+const page = getLocalizedAboutPage("mqtt-bridge", locale)!;
+const hero = getLocalizedAboutHeroPhoto(page.slug, locale)!;
 ---
 <AboutArticle
   slug={page.slug}
@@ -16,34 +20,18 @@ const hero = getAboutPhoto("ethernet-cable");
   heroCredit={hero.credit}
   heroCreditHref={hero.sourceUrl}
 >
-  <p>
-    ProbeHarbor is not an MQTT broker. Keep Mosquitto, ESPHome, or Home Assistant MQTT on your LAN,
-    then mirror selected topics over HTTPS so household freeze and leak SMS/email and history live in the cloud
-    without exposing the broker.
-  </p>
+  <p set:html={t.introHtml} />
 
-  <h2>Quick bridge (curl)</h2>
-  <p>
-    Create a <strong>push device</strong> under Dashboard → Devices, copy the ingest key, map JSON keys
-    to match your MQTT payload, then POST:
-  </p>
+  <h2>{t.curlTitle}</h2>
+  <p set:html={t.curlHtml} />
   <pre><code>{`curl -X POST "https://probeharbor.dev/api/ingest/mqtt" \\
   -H "Content-Type: application/json" \\
   -H "X-Ingest-Key: YOUR_DEVICE_KEY" \\
   -d '{"topic":"home/garage/temp","message":{"temp1":42.5,"humidity":38}}'`}</code></pre>
-  <p>
-    Full device creation (push vs pull) is covered in
-    <a class="text-link" href="/about/adding-devices">Adding push and pull devices</a>.
-    Payload shapes and outbound alert webhooks:
-    <a class="text-link" href="/about/ingest-and-webhooks">Ingest API and alert webhooks</a>.
-  </p>
+  <p set:html={t.devicesHtml} />
 
-  <h2>Home Assistant <code>rest_command</code></h2>
-  <p>
-    Prefer automatic entities from a share link? Use the
-    <a class="text-link" href="/integrations/home-assistant">official HACS integration</a>.
-    For MQTT-only mirroring:
-  </p>
+  <h2 set:html={t.haTitleHtml} />
+  <p set:html={t.haHtml} />
   <pre><code>{`# configuration.yaml
 rest_command:
   probeharbor_ingest:
@@ -62,22 +50,11 @@ rest_command:
     action:
       - service: rest_command.probeharbor_ingest`}</code></pre>
 
-  <h2>Node-RED</h2>
-  <p>
-    Import
-    <a class="text-link" href="/nodered/mqtt-to-probeharbor.json" download>mqtt-to-probeharbor.json</a>,
-    point MQTT nodes at your broker, set <code>PROBEHARBOR_INGEST_KEY</code>, and deploy.
-    Product guide:
-    <a class="text-link" href="/integrations/node-red">Node-RED integration</a>.
-    Extended write-up:
-    <a class="text-link" href="https://probeharbor.dev/developers/integrations/mqtt-bridge">developer MQTT bridge docs</a>.
-  </p>
+  <h2>{t.noderedTitle}</h2>
+  <p set:html={t.noderedHtml} />
 
-  <h2>Related</h2>
+  <h2>{t.relatedTitle}</h2>
   <ul>
-    <li><a class="text-link" href="/integrations/home-assistant">Home Assistant (HACS)</a>: dual-run with MQTT</li>
-    <li><a class="text-link" href="/compare/diy-mqtt">ProbeHarbor vs DIY MQTT</a></li>
-    <li><a class="text-link" href="/about/adding-devices">Adding push and pull devices</a></li>
-    <li><a class="text-link" href="/docs/api">HTTP API</a>: <code>POST /api/ingest/mqtt</code></li>
+    {t.related.map((item) => <li set:html={item} />)}
   </ul>
 </AboutArticle>

@@ -381,7 +381,7 @@ const de: HomeMessages = {
     kicker: "Szenario",
     title: "1 °C (34 °F). Dann zählt der Alarm.",
     copyHtml:
-      'Stell dir eine angebaute Garage vor, in der eine Ecke in jeder klaren Nacht unter 1 °C (34 °F) fällt. Der Alarm sagt, dass etwas nicht stimmt; der Verlauf zeigt, wo – nämlich an einer undichten Tordichtung, bevor die Leitungen vereisen. Genau so eine Zeitleiste würde ein <a class="text-link" href="/claims-pack">Schadensnachweis-Paket</a> dokumentieren, falls ein Frostschaden je mit der Versicherung geklärt werden muss.',
+      'Stell dir eine angebaute Garage vor, in der eine Ecke in jeder klaren Nacht unter 1 °C (34 °F) fällt. Der Alarm sagt, dass etwas nicht stimmt; der Verlauf zeigt, wo – nämlich an einer undichten Tordichtung, bevor die Leitungen vereisen. Genau so eine Zeitleiste würde ein <a class="text-link" href="/claims-pack">Nachweispaket</a> dokumentieren, falls ein Frostschaden je mit der Versicherung geklärt werden muss.',
     shotCaption: "Dieselbe Frostlinie, die Haushalte unter Alarme festlegen, sichtbar in den Verlaufskurven.",
     read: "Szenario lesen",
     more: "Weitere Szenarien",
@@ -399,7 +399,7 @@ const de: HomeMessages = {
       'Temperatur, Luftfeuchte, Luftqualität, Türen, Lecks, Strom und Bewegung auf Hardware, die du kontrollierst. <a class="text-link" href="/about/ingest-and-webhooks">Anbindungsanleitung</a> · <a class="text-link" href="/docs/api">HTTP-API</a>',
     portfolioTitle: "Vom Haushalt bis zum Immobilienbestand",
     portfolioCopyHtml:
-      'Lade deine Familie ein und teile einen Live-Link, ohne ein Passwort herauszugeben. Pro ergänzt ein <a class="text-link" href="/claims-pack">Schadensnachweis-Paket</a>; Portfolio ergänzt <a class="text-link" href="/property-management">Zugänge für Hausverwaltungen</a> für Mietobjekte und Mehrparteienhäuser.',
+      'Lade deine Familie ein und teile einen Live-Link, ohne ein Passwort herauszugeben. Pro ergänzt ein <a class="text-link" href="/claims-pack">Nachweispaket</a>; Portfolio ergänzt <a class="text-link" href="/property-management">Zugänge für Hausverwaltungen</a> für Mietobjekte und Mehrparteienhäuser.',
   },
   pricing: {
     title: "Kostenlos starten",

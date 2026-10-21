@@ -10,12 +10,19 @@ import {
   resolvePageUrl,
   resolveSiteUrl,
 } from "../lib/schemaMarkup";
-import { getMarketingFaqs, getMarketingFaqSchema } from "../lib/marketingFaqs";
+import { getLocale, localizePath } from "../i18n";
+import { androidMessages } from "../i18n/messages/android";
+import {
+  getLocalizedMarketingFaqs,
+  getLocalizedMarketingFaqSchema,
+} from "../i18n/content/marketingFaqs";
 import garageInstallLifestyle from "../assets/probeharbor-garage-install-lifestyle.jpg";
 
+const locale = getLocale(Astro);
+const t = androidMessages(locale);
 const siteUrl = resolveSiteUrl(Astro.site);
-const pageUrl = resolvePageUrl(siteUrl, "/android");
-const androidFaqs = getMarketingFaqs("android");
+const pageUrl = resolvePageUrl(siteUrl, localizePath("/android", locale));
+const androidFaqs = getLocalizedMarketingFaqs("android", locale);
 
 const ANDROID_REPO = "https://github.com/doodersrage/probeharbor-android";
 const playStoreUrl = String(import.meta.env.PUBLIC_PLAY_STORE_URL ?? "").trim();
@@ -24,14 +31,14 @@ const playStoreLive = playStoreUrl.startsWith("https://play.google.com/");
 const software = getSoftwareApplicationSchema(siteUrl);
 const schema = [
   getBreadcrumbSchema(siteUrl, [
-    { name: "Home", path: "/" },
-    { name: "Apps", path: "/apps" },
-    { name: "Android app", path: "/android" },
+    { name: t.breadcrumbHome, path: localizePath("/", locale) },
+    { name: t.breadcrumbApps, path: localizePath("/apps", locale) },
+    { name: t.breadcrumbAndroid, path: localizePath("/android", locale) },
   ]),
   {
     ...software,
     "@type": ["SoftwareApplication", "MobileApplication"],
-    name: `${BRAND_NAME} for Android`,
+    name: t.schemaName(BRAND_NAME),
     operatingSystem: "Android",
     applicationCategory: "UtilitiesApplication",
     url: pageUrl,
@@ -46,15 +53,15 @@ const schema = [
       url: playStoreLive ? playStoreUrl : pageUrl,
     },
   },
-  getMarketingFaqSchema(pageUrl, "android"),
+  getLocalizedMarketingFaqSchema(pageUrl, "android", locale),
 ].filter(Boolean) as Record<string, unknown>[];
 
 const description = playStoreLive
-  ? `${BRAND_NAME} Android companion on Google Play: live probes, freeze and flood alerts, MFA, and household tools. Phone is not a sensor.`
-  : `Use ${BRAND_NAME} on Android via the installable web app. Native Play app is in review. Live probes, freeze and flood alerts. Phone is not a sensor.`;
+  ? t.descriptionLive(BRAND_NAME)
+  : t.descriptionPwa(BRAND_NAME);
 ---
 <Layout
-  title="Android app"
+  title={t.title}
   description={description}
   schema={schema}
   ogImage="/og-android.jpg"
@@ -62,163 +69,104 @@ const description = playStoreLive
 >
   <div class="page-shell page-stack">
     <PageHeader
-      kicker={playStoreLive ? "Google Play" : "Works today · native app next"}
-      title="ProbeHarbor for Android"
-      lede={playStoreLive
-        ? "Native companion on Google Play, live readings, history, freeze/flood alerts, devices, MFA, and household tools for your ProbeHarbor account."
-        : "Use ProbeHarbor on Android today with the installable web app — same account, live readings, and alerts. The native Play listing is in review; GitHub build/sideload is optional for early testers."}
+      kicker={playStoreLive ? t.kickerLive : t.kickerPwa}
+      title={t.heading}
+      lede={playStoreLive ? t.ledeLive : t.ledePwa}
     >
       {playStoreLive ? (
         <a slot="actions" class="btn-primary" href={playStoreUrl} target="_blank" rel="noreferrer">
-          Get it on Google Play
+          {t.getOnPlay}
         </a>
       ) : (
         <a slot="actions" class="btn-primary" href="/about/install-pwa">
-          Install the web app (PWA)
+          {t.installPwa}
         </a>
       )}
       {!playStoreLive && (
         <a slot="actions" class="btn-secondary" href={ANDROID_REPO} target="_blank" rel="noreferrer">
-          GitHub · build or sideload
+          {t.githubSideload}
         </a>
       )}
       <a slot="actions" class="btn-ghost" href={playStoreLive ? ANDROID_REPO : "/contact?topic=android"}>
-        {playStoreLive ? "Source on GitHub" : "Request Play launch note"}
+        {playStoreLive ? t.sourceOnGithub : t.requestLaunchNote}
       </a>
     </PageHeader>
 
     <figure class="card overflow-hidden p-0 mb-0">
       <Image
         src={garageInstallLifestyle}
-        alt={`${BRAND_NAME} lifestyle photo: checking probe readings on phone and laptop beside a DIY install near copper pipes`}
+        alt={t.imageAlt(BRAND_NAME)}
         widths={[640, 960, 1280]}
         sizes="(max-width: 960px) 100vw, 900px"
         class="w-full h-auto block"
       />
       <figcaption class="px-4 py-3 text-sm text-[var(--color-text-muted)]">
-        DIY install vibe: phone and laptop as companions to your own probes. Screens in this
-        illustration are stylized, not a product screenshot.
+        {t.imageCaption}
       </figcaption>
     </figure>
 
     <section class="card">
-      <h2 class="card-title">What the phone does (and does not)</h2>
+      <h2 class="card-title">{t.phoneTitle}</h2>
       <ul class="text-sm space-y-2 mb-0">
-        <li>
-          <strong>Does:</strong> sign in to your ProbeHarbor account, show live curves, history,
-          and the same forecast-backed time-to-freeze clock as Overview,
-          manage alerts/devices/household settings, and receive freeze/flood push via Firebase Cloud Messaging.
-        </li>
-        <li>
-          <strong>Does not:</strong> read temperature from the handset. Your ESP/Arduino (or JSON feeds)
-          keep posting to probeharbor.dev; the app is a client over HTTPS.
-        </li>
+        <li set:html={t.doesHtml} />
+        <li set:html={t.doesNotHtml} />
       </ul>
-      <p class="mt-4 mb-0 text-sm text-[var(--color-text-muted)]">
-        Want a desktop glance instead?
-        <a class="text-link" href="/bay-buddy">Bay Buddy</a>
-        shows freeze and flood moods for one space without opening the full dashboard.
-      </p>
+      <p class="mt-4 mb-0 text-sm text-[var(--color-text-muted)]" set:html={t.bayBuddyNoteHtml} />
     </section>
 
     {playStoreLive ? (
       <section class="card">
-        <h2 class="card-title">Google Play</h2>
+        <h2 class="card-title">{t.playTitle}</h2>
         <p class="card-subtitle mb-4">
-          Install from the Play Store with the same ProbeHarbor account you use on the web.
-          Push alerts use Firebase Cloud Messaging on Android and are on every plan.
+          {t.playCopy}
         </p>
         <a class="btn-primary" href={playStoreUrl} target="_blank" rel="noreferrer">
-          Open in Google Play
+          {t.openInPlay}
         </a>
       </section>
     ) : (
       <section class="card">
-        <h2 class="card-title">Use Android today (PWA)</h2>
+        <h2 class="card-title">{t.pwaTitle}</h2>
         <p class="card-subtitle mb-4">
-          Install probeharbor.dev from Chrome — home screen icon, live readings, and alerts on your existing account.
-          Native Play listing is next; GitHub build/sideload stays optional for early testers.
+          {t.pwaCopy}
         </p>
         <div class="flex flex-wrap gap-3 mb-4">
-          <a class="btn-primary" href="/about/install-pwa">PWA install steps</a>
+          <a class="btn-primary" href="/about/install-pwa">{t.pwaSteps}</a>
           <a class="btn-secondary" href={ANDROID_REPO} target="_blank" rel="noreferrer">
-            GitHub · probeharbor-android
+            {t.githubRepo}
           </a>
         </div>
         <ol class="text-sm space-y-2 pl-5 list-decimal mb-0">
-          <li>
-            <a class="text-link" href="/register?next=/dashboard/devices">Create a free ProbeHarbor account</a>
-            and connect at least one probe.
-          </li>
-          <li>
-            Install the PWA (or build/sideload the native app) and sign in with the same credentials.
-          </li>
-          <li>
-            Enable push alerts in
-            <a class="text-link" href="/dashboard/alerts">Alert settings</a>
-            for Firebase freeze notifications when the native app is installed.
-          </li>
+          {t.pwaListHtml.map((item) => <li set:html={item} />)}
         </ol>
       </section>
     )}
 
     {!playStoreLive && (
     <section class="card">
-      <h2 class="card-title">While Play review is pending</h2>
+      <h2 class="card-title">{t.pendingTitle}</h2>
       <p class="card-subtitle mb-4">
-        You already have a full phone experience via the PWA. The native app will attach to the same account when the listing goes live.
+        {t.pendingCopy}
       </p>
       <ol class="text-sm space-y-2 pl-5 list-decimal mb-4">
-        <li>
-          <a class="text-link" href="/register?next=/dashboard/devices">Create a free account</a>
-          and connect a push device or HTTPS feed.
-        </li>
-        <li>
-          Set freeze thresholds under
-          <a class="text-link" href="/dashboard/alerts">Alert settings</a>
-          (email, push, and chat on every plan; SMS on Pro).
-        </li>
-        <li>
-          On Android Chrome,
-          <a class="text-link" href="/about/install-pwa">install the PWA</a>
-          for a home-screen shortcut and optional browser Web Push.
-        </li>
-        <li>
-          Prefer a launch email?
-          <a class="text-link" href="/contact?topic=android">Tell us you’re waiting on Play</a>
-          we read every message.
-        </li>
+        {t.pendingListHtml.map((item) => <li set:html={item} />)}
       </ol>
-      <p class="mb-0 text-sm text-[var(--color-text-muted)]">
-        Deep links stay aligned with the web app (<code>/dashboard</code>, alerts, household) so the native client and PWA feel familiar.
-      </p>
+      <p class="mb-0 text-sm text-[var(--color-text-muted)]" set:html={t.deepLinksHtml} />
     </section>
     )}
 
     <section class="card">
-      <h2 class="card-title">Open source</h2>
-      <p class="card-subtitle mb-0">
-        App repository:
-        <a
-          class="text-link"
-          href={ANDROID_REPO}
-          target="_blank"
-          rel="noreferrer"
-        >probeharbor-android</a>
-        · Privacy:
-        <a class="text-link" href="/privacy">how Android push tokens are handled</a>
-        · API:
-        <a class="text-link" href="/docs/api">HTTP reference</a>
-      </p>
+      <h2 class="card-title">{t.ossTitle}</h2>
+      <p class="card-subtitle mb-0" set:html={t.ossHtml(ANDROID_REPO)} />
     </section>
 
     <FaqSection
       faqs={androidFaqs}
-      lede="Straight answers for Play reviewers and homeowners waiting on the listing."
+      lede={t.faqLede}
     />
 
     <p class="mb-0 text-sm">
-      <a class="text-link" href="/apps">← All companion apps</a>
+      <a class="text-link" href="/apps">{t.backToApps}</a>
     </p>
   </div>
 </Layout>

@@ -3,7 +3,6 @@ import Layout from "../layouts/Layout.astro";
 import PageHeader from "../components/PageHeader.astro";
 import EditorialPhotoStrip from "../components/EditorialPhotoStrip.astro";
 import FaqSection from "../components/FaqSection.astro";
-import { getGuideHubCategories, guideHubCategoryTitle } from "../lib/guideHub";
 import { guidesHubPhotos } from "../lib/aboutPhotos";
 import {
   getBreadcrumbSchema,
@@ -12,54 +11,21 @@ import {
   resolvePageUrl,
   resolveSiteUrl,
 } from "../lib/schemaMarkup";
+import { getLocale, localizePath } from "../i18n";
+import { guidesMessages } from "../i18n/messages/guides";
+import {
+  getLocalizedGuideHubCategories,
+  getLocalizedGuideHubCategoryTitle,
+} from "../i18n/content/guideHub";
 
-const categories = getGuideHubCategories();
+const locale = getLocale(Astro);
+const t = guidesMessages(locale);
+const categories = getLocalizedGuideHubCategories(locale);
 const siteUrl = resolveSiteUrl(Astro.site);
-const pageUrl = resolvePageUrl(siteUrl, "/guides");
-const guidesFaqs = [
-  {
-    question: "Where should I start?",
-    answer:
-      "Pick a job below: hardware setup (ESP32 freeze kit), freeze/flood alerts, household sharing, or the HTTP API. Or open the full About library.",
-  },
-  {
-    question: "Do you sell hardware kits?",
-    answer:
-      "No. ProbeHarbor is software. Buy parts from Adafruit or Amazon using the ESP32 freeze kit BOM and accessories pages, then flash a pre-filled sketch from Devices.",
-  },
-  {
-    question: "Where are example scenarios and comparisons?",
-    answer:
-      "Illustrative freeze, leak, and heat scenarios: probeharbor.dev/stories. Versus DIY MQTT, Govee, Tempest, Nest, and Ecobee: probeharbor.dev/compare. Home Assistant: probeharbor.dev/integrations.",
-  },
-];
-const alsoUseful = [
-  {
-    href: "/stories",
-    label: "Scenarios",
-    summary: "Illustrative freeze, leak, and heat walkthroughs, alert by alert.",
-  },
-  {
-    href: "/compare",
-    label: "Compare alternatives",
-    summary: "ProbeHarbor vs DIY MQTT, Govee, Tempest, Nest, Ecobee, and others.",
-  },
-  {
-    href: "/integrations",
-    label: "Integrations",
-    summary: "Home Assistant, Matter, Node-RED, Influx, MQTT, and webhooks.",
-  },
-  {
-    href: "/accessories",
-    label: "Accessories",
-    summary: "Claim puck, alert beacon, door/leak/power contacts, kit labels, mounts.",
-  },
-  {
-    href: "/gift",
-    label: "Gift / referral",
-    summary: "Share an invite link: they get extra Pro trial days, and so do you when they subscribe.",
-  },
-];
+const pageUrl = resolvePageUrl(siteUrl, localizePath("/guides", locale));
+const guidesFaqs = t.faqs;
+const alsoUsefulHrefs = ["/stories", "/compare", "/integrations", "/accessories", "/gift"];
+const alsoUseful = alsoUsefulHrefs.map((href) => ({ href, ...t.alsoUseful[href] }));
 const guideListItems =categories.flatMap((category) =>
   category.links.map((link) => ({
     name: link.label,
@@ -68,38 +34,37 @@ const guideListItems =categories.flatMap((category) =>
 );
 const schema = [
   getBreadcrumbSchema(siteUrl, [
-    { name: "Home", path: "/" },
-    { name: "Guides", path: "/guides" },
+    { name: t.breadcrumbHome, path: localizePath("/", locale) },
+    { name: t.breadcrumbPage, path: localizePath("/guides", locale) },
   ]),
   getFaqPageSchema(pageUrl, guidesFaqs),
   getItemListSchema({
     pageUrl,
-    name: "ProbeHarbor guides by job",
-    description:
-      "Hardware setup, freeze and flood alerts, household sharing, and API guides.",
+    name: t.itemListName,
+    description: t.itemListDescription,
     items: guideListItems,
   }),
 ].filter(Boolean) as Record<string, unknown>[];
 
 const stripPhotoIds = guidesHubPhotos.map((p) => p.id);
-const stripLabels = guidesHubPhotos.map((p) => p.label);
+const stripLabels = guidesHubPhotos.map((p) => t.photoLabels[p.id] ?? p.label);
 const stripHrefs = guidesHubPhotos.map((p) => p.href);
 ---
 <Layout
-  title="Guides"
-  description="ProbeHarbor guides by job: hardware setup, freeze and flood/leak alerts, household sharing, and the HTTP API, plus all articles in one library."
+  title={t.title}
+  description={t.description}
   schema={schema}
   speakableSelectors={[".page-header-title", ".page-header-lede", ".faq-answer"]}
 >
   <div class="page-shell page-stack">
     <PageHeader
-      kicker="Guides"
-      title="Set up probes, freeze/flood alerts, sharing, and the API"
-      lede="Start with the job you need done. Hardware, freeze and flood/leak alerts, household sharing, and ingest/API docs in one place, then browse all articles if you want every guide."
+      kicker={t.kicker}
+      title={t.headerTitle}
+      lede={t.lede}
     >
-      <a slot="actions" class="btn-primary" href="/register?next=/dashboard/devices">Start free</a>
-      <a slot="actions" class="btn-secondary" href="/about">All articles</a>
-      <a slot="actions" class="btn-ghost" href="/about/esp32-freeze-kit">ESP32 freeze kit</a>
+      <a slot="actions" class="btn-primary" href="/register?next=/dashboard/devices">{t.startFree}</a>
+      <a slot="actions" class="btn-secondary" href="/about">{t.allArticles}</a>
+      <a slot="actions" class="btn-ghost" href="/about/esp32-freeze-kit">{t.esp32Kit}</a>
     </PageHeader>
 
     <EditorialPhotoStrip
@@ -122,11 +87,11 @@ const stripHrefs = guidesHubPhotos.map((p) => p.href);
                 </a>
                 {link.alsoIn && link.alsoIn.length > 0 && (
                   <p class="guide-hub-also">
-                    Also relevant to:{" "}
+                    {t.alsoRelevant}{" "}
                     {link.alsoIn.map((id, i) => (
                       <span>
                         {i > 0 ? ", " : ""}
-                        <a class="text-link" href={`/guides#${id}`}>{guideHubCategoryTitle(id)}</a>
+                        <a class="text-link" href={`/guides#${id}`}>{getLocalizedGuideHubCategoryTitle(id, locale)}</a>
                       </span>
                     ))}
                   </p>
@@ -139,9 +104,9 @@ const stripHrefs = guidesHubPhotos.map((p) => p.href);
     </div>
 
     <section class="card">
-      <h2 class="card-title">Also useful</h2>
+      <h2 class="card-title">{t.alsoUsefulTitle}</h2>
       <p class="card-subtitle mb-4">
-        Stories, comparisons, and integrations sit beside the how-to library.
+        {t.alsoUsefulSubtitle}
       </p>
       <ul class="guide-hub-list guide-hub-list--grid">
         {alsoUseful.map((link) => (
@@ -157,7 +122,7 @@ const stripHrefs = guidesHubPhotos.map((p) => p.href);
 
     <FaqSection
       faqs={guidesFaqs}
-      lede="Quick answers before you dive into a category."
+      lede={t.faqLede}
     />
   </div>
 </Layout>

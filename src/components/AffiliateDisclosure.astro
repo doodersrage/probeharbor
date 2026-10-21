@@ -2,12 +2,14 @@
 /**
  * FTC affiliate disclosure for pages with Amazon Associates buy links.
  */
-import { AFFILIATE_DISCLOSURE } from "../lib/affiliateLinks";
+import { getLocale } from "../i18n";
+import { aboutMediaMessages } from "../i18n/messages/aboutMedia";
 
 interface Props {
   class?: string;
 }
 
 const { class: className = "text-sm text-[var(--color-text-muted)]" } = Astro.props;
+const t = aboutMediaMessages(getLocale(Astro));
 ---
-<p class={className}>{AFFILIATE_DISCLOSURE}</p>
+<p class={className}>{t.affiliateDisclosure}</p>

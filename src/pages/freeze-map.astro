@@ -12,16 +12,23 @@ import {
   FREEZE_MAP_SAMPLE_FLOOR,
   resolveFreezeMapDisplay,
 } from "../lib/freezeMapSeed";
-import { formatRelativeAge } from "../lib/relativeTime";
 import { getAuthFromCookies } from "../lib/auth";
 import {
   getBreadcrumbSchema,
   resolvePageUrl,
   resolveSiteUrl,
 } from "../lib/schemaMarkup";
-import { getMarketingFaqs, getMarketingFaqSchema } from "../lib/marketingFaqs";
+import { getLocale, localizePath } from "../i18n";
+import { freezeMapMessages, formatFreezeMapAge } from "../i18n/messages/freezeMap";
+import {
+  getLocalizedMarketingFaqs,
+  getLocalizedMarketingFaqSchema,
+} from "../i18n/content/marketingFaqs";
 
 const { user } = await getAuthFromCookies(Astro.cookies);
+const locale = getLocale(Astro);
+const t = freezeMapMessages(locale);
+const clientText = t.client;
 const showSparse = Astro.url.searchParams.get("sparse") === "1";
 const [liveSnapshots, liveSparklines, optInCount] = await Promise.all([
   listLatestFreezeMapSnapshots(),
@@ -38,7 +45,7 @@ const visible = showSparse
   : snapshots.filter((row) => row.sample_count >= FREEZE_MAP_SAMPLE_FLOOR);
 const sparseHidden = snapshots.length - visible.length;
 const capturedAt = isSeed ? null : (snapshots[0]?.captured_at ?? null);
-const captureAge = formatRelativeAge(capturedAt, "not yet");
+const captureAge = formatFreezeMapAge(capturedAt, locale);
 
 const coldest = [...visible]
   .filter((row) => row.min_temp_f != null)
@@ -61,24 +68,24 @@ const mapPins = visible
 const mapPinsJson = JSON.stringify(mapPins);
 
 const siteUrl = resolveSiteUrl(Astro.site);
-const pageUrl = resolvePageUrl(siteUrl, "/freeze-map");
+const pageUrl = resolvePageUrl(siteUrl, localizePath("/freeze-map", locale));
 // Plain attribution link outside the iframe: links inside an iframe don't count for the host page.
 const embedSnippet = `<iframe src="${siteUrl}/embed/freeze-map" title="ProbeHarbor freeze-risk map" width="100%" height="420" style="border:0;border-radius:12px" loading="lazy"></iframe>
 <p><a href="${siteUrl}/freeze-map">Freeze-risk map</a> by ProbeHarbor</p>`;
 const badgeSnippet = `[![ProbeHarbor freeze map](${siteUrl}/badge/freeze-map.svg)](${siteUrl}/freeze-map)`;
-const freezeMapFaqs = getMarketingFaqs("freeze-map");
+const freezeMapFaqs = getLocalizedMarketingFaqs("freeze-map", locale);
 const schema = [
   getBreadcrumbSchema(siteUrl, [
-    { name: "Home", path: "/" },
-    { name: "Freeze map", path: "/freeze-map" },
+    { name: t.breadcrumbHome, path: localizePath("/", locale) },
+    { name: t.breadcrumb, path: localizePath("/freeze-map", locale) },
   ]),
-  getMarketingFaqSchema(pageUrl, "freeze-map"),
+  getLocalizedMarketingFaqSchema(pageUrl, "freeze-map", locale),
 ].filter(Boolean) as Record<string, unknown>[];
 
 const optInHref = user
   ? "/dashboard/household#freeze-map"
   : "/register?next=/dashboard/household";
-const optInLabel = user ? "Opt in from Household" : "Start free & opt in your city";
+const optInLabel = user ? t.optInHousehold : t.optInStart;
 
 function sparkPath(values: number[]): string {
   if (values.length < 2) return "";
@@ -97,66 +104,61 @@ function sparkPath(values: number[]): string {
 }
 
 function trendDeltaLabel(values: number[]): string {
-  if (values.length < 2) return "No history yet";
+  if (values.length < 2) return t.trendNoHistory;
   const delta = values[values.length - 1]! - values[0]!;
-  if (Math.abs(delta) < 0.3) return "Steady";
-  return delta < 0 ? `Cooling ${Math.abs(delta).toFixed(1)}°F` : `Warming ${delta.toFixed(1)}°F`;
+  if (Math.abs(delta) < 0.3) return t.trendSteady;
+  return delta < 0 ? t.trendCooling(Math.abs(delta)) : t.trendWarming(delta);
 }
 ---
 <Layout
-  title="Freeze-risk map"
-  description="See city-level freeze risk from ProbeHarbor probe households, then track your own unheated space for free. Opt-in, anonymized community map."
+  title={t.title}
+  description={t.description}
   schema={schema}
   speakableSelectors={[".page-header-title", ".page-header-lede", ".faq-answer"]}
 >
   <div class="page-shell page-stack">
     <PageHeader
-      kicker="Community"
-      title="Freeze-risk map"
-      lede="See whether your metro’s indoor probes are running cold this week, then start tracking your own garage, crawlspace, or shop for free. City averages only; no addresses or device names."
+      kicker={t.kicker}
+      title={t.title}
+      lede={t.lede}
     >
       <a slot="actions" class="btn-primary" href={optInHref}>{optInLabel}</a>
       {!user && (
-        <a slot="actions" class="btn-secondary" href="/signin?next=/dashboard/household">Sign in</a>
+        <a slot="actions" class="btn-secondary" href="/signin?next=/dashboard/household">{t.signIn}</a>
       )}
-      <a slot="actions" class="btn-ghost" href="/embed/freeze-map">Embed</a>
-      <a slot="actions" class="btn-ghost" href="/freeze-season">Freeze season</a>
-      <a slot="actions" class="btn-ghost" href="/share-kit">Share kit</a>
+      <a slot="actions" class="btn-ghost" href="/embed/freeze-map">{t.embed}</a>
+      <a slot="actions" class="btn-ghost" href="/freeze-season">{t.freezeSeason}</a>
+      <a slot="actions" class="btn-ghost" href="/share-kit">{t.shareKit}</a>
     </PageHeader>
 
     {isSeed ? (
       <p class="alert-warning mt-0" role="status">
-        <strong>Showing sample data</strong>, live city readings appear once enough households opt in
-        ({FREEZE_MAP_SAMPLE_FLOOR}+ probes per city).
+        <Fragment set:html={t.seedIntroHtml(FREEZE_MAP_SAMPLE_FLOOR)} />
         {" "}
-        {optInCount === 0
-          ? "No households have opted in yet: be the first in your metro."
-          : optInCount === 1
-            ? "1 household has opted in so far."
-            : `${optInCount} households have opted in so far.`}
+        {optInCount === 0 ? t.optInNone : t.optInCount(optInCount)}
         {" "}
-        <a class="text-link" href={optInHref}>{user ? "Opt in" : "Create an account to contribute"}</a>.
+        <a class="text-link" href={optInHref}>{user ? t.linkOptIn : t.linkCreate}</a>.
       </p>
     ) : (
       <p class="alert-info mt-0" role="status">
-        Live opt-in aggregates · {optInCount} household{optInCount === 1 ? "" : "s"} contributing · cities need {FREEZE_MAP_SAMPLE_FLOOR}+ samples to list by default
+        {t.liveNotice(optInCount, FREEZE_MAP_SAMPLE_FLOOR)}
         {capturedAt ? (
           <>
-            {" · "}Last snapshot {captureAge.label}
+            {t.lastSnapshot(captureAge.label)}
             {captureAge.absolute ? ` (${captureAge.absolute})` : ""}
           </>
         ) : null}
-        . Opt out anytime under Household.
+        {t.liveOptOut}
       </p>
     )}
 
     {(isSeed || approaching.length > 0) && (
       <section class="card">
-        <h2 class="card-title">Momentum</h2>
+        <h2 class="card-title">{t.momentumTitle}</h2>
         <p class="card-subtitle mb-4">
           {approaching.length > 0
-            ? `Cities closest to going live (${FREEZE_MAP_SAMPLE_FLOOR} households each). Your opt-in moves the count.`
-            : `Once a city reaches ${FREEZE_MAP_SAMPLE_FLOOR} opted-in households with a live probe, sample preview for that metro is replaced by real readings.`}
+            ? t.momentumApproaching(FREEZE_MAP_SAMPLE_FLOOR)
+            : t.momentumWaiting(FREEZE_MAP_SAMPLE_FLOOR)}
         </p>
         {approaching.length > 0 ? (
           <ul class="space-y-2 mb-4 text-sm">
@@ -166,17 +168,15 @@ function trendDeltaLabel(values: number[]): string {
                 <li>
                   <strong>{row.city_label}</strong>
                   {": "}
-                  {row.sample_count}/{FREEZE_MAP_SAMPLE_FLOOR} households
-                  {needed > 0
-                    ? ` · ${needed} more to go live`
-                    : ""}
+                  {t.householdsProgress(row.sample_count, FREEZE_MAP_SAMPLE_FLOOR)}
+                  {needed > 0 ? t.moreToGo(needed) : ""}
                 </li>
               );
             })}
           </ul>
         ) : (
           <p class="text-sm text-[var(--color-text-muted)] mb-4">
-            No sparse live cities yet: the next opted-in metros will show up here as they approach the floor.
+            {t.noSparse}
           </p>
         )}
         <a class="btn-secondary" href={optInHref}>{optInLabel}</a>
@@ -185,16 +185,16 @@ function trendDeltaLabel(values: number[]): string {
 
     {coldest.length > 0 && (
       <section class="card">
-        <h2 class="card-title">Coldest cities</h2>
+        <h2 class="card-title">{t.coldestTitle}</h2>
         <ol class="space-y-2 mb-0 text-sm">
           {coldest.map((row, i) => (
             <li>
               <strong>#{i + 1} {row.city_label}</strong>
               {": "}
-              min {row.min_temp_f?.toFixed(1)}°F
-              {row.avg_temp_f != null ? ` · avg ${row.avg_temp_f.toFixed(1)}°F` : ""}
+              {row.min_temp_f != null ? t.coldestMin(row.min_temp_f) : ""}
+              {row.avg_temp_f != null ? t.coldestAvg(row.avg_temp_f) : ""}
               {" · "}
-              {row.sample_count} household{row.sample_count === 1 ? "" : "s"}
+              {t.households(row.sample_count)}
             </li>
           ))}
         </ol>
@@ -204,10 +204,10 @@ function trendDeltaLabel(values: number[]): string {
     <section class="card">
       <p class="mb-0 text-sm">
         {showSparse ? (
-          <a class="text-link" href="/freeze-map">Hide sparse cities (&lt;{FREEZE_MAP_SAMPLE_FLOOR} households)</a>
+          <a class="text-link" href="/freeze-map">{t.hideSparse(FREEZE_MAP_SAMPLE_FLOOR)}</a>
         ) : (
           <a class="text-link" href="/freeze-map?sparse=1">
-            Show sparse cities{sparseHidden > 0 ? ` (${sparseHidden} hidden)` : ""}
+            {t.showSparse}{sparseHidden > 0 ? t.hiddenCount(sparseHidden) : ""}
           </a>
         )}
       </p>
@@ -215,14 +215,13 @@ function trendDeltaLabel(values: number[]): string {
 
     {mapPins.length > 0 && (
       <section class="card">
-        <h2 class="card-title">Map</h2>
+        <h2 class="card-title">{t.mapTitle}</h2>
         <p class="card-subtitle mb-4">
-          Pin color reflects freeze-risk share (green = low, red = high).
-          Toggle OpenWeather temperature or precipitation under the layers control.
+          {t.mapSubtitle}
         </p>
         <div id="freeze-map-leaflet" class="weather-map-frame freeze-map-frame" style="height:22rem">
           <div class="loading-state freeze-map-loading" id="freeze-map-loading">
-            <p class="m-0">Loading map…</p>
+            <p class="m-0">{t.loadingMap}</p>
           </div>
         </div>
         <link
@@ -230,7 +229,7 @@ function trendDeltaLabel(values: number[]): string {
           href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
           crossorigin=""
         />
-        <script is:inline define:vars={{ mapPinsJson }}>
+        <script is:inline define:vars={{ mapPinsJson, clientText }}>
           (() => {
             const pins = JSON.parse(mapPinsJson);
             function init() {
@@ -250,16 +249,16 @@ function trendDeltaLabel(values: number[]): string {
               {
                 const owmAttr =
                   'Weather &copy; <a href="https://openweathermap.org/">OpenWeather</a>';
-                overlays["Temperature"] = L.tileLayer(
+                overlays[clientText.layerTemperature] = L.tileLayer(
                   "/api/weather/tiles/temp_new/{z}/{x}/{y}",
                   { opacity: 0.55, maxZoom: 18, attribution: owmAttr },
                 );
-                overlays["Precipitation"] = L.tileLayer(
+                overlays[clientText.layerPrecipitation] = L.tileLayer(
                   "/api/weather/tiles/precipitation_new/{z}/{x}/{y}",
                   { opacity: 0.55, maxZoom: 18, attribution: owmAttr },
                 );
-                overlays["Temperature"].addTo(map);
-                L.control.layers({ Map: base }, overlays, { collapsed: false }).addTo(map);
+                overlays[clientText.layerTemperature].addTo(map);
+                L.control.layers({ [clientText.layerMap]: base }, overlays, { collapsed: false }).addTo(map);
               }
 
               for (const pin of pins) {
@@ -273,7 +272,7 @@ function trendDeltaLabel(values: number[]): string {
                   fillOpacity: 0.55,
                 })
                   .bindPopup(
-                    `<strong>${pin.label}</strong><br/>Avg ${pin.avg?.toFixed(1) ?? "—"}°F<br/>Risk ${pin.riskPct}% · ${pin.samples} households`,
+                    `<strong>${pin.label}</strong><br/>${clientText.popupAvg} ${pin.avg?.toFixed(1) ?? "—"}°F<br/>${clientText.popupRisk} ${pin.riskPct}% · ${pin.samples} ${clientText.popupHouseholds}`,
                   )
                   .addTo(map);
                 L.circle([pin.lat, pin.lon], {
@@ -306,10 +305,8 @@ function trendDeltaLabel(values: number[]): string {
     <section class="card">
       {visible.length === 0 ? (
         <p class="mb-0 text-[var(--color-text-muted)]">
-          No city samples yet{!showSparse && sparseHidden > 0 ? " that meet the sample floor" : ""}.
-          {user
-            ? " Be the first to opt in from your household settings."
-            : " Create an account and opt in from Household settings to contribute."}
+          {t.noSamples}{!showSparse && sparseHidden > 0 ? t.noSamplesFloor : ""}.
+          {user ? t.noSamplesUser : t.noSamplesGuest}
         </p>
       ) : (
         <>
@@ -317,14 +314,14 @@ function trendDeltaLabel(values: number[]): string {
             <table class="data-table">
               <thead>
                 <tr>
-                  <th>City</th>
-                  <th scope="col">Trend <span class="font-normal text-[var(--color-text-muted)]">(avg °F)</span></th>
-                  <th>Households</th>
-                  <th>Avg °F</th>
-                  <th>Min °F</th>
+                  <th>{t.thCity}</th>
+                  <th scope="col">{t.thTrend} <span class="font-normal text-[var(--color-text-muted)]">{t.thTrendUnit}</span></th>
+                  <th>{t.thHouseholds}</th>
+                  <th>{t.thAvg}</th>
+                  <th>{t.thMin}</th>
                   <th>
-                    Freeze-risk share
-                    <span class="block font-normal text-xs text-[var(--color-text-muted)]">% of households ≤34°F</span>
+                    {t.thRisk}
+                    <span class="block font-normal text-xs text-[var(--color-text-muted)]">{t.thRiskNote}</span>
                   </th>
                 </tr>
               </thead>
@@ -344,7 +341,7 @@ function trendDeltaLabel(values: number[]): string {
                         <strong>{row.city_label}</strong>
                         {sparse && (
                           <span class="block text-xs text-[var(--color-text-muted)]">
-                            Sparse
+                            {t.sparse}
                           </span>
                         )}
                       </td>
@@ -364,20 +361,20 @@ function trendDeltaLabel(values: number[]): string {
                             <span class="text-xs text-[var(--color-text-muted)]">{delta}</span>
                           </span>
                         ) : (
-                          <span class="text-[var(--color-text-muted)]" title="Needs more snapshots">: </span>
+                          <span class="text-[var(--color-text-muted)]" title={t.needsSnapshots}>: </span>
                         )}
                       </td>
                       <td>{row.sample_count}</td>
                       <td>
-                        {row.avg_temp_f != null ? row.avg_temp_f.toFixed(1) : "—"}
+                        {row.avg_temp_f != null ? t.tableNumber(row.avg_temp_f) : "—"}
                       </td>
                       <td>
-                        {row.min_temp_f != null ? row.min_temp_f.toFixed(1) : "—"}
+                        {row.min_temp_f != null ? t.tableNumber(row.min_temp_f) : "—"}
                       </td>
                       <td>
                         {riskPct}%
                         <span class="text-[var(--color-text-muted)]">
-                          {" "}({row.freeze_risk_count} of {row.sample_count})
+                          {" "}{t.riskOf(row.freeze_risk_count, row.sample_count)}
                         </span>
                       </td>
                     </tr>
@@ -387,54 +384,48 @@ function trendDeltaLabel(values: number[]): string {
             </table>
           </div>
           <p class="text-xs text-[var(--color-text-muted)] mt-3 mb-0">
-            Households = opted-in homes in that city for this snapshot. Freeze-risk share = households whose coldest probe was ≤34°F at capture.
-            Trend is recent city average temperature across hourly snapshots.
+            {t.tableNote}
           </p>
         </>
       )}
     </section>
 
     <section class="card">
-      <h2 class="card-title">Find your city</h2>
+      <h2 class="card-title">{t.findTitle}</h2>
       <p class="card-subtitle mb-4">
-        Search OpenWeather geocoding to see if your metro is on the map.
-        {user
-          ? " Household owners opt in under Dashboard → Household."
-          : " Sign in to opt your household in."}
+        {t.findSubtitle}
+        {user ? t.findUser : t.findGuest}
       </p>
       <div class="form-field mb-0">
-        <label class="form-label" for="freeze-map-search">City search</label>
-        <input class="form-input" id="freeze-map-search" type="search" placeholder="Asheville, NC" autocomplete="off" />
+        <label class="form-label" for="freeze-map-search">{t.searchLabel}</label>
+        <input class="form-input" id="freeze-map-search" type="search" placeholder={t.searchPlaceholder} autocomplete="off" />
       </div>
       <ul id="freeze-map-search-results" class="space-y-2 text-sm mt-3 mb-0"></ul>
     </section>
 
     <section class="card" id="embed">
-      <h2 class="card-title">Embed &amp; badge</h2>
-      <p class="card-subtitle mb-4">
-        Drop the map on a blog, Home Assistant dashboard, or README. Compact embed:
-        <a class="text-link" href="/embed/freeze-map?compact=1">/embed/freeze-map?compact=1</a>.
-      </p>
+      <h2 class="card-title">{t.embedTitle}</h2>
+      <p class="card-subtitle mb-4" set:html={t.embedLedeHtml} />
       <div class="form-field">
-        <label class="form-label" for="freeze-embed-code">Embed code</label>
+        <label class="form-label" for="freeze-embed-code">{t.embedCode}</label>
         <textarea class="form-textarea font-mono text-xs" id="freeze-embed-code" rows="4" readonly>{embedSnippet}</textarea>
-        <button type="button" class="btn-secondary mt-2" data-copy-target="freeze-embed-code">Copy embed</button>
+        <button type="button" class="btn-secondary mt-2" data-copy-target="freeze-embed-code">{t.copyEmbed}</button>
       </div>
       <div class="form-field mb-0">
-        <label class="form-label" for="freeze-badge-code">Markdown badge</label>
+        <label class="form-label" for="freeze-badge-code">{t.badgeLabel}</label>
         <textarea class="form-textarea font-mono text-xs" id="freeze-badge-code" rows="2" readonly>{badgeSnippet}</textarea>
-        <button type="button" class="btn-secondary mt-2" data-copy-target="freeze-badge-code">Copy badge</button>
+        <button type="button" class="btn-secondary mt-2" data-copy-target="freeze-badge-code">{t.copyBadge}</button>
       </div>
     </section>
 
     <FaqSection
       faqs={freezeMapFaqs}
-      lede="How the public map works and what stays private."
+      lede={t.faqLede}
     />
   </div>
 </Layout>
 
-<script is:inline>
+<script is:inline define:vars={{ clientText }}>
   (() => {
     const input = document.getElementById("freeze-map-search");
     const results = document.getElementById("freeze-map-search-results");
@@ -463,7 +454,7 @@ function trendDeltaLabel(values: number[]): string {
             })
             .join("");
         } catch {
-          results.innerHTML = "<li>Search failed.</li>";
+          results.innerHTML = `<li>${clientText.searchFailed}</li>`;
         }
       }, 300);
     });
@@ -476,12 +467,12 @@ function trendDeltaLabel(values: number[]): string {
         try {
           await navigator.clipboard.writeText(el.value);
           const prev = btn.textContent;
-          btn.textContent = "Copied!";
+          btn.textContent = clientText.copied;
           setTimeout(() => {
             btn.textContent = prev;
           }, 1800);
         } catch {
-          btn.textContent = "Copy failed";
+          btn.textContent = clientText.copyFailed;
         }
       });
     });

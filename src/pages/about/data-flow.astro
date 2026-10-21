@@ -4,11 +4,16 @@ import AboutArticle from "../../components/AboutArticle.astro";
 import AboutCcFigure from "../../components/AboutCcFigure.astro";
 import { Image } from "astro:assets";
 import JSONProbe from "../../assets/json-temp.jpg";
-import { getAboutPage } from "../../lib/aboutPages";
-import { getAboutPhoto } from "../../lib/aboutPhotos";
+import { getLocale } from "../../i18n";
+import { getLocalizedAboutPage } from "../../i18n/content/aboutPages";
+import { getLocalizedAboutPhoto } from "../../i18n/content/aboutPhotos";
+import { dataFlowMessages } from "../../i18n/messages/about-pages/data-flow";
 
-const page = getAboutPage("data-flow")!;
-const hero = getAboutPhoto("ethernet-cable");
+const locale = getLocale(Astro);
+const t = dataFlowMessages(locale);
+const page = getLocalizedAboutPage("data-flow", locale)!;
+// This slug has no entry in the hero map, so keep the explicit photo.
+const hero = getLocalizedAboutPhoto("ethernet-cable", locale);
 ---
 <AboutArticle
   slug={page.slug}
@@ -20,66 +25,38 @@ const hero = getAboutPhoto("ethernet-cable");
   heroCredit={hero.credit}
   heroCreditHref={hero.sourceUrl}
 >
-  <p>
-    Every number on the home page travels through several layers. Understanding that pipeline helps
-    when debugging stale readings, missing probes, or history gaps.
-  </p>
+  <p set:html={t.introHtml} />
 
-  <h2>Step 1. Sensing in the space</h2>
-  <p>
-    Probes measure temperature and humidity. The Arduino sketch polls them every few seconds, discards
-    obvious outliers, and prepares an in-memory JSON structure. Details:
-    <a class="text-link" href="/about/arduino-sketches">Arduino sketches</a> and
-    <a class="text-link" href="/about/temperature-probes">temperature probes</a>.
-  </p>
+  <h2>{t.step1Title}</h2>
+  <p set:html={t.step1Html} />
 
   <AboutCcFigure photoId="arduino-dht11" />
 
-  <h2>Step 2. Publishing JSON</h2>
-  <p>
-    The board or a nearby relay exposes HTTPS JSON. A Python FastAPI service may cache responses in Redis
-    so the wider internet never hits the residential uplink directly: see
-    <a class="text-link" href="/about/python-feeds">Python scripts and feeds</a>.
-  </p>
+  <h2>{t.step2Title}</h2>
+  <p set:html={t.step2Html} />
 
   <figure class="about-figure">
     <Image
       src={JSONProbe}
-      alt="Browser JSON viewer showing temp probe keys 0, 1, and avg with Fahrenheit Celsius and humidity"
+      alt={t.jsonAlt}
       widths={[480, 768, 1024]}
       sizes="(max-width: 768px) 100vw, 640px"
       class="w-full h-auto rounded-lg"
     />
-    <figcaption>Live feed payload shape consumed by the website after leaving the local network.</figcaption>
+    <figcaption>{t.jsonCaption}</figcaption>
   </figure>
 
-  <h2>Step 3. Website fetch and display</h2>
-  <p>
-    When you load the home page, server code retrieves each configured feed URL, parses probe keys, and
-    renders stat cards. Signed-in users load feed and probe mappings from Supabase instead of defaults.
-    Weather data follows a parallel path via OpenWeather using your optional city override.
-  </p>
+  <h2>{t.step3Title}</h2>
+  <p set:html={t.step3Html} />
 
-  <h2>Step 4. Persisting history</h2>
-  <p>
-    If you are authenticated, successful probe reads insert rows into Supabase with feed name, probe label,
-    key, temperatures, humidity, and timestamp. Guests still see live data but do not append history.
-    Learn more in <a class="text-link" href="/about/historical-data">historical data usage</a>.
-  </p>
+  <h2>{t.step4Title}</h2>
+  <p set:html={t.step4Html} />
 
-  <h2>Step 5. Dashboard and export</h2>
-  <p>
-    The history table paginates those rows. CSV export streams the full set for admins and subscribers.
-    Stripe webhooks maintain membership in the export-capable group. Account tools are described in
-    <a class="text-link" href="/about/accounts-and-dashboard">accounts and dashboard</a>.
-  </p>
+  <h2>{t.step5Title}</h2>
+  <p set:html={t.step5Html} />
 
-  <h2>Failure points to check</h2>
+  <h2>{t.failuresTitle}</h2>
   <ol>
-    <li>Probe wiring or power: serial logs on the Arduino.</li>
-    <li>Home network or certificate: curl the feed URL from a laptop on LTE.</li>
-    <li>Relay cache stale: restart upstream pull in fast-api-relay.</li>
-    <li>Dashboard mapping: probe key typos hide readings even when JSON is valid.</li>
-    <li>Auth cookies: history saves only for signed-in sessions.</li>
+    {t.failures.map((item) => <li set:html={item} />)}
   </ol>
 </AboutArticle>

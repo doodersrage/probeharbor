@@ -1,7 +1,8 @@
 ---
 import CompareGuideArticle from "../../components/CompareGuideArticle.astro";
-import { getCompareGuide } from "../../lib/compareGuides";
+import { getLocale } from "../../i18n";
+import { getLocalizedCompareGuide } from "../../i18n/content/compareGuides";
 
-const guide = getCompareGuide("shelly")!;
+const guide = getLocalizedCompareGuide("shelly", getLocale(Astro))!;
 ---
 <CompareGuideArticle guide={guide} />

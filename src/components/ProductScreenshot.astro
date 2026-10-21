@@ -2,6 +2,8 @@
 import { Image } from "astro:assets";
 import type { ImageMetadata } from "astro";
 import type { ProductShotId } from "../lib/productScreenshots";
+import { getLocale } from "../i18n";
+import { aboutMediaMessages } from "../i18n/messages/aboutMedia";
 import insightsImg from "../assets/marketing/probeharbor-dashboard-insights.jpg";
 import historyImg from "../assets/marketing/probeharbor-dashboard-history.jpg";
 import historyChartImg from "../assets/marketing/probeharbor-dashboard-history-chart.jpg";
@@ -23,69 +25,50 @@ interface Props {
   peek?: boolean;
 }
 
-type ShotMeta = { image: ImageMetadata; alt: string; defaultCaption: string };
+type ShotMeta = { image: ImageMetadata };
 
 const shots: Record<ProductShotId, ShotMeta> = {
   insights: {
     image: insightsImg,
-    alt: "ProbeHarbor Insights with 30-day probe curves, humidity and dew point, freeze threshold line, week-over-year comparison, and nights-at-risk forecast map",
-    defaultCaption: "Insights: probe curves with your freeze threshold.",
   },
   history: {
     image: historyImg,
-    alt: "ProbeHarbor Reading History chart with probe traces and 34°F freeze line",
-    defaultCaption: "History: week of probe traces against the freeze line.",
   },
   "history-chart": {
     image: historyChartImg,
-    alt: "ProbeHarbor seven-day temperature trend with two probes, average, humidity percent, dew point overlay, alert markers, and 34°F freeze line",
-    defaultCaption: "Temperature trend with humidity, dew point, and freeze guide.",
   },
   devices: {
     image: devicesImg,
-    alt: "ProbeHarbor Devices page showing device health score, last seen, sensor count, and feed health",
-    defaultCaption: "Devices: health score, last seen, and feed status.",
   },
   "overview-cards": {
     image: overviewCardsImg,
-    alt: "ProbeHarbor Overview with a Looking good space status, quick actions, and a forecast-backed time-to-freeze card",
-    defaultCaption: "Overview: space status, quick actions, and time to freeze.",
   },
   "overview-status": {
     image: overviewStatusImg,
-    alt: "ProbeHarbor Overview Status strip with last reading, fresh sensors, feeds online, alerts, and coldest margin above the freeze alert",
-    defaultCaption: "Overview Status: last reading, sensors, feeds, alerts, and freeze margin.",
   },
   portfolio: {
     image: portfolioImg,
-    alt: "Illustrative ProbeHarbor Portfolio dashboard listing multiple example properties with freeze-risk banner, min temperatures, device counts, and property-manager roles",
-    defaultCaption: "Illustrative example: every property’s freeze risk in one table.",
   },
   "claims-pack": {
     image: claimsPackImg,
-    alt: "ProbeHarbor claims pack PDF showing freeze-exposure stats, freeze threshold, critical alerts, and devices in scope",
-    defaultCaption: "Claims pack: freeze-exposure stats and devices for an adjuster.",
   },
   "claims-verification": {
     image: claimsVerifyImg,
-    alt: "ProbeHarbor claims pack verification section with SHA-256 code, permanent verify link, and legal disclaimer",
-    defaultCaption: "Verification. SHA-256 code and permanent re-view link.",
   },
   "monitoring-certificate": {
     image: monitoringCertImg,
-    alt: "ProbeHarbor monitoring certificate showing alerts enabled, freeze threshold, retention, and device coverage",
-    defaultCaption: "Monitoring certificate: configuration proof for insurers and landlords.",
   },
 };
 
 const { shot, caption, class: className, compact = false, peek = false } = Astro.props;
 const item = shots[shot];
-const captionText = caption ?? item.defaultCaption;
+const text = aboutMediaMessages(getLocale(Astro)).shots[shot];
+const captionText = caption ?? text.caption;
 ---
 <figure class:list={["product-shot", compact && "product-shot--compact", peek && "product-shot--peek", className]}>
   <Image
     src={item.image}
-    alt={item.alt}
+    alt={text.alt}
     widths={compact || peek ? [400, 640, 800] : [480, 768, 1024, 1200]}
     sizes={compact || peek ? "(max-width: 767px) 100vw, 420px" : "(max-width: 767px) 100vw, 720px"}
     class="product-shot-img"

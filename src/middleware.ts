@@ -27,7 +27,7 @@ import {
 } from "./lib/homeAssistantIntegration";
 import { THERMALTRACE_STATIC_REDIRECTS } from "./lib/rebrand";
 import type { AstroCookies } from "astro";
-import { DEFAULT_LOCALE, LOCALE_META, splitLocalePath } from "./i18n/locales";
+import { DEFAULT_LOCALE, LOCALE_META, localizePath, splitLocalePath } from "./i18n/locales";
 import { isLocalizablePath, localizeHtmlLinks } from "./i18n/routes";
 
 const LEGACY_STATIC_REDIRECTS: Record<string, string> = {
@@ -215,6 +215,15 @@ export const onRequest = defineMiddleware(async (context, next) => {
           "worker-src 'self' blob:",
         ].join("; "),
       );
+    }
+    // Page redirects (e.g. a missing story → /stories) keep the visitor's language.
+    const location = localized ? headers.get("Location") : null;
+    if (location?.startsWith("/") && !location.startsWith("//")) {
+      const cut = location.search(/[?#]/);
+      const target = cut === -1 ? location : location.slice(0, cut);
+      if (isLocalizablePath(target)) {
+        headers.set("Location", `${localizePath(target, locale)}${cut === -1 ? "" : location.slice(cut)}`);
+      }
     }
     const isHtml = headers.get("Content-Type")?.includes("text/html") ?? false;
     if (isHtml) {

@@ -1,11 +1,15 @@
 ---
 
 import AboutArticle from "../../components/AboutArticle.astro";
-import { getAboutPage } from "../../lib/aboutPages";
-import { getAboutHeroPhoto } from "../../lib/aboutPhotos";
+import { getLocale } from "../../i18n";
+import { getLocalizedAboutPage } from "../../i18n/content/aboutPages";
+import { getLocalizedAboutHeroPhoto } from "../../i18n/content/aboutPhotos";
+import { zapierMakeRecipesMessages } from "../../i18n/messages/about-pages/zapier-make-recipes";
 
-const page = getAboutPage("zapier-make-recipes")!;
-const hero = getAboutHeroPhoto(page.slug);
+const locale = getLocale(Astro);
+const t = zapierMakeRecipesMessages(locale);
+const page = getLocalizedAboutPage("zapier-make-recipes", locale)!;
+const hero = getLocalizedAboutHeroPhoto(page.slug, locale);
 ---
 <AboutArticle
   slug={page.slug}
@@ -17,25 +21,16 @@ const hero = getAboutHeroPhoto(page.slug);
   heroCredit={hero?.credit}
   heroCreditHref={hero?.sourceUrl}
 >
-  <h2>Outbound: alert → Zapier</h2>
+  <h2>{t.outboundTitle}</h2>
   <ol>
-    <li>Create a Zap with trigger <strong>Webhooks by Zapier → Catch Hook</strong>.</li>
-    <li>Paste the Zap URL into ProbeHarbor Pro → Alerts → Outbound webhook.</li>
-    <li>Send a test alert; map <code>title</code>, <code>body</code>, and <code>kind</code> to Slack, SMS, or sheets.</li>
+    {t.outboundSteps.map((item) => <li set:html={item} />)}
   </ol>
 
-  <h2>IFTTT, n8n, Sheets & Notion</h2>
-  <p>
-    Same outbound webhook works with IFTTT Maker and self-hosted n8n — including a downloadable
-    <a class="text-link" href="/n8n/probeharbor-alert-to-sheets.json" download>n8n → Google Sheets</a>
-    workflow. Full recipes:
-    <a class="text-link" href="/integrations/automation">IFTTT, n8n & Sheets</a>.
-  </p>
+  <h2>{t.othersTitle}</h2>
+  <p set:html={t.othersHtml} />
 
-  <h2>Inbound: snooze from automation</h2>
-  <p>
-    Pro households can create an inbound webhook under Dashboard → Share. POST:
-  </p>
+  <h2>{t.inboundTitle}</h2>
+  <p set:html={t.inboundHtml} />
   <pre><code>{`POST /api/inbound/gtw_…
 Content-Type: application/json
 
@@ -44,12 +39,8 @@ Content-Type: application/json
 {"action":"clear_snooze"}
 {"action":"clear_vacation"}
 {"action":"status"}`}</code></pre>
-  <p>
-    Use Make/Zapier <strong>HTTP POST</strong> when you leave home or arm the alarm to pause non-critical alerts.
-  </p>
+  <p set:html={t.inboundUseHtml} />
 
-  <h2>Home Assistant</h2>
-  <p>
-    Install the official <a class="text-link" href="/integrations/home-assistant">HACS integration</a> for share-link sensors and snooze services, or use the downloadable <a class="text-link" href="/ha/probeharbor_webhook.yaml">HA blueprint</a> for alerts into Home Assistant.
-  </p>
+  <h2>{t.haTitle}</h2>
+  <p set:html={t.haHtml} />
 </AboutArticle>

@@ -25,13 +25,13 @@ import {
   OG_IMAGE_HEIGHT,
   OG_IMAGE_TYPE,
   OG_IMAGE_WIDTH,
-  resolveOgImageAlt,
   resolveOgImagePath,
 } from "../lib/ogMeta";
 import { getLocale, LOCALE_META, LOCALES, localizePath } from "../i18n";
 import { getAlternatePaths, isLocalizablePath } from "../i18n/routes";
 import { layoutMessages } from "../i18n/messages/layout";
 import { brandMessages } from "../i18n/messages/brand";
+import { resolveLocalizedOgImageAlt } from "../i18n/messages/ogAlt";
 
 interface Props {
   title?: string;
@@ -98,7 +98,7 @@ const languageLinks = isLocalizablePath(currentPath)
   : LOCALES.map((l) => ({ locale: l, href: localizePath("/", l), label: LOCALE_META[l].label }));
 const resolvedOgPath = ogImage ?? resolveOgImagePath(currentPath);
 const ogImageUrl = absoluteOgImageUrl(siteUrl, resolvedOgPath);
-const resolvedOgAlt = ogImageAlt ?? resolveOgImageAlt(currentPath);
+const resolvedOgAlt = ogImageAlt ?? resolveLocalizedOgImageAlt(currentPath, locale);
 
 const { user } = skipAuth
   ? { user: null }

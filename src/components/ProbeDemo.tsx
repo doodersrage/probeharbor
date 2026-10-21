@@ -17,8 +17,154 @@ import {
   type DemoSpaceKind,
 } from "../lib/probeDemo";
 
-function formatHistoryTime(date: Date): string {
-  return date.toLocaleTimeString([], {
+/**
+ * Visible strings for the probe demo. The page resolves these on the server and
+ * passes them as the `text` prop (plain data, no functions). `{name}` marks a
+ * placeholder. `presets`, `spaces` and `status` are optional overlays: when
+ * missing, the English labels and status copy from `lib/probeDemo` are used.
+ */
+export type ProbeDemoText = {
+  conditionsTitle: string;
+  conditionsSubtitleHtml: string;
+  presetsAria: string;
+  spaceLabel: string;
+  /** {f} °F, {c} °C */
+  outdoorLabel: string;
+  /** {pct} */
+  sunLabel: string;
+  /** {f} °F, {c} °C */
+  freezeLabel: string;
+  /** {spread} °F difference, {spreadC} °C difference */
+  draftCalloutHtml: string;
+  reset: string;
+  /** {time} */
+  updated: string;
+  statusEyebrow: string;
+  /** {coldest} {coldestC} {threshold} {thresholdC} {outdoor} {outdoorC} */
+  coldestLine: string;
+  riskNote: string;
+  readingsTitle: string;
+  readingsSubtitle: string;
+  draftBadge: string;
+  /** {f} {c} */
+  statValue: string;
+  /** {f} {c} {h} */
+  statDetail: string;
+  belowFreeze: string;
+  nearFreeze: string;
+  averageLabel: string;
+  comparisonTitle: string;
+  comparisonOpen: string;
+  comparisonClosed: string;
+  barsAria: string;
+  /** {threshold} {thresholdC} */
+  barThresholdTitle: string;
+  /** {f} {c} */
+  barValue: string;
+  /** {threshold} {thresholdC} */
+  thresholdNote: string;
+  jsonTitle: string;
+  jsonSubtitleHtml: string;
+  jsonTabsAria: string;
+  tabPush: string;
+  tabPull: string;
+  copy: string;
+  copied: string;
+  copyFailed: string;
+  convertTitle: string;
+  convertSubtitle: string;
+  kitCta: string;
+  createAccount: string;
+  allOptions: string;
+  signedIn: string;
+  addPush: string;
+  essentials: string;
+  presets?: Partial<Record<DemoPresetId, { label: string; hint: string }>>;
+  spaces?: Partial<
+    Record<DemoSpaceKind, { label: string; doorLabel: string; modelHint: string; probeLabels: string[] }>
+  >;
+  /** Space-status copy; placeholders {coldest} {coldestC} {threshold} {thresholdC} {n}. */
+  status?: {
+    freezeRiskTitle: string;
+    freezeRiskDetail: string;
+    coldSnapTitle: string;
+    nightsTitleOne: string;
+    nightsTitleOther: string;
+    coldSnapDetail: string;
+    nightsDetail: string;
+    nearTitle: string;
+    nearDetail: string;
+    okTitle: string;
+    okDetail: string;
+  };
+};
+
+export const PROBE_DEMO_TEXT_EN: ProbeDemoText = {
+  conditionsTitle: "Probe conditions",
+  conditionsSubtitleHtml:
+    "Pick a space, tweak weather, and watch zones respond the way Overview and Devices do with live ingest. Try <strong>Door draft</strong> or <strong>Cold snap</strong> first — cause the change, then read the bars.",
+  presetsAria: "Scenario presets",
+  spaceLabel: "Monitored space",
+  outdoorLabel: "Outdoor temperature ({f} °F)",
+  sunLabel: "Sun / heat load ({pct}%)",
+  freezeLabel: "Freeze threshold ({f} °F)",
+  draftCalloutHtml:
+    "Door/entry zone is about <strong>{spread}°F</strong> colder than the warmest other probe — same reason a single workbench sensor can miss freeze risk at the door.",
+  reset: "Reset demo",
+  updated: "Simulated refresh every 2 seconds · Last update {time}",
+  statusEyebrow: "Space status (simulated)",
+  coldestLine: "Coldest probe {coldest}°F · threshold {threshold}°F · outdoor {outdoor}°F",
+  riskNote:
+    "In the real app this would fire your freeze essentials (email by default) — same logic as Overview’s space status card.",
+  readingsTitle: "Live probe readings",
+  readingsSubtitle: "Each card mirrors a sensor label you’d rename on Devices after first POST.",
+  draftBadge: " draft",
+  statValue: "{f} °F",
+  statDetail: "{c} °C · {h}% humidity",
+  belowFreeze: " · below freeze",
+  nearFreeze: " · near freeze",
+  averageLabel: "Average · avg",
+  comparisonTitle: "Probe comparison",
+  comparisonOpen:
+    "Open-door mix should drop the door/entry bar vs the others — dashed line is your freeze threshold.",
+  comparisonClosed:
+    "Relative temperature by zone — dashed line is your freeze threshold. Toggle the door open to widen the gap.",
+  barsAria: "Bar chart comparing probe temperatures",
+  barThresholdTitle: "Freeze {threshold}°F",
+  barValue: "{f} °F",
+  thresholdNote: "Vertical marks show the {threshold}°F freeze threshold on each bar.",
+  jsonTitle: "JSON feed preview",
+  jsonSubtitleHtml:
+    "Push ingest is what ESP/Arduino POST to Devices. Pull nests the same named probes under <code>temp</code> for scheduled HTTPS JSON.",
+  jsonTabsAria: "JSON format",
+  tabPush: "Push ingest",
+  tabPull: "Pull feed",
+  copy: "Copy JSON",
+  copied: "Copied",
+  copyFailed: "Copy failed",
+  convertTitle: "Want this for your garage?",
+  convertSubtitle:
+    "Same JSON shapes and freeze essentials — about $25 in ESP32 + waterproof probe parts, then a free account, one POST, and a freeze threshold before the next cold night.",
+  kitCta: "ESP32 freeze kit (~$25)",
+  createAccount: "Create free account",
+  allOptions: "All device options",
+  signedIn: "Already signed in?",
+  addPush: "Add a push device",
+  essentials: "Freeze + email essentials",
+};
+
+function fill(template: string, values: Record<string, string | number>): string {
+  return template.replace(/\{(\w+)\}/g, (match, key: string) =>
+    key in values ? String(values[key]) : match,
+  );
+}
+
+function fToC(f: number): number {
+  return ((f - 32) * 5) / 9;
+}
+
+function formatHistoryTime(date: Date, locale?: string): string {
+  return date.toLocaleTimeString(locale ? [locale] : [], {
     hour: "numeric",
     minute: "2-digit",
     second: "2-digit",
@@ -40,7 +186,31 @@ function presetFromLocation(): DemoPresetId | null {
   return null;
 }
 
-export default function ProbeDemo() {
+type ProbeDemoProps = {
+  /** Localized strings from the server; English when missing (dashboard usage). */
+  text?: ProbeDemoText;
+  /** BCP 47 tag for number/time formatting; English formatting when missing. */
+  locale?: string;
+};
+
+export default function ProbeDemo({ text = PROBE_DEMO_TEXT_EN, locale }: ProbeDemoProps = {}) {
+  const t = text;
+  const numberFormat = useMemo(
+    () =>
+      locale
+        ? new Intl.NumberFormat(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 })
+        : null,
+    [locale],
+  );
+  const looseFormat = useMemo(
+    () => (locale ? new Intl.NumberFormat(locale, { maximumFractionDigits: 1 }) : null),
+    [locale],
+  );
+  /** One decimal, like toFixed(1) in English. */
+  const n1 = (value: number) => (numberFormat ? numberFormat.format(value) : value.toFixed(1));
+  /** Slider values as entered (integers, or .5 steps). */
+  const nRaw = (value: number) => (looseFormat ? looseFormat.format(value) : String(value));
+  const cRaw = (f: number) => n1(fToC(f));
   const [controls, setControls] = useState<DemoControls>(() => {
     const preset = presetFromLocation();
     if (!preset) return defaultDemoControls;
@@ -100,6 +270,37 @@ export default function ProbeDemo() {
   );
   const coldest = coldestProbeTempF(probes);
   const space = DEMO_SPACES[controls.space];
+  const spaceText = t.spaces?.[controls.space];
+  const probeLabel = (probe: DemoProbe, index: number) =>
+    t.spaces?.[controls.space]?.probeLabels[index] ?? probe.label;
+  const statusText = (() => {
+    const s = t.status;
+    if (!s) return { title: spaceStatus.title, detail: spaceStatus.detail };
+    // Mirrors the branches computeGarageRiskStatus can reach from buildDemoSpaceStatus.
+    const threshold = controls.freezeThresholdF;
+    const values = {
+      coldest: coldest != null ? n1(coldest) : "",
+      coldestC: coldest != null ? cRaw(coldest) : "",
+      threshold: nRaw(threshold),
+      thresholdC: cRaw(threshold),
+      n: 1,
+    };
+    const nights = controls.outdoorF <= threshold + 5 ? 1 : 0;
+    if (coldest != null && Number.isFinite(coldest) && coldest <= threshold) {
+      return { title: fill(s.freezeRiskTitle, values), detail: fill(s.freezeRiskDetail, values) };
+    }
+    if (controls.outdoorF <= 25) {
+      return {
+        title: nights > 0 ? fill(s.nightsTitleOne, values) : s.coldSnapTitle,
+        detail: s.coldSnapDetail,
+      };
+    }
+    if (nights > 0) return { title: fill(s.nightsTitleOne, values), detail: s.nightsDetail };
+    if (coldest != null && Number.isFinite(coldest) && coldest <= threshold + 5) {
+      return { title: s.nearTitle, detail: fill(s.nearDetail, values) };
+    }
+    return { title: s.okTitle, detail: s.okDetail };
+  })();
   const draftSpread = doorDraftSpreadF(probes);
   const maxBarTemp = Math.max(
     ...probes.map((probe) => probe.reading.f),
@@ -130,11 +331,11 @@ export default function ProbeDemo() {
   async function copyJson() {
     try {
       await navigator.clipboard.writeText(activeJson);
-      setCopyStatus("Copied");
+      setCopyStatus(t.copied);
       const id = window.setTimeout(() => setCopyStatus(null), 1500);
       copyTimersRef.current.push(id);
     } catch {
-      setCopyStatus("Copy failed");
+      setCopyStatus(t.copyFailed);
       const id = window.setTimeout(() => setCopyStatus(null), 2000);
       copyTimersRef.current.push(id);
     }
@@ -143,31 +344,27 @@ export default function ProbeDemo() {
   return (
     <div class="probe-demo">
       <section class="card">
-        <h2 class="card-title">Probe conditions</h2>
-        <p class="card-subtitle">
-          Pick a space, tweak weather, and watch zones respond the way Overview and Devices do with
-          live ingest. Try <strong>Door draft</strong> or <strong>Cold snap</strong> first — cause
-          the change, then read the bars.
-        </p>
+        <h2 class="card-title">{t.conditionsTitle}</h2>
+        <p class="card-subtitle" dangerouslySetInnerHTML={{ __html: t.conditionsSubtitleHtml }} />
 
         {/* biome-ignore lint/a11y/useSemanticElements: button toolbar; <fieldset> would add form semantics and default borders */}
-        <div class="probe-demo-presets" role="group" aria-label="Scenario presets">
+        <div class="probe-demo-presets" role="group" aria-label={t.presetsAria}>
           {(Object.keys(DEMO_PRESETS) as DemoPresetId[]).map((id) => (
             <button
               key={id}
               type="button"
               class="btn-ghost"
-              title={DEMO_PRESETS[id].hint}
+              title={t.presets?.[id]?.hint ?? DEMO_PRESETS[id].hint}
               onClick={() => applyPreset(id)}
             >
-              {DEMO_PRESETS[id].label}
+              {t.presets?.[id]?.label ?? DEMO_PRESETS[id].label}
             </button>
           ))}
         </div>
 
         <div class="probe-demo-controls">
           <label class="probe-demo-control">
-            <span class="form-label">Monitored space</span>
+            <span class="form-label">{t.spaceLabel}</span>
             <select
               class="form-input"
               value={controls.space}
@@ -179,14 +376,16 @@ export default function ProbeDemo() {
               }
             >
               {(Object.keys(DEMO_SPACES) as DemoSpaceKind[]).map((id) => (
-                <option value={id}>{DEMO_SPACES[id].label}</option>
+                <option value={id}>{t.spaces?.[id]?.label ?? DEMO_SPACES[id].label}</option>
               ))}
             </select>
-            <span class="probe-demo-space-hint">{space.modelHint}</span>
+            <span class="probe-demo-space-hint">{spaceText?.modelHint ?? space.modelHint}</span>
           </label>
 
           <label class="probe-demo-control">
-            <span class="form-label">Outdoor temperature ({controls.outdoorF} °F)</span>
+            <span class="form-label">
+              {fill(t.outdoorLabel, { f: nRaw(controls.outdoorF), c: cRaw(controls.outdoorF) })}
+            </span>
             <input
               class="probe-demo-range"
               type="range"
@@ -204,7 +403,7 @@ export default function ProbeDemo() {
           </label>
 
           <label class="probe-demo-control">
-            <span class="form-label">Sun / heat load ({controls.sunIntensity}%)</span>
+            <span class="form-label">{fill(t.sunLabel, { pct: nRaw(controls.sunIntensity) })}</span>
             <input
               class="probe-demo-range"
               type="range"
@@ -223,7 +422,10 @@ export default function ProbeDemo() {
 
           <label class="probe-demo-control">
             <span class="form-label">
-              Freeze threshold ({controls.freezeThresholdF} °F)
+              {fill(t.freezeLabel, {
+                f: nRaw(controls.freezeThresholdF),
+                c: cRaw(controls.freezeThresholdF),
+              })}
             </span>
             <input
               class="probe-demo-range"
@@ -252,24 +454,29 @@ export default function ProbeDemo() {
                 )
               }
             />
-            <span>{space.doorLabel}</span>
+            <span>{spaceText?.doorLabel ?? space.doorLabel}</span>
           </label>
         </div>
 
         {controls.doorOpen && draftSpread != null && draftSpread >= 3 && (
-          <p class="probe-demo-draft-callout" role="status">
-            Door/entry zone is about <strong>{draftSpread.toFixed(1)}°F</strong> colder than the
-            warmest other probe — same reason a single workbench sensor can miss freeze risk at the
-            door.
-          </p>
+          <p
+            class="probe-demo-draft-callout"
+            role="status"
+            dangerouslySetInnerHTML={{
+              __html: fill(t.draftCalloutHtml, {
+                spread: n1(draftSpread),
+                spreadC: n1((draftSpread * 5) / 9),
+              }),
+            }}
+          />
         )}
 
         <div class="probe-demo-actions">
           <button class="btn-secondary" type="button" onClick={resetDemo}>
-            Reset demo
+            {t.reset}
           </button>
           <p class="probe-demo-updated m-0">
-            Simulated refresh every 2 seconds · Last update {formatHistoryTime(lastUpdated)}
+            {fill(t.updated, { time: formatHistoryTime(lastUpdated, locale) })}
           </p>
         </div>
       </section>
@@ -278,31 +485,30 @@ export default function ProbeDemo() {
         class={`card garage-risk-status garage-risk-status--${spaceStatus.level}`}
         aria-live="polite"
       >
-        <p class="garage-risk-eyebrow">Space status (simulated)</p>
-        <h2 class="card-title garage-risk-title">{spaceStatus.title}</h2>
-        <p class="card-subtitle mb-2">{spaceStatus.detail}</p>
+        <p class="garage-risk-eyebrow">{t.statusEyebrow}</p>
+        <h2 class="card-title garage-risk-title">{statusText.title}</h2>
+        <p class="card-subtitle mb-2">{statusText.detail}</p>
         {coldest != null && (
           <p class="text-sm text-[var(--color-text-muted)] mb-0">
-            Coldest probe {coldest.toFixed(1)}°F · threshold {controls.freezeThresholdF}°F · outdoor{" "}
-            {controls.outdoorF}°F
+            {fill(t.coldestLine, {
+              coldest: n1(coldest),
+              coldestC: cRaw(coldest),
+              threshold: nRaw(controls.freezeThresholdF),
+              thresholdC: cRaw(controls.freezeThresholdF),
+              outdoor: nRaw(controls.outdoorF),
+              outdoorC: cRaw(controls.outdoorF),
+            })}
           </p>
         )}
-        {spaceStatus.level === "risk" && (
-          <p class="alert-warning mt-3 mb-0">
-            In the real app this would fire your freeze essentials (email by default) — same logic as
-            Overview’s space status card.
-          </p>
-        )}
+        {spaceStatus.level === "risk" && <p class="alert-warning mt-3 mb-0">{t.riskNote}</p>}
       </section>
 
       <section class="card">
-        <h2 class="card-title">Live probe readings</h2>
-        <p class="card-subtitle">
-          Each card mirrors a sensor label you’d rename on Devices after first POST.
-        </p>
+        <h2 class="card-title">{t.readingsTitle}</h2>
+        <p class="card-subtitle">{t.readingsSubtitle}</p>
 
         <div class="stat-grid">
-          {probes.map((probe) => {
+          {probes.map((probe, index) => {
             const atRisk = probe.reading.f <= controls.freezeThresholdF;
             const near =
               !atRisk && probe.reading.f <= controls.freezeThresholdF + 5;
@@ -315,46 +521,48 @@ export default function ProbeDemo() {
                 key={probe.key}
               >
                 <span class="stat-label">
-                  {probe.label}
+                  {probeLabel(probe, index)}
                   <span class="probe-demo-key"> · {probe.ingestKey}</span>
                   {controls.doorOpen && isDoorZone ? (
-                    <span class="probe-demo-draft-badge"> draft</span>
+                    <span class="probe-demo-draft-badge">{t.draftBadge}</span>
                   ) : null}
                 </span>
-                <p class="stat-value m-0">{probe.reading.f.toFixed(1)} °F</p>
+                <p class="stat-value m-0">
+                  {fill(t.statValue, { f: n1(probe.reading.f), c: n1(probe.reading.c) })}
+                </p>
                 <p class="stat-detail m-0">
-                  {probe.reading.c.toFixed(1)} °C · {probe.reading.h.toFixed(1)}% humidity
-                  {atRisk ? " · below freeze" : near ? " · near freeze" : ""}
+                  {fill(t.statDetail, {
+                    f: n1(probe.reading.f),
+                    c: n1(probe.reading.c),
+                    h: n1(probe.reading.h),
+                  })}
+                  {atRisk ? t.belowFreeze : near ? t.nearFreeze : ""}
                 </p>
               </article>
             );
           })}
           <article class="stat-item">
-            <span class="stat-label">Average · avg</span>
-            <p class="stat-value m-0">{average.f.toFixed(1)} °F</p>
+            <span class="stat-label">{t.averageLabel}</span>
+            <p class="stat-value m-0">{fill(t.statValue, { f: n1(average.f), c: n1(average.c) })}</p>
             <p class="stat-detail m-0">
-              {average.c.toFixed(1)} °C · {average.h.toFixed(1)}% humidity
+              {fill(t.statDetail, { f: n1(average.f), c: n1(average.c), h: n1(average.h) })}
             </p>
           </article>
         </div>
       </section>
 
       <section class="card">
-        <h2 class="card-title">Probe comparison</h2>
-        <p class="card-subtitle">
-          {controls.doorOpen
-            ? "Open-door mix should drop the door/entry bar vs the others — dashed line is your freeze threshold."
-            : "Relative temperature by zone — dashed line is your freeze threshold. Toggle the door open to widen the gap."}
-        </p>
-        <div class="probe-demo-bars" role="img" aria-label="Bar chart comparing probe temperatures">
-          {probes.map((probe) => (
+        <h2 class="card-title">{t.comparisonTitle}</h2>
+        <p class="card-subtitle">{controls.doorOpen ? t.comparisonOpen : t.comparisonClosed}</p>
+        <div class="probe-demo-bars" role="img" aria-label={t.barsAria}>
+          {probes.map((probe, index) => (
             <div
               class={`probe-demo-bar-row${
                 controls.doorOpen && probe.key === "1" ? " probe-demo-bar-row--draft" : ""
               }`}
               key={probe.key}
             >
-              <span class="probe-demo-bar-label">{probe.label}</span>
+              <span class="probe-demo-bar-label">{probeLabel(probe, index)}</span>
               <div class="probe-demo-bar-track">
                 <div
                   class={`probe-demo-bar-fill${
@@ -369,25 +577,30 @@ export default function ProbeDemo() {
                 <span
                   class="probe-demo-bar-threshold"
                   style={{ left: `${freezeBarPct}%` }}
-                  title={`Freeze ${controls.freezeThresholdF}°F`}
+                  title={fill(t.barThresholdTitle, {
+                    threshold: nRaw(controls.freezeThresholdF),
+                    thresholdC: cRaw(controls.freezeThresholdF),
+                  })}
                 />
               </div>
-              <span class="probe-demo-bar-value">{probe.reading.f.toFixed(1)} °F</span>
+              <span class="probe-demo-bar-value">
+                {fill(t.barValue, { f: n1(probe.reading.f), c: n1(probe.reading.c) })}
+              </span>
             </div>
           ))}
         </div>
         <p class="mt-3 mb-0 text-sm text-[var(--color-text-muted)]">
-          Vertical marks show the {controls.freezeThresholdF}°F freeze threshold on each bar.
+          {fill(t.thresholdNote, {
+            threshold: nRaw(controls.freezeThresholdF),
+            thresholdC: cRaw(controls.freezeThresholdF),
+          })}
         </p>
       </section>
 
       <section class="card">
-        <h2 class="card-title">JSON feed preview</h2>
-        <p class="card-subtitle mb-3">
-          Push ingest is what ESP/Arduino POST to Devices. Pull nests the same named probes under
-          <code>temp</code> for scheduled HTTPS JSON.
-        </p>
-        <div class="probe-demo-json-tabs" role="tablist" aria-label="JSON format">
+        <h2 class="card-title">{t.jsonTitle}</h2>
+        <p class="card-subtitle mb-3" dangerouslySetInnerHTML={{ __html: t.jsonSubtitleHtml }} />
+        <div class="probe-demo-json-tabs" role="tablist" aria-label={t.jsonTabsAria}>
           <button
             type="button"
             role="tab"
@@ -395,7 +608,7 @@ export default function ProbeDemo() {
             aria-selected={jsonTab === "push"}
             onClick={() => setJsonTab("push")}
           >
-            Push ingest
+            {t.tabPush}
           </button>
           <button
             type="button"
@@ -404,39 +617,36 @@ export default function ProbeDemo() {
             aria-selected={jsonTab === "pull"}
             onClick={() => setJsonTab("pull")}
           >
-            Pull feed
+            {t.tabPull}
           </button>
           <button type="button" class="btn-ghost" onClick={() => void copyJson()}>
-            {copyStatus ?? "Copy JSON"}
+            {copyStatus ?? t.copy}
           </button>
         </div>
         <pre class="probe-demo-json"><code>{activeJson}</code></pre>
       </section>
 
       <section class="card probe-demo-convert" id="try-real">
-        <h2 class="card-title">Want this for your garage?</h2>
-        <p class="card-subtitle mb-4">
-          Same JSON shapes and freeze essentials — about $25 in ESP32 + waterproof probe parts,
-          then a free account, one POST, and a freeze threshold before the next cold night.
-        </p>
+        <h2 class="card-title">{t.convertTitle}</h2>
+        <p class="card-subtitle mb-4">{t.convertSubtitle}</p>
         <div class="flex flex-wrap gap-3 mb-3">
           <a class="btn-primary" href="/about/esp32-freeze-kit">
-            ESP32 freeze kit (~$25)
+            {t.kitCta}
           </a>
           <a class="btn-secondary" href="/register?next=/dashboard/devices">
-            Create free account
+            {t.createAccount}
           </a>
           <a class="btn-ghost" href="/about/adding-devices">
-            All device options
+            {t.allOptions}
           </a>
         </div>
         <p class="mb-0 text-sm text-[var(--color-text-muted)]">
-          Already signed in?
+          {t.signedIn}
           {" "}
-          <a class="text-link" href="/dashboard/devices">Add a push device</a>
+          <a class="text-link" href="/dashboard/devices">{t.addPush}</a>
           {" · "}
           <a class="text-link" href="/dashboard/alerts?tab=settings#alert-section-essentials">
-            Freeze + email essentials
+            {t.essentials}
           </a>
         </p>
       </section>

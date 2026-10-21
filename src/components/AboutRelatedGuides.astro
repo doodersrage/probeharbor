@@ -1,6 +1,8 @@
 ---
-import { getTopicContext } from "../lib/aboutNavigation";
-import { getAboutPage } from "../lib/aboutPages";
+import { getLocale } from "../i18n";
+import { aboutArticleMessages } from "../i18n/messages/aboutArticle";
+import { getLocalizedTopicContext } from "../i18n/content/aboutNavigation";
+import { getLocalizedAboutPage } from "../i18n/content/aboutPages";
 
 interface Props {
   slug: string;
@@ -8,17 +10,19 @@ interface Props {
 }
 
 const { slug, limit = 4 } = Astro.props;
-const context = getTopicContext(slug);
+const locale = getLocale(Astro);
+const t = aboutArticleMessages(locale).related;
+const context = getLocalizedTopicContext(slug, locale);
 const parent = context?.core;
 const siblings = (context?.guides ?? [])
   .filter((guide) => guide.slug !== slug)
   .slice(0, limit);
 
 const crossLinks = [
-  getAboutPage("cold-snap-playbook"),
-  getAboutPage("alert-channel-cookbook"),
-  getAboutPage("ingest-and-webhooks"),
-  getAboutPage("probe-demo"),
+  getLocalizedAboutPage("cold-snap-playbook", locale),
+  getLocalizedAboutPage("alert-channel-cookbook", locale),
+  getLocalizedAboutPage("ingest-and-webhooks", locale),
+  getLocalizedAboutPage("probe-demo", locale),
 ]
   .filter((page): page is NonNullable<typeof page> => Boolean(page))
   .filter((page) => page.slug !== slug)
@@ -30,10 +34,10 @@ if (siblings.length === 0 && crossLinks.length === 0) {
 }
 ---
 <aside class="card about-related" aria-labelledby={`about-related-${slug}`}>
-  <h2 class="about-related-title" id={`about-related-${slug}`}>Related guides</h2>
+  <h2 class="about-related-title" id={`about-related-${slug}`}>{t.title}</h2>
   {parent && (
     <p class="about-related-lead">
-      More under{" "}
+      {t.moreUnder}{" "}
       <a class="text-link" href={`/about/${parent.slug}`}>{parent.title}</a>
     </p>
   )}

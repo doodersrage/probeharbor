@@ -7,6 +7,18 @@ const en = {
   copy: "Copy",
   copied: "Copied",
   copyFailed: "Copy failed",
+  renameNotice: {
+    label: "Brand update",
+    headline: (former: string, brand: string) => `${former} is now ${brand}.`,
+    body: (domain: string) => `Same account and sensors; old ${domain} links and ingest URLs still work.`,
+    dismiss: "Dismiss notice",
+  },
+  analytics: {
+    label: "Analytics notice",
+    textHtml:
+      'Marketing pages use Google Analytics and Ahrefs to understand traffic. Dashboard routes do not. Details in <a class="text-link" href="/privacy#analytics">Privacy</a>.',
+    dismiss: "Got it",
+  },
   nav: {
     pricing: "Pricing",
     compare: "Compare",
@@ -71,6 +83,18 @@ const es: LayoutMessages = {
   copy: "Copiar",
   copied: "Copiado",
   copyFailed: "No se pudo copiar",
+  renameNotice: {
+    label: "Cambio de marca",
+    headline: (former, brand) => `${former} ahora es ${brand}.`,
+    body: (domain) => `Misma cuenta y mismos sensores; los enlaces antiguos de ${domain} y las URL de ingesta siguen funcionando.`,
+    dismiss: "Cerrar aviso",
+  },
+  analytics: {
+    label: "Aviso de analítica",
+    textHtml:
+      'Las páginas de marketing usan Google Analytics y Ahrefs para entender el tráfico. El panel no. Detalles en <a class="text-link" href="/privacy#analytics">Privacidad</a> (en inglés).',
+    dismiss: "Entendido",
+  },
   nav: {
     pricing: "Precios",
     compare: "Comparar",
@@ -133,6 +157,18 @@ const fr: LayoutMessages = {
   copy: "Copier",
   copied: "Copié",
   copyFailed: "Échec de la copie",
+  renameNotice: {
+    label: "Changement de marque",
+    headline: (former, brand) => `${former} devient ${brand}.`,
+    body: (domain) => `Même compte, mêmes capteurs ; les anciens liens ${domain} et les URL d’ingestion fonctionnent toujours.`,
+    dismiss: "Fermer l’avis",
+  },
+  analytics: {
+    label: "Avis sur les statistiques",
+    textHtml:
+      'Les pages marketing utilisent Google Analytics et Ahrefs pour comprendre le trafic. Le tableau de bord, non. Détails dans <a class="text-link" href="/privacy#analytics">Confidentialité</a> (en anglais).',
+    dismiss: "Compris",
+  },
   nav: {
     pricing: "Tarifs",
     compare: "Comparer",
@@ -196,6 +232,18 @@ const de: LayoutMessages = {
   copy: "Kopieren",
   copied: "Kopiert",
   copyFailed: "Kopieren fehlgeschlagen",
+  renameNotice: {
+    label: "Markenänderung",
+    headline: (former, brand) => `${former} heißt jetzt ${brand}.`,
+    body: (domain) => `Gleiches Konto, gleiche Sensoren; alte ${domain}-Links und Ingest-URLs funktionieren weiterhin.`,
+    dismiss: "Hinweis schließen",
+  },
+  analytics: {
+    label: "Hinweis zur Analyse",
+    textHtml:
+      'Die Marketingseiten nutzen Google Analytics und Ahrefs, um den Traffic zu verstehen. Das Dashboard nicht. Details unter <a class="text-link" href="/privacy#analytics">Datenschutz</a> (auf Englisch).',
+    dismiss: "Verstanden",
+  },
   nav: {
     pricing: "Preise",
     compare: "Vergleich",
@@ -220,7 +268,7 @@ const de: LayoutMessages = {
       pricing: "Preise",
       compare: "Vergleich",
       demo: "Live-Demo",
-      claimsPack: "Schadensnachweis",
+      claimsPack: "Nachweispaket",
       propertyManagement: "Hausverwaltung",
       apps: "Apps",
       accessories: "Zubehör",
@@ -258,6 +306,18 @@ const ptBr: LayoutMessages = {
   copy: "Copiar",
   copied: "Copiado",
   copyFailed: "Falha ao copiar",
+  renameNotice: {
+    label: "Mudança de marca",
+    headline: (former, brand) => `${former} agora é ${brand}.`,
+    body: (domain) => `Mesma conta e mesmos sensores; os links antigos de ${domain} e as URLs de ingestão continuam funcionando.`,
+    dismiss: "Fechar aviso",
+  },
+  analytics: {
+    label: "Aviso de análise",
+    textHtml:
+      'As páginas de marketing usam Google Analytics e Ahrefs para entender o tráfego. O painel não. Detalhes em <a class="text-link" href="/privacy#analytics">Privacidade</a> (em inglês).',
+    dismiss: "Entendi",
+  },
   nav: {
     pricing: "Preços",
     compare: "Comparar",

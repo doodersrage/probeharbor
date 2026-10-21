@@ -10,7 +10,9 @@ import {
   resolveSiteUrl,
 } from "../lib/schemaMarkup";
 import type { CompareGuide } from "../lib/compareGuides";
-import { getAnswersRelatedTo } from "../lib/answers";
+import { getLocale } from "../i18n";
+import { compareGuideMessages } from "../i18n/messages/compareGuide";
+import { getLocalizedAnswersRelatedTo } from "../i18n/content/answers";
 import "../styles/about.css";
 
 interface Props {
@@ -18,7 +20,9 @@ interface Props {
 }
 
 const { guide } = Astro.props;
-const relatedAnswers = getAnswersRelatedTo(guide.path, [
+const locale = getLocale(Astro);
+const t = compareGuideMessages(locale);
+const relatedAnswers = getLocalizedAnswersRelatedTo(guide.path, locale, [
   "freeze-alarm-without-subscription",
   "freeze-alarm-temperature-setting",
   "wifi-freeze-alarm-power-outage",
@@ -27,8 +31,8 @@ const siteUrl = resolveSiteUrl(Astro.site);
 const pageUrl = resolvePageUrl(siteUrl, guide.path);
 const schema = [
   getBreadcrumbSchema(siteUrl, [
-    { name: "Home", path: "/" },
-    { name: "Compare", path: "/compare" },
+    { name: t.breadcrumbHome, path: "/" },
+    { name: t.breadcrumbCompare, path: "/compare" },
     { name: guide.title, path: guide.path },
   ]),
   getFaqPageSchema(pageUrl, guide.faqs),
@@ -42,24 +46,24 @@ const schema = [
 >
   <div class="page-shell page-stack">
     <PageHeader
-      kicker="Compare"
+      kicker={t.kicker}
       title={guide.headline}
       lede={guide.lede}
     >
-      <a slot="actions" class="btn-primary" href="/pricing">See plans &amp; pricing</a>
-      <a slot="actions" class="btn-secondary" href="/register?next=/dashboard/devices">Start free</a>
+      <a slot="actions" class="btn-primary" href="/pricing">{t.seePlansPricing}</a>
+      <a slot="actions" class="btn-secondary" href="/register?next=/dashboard/devices">{t.startFree}</a>
     </PageHeader>
 
     {guide.photoId && <AboutCcFigure photoId={guide.photoId} />}
 
     <section class="card">
-      <h2 class="card-title">ProbeHarbor vs {guide.competitor}</h2>
+      <h2 class="card-title">{t.versusTitle(guide.competitor)}</h2>
       <div class="overflow-x-auto">
         <table class="plan-comparison-table">
-          <caption class="sr-only">{guide.headline} capability comparison</caption>
+          <caption class="sr-only">{t.tableCaption(guide.headline)}</caption>
           <thead>
             <tr>
-              <th scope="col">Capability</th>
+              <th scope="col">{t.capability}</th>
               <th scope="col">ProbeHarbor</th>
               <th scope="col">{guide.competitor}</th>
             </tr>
@@ -78,10 +82,10 @@ const schema = [
     </section>
 
     <section class="card">
-      <h2 class="card-title">When to choose which</h2>
+      <h2 class="card-title">{t.whenTitle}</h2>
       <div class="grid gap-6 sm:grid-cols-2">
         <div>
-          <h3 class="text-base font-semibold mb-2">Choose ProbeHarbor when</h3>
+          <h3 class="text-base font-semibold mb-2">{t.chooseProbeHarbor}</h3>
           <ul class="text-sm space-y-2 mb-0">
             {guide.whenProbeHarbor.map((item) => (
               <li>{item}</li>
@@ -89,7 +93,7 @@ const schema = [
           </ul>
         </div>
         <div>
-          <h3 class="text-base font-semibold mb-2">Choose {guide.competitor} when</h3>
+          <h3 class="text-base font-semibold mb-2">{t.chooseOther(guide.competitor)}</h3>
           <ul class="text-sm space-y-2 mb-0">
             {guide.whenOther.map((item) => (
               <li>{item}</li>
@@ -101,14 +105,14 @@ const schema = [
 
     <FaqSection
       faqs={guide.faqs}
-      lede={`Straight answers for people comparing ProbeHarbor to ${guide.competitor}.`}
+      lede={t.faqLede(guide.competitor)}
     />
 
     {guide.sources && (
       <section class="card">
-        <h2 class="card-title">Sources</h2>
+        <h2 class="card-title">{t.sourcesTitle}</h2>
         <p class="card-subtitle mb-3">
-          {guide.competitor} details come from their own pages, checked {guide.sources.checkedOn}. Prices change; check before you buy.
+          {t.sourcesNote(guide.competitor, guide.sources.checkedOn)}
         </p>
         <ul class="text-sm space-y-1 mb-0">
           {guide.sources.links.map((link) => (
@@ -119,50 +123,50 @@ const schema = [
     )}
 
     <section class="card">
-      <h2 class="card-title">Related answers</h2>
+      <h2 class="card-title">{t.relatedTitle}</h2>
       <ul class="text-sm space-y-1 mb-0">
         {relatedAnswers.map((answer) => (
           <li><a class="text-link" href={answer.path}>{answer.question}</a></li>
         ))}
-        <li><a class="text-link" href="/pipe-freeze-forecast">Will my pipes freeze tonight? (forecast)</a></li>
-        <li><a class="text-link" href="/freeze-time-calculator">Pipe freeze time calculator</a></li>
+        <li><a class="text-link" href="/pipe-freeze-forecast">{t.forecastLink}</a></li>
+        <li><a class="text-link" href="/freeze-time-calculator">{t.calculatorLink}</a></li>
       </ul>
     </section>
 
     <section class="card">
-      <h2 class="card-title">Next steps</h2>
+      <h2 class="card-title">{t.nextTitle}</h2>
       <p class="card-subtitle mb-4">
-        Start free with live charts, email alerts, and a family live share link, or compare plans when you need SMS, CSV history, and expanded Pro share scopes.
+        {t.nextSubtitle}
       </p>
       <div class="flex flex-wrap gap-3 mb-4">
-        <a class="btn-primary" href="/pricing">See plans &amp; pricing</a>
-        <a class="btn-secondary" href="/register?next=/dashboard/devices">Start free</a>
+        <a class="btn-primary" href="/pricing">{t.seePlansPricing}</a>
+        <a class="btn-secondary" href="/register?next=/dashboard/devices">{t.startFree}</a>
         {guide.slug === "diy-mqtt" && (
-          <a class="btn-secondary" href="/integrations/home-assistant">Home Assistant (HACS)</a>
+          <a class="btn-secondary" href="/integrations/home-assistant">{t.haButton}</a>
         )}
         {guide.slug === "diy-mqtt" && (
-          <a class="btn-secondary" href="/about/mqtt-bridge">MQTT bridge recipe</a>
+          <a class="btn-secondary" href="/about/mqtt-bridge">{t.mqttBridge}</a>
         )}
         {(guide.slug === "nest" || guide.slug === "ecobee") && (
           <a class="btn-secondary" href="/dashboard/devices?view=setup&tab=thermostat#thermostat-integration">
-            Connect your {guide.competitor.replace(" Thermostat", "")} (Pro)
+            {t.connectThermostat(guide.competitor.replace(" Thermostat", ""))}
           </a>
         )}
         {guide.slug === "tempstick" && (
-          <a class="btn-secondary" href="/freeze-season">Freeze-season checklist</a>
+          <a class="btn-secondary" href="/freeze-season">{t.freezeSeason}</a>
         )}
         {guide.slug === "tempstick" && (
-          <a class="btn-secondary" href="/about/esp32-freeze-kit">ESP32 freeze kit BOM</a>
+          <a class="btn-secondary" href="/about/esp32-freeze-kit">{t.esp32Kit}</a>
         )}
       </div>
       <p class="mb-0 text-sm">
-        <a class="text-link" href="/compare">← Back to all comparisons</a>
+        <a class="text-link" href="/compare">{t.backToAll}</a>
         {guide.slug === "diy-mqtt" && (
           <>
             {" · "}
-            <a class="text-link" href="/integrations/home-assistant">HACS integration</a>
+            <a class="text-link" href="/integrations/home-assistant">{t.hacsIntegration}</a>
             {" · "}
-            <a class="text-link" href="/nodered/mqtt-to-probeharbor.json" download>Node-RED flow</a>
+            <a class="text-link" href="/nodered/mqtt-to-probeharbor.json" download>{t.nodeRedFlow}</a>
           </>
         )}
       </p>

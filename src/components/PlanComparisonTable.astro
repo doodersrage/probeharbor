@@ -1,9 +1,8 @@
 ---
-import {
-  PLAN_FEATURE_ROWS,
-  type ComparisonTier,
-  type PlanFeatureRow,
-} from "../lib/planComparison";
+import type { ComparisonTier, PlanFeatureRow } from "../lib/planComparison";
+import { getLocale } from "../i18n";
+import { getLocalizedPlanFeatureRows } from "../i18n/content/planComparison";
+import { pricingMessages } from "../i18n/messages/pricing";
 import {
   getMemberPriceDisplay,
   getPortfolioPriceDisplay,
@@ -16,17 +15,19 @@ interface Props {
 }
 
 const { highlightTier = null, showAnchors = true } = Astro.props;
+const locale = getLocale(Astro);
+const t = pricingMessages(locale).table;
 
 const memberSave = getMemberPriceDisplay().annualSavingsPct;
 const proSave = getProPriceDisplay().annualSavingsPct;
 const portfolioSave = getPortfolioPriceDisplay().annualSavingsPct;
 
 function annualDiscountLabel(pct: number | null): string {
-  if (pct != null && pct > 0) return `Save ${pct}%`;
-  return "Save ~20%";
+  if (pct != null && pct > 0) return t.save(pct);
+  return t.saveApprox;
 }
 
-const rows: PlanFeatureRow[] = PLAN_FEATURE_ROWS.map((row) => {
+const rows: PlanFeatureRow[] = getLocalizedPlanFeatureRows(locale).map((row) => {
   if (row.id !== "annual_billing") return row;
   return {
     ...row,
@@ -44,12 +45,12 @@ function cellValue(row: PlanFeatureRow, tier: ComparisonTier): string {
 }
 ---
 <div class="plan-comparison">
-  <p class="plan-comparison-scroll-hint">Swipe sideways to compare Free, Member, Pro, and Portfolio.</p>
+  <p class="plan-comparison-scroll-hint">{t.scrollHint}</p>
   <div class="plan-comparison-wrap">
   <table class="plan-comparison-table">
     <thead>
       <tr>
-        <th scope="col">Feature</th>
+        <th scope="col">{t.feature}</th>
         <th scope="col" class:list={[highlightTier === "free" && "plan-col-highlight"]}>Free</th>
         <th scope="col" class:list={[highlightTier === "member" && "plan-col-highlight"]}>Member</th>
         <th scope="col" class:list={[highlightTier === "pro" && "plan-col-highlight"]}>Pro</th>

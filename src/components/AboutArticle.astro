@@ -2,7 +2,10 @@
 import Layout from "../layouts/Layout.astro";
 import { Image } from "astro:assets";
 import type { ImageMetadata } from "astro";
-import { aboutPages, getAboutParent } from "../lib/aboutPages";
+import { getLocale } from "../i18n";
+import { getLocalizedAboutPages, getLocalizedAboutParent } from "../i18n/content/aboutPages";
+import { getLocalizedAboutFaqs } from "../i18n/content/aboutFaqs";
+import { aboutArticleMessages } from "../i18n/messages/aboutArticle";
 import {
   DEFAULT_ARTICLE_MODIFIED,
   DEFAULT_ARTICLE_PUBLISHED,
@@ -12,7 +15,7 @@ import {
   resolvePageUrl,
   resolveSiteUrl,
 } from "../lib/schemaMarkup";
-import { getAboutFaqs, aboutFaqsToBlocks } from "../lib/aboutFaqs";
+import { aboutFaqsToBlocks } from "../lib/aboutFaqs";
 import { NOINDEX_ABOUT_SLUGS } from "../lib/sitemapPages";
 import "../styles/about.css";
 import AboutTopicSidebar from "./AboutTopicSidebar.astro";
@@ -56,15 +59,19 @@ const {
   sectionParent: sectionParentProp,
 } = Astro.props;
 
+const locale = getLocale(Astro);
+const t = aboutArticleMessages(locale);
+
 const sectionParent =
   sectionParentProp ??
   (() => {
-    const parent = getAboutParent(slug);
+    const parent = getLocalizedAboutParent(slug, locale);
     return parent ? { slug: parent.slug, title: parent.title } : undefined;
   })();
 
 const siteUrl = resolveSiteUrl(Astro.site);
 const pageUrl = resolvePageUrl(siteUrl, `/about/${slug}`);
+const aboutPages = getLocalizedAboutPages(locale);
 const pageIndex = aboutPages.findIndex((page) => page.slug === slug);
 const previousPage = pageIndex > 0 ? aboutPages[pageIndex - 1] : null;
 const nextPage =
@@ -72,13 +79,13 @@ const nextPage =
     ? aboutPages[pageIndex + 1]
     : null;
 
-const faqs = getAboutFaqs(slug);
-const faqBlocks = aboutFaqsToBlocks(faqs);
+const faqs = getLocalizedAboutFaqs(slug, locale);
+const faqBlocks = aboutFaqsToBlocks(faqs, t.faqHeading);
 const faqSchema = getFaqPageSchema(pageUrl, faqs);
 
 const breadcrumbs = [
-  { name: "Home", path: "/" },
-  { name: "About", path: "/about" },
+  { name: t.breadcrumbHome, path: "/" },
+  { name: t.breadcrumbAbout, path: "/about" },
   ...(sectionParent
     ? [{ name: sectionParent.title, path: `/about/${sectionParent.slug}` }]
     : []),
@@ -108,7 +115,7 @@ const schema = [
   skipAuth
   ogType="article"
   ogImage="/og-about.jpg"
-  ogSection={sectionParent?.title ?? "Guides"}
+  ogSection={sectionParent?.title ?? t.ogSectionFallback}
   speakableSelectors={[".card-title", ".card-subtitle", ".about-prose p"]}
 >
   <div class="page-shell page-stack">
@@ -117,10 +124,10 @@ const schema = [
 
       <div class="about-article-main page-stack">
         <section class="card animate-slide-in-left">
-          <nav aria-label="Breadcrumb">
+          <nav aria-label={t.breadcrumbLabel}>
             <ol class="about-breadcrumbs">
-              <li><a href="/">Home</a> /</li>
-              <li><a href="/about">About</a> /</li>
+              <li><a href="/">{t.breadcrumbHome}</a> /</li>
+              <li><a href="/about">{t.breadcrumbAbout}</a> /</li>
               {sectionParent && (
                 <li>
                   <a href={`/about/${sectionParent.slug}`}>{sectionParent.title}</a> /
@@ -167,7 +174,7 @@ const schema = [
         <AboutProductCta slug={slug} />
         <AboutRelatedGuides slug={slug} />
 
-        <nav class="card about-pagination" aria-label="About section pages">
+        <nav class="card about-pagination" aria-label={t.paginationLabel}>
           {previousPage ? (
             <a class="btn-secondary" href={`/about/${previousPage.slug}`}>
               <span class="btn-icon btn-icon--start" aria-hidden="true">←</span>
@@ -176,7 +183,7 @@ const schema = [
           ) : (
             <a class="btn-secondary" href="/about">
               <span class="btn-icon btn-icon--start" aria-hidden="true">←</span>
-              About overview
+              {t.aboutOverview}
             </a>
           )}
           {nextPage ? (
@@ -186,7 +193,7 @@ const schema = [
             </a>
           ) : (
             <a class="btn-secondary" href="/about">
-              Back to overview
+              {t.backToOverview}
               <span class="btn-icon btn-icon--end" aria-hidden="true">→</span>
             </a>
           )}

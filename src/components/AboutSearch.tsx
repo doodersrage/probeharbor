@@ -1,11 +1,31 @@
 import { useEffect, useMemo, useState } from "preact/hooks";
 import type { AboutSearchEntry } from "../lib/aboutSearchIndex";
 
+/** UI strings, resolved on the server (see `aboutArticleMessages().search`). */
+export type AboutSearchText = {
+  label: string;
+  placeholder: string;
+  featured: string;
+  noMatchBefore: string;
+  noMatchAfter: string;
+};
+
+const DEFAULT_TEXT: AboutSearchText = {
+  label: "Search guides",
+  placeholder: "Probe wiring, CSV export, ingest API, alerts…",
+  featured: "Popular starting points",
+  noMatchBefore: "No guides matched “",
+  noMatchAfter: "”.",
+};
+
 interface Props {
   pages: AboutSearchEntry[];
   featured?: AboutSearchEntry[];
   /** Prefill from `/about?q=` (WebSite SearchAction). */
   initialQuery?: string;
+  text?: AboutSearchText;
+  /** Localized `/about` path for result links (e.g. `/es/about`). */
+  aboutBase?: string;
 }
 
 function matchPage(page: AboutSearchEntry, query: string): boolean {
@@ -30,6 +50,8 @@ export default function AboutSearch({
   pages,
   featured = [],
   initialQuery = "",
+  text = DEFAULT_TEXT,
+  aboutBase = "/about",
 }: Props) {
   const [query, setQuery] = useState(initialQuery);
 
@@ -49,25 +71,25 @@ export default function AboutSearch({
   return (
     <div class="about-search">
       <label class="form-label" for="about-search-input">
-        Search guides
+        {text.label}
       </label>
       <input
         id="about-search-input"
         class="form-input"
         type="search"
         name="q"
-        placeholder="Probe wiring, CSV export, ingest API, alerts…"
+        placeholder={text.placeholder}
         value={query}
         onInput={(e) => setQuery((e.target as HTMLInputElement).value)}
       />
 
       {showFeatured && (
         <div class="about-search-featured">
-          <p class="about-search-featured-label">Popular starting points</p>
+          <p class="about-search-featured-label">{text.featured}</p>
           <ul class="about-search-results">
             {featured.map((page) => (
               <li key={page.slug}>
-                <a class="about-search-result" href={`/about/${page.slug}`}>
+                <a class="about-search-result" href={`${aboutBase}/${page.slug}`}>
                   <strong>{page.title}</strong>
                   <span>{page.summary}</span>
                 </a>
@@ -80,11 +102,11 @@ export default function AboutSearch({
       {query.trim() && (
         <ul class="about-search-results">
           {results.length === 0 ? (
-            <li class="about-search-empty">No guides matched “{query}”.</li>
+            <li class="about-search-empty">{text.noMatchBefore}{query}{text.noMatchAfter}</li>
           ) : (
             results.map((page) => (
               <li key={page.slug}>
-                <a class="about-search-result" href={`/about/${page.slug}`}>
+                <a class="about-search-result" href={`${aboutBase}/${page.slug}`}>
                   <strong>{page.title}</strong>
                   <span>{page.summary}</span>
                 </a>

@@ -7,23 +7,23 @@ interface Props {
   show: boolean;
 }
 
+import { getLocale } from "../i18n";
+import { layoutMessages } from "../i18n/messages/layout";
+
 const { show } = Astro.props;
+const t = layoutMessages(getLocale(Astro)).analytics;
 ---
 {show && (
   <div
     class="analytics-disclosure"
     id="analytics-disclosure"
     role="region"
-    aria-label="Analytics notice"
+    aria-label={t.label}
     hidden
   >
-    <p class="analytics-disclosure-text">
-      Marketing pages use Google Analytics and Ahrefs to understand traffic.
-      Dashboard routes do not. Details in
-      <a class="text-link" href="/privacy#analytics">Privacy</a>.
-    </p>
+    <p class="analytics-disclosure-text" set:html={t.textHtml} />
     <button type="button" class="btn-ghost analytics-disclosure-dismiss" id="analytics-disclosure-dismiss">
-      Got it
+      {t.dismiss}
     </button>
   </div>
 )}

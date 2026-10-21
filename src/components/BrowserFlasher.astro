@@ -4,6 +4,9 @@
  * Wi-Fi and the device key to the board over the same USB cable. Needs Web
  * Serial, so Chrome or Edge on a desktop; other browsers see the fallback note.
  */
+import { getLocale } from "../i18n";
+import { browserFlasherMessages } from "../i18n/messages/flashBrowser";
+
 interface Props {
   /** Pre-fill the device key (dashboard, right after a device is created). */
   deviceKey?: string;
@@ -12,75 +15,58 @@ interface Props {
 }
 
 const { deviceKey = "", headingLevel: Heading = "h2" } = Astro.props;
+const t = browserFlasherMessages(getLocale(Astro));
 ---
-<div class="browser-flasher" data-browser-flasher>
+<div class="browser-flasher" data-browser-flasher data-flasher-text={JSON.stringify(t.status)}>
   <section class="card">
-    <Heading class="card-title">1. Install the firmware</Heading>
-    <p class="mb-4">
-      Plug the ESP32 into this computer with a USB data cable, click Install, and pick the board's serial port.
-      It takes about a minute. Works with ESP32, ESP32-S3, and ESP32-C3 boards.
-    </p>
+    <Heading class="card-title">{t.installTitle}</Heading>
+    <p class="mb-4">{t.installCopy}</p>
     <esp-web-install-button manifest="/firmware/manifest.json">
-      <button slot="activate" class="btn-primary" type="button">Install firmware</button>
-      <p slot="unsupported" class="alert-warning mb-0">
-        This browser cannot talk to USB serial devices. Open this page in Chrome or Edge on a desktop or laptop, or use the
-        <a class="text-link" href="/about/esp32-web-flash">other flashing options</a>.
-      </p>
-      <p slot="not-allowed" class="alert-warning mb-0">The installer needs a secure (https) page.</p>
+      <button slot="activate" class="btn-primary" type="button">{t.installButton}</button>
+      <p slot="unsupported" class="alert-warning mb-0" set:html={t.unsupportedHtml} />
+      <p slot="not-allowed" class="alert-warning mb-0">{t.notAllowed}</p>
     </esp-web-install-button>
-    <p class="mt-4 mb-0 text-sm text-[var(--color-text-muted)]">
-      No port in the list? Try another cable (many are charge-only) and install the CP210x or CH340 driver for your board.
-    </p>
+    <p class="mt-4 mb-0 text-sm text-[var(--color-text-muted)]">{t.noPort}</p>
   </section>
 
   <section class="card">
-    <Heading class="card-title">2. Connect it to Wi‑Fi and your account</Heading>
-    <p class="mb-4">
-      Close the installer, then send these settings over the same cable. They go straight to the board and are not
-      stored on this page.
-    </p>
+    <Heading class="card-title">{t.connectTitle}</Heading>
+    <p class="mb-4">{t.connectCopy}</p>
     <form class="grid gap-4 sm:grid-cols-2 mb-4" data-flasher-form>
       <label class="block">
-        <span class="form-label">Wi‑Fi network name</span>
+        <span class="form-label">{t.ssidLabel}</span>
         <input class="form-input" name="ssid" required autocomplete="off" maxlength="32" />
-        <span class="text-sm text-[var(--color-text-muted)]">2.4 GHz network; ESP32 boards cannot join 5 GHz.</span>
+        <span class="text-sm text-[var(--color-text-muted)]">{t.ssidHint}</span>
       </label>
       <label class="block">
-        <span class="form-label">Wi‑Fi password</span>
+        <span class="form-label">{t.passwordLabel}</span>
         <input class="form-input" name="password" type="password" autocomplete="off" maxlength="64" />
       </label>
       <label class="block sm:col-span-2">
-        <span class="form-label">Device key</span>
+        <span class="form-label">{t.keyLabel}</span>
         <input class="form-input" name="key" required autocomplete="off" maxlength="300" value={deviceKey} />
         <span class="text-sm text-[var(--color-text-muted)]">
           {deviceKey
-            ? "Filled in for the device you just created."
-            : "From Dashboard → Devices after you add a push device. Pasting the whole ingest URL works too."}
+            ? t.keyHintPrefilled
+            : t.keyHint}
         </span>
       </label>
       <fieldset class="sm:col-span-2 m-0 p-0 border-0">
-        <legend class="form-label">Also wired to this board (optional)</legend>
+        <legend class="form-label">{t.extrasLegend}</legend>
         <div class="flex flex-wrap gap-x-5 gap-y-2">
-          <label class="checkbox-row mb-0"><input type="checkbox" name="extras" value="leak" /> Leak / water contact</label>
-          <label class="checkbox-row mb-0"><input type="checkbox" name="extras" value="door" /> Door reed switch</label>
-          <label class="checkbox-row mb-0"><input type="checkbox" name="extras" value="battery" /> Battery (1:1 divider)</label>
+          <label class="checkbox-row mb-0"><input type="checkbox" name="extras" value="leak" /> {t.extraLeak}</label>
+          <label class="checkbox-row mb-0"><input type="checkbox" name="extras" value="door" /> {t.extraDoor}</label>
+          <label class="checkbox-row mb-0"><input type="checkbox" name="extras" value="battery" /> {t.extraBattery}</label>
         </div>
-        <span class="text-sm text-[var(--color-text-muted)]">
-          Tick only what you've connected: an unwired pin would read as "dry" or "open". Pins are in the table above.
-          DS18B20, DHT22 and I²C sensors (BME280, SHT31, AHT20) are found automatically.
-        </span>
+        <span class="text-sm text-[var(--color-text-muted)]">{t.extrasHint}</span>
       </fieldset>
       <div class="sm:col-span-2">
-        <button class="btn-primary" type="submit" data-flasher-send>Send settings over USB</button>
+        <button class="btn-primary" type="submit" data-flasher-send>{t.sendButton}</button>
       </div>
     </form>
     <p class="mb-2 font-semibold" role="status" aria-live="polite" data-flasher-status></p>
     <pre class="ingest-key-curl text-xs overflow-x-auto mb-4" data-flasher-log hidden></pre>
-    <p class="mb-0 text-sm text-[var(--color-text-muted)]">
-      No USB serial in your browser, or the board is already mounted somewhere else? Power it up and join the
-      <strong>ProbeHarbor-Setup</strong> Wi‑Fi network from a phone to enter the same settings. Holding the BOOT button
-      for five seconds erases them.
-    </p>
+    <p class="mb-0 text-sm text-[var(--color-text-muted)]" set:html={t.phoneSetupHtml} />
   </section>
 </div>
 
@@ -112,11 +98,12 @@ const { deviceKey = "", headingLevel: Heading = "h2" } = Astro.props;
     const log = root.querySelector<HTMLElement>("[data-flasher-log]");
     const button = root.querySelector<HTMLButtonElement>("[data-flasher-send]");
     if (!form || !status || !log || !button) continue;
+    const text = JSON.parse(root.dataset.flasherText ?? "{}") as Record<string, string>;
 
     const serial = (navigator as Navigator & { serial?: SerialLike }).serial;
     if (!serial) {
       button.disabled = true;
-      status.textContent = "This browser has no USB serial support. Use Chrome or Edge on a computer, or the phone setup below.";
+      status.textContent = text.noSerial ?? "";
       continue;
     }
 
@@ -132,7 +119,7 @@ const { deviceKey = "", headingLevel: Heading = "h2" } = Astro.props;
       button.disabled = true;
       log.hidden = false;
       log.textContent = "";
-      status.textContent = "Pick the board's serial port…";
+      status.textContent = text.pickPort ?? "";
 
       let port: SerialPortLike | null = null;
       let reader: ReadableStreamDefaultReader<Uint8Array> | null = null;
@@ -141,7 +128,7 @@ const { deviceKey = "", headingLevel: Heading = "h2" } = Astro.props;
         await port.open({ baudRate: 115200 });
         // Opening the port resets many dev boards; release the lines and let it boot.
         await port.setSignals?.({ dataTerminalReady: false, requestToSend: false });
-        status.textContent = "Waiting for the board to start…";
+        status.textContent = text.waiting ?? "";
         await sleep(2500);
 
         const writer = port.writable!.getWriter();
@@ -167,7 +154,7 @@ const { deviceKey = "", headingLevel: Heading = "h2" } = Astro.props;
           if (!acknowledged && Date.now() - lastSent > RESEND_EVERY_MS) {
             await send();
             lastSent = Date.now();
-            status.textContent = "Sending settings…";
+            status.textContent = text.sending ?? "";
           }
           pendingRead ??= reader.read();
           const chunk = await Promise.race([pendingRead, sleep(1000).then(() => null)]);
@@ -183,11 +170,11 @@ const { deviceKey = "", headingLevel: Heading = "h2" } = Astro.props;
             log.textContent += `${line.slice(3)}\n`;
             if (line === "TT key saved") {
               acknowledged = true;
-              status.textContent = "Settings received. Joining Wi‑Fi…";
+              status.textContent = text.received ?? "";
               // Funnel: device created → settings on the board → first reading.
               trackProductEvent("flasher_settings_sent");
             } else if (line === "TT wifi ok") {
-              status.textContent = "On Wi‑Fi. Sending the first reading…";
+              status.textContent = text.wifiOk ?? "";
             } else if (line.startsWith("TT sensor: ")) {
               // e.g. "TT sensor: DHT22 on GPIO 4" (firmware 1.1+; DS18B20s are the default and not announced)
               sensorName = line.slice("TT sensor: ".length).split(" on ")[0] ?? null;
@@ -210,19 +197,19 @@ const { deviceKey = "", headingLevel: Heading = "h2" } = Astro.props;
         if (outcome === "ok") {
           trackProductEvent("flasher_first_reading", sensorName ? { sensor: sensorName } : undefined);
           status.textContent = sensorName
-            ? `First reading delivered from your ${sensorName}, with humidity. It's live: you can unplug it and mount it.`
-            : "First reading delivered. The probe is live: you can unplug it and mount it.";
+            ? (text.liveWithSensor ?? "").replace("{sensor}", sensorName)
+            : (text.live ?? "");
           root.dispatchEvent(new CustomEvent("probeharbor:probe-live", { bubbles: true }));
         } else if (outcome === "timeout") {
           status.textContent = acknowledged
-            ? "The board has the settings but no reading arrived yet. Check the sensor wiring (data to GPIO 4, 4.7kΩ to 3.3V), then try again."
-            : "No answer from the board. Make sure the firmware install finished, then try again.";
+            ? (text.noReading ?? "")
+            : (text.noAnswer ?? "");
         }
       } catch (error) {
         status.textContent =
           error instanceof DOMException && error.name === "NotFoundError"
-            ? "No port selected."
-            : `Could not talk to the board: ${error instanceof Error ? error.message : String(error)}`;
+            ? (text.noPortSelected ?? "")
+            : (text.couldNotTalk ?? "").replace("{error}", error instanceof Error ? error.message : String(error));
       } finally {
         try {
           await reader?.cancel();

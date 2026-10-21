@@ -11,7 +11,13 @@ import HomeStatusChip from "../components/HomeStatusChip.astro";
 import FaqSection from "../components/FaqSection.astro";
 import ProductScreenshot from "../components/ProductScreenshot.astro";
 import { fetchAppStatusSummary } from "../lib/appStatus";
-import { getMarketingFaqs, getMarketingFaqSchema } from "../lib/marketingFaqs";
+import { getLocale, LOCALE_META, localizePath } from "../i18n";
+import { demoMessages } from "../i18n/messages/demo";
+import { demoIslandMessages } from "../i18n/messages/demoIslands";
+import {
+  getLocalizedMarketingFaqs,
+  getLocalizedMarketingFaqSchema,
+} from "../i18n/content/marketingFaqs";
 import {
   getBreadcrumbSchema,
   resolvePageUrl,
@@ -19,22 +25,25 @@ import {
 } from "../lib/schemaMarkup";
 import historyChart from "../assets/marketing/probeharbor-dashboard-history-chart.jpg";
 
+const locale = getLocale(Astro);
+const t = demoMessages(locale);
+const islands = demoIslandMessages(locale);
+const intl = LOCALE_META[locale].intl;
 const siteUrl = resolveSiteUrl(Astro.site);
-const pageUrl = resolvePageUrl(siteUrl, "/demo");
-const demoFaqs = getMarketingFaqs("demo");
+const pageUrl = resolvePageUrl(siteUrl, localizePath("/demo", locale));
+const demoFaqs = getLocalizedMarketingFaqs("demo", locale);
 const appStatus = await fetchAppStatusSummary();
 const schema = [
   getBreadcrumbSchema(siteUrl, [
-    { name: "Home", path: "/" },
-    { name: "Live demo", path: "/demo" },
+    { name: t.breadcrumbHome, path: localizePath("/", locale) },
+    { name: t.breadcrumbDemo, path: localizePath("/demo", locale) },
   ]),
-  getMarketingFaqSchema(pageUrl, "demo"),
+  getLocalizedMarketingFaqSchema(pageUrl, "demo", locale),
   {
     "@context": "https://schema.org",
     "@type": "WebApplication",
-    name: "ProbeHarbor live probe demo",
-    description:
-      "No-account ProbeHarbor demos: interactive multi-zone probe simulator plus live demo probes on the production ingest path.",
+    name: t.schemaName,
+    description: t.schemaDescription,
     url: pageUrl,
     applicationCategory: "UtilitiesApplication",
     operatingSystem: "Any",
@@ -42,109 +51,85 @@ const schema = [
 ].filter(Boolean) as Record<string, unknown>[];
 ---
 <Layout
-  title="Live probe demo"
-  description="Try ProbeHarbor without an account: interactive probe simulator, real live demo probes, and the same freeze/flood alert path your hardware will use."
+  title={t.title}
+  description={t.description}
   schema={schema}
   speakableSelectors={[".page-header-title", ".page-header-lede", ".faq-answer"]}
   ogImage="/og-dashboard.jpg"
-  ogImageAlt="ProbeHarbor live probe temperature curves, no account required"
+  ogImageAlt={t.ogImageAlt}
 >
   <div class="page-shell page-stack">
     <PageHeader
-      kicker="Try it (no account)"
-      title="Demos: simulator + live feed"
-      lede="Cause a freeze event in the interactive probe simulator, or watch real demo probes next to outdoor weather: same ingest path your ESP or Arduino will use for freeze and flood alerts."
+      kicker={t.header.kicker}
+      title={t.header.title}
+      lede={t.header.lede}
     >
-      <a slot="actions" class="btn-primary" href="/about/probe-demo?preset=coldSnap">Interactive simulator</a>
-      <a slot="actions" class="btn-secondary" href="#live-feed">Live readings</a>
-      <a slot="actions" class="btn-ghost" href="/register?next=/dashboard/devices">Connect my probes</a>
+      <a slot="actions" class="btn-primary" href="/about/probe-demo?preset=coldSnap">{t.header.simulator}</a>
+      <a slot="actions" class="btn-secondary" href="#live-feed">{t.header.liveReadings}</a>
+      <a slot="actions" class="btn-ghost" href="/register?next=/dashboard/devices">{t.header.connect}</a>
     </PageHeader>
 
     <section class="card" aria-labelledby="demo-paths-title">
-      <h2 class="card-title" id="demo-paths-title">Three ways to try ProbeHarbor</h2>
-      <p class="card-subtitle mb-4">
-        Start with the simulator if you want to feel freeze risk respond to you, then confirm with the live feed and auto-wet flood path.
-      </p>
+      <h2 class="card-title" id="demo-paths-title">{t.paths.title}</h2>
+      <p class="card-subtitle mb-4">{t.paths.lede}</p>
       <ul class="demo-paths text-sm space-y-3 mb-0">
-        <li>
-          <strong><a class="text-link" href="/about/probe-demo">Interactive probe simulator</a></strong>
-          {": "}
-          Hands-on (best first stop). Tweak door open/closed, sun load, outdoor air, and freeze threshold. Cause a cold snap; watch multi-zone bars and push/pull JSON update.
-        </li>
-        <li>
-          <strong><a class="text-link" href="#live-feed">Live demo feed</a></strong>
-          {": "}
-          Observational. Real demo probes refresh here on the production ingest path. Best when you want “is this fake?” answered with live numbers.
-        </li>
-        <li>
-          <strong><a class="text-link" href="/about/kit-qr-onboarding">Kit QR onboarding</a></strong>
-          {": "}
-          Hardware path. After you create a push device, scan the ingest QR (or print it on a kit label) so firmware can POST temperature, flood, and other sensor kinds without typing the key.
-        </li>
+        {["/about/probe-demo", "#live-feed", "/about/kit-qr-onboarding"].map((href, i) => (
+          <li>
+            <strong><a class="text-link" href={href}>{t.paths.items[i].label}</a></strong>
+            {": "}
+            {t.paths.items[i].text}
+          </li>
+        ))}
       </ul>
     </section>
 
     <section class="card demo-sim-promo" aria-labelledby="demo-sim-title">
-      <h2 class="card-title" id="demo-sim-title">Cause the change: interactive simulator</h2>
-      <p class="card-subtitle mb-4">
-        Presets for cold snap, door draft, and sun load reuse the same Overview space-status helper as production.
-        Open the bay door and watch the door zone diverge from the workbench: that’s why multi-probe placement matters.
-      </p>
+      <h2 class="card-title" id="demo-sim-title">{t.sim.title}</h2>
+      <p class="card-subtitle mb-4">{t.sim.lede}</p>
       <div class="flex flex-wrap gap-3">
-        <a class="btn-secondary" href="/about/probe-demo?preset=doorDraft">Try door draft</a>
-        <a class="btn-secondary" href="/about/probe-demo?preset=coldSnap">Try cold snap</a>
-        <a class="btn-ghost" href="/about/probe-demo">Open full simulator</a>
+        <a class="btn-secondary" href="/about/probe-demo?preset=doorDraft">{t.sim.doorDraft}</a>
+        <a class="btn-secondary" href="/about/probe-demo?preset=coldSnap">{t.sim.coldSnap}</a>
+        <a class="btn-ghost" href="/about/probe-demo">{t.sim.openFull}</a>
       </div>
     </section>
 
     <HomeStatusChip status={appStatus} />
 
     <section class="card" id="live-feed" aria-labelledby="live-feed-title">
-      <h2 class="card-title" id="live-feed-title">Live demo feed</h2>
-      <p class="card-subtitle mb-4">
-        Real demo probe readings and outdoor weather, not a mockup. Prefer to manipulate variables yourself?
-        {" "}
-        <a class="text-link" href="/about/probe-demo">Open the interactive simulator</a>.
-      </p>
-      <div class="home-live" aria-label="Live demo readings">
-        <DemoTempsPanel client:visible intervalMs={15000} />
-        <WeatherPanel client:visible cityId={null} guest />
+      <h2 class="card-title" id="live-feed-title">{t.live.title}</h2>
+      <p class="card-subtitle mb-4" set:html={t.live.ledeHtml} />
+      <div class="home-live" aria-label={t.live.readingsLabel}>
+        <DemoTempsPanel client:visible intervalMs={15000} text={islands.temps} locale={intl} />
+        <WeatherPanel client:visible cityId={null} guest text={islands.weather} locale={intl} />
       </div>
       <div class="mt-6" id="demo-history">
-        <DemoHistoryChart client:visible />
-        <p class="mt-2 mb-0 text-xs text-[var(--color-text-muted)]">
-          Probe curves are the demo shop model run over the past week's real hourly weather; the dashed line is outdoor temperature.
-        </p>
+        <DemoHistoryChart client:visible text={islands.history} ui={locale === "en" ? undefined : islands.chart} />
+        <p class="mt-2 mb-0 text-xs text-[var(--color-text-muted)]">{t.live.historyNote}</p>
       </div>
     </section>
 
     <ProductScreenshot
       shot="insights"
-      caption="Same product UI after you connect hardware. Insights with 30-day curves, freeze threshold, and nights-at-risk."
+      caption={t.screenshotCaption}
     />
 
     <section class="demo-freeze" aria-labelledby="demo-freeze-title">
       <div class="demo-freeze-copy">
-        <h2 class="demo-freeze-title" id="demo-freeze-title">Same data that fires freeze and flood alerts</h2>
-        <p class="demo-freeze-lede">
-          When a probe crosses your threshold, ProbeHarbor can reach you on email, browser push, Discord, Telegram, Slack, and on Pro, SMS. Wet flood/leak contacts auto-alert on the same stack. Set the line once; test it before the next cold night.
-        </p>
-        <ul class="demo-freeze-channels" aria-label="Alert channels">
-          <li>Email · Discord · Telegram · Slack</li>
-          <li>Push on every plan</li>
-            <li>SMS · webhooks on Pro</li>
-          <li>Leak / flood sensors alert automatically when wet</li>
+        <h2 class="demo-freeze-title" id="demo-freeze-title">{t.freeze.title}</h2>
+        <p class="demo-freeze-lede">{t.freeze.lede}</p>
+        <ul class="demo-freeze-channels" aria-label={t.freeze.channelsLabel}>
+          {t.freeze.channels.map((channel) => <li>{channel}</li>)}
         </ul>
         <div class="demo-freeze-actions">
-          <a class="btn-secondary" href="/register?next=/dashboard/devices">Start free: open Devices</a>
-          <a class="btn-secondary" href="/stories/water-heater-pad-leak">Flood/leak story</a>
-          <a class="btn-ghost" href="/about/alert-channel-cookbook">Channel cookbook</a>
+          <a class="btn-secondary" href="/register?next=/dashboard/devices">{t.freeze.startFree}</a>
+          <a class="btn-secondary" href="/stories/water-heater-pad-leak">{t.freeze.story}</a>
+          <a class="btn-ghost" href="/about/alert-channel-cookbook">{t.freeze.cookbook}</a>
         </div>
       </div>
       <figure class="demo-freeze-visual">
         <Image
           src={historyChart}
-          alt="ProbeHarbor temperature trend with humidity, dew point, and freeze threshold at 34°F"
+          alt={t.freeze.imageAlt}
           widths={[480, 720, 960]}
           sizes="(max-width: 767px) 100vw, 42vw"
           class="demo-freeze-img"
@@ -154,97 +139,57 @@ const schema = [
 
     <section class="home-steps" aria-labelledby="demo-steps-title">
       <div class="home-steps-intro">
-        <h2 class="home-steps-title" id="demo-steps-title">Your kit next</h2>
-        <p class="home-steps-lede">
-          Free account, no credit card, from blank dashboard to a live curve in one sitting.
-          Physical kits can use
-          {" "}
-          <a class="text-link" href="/about/kit-qr-onboarding">kit QR onboarding</a>
-          {" "}
-          so the ingest URL is a scan away.
-        </p>
+        <h2 class="home-steps-title" id="demo-steps-title">{t.steps.title}</h2>
+        <p class="home-steps-lede" set:html={t.steps.ledeHtml} />
       </div>
       <ol class="home-steps-list">
-        <li class="home-step">
-          <span class="home-step-num" aria-hidden="true">1</span>
-          <div>
-            <h3 class="home-step-title">Create a push device</h3>
-            <p class="home-step-copy">
-              Sign up and pick a path on Devices: Home Assistant, ESPHome, or MQTT get a copy-paste snippet; a board gets a pre-filled sketch; no hardware gets a one-click demo feed.
-            </p>
-          </div>
-        </li>
-        <li class="home-step">
-          <span class="home-step-num" aria-hidden="true">2</span>
-          <div>
-            <h3 class="home-step-title">POST JSON</h3>
-            <p class="home-step-copy">
-              POST to <code>/api/ingest/&lt;key&gt;</code>. Sensors auto-import on first POST: rename on Devices afterward.
-            </p>
-          </div>
-        </li>
-        <li class="home-step">
-          <span class="home-step-num" aria-hidden="true">3</span>
-          <div>
-            <h3 class="home-step-title">Watch Home &amp; set alerts</h3>
-            <p class="home-step-copy">
-              Confirm live values, set a freeze threshold, and know that wet flood/leak contacts auto-alert on the same account.
-            </p>
-          </div>
-        </li>
+        {t.steps.items.map((step, i) => (
+          <li class="home-step">
+            <span class="home-step-num" aria-hidden="true">{i + 1}</span>
+            <div>
+              <h3 class="home-step-title">{step.title}</h3>
+              <p class="home-step-copy" set:html={step.copyHtml} />
+            </div>
+          </li>
+        ))}
       </ol>
       <div class="home-steps-actions">
-        <a class="btn-primary" href="/register?next=/dashboard/devices">Start free: open Devices</a>
-        <a class="btn-secondary" href="/about/adding-devices">Adding devices guide</a>
-        <a class="btn-ghost" href="/about/kit-qr-onboarding">Kit QR walkthrough</a>
+        <a class="btn-primary" href="/register?next=/dashboard/devices">{t.steps.startFree}</a>
+        <a class="btn-secondary" href="/about/adding-devices">{t.steps.guide}</a>
+        <a class="btn-ghost" href="/about/kit-qr-onboarding">{t.steps.walkthrough}</a>
       </div>
     </section>
 
-    <section class="home-compat" aria-label="Works with">
-      <p class="home-compat-label">Works with</p>
+    <section class="home-compat" aria-label={t.compat.label}>
+      <p class="home-compat-label">{t.compat.label}</p>
       <ul class="home-compat-list">
         <li>ESP32</li>
         <li>Arduino</li>
-        <li>HTTPS JSON push</li>
-        <li>HTTPS JSON pull</li>
-        <li>MQTT bridge</li>
-        <li><a class="text-link" href="/integrations/home-assistant">Home Assistant (HACS)</a></li>
+        <li>{t.compat.push}</li>
+        <li>{t.compat.pull}</li>
+        <li>{t.compat.mqtt}</li>
+        <li><a class="text-link" href="/integrations/home-assistant">{t.compat.homeAssistant}</a></li>
         <li>Discord · Telegram · Slack</li>
       </ul>
-      <p class="home-compat-note">
-        Keep MQTT on your LAN; mirror to ProbeHarbor over HTTPS for household freeze/flood alerts and history.
-        <a class="text-link" href="/about/mqtt-bridge">MQTT bridge recipe</a>
-      </p>
+      <p class="home-compat-note" set:html={t.compat.noteHtml} />
     </section>
 
     <section class="demo-explore" aria-labelledby="demo-explore-title">
-      <h2 class="demo-explore-title" id="demo-explore-title">Keep exploring</h2>
-      <p class="demo-explore-lede">
-        Already triggered a simulated cold snap? Confirm with the live feed, then try a flood/leak story, map a city, or set up kit QR.
-      </p>
+      <h2 class="demo-explore-title" id="demo-explore-title">{t.explore.title}</h2>
+      <p class="demo-explore-lede">{t.explore.lede}</p>
       <ul class="demo-explore-list">
-        <li>
-          <a class="text-link" href="/about/probe-demo">Interactive probe simulator</a>
-          <span class="demo-explore-hint">Primary hands-on demo: door, sun, outdoor, freeze threshold</span>
-        </li>
-        <li>
-          <a class="text-link" href="/freeze-map">Community freeze map</a>
-          <span class="demo-explore-hint">Opt-in city aggregates, no account required</span>
-        </li>
-        <li>
-          <a class="text-link" href="/about/kit-qr-onboarding">Kit QR onboarding</a>
-          <span class="demo-explore-hint">Create device → scan ingest QR → first POST</span>
-        </li>
-        <li>
-          <a class="text-link" href="/stories/garage-freeze-alert">Freeze scenario</a>
-          <span class="demo-explore-hint">What a 2 a.m. heater failure looks like, alert by alert</span>
-        </li>
+        {["/about/probe-demo", "/freeze-map", "/about/kit-qr-onboarding", "/stories/garage-freeze-alert"].map((href, i) => (
+          <li>
+            <a class="text-link" href={href}>{t.explore.items[i].label}</a>
+            <span class="demo-explore-hint">{t.explore.items[i].hint}</span>
+          </li>
+        ))}
       </ul>
     </section>
 
     <FaqSection
       faqs={demoFaqs}
-      lede="Demo-specific answers, for plans and product basics see Pricing or the homepage FAQ."
+      lede={t.faqLede}
     />
   </div>
 </Layout>

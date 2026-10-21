@@ -2,8 +2,13 @@
 import AccessoryProduct from "../layouts/AccessoryProduct.astro";
 import { commerceLinkRel } from "../lib/affiliateLinks";
 import { BOM } from "../lib/bomLinks";
-import { BRAND_NAME } from "../lib/brand";
 import { CLAIM_PUCK_REPO_URL } from "../lib/claimPuck";
+import { getLocale } from "../i18n";
+import { accessoriesMessages } from "../i18n/messages/accessories";
+
+const m = accessoriesMessages(getLocale(Astro));
+const c = m.common;
+const t = m.claimPuckCase;
 
 const ZERO = BOM.amazonRp2040Zero;
 const BUTTON = BOM.adafruitButton;
@@ -12,68 +17,65 @@ const DIFFUSER = BOM.adafruitDiffuser;
 <AccessoryProduct
   accessoryId="claim-puck-case"
   faqKey="claimPuckCase"
-  title="Claim puck case"
-  description={`Enclosure, claim button, and optional LED diffuser for the RP2040-Zero ${BRAND_NAME} claim puck — finish the bare-board build.`}
-  kicker="Kit / merch"
+  title={t.title}
+  description={t.description}
+  kicker={c.kitKicker}
 >
-  <a slot="actions" class="btn-primary" href="/claim-puck">Claim puck</a>
+  <a slot="actions" class="btn-primary" href="/claim-puck">{c.claimPuck}</a>
   <a slot="actions" class="btn-secondary" href={CLAIM_PUCK_REPO_URL} target="_blank" rel="noreferrer">
-    Firmware ↗
+    {t.firmware}
   </a>
-  <a slot="actions" class="btn-ghost" href="/alert-beacon">Alert beacon</a>
+  <a slot="actions" class="btn-ghost" href="/alert-beacon">{c.alertBeacon}</a>
 
   <section class="card">
-    <h2 class="card-title">What it is</h2>
+    <h2 class="card-title">{c.whatItIs}</h2>
     <ul class="text-sm space-y-2 mb-0">
       <li>
-        <strong>Does:</strong> Turns the Waveshare RP2040-Zero + GP4 button into a desk-safe presence key with a
-        softer mood glow.
+        <strong>{c.does}</strong> <Fragment set:html={t.doesHtml} />
       </li>
       <li>
-        <strong>Does not:</strong> Change the claim API. Same firmware and
-        <a class="text-link" href="/bay-buddy">Bay Buddy</a>
-        flow as the naked board.
+        <strong>{c.doesNot}</strong> <Fragment set:html={t.doesNotHtml} />
       </li>
     </ul>
   </section>
 
   <section class="card">
-    <h2 class="card-title">Parts</h2>
+    <h2 class="card-title">{c.parts}</h2>
     <div class="overflow-x-auto">
       <table class="plan-comparison-table">
-        <caption class="sr-only">Claim puck case parts</caption>
+        <caption class="sr-only">{t.caption}</caption>
         <thead>
           <tr>
-            <th scope="col">Part</th>
-            <th scope="col">Why</th>
-            <th scope="col">Buy</th>
+            <th scope="col">{c.colPart}</th>
+            <th scope="col">{c.colWhy}</th>
+            <th scope="col">{c.colBuy}</th>
           </tr>
         </thead>
         <tbody>
           <tr>
             <th scope="row">Waveshare RP2040-Zero</th>
-            <td>Claim puck MCU.</td>
+            <td>{t.zeroWhy}</td>
             <td>
               <a class="text-link" href={ZERO} target="_blank" rel={commerceLinkRel(ZERO)}>Amazon</a>
             </td>
           </tr>
           <tr>
-            <th scope="row">Momentary button</th>
-            <td>GP4 to GND for claim confirm.</td>
+            <th scope="row">{c.momentaryButton}</th>
+            <td>{c.buttonWhy}</td>
             <td>
-              <a class="text-link" href={BUTTON} target="_blank" rel={commerceLinkRel(BUTTON)}>Adafruit button</a>
+              <a class="text-link" href={BUTTON} target="_blank" rel={commerceLinkRel(BUTTON)}>{c.adafruitButton}</a>
             </td>
           </tr>
           <tr>
-            <th scope="row">3D-printed or laser case</th>
-            <td>USB cutout, button hole, LED window. Publish your STL next to the firmware repo if you share one.</td>
-            <td>DIY / local print shop.</td>
+            <th scope="row">{t.casePart}</th>
+            <td>{t.caseWhy}</td>
+            <td>{t.caseBuy}</td>
           </tr>
           <tr>
-            <th scope="row">LED diffuser (optional)</th>
-            <td>Softer mood color for the onboard RGB.</td>
+            <th scope="row">{t.diffuserPart}</th>
+            <td>{t.diffuserWhy}</td>
             <td>
-              <a class="text-link" href={DIFFUSER} target="_blank" rel={commerceLinkRel(DIFFUSER)}>Adafruit diffuser</a>
+              <a class="text-link" href={DIFFUSER} target="_blank" rel={commerceLinkRel(DIFFUSER)}>{t.diffuserBuy}</a>
             </td>
           </tr>
         </tbody>
@@ -82,15 +84,9 @@ const DIFFUSER = BOM.adafruitDiffuser;
   </section>
 
   <section class="card">
-    <h2 class="card-title">Build notes</h2>
+    <h2 class="card-title">{t.buildNotes}</h2>
     <ol class="text-sm space-y-2 pl-5 list-decimal mb-0">
-      <li>Leave USB clear for claim and mood drive from the host.</li>
-      <li>Debounce is in firmware — a cheap tactile switch is enough.</li>
-      <li>
-        For a brighter hallway light, use an
-        <a class="text-link" href="/alert-beacon">alert beacon</a>
-        NeoPixel stick instead of overdriving the Zero LED.
-      </li>
+      {t.notesHtml.map((note) => <li set:html={note} />)}
     </ol>
   </section>
 </AccessoryProduct>

@@ -20,6 +20,53 @@ const COLORS = {
   plum: "#1e293b",
 };
 
+/** UI strings, resolved on the server (see `aboutArticleMessages().probeActivity`). */
+export type AboutProbeActivityText = {
+  northWall: string;
+  doorZone: string;
+  workbench: string;
+  /** `{n}` = sun load percent. */
+  sunLoad: string;
+  bayInterior: string;
+  /** `{t}` = formatted outdoor temperature. */
+  outside: string;
+  /** `{n}` = relative humidity percent. */
+  humidity: string;
+  feed: string;
+  staticPreview: string;
+  simulated: string;
+  ariaLabel: string;
+  caption: string;
+  /** Show °C first (with °F alongside) instead of °F only. */
+  celsius: boolean;
+};
+
+const DEFAULT_TEXT: AboutProbeActivityText = {
+  northWall: "North wall",
+  doorZone: "Door zone",
+  workbench: "Workbench",
+  sunLoad: "Sun load {n}%",
+  bayInterior: "Bay interior",
+  outside: "{t} outside",
+  humidity: "{n}% RH",
+  feed: "JSON feed → website dashboard",
+  staticPreview: "Static preview",
+  simulated: "Simulated probe activity",
+  ariaLabel:
+    "Animated bay cross-section showing three temperature probes reporting live readings, a door opening and closing, sun load changing, and data pulses traveling to the website dashboard.",
+  caption:
+    "North wall, door zone, and workbench probes refresh every few seconds—the same rhythm as the live dashboard feed.",
+  celsius: false,
+};
+
+function fill(template: string, key: string, value: string): string {
+  return template.replace(`{${key}}`, value);
+}
+
+function fToC(f: number): number {
+  return ((f - 32) * 5) / 9;
+}
+
 type ProbeNode = {
   x: number;
   y: number;
@@ -27,11 +74,13 @@ type ProbeNode = {
   key: string;
 };
 
-const PROBE_NODES: ProbeNode[] = [
-  { x: 0.28, y: 0.58, label: "North wall", key: "0" },
-  { x: 0.48, y: 0.68, label: "Door zone", key: "1" },
-  { x: 0.72, y: 0.52, label: "Workbench", key: "2" },
-];
+function probeNodes(text: AboutProbeActivityText): ProbeNode[] {
+  return [
+    { x: 0.28, y: 0.58, label: text.northWall, key: "0" },
+    { x: 0.48, y: 0.68, label: text.doorZone, key: "1" },
+    { x: 0.72, y: 0.52, label: text.workbench, key: "2" },
+  ];
+}
 
 function tempColor(tempF: number): string {
   const t = Math.min(1, Math.max(0, (tempF - 34) / 28));
@@ -62,7 +111,11 @@ function drawRoundedRect(
   ctx.closePath();
 }
 
-export default function AboutProbeActivity() {
+export default function AboutProbeActivity({
+  text = DEFAULT_TEXT,
+}: {
+  text?: AboutProbeActivityText;
+} = {}) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const reducedMotionRef = useRef(false);
 
@@ -77,6 +130,7 @@ export default function AboutProbeActivity() {
       "(prefers-reduced-motion: reduce)",
     ).matches;
 
+    const PROBE_NODES = probeNodes(text);
     let width = 0;
     let height = 0;
     let dpr = 1;
@@ -210,7 +264,7 @@ export default function AboutProbeActivity() {
       ctx!.fillStyle = COLORS.textMuted;
       ctx!.font = "600 11px system-ui, sans-serif";
       ctx!.textAlign = "center";
-      ctx!.fillText(`Sun load ${Math.round(intensity)}%`, sunX, sunY + radius + 24);
+      ctx!.fillText(fill(text.sunLoad, "n", String(Math.round(intensity))), sunX, sunY + radius + 24);
     }
 
     function elapsedRayAngle(t0: number) {
@@ -254,7 +308,7 @@ export default function AboutProbeActivity() {
       ctx!.fillStyle = COLORS.textMuted;
       ctx!.font = "600 13px system-ui, sans-serif";
       ctx!.textAlign = "left";
-      ctx!.fillText("Bay interior", gx + 16, gy + 24);
+      ctx!.fillText(text.bayInterior, gx + 16, gy + 24);
 
       const doorLift = doorAmount * doorH * 0.82;
       const doorX = gx + 16;
@@ -299,7 +353,10 @@ export default function AboutProbeActivity() {
         ctx!.translate(gx + 5, gy + gh / 2);
         ctx!.rotate(-Math.PI / 2);
         ctx!.textAlign = "center";
-        ctx!.fillText(`${Math.round(outdoorF)}°F outside`, 0, 0);
+        const outdoor = text.celsius
+          ? `${Math.round(fToC(outdoorF))} °C (${Math.round(outdoorF)} °F)`
+          : `${Math.round(outdoorF)}°F`;
+        ctx!.fillText(fill(text.outside, "t", outdoor), 0, 0);
         ctx!.restore();
       }
 
@@ -365,11 +422,16 @@ export default function AboutProbeActivity() {
 
       ctx!.font = "700 14px system-ui, sans-serif";
       ctx!.fillStyle = COLORS.accentBright;
-      ctx!.fillText(`${tempF.toFixed(1)}°F`, x, cardY + 34);
+      ctx!.fillText(
+        text.celsius ? `${fToC(tempF).toFixed(1)} °C` : `${tempF.toFixed(1)}°F`,
+        x,
+        cardY + 34,
+      );
 
       ctx!.font = "500 10px system-ui, sans-serif";
       ctx!.fillStyle = COLORS.textMuted;
-      ctx!.fillText(`${humidity.toFixed(0)}% RH`, x, cardY + 46);
+      const rh = fill(text.humidity, "n", humidity.toFixed(0));
+      ctx!.fillText(text.celsius ? `${tempF.toFixed(0)} °F · ${rh}` : rh, x, cardY + 46);
     }
 
     function drawProbeLinks(
@@ -465,7 +527,7 @@ export default function AboutProbeActivity() {
       ctx!.fillStyle = COLORS.textMuted;
       ctx!.font = "600 11px system-ui, sans-serif";
       ctx!.textAlign = "left";
-      ctx!.fillText("JSON feed → website dashboard", pulseX, pulseY - 10);
+      ctx!.fillText(text.feed, pulseX, pulseY - 10);
 
       const dotCount = 6;
       for (let i = 0; i < dotCount; i++) {
@@ -538,7 +600,7 @@ export default function AboutProbeActivity() {
       ctx!.font = "500 10px system-ui, sans-serif";
       ctx!.textAlign = "right";
       ctx!.fillText(
-        reducedMotionRef.current ? "Static preview" : "Simulated probe activity",
+        reducedMotionRef.current ? text.staticPreview : text.simulated,
         width - 12,
         height - 8,
       );
@@ -571,11 +633,9 @@ export default function AboutProbeActivity() {
         ref={canvasRef}
         class="about-probe-activity-canvas"
         role="img"
-        aria-label="Animated bay cross-section showing three temperature probes reporting live readings, a door opening and closing, sun load changing, and data pulses traveling to the website dashboard."
+        aria-label={text.ariaLabel}
       />
-      <p class="about-probe-activity-caption">
-        North wall, door zone, and workbench probes refresh every few seconds—the same rhythm as the live dashboard feed.
-      </p>
+      <p class="about-probe-activity-caption">{text.caption}</p>
     </div>
   );
 }

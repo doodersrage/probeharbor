@@ -4,8 +4,10 @@ import { Image } from "astro:assets";
 import Layout from "../layouts/Layout.astro";
 import FaqSection from "./FaqSection.astro";
 import type { Story } from "../lib/stories";
-import { getAnswersRelatedTo } from "../lib/answers";
-import { getAboutPhoto } from "../lib/aboutPhotos";
+import { getLocale, localizePath } from "../i18n";
+import { storiesMessages } from "../i18n/messages/stories";
+import { getLocalizedAnswersRelatedTo } from "../i18n/content/answers";
+import { getLocalizedAboutPhoto } from "../i18n/content/aboutPhotos";
 import {
   getArticleSchema,
   getBreadcrumbSchema,
@@ -24,35 +26,38 @@ interface Props {
 }
 
 const { story, heroImage, heroCaption, heroCredit, heroCreditHref } = Astro.props;
-const ccHero = !heroImage && story.photoId ? getAboutPhoto(story.photoId) : undefined;
+const locale = getLocale(Astro);
+const m = storiesMessages(locale);
+const t = m.article;
+const ccHero = !heroImage && story.photoId ? getLocalizedAboutPhoto(story.photoId, locale) : undefined;
 const resolvedImage = heroImage ?? ccHero?.image;
 const resolvedCaption = heroCaption ?? ccHero?.caption;
 const resolvedCredit = heroCredit ?? ccHero?.credit;
 const resolvedCreditHref = heroCreditHref ?? ccHero?.sourceUrl;
-const resolvedAlt = ccHero?.alt ?? `Illustration for ${story.headline}`;
+const resolvedAlt = ccHero?.alt ?? t.illustrationAlt(story.headline);
 
-const relatedAnswers = getAnswersRelatedTo(story.path, [
+const relatedAnswers = getLocalizedAnswersRelatedTo(story.path, locale, [
   "how-long-for-pipes-to-freeze",
   "freeze-alarm-temperature-setting",
   "water-leak-sensor-placement",
 ]);
 const siteUrl = resolveSiteUrl(Astro.site);
-const pageUrl = resolvePageUrl(siteUrl, story.path);
+const pageUrl = resolvePageUrl(siteUrl, localizePath(story.path, locale));
 const schema = [
   getArticleSchema({
     siteUrl,
     pageUrl,
     headline: story.headline,
     description: story.description,
-    articleSection: "Scenarios",
+    articleSection: m.articleSection,
     datePublished: story.datePublished,
     dateModified: story.dateModified,
     imageUrl: `${siteUrl}${story.ogImage}`,
   }),
   getBreadcrumbSchema(siteUrl, [
-    { name: "Home", path: "/" },
-    { name: "Scenarios", path: "/stories" },
-    { name: story.headline, path: story.path },
+    { name: m.breadcrumbHome, path: localizePath("/", locale) },
+    { name: m.breadcrumbScenarios, path: localizePath("/stories", locale) },
+    { name: story.headline, path: localizePath(story.path, locale) },
   ]),
   getFaqPageSchema(pageUrl, story.faqs),
 ].filter(Boolean) as Record<string, unknown>[];
@@ -65,19 +70,18 @@ const schema = [
   ogImage={story.ogImage}
   ogPublishedTime={story.datePublished}
   ogModifiedTime={story.dateModified}
-  ogSection="Scenarios"
+  ogSection={m.articleSection}
   speakableSelectors={[".card-title", ".card-subtitle", ".faq-answer"]}
 >
   <div class="page-shell page-stack">
     <section class="card animate-slide-in-left">
       <p class="text-sm text-[var(--color-text-muted)] mb-2">
-        Scenario · {story.setting}
+        {t.scenarioLabel(story.setting)}
       </p>
       <h1 class="card-title">{story.title}</h1>
       <p class="card-subtitle">{story.description}</p>
       <p class="scenario-note mt-4 mb-0 text-sm" role="note">
-        <strong>Illustrative scenario.</strong> This is a walkthrough of how ProbeHarbor behaves in a common
-        failure, not an account from a real customer. The features, thresholds, and plan limits are real.
+        <strong>{t.noteLabel}</strong> {t.noteBody}
       </p>
     </section>
 
@@ -109,19 +113,19 @@ const schema = [
     }
 
     <section class="card">
-      <h2 class="card-title">The setup</h2>
+      <h2 class="card-title">{t.setupTitle}</h2>
       <ul class="text-sm space-y-2 mb-0">
         {story.setup.map((item) => <li>{item}</li>)}
       </ul>
     </section>
 
     <section class="card">
-      <h2 class="card-title">How it plays out</h2>
+      <h2 class="card-title">{t.timelineTitle}</h2>
       <ol class="text-sm space-y-3 mb-0 list-decimal pl-5">
         {
           story.timeline.map((step) => (
             <li>
-              <strong>{step.time}:</strong> {step.detail}
+              <strong>{t.timeLabel(step.time)}</strong> {step.detail}
             </li>
           ))
         }
@@ -129,17 +133,17 @@ const schema = [
     </section>
 
     <section class="card">
-      <h2 class="card-title">Why it matters</h2>
+      <h2 class="card-title">{t.whyTitle}</h2>
       <p class="mb-4">{story.outcome}</p>
       <p class="mb-0 text-sm text-[var(--color-text-muted)]">
-        Real outcomes depend on sensor placement, thresholds, and how quickly someone can respond.
+        {t.outcomeCaveat}
       </p>
     </section>
 
-    <FaqSection faqs={story.faqs} title="FAQ" />
+    <FaqSection faqs={story.faqs} title={t.faqTitle} />
 
     <section class="card">
-      <h2 class="card-title">Related answers</h2>
+      <h2 class="card-title">{t.relatedTitle}</h2>
       <ul class="text-sm space-y-1 mb-0">
         {relatedAnswers.map((answer) => (
           <li><a class="text-link" href={answer.path}>{answer.question}</a></li>
@@ -148,19 +152,18 @@ const schema = [
     </section>
 
     <section class="card">
-      <h2 class="card-title">Try it on your space</h2>
+      <h2 class="card-title">{t.tryTitle}</h2>
       <p class="mb-4">
-        Start free with live charts, email alerts, and one family live share link. Upgrade when you want CSV history (Member)
-        or SMS and expanded share scopes (Pro: 14-day trial).
+        {t.tryCopy}
       </p>
       <p class="mb-0">
-        <a class="btn-primary" href="/pricing">See plans &amp; pricing</a>
+        <a class="btn-primary" href="/pricing">{t.seePlansPricing}</a>
         {" "}
-        <a class="btn-secondary" href="/register?next=/dashboard/devices">Create free account</a>
+        <a class="btn-secondary" href="/register?next=/dashboard/devices">{t.createAccount}</a>
         {" "}
-        <a class="text-link" href="/compare">Compare vs DIY</a>
+        <a class="text-link" href="/compare">{t.compareDiy}</a>
         {" · "}
-        <a class="text-link" href="/stories">All scenarios</a>
+        <a class="text-link" href="/stories">{t.allScenarios}</a>
       </p>
     </section>
   </div>
