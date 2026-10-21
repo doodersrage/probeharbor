@@ -78,5 +78,7 @@ declare namespace App {
     session?: import("@supabase/supabase-js").Session | null;
     user?: import("@supabase/supabase-js").User | null;
     dashboardShell?: import("./lib/dashboardShell").DashboardShell | null;
+    /** Marketing locale from the URL prefix (/es, /fr, /de, /pt-br); "en" otherwise. */
+    locale?: import("./i18n/locales").Locale;
   }
 }

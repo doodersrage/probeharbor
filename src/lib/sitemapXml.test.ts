@@ -25,7 +25,19 @@ describe("sitemapXml", () => {
     expect(xml).toMatch(
       /<loc>https:\/\/probeharbor\.dev\/answers\/garage-pipe-freeze-temperature<\/loc><lastmod>\d{4}-\d{2}-\d{2}<\/lastmod>/,
     );
-    expect(xml).toContain("<url><loc>https://probeharbor.dev/pricing</loc></url>");
+    expect(xml).toMatch(/<url><loc>https:\/\/probeharbor\.dev\/pricing<\/loc><xhtml:link/);
+  });
+
+  it("lists translated pages with hreflang alternates", () => {
+    const xml = buildSitemapUrlsetXml("https://probeharbor.dev");
+    expect(xml).toContain("xmlns:xhtml=\"http://www.w3.org/1999/xhtml\"");
+    expect(xml).toContain("<loc>https://probeharbor.dev/es/pricing</loc>");
+    expect(xml).toContain("<loc>https://probeharbor.dev/pt-br</loc>");
+    expect(xml).toContain('hreflang="de" href="https://probeharbor.dev/de/pricing"');
+    expect(xml).toContain('hreflang="x-default" href="https://probeharbor.dev/pricing"');
+    // English-only pages get no locale copies or alternates.
+    expect(xml).not.toContain("https://probeharbor.dev/es/privacy");
+    expect(xml).toContain("<url><loc>https://probeharbor.dev/privacy</loc></url>");
   });
 
   it("builds a sitemap index pointing at sitemap-0", () => {

@@ -27,6 +27,8 @@ import {
 } from "./lib/homeAssistantIntegration";
 import { THERMALTRACE_STATIC_REDIRECTS } from "./lib/rebrand";
 import type { AstroCookies } from "astro";
+import { DEFAULT_LOCALE, LOCALE_META, splitLocalePath } from "./i18n/locales";
+import { isLocalizablePath, localizeHtmlLinks } from "./i18n/routes";
 
 const LEGACY_STATIC_REDIRECTS: Record<string, string> = {
   [HA_BLUEPRINT_LEGACY_URL]: HA_BLUEPRINT_URL,
@@ -54,7 +56,8 @@ function isMfaRequired(request: Request, cookies: AstroCookies): boolean {
 }
 
 export const onRequest = defineMiddleware(async (context, next) => {
-  const { pathname, hostname, protocol } = context.url;
+  const { hostname, protocol } = context.url;
+  let { pathname } = context.url;
 
   if (shouldRedirectLegacyHost(hostname, context.request.method, pathname)) {
     const dest = new URL(context.url);
@@ -80,6 +83,17 @@ export const onRequest = defineMiddleware(async (context, next) => {
   if (legacyStatic) {
     return context.redirect(legacyStatic, 301);
   }
+
+  // /es/pricing → render /pricing in Spanish. Untranslated paths go to English.
+  const { locale, path: unprefixedPath } = splitLocalePath(pathname);
+  const localized = locale !== DEFAULT_LOCALE;
+  if (localized) {
+    if (!isLocalizablePath(unprefixedPath)) {
+      return context.redirect(`${unprefixedPath}${context.url.search}`, 302);
+    }
+    pathname = unprefixedPath;
+  }
+  context.locals.locale = locale;
 
   let userId: string | null = null;
 
@@ -160,7 +174,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
       }
     }
 
-    const response = await next();
+    const response = localized ? await next(`${pathname}${context.url.search}`) : await next();
     const headers = new Headers(response.headers);
     if (!headers.has("X-Content-Type-Options")) {
       headers.set("X-Content-Type-Options", "nosniff");
@@ -201,6 +215,19 @@ export const onRequest = defineMiddleware(async (context, next) => {
           "worker-src 'self' blob:",
         ].join("; "),
       );
+    }
+    const isHtml = headers.get("Content-Type")?.includes("text/html") ?? false;
+    if (isHtml) {
+      headers.set("Content-Language", LOCALE_META[locale].htmlLang);
+    }
+    if (localized && isHtml) {
+      const html = localizeHtmlLinks(await response.text(), locale);
+      headers.delete("Content-Length");
+      return new Response(html, {
+        status: response.status,
+        statusText: response.statusText,
+        headers,
+      });
     }
     return new Response(response.body, {
       status: response.status,

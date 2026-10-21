@@ -1,5 +1,7 @@
 ---
 import type { AboutFaqItem } from "../lib/aboutFaqs";
+import { getLocale } from "../i18n";
+import { commonMessages } from "../i18n/messages/common";
 
 interface Props {
   title?: string;
@@ -8,7 +10,7 @@ interface Props {
   lede?: string;
 }
 
-const { title = "Frequently asked questions", faqs, lede } = Astro.props;
+const { title = commonMessages(getLocale(Astro)).faqTitle, faqs, lede } = Astro.props;
 ---
 
 {

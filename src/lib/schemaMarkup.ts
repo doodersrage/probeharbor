@@ -107,6 +107,8 @@ export function getWebPageSchema(options: {
   description: string;
   /** CSS selectors for AEO / speakable content */
   speakableCssSelectors?: string[];
+  /** BCP 47 page language (defaults to en-US). */
+  inLanguage?: string;
 }) {
   const schema: Record<string, unknown> = {
     "@context": "https://schema.org",
@@ -114,7 +116,7 @@ export function getWebPageSchema(options: {
     name: options.name,
     description: options.description,
     url: options.pageUrl,
-    inLanguage: "en-US",
+    inLanguage: options.inLanguage ?? "en-US",
     isPartOf: {
       "@type": "WebSite",
       name: SITE_NAME,
@@ -276,6 +278,7 @@ export function getSiteSchemas(options: {
   extraSchemas?: Record<string, unknown>[];
   includeSoftwareApplication?: boolean;
   speakableCssSelectors?: string[];
+  inLanguage?: string;
 }) {
   const schemas: Record<string, unknown>[] = [
     getOrganizationSchema(options.siteUrl),
@@ -286,6 +289,7 @@ export function getSiteSchemas(options: {
       name: options.pageName,
       description: options.pageDescription,
       speakableCssSelectors: options.speakableCssSelectors,
+      inLanguage: options.inLanguage,
     }),
   ];
 
