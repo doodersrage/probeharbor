@@ -18,8 +18,14 @@ import {
   resolvePageUrl,
   resolveSiteUrl,
 } from "../lib/schemaMarkup";
-import { getLocale, localizePath } from "../i18n";
-import { freezeMapMessages, formatFreezeMapAge } from "../i18n/messages/freezeMap";
+import { fmt, getLocale, localizePath, plural } from "../i18n";
+import {
+  formatFreezeMapAge,
+  freezeMapDelta,
+  freezeMapMessages,
+  freezeMapNumber,
+  freezeMapTemp,
+} from "../i18n/messages/freezeMap";
 import {
   getLocalizedMarketingFaqs,
   getLocalizedMarketingFaqSchema,
@@ -107,7 +113,9 @@ function trendDeltaLabel(values: number[]): string {
   if (values.length < 2) return t.trendNoHistory;
   const delta = values[values.length - 1]! - values[0]!;
   if (Math.abs(delta) < 0.3) return t.trendSteady;
-  return delta < 0 ? t.trendCooling(Math.abs(delta)) : t.trendWarming(delta);
+  return delta < 0
+    ? fmt(t.trendCooling, { delta: freezeMapDelta(Math.abs(delta), locale) })
+    : fmt(t.trendWarming, { delta: freezeMapDelta(delta, locale) });
 }
 ---
 <Layout
@@ -133,18 +141,18 @@ function trendDeltaLabel(values: number[]): string {
 
     {isSeed ? (
       <p class="alert-warning mt-0" role="status">
-        <Fragment set:html={t.seedIntroHtml(FREEZE_MAP_SAMPLE_FLOOR)} />
+        <Fragment set:html={fmt(t.seedIntroHtml, { floor: FREEZE_MAP_SAMPLE_FLOOR })} />
         {" "}
-        {optInCount === 0 ? t.optInNone : t.optInCount(optInCount)}
+        {optInCount === 0 ? t.optInNone : plural(t.optInCount, optInCount, locale)}
         {" "}
         <a class="text-link" href={optInHref}>{user ? t.linkOptIn : t.linkCreate}</a>.
       </p>
     ) : (
       <p class="alert-info mt-0" role="status">
-        {t.liveNotice(optInCount, FREEZE_MAP_SAMPLE_FLOOR)}
+        {plural(t.liveNotice, optInCount, locale, { floor: FREEZE_MAP_SAMPLE_FLOOR })}
         {capturedAt ? (
           <>
-            {t.lastSnapshot(captureAge.label)}
+            {fmt(t.lastSnapshot, { label: captureAge.label })}
             {captureAge.absolute ? ` (${captureAge.absolute})` : ""}
           </>
         ) : null}
@@ -157,8 +165,8 @@ function trendDeltaLabel(values: number[]): string {
         <h2 class="card-title">{t.momentumTitle}</h2>
         <p class="card-subtitle mb-4">
           {approaching.length > 0
-            ? t.momentumApproaching(FREEZE_MAP_SAMPLE_FLOOR)
-            : t.momentumWaiting(FREEZE_MAP_SAMPLE_FLOOR)}
+            ? fmt(t.momentumApproaching, { floor: FREEZE_MAP_SAMPLE_FLOOR })
+            : fmt(t.momentumWaiting, { floor: FREEZE_MAP_SAMPLE_FLOOR })}
         </p>
         {approaching.length > 0 ? (
           <ul class="space-y-2 mb-4 text-sm">
@@ -168,8 +176,8 @@ function trendDeltaLabel(values: number[]): string {
                 <li>
                   <strong>{row.city_label}</strong>
                   {": "}
-                  {t.householdsProgress(row.sample_count, FREEZE_MAP_SAMPLE_FLOOR)}
-                  {needed > 0 ? t.moreToGo(needed) : ""}
+                  {fmt(t.householdsProgress, { count: row.sample_count, floor: FREEZE_MAP_SAMPLE_FLOOR })}
+                  {needed > 0 ? plural(t.moreToGo, needed, locale) : ""}
                 </li>
               );
             })}
@@ -191,10 +199,10 @@ function trendDeltaLabel(values: number[]): string {
             <li>
               <strong>#{i + 1} {row.city_label}</strong>
               {": "}
-              {row.min_temp_f != null ? t.coldestMin(row.min_temp_f) : ""}
-              {row.avg_temp_f != null ? t.coldestAvg(row.avg_temp_f) : ""}
+              {row.min_temp_f != null ? fmt(t.coldestMin, { temp: freezeMapTemp(row.min_temp_f, locale) }) : ""}
+              {row.avg_temp_f != null ? fmt(t.coldestAvg, { temp: freezeMapTemp(row.avg_temp_f, locale) }) : ""}
               {" · "}
-              {t.households(row.sample_count)}
+              {plural(t.households, row.sample_count, locale)}
             </li>
           ))}
         </ol>
@@ -204,10 +212,10 @@ function trendDeltaLabel(values: number[]): string {
     <section class="card">
       <p class="mb-0 text-sm">
         {showSparse ? (
-          <a class="text-link" href="/freeze-map">{t.hideSparse(FREEZE_MAP_SAMPLE_FLOOR)}</a>
+          <a class="text-link" href="/freeze-map">{fmt(t.hideSparse, { floor: FREEZE_MAP_SAMPLE_FLOOR })}</a>
         ) : (
           <a class="text-link" href="/freeze-map?sparse=1">
-            {t.showSparse}{sparseHidden > 0 ? t.hiddenCount(sparseHidden) : ""}
+            {t.showSparse}{sparseHidden > 0 ? plural(t.hiddenCount, sparseHidden, locale) : ""}
           </a>
         )}
       </p>
@@ -366,15 +374,15 @@ function trendDeltaLabel(values: number[]): string {
                       </td>
                       <td>{row.sample_count}</td>
                       <td>
-                        {row.avg_temp_f != null ? t.tableNumber(row.avg_temp_f) : "—"}
+                        {row.avg_temp_f != null ? freezeMapNumber(row.avg_temp_f, locale) : "—"}
                       </td>
                       <td>
-                        {row.min_temp_f != null ? t.tableNumber(row.min_temp_f) : "—"}
+                        {row.min_temp_f != null ? freezeMapNumber(row.min_temp_f, locale) : "—"}
                       </td>
                       <td>
                         {riskPct}%
                         <span class="text-[var(--color-text-muted)]">
-                          {" "}{t.riskOf(row.freeze_risk_count, row.sample_count)}
+                          {" "}{fmt(t.riskOf, { risk: row.freeze_risk_count, total: row.sample_count })}
                         </span>
                       </td>
                     </tr>

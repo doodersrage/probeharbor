@@ -217,7 +217,7 @@ describe("fetchNightsAtRiskForConfig", () => {
 
     expect(mockFetchWeatherSnapshot).not.toHaveBeenCalled();
     expect(mockFetchAmbientWeatherSnapshot).not.toHaveBeenCalled();
-    expect(mockFetchNightsAtRisk).toHaveBeenCalledWith({ lat: 1, lon: 2, freezeThresholdF: 32 });
+    expect(mockFetchNightsAtRisk).toHaveBeenCalledWith({ lat: 1, lon: 2, freezeThresholdF: 32 }, "en");
   });
 
   it("treats an explicit null snapshot as 'no snapshot' without re-fetching", async () => {
@@ -229,7 +229,7 @@ describe("fetchNightsAtRiskForConfig", () => {
     expect(mockFetchNightsAtRisk).toHaveBeenCalledWith({
       cityId: "resolved-city",
       freezeThresholdF: 32,
-    });
+    }, "en");
   });
 
   it("fetches a snapshot when none is passed, and uses lat/lon when available", async () => {
@@ -239,7 +239,7 @@ describe("fetchNightsAtRiskForConfig", () => {
     await fetchNightsAtRiskForConfig(config(), 30);
 
     expect(mockFetchWeatherSnapshot).toHaveBeenCalled();
-    expect(mockFetchNightsAtRisk).toHaveBeenCalledWith({ lat: 5, lon: 6, freezeThresholdF: 30 });
+    expect(mockFetchNightsAtRisk).toHaveBeenCalledWith({ lat: 5, lon: 6, freezeThresholdF: 30 }, "en");
   });
 
   it("falls back to cityId when the fetched snapshot has no lat/lon", async () => {
@@ -251,6 +251,6 @@ describe("fetchNightsAtRiskForConfig", () => {
     expect(mockFetchNightsAtRisk).toHaveBeenCalledWith({
       cityId: "resolved-city",
       freezeThresholdF: 30,
-    });
+    }, "en");
   });
 });

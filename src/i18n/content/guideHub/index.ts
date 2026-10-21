@@ -2,6 +2,7 @@ import { type GuideHubCategory, getGuideHubCategories } from "../../../lib/guide
 import type { Locale, TranslatedLocale } from "../../locales";
 import { isLocale } from "../../locales";
 import { getLocalizedAboutPage } from "../aboutPages";
+import { fromContentModules } from "../collect";
 
 /**
  * Translation file shape for the /guides hub (`src/lib/guideHub.ts`).
@@ -15,23 +16,25 @@ export type GuideHubOverlay = {
   links?: Record<string, { label?: string; summary?: string }>;
 };
 
-const overlays: Partial<Record<TranslatedLocale, GuideHubOverlay>> = {};
-for (const [file, mod] of Object.entries(
-  import.meta.glob<{ default: GuideHubOverlay }>("./*/*.ts", { eager: true }),
-)) {
-  const locale = /\/([a-z]{2}(?:-[a-z]{2})?)\/[^/]+\.ts$/.exec(file)?.[1];
-  if (!isLocale(locale) || locale === "en") continue;
-  const prev = overlays[locale] ?? {};
-  overlays[locale] = {
-    categories: { ...prev.categories, ...mod.default.categories },
-    links: { ...prev.links, ...mod.default.links },
-  };
-}
+const loadOverlays = () =>
+  fromContentModules("guideHub", undefined, (modules) => {
+    const overlays: Partial<Record<TranslatedLocale, GuideHubOverlay>> = {};
+    for (const [file, mod] of Object.entries(modules as Record<string, { default: GuideHubOverlay }>)) {
+      const locale = /\/([a-z]{2}(?:-[a-z]{2})?)\/[^/]+\.ts$/.exec(file)?.[1];
+      if (!isLocale(locale) || locale === "en") continue;
+      const prev = overlays[locale] ?? {};
+      overlays[locale] = {
+        categories: { ...prev.categories, ...mod.default.categories },
+        links: { ...prev.links, ...mod.default.links },
+      };
+    }
+    return overlays;
+  });
 
 export function getLocalizedGuideHubCategories(locale: Locale): GuideHubCategory[] {
   const categories = getGuideHubCategories();
   if (locale === "en") return categories;
-  const overlay = overlays[locale];
+  const overlay = loadOverlays()[locale];
   return categories.map((category) => {
     const c = overlay?.categories?.[category.id];
     return {

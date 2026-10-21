@@ -3,6 +3,8 @@
  * forecast alert in the last two weeks reached this account by email only.
  * A generic "upgrade" tip on day 7 means little before anything has fired.
  */
+import type { Locale } from "../i18n/locales";
+import { overviewNudgesMessages } from "../i18n/messages/app/overview/nudges";
 import type { NotifyKind } from "./alerts";
 import { isCriticalNotifyKind } from "./quietHours";
 
@@ -24,13 +26,24 @@ export type AlertMoment = {
 const MOMENT_WINDOW_MS = 14 * 24 * 60 * 60 * 1000;
 const FAST_CHANNELS = new Set(["sms", "push", "whatsapp", "telegram", "pushover", "ntfy"]);
 
-function momentLabel(kind: string): string {
-  if (kind === "flood") return "leak alert";
-  if (kind === "forecast" || kind === "nws") return "freeze forecast";
-  return "freeze alert";
+export type AlertMomentKey = "freeze" | "leak" | "forecast";
+
+/** Which card copy fits an alert kind. */
+export function alertMomentKey(kind: string): AlertMomentKey {
+  if (kind === "flood") return "leak";
+  if (kind === "forecast" || kind === "nws") return "forecast";
+  return "freeze";
 }
 
-export function findAlertMoment(events: EventLike[], nowMs = Date.now()): AlertMoment | null {
+function momentLabel(kind: string, locale: Locale): string {
+  return overviewNudgesMessages(locale).alertMoment.labels[alertMomentKey(kind)];
+}
+
+export function findAlertMoment(
+  events: EventLike[],
+  nowMs = Date.now(),
+  locale: Locale = "en",
+): AlertMoment | null {
   const latest = events
     .filter((e) => isCriticalNotifyKind(e.kind as NotifyKind))
     .filter((e) => (e.channels_sent ?? []).length > 0)
@@ -46,6 +59,6 @@ export function findAlertMoment(events: EventLike[], nowMs = Date.now()): AlertM
     eventId: latest.id,
     kind: latest.kind,
     createdAt: latest.created_at,
-    label: momentLabel(latest.kind),
+    label: momentLabel(latest.kind, locale),
   };
 }

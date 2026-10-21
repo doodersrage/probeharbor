@@ -9,7 +9,7 @@ import {
   resolvePageUrl,
   resolveSiteUrl,
 } from "../../lib/schemaMarkup";
-import { getLocale } from "../../i18n";
+import { fmt, getLocale } from "../../i18n";
 import { integrationsMessages } from "../../i18n/messages/integrations";
 import { getLocalizedIntegrationTaglines } from "../../i18n/content/integrations";
 import {
@@ -73,7 +73,7 @@ const schema = [
     <section class="card">
       <h2 class="card-title">n8n</h2>
       <ol class="text-sm space-y-2 pl-5 list-decimal mb-4">
-        <li set:html={t.n8nStep1Html(N8N_ALERT_SHEETS_FLOW_URL)} />
+        <li set:html={fmt(t.n8nStep1Html, { href: N8N_ALERT_SHEETS_FLOW_URL })} />
         <li>{t.n8nStep2}</li>
         <li set:html={t.n8nStep3Html} />
       </ol>

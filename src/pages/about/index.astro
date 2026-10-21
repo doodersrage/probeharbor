@@ -14,7 +14,7 @@ import {
   resolveSiteUrl,
 } from "../../lib/schemaMarkup";
 import { getAboutStats } from "../../lib/aboutPages";
-import { getLocale, localizePath } from "../../i18n";
+import { fmt, getLocale, localizePath } from "../../i18n";
 import { aboutMessages } from "../../i18n/messages/about";
 import { aboutArticleMessages } from "../../i18n/messages/aboutArticle";
 import {
@@ -74,7 +74,7 @@ const initialSearchQuery = Astro.url.searchParams.get("q")?.trim() ?? "";
 
     <section class="card about-browse">
       <h2 class="card-title">{t.findTitle}</h2>
-      <p class="card-subtitle">{t.findSubtitle(stats.totalCount)}</p>
+      <p class="card-subtitle">{fmt(t.findSubtitle, { count: stats.totalCount })}</p>
       <AboutSearch
         client:visible
         pages={searchIndex}

@@ -2,6 +2,7 @@ import { signWithAlertLinkSecret, verifyWithAlertLinkSecret } from "./alertAckTo
 import type { AlertSettings } from "./alerts";
 import { getAlertSettingsForUser, saveAlertSettingsForUser } from "./notify";
 import { createAdminClient } from "./supabase";
+import type { Locale } from "../i18n/locales";
 
 /** Recurring (non-alert) emails a recipient can unsubscribe from. */
 export type UnsubscribeKind =
@@ -19,6 +20,7 @@ const SETTINGS_FIELD: Record<UnsubscribeKind, keyof AlertSettings> = {
   freeze_drill: "freezeDrillEnabled",
 };
 
+/** English labels; the confirm page uses `app/email/unsubscribe` labels. */
 export const UNSUBSCRIBE_LABELS: Record<UnsubscribeKind, string> = {
   digest: "weekly digest emails",
   monthly_report: "monthly report emails",
@@ -35,15 +37,18 @@ function unsubscribePayload(userId: string, kind: UnsubscribeKind): string {
   return `unsubscribe:${userId}:${kind}`;
 }
 
-/** Signed one-click unsubscribe URL, or null when no signing secret is configured. */
+/** Signed one-click unsubscribe URL (`lang` = page language), or null when no signing secret is configured. */
 export async function buildUnsubscribeUrl(
   siteUrl: string,
   userId: string,
   kind: UnsubscribeKind,
+  locale: Locale = "en",
 ): Promise<string | null> {
   const sig = await signWithAlertLinkSecret(unsubscribePayload(userId, kind));
   if (!sig) return null;
   const params = new URLSearchParams({ uid: userId, kind, sig });
+  // Unsigned hint so the confirm page speaks the recipient's language.
+  if (locale !== "en") params.set("lang", locale);
   return `${siteUrl.replace(/\/$/, "")}/api/email/unsubscribe?${params.toString()}`;
 }
 

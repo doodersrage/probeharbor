@@ -1,5 +1,7 @@
 ---
-import { FALSE_ALARM_TIPS, FLOOD_FALSE_ALARM_TIPS } from "../../lib/falseAlarmHints";
+import { getFalseAlarmTips, getFloodFalseAlarmTips } from "../../lib/falseAlarmHints";
+import { getLocale } from "../../i18n";
+import { alertsMessages } from "../../i18n/messages/app/alerts";
 
 interface Props {
   show?: boolean;
@@ -7,16 +9,20 @@ interface Props {
 
 const { show = true } = Astro.props;
 if (!show) return null;
+const locale = getLocale(Astro);
+const t = alertsMessages(locale).tipsCard;
+const freezeTips = getFalseAlarmTips(locale);
+const floodTips = getFloodFalseAlarmTips(locale);
 ---
 {/* Reference material: folded so the alert list stays the focus of the page. */}
 <details class="card" id="false-alarm-tips">
-  <summary class="card-title cursor-pointer">Getting too many alerts? Tips for cutting false alarms</summary>
+  <summary class="card-title cursor-pointer">{t.summary}</summary>
   <p class="card-subtitle mt-3 mb-3">
-    Freeze noise is usually placement or threshold. Flood noise is splash, condensation, or sump cycles: wet contacts still fire during snooze.
+    {t.intro}
   </p>
-  <h3 class="text-sm font-semibold mb-2">Freeze</h3>
+  <h3 class="text-sm font-semibold mb-2">{t.freeze}</h3>
   <ul class="text-sm space-y-3 mb-4">
-    {FALSE_ALARM_TIPS.map((tip) => (
+    {freezeTips.map((tip) => (
       <li>
         <strong>{tip.title}</strong>
         <span class="block text-[var(--color-text-muted)]">{tip.detail}</span>
@@ -26,9 +32,9 @@ if (!show) return null;
       </li>
     ))}
   </ul>
-  <h3 class="text-sm font-semibold mb-2">Flood / leak</h3>
+  <h3 class="text-sm font-semibold mb-2">{t.flood}</h3>
   <ul class="text-sm space-y-3 mb-0">
-    {FLOOD_FALSE_ALARM_TIPS.map((tip) => (
+    {floodTips.map((tip) => (
       <li>
         <strong>{tip.title}</strong>
         <span class="block text-[var(--color-text-muted)]">{tip.detail}</span>

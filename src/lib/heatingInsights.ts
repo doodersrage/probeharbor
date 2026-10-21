@@ -1,6 +1,9 @@
 import type { ChartPoint } from "./garageTempsHistory";
 import type { ThermostatSnapshot } from "./thermostatCorrelation";
 import { isThermostatCooling, isThermostatHeating } from "./thermostatCorrelation";
+import { fmt, formatNumber } from "../i18n/format";
+import type { Locale } from "../i18n/locales";
+import { overviewCardsMessages } from "../i18n/messages/app/overviewCards";
 
 export type HeatingInsight = {
   label: string;
@@ -48,15 +51,29 @@ export function dewPointF(tempF: number, rhPct: number): number | null {
   return tdC * (9 / 5) + 32;
 }
 
-export function buildHeatingInsights(options: {
-  indoorPoints: ChartPoint[];
-  outdoorTempF: number | null;
-  freezeThresholdF: number;
-  doorOpenMinutes?: number | null;
-  /** Live house temp from thermostat OAuth or an indoor reference probe. */
-  houseTempF?: number | null;
-  thermostatSnapshot?: ThermostatSnapshot | null;
-}): HeatingInsight[] {
+function fixed(value: number, digits: number, locale: Locale): string {
+  return formatNumber(value, locale, {
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits,
+    useGrouping: false,
+  });
+}
+
+export function buildHeatingInsights(
+  options: {
+    indoorPoints: ChartPoint[];
+    outdoorTempF: number | null;
+    freezeThresholdF: number;
+    doorOpenMinutes?: number | null;
+    /** Live house temp from thermostat OAuth or an indoor reference probe. */
+    houseTempF?: number | null;
+    thermostatSnapshot?: ThermostatSnapshot | null;
+  },
+  locale: Locale = "en",
+): HeatingInsight[] {
+  const t = overviewCardsMessages(locale).heating;
+  const threshold =
+    locale === "en" ? String(options.freezeThresholdF) : formatNumber(options.freezeThresholdF, locale);
   const insights: HeatingInsight[] = [];
   const latest = options.indoorPoints.filter((p) => Number.isFinite(p.tempf)).at(-1);
   if (!latest) return insights;
@@ -64,8 +81,8 @@ export function buildHeatingInsights(options: {
   const rate = estimateHeatingLossRate(options.indoorPoints, options.outdoorTempF);
   if (rate != null && rate <= -2) {
     insights.push({
-      label: "Rapid temperature drop",
-      detail: `Space is falling about ${Math.abs(rate).toFixed(1)}°F/h. Check doors, heaters, and insulation.`,
+      label: t.rapidDrop.label,
+      detail: fmt(t.rapidDrop.detail, { rate: fixed(Math.abs(rate), 1, locale) }),
       severity: "warning",
     });
   }
@@ -77,16 +94,16 @@ export function buildHeatingInsights(options: {
     rate < 0
   ) {
     insights.push({
-      label: "Door may be driving heat loss",
-      detail: `Door open ~${Math.round(options.doorOpenMinutes)} min while temperature is falling.`,
+      label: t.doorOpen.label,
+      detail: fmt(t.doorOpen.detail, { minutes: fixed(Math.round(options.doorOpenMinutes), 0, locale) }),
       severity: "warning",
     });
   }
 
   if (latest.tempf <= options.freezeThresholdF + 5) {
     insights.push({
-      label: "Near freeze threshold",
-      detail: `Current ${latest.tempf.toFixed(1)}°F: threshold is ${options.freezeThresholdF}°F.`,
+      label: t.nearFreeze.label,
+      detail: fmt(t.nearFreeze.detail, { temp: fixed(latest.tempf, 1, locale), threshold }),
       severity: latest.tempf <= options.freezeThresholdF ? "warning" : "info",
     });
   }
@@ -94,8 +111,11 @@ export function buildHeatingInsights(options: {
   if (options.outdoorTempF != null && options.outdoorTempF <= 20 && latest.tempf > options.freezeThresholdF) {
     const margin = latest.tempf - options.freezeThresholdF;
     insights.push({
-      label: "Cold snap outside",
-      detail: `Outdoor ${options.outdoorTempF.toFixed(0)}°F: ${margin.toFixed(0)}°F margin above your freeze alert.`,
+      label: t.coldSnap.label,
+      detail: fmt(t.coldSnap.detail, {
+        outdoor: fixed(options.outdoorTempF, 0, locale),
+        margin: fixed(margin, 0, locale),
+      }),
       severity: margin <= 8 ? "warning" : "info",
     });
   }
@@ -105,8 +125,11 @@ export function buildHeatingInsights(options: {
     const margin = latest.tempf - dewPoint;
     if (margin <= 5) {
       insights.push({
-        label: "Condensation risk",
-        detail: `Dew point ~${dewPoint.toFixed(0)}°F: air is within ${Math.max(0, margin).toFixed(0)}°F of saturating. Cold slabs and tools can sweat even if the probe is warmer.`,
+        label: t.condensation.label,
+        detail: fmt(t.condensation.detail, {
+          dewPoint: fixed(dewPoint, 0, locale),
+          margin: fixed(Math.max(0, margin), 0, locale),
+        }),
         severity: margin <= 2 ? "warning" : "info",
       });
     }
@@ -119,36 +142,40 @@ export function buildHeatingInsights(options: {
   const thermostat = options.thermostatSnapshot;
 
   if (houseTempF != null && Number.isFinite(latest.tempf)) {
+    const house = fixed(houseTempF, 0, locale);
     const delta = houseTempF - latest.tempf;
     if (delta >= 12) {
-      const houseLabel = thermostat ? "House thermostat" : "Indoor reference";
       insights.push({
-        label: "House–probe gap",
-        detail: `${houseLabel} ${houseTempF.toFixed(0)}°F vs probe ${latest.tempf.toFixed(1)}°F (${delta.toFixed(0)}°F warmer inside). Freeze alerts still apply to the unconditioned probe.`,
+        label: t.houseGap.label,
+        detail: fmt(thermostat ? t.houseGap.detailThermostat : t.houseGap.detailReference, {
+          house,
+          probe: fixed(latest.tempf, 1, locale),
+          delta: fixed(delta, 0, locale),
+        }),
         severity: latest.tempf <= options.freezeThresholdF + 5 ? "warning" : "info",
       });
     }
 
     if (latest.tempf <= options.freezeThresholdF && houseTempF > options.freezeThresholdF + 10) {
       insights.push({
-        label: "Warm house, cold probe",
-        detail: `Probe is at or below ${options.freezeThresholdF}°F while the house reads ${houseTempF.toFixed(0)}°F: expected for an unheated shop, garage, or attic.`,
+        label: t.warmHouse.label,
+        detail: fmt(t.warmHouse.detail, { threshold, house }),
         severity: "info",
       });
     }
 
     if (thermostat && isThermostatHeating(thermostat.hvacMode) && latest.tempf < houseTempF - 15) {
       insights.push({
-        label: "HVAC heating",
-        detail: `Furnace is on (house ${houseTempF.toFixed(0)}°F) but the monitored space is unconditioned: it will stay colder than living areas.`,
+        label: t.hvacHeating.label,
+        detail: fmt(t.hvacHeating.detail, { house }),
         severity: "info",
       });
     }
 
     if (thermostat && isThermostatCooling(thermostat.hvacMode) && latest.tempf > houseTempF + 10) {
       insights.push({
-        label: "HVAC cooling",
-        detail: `AC is running (house ${houseTempF.toFixed(0)}°F). A hot attic, shop, or garage probe can still spike on sunny days.`,
+        label: t.hvacCooling.label,
+        detail: fmt(t.hvacCooling.detail, { house }),
         severity: "info",
       });
     }

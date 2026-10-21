@@ -22,6 +22,11 @@ import {
   isDashboardQuietActive,
   shouldForceSimpleOverview,
 } from "../../lib/dashboardComfort";
+import { getLocale, LOCALE_META, LOCALES } from "../../i18n";
+import { settingsMessages } from "../../i18n/messages/app/settings";
+
+const locale = getLocale(Astro);
+const t = settingsMessages(locale);
 
 const shell = Astro.locals.dashboardShell ?? null;
 const { session, user } = shell
@@ -72,46 +77,67 @@ const planLabel =
     : entitlements.tier.charAt(0).toUpperCase() + entitlements.tier.slice(1);
 ---
 <DashboardLayout
-  title="Settings"
-  subtitle="Display, what Overview suggests, and your account."
+  title={t.title}
+  subtitle={t.subtitle}
 >
   <div class="space-y-6">
     {(passwordUpdated || signOutAllFailed || prefsSaved || prefsError || pinnedSaved || pinnedError || quietSaved || quietCleared || tipsHidden || tipsReset) && (
       <div class="dashboard-flash">
       {passwordUpdated && (
-        <p class="alert-success mt-0 mb-0" role="status">Password updated.</p>
+        <p class="alert-success mt-0 mb-0" role="status">{t.notices.passwordUpdated}</p>
       )}
       {signOutAllFailed && (
         <p class="alert-warning mt-0 mb-0" role="alert">
-          Could not sign out other devices. You're still signed in here; try again in a minute.
+          {t.notices.signOutAllFailed}
         </p>
       )}
       {prefsSaved && (
-        <p class="alert-success mt-0 mb-0" role="status">Display preferences saved.</p>
+        <p class="alert-success mt-0 mb-0" role="status">{t.notices.prefsSaved}</p>
       )}
       {prefsError && (
-        <p class="alert-warning mt-0 mb-0" role="alert">Could not save display preferences.</p>
+        <p class="alert-warning mt-0 mb-0" role="alert">{t.notices.prefsError}</p>
       )}
       {pinnedSaved && (
-        <p class="alert-success mt-0 mb-0" role="status">Pinned metrics saved.</p>
+        <p class="alert-success mt-0 mb-0" role="status">{t.notices.pinnedSaved}</p>
       )}
       {pinnedError && (
-        <p class="alert-warning mt-0 mb-0" role="alert">Could not save pinned metrics.</p>
+        <p class="alert-warning mt-0 mb-0" role="alert">{t.notices.pinnedError}</p>
       )}
       {(quietSaved || quietCleared) && (
         <p class="alert-success mt-0 mb-0" role="status">
-          {quietCleared ? "Recommendations shown again." : "Overview recommendations hidden for 7 days."}
+          {quietCleared ? t.notices.quietCleared : t.notices.quietSaved}
         </p>
       )}
       {(tipsHidden || tipsReset) && (
         <p class="alert-success mt-0 mb-0" role="status">
-          {tipsReset ? "Companion tips shown on Overview again." : "Companion tips hidden on Overview."}
+          {tipsReset ? t.notices.tipsReset : t.notices.tipsHidden}
         </p>
       )}
       </div>
     )}
 
     <DisplayPreferences preferences={preferences} redirectTo="/dashboard/settings" />
+
+    <section class="card card-compact" id="language" aria-labelledby="language-heading">
+      <form method="POST" action="/api/locale" data-locale-form>
+        <input type="hidden" name="redirect" value="/dashboard/settings" />
+        <h2 class="card-title" id="language-heading">{t.language.heading}</h2>
+        <p class="card-subtitle mb-3">{t.language.subtitle}</p>
+        <div class="flex flex-wrap items-end gap-3">
+          <div class="form-field mb-0">
+            <label class="form-label" for="settings-locale">{t.language.label}</label>
+            <select class="form-input" id="settings-locale" name="locale">
+              {LOCALES.map((l) => (
+                <option value={l} lang={LOCALE_META[l].htmlLang} selected={l === locale}>
+                  {LOCALE_META[l].label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <button type="submit" class="btn-secondary">{t.language.submit}</button>
+        </div>
+      </form>
+    </section>
 
     <div id="dashboard-comfort">
       <DashboardComfortCard
@@ -126,16 +152,16 @@ const planLabel =
     <PwaInstallCard />
 
     <details class="card" id="account-security" open={signOutAllFailed}>
-      <summary class="card-title cursor-pointer">Account &amp; security</summary>
+      <summary class="card-title cursor-pointer">{t.accountSecurity.summary}</summary>
       <p class="card-subtitle mb-4">
-        MFA, data retention, tenant relay, and account deletion: leave these alone unless you need them.
+        {t.accountSecurity.subtitle}
       </p>
 
       <div class="space-y-6">
         <AccountSecurity />
 
         <AccountLifecycle
-          userEmail={user.email ?? "your account"}
+          userEmail={user.email ?? t.accountSecurity.yourAccount}
           dataRetentionDays={alertSettings.dataRetentionDays}
           historyDays={entitlements.historyDays}
           tierLabel={planLabel}
@@ -148,15 +174,15 @@ const planLabel =
         />
 
         {retentionSaved && (
-          <p class="alert-success" role="status">Retention preference saved.</p>
+          <p class="alert-success" role="status">{t.notices.retentionSaved}</p>
         )}
 
         {tenantSaved && (
-          <p class="alert-success" role="status">Tenant contact saved.</p>
+          <p class="alert-success" role="status">{t.notices.tenantSaved}</p>
         )}
         {tenantError && (
           <p class="alert-warning" role="alert">
-            {tenantError === "1" ? "Could not save tenant contact." : decodeURIComponent(tenantError)}
+            {tenantError === "1" ? t.notices.tenantError : decodeURIComponent(tenantError)}
           </p>
         )}
 
@@ -171,3 +197,9 @@ const planLabel =
     </details>
   </div>
 </DashboardLayout>
+
+<script>
+  const localeForm = document.querySelector("[data-locale-form]") as HTMLFormElement | null;
+  const localeSelect = localeForm?.querySelector("select[name=locale]") as HTMLSelectElement | null;
+  localeSelect?.addEventListener("change", () => localeForm?.requestSubmit());
+</script>

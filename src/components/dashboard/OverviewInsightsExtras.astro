@@ -8,6 +8,8 @@ import AirQualityCard from "./AirQualityCard.astro";
 import InsightCalloutCard from "./InsightCalloutCard.astro";
 import RssiOverviewCard from "./RssiOverviewCard.astro";
 import ClaimsPackPromptCard from "./ClaimsPackPromptCard.astro";
+import { getLocale } from "../../i18n";
+import { overviewInsightsMessages } from "../../i18n/messages/app/overviewInsights";
 import type { DeviceWithSensors } from "../../lib/devices";
 import type { DoorOpenSession } from "../../lib/doorDuration";
 import type { PlanTier } from "../../lib/entitlements";
@@ -58,13 +60,15 @@ const {
   showClaimsPackPrompt,
 } = Astro.props;
 
+const t = overviewInsightsMessages(getLocale(Astro)).extras;
+
 function calloutTone(tone?: string): "warning" | "info" {
   return tone === "warning" ? "warning" : "info";
 }
 ---
 
 <details class="card">
-  <summary class="dashboard-recommendations-summary">Sensor extras</summary>
+  <summary class="dashboard-recommendations-summary">{t.summary}</summary>
   <div class="dashboard-recommendations-body space-y-4">
     {doorTempSummary && (
       <DoorTempInsightCard
@@ -75,19 +79,19 @@ function calloutTone(tone?: string): "warning" | "info" {
     )}
     {powerTempSummary && (
       <InsightCalloutCard
-        title="Power vs temperature"
-        subtitle="Circuit Off time correlated with cooling rate."
+        title={t.powerTitle}
+        subtitle={t.powerSubtitle}
         headline={powerTempSummary.title}
         detail={powerTempSummary.detail}
         tone={calloutTone(powerTempSummary.tone)}
         href="/dashboard/devices?view=ops"
-        hrefLabel="Open Devices"
+        hrefLabel={t.openDevices}
       />
     )}
     {motionSummary && (
       <InsightCalloutCard
-        title="Motion"
-        subtitle="Activity in the last 24 hours."
+        title={t.motionTitle}
+        subtitle={t.motionSubtitle}
         headline={motionSummary.title}
         detail={motionSummary.detail}
         tone={calloutTone(motionSummary.tone)}

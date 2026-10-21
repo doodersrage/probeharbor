@@ -6,11 +6,14 @@ import { getUserPreferences } from "../../../lib/userPreferences";
 import { fetchGarageTempHistory, fetchGarageTempChartData } from "../../../lib/garageTempsHistory";
 import { listHouseholdDevices } from "../../../lib/devices";
 import { getUserEntitlements } from "../../../lib/entitlements";
+import { apiCommonMessages, apiLocale } from "../../../i18n/messages/app/api/common";
 
-export const GET: APIRoute = async ({ request, cookies }) => {
+export const GET: APIRoute = async ({ request, cookies, locals }) => {
+  const locale = apiLocale({ locals });
+  const tc = apiCommonMessages(locale);
   const { session, user } = await getAuthFromRequest(request, cookies);
   if (!session || !user) {
-    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+    return new Response(JSON.stringify({ error: tc.unauthorized }), {
       status: 401,
       headers: { "Content-Type": "application/json" },
     });

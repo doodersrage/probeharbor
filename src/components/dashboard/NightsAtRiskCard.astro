@@ -3,6 +3,9 @@ import DashboardCard from "./DashboardCard.astro";
 import type { NightRisk, WeatherSnapshot } from "../../lib/FetchWeather";
 import type { NwsAlertSummary } from "../../lib/nwsAlerts";
 import WeatherMap from "../WeatherMap";
+import { fmt, formatDateTime, formatNumber, getLocale, plural } from "../../i18n";
+import { overviewCardsMessages } from "../../i18n/messages/app/overviewCards";
+import { liveMessages } from "../../i18n/messages/app/live";
 
 interface Props {
   nightsAtRisk: NightRisk[];
@@ -22,18 +25,41 @@ const {
   nwsAlerts,
 } = Astro.props;
 
+const locale = getLocale(Astro);
+const t = overviewCardsMessages(locale).nightsCard;
+// Same map copy as Live's weather panel.
+const weatherText = liveMessages(locale).weather;
+const mapText = {
+  mapLabel: weatherText.mapLabel,
+  openLarger: weatherText.mapOpenLarger,
+  attribution: weatherText.mapAttribution,
+};
+const threshold = locale === "en" ? String(freezeThresholdF) : formatNumber(freezeThresholdF, locale);
+const whole = (value: number) =>
+  formatNumber(value, locale, { maximumFractionDigits: 0, useGrouping: false });
+/** `night.dateLabel` is English; other languages format `night.date` the same way. */
+const nightLabel = (night: NightRisk) =>
+  locale === "en"
+    ? night.dateLabel
+    : formatDateTime(`${night.date}T12:00:00Z`, locale, {
+        weekday: "short",
+        month: "short",
+        day: "numeric",
+        timeZone: "UTC",
+      });
+
 const locationLabel = weatherSnapshot
   ? `${weatherSnapshot.name}${weatherSnapshot.country ? `, ${weatherSnapshot.country}` : ""}`
-  : "Weather";
+  : t.weather;
 ---
 {nightsAtRisk.length > 0 && (
   <DashboardCard>
-    <h2 class="card-title">Nights at risk this week</h2>
+    <h2 class="card-title">{t.title}</h2>
     <p class="card-subtitle mb-4">
-      Forecast overnight lows vs your freeze threshold ({freezeThresholdF}°F).
+      {fmt(t.subtitle, { threshold })}
       {nightsRiskCount > 0
-        ? ` ${nightsRiskCount} night(s) look at risk.`
-        : " No nights currently forecast below threshold."}
+        ? ` ${plural(t.atRiskCount, nightsRiskCount, locale)}`
+        : ` ${t.noneAtRisk}`}
     </p>
     {weatherHasCoords && weatherSnapshot && weatherSnapshot.lat != null && weatherSnapshot.lon != null && (
       <WeatherMap
@@ -41,6 +67,7 @@ const locationLabel = weatherSnapshot
         lat={weatherSnapshot.lat}
         lon={weatherSnapshot.lon}
         label={locationLabel}
+        text={mapText}
       >
         <div slot="fallback" class="weather-map mb-6">
           <div class="weather-map-frame freeze-map-frame" aria-hidden="true"></div>
@@ -49,7 +76,7 @@ const locationLabel = weatherSnapshot
     )}
     {nwsAlerts && nwsAlerts.alerts.length > 0 && (
       <div class="alert-warning mb-4">
-        <p class="m-0 mb-2"><strong>NWS freeze-related alerts</strong></p>
+        <p class="m-0 mb-2"><strong>{t.nwsTitle}</strong></p>
         <ul class="m-0 pl-5">
           {nwsAlerts.alerts.slice(0, 3).map((alert) => (
             <li>
@@ -68,15 +95,15 @@ const locationLabel = weatherSnapshot
             night.atRisk && "border-[var(--color-danger-border)]",
           ]}
         >
-          <span class="block text-xs text-muted-foreground">{night.dateLabel}</span>
+          <span class="block text-xs text-muted-foreground">{nightLabel(night)}</span>
           <p class="m-0 mt-1 text-base font-semibold text-foreground">
-            {night.minTempF.toFixed(0)}°F
+            {whole(night.minTempF)}°F
           </p>
           <p class:list={[
             "m-0 mt-0.5 text-sm",
             night.atRisk ? "text-[var(--color-danger)]" : "text-muted-foreground",
           ]}>
-            {night.atRisk ? "At risk" : "OK"}
+            {night.atRisk ? t.atRisk : t.ok}
           </p>
         </article>
       ))}

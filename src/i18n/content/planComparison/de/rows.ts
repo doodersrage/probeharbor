@@ -1,20 +1,8 @@
-import {
-  FREE_HISTORY_DAYS,
-  FREE_MAX_DEVICES,
-  MEMBER_HISTORY_DAYS,
-  MEMBER_MAX_DEVICES,
-  PORTFOLIO_MAX_OWNED_HOUSEHOLDS,
-  PRO_HISTORY_DAYS,
-  PRO_MAX_DEVICES,
-  PRO_MAX_OWNED_HOUSEHOLDS,
-} from "../../../../lib/entitlements";
-import { formatRetention } from "../format";
 import type { PlanComparisonOverlay } from "../index";
 
 const Y = "Ja";
 const all = { free: Y, member: Y, pro: Y, portfolio: Y };
 const paid = { pro: Y, portfolio: Y };
-const r = (days: number) => formatRetention(days, "de");
 const sensors = "Temperatur, Luftfeuchte, CO₂, Luftqualität, Türen, Lecks, Energie, Bewegung";
 const forecastNws = "Schwellenwert + Frost-Countdown + Prognose + NWS (USA)";
 const trial = "14 Tage (+7 mit Empfehlung)";
@@ -23,18 +11,18 @@ export default {
   push_devices: {
     category: "Kontingente",
     label: "Push-Geräte für die Datenübertragung (pro Objekt)",
-    free: `${FREE_MAX_DEVICES} Geräte`,
-    member: `${MEMBER_MAX_DEVICES} Geräte`,
-    pro: `${PRO_MAX_DEVICES} Geräte`,
-    portfolio: `${PRO_MAX_DEVICES} Geräte`,
+    free: `2 Geräte`,
+    member: `6 Geräte`,
+    pro: `24 Geräte`,
+    portfolio: `24 Geräte`,
   },
   data_retention: {
     category: "Kontingente",
     label: "Datenaufbewahrung",
-    free: r(FREE_HISTORY_DAYS),
-    member: r(MEMBER_HISTORY_DAYS),
-    pro: `${r(PRO_HISTORY_DAYS)}+`,
-    portfolio: `${r(PRO_HISTORY_DAYS)}+`,
+    free: "7 Tage",
+    member: "90 Tage",
+    pro: `1 Jahr+`,
+    portfolio: `1 Jahr+`,
   },
   pull_feeds: {
     category: "Kontingente",
@@ -106,8 +94,8 @@ export default {
   multi_property: {
     category: "Haushalte",
     label: "Eigene Objekte",
-    pro: `Bis zu ${PRO_MAX_OWNED_HOUSEHOLDS}`,
-    portfolio: `Bis zu ${PORTFOLIO_MAX_OWNED_HOUSEHOLDS}`,
+    pro: `Bis zu 50`,
+    portfolio: `Bis zu 500`,
   },
   property_manager: {
     category: "Haushalte",

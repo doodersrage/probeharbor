@@ -30,6 +30,7 @@ import { getIndoorReferenceSensorId } from "../../../lib/indoorReference";
 import { requireHouseholdManager } from "../../../lib/householdAuth";
 import { recordHouseholdActivity } from "../../../lib/householdActivity";
 import { formRedirectPath, withQuery } from "../../../lib/siteUrl";
+import { apiLocale, apiMoreCommonMessages } from "../../../i18n/messages/app/apiMore/common";
 
 export const GET: APIRoute = async ({ request, cookies }) => {
   const { user } = await getAuthFromRequest(request, cookies);
@@ -85,7 +86,8 @@ export const GET: APIRoute = async ({ request, cookies }) => {
   );
 };
 
-export const POST: APIRoute = async ({ request, cookies, redirect }) => {
+export const POST: APIRoute = async (context) => {
+  const { request, cookies, redirect } = context;
   const { user } = await getAuthFromRequest(request, cookies);
   if (!user) {
     return redirect("/signin");
@@ -127,7 +129,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     if (ownedCount >= entitlements.maxOwnedHouseholds) {
       return redirect(withQuery(redirectTo, { error: "property_limit" }));
     }
-    const name = formData.get("name")?.toString() ?? "My property";
+    const name = formData.get("name")?.toString() ?? apiMoreCommonMessages(apiLocale(context)).defaults.myProperty;
     const result = await createAdditionalHouseholdForUser(user.id, name);
     if (result.error) {
       return redirect(withQuery(redirectTo, { error: "1" }));
@@ -236,11 +238,15 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     .maybeSingle();
 
   const acceptUrl = buildSiteUrl(request, `/invite/${invite.token}`);
+  // Written in the inviter's language: the invitee may not have an account yet.
+  const locale = apiLocale(context);
   await sendInviteEmail(
     email,
     acceptUrl,
-    householdRow?.name ?? "a household",
+    householdRow?.name ?? apiMoreCommonMessages(locale).defaults.aHousehold,
     user.email ?? null,
+    // English is the default; only pass a locale when it changes the email.
+    ...(locale === "en" ? [] : [locale]),
   );
 
   return redirect(withQuery(redirectTo, { invited: "1" }));

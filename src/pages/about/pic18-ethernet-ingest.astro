@@ -2,7 +2,7 @@
 import AboutArticle from "../../components/AboutArticle.astro";
 import { affiliateHref, commerceLinkRel } from "../../lib/affiliateLinks";
 import { BOM } from "../../lib/bomLinks";
-import { getLocale } from "../../i18n";
+import { fmt, getLocale } from "../../i18n";
 import { getLocalizedAboutPage } from "../../i18n/content/aboutPages";
 import { getLocalizedAboutHeroPhoto } from "../../i18n/content/aboutPhotos";
 import { pic18EthernetIngestMessages } from "../../i18n/messages/about-pages/pic18-ethernet-ingest";
@@ -92,7 +92,7 @@ const MPLAB = "https://www.microchip.com/en-us/tools-resources/develop/mplab-x-i
   --upstream https://probeharbor.dev`}</code></pre>
     </li>
     <li set:html={t.stepHostHtml} />
-    <li set:html={t.stepMplabHtml(MPLAB)} />
+    <li set:html={fmt(t.stepMplabHtml, { mplab: MPLAB })} />
     <li set:html={t.stepSerialHtml} />
   </ol>
   <p>

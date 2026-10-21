@@ -9,6 +9,7 @@ import {
   paramsFromSearchParams,
 } from "../../../lib/historySavedViews";
 import { formRedirectPath, withQuery } from "../../../lib/siteUrl";
+import { apiCommonMessages, apiLocale } from "../../../i18n/messages/app/api/common";
 
 async function updateDefaultHistoryViewId(
   accessToken: string,
@@ -37,10 +38,12 @@ async function updateDefaultHistoryViewId(
   };
 }
 
-export const GET: APIRoute = async ({ cookies }) => {
+export const GET: APIRoute = async ({ cookies, locals }) => {
+  const locale = apiLocale({ locals });
+  const tc = apiCommonMessages(locale);
   const { session, user } = await getAuthFromCookies(cookies);
   if (!session || !user) {
-    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+    return new Response(JSON.stringify({ error: tc.unauthorized }), {
       status: 401,
       headers: { "Content-Type": "application/json" },
     });
@@ -52,7 +55,9 @@ export const GET: APIRoute = async ({ cookies }) => {
   });
 };
 
-export const POST: APIRoute = async ({ request, cookies, redirect }) => {
+export const POST: APIRoute = async ({ request, cookies, redirect, locals }) => {
+  const locale = apiLocale({ locals });
+  const tc = apiCommonMessages(locale);
   const { session, user } = await getAuthFromCookies(cookies);
   if (!session || !user) {
     return redirect("/signin");

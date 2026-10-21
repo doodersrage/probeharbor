@@ -1,4 +1,7 @@
 ---
+import { fmt, getLocale } from "../../i18n";
+import { overviewInsightsMessages } from "../../i18n/messages/app/overviewInsights";
+
 interface Props {
   passwordUpdated?: boolean;
   prefsSaved?: boolean;
@@ -31,6 +34,8 @@ const {
   vacationError = false,
 } = Astro.props;
 
+const t = overviewInsightsMessages(getLocale(Astro)).flash;
+
 const show =
   passwordUpdated ||
   prefsSaved ||
@@ -48,54 +53,54 @@ const show =
 {show && (
   <div class="dashboard-flash" id="overview-flash">
     {passwordUpdated && (
-      <p class="alert-success mt-0 mb-0" role="status">Password updated.</p>
+      <p class="alert-success mt-0 mb-0" role="status">{t.passwordUpdated}</p>
     )}
     {prefsSaved && (
       <p class="alert-success mt-0 mb-0" role="status">
-        Display preferences saved.
+        {t.prefsSaved}
         {" "}
-        <a class="text-link" href="/dashboard/settings">Open settings</a>
+        <a class="text-link" href="/dashboard/settings">{t.openSettings}</a>
       </p>
     )}
     {prefsError && (
       <p class="alert-warning mt-0 mb-0" role="alert">
-        Could not save display preferences.
+        {t.prefsError}
         {" "}
-        <a class="text-link" href="/dashboard/settings">Try again in settings</a>
+        <a class="text-link" href="/dashboard/settings">{t.tryAgainInSettings}</a>
       </p>
     )}
     {checkedSaved && (
       <p class="alert-success mt-0 mb-0" role="status">
-        Marked this property as checked.
+        {t.checkedSaved}
       </p>
     )}
     {checkedError && (
       <p class="alert-warning mt-0 mb-0" role="alert">
-        Could not save space-checked status. Try again.
+        {t.checkedError}
       </p>
     )}
     {ackOk && (
       <p class="alert-success mt-0 mb-0" role="status">
-        {ackMsg ?? "Alert marked as handled."}
+        {ackMsg ?? t.alertHandled}
       </p>
     )}
     {snoozeFlash && (
       <p class="alert-success mt-0 mb-0" role="status">
-        Alerts snoozed{snoozeHours ? ` for ${snoozeHours}h` : ""}.
+        {snoozeHours ? fmt(t.snoozedFor, { hours: snoozeHours }) : t.snoozed}
       </p>
     )}
     {snoozeCleared && (
-      <p class="alert-success mt-0 mb-0" role="status">Snooze cleared.</p>
+      <p class="alert-success mt-0 mb-0" role="status">{t.snoozeCleared}</p>
     )}
     {vacationFlash && (
-      <p class="alert-success mt-0 mb-0" role="status">Vacation mode set.</p>
+      <p class="alert-success mt-0 mb-0" role="status">{t.vacationSet}</p>
     )}
     {vacationCleared && (
-      <p class="alert-success mt-0 mb-0" role="status">Vacation cleared.</p>
+      <p class="alert-success mt-0 mb-0" role="status">{t.vacationCleared}</p>
     )}
     {vacationError && (
       <p class="alert-warning mt-0 mb-0" role="alert">
-        Could not set vacation. Pick a future return date.
+        {t.vacationError}
       </p>
     )}
   </div>

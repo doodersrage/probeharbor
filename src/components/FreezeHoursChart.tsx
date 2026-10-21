@@ -2,17 +2,72 @@ import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import type { DailyFreezeHours } from "../lib/freezeHours";
 import { expandedChartDialogAttrs } from "../lib/chartLightbox";
 
+/**
+ * Every visible string. Plain strings only (island props are serialized);
+ * `{name}` marks a placeholder. Dashboard → History passes a translation
+ * from `src/i18n/messages/app/history/charts`.
+ */
+export const FREEZE_HOURS_CHART_TEXT_EN = {
+  title: "Hours at or below freeze by day",
+  closeExpandedAria: "Close expanded chart",
+  close: "Close",
+  expand: "Expand",
+  hint: "Hours at or below {temp}°F each day in this window. Hover a bar for detail.",
+  axisHours: "{hours}h",
+  belowFreeze: "Below freeze",
+  coldest: "Coldest",
+  hoursValue: "{hours} h",
+};
+
+export type FreezeHoursChartText = typeof FREEZE_HOURS_CHART_TEXT_EN;
+
 interface Props {
   days: DailyFreezeHours[];
   thresholdF?: number;
   title?: string;
+  text?: Partial<FreezeHoursChartText>;
+  /** BCP 47 tag for number/date formatting. Omitted or English keeps the original formatting. */
+  locale?: string;
+}
+
+function fill(template: string, values: Record<string, string | number>): string {
+  return template.replace(/\{(\w+)\}/g, (match, key: string) => (key in values ? String(values[key]) : match));
+}
+
+function isEnglishLocale(locale?: string): boolean {
+  return !locale || locale.toLowerCase().startsWith("en");
+}
+
+/** `toFixed`, or the locale's decimal separator when a non-English locale is given. */
+function fixed(value: number, digits: number, locale?: string): string {
+  if (isEnglishLocale(locale)) return value.toFixed(digits);
+  return new Intl.NumberFormat(locale, {
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits,
+    useGrouping: false,
+  }).format(value);
+}
+
+/** The lib's day label, re-rendered from `dayKey` for a non-English locale. */
+function dayLabel(day: DailyFreezeHours, locale?: string): string {
+  if (isEnglishLocale(locale)) return day.label;
+  const [y, m, d] = day.dayKey.split("-").map(Number);
+  if (!y || !m || !d) return day.label;
+  return new Date(y, m - 1, d).toLocaleDateString(locale, { month: "short", day: "numeric" });
 }
 
 export default function FreezeHoursChart({
   days,
   thresholdF = 34,
-  title = "Hours at or below freeze by day",
+  title: titleProp,
+  text: textProp,
+  locale,
 }: Props) {
+  const text = useMemo<FreezeHoursChartText>(
+    () => ({ ...FREEZE_HOURS_CHART_TEXT_EN, ...textProp }),
+    [textProp],
+  );
+  const title = titleProp ?? text.title;
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
@@ -84,7 +139,7 @@ export default function FreezeHoursChart({
         g.fillStyle = "#94a3b8";
         g.font = "10px system-ui, sans-serif";
         g.textAlign = "right";
-        g.fillText(`${val.toFixed(0)}h`, pad.left - 6, y + 3);
+        g.fillText(fill(text.axisHours, { hours: fixed(val, 0, locale) }), pad.left - 6, y + 3);
       }
 
       days.forEach((day, i) => {
@@ -103,16 +158,16 @@ export default function FreezeHoursChart({
       g.fillStyle = "#94a3b8";
       g.font = "10px system-ui, sans-serif";
       g.textAlign = "left";
-      g.fillText(days[0]!.label, pad.left, height - 10);
+      g.fillText(dayLabel(days[0]!, locale), pad.left, height - 10);
       g.textAlign = "right";
-      g.fillText(days[days.length - 1]!.label, width - pad.right, height - 10);
+      g.fillText(dayLabel(days[days.length - 1]!, locale), width - pad.right, height - 10);
     }
 
     draw();
     const ro = new ResizeObserver(() => draw());
     ro.observe(canvas);
     return () => ro.disconnect();
-  }, [days, maxHours, hoverIndex, expanded]);
+  }, [days, maxHours, hoverIndex, expanded, text, locale]);
 
   function indexFromClientX(clientX: number): number | null {
     const canvas = canvasRef.current;
@@ -141,7 +196,7 @@ export default function FreezeHoursChart({
         <button
           type="button"
           class="history-chart-lightbox-scrim"
-          aria-label="Close expanded chart"
+          aria-label={text.closeExpandedAria}
           onClick={() => setExpanded(false)}
         />
       )}
@@ -159,7 +214,7 @@ export default function FreezeHoursChart({
                 class="history-chart-zoom-btn history-chart-expand-btn"
                 onClick={() => setExpanded(false)}
               >
-                Close
+                {text.close}
               </button>
             ) : (
               <button
@@ -170,13 +225,13 @@ export default function FreezeHoursChart({
                   setExpanded(true);
                 }}
               >
-                Expand
+                {text.expand}
               </button>
             )}
           </div>
         </div>
         <p class="m-0 mb-2 text-xs text-[var(--color-text-muted)]">
-          Hours at or below {thresholdF}°F each day in this window. Hover a bar for detail.
+          {fill(text.hint, { temp: isEnglishLocale(locale) ? thresholdF : new Intl.NumberFormat(locale, { maximumFractionDigits: 2, useGrouping: false }).format(thresholdF) })}
         </p>
         <div
           class="history-chart-canvas-wrap"
@@ -210,16 +265,16 @@ export default function FreezeHoursChart({
               style={{ left: `${tooltipPos.x}px`, top: `${tooltipPos.y}px` }}
               role="status"
             >
-              <p class="history-chart-tooltip-time">{hover.label}</p>
+              <p class="history-chart-tooltip-time">{dayLabel(hover, locale)}</p>
               <ul class="history-chart-tooltip-list">
                 <li>
                   <span
                     class="history-chart-tooltip-swatch"
                     style={{ background: "#38bdf8" }}
                   />
-                  <span class="history-chart-tooltip-label">Below freeze</span>
+                  <span class="history-chart-tooltip-label">{text.belowFreeze}</span>
                   <span class="history-chart-tooltip-value">
-                    {hover.hoursBelow.toFixed(1)} h
+                    {fill(text.hoursValue, { hours: fixed(hover.hoursBelow, 1, locale) })}
                   </span>
                 </li>
                 {hover.coldestF != null && (
@@ -228,9 +283,9 @@ export default function FreezeHoursChart({
                       class="history-chart-tooltip-swatch"
                       style={{ background: "#94a3b8" }}
                     />
-                    <span class="history-chart-tooltip-label">Coldest</span>
+                    <span class="history-chart-tooltip-label">{text.coldest}</span>
                     <span class="history-chart-tooltip-value">
-                      {hover.coldestF.toFixed(1)}°F
+                      {fixed(hover.coldestF, 1, locale)}°F
                     </span>
                   </li>
                 )}

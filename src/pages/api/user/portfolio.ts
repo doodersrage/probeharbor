@@ -3,11 +3,14 @@ import { getAuthFromRequest } from "../../../lib/auth";
 import { fetchCrossPropertySnapshots } from "../../../lib/crossProperty";
 import { getUserEntitlements } from "../../../lib/entitlements";
 import { scorePropertyHealth } from "../../../lib/portfolioHealth";
+import { apiCommonMessages, apiLocale } from "../../../i18n/messages/app/api/common";
 
-export const GET: APIRoute = async ({ request, cookies }) => {
+export const GET: APIRoute = async ({ request, cookies, locals }) => {
+  const locale = apiLocale({ locals });
+  const tc = apiCommonMessages(locale);
   const { session, user } = await getAuthFromRequest(request, cookies);
   if (!session || !user) {
-    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+    return new Response(JSON.stringify({ error: tc.unauthorized }), {
       status: 401,
       headers: { "Content-Type": "application/json" },
     });
@@ -15,7 +18,7 @@ export const GET: APIRoute = async ({ request, cookies }) => {
 
   const entitlements = await getUserEntitlements(user.id);
   if (!entitlements.canUsePortfolio) {
-    return new Response(JSON.stringify({ error: "Portfolio requires Pro or Portfolio plan" }), {
+    return new Response(JSON.stringify({ error: tc.portfolioPlanRequired }), {
       status: 403,
       headers: { "Content-Type": "application/json" },
     });
@@ -32,7 +35,7 @@ export const GET: APIRoute = async ({ request, cookies }) => {
   return new Response(
     JSON.stringify({
       properties: properties.map((p) => {
-        const health = scorePropertyHealth(p);
+        const health = scorePropertyHealth(p, Date.now(), locale);
         return {
           household_id: p.householdId,
           name: p.name,

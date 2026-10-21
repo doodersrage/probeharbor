@@ -1,12 +1,14 @@
 import type { APIRoute } from "astro";
 import { getAuthFromRequest } from "../../../lib/auth";
 import { fetchTemps } from "../../../lib/FetchTemps";
+import { localizeFeedError } from "../../../lib/feedErrorText";
 import { getUserPreferences } from "../../../lib/userPreferences";
 import { buildFeedDisplayGroups } from "../../../lib/tempFeedConfig";
 import { getUserDevicesAsTempConfig } from "../../../lib/devices";
 import { fetchLatestSensorValues } from "../../../lib/sensorReadings";
 import type { SensorKind } from "../../../lib/devices";
 import type { DeviceSource } from "../../../lib/devices";
+import { apiCommonMessages, apiLocale } from "../../../i18n/messages/app/api/common";
 
 export type LiveSensorCard = {
   deviceId: string;
@@ -25,11 +27,13 @@ export type LiveSensorCard = {
   temp?: { f: number; c: number; h: number } | null;
 };
 
-export const GET: APIRoute = async ({ cookies, url, request }) => {
+export const GET: APIRoute = async ({ cookies, url, request, locals }) => {
+  const locale = apiLocale({ locals });
+  const tc = apiCommonMessages(locale);
   const { session, user } = await getAuthFromRequest(request, cookies);
 
   if (!session || !user) {
-    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+    return new Response(JSON.stringify({ error: tc.unauthorized }), {
       status: 401,
       headers: { "Content-Type": "application/json" },
     });
@@ -59,7 +63,7 @@ export const GET: APIRoute = async ({ cookies, url, request }) => {
     feedId: group.feedId,
     feedName: group.feedName,
     enabled: group.enabled,
-    error: group.error,
+    error: group.error ? localizeFeedError(group.error, locale) : group.error,
     probes: group.probes.map((probe) => ({
       key: probe.key,
       label: probe.label,

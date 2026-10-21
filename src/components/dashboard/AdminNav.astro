@@ -1,12 +1,16 @@
 ---
 import DashboardTabNav from "./DashboardTabNav.astro";
 import { ADMIN_DASHBOARD_TABS, adminTabIdFromPath } from "../../lib/dashboardNav";
+import { getLocale } from "../../i18n";
+import { shellMessages } from "../../i18n/messages/app/shell";
 
+const t = shellMessages(getLocale(Astro)).adminTabs;
 const currentPath = Astro.url.pathname;
 const activeId = adminTabIdFromPath(currentPath);
+const tabs = ADMIN_DASHBOARD_TABS.map((tab) => ({ ...tab, label: t[tab.id] }));
 ---
 <DashboardTabNav
-  tabs={[...ADMIN_DASHBOARD_TABS]}
+  tabs={tabs}
   activeId={activeId}
-  ariaLabel="Admin sections"
+  ariaLabel={t.ariaLabel}
 />

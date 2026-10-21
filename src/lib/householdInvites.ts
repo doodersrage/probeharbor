@@ -1,5 +1,9 @@
 import { createServerClient } from "./supabase";
 import { addHouseholdMemberByUserId, setActiveHouseholdForUser } from "./households";
+import { ensureLocale } from "../i18n/catalog";
+import { fmt } from "../i18n/format";
+import type { Locale } from "../i18n/locales";
+import { inviteEmailMessages } from "../i18n/messages/app/email/invite";
 
 export type HouseholdInviteRole =
   | "member"
@@ -178,29 +182,35 @@ export async function revokeHouseholdInvite(
   return { error: null };
 }
 
+/** Invite email, written in the inviter's language (`locale`). */
 export async function sendInviteEmail(
   to: string,
   acceptUrl: string,
   householdName: string,
   invitedByEmail: string | null,
+  locale: Locale = "en",
 ): Promise<void> {
   try {
     const { sendEmail } = await import("./mailer");
     const { brandedEmailParts } = await import("./emailLayout");
-    const who = invitedByEmail ?? "Someone";
-    const parts = brandedEmailParts({
-      eyebrow: "Household invite",
-      preheader: `${who} invited you to share probe sensors on ProbeHarbor.`,
-      title: `You're invited to ${householdName}`,
-      intro: `${who} wants to share live probes, freeze alerts, and leak contacts with you on ProbeHarbor.`,
-      paragraphs: [
-        "Accept the invite with this email address (sign in or register). The link expires in 7 days.",
-      ],
-      cta: { label: "Accept invite", url: acceptUrl },
-      tone: "brand",
-      footerNote: "If you weren’t expecting this, you can ignore the message.",
-    });
-    await sendEmail(to, `You're invited to ${householdName}`, parts.text, {
+    await ensureLocale(locale, ["app"]);
+    const t = inviteEmailMessages(locale);
+    const who = invitedByEmail ?? t.someone;
+    const vars = { who, household: householdName };
+    const parts = brandedEmailParts(
+      {
+        eyebrow: t.eyebrow,
+        preheader: fmt(t.preheader, vars),
+        title: fmt(t.title, vars),
+        intro: fmt(t.intro, vars),
+        paragraphs: [t.body],
+        cta: { label: t.cta, url: acceptUrl },
+        tone: "brand",
+        footerNote: t.footerNote,
+      },
+      locale,
+    );
+    await sendEmail(to, fmt(t.subject, vars), parts.text, {
       html: parts.html,
     });
   } catch (error) {

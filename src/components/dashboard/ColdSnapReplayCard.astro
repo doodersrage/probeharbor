@@ -1,5 +1,7 @@
 ---
 import type { ColdSnapReplay } from "../../lib/coldSnapReplay";
+import { fmt, formatNumber, getLocale, LOCALE_META } from "../../i18n";
+import { appHistoryMessages } from "../../i18n/messages/app/history";
 
 /**
  * History → Chart: the most recent stretch below the freeze line, replayed
@@ -13,19 +15,29 @@ interface Props {
 }
 
 const { replay, thresholdF, timeZone } = Astro.props;
+const locale = getLocale(Astro);
+const t = appHistoryMessages(locale).coldSnap;
+
+/** `toFixed` in English; the locale's decimal separator otherwise. */
+function num(value: number, digits: number): string {
+  if (locale === "en") return value.toFixed(digits);
+  return formatNumber(value, locale, { minimumFractionDigits: digits, maximumFractionDigits: digits, useGrouping: false });
+}
+const thresholdText =
+  locale === "en" ? String(thresholdF) : formatNumber(thresholdF, locale, { maximumFractionDigits: 2, useGrouping: false });
 
 function formatAt(iso: string): string {
   const date = new Date(iso);
   try {
-    return new Intl.DateTimeFormat("en-US", { timeZone, weekday: "short", hour: "numeric", minute: "2-digit" }).format(date);
+    return new Intl.DateTimeFormat(LOCALE_META[locale].intl, { timeZone, weekday: "short", hour: "numeric", minute: "2-digit" }).format(date);
   } catch {
     return date.toISOString().slice(0, 16).replace("T", " ");
   }
 }
 
 function formatHours(hours: number): string {
-  if (hours < 1) return `${Math.max(1, Math.round(hours * 60))} min`;
-  return `${hours.toFixed(1)} h`;
+  if (hours < 1) return fmt(t.minutes, { count: num(Math.max(1, Math.round(hours * 60)), 0) });
+  return fmt(t.hours, { hours: num(hours, 1) });
 }
 
 const toneClass: Record<string, string> = {
@@ -34,28 +46,32 @@ const toneClass: Record<string, string> = {
   ok: "text-[var(--color-success)]",
   info: "text-[var(--color-text-muted)]",
 };
-const toneLabel: Record<string, string> = { cold: "Cold", alert: "Alert", ok: "Recovered", info: "Note" };
+const toneLabel: Record<string, string> = t.tones;
 ---
 <section class="card" aria-labelledby="cold-snap-replay-title">
-  <h2 class="card-title" id="cold-snap-replay-title">Last cold snap in this window</h2>
+  <h2 class="card-title" id="cold-snap-replay-title">{t.title}</h2>
   <p class="card-subtitle mb-4">
-    {replay.probeLabel} was at or below {thresholdF}°F {replay.endAt ? "" : "and still is, "}starting {formatAt(replay.startAt)}.
+    {fmt(replay.endAt ? t.subtitleEnded : t.subtitleOngoing, {
+      probe: replay.probeLabel,
+      temp: thresholdText,
+      time: formatAt(replay.startAt),
+    })}
   </p>
   <div class="stat-grid mb-4">
     <article class="stat-item">
-      <span class="stat-label">Lowest</span>
-      <p class="stat-value">{replay.lowestF.toFixed(1)}°F</p>
+      <span class="stat-label">{t.lowest}</span>
+      <p class="stat-value">{num(replay.lowestF, 1)}°F</p>
     </article>
     <article class="stat-item">
-      <span class="stat-label">Time at or below {thresholdF}°F</span>
+      <span class="stat-label">{fmt(t.timeAtOrBelow, { temp: thresholdText })}</span>
       <p class="stat-value">{formatHours(replay.hoursBelow)}</p>
     </article>
     <article class="stat-item">
-      <span class="stat-label">Lowest to recovered</span>
-      <p class="stat-value">{replay.recoveryHours != null ? formatHours(replay.recoveryHours) : "Not yet"}</p>
+      <span class="stat-label">{t.lowestToRecovered}</span>
+      <p class="stat-value">{replay.recoveryHours != null ? formatHours(replay.recoveryHours) : t.notYet}</p>
     </article>
   </div>
-  <ol class="space-y-2 mb-0" aria-label="Cold snap timeline">
+  <ol class="space-y-2 mb-0" aria-label={t.timelineAria}>
     {replay.steps.map((step) => (
       <li class="flex flex-wrap gap-x-3 text-sm">
         <time class="tabular-nums text-[var(--color-text-muted)] min-w-[7.5rem]" datetime={step.at}>{formatAt(step.at)}</time>
@@ -66,7 +82,11 @@ const toneLabel: Record<string, string> = { cold: "Cold", alert: "Alert", ok: "R
   </ol>
   {replay.otherLows.length > 0 && (
     <p class="form-hint mt-4 mb-0">
-      Other probes over the same stretch: {replay.otherLows.map((o) => `${o.probeLabel} ${o.lowestF.toFixed(1)}°F`).join(", ")}.
+      {fmt(t.otherLows, {
+        list: replay.otherLows
+          .map((o) => fmt(t.otherLow, { probe: o.probeLabel, temp: num(o.lowestF, 1) }))
+          .join(t.listSeparator),
+      })}
     </p>
   )}
 </section>

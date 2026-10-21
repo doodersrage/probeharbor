@@ -8,6 +8,23 @@ import {
   humidityThresholdForReading,
   readingIncludedInThresholdAlerts,
 } from "./thresholdSensorScope";
+import type { Locale } from "../i18n/locales";
+import { fmt, formatNumber } from "../i18n/format";
+import { alertMessages } from "../i18n/messages/app/alertMessages";
+
+/**
+ * Alert numbers: English keeps the exact `toFixed` output it always had;
+ * other locales get their decimal separator (no grouping).
+ */
+export function alertNumber(value: number, locale: Locale, digits?: number): string {
+  if (locale === "en") return digits === undefined ? String(value) : value.toFixed(digits);
+  return formatNumber(value, locale, {
+    useGrouping: false,
+    ...(digits === undefined
+      ? { maximumFractionDigits: 3 }
+      : { minimumFractionDigits: digits, maximumFractionDigits: digits }),
+  });
+}
 
 export type AlertChannelName =
   | "email"
@@ -596,12 +613,21 @@ export type ThresholdAlertDetail =
   | { kind: "freeze"; label: string; tempF: number; thresholdF: number; dwellMinutes: number }
   | { kind: "humidity"; label: string; humidity: number; threshold: number };
 
-export function formatThresholdAlertDetail(detail: ThresholdAlertDetail): string {
+export function formatThresholdAlertDetail(detail: ThresholdAlertDetail, locale: Locale = "en"): string {
+  const t = alertMessages(locale).threshold;
   if (detail.kind === "freeze") {
-    const dwellNote = detail.dwellMinutes > 0 ? ` for ${detail.dwellMinutes}+ min` : "";
-    return `${detail.label} is ${detail.tempF.toFixed(1)}°F (at or below freeze threshold ${detail.thresholdF}°F${dwellNote}).`;
+    return fmt(detail.dwellMinutes > 0 ? t.freezeDetailDwell : t.freezeDetail, {
+      label: detail.label,
+      temp: alertNumber(detail.tempF, locale, 1),
+      threshold: alertNumber(detail.thresholdF, locale),
+      minutes: alertNumber(detail.dwellMinutes, locale),
+    });
   }
-  return `${detail.label} humidity is ${detail.humidity.toFixed(0)}% (above threshold ${detail.threshold}%).`;
+  return fmt(t.humidityDetail, {
+    label: detail.label,
+    humidity: alertNumber(detail.humidity, locale, 0),
+    threshold: alertNumber(detail.threshold, locale),
+  });
 }
 
 /**
@@ -609,21 +635,22 @@ export function formatThresholdAlertDetail(detail: ThresholdAlertDetail): string
  * "Freeze: Garage pipe 31.2°F (+2 more)", so alert lists and notifications
  * can be read without opening each one.
  */
-export function thresholdAlertTitle(details: ThresholdAlertDetail[]): string {
+export function thresholdAlertTitle(details: ThresholdAlertDetail[], locale: Locale = "en"): string {
+  const t = alertMessages(locale).threshold;
   const freezes = details.filter((d) => d.kind === "freeze");
   const humid = details.filter((d) => d.kind === "humidity");
   if (freezes.length > 0) {
     const coldest = freezes.reduce((min, d) => (d.tempF < min.tempF ? d : min));
-    const more = freezes.length > 1 ? ` (+${freezes.length - 1} more)` : "";
-    const humidNote = humid.length > 0 ? ", high humidity" : "";
-    return `Freeze: ${coldest.label} ${coldest.tempF.toFixed(1)}°F${more}${humidNote}`;
+    const more = freezes.length > 1 ? fmt(t.titleMore, { count: alertNumber(freezes.length - 1, locale) }) : "";
+    const humidNote = humid.length > 0 ? t.titleHumidityNote : "";
+    return `${fmt(t.titleFreeze, { label: coldest.label, temp: alertNumber(coldest.tempF, locale, 1) })}${more}${humidNote}`;
   }
   if (humid.length > 0) {
     const wettest = humid.reduce((max, d) => (d.humidity > max.humidity ? d : max));
-    const more = humid.length > 1 ? ` (+${humid.length - 1} more)` : "";
-    return `High humidity: ${wettest.label} ${wettest.humidity.toFixed(0)}%${more}`;
+    const more = humid.length > 1 ? fmt(t.titleMore, { count: alertNumber(humid.length - 1, locale) }) : "";
+    return `${fmt(t.titleHumidity, { label: wettest.label, humidity: alertNumber(wettest.humidity, locale, 0) })}${more}`;
   }
-  return "Temperature alert";
+  return t.titleFallback;
 }
 
 export function evaluateAlerts(
@@ -633,8 +660,11 @@ export function evaluateAlerts(
     dwellSamplesBySensorId?: Record<string, Array<{ at: string; tempF: number }>>;
     nowMs?: number;
   },
+  locale: Locale = "en",
 ): string[] {
-  return evaluateAlertDetails(settings, readings, options).map(formatThresholdAlertDetail);
+  return evaluateAlertDetails(settings, readings, options).map((detail) =>
+    formatThresholdAlertDetail(detail, locale),
+  );
 }
 
 export function evaluateAlertDetails(
@@ -704,41 +734,56 @@ export type FloodAlertReading = {
 export function evaluateFloodAlerts(
   settings: AlertSettings,
   wetSensors: FloodAlertReading[],
+  locale: Locale = "en",
 ): string[] {
   if (!settings.enabled) return [];
-  return wetSensors.map(
-    (sensor) => `${sensor.label} flood / leak sensor is wet.`,
-  );
+  const t = alertMessages(locale).flood;
+  return wetSensors.map((sensor) => fmt(t.detail, { label: sensor.label }));
 }
 
 /** Power sensors reading "off" notify when alerts and power alerts are on. */
-export function evaluatePowerAlerts(settings: AlertSettings, offSensors: FloodAlertReading[]): string[] {
+export function evaluatePowerAlerts(
+  settings: AlertSettings,
+  offSensors: FloodAlertReading[],
+  locale: Locale = "en",
+): string[] {
   if (!settings.enabled || !settings.powerAlertsEnabled) return [];
-  return offSensors.map((sensor) => `${sensor.label} reports the power is off.`);
+  const t = alertMessages(locale).power;
+  return offSensors.map((sensor) => fmt(t.detail, { label: sensor.label }));
 }
 
 export function evaluateForecastFreeze(
   settings: AlertSettings,
   forecastMinF: number | null,
   hoursAhead: number,
+  locale: Locale = "en",
 ): string | null {
   if (!settings.enabled || !settings.forecastFreezeEnabled) return null;
   if (forecastMinF == null || !Number.isFinite(forecastMinF)) return null;
   if (forecastMinF > settings.freezeThresholdF) return null;
-  return `Outdoor forecast reaches ${forecastMinF.toFixed(1)}°F within ${hoursAhead}h (freeze threshold ${settings.freezeThresholdF}°F).`;
+  return fmt(alertMessages(locale).forecast.detail, {
+    temp: alertNumber(forecastMinF, locale, 1),
+    hours: alertNumber(hoursAhead, locale),
+    threshold: alertNumber(settings.freezeThresholdF, locale),
+  });
 }
 
 export function evaluateRateChange(
   settings: AlertSettings,
   label: string,
   valuesOldestToNewest: number[],
+  locale: Locale = "en",
 ): string | null {
   if (!settings.enabled || valuesOldestToNewest.length < 2) return null;
   const first = valuesOldestToNewest[0];
   const last = valuesOldestToNewest[valuesOldestToNewest.length - 1];
   const delta = last - first;
   if (Math.abs(delta) >= settings.rateChangeF) {
-    return `${label} changed ${delta > 0 ? "+" : ""}${delta.toFixed(1)}°F in the last hour (threshold ±${settings.rateChangeF}°F).`;
+    return fmt(alertMessages(locale).rate.detail, {
+      label,
+      delta: `${delta > 0 ? "+" : ""}${alertNumber(delta, locale, 1)}`,
+      threshold: alertNumber(settings.rateChangeF, locale),
+    });
   }
   return null;
 }
@@ -752,6 +797,7 @@ export type DeviceHealth = {
 export function evaluateBatteryHealth(
   settings: AlertSettings,
   devices: DeviceHealth[],
+  locale: Locale = "en",
 ): string[] {
   if (!settings.enabled || !settings.batteryAlertsEnabled) return [];
   const messages: string[] = [];
@@ -761,7 +807,11 @@ export function evaluateBatteryHealth(
       device.batteryPct <= settings.batteryThresholdPct
     ) {
       messages.push(
-        `${device.deviceName} battery is ${device.batteryPct}% (threshold ${settings.batteryThresholdPct}%).`,
+        fmt(alertMessages(locale).battery.detail, {
+          device: device.deviceName,
+          pct: alertNumber(device.batteryPct, locale),
+          threshold: alertNumber(settings.batteryThresholdPct, locale),
+        }),
       );
     }
   }
@@ -771,13 +821,18 @@ export function evaluateBatteryHealth(
 export function evaluateRssiHealth(
   settings: AlertSettings,
   devices: DeviceHealth[],
+  locale: Locale = "en",
 ): string[] {
   if (!settings.enabled || !settings.rssiAlertsEnabled) return [];
   const messages: string[] = [];
   for (const device of devices) {
     if (device.rssi != null && device.rssi <= settings.rssiThreshold) {
       messages.push(
-        `${device.deviceName} signal is ${device.rssi} dBm (threshold ${settings.rssiThreshold} dBm).`,
+        fmt(alertMessages(locale).rssi.detail, {
+          device: device.deviceName,
+          rssi: alertNumber(device.rssi, locale),
+          threshold: alertNumber(settings.rssiThreshold, locale),
+        }),
       );
     }
   }
@@ -789,18 +844,24 @@ export function evaluateOutage(
   deviceName: string,
   lastSeenAt: string | null,
   now = Date.now(),
+  locale: Locale = "en",
 ): string | null {
   if (!settings.enabled) return null;
+  const t = alertMessages(locale).outage;
   // outageHours <= 0 disables "sensor not reporting" alerts.
   if (!(settings.outageHours > 0)) return null;
   if (!lastSeenAt) {
-    return `${deviceName} has never reported a reading.`;
+    return fmt(t.never, { device: deviceName });
   }
   const last = Date.parse(lastSeenAt);
   if (Number.isNaN(last)) return null;
   const hours = (now - last) / (60 * 60 * 1000);
   if (hours >= settings.outageHours) {
-    return `${deviceName} has been silent for ${hours.toFixed(1)} hours (outage threshold ${settings.outageHours}h).`;
+    return fmt(t.silent, {
+      device: deviceName,
+      hours: alertNumber(hours, locale, 1),
+      threshold: alertNumber(settings.outageHours, locale),
+    });
   }
   return null;
 }

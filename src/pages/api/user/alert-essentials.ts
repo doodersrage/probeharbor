@@ -12,12 +12,15 @@ import {
 import { formRedirectPath, withQuery } from "../../../lib/siteUrl";
 import { recordHouseholdActivity } from "../../../lib/householdActivity";
 import { getUserHouseholdId } from "../../../lib/households";
+import { apiLocale } from "../../../i18n/messages/app/api/common";
+import { apiUserMessages } from "../../../i18n/messages/app/api/user";
 
 /**
  * Minimal first-alert path used from Devices after first ingest.
  * Turns on alerts + email + freeze threshold without the full Alerts form.
  */
-export const POST: APIRoute = async ({ request, cookies, redirect }) => {
+export const POST: APIRoute = async ({ request, cookies, redirect, locals }) => {
+  const locale = apiLocale({ locals });
   const { user } = await getAuthFromCookies(cookies);
   if (!user) {
     return redirect("/signin");
@@ -71,11 +74,15 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const alsoTest = formData.get("also_test") === "1";
   if (alsoTest) {
     try {
-      const { sent, skipped } = await notifyUser(user.id, user.email, settings, {
-        title: "ProbeHarbor test alert",
-        body: "This is a test notification from your ProbeHarbor dashboard. If you received this, your alert channels are working.",
-        kind: "generic",
-      });
+      const testText = apiUserMessages(locale).testAlert;
+      const { sent, skipped } = await notifyUser(
+        user.id,
+        user.email,
+        settings,
+        { title: testText.title, body: testText.body, kind: "generic" },
+        undefined,
+        locale,
+      );
       if (sent.length === 0) {
         const reason = skipped.length > 0 ? "incomplete" : "none";
         return redirect(

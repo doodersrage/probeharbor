@@ -12,6 +12,9 @@ import {
   type PinnableOverviewMetric,
 } from "../../../lib/dashboardComfort";
 import { formRedirectPath, withQuery } from "../../../lib/siteUrl";
+import { fmt, formatNumber } from "../../../i18n";
+import { apiCommonMessages, apiLocale } from "../../../i18n/messages/app/api/common";
+import { apiUserMessages } from "../../../i18n/messages/app/api/user";
 
 function wantsJson(request: Request): boolean {
   const accept = request.headers.get("accept") ?? "";
@@ -19,12 +22,14 @@ function wantsJson(request: Request): boolean {
   return accept.includes("application/json") || contentType.includes("application/json");
 }
 
-export const POST: APIRoute = async ({ request, cookies, redirect }) => {
+export const POST: APIRoute = async ({ request, cookies, redirect, locals }) => {
+  const locale = apiLocale({ locals });
+  const tc = apiCommonMessages(locale);
   const { session, user } = await getAuthFromCookies(cookies);
 
   if (!session || !user) {
     if (wantsJson(request)) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      return new Response(JSON.stringify({ error: tc.unauthorized }), {
         status: 401,
         headers: { "Content-Type": "application/json" },
       });
@@ -49,7 +54,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
       if (body.action === "toggle" && typeof body.metric === "string") {
         const allowed = new Set<string>(PINNABLE_OVERVIEW_METRICS);
         if (!allowed.has(body.metric)) {
-          return new Response(JSON.stringify({ error: "Invalid metric" }), {
+          return new Response(JSON.stringify({ error: apiUserMessages(locale).pinned.invalidMetric }), {
             status: 400,
             headers: { "Content-Type": "application/json" },
           });
@@ -62,7 +67,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
         } else if (current.length >= PINNED_METRICS_MAX) {
           return new Response(
             JSON.stringify({
-              error: `You can pin up to ${PINNED_METRICS_MAX} Status metrics.`,
+              error: fmt(apiUserMessages(locale).pinned.max, { max: formatNumber(PINNED_METRICS_MAX, locale) }),
               atMax: true,
               metrics: current,
             }),
@@ -77,14 +82,14 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
       } else if (Array.isArray(body.metrics)) {
         if (countPinnedOverviewMetricsInput(body.metrics.map(String)) > PINNED_METRICS_MAX) {
           return new Response(
-            JSON.stringify({ error: `You can pin up to ${PINNED_METRICS_MAX} Status metrics.`, atMax: true }),
+            JSON.stringify({ error: fmt(apiUserMessages(locale).pinned.max, { max: formatNumber(PINNED_METRICS_MAX, locale) }), atMax: true }),
             { status: 400, headers: { "Content-Type": "application/json" } },
           );
         }
         metrics = parsePinnedOverviewMetricsInput(body.metrics.map(String));
       }
     } catch {
-      return new Response(JSON.stringify({ error: "Invalid JSON" }), {
+      return new Response(JSON.stringify({ error: tc.invalidJson }), {
         status: 400,
         headers: { "Content-Type": "application/json" },
       });
@@ -115,7 +120,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
 
   if (!metrics) {
     if (asJson) {
-      return new Response(JSON.stringify({ error: "No metrics" }), {
+      return new Response(JSON.stringify({ error: apiUserMessages(locale).pinned.noMetrics }), {
         status: 400,
         headers: { "Content-Type": "application/json" },
       });

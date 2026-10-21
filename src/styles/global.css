@@ -1710,16 +1710,31 @@
     margin: 0;
   }
 
-  .site-footer-languages a {
+  .site-footer-language-form {
+    margin: 0;
+  }
+
+  .site-footer-languages a,
+  .site-footer-languages button {
     color: var(--color-text-secondary);
     text-decoration: none;
   }
 
-  .site-footer-languages a:hover {
+  .site-footer-languages button {
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .site-footer-languages a:hover,
+  .site-footer-languages button:hover {
     color: var(--color-accent-muted);
   }
 
-  .site-footer-languages a[aria-current="true"] {
+  .site-footer-languages a[aria-current="true"],
+  .site-footer-languages button[aria-current="true"] {
     color: var(--color-text);
     font-weight: 600;
   }

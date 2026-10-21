@@ -1,0 +1,78 @@
+import type { LayoutMessages } from "./en";
+
+const fr: LayoutMessages = {
+  skipToContent: "Aller au contenu",
+  menu: "Menu",
+  close: "Fermer",
+  copy: "Copier",
+  copied: "Copié",
+  copyFailed: "Échec de la copie",
+  renameNotice: {
+    label: "Changement de marque",
+    headline: "{former} devient {brand}.",
+    body: "Même compte, mêmes capteurs ; les anciens liens {domain} et les URL d’ingestion fonctionnent toujours.",
+    dismiss: "Fermer l’avis",
+  },
+  analytics: {
+    label: "Avis sur les statistiques",
+    textHtml:
+      'Les pages marketing utilisent Google Analytics et Ahrefs pour comprendre le trafic. Le tableau de bord, non. Détails dans <a class="text-link" href="/privacy#analytics">Confidentialité</a> (en anglais).',
+    dismiss: "Compris",
+  },
+  nav: {
+    pricing: "Tarifs",
+    compare: "Comparer",
+    landlords: "Propriétaires",
+    guides: "Guides",
+    contact: "Contact",
+    dashboard: "Tableau de bord",
+    signOut: "Se déconnecter",
+    signIn: "Se connecter",
+    startFree: "Commencer gratuitement",
+  },
+  footer: {
+    blurb:
+      "Alertes de gel et d’inondation avec historique, pour surveiller les conditions avant qu’une vague de froid ou une flaque ne fasse des dégâts.",
+    hosting: "Fonctionne sur le réseau edge de Cloudflare.",
+    systemStatus: "État du système en direct",
+    product: "Produit",
+    learn: "Apprendre",
+    account: "Compte",
+    language: "Langue",
+    links: {
+      pricing: "Tarifs",
+      compare: "Comparer",
+      demo: "Démo en direct",
+      claimsPack: "Dossier de sinistre",
+      propertyManagement: "Gestion locative",
+      apps: "Applications",
+      accessories: "Accessoires",
+      integrations: "Intégrations",
+      guides: "Guides",
+      allArticles: "Tous les articles",
+      freezeSeason: "Saison du gel",
+      freezeMap: "Carte du gel",
+      httpApi: "API HTTP",
+      answers: "Réponses",
+      freezeForecast: "Prévisions et alertes de gel",
+      freezeCalculator: "Calculateur de temps de gel",
+      scenarios: "Scénarios",
+      probeDemo: "Démo des sondes",
+      shareKit: "Kit de partage",
+      extendedDocs: "Documentation détaillée",
+      dashboard: "Tableau de bord",
+      settings: "Paramètres",
+      signOut: "Se déconnecter",
+      signIn: "Se connecter",
+      createAccount: "Créer un compte gratuit",
+      contact: "Contact",
+      privacy: "Confidentialité",
+      terms: "Conditions",
+    },
+    copyright: "Copyright © {year} ProbeHarbor. Tous droits réservés.",
+    englishOnlyNote:
+      "La politique de confidentialité, les conditions et la référence de l’API HTTP sont en anglais.",
+  },
+};
+
+export default fr;

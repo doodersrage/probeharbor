@@ -4,11 +4,14 @@ import { getUserEntitlements } from "../../../lib/entitlements";
 import { countFcmTokens, isFcmConfigured } from "../../../lib/fcm";
 import { getAlertSettingsForUser } from "../../../lib/notify";
 import { countPushSubscriptions, isVapidConfigured } from "../../../lib/webPush";
+import { apiCommonMessages, apiLocale } from "../../../i18n/messages/app/api/common";
 
-export const GET: APIRoute = async ({ cookies }) => {
+export const GET: APIRoute = async ({ cookies, locals }) => {
+  const locale = apiLocale({ locals });
+  const tc = apiCommonMessages(locale);
   const { user } = await getAuthFromCookies(cookies);
   if (!user) {
-    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+    return new Response(JSON.stringify({ error: tc.unauthorized }), {
       status: 401,
       headers: { "Content-Type": "application/json" },
     });

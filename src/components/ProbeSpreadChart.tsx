@@ -10,17 +10,62 @@ import {
 import type { ProbeSpreadPoint } from "../lib/probeSpread";
 import { expandedChartDialogAttrs } from "../lib/chartLightbox";
 
+/**
+ * Every visible string. Plain strings only (island props are serialized).
+ * Dashboard → History passes a translation from
+ * `src/i18n/messages/app/history/charts`.
+ */
+export const PROBE_SPREAD_CHART_TEXT_EN = {
+  title: "Probe spread (°F)",
+  closeExpandedAria: "Close expanded chart",
+  close: "Close",
+  expand: "Expand",
+  hint: "Hourly warmest−coldest gap across probes. Wider spread can mean stratification or a failing sensor.",
+  spread: "Spread",
+  coldest: "Coldest",
+  warmest: "Warmest",
+};
+
+export type ProbeSpreadChartText = typeof PROBE_SPREAD_CHART_TEXT_EN;
+
 interface Props {
   points: ProbeSpreadPoint[];
   title?: string;
+  text?: Partial<ProbeSpreadChartText>;
+  /** BCP 47 tag for number/date formatting. Omitted or English keeps the original formatting. */
+  locale?: string;
 }
 
 const LINE = "#f472b6";
 
+function isEnglishLocale(locale?: string): boolean {
+  return !locale || locale.toLowerCase().startsWith("en");
+}
+
+/** `toFixed`, or the locale's decimal separator when a non-English locale is given. */
+function fixed(value: number, digits: number, locale?: string): string {
+  if (isEnglishLocale(locale)) return value.toFixed(digits);
+  return new Intl.NumberFormat(locale, {
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits,
+    useGrouping: false,
+  }).format(value);
+}
+
+/** `formatHoverTime`, in `locale` when a non-English one is given. */
+const hoverTime = (iso: string, locale?: string): string => formatHoverTime(iso, locale);
+
 export default function ProbeSpreadChart({
   points,
-  title = "Probe spread (°F)",
+  title: titleProp,
+  text: textProp,
+  locale,
 }: Props) {
+  const text = useMemo<ProbeSpreadChartText>(
+    () => ({ ...PROBE_SPREAD_CHART_TEXT_EN, ...textProp }),
+    [textProp],
+  );
+  const title = titleProp ?? text.title;
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const plotBoundsRef = useRef<PlotBounds | null>(null);
@@ -114,7 +159,7 @@ export default function ProbeSpreadChart({
         g.fillStyle = "#94a3b8";
         g.font = "10px system-ui, sans-serif";
         g.textAlign = "right";
-        g.fillText(`${val.toFixed(0)}°F`, pad.left - 6, y + 3);
+        g.fillText(`${fixed(val, 0, locale)}°F`, pad.left - 6, y + 3);
       }
 
       g.strokeStyle = LINE;
@@ -146,16 +191,16 @@ export default function ProbeSpreadChart({
       g.fillStyle = "#94a3b8";
       g.font = "10px system-ui, sans-serif";
       g.textAlign = "left";
-      g.fillText(new Date(minTs).toLocaleDateString(), pad.left, height - 8);
+      g.fillText(new Date(minTs).toLocaleDateString(isEnglishLocale(locale) ? undefined : locale), pad.left, height - 8);
       g.textAlign = "right";
-      g.fillText(new Date(maxTs).toLocaleDateString(), width - pad.right, height - 8);
+      g.fillText(new Date(maxTs).toLocaleDateString(isEnglishLocale(locale) ? undefined : locale), width - pad.right, height - 8);
     }
 
     draw();
     const ro = new ResizeObserver(() => draw());
     ro.observe(canvas);
     return () => ro.disconnect();
-  }, [points, domain, hover, expanded]);
+  }, [points, domain, hover, expanded, locale]);
 
   if (points.length < 2) return null;
 
@@ -172,7 +217,7 @@ export default function ProbeSpreadChart({
         <button
           type="button"
           class="history-chart-lightbox-scrim"
-          aria-label="Close expanded chart"
+          aria-label={text.closeExpandedAria}
           onClick={() => setExpanded(false)}
         />
       )}
@@ -190,7 +235,7 @@ export default function ProbeSpreadChart({
                 class="history-chart-zoom-btn history-chart-expand-btn"
                 onClick={() => setExpanded(false)}
               >
-                Close
+                {text.close}
               </button>
             ) : (
               <button
@@ -201,13 +246,13 @@ export default function ProbeSpreadChart({
                   setExpanded(true);
                 }}
               >
-                Expand
+                {text.expand}
               </button>
             )}
           </div>
         </div>
         <p class="m-0 mb-2 text-xs text-[var(--color-text-muted)]">
-          Hourly warmest−coldest gap across probes. Wider spread can mean stratification or a failing sensor.
+          {text.hint}
         </p>
         <div
           class="history-chart-canvas-wrap"
@@ -245,24 +290,24 @@ export default function ProbeSpreadChart({
               style={{ left: `${tooltipPos.x}px`, top: `${tooltipPos.y}px` }}
               role="status"
             >
-              <p class="history-chart-tooltip-time">{formatHoverTime(hover.timestamp)}</p>
+              <p class="history-chart-tooltip-time">{hoverTime(hover.timestamp, locale)}</p>
               <ul class="history-chart-tooltip-list">
                 <li>
                   <span class="history-chart-tooltip-swatch" style={{ background: LINE }} />
-                  <span class="history-chart-tooltip-label">Spread</span>
+                  <span class="history-chart-tooltip-label">{text.spread}</span>
                   <span class="history-chart-tooltip-value">
-                    {hover.spreadF.toFixed(1)}°F
+                    {fixed(hover.spreadF, 1, locale)}°F
                   </span>
                 </li>
                 <li>
                   <span class="history-chart-tooltip-swatch" style={{ background: "#38bdf8" }} />
-                  <span class="history-chart-tooltip-label">Coldest</span>
-                  <span class="history-chart-tooltip-value">{hover.minF.toFixed(1)}°F</span>
+                  <span class="history-chart-tooltip-label">{text.coldest}</span>
+                  <span class="history-chart-tooltip-value">{fixed(hover.minF, 1, locale)}°F</span>
                 </li>
                 <li>
                   <span class="history-chart-tooltip-swatch" style={{ background: "#fb923c" }} />
-                  <span class="history-chart-tooltip-label">Warmest</span>
-                  <span class="history-chart-tooltip-value">{hover.maxF.toFixed(1)}°F</span>
+                  <span class="history-chart-tooltip-label">{text.warmest}</span>
+                  <span class="history-chart-tooltip-value">{fixed(hover.maxF, 1, locale)}°F</span>
                 </li>
               </ul>
             </div>

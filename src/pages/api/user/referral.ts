@@ -2,11 +2,14 @@ import type { APIRoute } from "astro";
 import { getAuthFromCookies } from "../../../lib/auth";
 import { countReferralSignups, getOrCreateReferralCode } from "../../../lib/referrals";
 import { getSiteUrl } from "../../../lib/stripe";
+import { apiCommonMessages, apiLocale } from "../../../i18n/messages/app/api/common";
 
-export const GET: APIRoute = async ({ cookies, request }) => {
+export const GET: APIRoute = async ({ cookies, request, locals }) => {
+  const locale = apiLocale({ locals });
+  const tc = apiCommonMessages(locale);
   const { user } = await getAuthFromCookies(cookies);
   if (!user) {
-    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+    return new Response(JSON.stringify({ error: tc.unauthorized }), {
       status: 401,
       headers: { "Content-Type": "application/json" },
     });

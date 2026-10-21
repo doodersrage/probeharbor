@@ -18,7 +18,7 @@ type FeedGroup = {
 /**
  * Visible copy. Plain strings only (island props are serialized), with
  * `{name}` placeholders. English is the default; marketing pages pass a
- * translation from `src/i18n/messages/demoIslands.ts`.
+ * translation from `src/i18n/messages/demoIslands/`.
  */
 export const DEMO_TEMPS_TEXT_EN = {
   loading: "Loading probe temperatures…",

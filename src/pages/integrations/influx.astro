@@ -9,7 +9,7 @@ import {
   resolvePageUrl,
   resolveSiteUrl,
 } from "../../lib/schemaMarkup";
-import { getLocale } from "../../i18n";
+import { fmt, getLocale } from "../../i18n";
 import { integrationsMessages } from "../../i18n/messages/integrations";
 import { getLocalizedIntegrationTaglines } from "../../i18n/content/integrations";
 import {
@@ -72,7 +72,7 @@ const schema = [
       <h2 class="card-title">{t.quickTitle}</h2>
       <ol class="text-sm space-y-2 pl-5 list-decimal mb-4">
         <li set:html={t.quickStep1Html} />
-        <li set:html={t.quickStep2Html(TELEGRAF_CONFIG_URL)} />
+        <li set:html={fmt(t.quickStep2Html, { href: TELEGRAF_CONFIG_URL })} />
         <li set:html={t.quickStep3Html} />
       </ol>
       <pre class="text-xs overflow-x-auto mb-0"><code>{`curl -sH "Authorization: Bearer $PROBEHARBOR_API_KEY" \\

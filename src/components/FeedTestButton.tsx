@@ -1,12 +1,15 @@
 import { useState } from "preact/hooks";
+import en, { type FeedTestText } from "../i18n/messages/app/deviceSetup/pull/en";
 
 interface Props {
   inputId: string;
   /** Optional input that holds the JSON root key (default `temp`). */
   rootInputId?: string;
+  /** Translated strings from the server; English when missing. */
+  text?: FeedTestText;
 }
 
-export default function FeedTestButton({ inputId, rootInputId }: Props) {
+export default function FeedTestButton({ inputId, rootInputId, text = en.feedTest }: Props) {
   const [status, setStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -19,7 +22,7 @@ export default function FeedTestButton({ inputId, rootInputId }: Props) {
     const jsonRoot = rootInput?.value.trim() || "temp";
 
     if (!url) {
-      setStatus("Enter a feed URL first.");
+      setStatus(text.enterUrl);
       return;
     }
 
@@ -33,9 +36,9 @@ export default function FeedTestButton({ inputId, rootInputId }: Props) {
         body: JSON.stringify({ url, jsonRoot }),
       });
       const data = (await response.json()) as { message?: string; ok?: boolean };
-      setStatus(data.message ?? (data.ok ? "Feed OK" : "Feed test failed"));
+      setStatus(data.message ?? (data.ok ? text.ok : text.failed));
     } catch {
-      setStatus("Unable to test feed.");
+      setStatus(text.unable);
     } finally {
       setLoading(false);
     }
@@ -49,7 +52,7 @@ export default function FeedTestButton({ inputId, rootInputId }: Props) {
         onClick={testFeed}
         disabled={loading}
       >
-        {loading ? "Testing…" : "Test feed URL"}
+        {loading ? text.testing : text.test}
       </button>
       {status && <span class="text-sm text-[var(--color-text-muted)]">{status}</span>}
     </div>

@@ -6,7 +6,7 @@ import WeatherMap, { WEATHER_MAP_TEXT_EN } from "./WeatherMap";
 /**
  * Visible copy. Plain strings only (island props are serialized). English is
  * the default; marketing pages pass a translation from
- * `src/i18n/messages/demoIslands.ts`.
+ * `src/i18n/messages/demoIslands/`.
  */
 export const WEATHER_PANEL_TEXT_EN = {
   loading: "Loading outdoor weather…",

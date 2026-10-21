@@ -1,33 +1,20 @@
 ---
 import DashboardCard from "./dashboard/DashboardCard.astro";
+import { getLocale } from "../i18n";
+import { shareMessages } from "../i18n/messages/app/share";
+
+const t = shareMessages(getLocale(Astro)).lan;
 ---
 <DashboardCard>
-  <h2 class="card-title">ESPHome &amp; Shelly</h2>
+  <h2 class="card-title">{t.title}</h2>
   <p class="card-subtitle mb-4">
-    Push readings from off-the-shelf LAN sensors without writing custom firmware.
+    {t.subtitle}
   </p>
   <ul class="text-sm space-y-2 mb-4">
-    <li>
-      Create a <strong>push device</strong> under
-      <a class="text-link" href="/dashboard/devices">Devices</a>
-      and copy the ingest URL.
-    </li>
-    <li>
-      <a class="text-link" href="/about/esphome-shelly-recipes">ESPHome &amp; Shelly recipes</a>
-      HTTP POST examples for temperature, humidity, and door contacts.
-    </li>
-    <li>
-      Pair a door sensor with a freeze rule:
-      <a class="text-link" href="/about/garage-door-cold-playbook">door + cold playbook</a>.
-    </li>
-    <li>
-      <a class="text-link" href="/esphome/probeharbor.yaml" download>Download ESPHome snippet</a>
-      copy into your device YAML after setting <code>probeharbor_ingest_url</code> in secrets.
-    </li>
-    <li>
-      Already on Home Assistant? Use the
-      <a class="text-link" href="/integrations/home-assistant">HACS integration</a>
-      or <a class="text-link" href="/about/adding-devices">MQTT bridge</a> instead.
-    </li>
+    <li set:html={t.pushDeviceHtml} />
+    <li set:html={t.recipesHtml} />
+    <li set:html={t.doorHtml} />
+    <li set:html={t.snippetHtml} />
+    <li set:html={t.haHtml} />
   </ul>
 </DashboardCard>

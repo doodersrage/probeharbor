@@ -6,6 +6,7 @@ import {
   resolveBayMoodForHousehold,
   setBayMoodOverride,
 } from "../../../../lib/pucks";
+import { apiCommonMessages, apiLocale } from "../../../../i18n/messages/app/api/common";
 
 function json(status: number, payload: Record<string, unknown>) {
   return new Response(JSON.stringify(payload), {
@@ -14,10 +15,12 @@ function json(status: number, payload: Record<string, unknown>) {
   });
 }
 
-export const GET: APIRoute = async ({ params, request, cookies }) => {
+export const GET: APIRoute = async ({ params, request, cookies, locals }) => {
+  const locale = apiLocale({ locals });
+  const tc = apiCommonMessages(locale);
   const { session, user } = await getAuthFromRequest(request, cookies);
   if (!session || !user) {
-    return json(401, { error: "Unauthorized" });
+    return json(401, { error: tc.unauthorized });
   }
 
   const bayId = params.bay_id ?? "";
@@ -43,10 +46,12 @@ export const GET: APIRoute = async ({ params, request, cookies }) => {
   });
 };
 
-export const PUT: APIRoute = async ({ params, request, cookies }) => {
+export const PUT: APIRoute = async ({ params, request, cookies, locals }) => {
+  const locale = apiLocale({ locals });
+  const tc = apiCommonMessages(locale);
   const { session, user } = await getAuthFromRequest(request, cookies);
   if (!session || !user) {
-    return json(401, { error: "Unauthorized" });
+    return json(401, { error: tc.unauthorized });
   }
 
   const bayId = params.bay_id ?? "";
@@ -54,10 +59,10 @@ export const PUT: APIRoute = async ({ params, request, cookies }) => {
   try {
     body = await request.json();
   } catch {
-    return json(400, { error: "Invalid JSON" });
+    return json(400, { error: tc.invalidJson });
   }
   if (!body || typeof body !== "object") {
-    return json(400, { error: "Invalid JSON" });
+    return json(400, { error: tc.invalidJson });
   }
 
   const mood = typeof body.mood === "string" ? body.mood.toLowerCase() : "";

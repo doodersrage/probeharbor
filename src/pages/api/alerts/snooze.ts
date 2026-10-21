@@ -1,13 +1,44 @@
 import type { APIRoute } from "astro";
 import { applySnoozeToken } from "../../../lib/alertSnoozeTokens";
+import { LOCALE_META, type Locale } from "../../../i18n/locales";
+import { ensureLocale } from "../../../i18n/catalog";
+import { localeFromMetadata } from "../../../i18n/userLocale";
+import { alertJobsMessages } from "../../../i18n/messages/app/alertJobs";
 
-async function handleSnooze(url: URL): Promise<Response> {
+/** Language of the account a snooze link belongs to (the person who tapped it). */
+async function tokenOwnerLocale(token: string, fallback: Locale | undefined): Promise<Locale> {
+  let locale: Locale = fallback ?? "en";
+  try {
+    const { createServerClient, createAdminClient } = await import("../../../lib/supabase");
+    const { data: row } = await createServerClient()
+      .from("alert_snooze_tokens")
+      .select("user_id")
+      .eq("token", token)
+      .maybeSingle();
+    if (row?.user_id) {
+      const { data } = await createAdminClient().auth.admin.getUserById(row.user_id);
+      if (data.user) locale = localeFromMetadata(data.user.user_metadata as Record<string, unknown> | undefined);
+    }
+  } catch {
+    // Keep the request language.
+  }
+  await ensureLocale(locale, ["app"]);
+  return locale;
+}
+
+function escapeHtml(value: string): string {
+  return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+async function handleSnooze(url: URL, requestLocale: Locale | undefined): Promise<Response> {
   const token = url.searchParams.get("token")?.trim();
   if (!token) {
-    return new Response("Missing token", { status: 400 });
+    return new Response(alertJobsMessages(requestLocale ?? "en").snoozePage.missingToken, { status: 400 });
   }
 
-  const result = await applySnoozeToken(token);
+  // Read the owner before the token is marked used.
+  const locale = await tokenOwnerLocale(token, requestLocale);
+  const result = await applySnoozeToken(token, locale);
   const params = new URLSearchParams({
     alert_saved: "1",
     snooze: result.ok ? "1" : "0",
@@ -20,26 +51,28 @@ async function handleSnooze(url: URL): Promise<Response> {
 }
 
 /** Prefer POST so link prefetchers cannot snooze. */
-export const POST: APIRoute = async ({ url }) => handleSnooze(url);
+export const POST: APIRoute = async ({ url, locals }) => handleSnooze(url, locals?.locale);
 
 /** GET shows a confirm page (no side effects until POST). */
-export const GET: APIRoute = async ({ url }) => {
+export const GET: APIRoute = async ({ url, locals }) => {
   const token = url.searchParams.get("token")?.trim() ?? "";
   if (!token) {
-    return new Response("Missing token", { status: 400 });
+    return new Response(alertJobsMessages(locals?.locale ?? "en").snoozePage.missingToken, { status: 400 });
   }
 
+  const locale = await tokenOwnerLocale(token, locals?.locale);
+  const t = alertJobsMessages(locale).snoozePage;
   const action = `/api/alerts/snooze?token=${encodeURIComponent(token)}`;
   const html = `<!DOCTYPE html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Snooze alerts</title></head>
+<html lang="${LOCALE_META[locale].htmlLang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${escapeHtml(t.title)}</title></head>
 <body style="font-family:system-ui,sans-serif;max-width:28rem;margin:3rem auto;padding:0 1rem">
-<h1>Snooze alerts?</h1>
-<p>Confirm snoozing threshold noise. Freeze/flood critical paths may still notify. Prefetchers will not complete this action.</p>
+<h1>${escapeHtml(t.heading)}</h1>
+<p>${escapeHtml(t.body)}</p>
 <form method="post" action="${action}">
-<button type="submit" style="font-size:1rem;padding:0.6rem 1rem">Yes, snooze</button>
+<button type="submit" style="font-size:1rem;padding:0.6rem 1rem">${escapeHtml(t.button)}</button>
 </form>
-<p><a href="/dashboard/alerts">Cancel</a></p>
+<p><a href="/dashboard/alerts">${escapeHtml(t.cancel)}</a></p>
 </body></html>`;
   return new Response(html, {
     status: 200,

@@ -7,7 +7,7 @@ import { NODERED_TAGLINE } from "../../../lib/nodeRedIntegration";
 import { SMARTTHINGS_TAGLINE } from "../../../lib/smartThingsIntegration";
 import type { Locale, TranslatedLocale } from "../../locales";
 import { type DeepPartial, translateList, translateValue } from "../../translate";
-import { collectKeyedOverlays } from "../collect";
+import { fromContentModules, keyedOverlays } from "../collect";
 
 /**
  * Translation file shapes, one pair per locale folder:
@@ -36,25 +36,24 @@ const EN_TAGLINES: IntegrationTaglines = {
   smartThingsTagline: SMARTTHINGS_TAGLINE,
 };
 
-const cardOverlays = collectKeyedOverlays<DeepPartial<IntegrationCard>>(
-  import.meta.glob("./*/cards.ts", { eager: true }),
-);
+const cardOverlays = () => keyedOverlays<DeepPartial<IntegrationCard>>("integrations", "cards");
 
-const taglineModules = import.meta.glob<{ default: IntegrationTaglinesOverlay }>("./*/taglines.ts", {
-  eager: true,
-});
-const taglineOverlays: Partial<Record<TranslatedLocale, IntegrationTaglinesOverlay>> = {};
-for (const [file, mod] of Object.entries(taglineModules)) {
-  const locale = /\/([a-z]{2}(?:-[a-z]{2})?)\/taglines\.ts$/.exec(file)?.[1] as TranslatedLocale | undefined;
-  if (locale) taglineOverlays[locale] = mod.default;
-}
+const taglineOverlays = () =>
+  fromContentModules("integrations", "taglines", (modules) => {
+    const out: Partial<Record<TranslatedLocale, IntegrationTaglinesOverlay>> = {};
+    for (const [file, mod] of Object.entries(modules)) {
+      const locale = /\/([a-z]{2}(?:-[a-z]{2})?)\/taglines\.ts$/.exec(file)?.[1] as TranslatedLocale | undefined;
+      if (locale) out[locale] = mod.default as IntegrationTaglinesOverlay;
+    }
+    return out;
+  });
 
 /** `INTEGRATION_CARDS` with visible text in the given locale (English is returned as is). */
 export function getLocalizedIntegrationCards(locale: Locale): IntegrationCard[] {
-  return translateList(locale, INTEGRATION_CARDS, cardOverlays, (card) => card.id);
+  return translateList(locale, INTEGRATION_CARDS, cardOverlays(), (card) => card.id);
 }
 
 /** Integration page descriptions/taglines in the given locale. */
 export function getLocalizedIntegrationTaglines(locale: Locale): IntegrationTaglines {
-  return translateValue(locale, EN_TAGLINES, taglineOverlays);
+  return translateValue(locale, EN_TAGLINES, taglineOverlays());
 }

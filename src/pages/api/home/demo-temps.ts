@@ -1,6 +1,7 @@
 import type { APIRoute } from "astro";
 import { checkDemoTempsRateLimit } from "../../../lib/demoTempsLimits";
 import { fetchWeatherSimulatedFeed } from "../../../lib/weatherSimulatedFeed";
+import { apiCommonMessages, apiLocale } from "../../../i18n/messages/app/api/common";
 
 const PROBE_LABELS: Record<string, string> = {
   "0": "North wall",
@@ -10,10 +11,12 @@ const PROBE_LABELS: Record<string, string> = {
 };
 
 /** Public demo probe temperatures for signed-out Home visitors. */
-export const GET: APIRoute = async ({ clientAddress, url }) => {
+export const GET: APIRoute = async ({ clientAddress, url, locals }) => {
+  const locale = apiLocale({ locals });
+  const tc = apiCommonMessages(locale);
   const rate = checkDemoTempsRateLimit(clientAddress || "unknown");
   if (!rate.ok) {
-    return new Response(JSON.stringify({ error: "Too many requests" }), {
+    return new Response(JSON.stringify({ error: tc.tooManyRequests }), {
       status: 429,
       headers: {
         "Content-Type": "application/json",

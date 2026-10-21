@@ -1,15 +1,11 @@
-import { FREEZE_MAP_SAMPLE_FLOOR } from "../../../../lib/freezeMapSeed";
-import { brandMessages } from "../../../messages/brand";
 import type { MarketingFaqOverlay } from "../index";
-
-const brand = brandMessages("fr");
 
 // French typography: narrow no-break space (U+202F) before ? ! ; and no-break space (U+00A0) before :
 export default {
   home: [
     {
       question: "Qu’est-ce que ProbeHarbor ?",
-      answer: `${brand.description} Montez votre matériel avec un ESP32, un Pico W ou un Arduino ; ProbeHarbor s’occupe du tableau de bord hébergé, de l’historique et des alertes pour votre foyer.`,
+      answer: `ProbeHarbor, la surveillance open source du gel et des fuites pour garages, ateliers et combles : ingestion ESP/Arduino, courbes en direct et alertes. Montez votre matériel avec un ESP32, un Pico W ou un Arduino ; ProbeHarbor s’occupe du tableau de bord hébergé, de l’historique et des alertes pour votre foyer.`,
     },
     {
       question: "Comment connecter des capteurs ESP32, Pico W ou Arduino ?",
@@ -82,7 +78,7 @@ export default {
   pricing: [
     {
       question: "Que comprend l’offre Free ?",
-      answer: `Relevés en direct de température, d’humidité, de qualité de l’air, de portes, de fuites, d’énergie et de mouvement dans les ${brand.spaces} ; 7 jours d’historique ; alertes de gel et de fuite par seuil et compte à rebours avant gel ; e-mail et canaux de messagerie ; un nombre limité d’appareils ; un lien de partage en direct pour la famille ; et le partage au sein du foyer pour que vos proches suivent les mêmes capteurs.`,
+      answer: `Relevés en direct de température, d’humidité, de qualité de l’air, de portes, de fuites, d’énergie et de mouvement dans les garages, ateliers, combles, vides sanitaires et hangars ; 7 jours d’historique ; alertes de gel et de fuite par seuil et compte à rebours avant gel ; e-mail et canaux de messagerie ; un nombre limité d’appareils ; un lien de partage en direct pour la famille ; et le partage au sein du foyer pour que vos proches suivent les mêmes capteurs.`,
     },
     {
       question: "Quand passer à Member ou Pro ?",
@@ -123,7 +119,7 @@ export default {
     },
     {
       question: "Comment ProbeHarbor se compare-t-il à Govee ou SmartThings ?",
-      answer: `Govee et SmartThings sont des applications grand public généralistes de maison connectée. ProbeHarbor est conçu spécifiquement pour les ${brand.spaces} : ingestion ESP/Arduino ou JSON, procédures contre le gel, qualité de l’air, portes, fuites, énergie et historique CSV, plutôt qu’un tableau de bord fourre-tout pour tous les appareils.`,
+      answer: `Govee et SmartThings sont des applications grand public généralistes de maison connectée. ProbeHarbor est conçu spécifiquement pour les garages, ateliers, combles, vides sanitaires et hangars : ingestion ESP/Arduino ou JSON, procédures contre le gel, qualité de l’air, portes, fuites, énergie et historique CSV, plutôt qu’un tableau de bord fourre-tout pour tous les appareils.`,
     },
     {
       question: "Mon Arduino a-t-il besoin d’une IP publique ?",
@@ -147,7 +143,7 @@ export default {
     },
     {
       question: "J’ai déjà Govee ou une Tempest : ai-je encore besoin de ceci ?",
-      answer: `Govee est un capteur d’ambiance grand public ; Tempest est une station météo extérieure. ProbeHarbor surveille les courbes des sondes dans les ${brand.spaces} sur du matériel que vous maîtrisez. Les deux peuvent coexister : consultez les pages de comparaison Govee et Tempest pour savoir quand chaque outil est le plus adapté.`,
+      answer: `Govee est un capteur d’ambiance grand public ; Tempest est une station météo extérieure. ProbeHarbor surveille les courbes des sondes dans les garages, ateliers, combles, vides sanitaires et hangars sur du matériel que vous maîtrisez. Les deux peuvent coexister : consultez les pages de comparaison Govee et Tempest pour savoir quand chaque outil est le plus adapté.`,
     },
   ],
   "freeze-map": [
@@ -168,7 +164,7 @@ export default {
     },
     {
       question: "Combien de foyers faut-il pour que ma ville affiche de vraies données ?",
-      answer: `Une ville apparaît sur la carte par défaut dès qu’au moins ${FREEZE_MAP_SAMPLE_FLOOR} foyers participants dotés d’une sonde de température active contribuent dans la même fenêtre d’instantané. Les villes peu représentées (sous ce seuil) sont masquées par défaut, mais peuvent être affichées avec le sélecteur des villes clairsemées. Tant qu’aucune ville n’atteint ce seuil, la page affiche un aperçu d’exemple clairement signalé.`,
+      answer: `Une ville apparaît sur la carte par défaut dès qu’au moins 3 foyers participants dotés d’une sonde de température active contribuent dans la même fenêtre d’instantané. Les villes peu représentées (sous ce seuil) sont masquées par défaut, mais peuvent être affichées avec le sélecteur des villes clairsemées. Tant qu’aucune ville n’atteint ce seuil, la page affiche un aperçu d’exemple clairement signalé.`,
     },
     {
       question: "Je n’ai qu’une sonde : est-ce que ça compte ?",

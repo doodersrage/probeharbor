@@ -7,6 +7,7 @@ import {
   type ExampleFeedFormat,
 } from "../../../lib/weatherSimulatedFeed";
 import { resolveSiteUrl } from "../../../lib/schemaMarkup";
+import { apiCommonMessages, apiLocale } from "../../../i18n/messages/app/api/common";
 
 function parseFormat(raw: string | null): ExampleFeedFormat {
   if (raw === "ingest" || raw === "document") return raw;
@@ -30,10 +31,12 @@ function parseOptionalSun(raw: string | null): number | undefined {
 }
 
 /** Public weather-driven example feed for pull setup and push ingest samples. */
-export const GET: APIRoute = async ({ url, clientAddress, site }) => {
+export const GET: APIRoute = async ({ url, clientAddress, site, locals }) => {
+  const locale = apiLocale({ locals });
+  const tc = apiCommonMessages(locale);
   const rate = checkDemoTempsRateLimit(`example-feed:${clientAddress || "unknown"}`);
   if (!rate.ok) {
-    return new Response(JSON.stringify({ error: "Too many requests" }), {
+    return new Response(JSON.stringify({ error: tc.tooManyRequests }), {
       status: 429,
       headers: {
         "Content-Type": "application/json",

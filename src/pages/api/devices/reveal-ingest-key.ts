@@ -10,11 +10,17 @@ import { checkRevealIngestKeyRateLimit } from "../../../lib/revealIngestKeyLimit
 import { listHouseholdDevices } from "../../../lib/devices";
 import { recordHouseholdActivity } from "../../../lib/householdActivity";
 import { requireHouseholdEditor, householdEditorCtx } from "../../../lib/householdAuth";
+import { fmt, formatNumber } from "../../../i18n";
+import { apiCommonMessages, apiLocale } from "../../../i18n/messages/app/api/common";
+import { apiDevicesMessages } from "../../../i18n/messages/app/api/devices";
 
-export const POST: APIRoute = async ({ request, cookies }) => {
+export const POST: APIRoute = async ({ request, cookies, locals }) => {
+  const locale = apiLocale({ locals });
+  const tc = apiCommonMessages(locale);
+  const t = apiDevicesMessages(locale).reveal;
   const { session, user } = await getAuthFromCookies(cookies);
   if (!session || !user) {
-    return new Response(JSON.stringify({ ok: false, error: "Unauthorized" }), {
+    return new Response(JSON.stringify({ ok: false, error: tc.unauthorized }), {
       status: 401,
       headers: { "Content-Type": "application/json" },
     });
@@ -25,7 +31,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     return new Response(
       JSON.stringify({
         ok: false,
-        error: `Too many reveal attempts. Try again in ${rate.retryAfterSec ?? 60} seconds.`,
+        error: fmt(t.tooManyAttempts, { seconds: formatNumber(rate.retryAfterSec ?? 60, locale) }),
       }),
       {
         status: 429,
@@ -39,7 +45,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
   if (!ingestKeyVaultConfigured()) {
     return new Response(
-      JSON.stringify({ ok: false, error: "Key recovery is not configured on this server." }),
+      JSON.stringify({ ok: false, error: t.notConfigured }),
       { status: 503, headers: { "Content-Type": "application/json" } },
     );
   }
@@ -49,7 +55,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     session.refresh_token,
   );
   if (sessionError) {
-    return new Response(JSON.stringify({ ok: false, error: "Session expired." }), {
+    return new Response(JSON.stringify({ ok: false, error: tc.sessionExpired }), {
       status: 401,
       headers: { "Content-Type": "application/json" },
     });
@@ -63,7 +69,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     return new Response(
       JSON.stringify({
         ok: false,
-        error: "Verify MFA again before revealing ingest keys.",
+        error: t.verifyMfa,
       }),
       { status: 401, headers: { "Content-Type": "application/json" } },
     );
@@ -71,7 +77,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
   const editor = await requireHouseholdEditor(user.id);
   if (!editor.ok) {
-    return new Response(JSON.stringify({ ok: false, error: "View-only access." }), {
+    return new Response(JSON.stringify({ ok: false, error: tc.viewOnly }), {
       status: 403,
       headers: { "Content-Type": "application/json" },
     });
@@ -84,7 +90,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     body = null;
   }
   if (!body || typeof body !== "object") {
-    return new Response(JSON.stringify({ ok: false, error: "Invalid JSON" }), {
+    return new Response(JSON.stringify({ ok: false, error: tc.invalidJson }), {
       status: 400,
       headers: { "Content-Type": "application/json" },
     });
@@ -100,7 +106,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   const { devices } = await listHouseholdDevices(householdEditorCtx(editor).householdId);
   const device = devices.find((row) => row.id === deviceId && row.source === "push");
   if (!device) {
-    return new Response(JSON.stringify({ ok: false, error: "Device not found." }), {
+    return new Response(JSON.stringify({ ok: false, error: t.deviceNotFound }), {
       status: 404,
       headers: { "Content-Type": "application/json" },
     });
@@ -115,7 +121,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     return new Response(
       JSON.stringify({
         ok: false,
-        error: "No recoverable key for this device. Rotate to generate a new one.",
+        error: t.noRecoverableKey,
       }),
       { status: 404, headers: { "Content-Type": "application/json" } },
     );
@@ -123,7 +129,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
   const ingestKey = await decryptStoredIngestKey(stored);
   if (!ingestKey) {
-    return new Response(JSON.stringify({ ok: false, error: "Could not decrypt stored key." }), {
+    return new Response(JSON.stringify({ ok: false, error: t.decryptFailed }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
     });

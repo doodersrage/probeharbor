@@ -14,8 +14,12 @@ import {
 } from "../../../lib/referrals";
 import { getUserHouseholdId } from "../../../lib/households";
 import { recordHouseholdActivity } from "../../../lib/householdActivity";
+import { apiLocale } from "../../../i18n/messages/app/apiMore/common";
+import { apiMoreBillingMessages } from "../../../i18n/messages/app/apiMore/billing";
 
-export const POST: APIRoute = async ({ request, cookies, redirect }) => {
+export const POST: APIRoute = async (context) => {
+  const { request, cookies, redirect } = context;
+  const t = apiMoreBillingMessages(apiLocale(context)).stripe;
   const { session, user } = await getAuthFromCookies(cookies);
 
   if (!session || !user) {
@@ -29,7 +33,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
       ? planRaw
       : null;
   if (!plan) {
-    return new Response("Unknown plan", { status: 400 });
+    return new Response(t.unknownPlan, { status: 400 });
   }
   const interval =
     formData?.get("interval")?.toString() === "annual" ? "annual" : "monthly";
@@ -85,7 +89,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
       const current = await stripe.subscriptions.retrieve(existing.stripe_subscription_id);
       const item = current.items.data[0];
       if (!item) {
-        return new Response("Subscription has no items to change", { status: 500 });
+        return new Response(t.noItems, { status: 500 });
       }
       const portal = await stripe.billingPortal.sessions.create({
         customer: existing.stripe_customer_id,
@@ -147,7 +151,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     });
 
     if (!checkoutSession.url) {
-      return new Response("Unable to create checkout session", { status: 500 });
+      return new Response(t.sessionFailed, { status: 500 });
     }
 
     const householdId = await getUserHouseholdId(user.id);
@@ -163,7 +167,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     return redirect(checkoutSession.url);
   } catch (error) {
     const message =
-      error instanceof Error ? error.message : "Unable to start checkout";
+      error instanceof Error ? error.message : t.checkoutFailed;
     return new Response(message, { status: 500 });
   }
 };

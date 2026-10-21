@@ -16,9 +16,10 @@ import {
 import { recordHouseholdActivity } from "../../../lib/householdActivity";
 import { getUserHouseholdId } from "../../../lib/households";
 import { recordAlertSettingsChange } from "../../../lib/alertSettingsHistory";
+import { apiLocale } from "../../../i18n/messages/app/api/common";
 import { formRedirectPath, withQuery } from "../../../lib/siteUrl";
 
-export const POST: APIRoute = async ({ request, cookies, redirect }) => {
+export const POST: APIRoute = async ({ request, cookies, redirect, locals }) => {
   const { session, user } = await getAuthFromRequest(request, cookies);
 
   if (!session || !user) {
@@ -61,7 +62,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     return redirect(withQuery(redirectTo, { alert_error: "1" }));
   }
 
-  await recordAlertSettingsChange(user.id, existing, settings);
+  await recordAlertSettingsChange(user.id, existing, settings, apiLocale({ locals }));
 
   const householdId = await getUserHouseholdId(user.id);
   if (householdId) {

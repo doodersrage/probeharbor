@@ -1,0 +1,123 @@
+import type { DevicesMessages } from "./en";
+
+const de: DevicesMessages = {
+  title: "Geräte",
+  subtitle: {
+    ops: "Alle Geräte, die kritischsten zuerst. Öffne eines, um es zu verwalten.",
+    pull: "HTTPS-JSON-Feeds, die wir regelmäßig abrufen.",
+    thermostat: "Dein Haus-Thermostat und die Innenreferenz, als Kontext neben deinen Fühlern.",
+    push: "Verbinde ein neues Gerät oder schließe die Einrichtung eines Geräts ab.",
+  },
+  indoorRefError: {
+    saveFailed: "Die Innenreferenz konnte nicht gespeichert werden, versuch es noch einmal.",
+    forbidden: "Du hast keine Berechtigung, diese Einstellung zu ändern.",
+    noHousehold: "Kein Haushalt gefunden.",
+  },
+  notice: {
+    deviceTransferred: "Gerät wurde in das andere Objekt verschoben.",
+    deviceNotFound: "Dieses Gerät gehört nicht mehr zu diesem Objekt.",
+    sensorReplaced: {
+      one: "Sensor ersetzt: {count} Messwert aus dem Verlauf wurde auf den neuen Sensor übertragen.",
+      other: "Sensor ersetzt: {count} Messwerte aus dem Verlauf wurden auf den neuen Sensor übertragen.",
+    },
+    deviceDeleted: "Gerät gelöscht.",
+    bulkDeleted: { one: "{count} Eintrag gelöscht.", other: "{count} Einträge gelöscht." },
+    bulkUpdated: { one: "{count} Eintrag aktualisiert.", other: "{count} Einträge aktualisiert." },
+    bulkError: "Die Sammelaktion konnte nicht abgeschlossen werden. Versuch es noch einmal.",
+    deviceRenamed: "Gerät umbenannt.",
+    sensorAdded: "Sensor hinzugefügt.",
+    sensorUpdated: "Sensor aktualisiert.",
+    sensorDeleted: "Sensor gelöscht.",
+    pullSavedDiscovered:
+      "Abruf-Einrichtung gespeichert: {count} Fühler-Schlüssel importiert. Benenne sie unten bei Bedarf um.",
+    pullSaved: "Abruf-Einrichtung gespeichert.",
+    probesSaved: "Fühler-Bezeichnungen gespeichert.",
+    sensorsRenamed: "Sensornamen gespeichert.",
+    feedDeleted: "Feed gelöscht.",
+    probeDeleted: "Fühler gelöscht.",
+    saveFailed: "Änderungen konnten nicht gespeichert werden. Bitte versuch es noch einmal.",
+    deviceLimit: "Limit für Push-Geräte erreicht ({max} pro Objekt). Wechsle den Tarif, um weitere hinzuzufügen.",
+    viewer: "Nur-Lese-Zugriff: Du kannst keine Geräte oder Feeds ändern.",
+    deviceActionFailed: "Diese Geräteaktion konnte nicht abgeschlossen werden. Prüfe das Formular und versuch es noch einmal.",
+    actionFailed: "Diese Aktion konnte nicht abgeschlossen werden ({code}). Bitte versuch es noch einmal.",
+    viewPlans: "Tarife ansehen",
+  },
+  tabs: {
+    ariaLabel: "Gerätebereiche",
+    ops: "Geräte",
+    push: "Gerät hinzufügen",
+    pull: "Abruf-Feeds",
+    thermostat: "Thermostat",
+  },
+  keyCallout: {
+    titleRotated: "Speichere deinen neuen Ingest-Schlüssel",
+    title: "Speichere deinen Ingest-Schlüssel",
+    subtitleReporting:
+      "Dein Gerät ist verbunden. Bewahre eine Kopie des Schlüssels auf, falls du es neu flashst; er bleibt 30 Minuten hier sichtbar.",
+    subtitle:
+      "Scanne den QR-Code, lade einen vorausgefüllten ESP32-Sketch herunter oder kopiere die URL. Dieser Schlüssel bleibt 30 Minuten verfügbar, auch nach dem Neuladen, bis du ihn ausblendest.",
+    summaryReporting: "Schlüssel und Einrichtungsschritte anzeigen",
+    summary: "Schlüssel und Einrichtungsschritte",
+    copySnippet: "Snippet kopieren",
+    qrAria: "QR-Code der Ingest-URL",
+    ingestUrl: "Ingest-URL",
+    postJsonTo: "JSON per POST senden an",
+    copyUrl: "URL kopieren",
+    copyKey: "Schlüssel kopieren",
+    downloadSvg: "SVG herunterladen",
+    printLabel: "Etikett drucken",
+    dismiss: "Hab ich gespeichert",
+    printTitle: "Ingest-Etikett",
+    defaultDeviceName: "Push-Gerät",
+  },
+  via: {
+    ha: {
+      title: "In Home Assistant einfügen",
+      hint: "Trag deine Entitäts-IDs ein, lade das YAML neu, und der erste Messwert kommt innerhalb von 5 Minuten an. Sensoren in °C werden automatisch umgerechnet.",
+      guide: "Home-Assistant-Anleitung",
+    },
+    esphome: {
+      title: "Zu deinem ESPHome-Knoten hinzufügen",
+      hint: "Ruf das aus einer interval- oder on_value-Automation auf und flashe dann den Knoten.",
+      guide: "ESPHome- und Shelly-Rezepte",
+    },
+    mqtt: {
+      title: "MQTT über HTTPS weiterleiten",
+      hint: "Lass deinen Broker im LAN. Importiere den Node-RED-Flow und füge diesen Schlüssel ein, oder sende so per POST von einem beliebigen Relay.",
+      guide: "Node-RED-Flow",
+    },
+  },
+  waiting: {
+    titleWaiting: "Warte auf den ersten POST",
+    titleVerify: "Als Nächstes: Ingest prüfen",
+    subtitle:
+      "Richte die Firmware auf deine Ingest-URL und sende JSON per POST. Sensoren werden beim ersten POST automatisch importiert: Umbenennen kannst du sie später.",
+    stepCreated: "Push-Gerät erstellt",
+    stepPost: "Erster Ingest-POST",
+    statusListening: ": lauscht…",
+    statusSendTest: ", sende einen Test-POST",
+    sampleSummary: "Beispiel-curl / Payload",
+    kitGuide: "QR-Anleitung für das Hardware-Kit",
+    checkNow: "Jetzt prüfen",
+    metaAuto: "Automatische Prüfung alle 5 Sekunden, solange diese Seite geöffnet ist.",
+    metaManual: "Sende einen POST und klicke dann auf Jetzt prüfen oder lade neu.",
+  },
+  wizard: {
+    title: "Geräteeinrichtung",
+    step: "Schritt {step} von 2: Push-Gerät erstellen, JSON per POST senden (Sensoren werden automatisch importiert), dann Messwerte prüfen.",
+    createStep: "Push-Gerät erstellen",
+    postStep: "JSON per POST: Sensoren werden automatisch importiert; danach bei Bedarf umbenennen",
+    showAll: "Alle Geräteeinstellungen anzeigen",
+  },
+  client: {
+    stillWaiting: "Warte noch: letzte Prüfung {time}. Automatische Prüfung alle 5 Sekunden.",
+    lastCheck: "Letzte Prüfung {time}.",
+    received: ": empfangen!",
+    listening: ": lauscht…",
+    checkFailed: "Status konnte nicht geprüft werden, versuch es mit Jetzt prüfen.",
+    couldNotSave: "Konnte nicht gespeichert werden.",
+    saved: "Gespeichert.",
+  },
+};
+
+export default de;

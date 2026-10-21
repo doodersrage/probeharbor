@@ -1,6 +1,18 @@
 ---
-import type { PlanTier } from "../lib/entitlements";
+import {
+  FREE_HISTORY_DAYS,
+  FREE_MAX_DEVICES,
+  MEMBER_HISTORY_DAYS,
+  MEMBER_MAX_DEVICES,
+  PORTFOLIO_MAX_OWNED_HOUSEHOLDS,
+  PRO_HISTORY_DAYS,
+  PRO_MAX_DEVICES,
+  PRO_MAX_OWNED_HOUSEHOLDS,
+  type PlanTier,
+} from "../lib/entitlements";
 import { getNudgeContent, type NudgeFeatureId } from "../lib/planComparison";
+import { fmt, formatNumber, getLocale, plural, type Locale } from "../i18n";
+import { shellMessages } from "../i18n/messages/app/shell";
 
 interface Props {
   feature: NudgeFeatureId;
@@ -12,6 +24,38 @@ const { feature, tier, compact = false } = Astro.props;
 const nudge = getNudgeContent(tier, feature);
 if (!nudge) return null;
 
+const locale: Locale = getLocale(Astro);
+const t = shellMessages(locale).nudge;
+
+/** Same buckets as formatHistoryRetention, worded for the locale. */
+function retention(days: number): string {
+  if (days >= 365) {
+    const years = days / 365;
+    return plural(t.retentionYears, years, locale, {
+      count: formatNumber(years, locale, { maximumFractionDigits: 1 }),
+    });
+  }
+  return plural(t.retentionDays, days, locale);
+}
+
+// English comes straight from planComparison so it never drifts.
+let title = nudge.title;
+let body = nudge.body;
+if (locale !== "en") {
+  const item = t.items[feature];
+  title = item.title;
+  body = fmt(item.body, {
+    free: feature === "data_retention" ? retention(FREE_HISTORY_DAYS) : formatNumber(FREE_MAX_DEVICES, locale),
+    member:
+      feature === "data_retention" ? retention(MEMBER_HISTORY_DAYS) : formatNumber(MEMBER_MAX_DEVICES, locale),
+    pro: feature === "data_retention" ? retention(PRO_HISTORY_DAYS) : formatNumber(PRO_MAX_DEVICES, locale),
+    max: formatNumber(
+      feature === "portfolio_scale" ? PORTFOLIO_MAX_OWNED_HOUSEHOLDS : PRO_MAX_OWNED_HOUSEHOLDS,
+      locale,
+    ),
+  });
+}
+
 const checkoutPlan =
   nudge.targetTier === "member"
     ? "member"
@@ -19,12 +63,14 @@ const checkoutPlan =
       ? "portfolio"
       : "pro";
 const checkoutSource = `nudge_${feature}`;
-const upgradeLabel =
-  nudge.targetTier === "member"
-    ? "Upgrade to Member"
-    : nudge.targetTier === "portfolio"
-      ? "Upgrade to Portfolio"
-      : "Upgrade to Pro";
+const upgradeLabel = fmt(t.upgradeTo, {
+  plan:
+    nudge.targetTier === "member"
+      ? "Member"
+      : nudge.targetTier === "portfolio"
+        ? "Portfolio"
+        : "Pro",
+});
 ---
 <aside
   class:list={["upgrade-nudge", compact && "upgrade-nudge-compact"]}
@@ -32,11 +78,11 @@ const upgradeLabel =
   role="note"
 >
   <div class="upgrade-nudge-body">
-    <p class="upgrade-nudge-title">{nudge.title}</p>
-    <p class="upgrade-nudge-text">{nudge.body}</p>
+    <p class="upgrade-nudge-title">{title}</p>
+    <p class="upgrade-nudge-text">{body}</p>
   </div>
   <div class="upgrade-nudge-actions">
-    <a class="btn-secondary" href={nudge.compareHref}>Compare plans</a>
+    <a class="btn-secondary" href={nudge.compareHref}>{t.comparePlans}</a>
     <form action="/api/stripe/checkout" method="post">
       <input type="hidden" name="plan" value={checkoutPlan} />
       <input type="hidden" name="interval" value="annual" />
@@ -46,7 +92,7 @@ const upgradeLabel =
       </button>
     </form>
     <button type="button" class="btn-ghost" data-dismiss={nudge.dismissKey}>
-      Not now
+      {t.notNow}
     </button>
   </div>
 </aside>

@@ -1,0 +1,14 @@
+---
+/**
+ * Page-wide strings for client scripts: renders `data` as JSON in a
+ * `<script type="application/json">`. Read it with `readI18nJson(id, en)`
+ * from src/i18n/client.ts. `<` is escaped so text can't close the tag.
+ */
+interface Props {
+  id: string;
+  data: unknown;
+}
+const { id, data } = Astro.props;
+const json = JSON.stringify(data).replace(/</g, "\\u003c");
+---
+<script type="application/json" id={id} set:html={json} />

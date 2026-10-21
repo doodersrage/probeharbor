@@ -1,17 +1,15 @@
 import { type AboutPage, aboutPages } from "../../../lib/aboutPages";
 import type { Locale } from "../../locales";
 import { type DeepPartial, translateList } from "../../translate";
-import { collectKeyedOverlays } from "../collect";
+import { keyedOverlays } from "../collect";
 
 /** Translation file shape: `{ [aboutSlug]: { title, description, summary } }`. */
 export type AboutPageOverlay = Record<string, DeepPartial<Pick<AboutPage, "title" | "description" | "summary">>>;
 
-const overlays = collectKeyedOverlays<DeepPartial<AboutPage>>(
-  import.meta.glob("./*/*.ts", { eager: true }),
-);
+const overlays = () => keyedOverlays<DeepPartial<AboutPage>>("aboutPages");
 
 export function getLocalizedAboutPages(locale: Locale): AboutPage[] {
-  return translateList(locale, aboutPages, overlays, (p) => p.slug);
+  return translateList(locale, aboutPages, overlays(), (p) => p.slug);
 }
 
 export function getLocalizedAboutPage(slug: string, locale: Locale): AboutPage | undefined {

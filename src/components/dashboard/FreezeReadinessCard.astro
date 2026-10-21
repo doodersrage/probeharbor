@@ -1,22 +1,26 @@
 ---
 import DashboardCard from "./DashboardCard.astro";
 import type { FreezeReadinessResult } from "../../lib/freezeReadiness";
+import { formatNumber, getLocale } from "../../i18n";
+import { overviewCardsMessages } from "../../i18n/messages/app/overviewCards";
 
 interface Props {
   readiness: FreezeReadinessResult;
 }
 
 const { readiness } = Astro.props;
+const locale = getLocale(Astro);
+const t = overviewCardsMessages(locale).readinessCard;
 const tone =
   readiness.score >= 85 ? "text-[var(--color-success)]" : readiness.score >= 60 ? "text-[var(--color-warning)]" : "text-[var(--color-danger)]";
 const failed = readiness.checks.filter((c) => !c.ok);
 ---
 <DashboardCard id="freeze-readiness">
-  <h2 class="card-title">Property readiness</h2>
+  <h2 class="card-title">{t.title}</h2>
   <p class="card-subtitle mb-3">
-    Score from freeze alerts, flood contacts, batteries, and weather: run this before cold season or a wet season.
+    {t.subtitle}
   </p>
-  <p class:list={["text-2xl font-bold mb-3", tone]}>{readiness.score}%</p>
+  <p class:list={["text-2xl font-bold mb-3", tone]}>{formatNumber(readiness.score / 100, locale, { style: "percent" })}</p>
   <ul class="text-sm space-y-1 mb-4">
     {readiness.checks.map((check) => (
       <li class:list={[check.ok ? "text-[var(--color-text-muted)]" : ""]}>
@@ -27,7 +31,7 @@ const failed = readiness.checks.filter((c) => !c.ok);
             {check.href && (
               <>
                 {" "}
-                <a class="text-link" href={check.href}>{check.action ?? "Fix"} →</a>
+                <a class="text-link" href={check.href}>{check.action ?? t.fix} →</a>
               </>
             )}
           </span>
@@ -38,9 +42,9 @@ const failed = readiness.checks.filter((c) => !c.ok);
   <div class="flex flex-wrap gap-2">
     {!readiness.ready && (
       <a class="btn-secondary" href="/dashboard/alerts?tab=settings#send-test-alert">
-        Send test alert
+        {t.sendTest}
       </a>
     )}
-    <a class="btn-ghost" href="/freeze-season">Seasonal checklist</a>
+    <a class="btn-ghost" href="/freeze-season">{t.seasonalChecklist}</a>
   </div>
 </DashboardCard>

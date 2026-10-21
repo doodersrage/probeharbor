@@ -19,7 +19,8 @@ import {
   resolvePageUrl,
   resolveSiteUrl,
 } from "../lib/schemaMarkup";
-import { getLocale, localizePath } from "../i18n";
+import { fmt, getLocale, localizePath } from "../i18n";
+import { freezeMapTemp } from "../i18n/messages/freezeMap";
 import { freezeSeasonMessages } from "../i18n/messages/freezeSeason";
 
 const { user } = await getAuthFromCookies(Astro.cookies);
@@ -56,7 +57,7 @@ const freezeSeasonHowTo = getHowToSchema({
   totalTime: "PT30M",
   steps: [
     ...t.checklist.map((text, index) => ({
-      name: t.howToStep(index + 1),
+      name: fmt(t.howToStep, { step: index + 1 }),
       text,
     })),
     {
@@ -113,7 +114,7 @@ const schema = [
         <ul class="text-sm space-y-2 mb-0">
           {coldest.map((row) => (
             <li>
-              <strong>{row.city_label}</strong>: {row.min_temp_f != null ? t.minTemp(row.min_temp_f) : ""}
+              <strong>{row.city_label}</strong>: {row.min_temp_f != null ? fmt(t.minTemp, { temp: freezeMapTemp(row.min_temp_f, locale) }) : ""}
             </li>
           ))}
         </ul>

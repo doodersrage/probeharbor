@@ -2,6 +2,8 @@
 import type { GarageRiskStatus } from "../../lib/garageRiskStatus";
 import { formatRelativeAge } from "../../lib/relativeTime";
 import ReadingAgeBadge from "./ReadingAgeBadge.astro";
+import { fmt, getLocale } from "../../i18n";
+import { overviewCardsMessages } from "../../i18n/messages/app/overviewCards";
 
 /** Coldest temperature probe, so the card answers "which one, how cold, how fresh". */
 export type ColdestProbeSummary = {
@@ -19,6 +21,7 @@ interface Props {
 }
 
 const { status, coldestProbe = null } = Astro.props;
+const t = overviewCardsMessages(getLocale(Astro)).riskCard;
 // A stale reading shouldn't look live: grey the value out.
 const probeStale = coldestProbe ? formatRelativeAge(coldestProbe.recordedAt).stale : false;
 ---
@@ -32,7 +35,7 @@ const probeStale = coldestProbe ? formatRelativeAge(coldestProbe.recordedAt).sta
   data-overview-risk
   data-risk-level={status.level}
 >
-  <p class="garage-risk-eyebrow">Space status</p>
+  <p class="garage-risk-eyebrow">{t.eyebrow}</p>
   <h2
     id="garage-risk-heading"
     class="card-title garage-risk-title"
@@ -43,15 +46,15 @@ const probeStale = coldestProbe ? formatRelativeAge(coldestProbe.recordedAt).sta
   <p class="card-subtitle mb-4" data-overview-field="riskDetail">{status.detail}</p>
   {coldestProbe && (
     <p class="garage-risk-probe" data-coldest-probe>
-      <span class="garage-risk-probe-label">Coldest: {coldestProbe.label}</span>
+      <span class="garage-risk-probe-label">{fmt(t.coldest, { label: coldestProbe.label })}</span>
       <strong
         class:list={["garage-risk-probe-temp", probeStale && "is-stale"]}
-        title={probeStale ? "Last reading is old; this may not be current." : undefined}
+        title={probeStale ? t.staleTitle : undefined}
       >
         {coldestProbe.temp}
       </strong>
       <span class="garage-risk-probe-margin">{coldestProbe.margin}</span>
-      <ReadingAgeBadge iso={coldestProbe.recordedAt} emptyLabel="No reading" />
+      <ReadingAgeBadge iso={coldestProbe.recordedAt} emptyLabel={t.noReading} />
     </p>
   )}
   <a

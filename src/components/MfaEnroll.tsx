@@ -4,11 +4,10 @@ import {
   browserSupportsWebAuthn,
   performWebAuthnCreate,
 } from "../lib/webauthnMfaBrowser";
-import {
-  MFA_WEBAUTHN_UI_ENABLED,
-  YUBIKEY_OTP_ENROLL_HINT,
-  YUBIKEY_TOTP_ENROLL_HINT,
-} from "../lib/mfaWebAuthnUi";
+import { MFA_WEBAUTHN_UI_ENABLED } from "../lib/mfaWebAuthnUi";
+import { fmt, plural } from "../i18n/format";
+import type { Locale } from "../i18n/locales";
+import en, { type MfaEnrollText } from "../i18n/messages/app/settings/en";
 
 type FactorRow = {
   id: string;
@@ -31,9 +30,15 @@ async function mfaFetch(
   });
 }
 
-export default function MfaEnroll() {
+interface Props {
+  /** Strings from settingsMessages(locale).mfa; English when omitted. */
+  text?: MfaEnrollText;
+  locale?: Locale;
+}
+
+export default function MfaEnroll({ text: t = en.mfa, locale = "en" }: Props) {
   const [loadState, setLoadState] = useState<LoadState>("loading");
-  const [status, setStatus] = useState("Checking MFA status…");
+  const [status, setStatus] = useState(t.checking);
   const [message, setMessage] = useState("");
   const [qrCode, setQrCode] = useState<string | null>(null);
   const [factorId, setFactorId] = useState<string | null>(null);
@@ -59,7 +64,7 @@ export default function MfaEnroll() {
       error?: string;
     };
     if (!res.ok) {
-      throw new Error(payload.error ?? "Could not load MFA status");
+      throw new Error(payload.error ?? t.loadError);
     }
     const totp = payload.totp ?? payload.factors ?? [];
     const webauthn = payload.webauthn ?? [];
@@ -79,26 +84,31 @@ export default function MfaEnroll() {
     const yubiConfigured = payload.yubikeyOtpConfigured === true;
     const total = totp.length + webauthn.length + yubiCount;
     if (total === 0) {
-      setStatus(
-        yubiConfigured
-          ? "No MFA factors enrolled yet — add an authenticator or YubiKey below."
-          : "No MFA factors enrolled — add an authenticator below.",
-      );
+      setStatus(yubiConfigured ? t.noneWithYubikey : t.none);
     } else if (verified > 0 && pending === 0) {
       const keyPart =
         verifiedKeys > 0
-          ? ` (${verifiedTotp} app · ${verifiedKeys} key${verifiedKeys === 1 ? "" : "s"})`
+          ? fmt(t.breakdown, {
+              apps: verifiedTotp,
+              keys: plural(t.keyCount, verifiedKeys, locale),
+            })
           : "";
       setStatus(
-        `${verified} MFA factor${verified === 1 ? "" : "s"} enrolled${keyPart}.`,
+        fmt(t.allVerified, {
+          factors: plural(t.factorsEnrolled, verified, locale),
+          breakdown: keyPart,
+        }),
       );
     } else if (verified > 0) {
       setStatus(
-        `${verified} enrolled · ${pending} unfinished enrollment${pending === 1 ? "" : "s"} (remove if stuck).`,
+        fmt(t.someUnfinished, {
+          verified,
+          unfinished: plural(t.unfinishedCount, pending, locale),
+        }),
       );
     } else {
       setStatus(
-        `${pending} unfinished enrollment${pending === 1 ? "" : "s"} — verify or remove to continue.`,
+        fmt(t.onlyUnfinished, { unfinished: plural(t.unfinishedCount, pending, locale) }),
       );
     }
     setLoadState("ready");
@@ -113,7 +123,7 @@ export default function MfaEnroll() {
         if (cancelled) return;
         setLoadState("error");
         setStatus(
-          err instanceof Error ? err.message : "Could not load MFA status",
+          err instanceof Error ? err.message : t.loadError,
         );
       }
     })();
@@ -135,15 +145,13 @@ export default function MfaEnroll() {
         qrCode?: string | null;
         error?: string;
       };
-      if (!res.ok) throw new Error(payload.error ?? "Enrollment failed");
+      if (!res.ok) throw new Error(payload.error ?? t.enrollFailed);
       setQrCode(payload.qrCode ?? null);
       setFactorId(payload.factorId ?? null);
-      setMessage(
-        "Scan the QR code with your authenticator app (or Yubico Authenticator on a YubiKey), then enter a verification code below.",
-      );
+      setMessage(t.scanQr);
       await refreshFactorList();
     } catch (err) {
-      setMessage(err instanceof Error ? err.message : "Enrollment failed");
+      setMessage(err instanceof Error ? err.message : t.enrollFailed);
     } finally {
       setBusy(false);
     }
@@ -163,17 +171,15 @@ export default function MfaEnroll() {
         }),
       });
       const payload = (await res.json().catch(() => ({}))) as { error?: string };
-      if (!res.ok) throw new Error(payload.error ?? "Verification failed");
-      setMessage(
-        "Authenticator enrolled successfully. Sign-in will ask for a code next time.",
-      );
+      if (!res.ok) throw new Error(payload.error ?? t.verifyFailed);
+      setMessage(t.totpEnrolled);
       setQrCode(null);
       setFactorId(null);
       setVerifyCode("");
       trackProductEvent("mfa_enrolled");
       await refreshFactorList();
     } catch (err) {
-      setMessage(err instanceof Error ? err.message : "Verification failed");
+      setMessage(err instanceof Error ? err.message : t.verifyFailed);
     } finally {
       setBusy(false);
     }
@@ -193,7 +199,7 @@ export default function MfaEnroll() {
         error?: string;
       };
       if (!enrollRes.ok || !enrolled.factorId) {
-        throw new Error(enrolled.error ?? "Could not enroll security key");
+        throw new Error(enrolled.error ?? t.keyEnrollFailed);
       }
 
       const challengeRes = await mfaFetch({
@@ -211,9 +217,7 @@ export default function MfaEnroll() {
         error?: string;
       };
       if (!challengeRes.ok || !challenge.publicKey) {
-        throw new Error(
-          challenge.error ?? "Could not start security key registration",
-        );
+        throw new Error(challenge.error ?? t.keyStartFailed);
       }
 
       const credentialResponse = await performWebAuthnCreate(challenge.publicKey);
@@ -233,18 +237,14 @@ export default function MfaEnroll() {
         error?: string;
       };
       if (!verifyRes.ok || !verified.ok) {
-        throw new Error(verified.error ?? "Security key verification failed");
+        throw new Error(verified.error ?? t.keyVerifyFailed);
       }
 
-      setMessage(
-        "Security key enrolled successfully. Sign-in will ask for your key or authenticator code next time.",
-      );
+      setMessage(t.keyEnrolled);
       trackProductEvent("mfa_enrolled");
       await refreshFactorList();
     } catch (err) {
-      setMessage(
-        err instanceof Error ? err.message : "Security key enrollment failed",
-      );
+      setMessage(err instanceof Error ? err.message : t.keyEnrollmentFailed);
     } finally {
       setBusy(false);
     }
@@ -268,18 +268,14 @@ export default function MfaEnroll() {
         publicId?: string;
         error?: string;
       };
-      if (!res.ok) throw new Error(payload.error ?? "YubiKey enrollment failed");
+      if (!res.ok) throw new Error(payload.error ?? t.yubikeyEnrollFailed);
       if (yubikeyInputRef.current) yubikeyInputRef.current.value = "";
       setYubikeyReady(false);
-      setMessage(
-        "YubiKey enrolled. Sign-in will ask for a YubiKey tap or authenticator code next time.",
-      );
+      setMessage(t.yubikeyEnrolled);
       trackProductEvent("mfa_enrolled");
       await refreshFactorList();
     } catch (err) {
-      setMessage(
-        err instanceof Error ? err.message : "YubiKey enrollment failed",
-      );
+      setMessage(err instanceof Error ? err.message : t.yubikeyEnrollFailed);
     } finally {
       setBusy(false);
     }
@@ -299,13 +295,13 @@ export default function MfaEnroll() {
         }),
       });
       const payload = (await res.json().catch(() => ({}))) as { error?: string };
-      if (!res.ok) throw new Error(payload.error ?? "Could not remove YubiKey");
+      if (!res.ok) throw new Error(payload.error ?? t.yubikeyRemoveFailed);
       if (yubikeyInputRef.current) yubikeyInputRef.current.value = "";
       setYubikeyReady(false);
-      setMessage("YubiKey removed.");
+      setMessage(t.yubikeyRemoved);
       await refreshFactorList();
     } catch (err) {
-      setMessage(err instanceof Error ? err.message : "Could not remove YubiKey");
+      setMessage(err instanceof Error ? err.message : t.yubikeyRemoveFailed);
     } finally {
       setBusy(false);
     }
@@ -320,15 +316,15 @@ export default function MfaEnroll() {
         body: JSON.stringify({ action: "unenroll", factorId: id }),
       });
       const payload = (await res.json().catch(() => ({}))) as { error?: string };
-      if (!res.ok) throw new Error(payload.error ?? "Could not remove factor");
-      setMessage("Authenticator removed.");
+      if (!res.ok) throw new Error(payload.error ?? t.factorRemoveFailed);
+      setMessage(t.totpRemoved);
       if (factorId === id) {
         setFactorId(null);
         setQrCode(null);
       }
       await refreshFactorList();
     } catch (err) {
-      setMessage(err instanceof Error ? err.message : "Could not remove factor");
+      setMessage(err instanceof Error ? err.message : t.factorRemoveFailed);
     } finally {
       setBusy(false);
     }
@@ -353,16 +349,16 @@ export default function MfaEnroll() {
           disabled={busy}
           onClick={() => {
             setLoadState("loading");
-            setStatus("Checking MFA status…");
+            setStatus(t.checking);
             void refreshFactorList().catch((err) => {
               setLoadState("error");
               setStatus(
-                err instanceof Error ? err.message : "Could not load MFA status",
+                err instanceof Error ? err.message : t.loadError,
               );
             });
           }}
         >
-          Retry
+          {t.retry}
         </button>
       )}
       {factors.length > 0 && (
@@ -370,7 +366,7 @@ export default function MfaEnroll() {
           {factors.map((factor) => (
             <li class="flex flex-wrap items-center gap-2" key={factor.id}>
               <span>
-                {factor.friendly_name || "Authenticator"} ({factor.status})
+                {factor.friendly_name || t.authenticator} ({t.statusLabels[factor.status] ?? factor.status})
               </span>
               <button
                 type="button"
@@ -378,7 +374,7 @@ export default function MfaEnroll() {
                 disabled={blocked}
                 onClick={() => void unenroll(factor.id)}
               >
-                Remove
+                {t.remove}
               </button>
             </li>
           ))}
@@ -389,7 +385,7 @@ export default function MfaEnroll() {
           {webauthnFactors.map((factor) => (
             <li class="flex flex-wrap items-center gap-2" key={factor.id}>
               <span>
-                {factor.friendly_name || "Security key"} ({factor.status})
+                {factor.friendly_name || t.securityKey} ({t.statusLabels[factor.status] ?? factor.status})
               </span>
               <button
                 type="button"
@@ -397,14 +393,14 @@ export default function MfaEnroll() {
                 disabled={blocked}
                 onClick={() => void unenroll(factor.id)}
               >
-                Remove
+                {t.remove}
               </button>
             </li>
           ))}
         </ul>
       )}
       <p class="text-sm text-[var(--color-text-muted)] mb-3">
-        {YUBIKEY_TOTP_ENROLL_HINT}
+        {t.totpHint}
       </p>
       <div class="flex flex-wrap gap-2 mb-3">
         <button
@@ -413,7 +409,7 @@ export default function MfaEnroll() {
           disabled={blocked || loadState === "error"}
           onClick={() => void enroll()}
         >
-          {loading ? "Loading…" : "Enroll authenticator app"}
+          {loading ? t.loading : t.enrollApp}
         </button>
         {webauthnSupported && (
           <button
@@ -422,14 +418,14 @@ export default function MfaEnroll() {
             disabled={blocked || loadState === "error"}
             onClick={() => void enrollSecurityKey()}
           >
-            {busy ? "Waiting for key…" : "Add security key"}
+            {busy ? t.waitingForKey : t.addKey}
           </button>
         )}
       </div>
       {yubikeyConfigured && (
         <div class="mb-3 pt-3 border-t border-[var(--color-border)]">
           <p class="text-sm text-[var(--color-text-muted)] mb-3">
-            {YUBIKEY_OTP_ENROLL_HINT}
+            {t.otpHint}
           </p>
           {yubikeyPublicIds.length > 0 && (
             <ul class="mb-3 space-y-2 text-sm">
@@ -442,7 +438,7 @@ export default function MfaEnroll() {
                     disabled={blocked}
                     onClick={() => void unenrollYubiKey(publicId)}
                   >
-                    Remove
+                    {t.remove}
                   </button>
                 </li>
               ))}
@@ -450,7 +446,7 @@ export default function MfaEnroll() {
           )}
           <div class="form-field mb-3">
             <label class="form-label" for="yubikey-enroll-otp">
-              YubiKey OTP
+              {t.yubikeyOtpLabel}
             </label>
             <input
               ref={yubikeyInputRef}
@@ -470,17 +466,17 @@ export default function MfaEnroll() {
             disabled={blocked || !yubikeyReady}
             onClick={() => void enrollYubiKey()}
           >
-            Add YubiKey (OTP)
+            {t.addYubikey}
           </button>
         </div>
       )}
       {qrCode && (
-        <img src={qrCode} alt="TOTP QR code" width={180} height={180} class="mb-3" />
+        <img src={qrCode} alt={t.qrAlt} width={180} height={180} class="mb-3" />
       )}
       {factorId && (
         <div class="form-field mb-3">
           <label class="form-label" for="mfa-verify-code">
-            Verification code
+            {t.verifyCodeLabel}
           </label>
           <input
             class="form-input"
@@ -497,7 +493,7 @@ export default function MfaEnroll() {
             disabled={blocked}
             onClick={() => void verify()}
           >
-            Verify & activate
+            {t.verifySubmit}
           </button>
         </div>
       )}

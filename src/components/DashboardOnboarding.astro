@@ -1,5 +1,7 @@
 ---
 import DashboardCard from "./dashboard/DashboardCard.astro";
+import { fmt, getLocale } from "../i18n";
+import { overviewMessages } from "../i18n/messages/app/overview";
 
 interface Props {
   hasDevices: boolean;
@@ -38,6 +40,8 @@ const {
   placement = "top",
 } = Astro.props;
 
+const t = overviewMessages(getLocale(Astro)).onboarding;
+
 const showFreezeMapCta = hasLiveSensors && hasHousehold;
 const ingestVerified = hasLiveSensors || hasHistory;
 
@@ -46,20 +50,20 @@ const essentialSteps = [
   {
     done: hasDevices,
     href: "/dashboard/devices?view=setup",
-    title: "Connect a push device",
-    detail: "Step 1 of 3: create a push ingest URL for ESP/Arduino (or open Devices for demo/HA paths).",
+    title: t.essential.device.title,
+    detail: t.essential.device.detail,
   },
   {
     done: hasAlertsEnabled && hasEmailAlerts,
     href: "/dashboard/alerts?tab=settings#alert-section-essentials",
-    title: "Set freeze °F + email",
-    detail: "Step 2 of 3: freeze threshold, email, and optional sensor-dead alerts, then save.",
+    title: t.essential.alerts.title,
+    detail: t.essential.alerts.detail,
   },
   {
     done: hasTestAlert,
     href: "/dashboard/alerts?tab=settings#send-test-alert",
-    title: "Send a test alert",
-    detail: "Step 3 of 3: confirm delivery once so you trust the path before a real freeze night.",
+    title: t.essential.test.title,
+    detail: t.essential.test.detail,
   },
 ];
 
@@ -67,20 +71,20 @@ const kitSteps = [
   {
     done: hasLiveSensors || hasSensors,
     href: "/dashboard/devices?view=setup",
-    title: "Verify first POST",
-    detail: "Create a push device, POST JSON once, and confirm sensors auto-import on the Devices page.",
+    title: t.kit.firstPost.title,
+    detail: t.kit.firstPost.detail,
   },
   {
     done: ingestVerified,
     href: "/dashboard/devices?view=setup#verify-ingest-step",
-    title: "Rename imported sensors",
-    detail: "Accept suggested names on the device card so Home and alerts read clearly.",
+    title: t.kit.rename.title,
+    detail: t.kit.rename.detail,
   },
   {
     done: hasSensors,
     href: "/about/kit-qr-onboarding",
-    title: "Optional: QR sticker",
-    detail: "Print the in-app ingest QR from Devices for one-scan phone setup.",
+    title: t.kit.qr.title,
+    detail: t.kit.qr.detail,
   },
 ];
 
@@ -91,15 +95,15 @@ const nextSteps = [
     done: hasHistory,
     required: true,
     href: "/dashboard/history",
-    title: "Review saved history",
-    detail: "Snapshots collect while feeds or devices are online.",
+    title: t.next.history.title,
+    detail: t.next.history.detail,
   },
   {
     done: hasHouseholdMembers,
     required: true,
     href: "/dashboard/household",
-    title: "Invite your household",
-    detail: "Share devices and alerts with family by email.",
+    title: t.next.household.title,
+    detail: t.next.household.detail,
   },
 ];
 
@@ -115,15 +119,15 @@ const progressPct = activeSteps.length
   : 100;
 
 const sectionTitle = !essentialDone
-  ? "Getting started"
+  ? t.gettingStarted
   : !kitDone
-    ? "Hardware setup"
-    : "Next steps";
+    ? t.hardwareSetup
+    : t.nextSteps;
 const sectionSubtitle = !essentialDone
-  ? `${completedCount} of ${essentialSteps.length} essentials: device, freeze+email, test (unlocks Insights)`
+  ? fmt(t.essentialsProgress, { done: completedCount, total: essentialSteps.length })
   : !kitDone
-    ? `${completedCount} of ${kitSteps.length} hardware steps`
-    : `${completedCount} of ${nextSteps.length} optional steps`;
+    ? fmt(t.hardwareProgress, { done: completedCount, total: kitSteps.length })
+    : fmt(t.optionalProgress, { done: completedCount, total: nextSteps.length });
 
 const optionalPhase = essentialDone && kitDone;
 const wantedPlacement = optionalPhase ? "below-status" : "top";
@@ -140,7 +144,7 @@ if (dismissed || fullyDone || placement !== wantedPlacement) {
           <strong>{sectionTitle}</strong>
           <span class="text-sm text-[var(--color-text-muted)]"> · {sectionSubtitle}</span>
         </span>
-        <span class="text-sm text-[var(--color-text-muted)]">Show</span>
+        <span class="text-sm text-[var(--color-text-muted)]">{t.show}</span>
       </summary>
       <div class="dashboard-onboarding mt-4">
         {activeSteps.map((step, index) => (
@@ -157,22 +161,22 @@ if (dismissed || fullyDone || placement !== wantedPlacement) {
       </div>
       <div class="mt-4 flex flex-wrap items-center justify-between gap-3">
         <p class="mb-0 text-sm text-[var(--color-text-muted)]">
-          Guides:
-          <a class="text-link" href="/about/esp32-ota-firmware">ESP32 OTA</a> ·
-          <a class="text-link" href="/about/kit-qr-onboarding">Kit QR</a> ·
-          <a class="text-link" href="/about/ingest-and-webhooks">Ingest API</a> ·
-          <a class="text-link" href="/freeze-map">Freeze map</a>
+          {t.guides}
+          <a class="text-link" href="/about/esp32-ota-firmware">{t.guideOta}</a> ·
+          <a class="text-link" href="/about/kit-qr-onboarding">{t.guideKitQr}</a> ·
+          <a class="text-link" href="/about/ingest-and-webhooks">{t.guideIngest}</a> ·
+          <a class="text-link" href="/freeze-map">{t.guideFreezeMap}</a>
           {showFreezeMapCta && (
             <>
               {" · "}
-              <a class="text-link" href="/dashboard/household">Opt in on map</a>
+              <a class="text-link" href="/dashboard/household">{t.optInMap}</a>
             </>
           )}
         </p>
         <form action="/api/user/onboarding" method="post">
           <input type="hidden" name="action" value="dismiss" />
           <input type="hidden" name="redirect" value="/dashboard" />
-          <button class="btn-ghost btn-sm" type="submit">Dismiss</button>
+          <button class="btn-ghost btn-sm" type="submit">{t.dismiss}</button>
         </form>
       </div>
     </details>
@@ -186,7 +190,7 @@ if (dismissed || fullyDone || placement !== wantedPlacement) {
       <div
         class="onboarding-progress mt-3"
         role="progressbar"
-        aria-label={`Setup progress: ${completedCount} of ${activeSteps.length} steps complete`}
+        aria-label={fmt(t.progressAria, { done: completedCount, total: activeSteps.length })}
         aria-valuenow={progressPct}
         aria-valuemin={0}
         aria-valuemax={100}
@@ -198,7 +202,7 @@ if (dismissed || fullyDone || placement !== wantedPlacement) {
       <form action="/api/user/onboarding" method="post">
         <input type="hidden" name="action" value="dismiss" />
         <input type="hidden" name="redirect" value="/dashboard" />
-        <button class="btn-ghost" type="submit">Dismiss</button>
+        <button class="btn-ghost" type="submit">{t.dismiss}</button>
       </form>
     )}
   </div>
@@ -219,39 +223,39 @@ if (dismissed || fullyDone || placement !== wantedPlacement) {
     <div class="mt-4 flex flex-wrap gap-2">
       {!hasLiveSensors && (
         <>
-          <a class="btn-secondary btn-sm" href="/dashboard/devices?view=setup">Open Devices</a>
+          <a class="btn-secondary btn-sm" href="/dashboard/devices?view=setup">{t.openDevices}</a>
           {showDemoFeed && (
-            <a class="btn-secondary btn-sm" href="#demo-pull-nudge">Try demo feed</a>
+            <a class="btn-secondary btn-sm" href="#demo-pull-nudge">{t.tryDemoFeed}</a>
           )}
           {!hasDevices && (
-            <a class="btn-ghost btn-sm" href="/about/esp32-freeze-kit">ESP32 parts list</a>
+            <a class="btn-ghost btn-sm" href="/about/esp32-freeze-kit">{t.esp32Parts}</a>
           )}
-          <a class="btn-ghost btn-sm" href="/about/probe-demo">Probe simulator</a>
+          <a class="btn-ghost btn-sm" href="/about/probe-demo">{t.probeSimulator}</a>
         </>
       )}
       {hasLiveSensors && !hasEmailAlerts && (
         <a class="btn-secondary btn-sm" href="/dashboard/alerts?tab=settings#alert-section-essentials">
-          Set freeze + email
+          {t.setFreezeEmail}
         </a>
       )}
       {hasLiveSensors && hasEmailAlerts && !hasTestAlert && (
         <a class="btn-secondary btn-sm" href="/dashboard/alerts?tab=settings#send-test-alert">
-          Send test alert
+          {t.sendTestAlert}
         </a>
       )}
     </div>
   )}
   {essentialDone && (
     <p class="mt-4 mb-0 text-sm text-[var(--color-text-muted)]">
-      Guides:
-      <a class="text-link" href="/about/esp32-ota-firmware">ESP32 OTA</a> ·
-      <a class="text-link" href="/about/kit-qr-onboarding">Kit QR</a> ·
-      <a class="text-link" href="/about/ingest-and-webhooks">Ingest API</a> ·
-      <a class="text-link" href="/freeze-map">Freeze map</a>
+      {t.guides}
+      <a class="text-link" href="/about/esp32-ota-firmware">{t.guideOta}</a> ·
+      <a class="text-link" href="/about/kit-qr-onboarding">{t.guideKitQr}</a> ·
+      <a class="text-link" href="/about/ingest-and-webhooks">{t.guideIngest}</a> ·
+      <a class="text-link" href="/freeze-map">{t.guideFreezeMap}</a>
       {showFreezeMapCta && (
         <>
           {" · "}
-          <a class="text-link" href="/dashboard/household">Opt in on map</a>
+          <a class="text-link" href="/dashboard/household">{t.optInMap}</a>
         </>
       )}
     </p>

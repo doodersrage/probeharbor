@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { ensureLocale } from "../i18n/catalog";
 import { buildProtectionCoverage, isWetSpace, UNASSIGNED_SPACE } from "./protectionCoverage";
 import type { DeviceSensor, DeviceWithSensors } from "./devices";
 import type { SensorKind } from "./sensorKinds";
@@ -38,6 +39,14 @@ describe("buildProtectionCoverage", () => {
     const [row] = buildProtectionCoverage([garage], latest, now);
     expect(row?.risks).toEqual({ freeze: "live", leak: "none", door: "stale", power: "none" });
     expect(row?.gaps).toEqual(["Door sensor hasn't reported recently."]);
+  });
+
+  it("writes gaps in the requested language", async () => {
+    await ensureLocale("de", ["app"]);
+    const garage = device("g", "Garage", ["temperature", "door"]);
+    const latest = [reading(garage.sensors[0]!, minutesAgo(5)), reading(garage.sensors[1]!, minutesAgo(60 * 24))];
+    const [row] = buildProtectionCoverage([garage], latest, now, "de");
+    expect(row?.gaps).toEqual(["Der Türsensor hat sich länger nicht gemeldet."]);
   });
 
   it("asks for a leak sensor only in spaces with plumbing", () => {

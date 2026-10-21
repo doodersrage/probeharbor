@@ -2,8 +2,16 @@
 import DashboardLayout from "../../layouts/DashboardLayout.astro";
 import AdminNav from "../../components/dashboard/AdminNav.astro";
 import { collectAllUsersFeedHealth } from "../../lib/collectHistory";
+import { feedHealthMessage } from "../../lib/feedErrorText";
 import { getAuthFromCookies } from "../../lib/auth";
 import { isUserAdmin } from "../../lib/adminAccess";
+import { fmt, formatNumber, getLocale, LOCALE_META } from "../../i18n";
+import { adminMessages } from "../../i18n/messages/app/admin";
+
+const locale = getLocale(Astro);
+const a = adminMessages(locale);
+const t = a.feeds;
+const intl = LOCALE_META[locale].intl;
 
 const { session, user } = await getAuthFromCookies(Astro.cookies);
 
@@ -25,7 +33,7 @@ const failing = statuses.filter((status) => !status.ok);
 const healthy = statuses.filter((status) => status.ok);
 ---
 
-<DashboardLayout title="Feed health" subtitle="Live status for every configured feed across accounts." requireAdmin>
+<DashboardLayout title={t.title} subtitle={t.subtitle} requireAdmin>
   <div class="space-y-6">
     <AdminNav />
     {errors.length > 0 && (
@@ -34,18 +42,18 @@ const healthy = statuses.filter((status) => status.ok);
       </div>
     )}
     <section class="card animate-slide-in-left">
-      <h2 class="card-title">Needs attention ({failing.length})</h2>
+      <h2 class="card-title">{fmt(t.failingTitle, { count: formatNumber(failing.length, locale) })}</h2>
       {failing.length === 0 ? (
-        <p class="m-0 stat-detail">All checked feeds are responding.</p>
+        <p class="m-0 stat-detail">{t.allOk}</p>
       ) : (
         <div class="table-wrap">
           <table class="data-table">
             <thead>
               <tr>
-                <th scope="col">User</th>
-                <th scope="col">Feed</th>
-                <th scope="col">URL</th>
-                <th scope="col">Status</th>
+                <th scope="col">{a.common.user}</th>
+                <th scope="col">{a.common.feed}</th>
+                <th scope="col">{t.url}</th>
+                <th scope="col">{a.common.status}</th>
               </tr>
             </thead>
             <tbody>
@@ -54,7 +62,7 @@ const healthy = statuses.filter((status) => status.ok);
                   <td>{status.userEmail ?? status.userId}</td>
                   <td>{status.feedName}</td>
                   <td><code>{status.url}</code></td>
-                  <td>{status.message}</td>
+                  <td>{feedHealthMessage(status, locale)}</td>
                 </tr>
               ))}
             </tbody>
@@ -64,18 +72,18 @@ const healthy = statuses.filter((status) => status.ok);
     </section>
 
     <section class="card">
-      <h2 class="card-title">Healthy feeds ({healthy.length})</h2>
+      <h2 class="card-title">{fmt(t.healthyTitle, { count: formatNumber(healthy.length, locale) })}</h2>
       {healthy.length === 0 ? (
-        <p class="m-0 stat-detail">No healthy feeds found.</p>
+        <p class="m-0 stat-detail">{t.noHealthy}</p>
       ) : (
         <div class="table-wrap">
           <table class="data-table">
             <thead>
               <tr>
-                <th scope="col">User</th>
-                <th scope="col">Feed</th>
-                <th scope="col">Probes</th>
-                <th scope="col">Checked</th>
+                <th scope="col">{a.common.user}</th>
+                <th scope="col">{a.common.feed}</th>
+                <th scope="col">{t.probes}</th>
+                <th scope="col">{t.checked}</th>
               </tr>
             </thead>
             <tbody>
@@ -84,7 +92,7 @@ const healthy = statuses.filter((status) => status.ok);
                   <td>{status.userEmail ?? status.userId}</td>
                   <td>{status.feedName}</td>
                   <td>{status.probeCount}</td>
-                  <td>{new Date(status.checkedAt).toLocaleString()}</td>
+                  <td>{new Date(status.checkedAt).toLocaleString(intl)}</td>
                 </tr>
               ))}
             </tbody>

@@ -15,6 +15,7 @@ import { type AboutSearchEntry, buildAboutSearchIndex } from "../../../lib/about
 import type { Locale, TranslatedLocale } from "../../locales";
 import { type DeepPartial, translateList } from "../../translate";
 import { getLocalizedAboutPages } from "../aboutPages";
+import { fromContentModules } from "../collect";
 
 /**
  * Translation file shape (one file per locale folder):
@@ -26,18 +27,20 @@ export type AboutNavigationOverlay = {
   journeys?: Record<string, DeepPartial<Pick<AboutJourney, "title" | "description" | "ctaLabel" | "steps">>>;
 };
 
-const overlays: Partial<Record<TranslatedLocale, AboutNavigationOverlay>> = {};
-for (const [file, mod] of Object.entries(
-  import.meta.glob<{ default: AboutNavigationOverlay }>("./*/*.ts", { eager: true }),
-)) {
-  const locale = /\/([a-z]{2}(?:-[a-z]{2})?)\/[^/]+\.ts$/.exec(file)?.[1] as TranslatedLocale | undefined;
-  if (!locale) continue;
-  const prev = overlays[locale] ?? {};
-  overlays[locale] = {
-    megaGroups: { ...prev.megaGroups, ...mod.default.megaGroups },
-    journeys: { ...prev.journeys, ...mod.default.journeys },
-  };
-}
+const loadOverlays = () =>
+  fromContentModules("aboutNavigation", undefined, (modules) => {
+    const overlays: Partial<Record<TranslatedLocale, AboutNavigationOverlay>> = {};
+    for (const [file, mod] of Object.entries(modules as Record<string, { default: AboutNavigationOverlay }>)) {
+      const locale = /\/([a-z]{2}(?:-[a-z]{2})?)\/[^/]+\.ts$/.exec(file)?.[1] as TranslatedLocale | undefined;
+      if (!locale) continue;
+      const prev = overlays[locale] ?? {};
+      overlays[locale] = {
+        megaGroups: { ...prev.megaGroups, ...mod.default.megaGroups },
+        journeys: { ...prev.journeys, ...mod.default.journeys },
+      };
+    }
+    return overlays;
+  });
 
 function pageMap(locale: Locale): Map<string, AboutPage> {
   return new Map(getLocalizedAboutPages(locale).map((p) => [p.slug, p]));
@@ -51,7 +54,7 @@ function localizeSection(section: AboutTopicSection, pages: Map<string, AboutPag
 }
 
 export function getLocalizedAboutMegaGroups(locale: Locale): AboutMegaGroup[] {
-  const table = overlays[locale as TranslatedLocale]?.megaGroups ?? {};
+  const table = loadOverlays()[locale as TranslatedLocale]?.megaGroups ?? {};
   return translateList(locale, aboutMegaGroups, { [locale]: table }, (g) => g.id);
 }
 
@@ -88,7 +91,7 @@ export function getLocalizedTopicContext(
 }
 
 export function getLocalizedAboutJourneys(locale: Locale): AboutJourney[] {
-  const table = overlays[locale as TranslatedLocale]?.journeys ?? {};
+  const table = loadOverlays()[locale as TranslatedLocale]?.journeys ?? {};
   return translateList(locale, aboutJourneys, { [locale]: table }, (j) => j.id);
 }
 

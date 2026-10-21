@@ -1,5 +1,5 @@
 ---
-import { getLocale } from "../i18n";
+import { fmt, getLocale } from "../i18n";
 import { aboutArticleMessages } from "../i18n/messages/aboutArticle";
 import { getLocalizedJourneysForSlug } from "../i18n/content/aboutNavigation";
 
@@ -22,7 +22,7 @@ if (matches.length === 0) {
       <p class="about-journey-strip-label">
         {t.path} <a class="text-link" href={`/about#journey-${journey.id}`}>{journey.title}</a>
         <span class="about-journey-strip-meta">
-          {t.step(stepIndex + 1, journey.steps.length)}
+          {fmt(t.step, { n: stepIndex + 1, total: journey.steps.length })}
         </span>
       </p>
       <div class="about-journey-strip-actions">
@@ -33,7 +33,7 @@ if (matches.length === 0) {
         )}
         {nextStep ? (
           <a class="btn-secondary" href={`/about/${nextStep.slug}`}>
-            {t.next(nextStep.label)}
+            {fmt(t.next, { label: nextStep.label })}
           </a>
         ) : (
           <a class="btn-secondary" href={journey.ctaHref}>

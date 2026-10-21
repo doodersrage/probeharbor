@@ -24,6 +24,9 @@ import {
   isYubiKeyOtpConfigured,
   verifyYubiKeyOtpWithYubiCloud,
 } from "../../../lib/yubikeyOtp";
+import { authApiMessages } from "../../../i18n/messages/app/auth/api";
+import type { Locale } from "../../../i18n/locales";
+import { requestLocale } from "./_locale";
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -48,6 +51,7 @@ async function requireElevatedForAdditionalEnroll(
   session: Session,
   user: User,
   client: SupabaseClient<Database>,
+  locale: Locale,
 ): Promise<Response | null> {
   const { data: userData } = await client.auth.getUser();
   const hasMfa = await userHasAnyMfaEnrolled(client, userData.user ?? user);
@@ -58,7 +62,7 @@ async function requireElevatedForAdditionalEnroll(
   }
 
   return json(
-    { error: "Verify MFA before adding another authenticator" },
+    { error: authApiMessages(locale).mfa.verifyBeforeAdding },
     401,
   );
 }
@@ -121,7 +125,10 @@ type ManageBody = {
  * - verify → activate factor, refresh cookies to aal2 when possible
  * - unenroll → remove factor
  */
-export const POST: APIRoute = async ({ request, cookies }) => {
+export const POST: APIRoute = async (context) => {
+  const { request, cookies } = context;
+  const locale = requestLocale(context);
+  const t = authApiMessages(locale).mfa;
   const auth = await requireSession(cookies);
   if (!auth) return json({ error: "Unauthorized" }, 401);
 
@@ -148,6 +155,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       auth.session,
       auth.user,
       client,
+      locale,
     );
     if (blocked) return blocked;
 
@@ -169,7 +177,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     const factorId = body.factorId?.trim();
     const code = body.code?.trim() ?? "";
     if (!factorId || !/^\d{6}$/.test(code)) {
-      return json({ error: "Enter a valid 6-digit code" }, 400);
+      return json({ error: t.invalidCode }, 400);
     }
 
     const { data, error: verifyError } = await client.auth.mfa.challengeAndVerify({
@@ -177,7 +185,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       code,
     });
     if (verifyError || !data?.access_token || !data.refresh_token) {
-      return json({ error: verifyError?.message ?? "Verification failed" }, 400);
+      return json({ error: verifyError?.message ?? t.verificationFailed }, 400);
     }
 
     setAuthCookies(cookies, data.access_token, data.refresh_token);
@@ -205,6 +213,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       auth.session,
       auth.user,
       client,
+      locale,
     );
     if (blocked) return blocked;
 
@@ -230,7 +239,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       rp,
     );
     if (challengeError || !challenge) {
-      return json({ error: challengeError ?? "Challenge failed" }, 400);
+      return json({ error: challengeError ?? t.challengeFailed }, 400);
     }
 
     return json({
@@ -268,7 +277,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       rp,
     );
     if (verifyError || !result) {
-      return json({ error: verifyError ?? "Verification failed" }, 400);
+      return json({ error: verifyError ?? t.verificationFailed }, 400);
     }
 
     setAuthCookies(cookies, result.accessToken, result.refreshToken);
@@ -289,7 +298,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
   if (action === "yubikey_enroll") {
     if (!isYubiKeyOtpConfigured()) {
-      return json({ error: "YubiKey OTP is not configured on this site" }, 503);
+      return json({ error: t.yubikeyNotConfigured }, 503);
     }
 
     const blocked = await requireElevatedForAdditionalEnroll(
@@ -298,11 +307,12 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       auth.session,
       auth.user,
       client,
+      locale,
     );
     if (blocked) return blocked;
 
     const otp = body.otp?.trim() ?? "";
-    if (!otp) return json({ error: "Tap your YubiKey in the OTP field" }, 400);
+    if (!otp) return json({ error: t.tapYubikey }, 400);
 
     const verified = await verifyYubiKeyOtpWithYubiCloud(otp);
     if (!verified.ok) return json({ error: verified.error }, 400);
@@ -310,10 +320,10 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     const { data: userData } = await client.auth.getUser();
     const existing = getYubiKeyPublicIdsFromUser(userData.user ?? auth.user);
     if (existing.includes(verified.publicId)) {
-      return json({ error: "This YubiKey is already enrolled" }, 400);
+      return json({ error: t.yubikeyAlreadyEnrolled }, 400);
     }
     if (existing.length >= 5) {
-      return json({ error: "Maximum of 5 YubiKeys per account" }, 400);
+      return json({ error: t.yubikeyLimit }, 400);
     }
 
     const { error: updateError } = await client.auth.updateUser({
@@ -341,19 +351,19 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     const { data: userData } = await client.auth.getUser();
     const existing = getYubiKeyPublicIdsFromUser(userData.user ?? auth.user);
     if (!existing.includes(publicId)) {
-      return json({ error: "YubiKey not found on this account" }, 400);
+      return json({ error: t.yubikeyNotFound }, 400);
     }
 
     if (getAalClaim(auth.session.access_token) !== "aal2") {
       if (!isYubiKeyOtpConfigured()) {
-        return json({ error: "Verify MFA again before removing YubiKeys" }, 401);
+        return json({ error: t.verifyBeforeRemovingYubikeys }, 401);
       }
       if (!otp) {
-        return json({ error: "Tap the YubiKey you are removing to confirm" }, 400);
+        return json({ error: t.tapYubikeyToRemove }, 400);
       }
       const verified = await verifyYubiKeyOtpWithYubiCloud(otp);
       if (!verified.ok || verified.publicId !== publicId) {
-        return json({ error: "YubiKey confirmation failed" }, 400);
+        return json({ error: t.yubikeyConfirmFailed }, 400);
       }
     }
 
@@ -368,7 +378,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   if (action === "unenroll") {
     if (getAalClaim(auth.session.access_token) !== "aal2") {
       return json(
-        { error: "Verify MFA again before removing authenticators" },
+        { error: t.verifyBeforeRemoving },
         401,
       );
     }

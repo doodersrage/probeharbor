@@ -7,6 +7,9 @@ import {
 import { acknowledgeLatestUnackedAlert, acknowledgeAllUnackedAlerts } from "../../../../lib/alertEvents";
 import { formRedirectPath, withQuery } from "../../../../lib/siteUrl";
 import { getSiteUrl } from "../../../../lib/stripe";
+import { plural } from "../../../../i18n";
+import { apiCommonMessages, apiLocale } from "../../../../i18n/messages/app/api/common";
+import { apiUserMessages } from "../../../../i18n/messages/app/api/user";
 
 const VALID_ACTIONS = new Set<AckPlaybookAction>([
   "ack",
@@ -35,11 +38,13 @@ function parseAction(raw: unknown): AckPlaybookAction | "ack_latest" | "ack_all"
   return "ack";
 }
 
-export const POST: APIRoute = async ({ request, cookies, redirect }) => {
+export const POST: APIRoute = async ({ request, cookies, redirect, locals }) => {
+  const locale = apiLocale({ locals });
+  const tc = apiCommonMessages(locale);
   const { session, user } = await getAuthFromRequest(request, cookies);
   if (!session || !user) {
     if (wantsJson(request)) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      return new Response(JSON.stringify({ error: tc.unauthorized }), {
         status: 401,
         headers: { "Content-Type": "application/json" },
       });
@@ -60,7 +65,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
       eventId = Number(body.event_id);
       action = parseAction(body.action);
     } catch {
-      return new Response(JSON.stringify({ error: "Invalid JSON" }), {
+      return new Response(JSON.stringify({ error: tc.invalidJson }), {
         status: 400,
         headers: { "Content-Type": "application/json" },
       });
@@ -74,16 +79,16 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   }
 
   if (action === "ack_all") {
-    const ack = await acknowledgeAllUnackedAlerts(user.id);
+    const ack = await acknowledgeAllUnackedAlerts(user.id, undefined, locale);
     if (!ack.ok) {
       if (wantsJson(request)) {
-        return new Response(JSON.stringify({ error: ack.error ?? "Nothing to acknowledge" }), {
+        return new Response(JSON.stringify({ error: ack.error ?? apiUserMessages(locale).ack.nothing }), {
           status: 400,
           headers: { "Content-Type": "application/json" },
         });
       }
       return redirect(
-        withQuery(redirectTo, { ack_error: "1", ack_msg: ack.error ?? "Nothing to acknowledge" }),
+        withQuery(redirectTo, { ack_error: "1", ack_msg: ack.error ?? apiUserMessages(locale).ack.nothing }),
       );
     }
     if (wantsJson(request)) {
@@ -93,15 +98,15 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
       );
     }
     return redirect(
-      withQuery(redirectTo, { ack_ok: "1", ack_msg: `Handled ${ack.count} alert${ack.count === 1 ? "" : "s"}.` }),
+      withQuery(redirectTo, { ack_ok: "1", ack_msg: plural(apiUserMessages(locale).ack.handled, ack.count, locale) }),
     );
   }
 
   if (action === "ack_latest") {
-    const ack = await acknowledgeLatestUnackedAlert(user.id);
+    const ack = await acknowledgeLatestUnackedAlert(user.id, locale);
     if (!ack.ok) {
       if (wantsJson(request)) {
-        return new Response(JSON.stringify({ error: ack.error ?? "Nothing to acknowledge" }), {
+        return new Response(JSON.stringify({ error: ack.error ?? apiUserMessages(locale).ack.nothing }), {
           status: 400,
           headers: { "Content-Type": "application/json" },
         });
@@ -134,6 +139,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     eventId: eventId as number,
     action,
     siteUrl,
+    locale,
   });
 
   if (!result.ok) {

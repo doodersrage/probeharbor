@@ -32,3 +32,20 @@ describe("battery trend", () => {
     expect(days).toBeLessThan(11);
   });
 });
+
+describe("battery trend (translated)", () => {
+  it("words the drop line in German", async () => {
+    const { ensureLocale } = await import("../i18n");
+    await ensureLocale("de", ["app"]);
+    const msg = detectBatteryTrendDrop(
+      [
+        { pct: 90, at: new Date(Date.now() - 5 * 86400000).toISOString() },
+        { pct: 60, at: new Date().toISOString() },
+      ],
+      20,
+      7,
+      "de",
+    );
+    expect(msg).toMatch(/^Akku seit .+ um 30 % gesunken \(90 % → 60 %\)\./);
+  });
+});

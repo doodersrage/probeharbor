@@ -9,7 +9,7 @@ import {
   resolvePageUrl,
   resolveSiteUrl,
 } from "../lib/schemaMarkup";
-import { getLocale, localizePath } from "../i18n";
+import { fmt, getLocale, localizePath } from "../i18n";
 import { contactMessages } from "../i18n/messages/contact";
 import {
   getLocalizedMarketingFaqs,
@@ -60,7 +60,7 @@ const githubIssues = "https://github.com/doodersrage/probeharbor/issues";
 
         <section class="card">
           <h2 class="card-title">{t.issuesTitle}</h2>
-          <p class="card-subtitle mb-0" set:html={t.issuesHtml(githubIssues)} />
+          <p class="card-subtitle mb-0" set:html={fmt(t.issuesHtml, { url: githubIssues })} />
         </section>
 
         <section class="card">

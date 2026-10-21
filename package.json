@@ -7,7 +7,8 @@
     "node": ">=22.12.0"
   },
   "scripts": {
-    "deploy": "astro build && pnpm docs:build:site && wrangler deploy --config dist/server/wrangler.json",
+    "deploy": "astro build && pnpm docs:build:site && node scripts/gen-i18n-catalog.mjs && wrangler deploy --config workers/i18n/wrangler.jsonc && wrangler deploy --config dist/server/wrangler.json",
+    "i18n:catalog": "node scripts/gen-i18n-catalog.mjs",
     "db:push": "supabase db push --linked",
     "secrets:push": "node scripts/push-worker-secrets.mjs",
     "secrets:push:dry": "node scripts/push-worker-secrets.mjs --dry-run",

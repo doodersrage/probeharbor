@@ -3,6 +3,37 @@ import { getAlertSettingsForUser, notifyUser } from "./notify";
 import { createServerClient } from "./supabase";
 import { listUserHouseholds } from "./households";
 import { getUserEntitlements } from "./entitlements";
+import type { Locale } from "../i18n/locales";
+import { fmt, formatNumber, plural } from "../i18n/format";
+import { localeFromMetadata } from "../i18n/userLocale";
+import { alertJobsMessages } from "../i18n/messages/app/alertJobs";
+
+type AtRiskProperty = { name: string; minTempF?: number | null; freezeThresholdF: number };
+
+/** Landlord digest title and body, in the owner's language. */
+export function buildPortfolioDigest(
+  atRisk: AtRiskProperty[],
+  locale: Locale = "en",
+): { title: string; body: string } {
+  const t = alertJobsMessages(locale).portfolio;
+  const num = (value: number | null | undefined, digits?: number): string => {
+    if (locale === "en") return digits == null ? String(value) : `${value?.toFixed(digits)}`;
+    if (value == null) return "—";
+    return formatNumber(
+      value,
+      locale,
+      digits == null ? undefined : { minimumFractionDigits: digits, maximumFractionDigits: digits },
+    );
+  };
+  const lines = atRisk
+    .map((p) => fmt(t.line, { name: p.name, temp: num(p.minTempF, 1), threshold: num(p.freezeThresholdF) }))
+    .join("\n");
+  const count = atRisk.length;
+  return {
+    title: fmt(t.title, { count: locale === "en" ? String(count) : formatNumber(count, locale) }),
+    body: `${plural(t.intro, count, locale)}\n${lines}`,
+  };
+}
 
 const PORTFOLIO_COOLDOWN_MS = 4 * 60 * 60 * 1000;
 
@@ -66,18 +97,13 @@ export async function sendPortfolioAlertsForAllUsers(): Promise<{
         continue;
       }
 
-      const body = atRisk
-        .map(
-          (p) =>
-            `${p.name}: ${p.minTempF?.toFixed(1)}°F (threshold ${p.freezeThresholdF}°F)`,
-        )
-        .join("\n");
+      const locale = localeFromMetadata(userData.user?.user_metadata as Record<string, unknown> | undefined);
+      const digest = buildPortfolioDigest(atRisk, locale);
 
-      await notifyUser(userId, email, settings, {
-        title: `Properties at risk today (${atRisk.length})`,
-        body: `Landlord digest — ${atRisk.length} propert${atRisk.length === 1 ? "y is" : "ies are"} at or below freeze:\n${body}`,
-        kind: "threshold",
-      });
+      const payload = { title: digest.title, body: digest.body, kind: "threshold" as const };
+      // English keeps the original call shape.
+      if (locale === "en") await notifyUser(userId, email, settings, payload);
+      else await notifyUser(userId, email, settings, payload, undefined, locale);
 
       await supabase
         .from("alert_settings")

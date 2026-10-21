@@ -15,7 +15,7 @@ describe("rule-check", () => {
     const { GET } = await import("./rule-check");
     const response = await GET({ cookies: {} } as unknown as APIContext);
     expect(response.status).toBe(200);
-    expect(mockExplain).toHaveBeenCalledWith("u1", { alertRules: [] }, "hh", []);
+    expect(mockExplain).toHaveBeenCalledWith("u1", { alertRules: [] }, "hh", [], "en");
     expect(((await response.json()) as { alertsEnabled: boolean }).alertsEnabled).toBe(true);
   });
 

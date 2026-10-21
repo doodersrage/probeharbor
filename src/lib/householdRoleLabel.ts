@@ -1,16 +1,16 @@
+import type { Locale } from "../i18n/locales";
+import { shellMessages } from "../i18n/messages/app/shell";
+
 /** Display labels for household roles (DB values stay owner/member/viewer/…). */
-export function householdRoleLabel(role: string | null | undefined): string {
+export function householdRoleLabel(role: string | null | undefined, locale: Locale = "en"): string {
+  const roles = shellMessages(locale).roles;
   switch (role) {
     case "owner":
-      return "Owner";
     case "member":
-      return "Editor";
     case "viewer":
-      return "Viewer";
     case "alert_only":
-      return "Alert only";
     case "property_manager":
-      return "Property manager";
+      return roles[role];
     default:
       return role ? role.replace(/_/g, " ") : "";
   }

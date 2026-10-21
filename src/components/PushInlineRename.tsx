@@ -1,5 +1,6 @@
 import { useState } from "preact/hooks";
 import { trackProductEvent } from "../lib/productAnalytics";
+import en, { type PushInlineRenameText } from "../i18n/messages/app/deviceSetup/push/en";
 
 export type InlineSensorRow = {
   id: string;
@@ -13,12 +14,15 @@ interface Props {
   deviceName: string;
   sensors: InlineSensorRow[];
   highlight?: boolean;
+  /** Translated strings from the server; English when missing. */
+  text?: PushInlineRenameText;
 }
 
 export default function PushInlineRename({
   deviceName,
   sensors: initial,
   highlight = false,
+  text = en.inlineRename,
 }: Props) {
   const [sensors, setSensors] = useState(initial);
   const [saving, setSaving] = useState(false);
@@ -51,13 +55,13 @@ export default function PushInlineRename({
       });
       const data = (await response.json()) as { ok?: boolean; error?: string };
       if (!response.ok || !data.ok) {
-        setStatus(data.error ?? "Could not save.");
+        setStatus(data.error ?? text.couldNotSave);
         return;
       }
       trackProductEvent("sensors_renamed", { count: sensors.length });
-      setStatus("Saved.");
+      setStatus(text.saved);
     } catch {
-      setStatus("Could not save.");
+      setStatus(text.couldNotSave);
     } finally {
       setSaving(false);
     }
@@ -73,7 +77,7 @@ export default function PushInlineRename({
   return (
     <div class={wrapperClass}>
       <p class="m-0 mb-2 text-sm font-medium">
-        {highlight ? "Rename auto-imported sensors" : "Quick rename"} · {deviceName}
+        {highlight ? text.renameImported : text.quickRename} · {deviceName}
       </p>
       <div class="flex flex-col gap-2">
         {sensors.map((row, index) => (
@@ -98,10 +102,10 @@ export default function PushInlineRename({
       </div>
       <div class="flex flex-wrap gap-2 mt-3">
         <button type="button" class="btn-secondary" onClick={acceptSuggested}>
-          Accept suggested
+          {text.acceptSuggested}
         </button>
         <button type="button" class="btn-primary" disabled={saving} onClick={() => void saveAll()}>
-          {saving ? "Saving…" : "Save names"}
+          {saving ? text.saving : text.saveNames}
         </button>
         {status ? <span class="text-sm text-[var(--color-text-muted)]">{status}</span> : null}
       </div>

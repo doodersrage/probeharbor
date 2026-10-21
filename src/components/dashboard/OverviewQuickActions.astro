@@ -1,4 +1,7 @@
 ---
+import { fmt, getLocale } from "../../i18n";
+import { overviewInsightsMessages } from "../../i18n/messages/app/overviewInsights";
+
 interface Props {
   canEdit: boolean;
   unackedCount: number;
@@ -24,6 +27,10 @@ const snoozeActive =
     ? Date.parse(snoozeUntil) > Date.now()
     : false;
 const spaces = deviceSpaces.filter(Boolean);
+const t = overviewInsightsMessages(getLocale(Astro)).quickActions;
+const c = t.client;
+const snoozeLabel = (hours: number) =>
+  hours === 1 ? c.snooze1h : hours === 4 ? c.snooze4h : c.snooze24h;
 ---
 
 {canEdit && (
@@ -35,22 +42,23 @@ const spaces = deviceSpaces.filter(Boolean);
     data-snooze-active={snoozeActive ? "1" : "0"}
     data-snooze-until={snoozeUntil ?? ""}
     data-qa-calm={!snoozeActive && unackedCount === 0 ? "1" : "0"}
+    data-i18n={JSON.stringify(c)}
   >
     {unackedCount === 0 && !snoozeActive ? (
       <details class="overview-quick-actions-details" data-qa-details>
         <summary class="overview-quick-actions-summary" id="overview-quick-actions-title">
-          Actions
-          <span class="text-[var(--color-text-muted)] font-normal"> · alerts clear · mark space checked</span>
+          {t.actions}
+          <span class="text-[var(--color-text-muted)] font-normal">{t.calmSummary}</span>
         </summary>
         <div class="overview-quick-actions-body mt-3">
           <p class="alert-success mt-0 mb-3 hidden" data-qa-status role="status"></p>
           <p class="alert-warning mt-0 mb-3 hidden" data-qa-error role="alert"></p>
           <div class="overview-quick-actions-row" data-qa-row>
             <div data-qa-ack-slot class="inline-flex flex-wrap items-center gap-2">
-              <a class="btn-ghost btn-sm" href="/dashboard/alerts" data-qa-alerts-clear>Alerts clear</a>
+              <a class="btn-ghost btn-sm" href="/dashboard/alerts" data-qa-alerts-clear>{c.alertsClear}</a>
             </div>
             <div data-qa-snooze-slot class="inline-flex flex-wrap items-center gap-1">
-              <span class="text-sm text-[var(--color-text-muted)]">Snooze</span>
+              <span class="text-sm text-[var(--color-text-muted)]">{t.snooze}</span>
               {[1, 4, 24].map((hours) => (
                 <button
                   type="button"
@@ -59,7 +67,7 @@ const spaces = deviceSpaces.filter(Boolean);
                   data-qa-snooze="snooze"
                   data-qa-hours={String(hours)}
                 >
-                  {hours}h
+                  {fmt(t.hoursShort, { hours })}
                 </button>
               ))}
             </div>
@@ -68,15 +76,15 @@ const spaces = deviceSpaces.filter(Boolean);
                 <input type="hidden" data-qa-household value={householdId} />
               )}
               {spaces.length > 0 && (
-                <select class="form-input text-sm py-1" data-qa-space aria-label="Space checked">
-                  <option value="">Whole property</option>
+                <select class="form-input text-sm py-1" data-qa-space aria-label={t.spaceChecked}>
+                  <option value="">{t.wholeProperty}</option>
                   {spaces.map((space) => (
                     <option value={space}>{space}</option>
                   ))}
                 </select>
               )}
               <button type="button" class="btn-ghost btn-sm" id="overview-checked-space" data-qa-checked>
-                I checked the space
+                {t.checkedSpace}
               </button>
             </div>
             <span
@@ -92,12 +100,12 @@ const spaces = deviceSpaces.filter(Boolean);
     ) : (
       <>
         {embedded ? (
-          <h3 class="sr-only" id="overview-quick-actions-title">Quick actions</h3>
+          <h3 class="sr-only" id="overview-quick-actions-title">{t.title}</h3>
         ) : (
           <div class="overview-quick-actions-head">
-            <h2 class="card-title mb-0" id="overview-quick-actions-title">Quick actions</h2>
+            <h2 class="card-title mb-0" id="overview-quick-actions-title">{t.title}</h2>
             <p class="card-subtitle mb-0">
-              Acknowledge, snooze alerts, or mark that you checked a space.
+              {t.subtitle}
             </p>
           </div>
         )}
@@ -106,20 +114,20 @@ const spaces = deviceSpaces.filter(Boolean);
         <div class="overview-quick-actions-row" data-qa-row>
           <div data-qa-ack-slot class="inline-flex flex-wrap items-center gap-2">
             {unackedCount > 0 ? (
-              <button type="button" class="btn-secondary btn-sm" data-qa-action="ack_latest">Acknowledge latest</button>
+              <button type="button" class="btn-secondary btn-sm" data-qa-action="ack_latest">{c.ackLatest}</button>
             ) : (
-              <a class="btn-ghost btn-sm" href="/dashboard/alerts" data-qa-alerts-clear>Alerts clear</a>
+              <a class="btn-ghost btn-sm" href="/dashboard/alerts" data-qa-alerts-clear>{c.alertsClear}</a>
             )}
           </div>
 
           <div data-qa-snooze-slot class="inline-flex">
             {snoozeActive ? (
               <button type="button" class="btn-ghost btn-sm" id="overview-snooze-action" data-qa-snooze="clear_snooze">
-                Clear snooze
+                {c.clearSnooze}
               </button>
             ) : (
               <details class="qa-menu">
-                <summary class="btn-ghost btn-sm">Snooze ▾</summary>
+                <summary class="btn-ghost btn-sm">{c.snoozeMenu}</summary>
                 <div class="qa-menu-pop">
                   {[1, 4, 24].map((hours) => (
                     <button
@@ -129,7 +137,7 @@ const spaces = deviceSpaces.filter(Boolean);
                       data-qa-snooze="snooze"
                       data-qa-hours={String(hours)}
                     >
-                      {hours === 24 ? "24 hours" : `${hours} hour${hours === 1 ? "" : "s"}`}
+                      {snoozeLabel(hours)}
                     </button>
                   ))}
                 </div>
@@ -138,7 +146,7 @@ const spaces = deviceSpaces.filter(Boolean);
           </div>
 
           <details class="qa-menu">
-            <summary class="btn-ghost btn-sm">More ▾</summary>
+            <summary class="btn-ghost btn-sm">{t.more}</summary>
             <div class="qa-menu-pop">
               <div data-qa-ackall-slot>
                 {unackedCount > 1 && (
@@ -146,23 +154,23 @@ const spaces = deviceSpaces.filter(Boolean);
                     type="button"
                     class="btn-ghost btn-sm"
                     data-qa-action="ack_all"
-                    data-qa-confirm={`Mark all ${unackedCount} unhandled alerts as handled?`}
+                    data-qa-confirm={fmt(c.confirmAll, { count: unackedCount })}
                   >
-                    Handle all {" "}<span data-overview-field="unackedCount">{unackedCount}</span>
+                    {c.handleAll} {" "}<span data-overview-field="unackedCount">{unackedCount}</span>
                   </button>
                 )}
               </div>
               {householdId && <input type="hidden" data-qa-household value={householdId} />}
               {spaces.length > 0 && (
-                <select class="form-input text-sm py-1" data-qa-space aria-label="Space checked">
-                  <option value="">Whole property</option>
+                <select class="form-input text-sm py-1" data-qa-space aria-label={t.spaceChecked}>
+                  <option value="">{t.wholeProperty}</option>
                   {spaces.map((space) => (
                     <option value={space}>{space}</option>
                   ))}
                 </select>
               )}
               <button type="button" class="btn-ghost btn-sm" id="overview-checked-space" data-qa-checked>
-                I checked the space
+                {t.checkedSpace}
               </button>
             </div>
           </details>
@@ -180,7 +188,11 @@ const spaces = deviceSpaces.filter(Boolean);
 )}
 
 <script>
+  import { fmt, readI18n } from "../../i18n/client";
+  import en from "../../i18n/messages/app/overviewInsights/en";
+
   const root = document.querySelector("[data-overview-quick-actions]");
+  const text = readI18n(root, en.quickActions.client);
   const statusEl = root?.querySelector<HTMLElement>("[data-qa-status]");
   const errorEl = root?.querySelector<HTMLElement>("[data-qa-error]");
   const checkedStatus = document.getElementById("overview-checked-status");
@@ -218,10 +230,10 @@ const spaces = deviceSpaces.filter(Boolean);
     checkedStatus.hidden = false;
     checkedStatus.textContent =
       mins < 1
-        ? "Checked just now"
+        ? text.checkedJustNow
         : mins < 60
-          ? `Checked ${mins}m ago`
-          : `Checked ${Math.round(mins / 60)}h ago`;
+          ? fmt(text.checkedMinutesAgo, { count: mins })
+          : fmt(text.checkedHoursAgo, { count: Math.round(mins / 60) });
   }
 
   async function postJson(url: string, body: Record<string, unknown>) {
@@ -242,7 +254,7 @@ const spaces = deviceSpaces.filter(Boolean);
       count?: number;
     };
     if (!res.ok) {
-      throw new Error(data.error || "Request failed");
+      throw new Error(data.error || text.requestFailed);
     }
     return data;
   }
@@ -262,7 +274,7 @@ const spaces = deviceSpaces.filter(Boolean);
     try {
       if (ack) {
         const data = await postJson("/api/user/alert-events/ack", { action: ack });
-        showStatus(data.message ?? (ack === "ack_all" ? "Alerts handled." : "Alert acknowledged."));
+        showStatus(data.message ?? (ack === "ack_all" ? text.alertsHandled : text.alertAcknowledged));
         window.dispatchEvent(new CustomEvent("overview:soft-refresh"));
       } else if (snooze) {
         const hours = Number(btn.getAttribute("data-qa-hours") || "24");
@@ -270,7 +282,7 @@ const spaces = deviceSpaces.filter(Boolean);
           action: snooze,
           hours,
         });
-        showStatus(data.message ?? "Snooze updated.");
+        showStatus(data.message ?? text.snoozeUpdated);
         window.dispatchEvent(new CustomEvent("overview:soft-refresh"));
       } else if (checked) {
         const household =
@@ -285,10 +297,10 @@ const spaces = deviceSpaces.filter(Boolean);
           checkedStatus?.setAttribute("data-checked-at", data.checked_at);
           renderChecked();
         }
-        showStatus("Marked as checked.");
+        showStatus(text.markedChecked);
       }
     } catch (error) {
-      showError(error instanceof Error ? error.message : "Could not complete action.");
+      showError(error instanceof Error ? error.message : text.actionFailed);
     } finally {
       btn.disabled = false;
     }

@@ -3,6 +3,9 @@ import {
   formatDurationHours,
   type TempSample,
 } from "./timeToFreeze";
+import { fmt, formatNumber, plural } from "../i18n/format";
+import { LOCALE_META, type Locale } from "../i18n/locales";
+import { overviewCardsMessages } from "../i18n/messages/app/overviewCards";
 
 export type OutdoorHourlyPoint = { atMs: number; tempF: number };
 
@@ -192,22 +195,56 @@ function calendarDayKey(date: Date, timeZone: string): string {
   }
 }
 
+function fixed(value: number, digits: number, locale: Locale): string {
+  return formatNumber(value, locale, {
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits,
+    useGrouping: false,
+  });
+}
+
+/** `String(n)` in English as before; locale digits elsewhere. */
+function rawNumber(value: number, locale: Locale): string {
+  return locale === "en" ? String(value) : formatNumber(value, locale);
+}
+
+/**
+ * "12 minutes" / "3.5 hours" / "2.1 days". English is `formatDurationHours`
+ * from lib/timeToFreeze; other languages use their own plural forms.
+ */
+export function formatDurationLabel(hours: number, locale: Locale = "en"): string {
+  if (locale === "en") return formatDurationHours(hours);
+  const t = overviewCardsMessages(locale).thermal;
+  if (hours < 1) return plural(t.minutes, Math.round(hours * 60), locale);
+  // One decimal place: pick the plural form for "1.0", not "1".
+  const pick = (forms: typeof t.hours, value: number) => {
+    const rules = new Intl.PluralRules(LOCALE_META[locale].intl, { minimumFractionDigits: 1 });
+    const category = rules.select(Number(value.toFixed(1))) as keyof typeof forms;
+    return fmt(forms[category] ?? forms.other, { count: fixed(value, 1, locale) });
+  };
+  if (hours < 48) return pick(t.hours, hours);
+  return pick(t.days, hours / 24);
+}
+
 export function formatHitsAtLabel(
   iso: string,
   timeZone: string,
   now = new Date(),
+  locale: Locale = "en",
 ): string {
   const hits = new Date(iso);
   if (Number.isNaN(hits.getTime())) return iso;
+  const intl = LOCALE_META[locale].intl;
+  const t = overviewCardsMessages(locale).thermal;
   const timeOpts: Intl.DateTimeFormatOptions = {
     hour: "numeric",
     minute: "2-digit",
   };
   let time: string;
   try {
-    time = new Intl.DateTimeFormat("en-US", { ...timeOpts, timeZone }).format(hits);
+    time = new Intl.DateTimeFormat(intl, { ...timeOpts, timeZone }).format(hits);
   } catch {
-    time = new Intl.DateTimeFormat("en-US", {
+    time = new Intl.DateTimeFormat(intl, {
       ...timeOpts,
       timeZone: "UTC",
     }).format(hits);
@@ -218,14 +255,14 @@ export function formatHitsAtLabel(
   if (hitsDay === nowDay) return time;
 
   const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
-  if (hitsDay === calendarDayKey(tomorrow, timeZone)) return `${time} tomorrow`;
+  if (hitsDay === calendarDayKey(tomorrow, timeZone)) return fmt(t.hitsTomorrow, { time });
 
   try {
-    const weekday = new Intl.DateTimeFormat("en-US", {
+    const weekday = new Intl.DateTimeFormat(intl, {
       timeZone,
       weekday: "short",
     }).format(hits);
-    return `${weekday} ${time}`;
+    return fmt(t.hitsWeekday, { weekday, time });
   } catch {
     return time;
   }
@@ -302,25 +339,27 @@ export function buildTimeToFreezeProjection(input: {
   timeZone?: string;
   lookAheadHours?: number;
   useCelsius?: boolean;
-}): TimeToFreezeProjection {
+}, locale: Locale = "en"): TimeToFreezeProjection {
   const nowMs = input.nowMs ?? Date.now();
   const lookAheadHours = input.lookAheadHours ?? 12;
   const timeZone = input.timeZone ?? "UTC";
+  const t = overviewCardsMessages(locale).thermal;
   const thresholdLabel = input.useCelsius
-    ? `${(((input.freezeThresholdF - 32) * 5) / 9).toFixed(0)}°C`
-    : `${input.freezeThresholdF}°F`;
+    ? `${fixed(((input.freezeThresholdF - 32) * 5) / 9, 0, locale)}°C`
+    : `${rawNumber(input.freezeThresholdF, locale)}°F`;
 
   const trend = estimateTimeToFreeze(
     input.currentTempF,
     input.freezeThresholdF,
     input.indoorSamples,
   );
+  const trendMessage = localizedTrendMessage(trend, input, locale);
 
   if (input.currentTempF <= input.freezeThresholdF) {
     return {
       hours: 0,
       hitsAtIso: new Date(nowMs).toISOString(),
-      hitsAtLabel: formatHitsAtLabel(new Date(nowMs).toISOString(), timeZone, new Date(nowMs)),
+      hitsAtLabel: formatHitsAtLabel(new Date(nowMs).toISOString(), timeZone, new Date(nowMs), locale),
       confidence: "high",
       source: "already_below",
       currentTempF: input.currentTempF,
@@ -328,7 +367,7 @@ export function buildTimeToFreezeProjection(input: {
       rateFPerHour: trend.rateFPerHour,
       params: null,
       lookAheadHours,
-      message: trend.message,
+      message: trendMessage,
     };
   }
 
@@ -362,7 +401,7 @@ export function buildTimeToFreezeProjection(input: {
       });
     const early = scenario(-band);
     const late = scenario(band);
-    const label = (iso: string) => formatHitsAtLabel(iso, timeZone, new Date(nowMs));
+    const label = (iso: string) => formatHitsAtLabel(iso, timeZone, new Date(nowMs), locale);
     const window: TimeToFreezeWindow | null = early.hitsAtIso
       ? {
           earliestIso: early.hitsAtIso,
@@ -381,16 +420,16 @@ export function buildTimeToFreezeProjection(input: {
       rateFPerHour: trend.rateFPerHour,
       doorOpenNearby: input.doorOpenNearby === true,
       band,
+      locale,
     });
     if (projected.hours != null && projected.hitsAtIso) {
       const hitsAtLabel = formatHitsAtLabel(
         projected.hitsAtIso,
         timeZone,
         new Date(nowMs),
+        locale,
       );
-      const doorNote = input.doorOpenNearby
-        ? " A door is open: heat loss will be faster until it closes."
-        : "";
+      const doorNote = input.doorOpenNearby ? t.doorNote : "";
       return {
         hours: projected.hours,
         hitsAtIso: projected.hitsAtIso,
@@ -402,7 +441,12 @@ export function buildTimeToFreezeProjection(input: {
         rateFPerHour: trend.rateFPerHour,
         params,
         lookAheadHours,
-        message: `Hits ${thresholdLabel} around ${hitsAtLabel} (about ${formatDurationHours(projected.hours)}). Forecast-backed from this space's lag vs outdoor.${doorNote}`,
+        message:
+          fmt(t.forecastHit, {
+            threshold: thresholdLabel,
+            time: hitsAtLabel,
+            duration: formatDurationLabel(projected.hours, locale),
+          }) + doorNote,
         window,
         reasons,
         forecastLowF,
@@ -420,9 +464,11 @@ export function buildTimeToFreezeProjection(input: {
       rateFPerHour: trend.rateFPerHour,
       params,
       lookAheadHours,
-      message: `No freeze in the next ${lookAheadHours}h at this space's typical lag vs the outdoor forecast.${
-        window ? ` A night ${band}°F colder than expected would reach it around ${window.earliestLabel}.` : ""
-      }`,
+      message:
+        fmt(t.noFreeze, { hours: rawNumber(lookAheadHours, locale) }) +
+        (window
+          ? fmt(t.noFreezeColderNight, { band: rawNumber(band, locale), time: window.earliestLabel })
+          : ""),
       window,
       reasons,
       forecastLowF,
@@ -440,17 +486,20 @@ export function buildTimeToFreezeProjection(input: {
 
   if (trend.hours != null && trend.hours > 0) {
     const hitsAtIso = new Date(nowMs + trend.hours * 60 * 60 * 1000).toISOString();
-    const hitsAtLabel = formatHitsAtLabel(hitsAtIso, timeZone, new Date(nowMs));
+    const hitsAtLabel = formatHitsAtLabel(hitsAtIso, timeZone, new Date(nowMs), locale);
     const atHours = (hours: number) => new Date(nowMs + hours * 60 * 60 * 1000).toISOString();
     const earliestIso = atHours(trend.hours / (1 + TREND_WINDOW_RATE_SPREAD));
     const latestIso = atHours(trend.hours / (1 - TREND_WINDOW_RATE_SPREAD));
     const reasons = [
       trend.rateFPerHour != null
-        ? `Cooling about ${Math.abs(trend.rateFPerHour).toFixed(1)}°F/hr${
-            elapsedHours != null ? ` over the last ${formatDurationHours(elapsedHours)}` : ""
-          }.`
+        ? elapsedHours != null
+          ? fmt(t.reasons.trendCoolingOver, {
+              rate: fixed(Math.abs(trend.rateFPerHour), 1, locale),
+              duration: formatDurationLabel(elapsedHours, locale),
+            })
+          : fmt(t.reasons.trendCooling, { rate: fixed(Math.abs(trend.rateFPerHour), 1, locale) })
         : null,
-      "No outdoor forecast for this space yet, so this assumes the current cooling rate holds.",
+      t.reasons.noForecast,
     ].filter((r): r is string => r != null);
     return {
       hours: trend.hours,
@@ -463,12 +512,12 @@ export function buildTimeToFreezeProjection(input: {
       rateFPerHour: trend.rateFPerHour,
       params,
       lookAheadHours,
-      message: `${trend.message} Around ${hitsAtLabel} if this cooling rate holds.`,
+      message: fmt(t.trendHit, { message: trendMessage, time: hitsAtLabel }),
       window: {
         earliestIso,
-        earliestLabel: formatHitsAtLabel(earliestIso, timeZone, new Date(nowMs)),
+        earliestLabel: formatHitsAtLabel(earliestIso, timeZone, new Date(nowMs), locale),
         latestIso,
-        latestLabel: formatHitsAtLabel(latestIso, timeZone, new Date(nowMs)),
+        latestLabel: formatHitsAtLabel(latestIso, timeZone, new Date(nowMs), locale),
       },
       reasons,
     };
@@ -485,8 +534,38 @@ export function buildTimeToFreezeProjection(input: {
     rateFPerHour: trend.rateFPerHour,
     params,
     lookAheadHours,
-    message: trend.message,
+    message: trendMessage,
   };
+}
+
+/**
+ * lib/timeToFreeze words its trend message in English; other languages
+ * rebuild it here from the same branches.
+ */
+/** `estimateTimeToFreeze(...).message` in the reader's language (English unchanged). */
+export function localizedTrendMessage(
+  trend: ReturnType<typeof estimateTimeToFreeze>,
+  input: { currentTempF: number; freezeThresholdF: number; indoorSamples: TempSample[] },
+  locale: Locale,
+): string {
+  if (locale === "en") return trend.message;
+  const t = overviewCardsMessages(locale).thermal.trend;
+  if (input.currentTempF <= input.freezeThresholdF) return t.alreadyBelow;
+  const sorted = [...input.indoorSamples]
+    .filter((s) => Number.isFinite(s.tempF) && s.at)
+    .sort((a, b) => Date.parse(a.at) - Date.parse(b.at));
+  if (sorted.length < 2) return t.needMore;
+  const elapsedHours =
+    (Date.parse(sorted[sorted.length - 1]!.at) - Date.parse(sorted[0]!.at)) / (60 * 60 * 1000);
+  if (elapsedHours < 0.25 || trend.rateFPerHour == null) return t.tooClose;
+  if (trend.rateFPerHour >= -0.05 || trend.hours == null) {
+    return trend.rateFPerHour > 0.1 ? t.rising : t.stable;
+  }
+  return fmt(t.cooling, {
+    rate: fixed(Math.abs(trend.rateFPerHour), 1, locale),
+    duration: formatDurationLabel(trend.hours, locale),
+    threshold: rawNumber(input.freezeThresholdF, locale),
+  });
 }
 
 function lowestForecastF(forecast: OutdoorHourlyPoint[], nowMs: number, lookAheadHours: number): number | null {
@@ -504,36 +583,43 @@ function forecastReasons(input: {
   rateFPerHour: number | null;
   doorOpenNearby: boolean;
   band: number;
+  locale: Locale;
 }): string[] {
+  const { locale } = input;
+  const t = overviewCardsMessages(locale).thermal.reasons;
   const reasons: string[] = [];
   const horizonMs = input.nowMs + input.lookAheadHours * 60 * 60 * 1000;
   const ahead = input.outdoorForecast.filter((p) => p.atMs >= input.nowMs && p.atMs <= horizonMs);
   const low = ahead.reduce<OutdoorHourlyPoint | null>((min, p) => (!min || p.tempF < min.tempF ? p : min), null);
   if (low) {
     reasons.push(
-      `Outdoor forecast low of ${Math.round(low.tempF)}°F around ${formatHitsAtLabel(
-        new Date(low.atMs).toISOString(),
-        input.timeZone,
-        new Date(input.nowMs),
-      )}.`,
+      fmt(t.forecastLow, {
+        temp: fixed(Math.round(low.tempF) || 0, 0, locale),
+        time: formatHitsAtLabel(new Date(low.atMs).toISOString(), input.timeZone, new Date(input.nowMs), locale),
+      }),
     );
   }
   const offset = Math.round(input.params.offsetF);
   reasons.push(
     offset === 0
-      ? "This space usually sits right at the outdoor temperature."
-      : `This space usually runs about ${Math.abs(offset)}°F ${offset > 0 ? "warmer" : "colder"} than outdoors.`,
+      ? t.offsetZero
+      : fmt(offset > 0 ? t.offsetWarmer : t.offsetColder, { offset: rawNumber(Math.abs(offset), locale) }),
   );
+  // English as before: the raw count, no digit grouping.
+  const sampleVars: Record<string, string> = locale === "en" ? { count: String(input.params.sampleCount) } : {};
   reasons.push(
-    input.params.fittedCoupling
-      ? `How fast it follows outdoor air is learned from ${input.params.sampleCount} paired readings.`
-      : `How fast it follows outdoor air is a default until there's more history (${input.params.sampleCount} paired readings so far).`,
+    plural(
+      input.params.fittedCoupling ? t.couplingLearned : t.couplingDefault,
+      input.params.sampleCount,
+      locale,
+      sampleVars,
+    ),
   );
   if (input.rateFPerHour != null && input.rateFPerHour < -0.05) {
-    reasons.push(`Cooling about ${Math.abs(input.rateFPerHour).toFixed(1)}°F/hr right now.`);
+    reasons.push(fmt(t.coolingNow, { rate: fixed(Math.abs(input.rateFPerHour), 1, locale) }));
   }
-  if (input.doorOpenNearby) reasons.push("A door is open nearby, so it's assumed to lose heat faster.");
-  reasons.push(`The window assumes the space runs up to ${input.band}°F colder or milder than usual.`);
+  if (input.doorOpenNearby) reasons.push(t.doorOpen);
+  reasons.push(fmt(t.band, { band: rawNumber(input.band, locale) }));
   return reasons;
 }
 
@@ -556,14 +642,18 @@ export function shouldAlertOnRunway(
 export function evaluateRunwayAlert(
   settings: { enabled: boolean; runwayAlertEnabled: boolean; freezeThresholdF: number; forecastHoursAhead: number },
   projection: TimeToFreezeProjection,
+  locale: Locale = "en",
 ): string | null {
   if (!settings.enabled || !settings.runwayAlertEnabled) return null;
   const lookAhead = settings.forecastHoursAhead || projection.lookAheadHours;
   if (!shouldAlertOnRunway(projection, lookAhead)) return null;
-  const clock = projection.hitsAtLabel ? ` around ${projection.hitsAtLabel}` : "";
-  const hoursLabel =
-    projection.hours != null ? formatDurationHours(projection.hours) : "a few hours";
-  return `This space is projected to hit ${settings.freezeThresholdF}°F${clock} (in ${hoursLabel}). Drip faucets or turn on heat now: you still have a window before the probe crosses freeze.`;
+  const t = overviewCardsMessages(locale).thermal;
+  const duration =
+    projection.hours != null ? formatDurationLabel(projection.hours, locale) : t.aFewHours;
+  const threshold = rawNumber(settings.freezeThresholdF, locale);
+  return projection.hitsAtLabel
+    ? fmt(t.runwayAlertAt, { threshold, time: projection.hitsAtLabel, duration })
+    : fmt(t.runwayAlert, { threshold, duration });
 }
 
 export function timeToFreezeApiPayload(projection: TimeToFreezeProjection) {

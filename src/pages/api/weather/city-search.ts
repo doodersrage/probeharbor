@@ -2,11 +2,15 @@ import type { APIRoute } from "astro";
 import { getOpenWeatherApiKey } from "../../../lib/FetchWeather";
 import { normalizeGeocodeResults } from "../../../lib/weatherCities";
 import { checkWeatherSearchRateLimit } from "../../../lib/weatherSearchLimits";
+import { apiCommonMessages, apiLocale } from "../../../i18n/messages/app/api/common";
+import { apiUserMessages } from "../../../i18n/messages/app/api/user";
 
-export const GET: APIRoute = async ({ url, clientAddress }) => {
+export const GET: APIRoute = async ({ url, clientAddress, locals }) => {
+  const locale = apiLocale({ locals });
+  const tc = apiCommonMessages(locale);
   const rate = checkWeatherSearchRateLimit(clientAddress || "unknown");
   if (!rate.ok) {
-    return new Response(JSON.stringify({ error: "Too many requests" }), {
+    return new Response(JSON.stringify({ error: tc.tooManyRequests }), {
       status: 429,
       headers: {
         "Content-Type": "application/json",
@@ -25,7 +29,7 @@ export const GET: APIRoute = async ({ url, clientAddress }) => {
 
   const apiKey = getOpenWeatherApiKey();
   if (!apiKey) {
-    return new Response(JSON.stringify({ error: "Weather API not configured" }), {
+    return new Response(JSON.stringify({ error: apiUserMessages(locale).weather.notConfigured }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
     });
@@ -48,7 +52,7 @@ export const GET: APIRoute = async ({ url, clientAddress }) => {
       });
     }
     if (!response.ok) {
-      return new Response(JSON.stringify({ error: "Geocode failed" }), {
+      return new Response(JSON.stringify({ error: apiUserMessages(locale).weather.geocodeFailed }), {
         status: 502,
         headers: { "Content-Type": "application/json" },
       });
@@ -65,7 +69,7 @@ export const GET: APIRoute = async ({ url, clientAddress }) => {
       headers: { "Content-Type": "application/json" },
     });
   } catch {
-    return new Response(JSON.stringify({ error: "Geocode request failed" }), {
+    return new Response(JSON.stringify({ error: apiUserMessages(locale).weather.geocodeRequestFailed }), {
       status: 502,
       headers: { "Content-Type": "application/json" },
     });

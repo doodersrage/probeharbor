@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { evaluateAlertRules, explainAlertRules, parseAlertRulesFromForm, type AlertRule, type RuleEvalContext } from "./alertRules";
+import { conditionOptions, evaluateAlertRules, explainAlertRules, parseAlertRulesFromForm, type AlertRule, type RuleEvalContext } from "./alertRules";
+import { ensureLocale } from "../i18n/catalog";
 import {
   DEFAULT_ALERT_SETTINGS,
   evaluateForecastFreeze,
@@ -315,6 +316,26 @@ describe("explainAlertRules", () => {
     expect(scoped?.conditions[0]?.detail).toBe('No temperature probe with "shed" in its name.');
     expect(weather?.conditions[0]?.detail).toMatch(/unknown/);
     expect(weather?.conditions[1]?.detail).toBe("Biggest: Garage pipe dropped 2°F in the last hour; needs 5°F.");
+  });
+
+  it("explains conditions and matched rules in the user's language", async () => {
+    await ensureLocale("de", ["app"]);
+    const [result] = explainAlertRules(
+      [{ id: "r1", enabled: true, name: "Garage kalt", all: [{ type: "temp_below", labelIncludes: "garage" }, { type: "door_open" }] }],
+      { ...ctx, readings: [{ label: "Garage pipe", tempf: 36.5, humidity: 40 }] },
+      "de",
+    );
+    expect(result?.conditions[0]?.detail).toBe("Am nächsten: Garage pipe mit 36,5°F; nötig ist ≤ 34°F.");
+    expect(result?.conditions[1]?.detail).toBe("Keiner von 1 Türsensor meldet „offen“.");
+    const [line] = evaluateAlertRules(
+      [{ id: "x", enabled: true, name: "Kalt", all: [{ type: "temp_below", value: 40 }] }],
+      ctx,
+      "de",
+    );
+    expect(line).toBe("Regel „Kalt“ hat ausgelöst (Temperatur niedrig).");
+    expect(conditionOptions("de").find((o) => o.value === "outdoor_below")?.label).toBe(
+      "Außentemperatur unter (°F, Standard 20)",
+    );
   });
 
   it("agrees with evaluateAlertRules", () => {

@@ -5,8 +5,10 @@ import {
   applyReferralForNewUser,
 } from "../../../lib/referrals";
 import { REGISTER_NEXT_DEVICES, sanitizeRegisterNext } from "../../../lib/registerUrl";
+import { requestLocale } from "./_locale";
 
-export const POST: APIRoute = async ({ request, redirect, clientAddress }) => {
+export const POST: APIRoute = async (context) => {
+  const { request, redirect, clientAddress } = context;
   const formData = await request.formData();
   const turnstile = await verifyTurnstileToken(
     getTurnstileToken(formData),
@@ -32,9 +34,12 @@ export const POST: APIRoute = async ({ request, redirect, clientAddress }) => {
   // Fresh client -- never the shared `supabase` singleton, which would
   // leave this newly-created session sitting as ambient state for any
   // other concurrent request on the same Worker isolate to pick up.
+  // The language the form was viewed in (ph_locale cookie, set by /es/register
+  // etc.) becomes the account language for emails, alerts and the dashboard.
   const { data, error } = await createAuthClient().auth.signUp({
     email,
     password,
+    options: { data: { locale: requestLocale(context) } },
   });
 
   if (error) {

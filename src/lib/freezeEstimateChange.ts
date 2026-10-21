@@ -1,5 +1,7 @@
-import { formatHitsAtLabel, type TimeToFreezeProjection } from "./spaceThermalModel";
-import { formatDurationHours } from "./timeToFreeze";
+import { formatDurationLabel, formatHitsAtLabel, type TimeToFreezeProjection } from "./spaceThermalModel";
+import { fmt, formatNumber } from "../i18n/format";
+import type { Locale } from "../i18n/locales";
+import { overviewCardsMessages } from "../i18n/messages/app/overviewCards";
 import { createServerClient } from "./supabase";
 import type { Json } from "../types/supabase";
 
@@ -37,8 +39,12 @@ export function snapshotFromProjection(projection: TimeToFreezeProjection, nowMs
   };
 }
 
-function f(value: number): string {
-  return `${Math.round(value)}°F`;
+function whole(value: number, locale: Locale): string {
+  return formatNumber(Math.round(value) || 0, locale, { useGrouping: false });
+}
+
+function f(value: number, locale: Locale): string {
+  return `${whole(value, locale)}°F`;
 }
 
 export function explainEstimateChange(
@@ -46,47 +52,62 @@ export function explainEstimateChange(
   next: FreezeEstimateSnapshot,
   timeZone: string,
   nowMs = Date.now(),
+  locale: Locale = "en",
 ): FreezeEstimateChange | null {
   if (!previous) return null;
+  const t = overviewCardsMessages(locale).estimateChange;
   const prevAt = Date.parse(previous.computedAt);
   if (!Number.isFinite(prevAt) || nowMs - prevAt > MAX_BASELINE_AGE_MS || nowMs - prevAt < 5 * 60 * 1000) return null;
   const now = new Date(nowMs);
-  const since = formatHitsAtLabel(previous.computedAt, timeZone, now);
-  const label = (iso: string) => formatHitsAtLabel(iso, timeZone, now);
+  const since = formatHitsAtLabel(previous.computedAt, timeZone, now, locale);
+  const label = (iso: string) => formatHitsAtLabel(iso, timeZone, now, locale);
 
   let headline: string;
   if (previous.hitsAtIso && next.hitsAtIso) {
     const shiftMs = Date.parse(next.hitsAtIso) - Date.parse(previous.hitsAtIso);
     if (!Number.isFinite(shiftMs) || Math.abs(shiftMs) < MIN_SHIFT_MS) return null;
-    headline = `${formatDurationHours(Math.abs(shiftMs) / 3_600_000)} ${shiftMs < 0 ? "earlier" : "later"} than the estimate at ${since} (was ${label(previous.hitsAtIso)}).`;
+    headline = fmt(shiftMs < 0 ? t.earlier : t.later, {
+      duration: formatDurationLabel(Math.abs(shiftMs) / 3_600_000, locale),
+      since,
+      was: label(previous.hitsAtIso),
+    });
   } else if (!previous.hitsAtIso && next.hitsAtIso) {
-    headline = `New since ${since}: no freeze was expected then.`;
+    headline = fmt(t.newSince, { since });
   } else if (previous.hitsAtIso && !next.hitsAtIso) {
-    headline = `No longer expected to reach freeze. At ${since} it was around ${label(previous.hitsAtIso)}.`;
+    headline = fmt(t.noLonger, { since, was: label(previous.hitsAtIso) });
   } else {
     return null;
   }
 
   const reasons: string[] = [];
   if (previous.forecastLowF != null && next.forecastLowF != null && Math.abs(next.forecastLowF - previous.forecastLowF) >= 2) {
-    reasons.push(`Outdoor forecast low moved from ${f(previous.forecastLowF)} to ${f(next.forecastLowF)}.`);
+    reasons.push(fmt(t.forecastLow, { from: f(previous.forecastLowF, locale), to: f(next.forecastLowF, locale) }));
   }
   if (
     previous.rateFPerHour != null &&
     next.rateFPerHour != null &&
     Math.abs(next.rateFPerHour - previous.rateFPerHour) >= 0.3
   ) {
-    const word = (rate: number) => (rate < 0 ? `cooling ${Math.abs(rate).toFixed(1)}°F/hr` : "not cooling");
-    reasons.push(`The space went from ${word(previous.rateFPerHour)} to ${word(next.rateFPerHour)}.`);
+    const word = (rate: number) =>
+      rate < 0
+        ? fmt(t.cooling, {
+            rate: formatNumber(Math.abs(rate), locale, {
+              minimumFractionDigits: 1,
+              maximumFractionDigits: 1,
+              useGrouping: false,
+            }),
+          })
+        : t.notCooling;
+    reasons.push(fmt(t.rate, { from: word(previous.rateFPerHour), to: word(next.rateFPerHour) }));
   }
   if (previous.offsetF != null && next.offsetF != null && Math.abs(next.offsetF - previous.offsetF) >= 2) {
-    reasons.push(`Its learned lag behind outdoor air changed from ${Math.round(previous.offsetF)}°F to ${Math.round(next.offsetF)}°F.`);
+    reasons.push(fmt(t.offset, { from: whole(previous.offsetF, locale), to: whole(next.offsetF, locale) }));
   }
   if (previous.source !== next.source) {
-    if (next.source === "forecast_model") reasons.push("The estimate now uses the outdoor forecast, not just the cooling rate.");
-    else if (next.source === "trend") reasons.push("No usable outdoor forecast now, so the estimate uses the cooling rate alone.");
+    if (next.source === "forecast_model") reasons.push(t.nowForecast);
+    else if (next.source === "trend") reasons.push(t.nowTrend);
   }
-  if (reasons.length === 0) reasons.push("Newer readings and forecast hours; no single input moved much.");
+  if (reasons.length === 0) reasons.push(t.noSingle);
   return { headline, reasons };
 }
 
@@ -99,6 +120,7 @@ export async function compareAndStoreFreezeEstimate(
   next: FreezeEstimateSnapshot,
   timeZone: string,
   nowMs = Date.now(),
+  locale: Locale = "en",
 ): Promise<FreezeEstimateChange | null> {
   try {
     const supabase = createServerClient();
@@ -108,7 +130,7 @@ export async function compareAndStoreFreezeEstimate(
       .eq("household_id", householdId)
       .maybeSingle();
     const previous = (data?.data as unknown as FreezeEstimateSnapshot | undefined) ?? null;
-    const change = explainEstimateChange(previous, next, timeZone, nowMs);
+    const change = explainEstimateChange(previous, next, timeZone, nowMs, locale);
     const storedAt = data?.updated_at ? Date.parse(data.updated_at) : NaN;
     if (!Number.isFinite(storedAt) || nowMs - storedAt >= SNAPSHOT_REFRESH_MS) {
       await supabase

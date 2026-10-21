@@ -3,6 +3,9 @@
  * One-click "I'm on it" plus the other acknowledge actions behind "More".
  * Each button submits its own `action` value to /api/user/alert-events/ack.
  */
+import { getLocale } from "../../i18n";
+import { alertsMessages } from "../../i18n/messages/app/alerts";
+
 interface Props {
   eventId: number;
   hasTenantRelay: boolean;
@@ -12,14 +15,16 @@ interface Props {
 
 const { eventId, hasTenantRelay, canPingWebhook, compact = false } = Astro.props;
 
+const t = alertsMessages(getLocale(Astro)).ack;
+
 const moreActions: Array<{ value: string; label: string }> = [
-  { value: "snooze_1h", label: "Handle & snooze 1h" },
-  { value: "snooze_4h", label: "Handle & snooze 4h" },
-  { value: "snooze_24h", label: "Handle & snooze 24h" },
-  { value: "false_alarm", label: "False alarm (snooze 24h)" },
-  { value: "raise_threshold", label: "False alarm + raise threshold +2°F" },
-  ...(hasTenantRelay ? [{ value: "notify_tenant", label: "Handle & email tenant" }] : []),
-  ...(canPingWebhook ? [{ value: "webhook_ping", label: "Handle & ping webhook" }] : []),
+  { value: "snooze_1h", label: t.snooze1h },
+  { value: "snooze_4h", label: t.snooze4h },
+  { value: "snooze_24h", label: t.snooze24h },
+  { value: "false_alarm", label: t.falseAlarm },
+  { value: "raise_threshold", label: t.raiseThreshold },
+  ...(hasTenantRelay ? [{ value: "notify_tenant", label: t.notifyTenant }] : []),
+  ...(canPingWebhook ? [{ value: "webhook_ping", label: t.webhookPing }] : []),
 ];
 ---
 <form
@@ -34,12 +39,12 @@ const moreActions: Array<{ value: string; label: string }> = [
     name="action"
     value="ack"
     class="btn-secondary btn-sm"
-    title="Stops repeat alerts until the space warms back above your threshold"
+    title={t.imOnItTitle}
   >
-    I'm on it
+    {t.imOnIt}
   </button>
   <details class="alert-ack-more">
-    <summary class="btn-ghost btn-sm">More</summary>
+    <summary class="btn-ghost btn-sm">{t.more}</summary>
     <div class="alert-ack-more-menu">
       {moreActions.map((action) => (
         <button type="submit" name="action" value={action.value} class="btn-ghost btn-sm">

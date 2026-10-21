@@ -2,11 +2,15 @@ import type { APIRoute } from "astro";
 import { getAuthFromCookies } from "../../../lib/auth";
 import { listHouseholdDevices, updateDeviceSensor } from "../../../lib/devices";
 import { requireHouseholdEditor, householdEditorCtx } from "../../../lib/householdAuth";
+import { apiCommonMessages, apiLocale } from "../../../i18n/messages/app/api/common";
+import { apiDevicesMessages } from "../../../i18n/messages/app/api/devices";
 
-export const POST: APIRoute = async ({ request, cookies }) => {
+export const POST: APIRoute = async ({ request, cookies, locals }) => {
+  const locale = apiLocale({ locals });
+  const tc = apiCommonMessages(locale);
   const { user } = await getAuthFromCookies(cookies);
   if (!user) {
-    return new Response(JSON.stringify({ ok: false, error: "Unauthorized" }), {
+    return new Response(JSON.stringify({ ok: false, error: tc.unauthorized }), {
       status: 401,
       headers: { "Content-Type": "application/json" },
     });
@@ -14,7 +18,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
   const editor = await requireHouseholdEditor(user.id);
   if (!editor.ok) {
-    return new Response(JSON.stringify({ ok: false, error: "View-only access." }), {
+    return new Response(JSON.stringify({ ok: false, error: tc.viewOnly }), {
       status: 403,
       headers: { "Content-Type": "application/json" },
     });
@@ -29,13 +33,13 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     body = null;
   }
   if (!body || typeof body !== "object") {
-    return new Response(JSON.stringify({ ok: false, error: "Invalid JSON" }), {
+    return new Response(JSON.stringify({ ok: false, error: tc.invalidJson }), {
       status: 400,
       headers: { "Content-Type": "application/json" },
     });
   }
   if (!Array.isArray(body.sensors) || body.sensors.length === 0) {
-    return new Response(JSON.stringify({ ok: false, error: "No sensors provided." }), {
+    return new Response(JSON.stringify({ ok: false, error: apiDevicesMessages(locale).noSensorsProvided }), {
       status: 400,
       headers: { "Content-Type": "application/json" },
     });

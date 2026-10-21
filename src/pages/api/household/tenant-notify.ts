@@ -7,8 +7,10 @@ import {
 } from "../../../lib/householdAuth";
 import { updateTenantNotifySettings } from "../../../lib/tenantRelay";
 import { formRedirectPath, withQuery } from "../../../lib/siteUrl";
+import { apiLocale } from "../../../i18n/messages/app/apiMore/common";
 
-export const POST: APIRoute = async ({ request, cookies, redirect }) => {
+export const POST: APIRoute = async (context) => {
+  const { request, cookies, redirect } = context;
   const { user } = await getAuthFromCookies(cookies);
   if (!user) {
     return redirect("/signin");
@@ -30,9 +32,10 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const result = await updateTenantNotifySettings(householdId, {
     email: formData.get("tenant_email")?.toString() ?? null,
     name: formData.get("tenant_name")?.toString() ?? null,
-  });
+  }, apiLocale(context));
 
   if (result.error) {
+    // The settings page shows this text as is (already in the request language).
     return redirect(withQuery(redirectTo, { tenant_error: result.error }));
   }
 

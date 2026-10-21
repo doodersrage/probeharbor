@@ -1,0 +1,283 @@
+import type { AlertSettingsMessages } from "./en";
+
+const de: AlertSettingsMessages = {
+  viewOnly: "Nur Ansicht: Die Alarmeinstellungen können in diesem Konto nicht geändert werden.",
+  essentialsIntroHtml:
+    "Beginne mit <strong>Wann alarmieren</strong> und <strong>Wie du benachrichtigt wirst</strong>, speichere und sende dann unten einen Testalarm.",
+  defaultValue: "Standard: {value}",
+
+  essentials: {
+    title: "Wann alarmieren",
+    subtitle: "Frost, Lecks, stumme Sensoren und Frühwarnungen.",
+    turnOn: "Alarme einschalten",
+    freezeBelow: "Frost unter (°F)",
+    freezeHint: "Alarm, wenn ein Fühler diese Temperatur erreicht oder unterschreitet.",
+    dwellLabel: "Wartezeit vor dem Alarm (Minuten)",
+    dwellHint:
+      "Wie lange ein Fühler mindestens an oder unter der Frostgrenze bleiben muss. 5–15 ignoriert eine kurz offene Tür; 0 alarmiert schon beim ersten kalten Messwert.",
+    leakHint: "Lecksensoren alarmieren automatisch, sobald sie Nässe melden.",
+    powerAlerts:
+      "Alarm, wenn ein Stromsensor „aus“ meldet (Heizungen, Heizbänder und Sumpfpumpen sind dann eventuell auch aus)",
+    outageToggle: "Alarm, wenn ein Sensor keine Daten mehr sendet",
+    outageHours: "Nach so vielen Stunden ohne Daten",
+    outageHint:
+      "Ein stummer Fühler kann dich nicht vor Frost warnen – deshalb ist das oft der nützlichste Alarm.",
+    earlyWarnings: "Frühwarnungen",
+    runwayToggle: "Warnen, bevor ein Fühler die Frostgrenze erreicht – solange noch Zeit zum Handeln ist",
+    runwayHint:
+      "Schätzt anhand der Abkühlgeschwindigkeit (und der Außenvorhersage, wenn ein Wetterstandort eingestellt ist), wann jeder Bereich deine Frostgrenze erreicht, und warnt innerhalb des oben eingestellten Zeitfensters, damit du Wasserhähne tropfen lassen oder heizen kannst.",
+    forecastToggle: "Warnen, wenn die Außenvorhersage unter den Gefrierpunkt fällt",
+    forecastHours: "Wie weit im Voraus (Stunden)",
+    forecastHoursHint: "Gilt für beide Frühwarnungen: die Vorhersagewarnung und die Warnung „Zeit bis Frost“.",
+    nwsSummary: "Luftfeuchte, schnelle Temperaturstürze und amtliche Frostwarnungen",
+    humidityAbove: "Luftfeuchte über (%)",
+    rateDrop: "Temperatursturz (°F / Stunde)",
+    nwsToggle: "Amtliche Frost-/Kältewarnungen des NWS (USA)",
+    perSensorSummary: "Eigene Schwellenwerte pro Sensor",
+    perSensorHint:
+      "Standardmäßig nutzt jeder Temperatursensor die oben eingestellten Frost- und Luftfeuchte-Schwellenwerte des Haushalts. Wähle einzelne Sensoren aus, um Schwellenwert-Alarme einzuschränken, oder lege pro Sensor einen eigenen Wert fest.",
+    allSensors: "Alle Temperatursensoren (Standard)",
+    freezeOverride: "Eigene Frostgrenze (°F, optional)",
+    humidityOverride: "Eigener Luftfeuchte-Schwellenwert (%, optional)",
+    healthSummary: "Akku, WLAN-Signal und Feed-Prüfung",
+    lowBattery: "Alarme bei niedrigem Akkustand",
+    batteryTrend: "Anhaltender Akkuabfall",
+    batteryBelow: "Akku unter (%)",
+    weakWifi: "Schwaches WLAN-Signal",
+    rssiBelow: "RSSI unter (dBm)",
+    feedUptime: "Feed nicht erreichbar (stündliche Prüfung abgerufener JSON-Feeds)",
+  },
+
+  channels: {
+    title: "Wie du benachrichtigt wirst",
+    subtitle:
+      "E-Mail plus beliebige Chat-Apps, SMS, Push oder Webhook. Jeder ausgewählte Kanal erhält jeden Alarm.",
+    alertEmail: "E-Mail für Alarme",
+    sendByEmail: "Alarme per E-Mail senden",
+    otherChannels: "Weitere Kanäle",
+    push: "Push (Browser + Android)",
+    outboundWebhook: "Ausgehender Webhook",
+    twilioMissing:
+      "SMS ist in deinem Tarif enthalten, aber Twilio ist auf diesem Server nicht eingerichtet. Nachrichten werden übersprungen, bis die `TWILIO_*`-Secrets gesetzt sind.",
+    unlockProHtml: 'Schalte SMS und Webhooks mit <a class="text-link" href="/dashboard/plans">Pro</a> frei.',
+    webhookUrl: "Webhook-URL",
+    botToken: "Bot-Token",
+    chatId: "Chat-ID (für Befehle erforderlich)",
+    webhookSecret: "Webhook-Secret (optional)",
+    telegramHintHtml:
+      "Nutze bei Telegram <code>setWebhook</code> mit <code>secret_token</code>, damit Telegram <code>X-Telegram-Bot-Api-Secret-Token</code> sendet (der Parameter <code>?secret=</code> wird nicht akzeptiert). Speichere oben eine Chat-ID: Befehle funktionieren nur aus diesem Chat (/status [Name], /snooze [Stunden], /vacation [Tage]).",
+    incomingWebhookUrl: "URL des eingehenden Webhooks",
+    topic: "Topic",
+    serverOptional: "Server (optional)",
+    userKey: "User Key",
+    appToken: "App-Token",
+    phoneNumber: "Telefonnummer",
+    smsHint: "Internationales Format, z. B. +1 für US-Nummern.",
+    url: "URL",
+    signingSecret: "Signatur-Secret (optional)",
+    pushHintHtml:
+      "Ein Kanal deckt <strong>diesen Browser</strong> (Web Push) und die <strong>ProbeHarbor-Android-App</strong> (FCM) ab. Aktiviere ihn unten für diesen Browser; die Android-App registriert sich automatisch, wenn du dich mit Pro anmeldest.",
+    pushNotConfigured: "Browser-Push ist auf dem Server noch nicht eingerichtet (VAPID-Schlüssel fehlen).",
+    pushChecking: "Push-Status wird geprüft…",
+    pushEnable: "Browser-Push auf diesem Gerät aktivieren",
+  },
+
+  quiet: {
+    title: "Alarme pausieren",
+    subtitle: "Ruhezeiten über Nacht oder pausieren und Urlaubsmodus, wenn du schon Bescheid weißt.",
+    enable: "Ruhezeiten für Alarme aktivieren",
+    bypassFreeze: "Frost-, Überflutungs- und Vorhersagealarme immer zustellen",
+    smsCritical: "Kritische Frost-/Überflutungs-/Vorhersagealarme trotzdem per SMS senden (Pro)",
+    upgradeLinkHtml: ': <a class="text-link" href="/dashboard/plans">Upgrade</a>',
+    start: "Beginn",
+    end: "Ende",
+    timezone: "Zeitzone",
+    snoozeSummary: "Pausieren oder Urlaub",
+    snoozeHint:
+      "Pausieren stoppt die meisten Alarme (Sensor-stumm- und Überflutungsalarme kommen weiterhin). Der Urlaubsmodus schaltet Routinealarme (Änderungsrate, Regeln, Akku, Zusammenfassungen) bis zu einem Rückkehrdatum oder für eine bestimmte Anzahl Tage stumm; Frost-, Vorhersage- und Überflutungsalarme kommen weiterhin.",
+    snoozedUntil: "Pausiert bis {date}.",
+    vacationUntil: "Urlaub bis {date}.",
+    snooze24: "24 Std. pausieren",
+    vacation7: "7 Tage Urlaub",
+    clearSnooze: "Pause beenden",
+    endVacation: "Urlaub beenden",
+    vacationUntilLabel: "Urlaub bis",
+    setVacationUntil: "Rückkehrdatum festlegen",
+  },
+
+  reports: {
+    title: "Zusammenfassungen per E-Mail",
+    subtitle: "Wöchentliche Zusammenfassung und ausführlichere Berichte. Nichts davon ist ein Alarm.",
+    weeklyDigest: "Wöchentliche E-Mail-Zusammenfassung (montags): kälteste Nacht, Lecks und Ausfälle",
+    portfolioDigest: "Zusammenfassung gefährdeter Objekte: E-Mail, sobald ein Objekt die Frostgrenze erreicht",
+    monthlyReport: "Monatlicher Frostbericht (am 1. des Monats, HTML-Anhang)",
+    quarterlyReport: "Vierteljährlicher Saisonbericht (Jan., Apr., Juli, Okt.)",
+    dripEmails: "Tipps für den Einstieg (1, 3 und 7 Tage nach der Registrierung)",
+    freezeDrill: "Frost-Probelauf vor der Saison (E-Mail von Sept. bis Nov. mit Bereitschaftswert)",
+  },
+
+  automation: {
+    title: "Regeln und Eskalation",
+    subtitle:
+      "Eigene Bedingungen (z. B. Leitung unter 3 °C (38 °F), während eine Tür offen ist), Folgeschritte und erneutes Senden per SMS.",
+    compositeRules: "Kombinierte Regeln",
+    compositeHintHtml:
+      'Lösen aus, wenn alle (oder eine) der Bedingungen einer Regel zutreffen, z. B. Leitung unter 3 °C (38 °F) UND draußen unter −7 °C (20 °F). Überflutung alarmiert bereits bei Nässe; füge hier nur dann eine Überflutungsbedingung hinzu, wenn du sie mit anderen Prüfungen kombinieren willst. Beispiel Tür + Kälte: <a class="text-link" href="/about/garage-door-cold-playbook">Leitfaden Garagentor</a>.',
+    addRule: "Regel hinzufügen",
+    addHeatRule: "Hitzeregel hinzufügen ({threshold} °F)",
+    playbooks: "Alarm-Abläufe",
+    playbooksHint: "Folgeschritte nach dem ersten Alarm: z. B. 15 Minuten später eine SMS, wenn noch niemand bestätigt hat.",
+    addStep: "Schritt hinzufügen",
+    smsEscalation: "SMS-Eskalation",
+    escalationToggle: "Schwellenwert-Alarme erneut per SMS senden",
+    afterMinutes: "Nach (Minuten)",
+  },
+
+  advanced: {
+    title: "Erweitert",
+    subtitle: "Kanal-Routing pro Alarmart und pro Bereich, eigene Nachrichtentexte und Messwert-Webhooks.",
+    severitySummary: "Routing nach Schweregrad (optional)",
+    severityHint:
+      "Leer lassen, um die allgemeinen Kanal-Kästchen zu nutzen. Sonst werden für diese Art nur die ausgewählten Kanäle verwendet.",
+    spaceSummary: "Kanal-Routing pro Bereich",
+    spaceEmpty: "Weise deinen Geräten einen Bereich zu (Dashboard → Geräte), um Alarme nach Ort zu routen.",
+    spaceHint:
+      "Wähle Kanäle pro Bereich und Alarmart. Nicht ausgewählte Arten nutzen das allgemeine bzw. das Schweregrad-Routing.",
+    templatesSummary: "Eigene Alarmtexte",
+    templatesHintHtml: "Titel/Text pro Alarmart überschreiben. Variablen: {vars}.",
+    templateTitle: "Titel",
+    templateBody: "Text",
+    templatePlaceholder: "Leer lassen für den Standardtext",
+    readingSummary: "Messwert-Webhooks (Pro)",
+    readingUrl: "URL des Messwert-Webhooks",
+    readingHint: "POST bei jeder erfolgreichen Datenübermittlung eines Geräts, mit den neuesten Messwerten als JSON.",
+  },
+
+  save: {
+    button: "Alarmeinstellungen speichern",
+    incompleteHint: "Für einen ausgewählten Kanal fehlt das Ziel – sonst wird er beim Alarm übersprungen.",
+    notApplied: "Änderungen gelten erst nach dem Speichern.",
+  },
+
+  channelLabels: {
+    email: "E-Mail",
+  },
+  channelIds: {
+    email: "E-Mail",
+  },
+  kindIds: {
+    threshold: "Schwellenwert",
+    flood: "Überflutung",
+    power: "Strom",
+    runway: "Zeit bis Frost",
+    forecast: "Vorhersage",
+    nws: "NWS",
+    rate: "Änderungsrate",
+    outage: "Sensor stumm",
+    rule: "Regel",
+    battery: "Akku",
+    rssi: "RSSI",
+    stuck: "Fühler hängt",
+    recovery: "Entwarnung",
+  },
+  kindLabels: {
+    threshold: "Schwellenwert",
+    flood: "Überflutung / Leck",
+    power: "Strom aus",
+    runway: "Zeit bis Frost",
+    forecast: "Vorhersage",
+    nws: "NWS",
+    rule: "Regel",
+    outage: "Sensor stumm",
+    rate: "Temperatursturz",
+    battery: "Akku",
+    rssi: "Signal",
+    generic: "Allgemein",
+  },
+
+  delivery: {
+    lastFailed: "Letzter Versuch fehlgeschlagen {age}",
+    lastDelivered: "Zuletzt zugestellt {age}",
+    none: "Noch keine Zustellungen",
+    failedTitle: "Prüfe das Ziel unten und sende dann einen Test.",
+    sendTest: "Test senden",
+    sendTestTitle: "Nur an diesen Kanal einen Test senden",
+    saveFirstTitle: "Speichere zuerst die Einstellungen mit aktiviertem Kanal",
+  },
+
+  clientSubmit: {
+    saving: "Wird gespeichert…",
+    saveButton: "Alarmeinstellungen speichern",
+    saveFailed: "Alarmeinstellungen konnten nicht gespeichert werden.",
+    pickVacationDate: "Wähle ein Rückkehrdatum für den Urlaub.",
+    snoozeFailed: "Pause konnte nicht aktualisiert werden.",
+    updated: "Aktualisiert.",
+    sending: "Wird gesendet…",
+    sent: "Gesendet. Sieh in {channel} nach.",
+    notSentReasons: "Nicht gesendet: {reasons}.",
+    notSent: "Nicht gesendet. Prüfe das Ziel dieses Kanals, speichere und versuche es erneut.",
+    unreachable: "Server nicht erreichbar. Versuche es erneut.",
+  },
+
+  clientRules: {
+    valuePlaceholder: "Wert",
+    labelPlaceholder: "Name enthält",
+    remove: "Entfernen",
+    on: "An",
+    namePlaceholder: "Name der Regel",
+    deleteRule: "Regel löschen",
+    fireWhen: "Auslösen, wenn",
+    allOf: "alle",
+    anyOf: "eine",
+    theseAreTrue: "dieser Bedingungen zutreffen:",
+    addCondition: "Bedingung hinzufügen",
+    newRuleName: "Neue Regel",
+    heatRuleName: "Zu heiß",
+  },
+
+  clientPlaybooks: {
+    namePlaceholder: "Name des Schritts",
+    afterMinutes: "Nach (Min.)",
+    onlyIfUnacked: "Nur wenn unbestätigt",
+    delete: "Löschen",
+    channels: "Kanäle",
+    kinds: "Alarmarten (keine = alle)",
+    newStepName: "Eskalationsschritt",
+  },
+
+  clientPush: {
+    noVapidKey: "Öffentlicher VAPID-Schlüssel ist nicht eingerichtet",
+    noVapidKeyServer: "Öffentlicher VAPID-Schlüssel ist auf dem Server nicht eingerichtet",
+    permissionDenied: "Die Berechtigung für Benachrichtigungen wurde nicht erteilt",
+    serverRejected: "Der Server hat das Abonnement abgelehnt",
+    subscribed: "In diesem Browser abonniert. Speichere die Alarmeinstellungen und sende dann einen Test.",
+    subscribedHint:
+      "Der Kanal „Push (Browser + Android)“ wurde ausgewählt: Klicke vor dem Testen auf „Alarmeinstellungen speichern“.",
+    refresh: "Push erneut aktivieren / aktualisieren",
+    unsupported: "Dieser Browser unterstützt kein Push.",
+    blocked:
+      "Benachrichtigungen sind für diese Website blockiert. Erlaube sie in den Browsereinstellungen und versuche es erneut.",
+    retry: "Push erneut aktivieren",
+    enabled: "Push ist in diesem Browser aktiv.",
+    androidDevices: {
+      one: "Außerdem ist {count} Android-Gerät registriert.",
+      other: "Außerdem sind {count} Android-Geräte registriert.",
+    },
+    channelOnHint: "Der Push-Kanal ist an: Teste unten (Browser + Android).",
+    channelOffHint:
+      "Wähle oben unter den Kanälen „Push (Browser + Android)“, speichere die Einstellungen und sende dann einen Test.",
+    finishing: "Berechtigung erteilt – Browser-Abonnement wird abgeschlossen…",
+    subscribeFailed: "Berechtigung erteilt, aber das Abonnieren ist fehlgeschlagen: {error}",
+    subscribe: "Diesen Browser abonnieren",
+    notSubscribed: "Berechtigung erteilt, aber dieser Browser ist noch nicht abonniert.",
+    notEnabled: "In diesem Browser noch nicht aktiviert.",
+    enable: "Browser-Push auf diesem Gerät aktivieren",
+    vapidMissing: "Die VAPID-Schlüssel des Servers fehlen: Browser-Push kann erst nach der Einrichtung senden.",
+    androidRegistered:
+      "Die Android-App ist registriert: Wähle „Push (Browser + Android)“, speichere und teste dann.",
+    statusFailed: "Push-Status konnte nicht gelesen werden.",
+    enableFailed: "Push konnte nicht aktiviert werden: {error}",
+  },
+};
+
+export default de;

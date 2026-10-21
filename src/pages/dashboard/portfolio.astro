@@ -13,6 +13,18 @@ import {
   parsePortfolioListQuery,
   portfolioListQueryString,
 } from "../../lib/portfolioList";
+import { fmt, formatDateTime, formatNumber, getLocale, plural } from "../../i18n";
+import { portfolioMessages } from "../../i18n/messages/app/portfolio";
+
+const locale = getLocale(Astro);
+const t = portfolioMessages(locale);
+const temp1 = (value: number) =>
+  formatNumber(value, locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+const temp0 = (value: number) => formatNumber(value, locale, { maximumFractionDigits: 0 });
+const pct = (score: number) => fmt(t.score, { score: formatNumber(score, locale) });
+const roleLabel = (role: string) =>
+  (t.roles as Record<string, string>)[role] ?? role.replace("_", " ");
+const capitalizeFirst = (value: string) => value.charAt(0).toUpperCase() + value.slice(1);
 
 const shell = Astro.locals.dashboardShell ?? null;
 const { session, user } = shell
@@ -28,7 +40,7 @@ const entitlements = shell
 const { properties, error } = entitlements.canUsePortfolio
   ? await fetchCrossPropertySnapshots(user.id)
   : { properties: [], error: null as string | null };
-const withHealth = attachPropertyHealth(properties);
+const withHealth = attachPropertyHealth(properties, Date.now(), locale);
 const atRisk = withHealth.filter((p) => p.atRisk);
 const floodWet = withHealth.filter((p) => p.floodWet);
 const coldest = [...withHealth]
@@ -73,8 +85,26 @@ const vacationCleared = flash.get("portfolio_vacation_cleared") === "1";
 const vacationDays = flash.get("days");
 const vacationProperties = flash.get("properties");
 const viewMode = Astro.url.searchParams.get("view") === "heatmap" ? "heatmap" : "list";
+const vacationDaysLabel = vacationDays ?? "7";
+const vacationCountVars = (raw: string) => ({ count: raw, days: vacationDaysLabel });
+const vacationSetText =
+  vacationProperties == null
+    ? fmt(t.vacationSetAll, { days: vacationDaysLabel })
+    : plural(t.vacationSet, Number(vacationProperties), locale, vacationCountVars(vacationProperties));
+const vacationClearedText =
+  vacationProperties == null
+    ? t.vacationClearedAll
+    : plural(t.vacationCleared, Number(vacationProperties), locale, vacationCountVars(vacationProperties));
+const lastReadingFormat: Intl.DateTimeFormatOptions = {
+  year: "numeric",
+  month: "numeric",
+  day: "numeric",
+  hour: "numeric",
+  minute: "2-digit",
+  second: "2-digit",
+};
 ---
-<DashboardLayout title="Portfolio" subtitle="Cross-property freeze and flood risk at a glance.">
+<DashboardLayout title={t.title} subtitle={t.subtitle}>
   <div class="space-y-6">
     {!entitlements.canUsePortfolio ? (
       <UpgradeNudge feature="multi_property" tier={entitlements.tier} />
@@ -82,24 +112,24 @@ const viewMode = Astro.url.searchParams.get("view") === "heatmap" ? "heatmap" : 
       <UpgradeNudge feature="portfolio_scale" tier={entitlements.tier} />
     ) : null}
     <section class="card">
-      <h2 class="card-title">All properties</h2>
+      <h2 class="card-title">{t.allProperties}</h2>
       {/* The page subtitle already says what Portfolio is; only add plan context here. */}
       {!entitlements.canUsePortfolio ? (
-        <p class="card-subtitle mb-0">Upgrade to Pro to unlock portfolio view and alerts.</p>
+        <p class="card-subtitle mb-0">{t.upgradeToPro}</p>
       ) : entitlements.tier === "pro" ? (
         <p class="card-subtitle mb-0">
-          Portfolio raises the property ceiling and adds property-manager logins.
+          {t.portfolioUpsell}
         </p>
       ) : null}
       {error && <p class="alert-warning mt-3" role="alert">{error}</p>}
       {vacationFlash && (
         <p class="alert-success mt-3" role="status">
-          Vacation mode set for {vacationDays ?? "7"} days across {vacationProperties ?? "your"} editable propert{(vacationProperties === "1") ? "y" : "ies"}.
+          {vacationSetText}
         </p>
       )}
       {vacationCleared && (
         <p class="alert-success mt-3" role="status">
-          Vacation cleared across {vacationProperties ?? "your"} editable propert{(vacationProperties === "1") ? "y" : "ies"}.
+          {vacationClearedText}
         </p>
       )}
       {entitlements.canUsePortfolio && withHealth.length > 0 && (
@@ -108,7 +138,7 @@ const viewMode = Astro.url.searchParams.get("view") === "heatmap" ? "heatmap" : 
             class:list={["btn-ghost btn-sm", viewMode === "list" && "font-semibold"]}
             href={`/dashboard/portfolio${portfolioListQueryString({ ...listQuery, page: 1 })}`}
           >
-            List
+            {t.viewList}
           </a>
           <a
             class:list={["btn-ghost btn-sm", viewMode === "heatmap" && "font-semibold"]}
@@ -117,7 +147,7 @@ const viewMode = Astro.url.searchParams.get("view") === "heatmap" ? "heatmap" : 
               return base ? `${base}&view=heatmap` : "?view=heatmap";
             })()}`}
           >
-            Heatmap
+            {t.viewHeatmap}
           </a>
         </div>
       )}
@@ -127,10 +157,16 @@ const viewMode = Astro.url.searchParams.get("view") === "heatmap" ? "heatmap" : 
       <DashboardCard>
         <div class="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h2 class="card-title">Portfolio health</h2>
+            <h2 class="card-title">{t.healthTitle}</h2>
             <p class="card-subtitle mb-0">
-              Average score {avgHealth}% · {atRisk.length} at freeze/flood risk
-              {floodWet.length > 0 ? ` · ${floodWet.length} wet` : ""} · coldest listed below
+              {fmt(t.healthSummary, {
+                score: formatNumber(avgHealth ?? 0, locale),
+                atRisk: formatNumber(atRisk.length, locale),
+                wet:
+                  floodWet.length > 0
+                    ? fmt(t.healthSummaryWet, { count: formatNumber(floodWet.length, locale) })
+                    : "",
+              })}
             </p>
           </div>
         </div>
@@ -139,8 +175,8 @@ const viewMode = Astro.url.searchParams.get("view") === "heatmap" ? "heatmap" : 
             {coldest.map((p) => (
               <li>
                 <strong>{p.name}</strong>
-                {": "}
-                {p.minTempF != null ? `${p.minTempF.toFixed(1)}°F` : "—"}
+                {locale === "fr" ? " : " : ": "}
+                {p.minTempF != null ? `${temp1(p.minTempF)}°F` : "—"}
                 {" · "}
                 <span class="text-[var(--color-text-muted)]">{p.health.detail}</span>
               </li>
@@ -152,7 +188,7 @@ const viewMode = Astro.url.searchParams.get("view") === "heatmap" ? "heatmap" : 
             <input type="hidden" name="action" value="vacation" />
             <input type="hidden" name="redirect" value={listPath} />
             <div class="form-field mb-0">
-              <label class="form-label" for="portfolio-vacation-days">Bulk vacation (days)</label>
+              <label class="form-label" for="portfolio-vacation-days">{t.bulkVacationDays}</label>
               <input
                 class="form-input w-24"
                 id="portfolio-vacation-days"
@@ -164,7 +200,7 @@ const viewMode = Astro.url.searchParams.get("view") === "heatmap" ? "heatmap" : 
               />
             </div>
             <div class="form-field mb-0">
-              <label class="form-label" for="portfolio-vacation-until">Or until date</label>
+              <label class="form-label" for="portfolio-vacation-until">{t.orUntilDate}</label>
               <input
                 class="form-input"
                 id="portfolio-vacation-until"
@@ -173,39 +209,34 @@ const viewMode = Astro.url.searchParams.get("view") === "heatmap" ? "heatmap" : 
                 min={new Date().toISOString().slice(0, 10)}
               />
             </div>
-            <button class="btn-secondary" type="submit">Mute all properties</button>
+            <button class="btn-secondary" type="submit">{t.muteAll}</button>
           </form>
           <form action="/api/user/portfolio-vacation" method="post">
             <input type="hidden" name="action" value="clear_vacation" />
             <input type="hidden" name="redirect" value={listPath} />
-            <button class="btn-ghost" type="submit">Clear vacation everywhere</button>
+            <button class="btn-ghost" type="submit">{t.clearVacation}</button>
           </form>
         </div>
-        <p class="mt-2 mb-0 text-xs text-[var(--color-text-muted)]">
-          Bulk vacation applies to every property you can edit. Forecast / NWS / flood alerts still deliver during vacation.
-          Toggle the coldest-properties digest under
-          <a class="text-link" href="/dashboard/alerts?tab=settings#alert-section-essentials">Alerts → When to alert</a>.
-        </p>
+        <p class="mt-2 mb-0 text-xs text-[var(--color-text-muted)]" set:html={t.bulkVacationHintHtml} />
       </DashboardCard>
     )}
 
     {atRisk.length > 0 && (
       <DashboardCard>
         <h2 class="card-title text-[var(--color-warning)]">
-          {atRisk.length} propert{atRisk.length === 1 ? "y" : "ies"} at freeze or flood risk today
+          {plural(t.atRiskTitle, atRisk.length, locale)}
         </h2>
-        <p class="card-subtitle mb-3">
-          Portfolio digest emails fire when properties cross freeze: toggle under
-          <a class="text-link" href="/dashboard/alerts?tab=settings#alert-section-essentials">Alerts → When to alert</a>.
-          Flood/leak wet contacts auto-alert per property (bypass vacation).
-        </p>
+        <p class="card-subtitle mb-3" set:html={t.atRiskHintHtml} />
         <ul class="m-0 p-0 list-none space-y-2">
           {atRisk.map((p) => (
             <li class="text-sm">
               <strong>{p.name}</strong>
               {p.floodWet
-                ? ": flood/leak wet"
-                : `: ${p.minTempF?.toFixed(1)}°F (threshold ${p.freezeThresholdF}°F)`}
+                ? t.atRiskWet
+                : fmt(t.atRiskCold, {
+                    temp: p.minTempF != null ? temp1(p.minTempF) : String(p.minTempF),
+                    threshold: formatNumber(p.freezeThresholdF, locale),
+                  })}
             </li>
           ))}
         </ul>
@@ -217,67 +248,66 @@ const viewMode = Astro.url.searchParams.get("view") === "heatmap" ? "heatmap" : 
       <>
       {properties.length <= 1 && (
         <div class="mb-4">
-          <h3 class="card-title text-base">Add another property</h3>
+          <h3 class="card-title text-base">{t.addPropertyTitle}</h3>
           <p class="card-subtitle mb-3">
-            Portfolio is most useful with two or more households. Create a second property (rental,
-            vacation home, workshop) under Household, then switch between them here.
+            {t.addPropertyBody}
           </p>
-          <a class="btn-secondary" href="/dashboard/household">Add property on Household</a>
+          <a class="btn-secondary" href="/dashboard/household">{t.addPropertyButton}</a>
         </div>
       )}
       {properties.length === 0 ? (
         <p class="text-sm text-[var(--color-text-muted)] mb-0">
-          No properties in this portfolio yet, open Household to create or join one.
+          {t.emptyPortfolio}
         </p>
       ) : (
       <>
       <form class="history-filters" method="get" action="/dashboard/portfolio">
         {viewMode === "heatmap" && <input type="hidden" name="view" value="heatmap" />}
         <div class="form-field mb-0">
-          <label class="form-label" for="portfolio-search">Search</label>
+          <label class="form-label" for="portfolio-search">{t.searchLabel}</label>
           <input
             class="form-input"
             type="search"
             id="portfolio-search"
             name="q"
             value={listQuery.search}
-            placeholder="Property name or id"
+            placeholder={t.searchPlaceholder}
           />
         </div>
         <div class="form-field mb-0">
-          <label class="form-label" for="portfolio-status">Status</label>
+          <label class="form-label" for="portfolio-status">{t.statusLabel}</label>
           <select class="form-input" id="portfolio-status" name="status">
-            <option value="" selected={listQuery.status === ""}>All statuses</option>
-            <option value="at_risk" selected={listQuery.status === "at_risk"}>At risk</option>
-            <option value="wet" selected={listQuery.status === "wet"}>Wet flood/leak</option>
-            <option value="watch" selected={listQuery.status === "watch"}>Watch</option>
-            <option value="healthy" selected={listQuery.status === "healthy"}>Healthy</option>
-            <option value="offline" selected={listQuery.status === "offline"}>Offline</option>
+            <option value="" selected={listQuery.status === ""}>{t.status.all}</option>
+            <option value="at_risk" selected={listQuery.status === "at_risk"}>{t.status.at_risk}</option>
+            <option value="wet" selected={listQuery.status === "wet"}>{t.status.wet}</option>
+            <option value="watch" selected={listQuery.status === "watch"}>{t.status.watch}</option>
+            <option value="healthy" selected={listQuery.status === "healthy"}>{t.status.healthy}</option>
+            <option value="offline" selected={listQuery.status === "offline"}>{t.status.offline}</option>
           </select>
         </div>
         <div class="form-field mb-0">
-          <label class="form-label" for="portfolio-sort">Sort</label>
+          <label class="form-label" for="portfolio-sort">{t.sortLabel}</label>
           <select class="form-input" id="portfolio-sort" name="sort">
             {PORTFOLIO_SORT_OPTIONS.map((opt) => (
               <option value={opt.value} selected={listQuery.sort === opt.value}>
-                {opt.label}
+                {t.sorts[opt.value] ?? opt.label}
               </option>
             ))}
           </select>
         </div>
-        <button type="submit" class="btn-secondary self-end">Apply</button>
+        <button type="submit" class="btn-secondary self-end">{t.apply}</button>
         {hasFilters && (
-          <a class="btn-ghost self-end" href="/dashboard/portfolio">Clear</a>
+          <a class="btn-ghost self-end" href="/dashboard/portfolio">{t.clear}</a>
         )}
       </form>
       <p class="preference-hint mb-4">
-        Health summary above stays portfolio-wide. This table filters and sorts the property list.
+        {t.filterHint}
       </p>
       {listed.rows.length === 0 ? (
         <p class="text-sm text-[var(--color-text-muted)] mb-0">
           {hasFilters
-            ? "No properties match these filters."
-            : "No properties in this portfolio yet."}
+            ? t.noMatches
+            : t.noProperties}
         </p>
       ) : (
       <>
@@ -297,13 +327,13 @@ const viewMode = Astro.url.searchParams.get("view") === "heatmap" ? "heatmap" : 
                 class:list={["portfolio-heatmap-cell", `portfolio-heatmap-cell--${tone}`]}
                 href={`/dashboard?household=${p.householdId}`}
                 role="listitem"
-                title={`${p.name}: ${p.health.score}% · ${p.health.detail}`}
+                title={fmt(t.heatmapTitle, { name: p.name, score: formatNumber(p.health.score, locale), detail: p.health.detail })}
               >
                 <span class="portfolio-heatmap-name">{p.name}</span>
-                <span class="portfolio-heatmap-score">{p.health.score}%</span>
+                <span class="portfolio-heatmap-score">{pct(p.health.score)}</span>
                 <span class="portfolio-heatmap-meta">
-                  {p.minTempF != null ? `${p.minTempF.toFixed(0)}°F` : "—"}
-                  {p.floodWet ? " · wet" : ""}
+                  {p.minTempF != null ? `${temp0(p.minTempF)}°F` : "—"}
+                  {p.floodWet ? t.wetSuffix : ""}
                 </span>
               </a>
             );
@@ -314,12 +344,12 @@ const viewMode = Astro.url.searchParams.get("view") === "heatmap" ? "heatmap" : 
         <table class="w-full text-sm">
           <thead>
             <tr>
-              <th class="text-left py-2">Property</th>
-              <th class="text-left py-2">Role</th>
-              <th class="text-left py-2">Health</th>
-              <th class="text-left py-2">Min temp</th>
-              <th class="text-left py-2">Devices</th>
-              <th class="text-left py-2">Last reading</th>
+              <th class="text-left py-2">{t.columns.property}</th>
+              <th class="text-left py-2">{t.columns.role}</th>
+              <th class="text-left py-2">{t.columns.health}</th>
+              <th class="text-left py-2">{t.columns.minTemp}</th>
+              <th class="text-left py-2">{t.columns.devices}</th>
+              <th class="text-left py-2">{t.columns.lastReading}</th>
             </tr>
           </thead>
           <tbody>
@@ -333,11 +363,13 @@ const viewMode = Astro.url.searchParams.get("view") === "heatmap" ? "heatmap" : 
                   </form>
                   {p.atRisk && (
                     <span class="ml-2 text-xs text-[var(--color-warning)]">
-                      {p.floodWet ? "Wet" : "At risk"}
+                      {p.floodWet ? t.badgeWet : t.badgeAtRisk}
                     </span>
                   )}
                 </td>
-                <td class="py-2 capitalize">{p.role.replace("_", " ")}</td>
+                <td class:list={["py-2", locale === "en" && "capitalize"]}>
+                  {locale === "en" ? roleLabel(p.role) : capitalizeFirst(roleLabel(p.role))}
+                </td>
                 <td class="py-2">
                   <span
                     class:list={[
@@ -348,19 +380,19 @@ const viewMode = Astro.url.searchParams.get("view") === "heatmap" ? "heatmap" : 
                         "text-[var(--color-danger)]",
                     ]}
                   >
-                    {p.health.score}%
+                    {pct(p.health.score)}
                   </span>
                   <span class="block text-xs text-[var(--color-text-muted)]">{p.health.detail}</span>
                 </td>
                 <td class="py-2">
-                  {p.minTempF != null ? `${p.minTempF.toFixed(1)}°F` : "—"}
+                  {p.minTempF != null ? `${temp1(p.minTempF)}°F` : "—"}
                 </td>
-                <td class="py-2">{p.deviceCount}</td>
+                <td class="py-2">{formatNumber(p.deviceCount, locale)}</td>
                 <td class="py-2">
                   <ReadingAgeBadge iso={p.lastReadingAt} emptyLabel="—" />
                   {p.lastReadingAt && (
                     <span class="block text-xs text-[var(--color-text-muted)] mt-1">
-                      {new Date(p.lastReadingAt).toLocaleString()}
+                      {formatDateTime(p.lastReadingAt, locale, lastReadingFormat)}
                     </span>
                   )}
                 </td>
@@ -387,41 +419,48 @@ const viewMode = Astro.url.searchParams.get("view") === "heatmap" ? "heatmap" : 
                     "text-[var(--color-danger)]",
                 ]}
               >
-                {p.health.score}%
+                {pct(p.health.score)}
               </span>
             </div>
             <p class="m-0 mt-1 text-xs text-[var(--color-text-muted)]">
-              {p.role.replace("_", " ")}
+              {roleLabel(p.role)}
               {" · "}
-              {p.minTempF != null ? `${p.minTempF.toFixed(1)}°F` : "no temp"}
+              {p.minTempF != null ? `${temp1(p.minTempF)}°F` : t.noTemp}
               {" · "}
-              {p.deviceCount} device{p.deviceCount === 1 ? "" : "s"}
-              {p.atRisk ? (p.floodWet ? " · wet" : " · at risk") : ""}
+              {plural(t.deviceCount, p.deviceCount, locale)}
+              {p.atRisk ? (p.floodWet ? t.wetSuffix : t.atRiskSuffix) : ""}
             </p>
             <p class="m-0 mt-2 text-xs text-[var(--color-text-muted)]">{p.health.detail}</p>
             <p class="m-0 mt-2">
-              <ReadingAgeBadge iso={p.lastReadingAt} emptyLabel="No readings" />
+              <ReadingAgeBadge iso={p.lastReadingAt} emptyLabel={t.noReadings} />
             </p>
           </article>
         ))}
       </div>
       <div class="pagination">
         <p class="pagination-summary">
-          Showing {showingFrom}–{showingTo} of {listed.totalCount} properties
+          {fmt(t.showing, {
+            from: formatNumber(showingFrom, locale),
+            to: formatNumber(showingTo, locale),
+            total: formatNumber(listed.totalCount, locale),
+          })}
         </p>
         <div class="pagination-controls">
           {prevPage ? (
-            <a class="btn-secondary" href={`/dashboard/portfolio${queryString(prevPage)}`}>Previous</a>
+            <a class="btn-secondary" href={`/dashboard/portfolio${queryString(prevPage)}`}>{t.previous}</a>
           ) : (
-            <span class="btn-secondary pagination-disabled">Previous</span>
+            <span class="btn-secondary pagination-disabled">{t.previous}</span>
           )}
           <span class="pagination-current">
-            Page {listed.page} of {Math.max(listed.totalPages, 1)}
+            {fmt(t.pageOf, {
+              page: formatNumber(listed.page, locale),
+              pages: formatNumber(Math.max(listed.totalPages, 1), locale),
+            })}
           </span>
           {nextPage ? (
-            <a class="btn-secondary" href={`/dashboard/portfolio${queryString(nextPage)}`}>Next</a>
+            <a class="btn-secondary" href={`/dashboard/portfolio${queryString(nextPage)}`}>{t.next}</a>
           ) : (
-            <span class="btn-secondary pagination-disabled">Next</span>
+            <span class="btn-secondary pagination-disabled">{t.next}</span>
           )}
         </div>
       </div>
@@ -432,7 +471,7 @@ const viewMode = Astro.url.searchParams.get("view") === "heatmap" ? "heatmap" : 
       </>
       ) : (
         <p class="text-sm text-[var(--color-text-muted)] mb-0">
-          Portfolio view shows freeze risk across all your properties. Available on Pro.
+          {t.notAvailable}
         </p>
       )}
     </DashboardCard>

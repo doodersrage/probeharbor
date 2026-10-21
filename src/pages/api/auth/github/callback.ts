@@ -26,8 +26,10 @@ import {
   needsMfaStepUp,
   setMfaRequiredCookie,
 } from "../../../../lib/mfa";
+import { requestLocale, saveLocaleIfMissing } from "../_locale";
 
-export const GET: APIRoute = async ({ url, cookies, redirect, request, site }) => {
+export const GET: APIRoute = async (context) => {
+  const { url, cookies, redirect, request, site } = context;
   const oauthError = url.searchParams.get("error");
   if (oauthError) {
     cookies.delete(GITHUB_OAUTH_STATE_COOKIE, { path: "/" });
@@ -48,7 +50,17 @@ export const GET: APIRoute = async ({ url, cookies, redirect, request, site }) =
   try {
     const redirectUri = buildGitHubOAuthCallbackUrl(request, site);
     const profile = await completeGitHubOAuth(code, redirectUri);
-    const { session, user } = await establishSessionForGitHubProfile(profile);
+    const established = await establishSessionForGitHubProfile(profile);
+    const { user } = established;
+    // New accounts get the language they signed up in; existing accounts
+    // without one get it when signing in from a translated page.
+    const session = await saveLocaleIfMissing(
+      createAuthClient(),
+      established.session,
+      user,
+      requestLocale(context),
+      { always: isLikelyNewUser(user.created_at) },
+    );
 
     const refCode = cookies.get(OAUTH_REF_COOKIE)?.value?.trim().toLowerCase() ?? "";
     cookies.delete(OAUTH_REF_COOKIE, { path: "/" });

@@ -11,6 +11,8 @@ import {
 } from "./tempFeedConfig";
 import type { SensorKind } from "./sensorKinds";
 import { clampSensorOffset } from "./sensorCalibration";
+import type { Locale } from "../i18n/locales";
+import { apiDevicesMessages } from "../i18n/messages/app/api/devices";
 
 export type { SensorKind } from "./sensorKinds";
 export {
@@ -302,10 +304,12 @@ export async function renamePushDevice(
   householdId: string,
   deviceId: string,
   name: string,
+  locale: Locale = "en",
 ): Promise<{ error: string | null }> {
+  const t = apiDevicesMessages(locale);
   const trimmed = name.trim();
   if (!trimmed) {
-    return { error: "Name is required" };
+    return { error: t.nameRequired };
   }
 
   const supabase = createServerClient();
@@ -319,7 +323,7 @@ export async function renamePushDevice(
     .maybeSingle();
 
   if (error || !data) {
-    return { error: error?.message ?? "Failed to rename device" };
+    return { error: error?.message ?? t.renameFailed };
   }
 
   return { error: null };
@@ -329,6 +333,7 @@ export async function updateDeviceSpace(
   householdId: string,
   deviceId: string,
   space: string | null,
+  locale: Locale = "en",
 ): Promise<{ error: string | null }> {
   const trimmed = space?.trim() || null;
   const supabase = createServerClient();
@@ -341,7 +346,7 @@ export async function updateDeviceSpace(
     .maybeSingle();
 
   if (error || !data) {
-    return { error: error?.message ?? "Failed to update space" };
+    return { error: error?.message ?? apiDevicesMessages(locale).updateSpaceFailed };
   }
   return { error: null };
 }
@@ -354,7 +359,9 @@ export async function updateDeviceDetails(
   householdId: string,
   deviceId: string,
   patch: { name?: string; space: string | null; enabled?: boolean },
+  locale: Locale = "en",
 ): Promise<{ error: string | null }> {
+  const t = apiDevicesMessages(locale);
   const supabase = createServerClient();
   const { data: existing } = await supabase
     .from("devices")
@@ -362,9 +369,9 @@ export async function updateDeviceDetails(
     .eq("id", deviceId)
     .eq("household_id", householdId)
     .maybeSingle();
-  if (!existing) return { error: "Device not found" };
+  if (!existing) return { error: t.deviceNotFound };
   const name = patch.name?.trim();
-  if (existing.source === "push" && patch.name !== undefined && !name) return { error: "Name is required" };
+  if (existing.source === "push" && patch.name !== undefined && !name) return { error: t.nameRequired };
   const { error } = await supabase
     .from("devices")
     .update({
@@ -691,9 +698,11 @@ export async function transferDeviceToHousehold(
   deviceId: string,
   fromHouseholdId: string,
   toHouseholdId: string,
+  locale: Locale = "en",
 ): Promise<{ error: string | null }> {
+  const t = apiDevicesMessages(locale);
   if (fromHouseholdId === toHouseholdId) {
-    return { error: "Same household" };
+    return { error: t.sameHousehold };
   }
   const supabase = createServerClient();
   const { data, error } = await supabase
@@ -708,7 +717,7 @@ export async function transferDeviceToHousehold(
     .maybeSingle();
 
   if (error || !data) {
-    return { error: error?.message ?? "Device not found" };
+    return { error: error?.message ?? t.deviceNotFound };
   }
 
   await supabase

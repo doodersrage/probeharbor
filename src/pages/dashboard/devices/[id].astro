@@ -4,7 +4,7 @@ import ReadingAgeBadge from "../../../components/dashboard/ReadingAgeBadge.astro
 import SensorReplaceCard from "../../../components/dashboard/SensorReplaceCard.astro";
 import RevealIngestKeyButton from "../../../components/RevealIngestKeyButton";
 import { getAuthFromCookies } from "../../../lib/auth";
-import { listHouseholdDevices, SENSOR_KIND_LABELS } from "../../../lib/devices";
+import { listHouseholdDevices } from "../../../lib/devices";
 import {
   canEditHousehold,
   getOrCreateHouseholdForUser,
@@ -19,13 +19,19 @@ import { formatSensorValue, spaceSuggestions } from "../../../lib/deviceList";
 import { firmwareUpdateAvailable, LATEST_FIRMWARE_VERSION } from "../../../lib/firmwareVersion";
 import { listIngestStatsForHousehold } from "../../../lib/ingestStats";
 import { ingestKeyVaultConfigured } from "../../../lib/ingestKeyVault";
-import { replacementErrorMessage } from "../../../lib/sensorReplacement";
 import { formatRelativeAge } from "../../../lib/relativeTime";
+import { escapeHtml } from "../../../lib/htmlEscape";
+import type { SensorKind } from "../../../lib/sensorKinds";
+import { fmt, formatNumber, getLocale, plural } from "../../../i18n";
+import { deviceDetailMessages } from "../../../i18n/messages/app/deviceDetail";
+import { deviceSetupPushMessages } from "../../../i18n/messages/app/deviceSetup/push";
 
 /**
  * One device, everything about it: what it reads, its settings, how it
  * connects, maintenance, and (set apart at the bottom) rotate key and delete.
  */
+const locale = getLocale(Astro);
+const t = deviceDetailMessages(locale);
 const shell = Astro.locals.dashboardShell ?? null;
 const { session, user } = shell ? { session: shell.session, user: shell.user } : await getAuthFromCookies(Astro.cookies);
 if (!session || !user) return Astro.redirect("/signin");
@@ -47,11 +53,11 @@ const isPush = device.source === "push";
 const now = Date.now();
 const [latestAll, stuck, ingestStats] = await Promise.all([
   latestFromShell(shell, householdId) ?? fetchLatestSensorValues(householdId),
-  findStuckSensors([device], now).catch(() => []),
+  findStuckSensors([device], now, locale).catch(() => []),
   isPush ? listIngestStatsForHousehold(householdId, 7).catch(() => []) : Promise.resolve([]),
 ]);
 const latestBySensor = new Map(latestAll.map((row) => [row.sensor.id, row]));
-const health = scoreDeviceHealth(device, latestAll, now, -80, stuck);
+const health = scoreDeviceHealth(device, latestAll, now, -80, stuck, locale);
 const stuckById = new Map(stuck.map((s) => [s.sensorId, s]));
 const deviceStats = ingestStats.filter((row) => row.device_id === device.id);
 const accepted = deviceStats.reduce((sum, row) => sum + row.success_count, 0);
@@ -64,7 +70,10 @@ const transferTargets = userHouseholds.households.filter((h) => h.household_id !
 const self = `/dashboard/devices/${encodeURIComponent(device.id)}`;
 const listHref = "/dashboard/devices?view=ops";
 const spaces = spaceSuggestions(devices);
-const healthLabel = { healthy: "Healthy", watch: "Watch", at_risk: "At risk", offline: "Offline" }[health.label];
+const healthLabel = t.healthLabels[health.label];
+const healthDetail = health.detail;
+const kindOptions = Object.entries(t.kinds) as Array<[SensorKind, string]>;
+const sourceLabel = isPush ? t.pushDevice : t.pullFeed;
 const healthTone = {
   healthy: "text-[var(--color-success)]",
   watch: "text-[var(--color-warning)]",
@@ -75,26 +84,33 @@ const healthTone = {
 const params = Astro.url.searchParams;
 const replaceError = params.get("replace_error");
 const sensorReplaced = params.get("sensor_replaced");
+const replaceErrorText = (code: string) =>
+  Object.hasOwn(t.replaceErrors, code)
+    ? t.replaceErrors[code as keyof typeof t.replaceErrors]
+    : t.replaceErrors.failed;
 const notice = params.get("device_saved")
-  ? "Device saved."
+  ? t.notices.deviceSaved
   : params.get("sensor_updated")
-    ? "Sensors saved."
+    ? t.notices.sensorsSaved
     : params.get("sensor_deleted")
-      ? "Sensor deleted."
+      ? t.notices.sensorDeleted
       : params.get("sensor_added")
-        ? "Sensor added."
+        ? t.notices.sensorAdded
         : sensorReplaced
-          ? `Sensor replaced: ${Number(sensorReplaced).toLocaleString("en-US")} readings moved.`
+          ? // English always said "readings" (even for 1); keep that, use plural forms elsewhere.
+            locale === "en"
+            ? fmt(t.notices.sensorReplaced.other, { count: formatNumber(Number(sensorReplaced), locale) })
+            : plural(t.notices.sensorReplaced, Number(sensorReplaced), locale)
           : replaceError
-            ? replacementErrorMessage(replaceError)
+            ? replaceErrorText(replaceError)
             : params.get("error")
-              ? "Couldn't save that. Check the form and try again."
+              ? t.notices.saveError
               : null;
 const noticeIsError = Boolean(replaceError || params.get("error"));
 ---
-<DashboardLayout title={device.name} subtitle={device.space ? `${device.space} · ${isPush ? "Push device" : "Pull feed"}` : isPush ? "Push device" : "Pull feed"}>
+<DashboardLayout title={device.name} subtitle={device.space ? fmt(t.subtitleWithSpace, { space: device.space, source: sourceLabel }) : sourceLabel}>
   <div class="space-y-6 device-page">
-    <a class="text-link text-sm" href={listHref}>← All devices</a>
+    <a class="text-link text-sm" href={listHref}>{t.allDevices}</a>
 
     {notice && (
       <p class:list={[noticeIsError ? "alert-warning" : "alert-success", "mt-0 mb-0"]} role={noticeIsError ? "alert" : "status"}>
@@ -103,84 +119,84 @@ const noticeIsError = Boolean(replaceError || params.get("error"));
     )}
 
     <section class="card" aria-labelledby="device-status-title">
-      <h2 class="card-title" id="device-status-title">Status</h2>
+      <h2 class="card-title" id="device-status-title">{t.status.title}</h2>
       <dl class="device-facts">
         <div>
-          <dt>Health</dt>
+          <dt>{t.status.health}</dt>
           <dd>
             <span class:list={["font-semibold", healthTone]}>{healthLabel}</span>
             <span class="text-[var(--color-text-muted)]"> {health.score}/100</span>
-            <span class="block text-xs text-[var(--color-text-muted)]">{health.detail}</span>
+            <span class="block text-xs text-[var(--color-text-muted)]">{healthDetail}</span>
           </dd>
         </div>
         <div>
-          <dt>Last seen</dt>
-          <dd><ReadingAgeBadge iso={device.last_seen_at} emptyLabel="Never" /></dd>
+          <dt>{t.status.lastSeen}</dt>
+          <dd><ReadingAgeBadge iso={device.last_seen_at} emptyLabel={t.status.never} /></dd>
         </div>
         {health.batteryPct != null && (
           <div>
-            <dt>Battery</dt>
+            <dt>{t.status.battery}</dt>
             <dd>
-              {health.batteryPct}%
+              {locale === "en" ? `${health.batteryPct}%` : formatNumber(health.batteryPct / 100, locale, { style: "percent", maximumFractionDigits: 1 })}
               {health.daysRemaining != null && (
-                <span class="block text-xs text-[var(--color-text-muted)]">{formatBatteryEta(health.daysRemaining)}</span>
+                <span class="block text-xs text-[var(--color-text-muted)]">{formatBatteryEta(health.daysRemaining, locale)}</span>
               )}
             </dd>
           </div>
         )}
         {rssi != null && (
           <div>
-            <dt>Wi-Fi signal</dt>
+            <dt>{t.status.wifiSignal}</dt>
             <dd>{rssi} dBm</dd>
           </div>
         )}
         {firmware && (
           <div>
-            <dt>Firmware</dt>
+            <dt>{t.status.firmware}</dt>
             <dd>
               {firmware}
               {firmwareUpdateAvailable(firmware) && (
-                <a class="text-link block text-xs" href="/flash">Update to {LATEST_FIRMWARE_VERSION}</a>
+                <a class="text-link block text-xs" href="/flash">{fmt(t.status.updateTo, { version: LATEST_FIRMWARE_VERSION })}</a>
               )}
             </dd>
           </div>
         )}
         {!device.enabled && (
           <div>
-            <dt>State</dt>
-            <dd class="text-[var(--color-warning)]">Disabled: readings are ignored</dd>
+            <dt>{t.status.state}</dt>
+            <dd class="text-[var(--color-warning)]">{t.status.disabled}</dd>
           </div>
         )}
       </dl>
       {seen.label === "never" && isPush && (
         <p class="mt-4 mb-0 text-sm">
-          No readings yet. Point the device at its ingest URL (see Connection below); sensors appear on the first upload.
+          {t.status.noReadingsYet}
         </p>
       )}
     </section>
 
     <section class="card" aria-labelledby="device-sensors-title" id="sensors">
-      <h2 class="card-title" id="device-sensors-title">Sensors ({device.sensors.length})</h2>
+      <h2 class="card-title" id="device-sensors-title">{fmt(t.sensors.title, { count: formatNumber(device.sensors.length, locale) })}</h2>
       {device.sensors.length === 0 ? (
         <p class="card-subtitle mb-0">
-          {isPush ? "None yet: they're added automatically from the first upload's JSON keys." : "None yet: they appear after the next feed fetch."}
+          {isPush ? t.sensors.noneYetPush : t.sensors.noneYetPull}
         </p>
       ) : (
         <form action="/api/devices" method="post" class="device-sensors-form">
           <input type="hidden" name="action" value="update_sensors" />
           <input type="hidden" name="device_id" value={device.id} />
           <input type="hidden" name="redirect" value={`${self}#sensors`} />
-          <p class="card-subtitle mb-3">Rename them to what they measure. One Save covers every sensor.</p>
+          <p class="card-subtitle mb-3">{t.sensors.intro}</p>
           <ul class="device-sensor-list">
             {device.sensors.map((sensor) => {
               const reading = latestBySensor.get(sensor.id);
-              const value = reading ? formatSensorValue(reading) : null;
+              const value = reading ? formatSensorValue(reading, locale) : null;
               const stuckHit = stuckById.get(sensor.id);
               return (
                 <li class="device-sensor-row">
                   <div class="device-sensor-main">
                     <div class="form-field mb-0">
-                      <label class="form-label" for={`label-${sensor.id}`}>Name</label>
+                      <label class="form-label" for={`label-${sensor.id}`}>{t.sensors.name}</label>
                       <input
                         class="form-input"
                         id={`label-${sensor.id}`}
@@ -191,7 +207,7 @@ const noticeIsError = Boolean(replaceError || params.get("error"));
                       />
                     </div>
                     <div class="device-sensor-reading">
-                      <span class="form-label">Latest</span>
+                      <span class="form-label">{t.sensors.latest}</span>
                       <span class="font-semibold">{value ?? "—"}</span>
                       {reading && (
                         <span class="text-xs">
@@ -201,41 +217,41 @@ const noticeIsError = Boolean(replaceError || params.get("error"));
                       {stuckHit && <span class="block text-xs text-[var(--color-warning)]">{stuckHit.detail}</span>}
                     </div>
                     <div class="form-field mb-0">
-                      <label class="form-label" for={`kind-${sensor.id}`}>Type</label>
+                      <label class="form-label" for={`kind-${sensor.id}`}>{t.sensors.type}</label>
                       <select class="form-input" id={`kind-${sensor.id}`} name={`kind:${sensor.id}`} disabled={!canEdit}>
-                        {Object.entries(SENSOR_KIND_LABELS).map(([kind, label]) => (
+                        {kindOptions.map(([kind, label]) => (
                           <option value={kind} selected={sensor.kind === kind}>{label}</option>
                         ))}
                       </select>
                     </div>
                     <label class="checkbox-row mb-0 device-sensor-visible">
                       <input type="checkbox" name={`visible:${sensor.id}`} value="true" checked={sensor.visible} disabled={!canEdit} />
-                      <span>Show on Home</span>
+                      <span>{t.sensors.showOnHome}</span>
                     </label>
                   </div>
                   <details class="device-sensor-more">
                     <summary class="text-sm text-[var(--color-text-muted)] cursor-pointer">
-                      More: JSON key <code>{sensor.key}</code>
-                      {(sensor.offset_num ?? 0) !== 0 && ` · offset ${(sensor.offset_num ?? 0) > 0 ? "+" : ""}${sensor.offset_num}`}
+                      {t.sensors.moreJsonKey} <code>{sensor.key}</code>
+                      {(sensor.offset_num ?? 0) !== 0 && fmt(t.sensors.offsetSummary, { offset: `${(sensor.offset_num ?? 0) > 0 ? "+" : ""}${formatNumber(sensor.offset_num ?? 0, locale, { maximumFractionDigits: 20, useGrouping: false })}` })}
                     </summary>
                     <div class="device-sensor-more-grid">
                       <div class="form-field mb-0">
-                        <label class="form-label" for={`key-${sensor.id}`}>JSON key</label>
+                        <label class="form-label" for={`key-${sensor.id}`}>{t.sensors.jsonKey}</label>
                         <input class="form-input font-mono" id={`key-${sensor.id}`} name={`key:${sensor.id}`} value={sensor.key} disabled={!canEdit} />
                       </div>
                       <div class="form-field mb-0">
-                        <label class="form-label" for={`unit-${sensor.id}`}>Unit</label>
+                        <label class="form-label" for={`unit-${sensor.id}`}>{t.sensors.unit}</label>
                         <input
                           class="form-input"
                           id={`unit-${sensor.id}`}
                           name={`unit:${sensor.id}`}
                           value={sensor.unit ?? ""}
-                          placeholder="Type default"
+                          placeholder={t.sensors.unitPlaceholder}
                           disabled={!canEdit}
                         />
                       </div>
                       <div class="form-field mb-0">
-                        <label class="form-label" for={`offset-${sensor.id}`}>Calibration offset</label>
+                        <label class="form-label" for={`offset-${sensor.id}`}>{t.sensors.offset}</label>
                         <input
                           class="form-input"
                           id={`offset-${sensor.id}`}
@@ -247,7 +263,7 @@ const noticeIsError = Boolean(replaceError || params.get("error"));
                           value={sensor.offset_num ?? 0}
                           disabled={!canEdit}
                         />
-                        <p class="form-hint mb-0">Added to every reading. Raw readings stay unchanged.</p>
+                        <p class="form-hint mb-0">{t.sensors.offsetHint}</p>
                       </div>
                       {canEdit && (
                         <button
@@ -256,9 +272,9 @@ const noticeIsError = Boolean(replaceError || params.get("error"));
                           name="delete_sensor_id"
                           value={sensor.id}
                           formnovalidate
-                          onclick={`return confirm(${JSON.stringify(`Delete sensor "${sensor.label}" and its history?`)});`}
+                          onclick={`return confirm(${JSON.stringify(fmt(t.sensors.deleteConfirm, { name: sensor.label }))});`}
                         >
-                          Delete sensor
+                          {t.sensors.deleteSensor}
                         </button>
                       )}
                     </div>
@@ -267,32 +283,32 @@ const noticeIsError = Boolean(replaceError || params.get("error"));
               );
             })}
           </ul>
-          {canEdit && <button class="btn-primary mt-4" type="submit">Save sensors</button>}
+          {canEdit && <button class="btn-primary mt-4" type="submit">{t.sensors.saveSensors}</button>}
         </form>
       )}
       {canEdit && isPush && (
         <details class="mt-4">
-          <summary class="text-sm cursor-pointer">Add a sensor by hand</summary>
-          <p class="form-hint mt-2">Only needed to set a name before the first upload; keys are added automatically otherwise.</p>
+          <summary class="text-sm cursor-pointer">{t.sensors.addByHand}</summary>
+          <p class="form-hint mt-2">{t.sensors.addHint}</p>
           <form action="/api/devices" method="post" class="device-add-sensor">
             <input type="hidden" name="action" value="add_sensor" />
             <input type="hidden" name="device_id" value={device.id} />
             <input type="hidden" name="redirect" value={`${self}#sensors`} />
             <div class="form-field mb-0">
-              <label class="form-label" for="add-key">JSON key</label>
+              <label class="form-label" for="add-key">{t.sensors.jsonKey}</label>
               <input class="form-input font-mono" id="add-key" name="key" required placeholder="temp1" />
             </div>
             <div class="form-field mb-0">
-              <label class="form-label" for="add-label">Name</label>
-              <input class="form-input" id="add-label" name="label" required placeholder="Garage pipe" />
+              <label class="form-label" for="add-label">{t.sensors.name}</label>
+              <input class="form-input" id="add-label" name="label" required placeholder={t.sensors.addLabelPlaceholder} />
             </div>
             <div class="form-field mb-0">
-              <label class="form-label" for="add-kind">Type</label>
+              <label class="form-label" for="add-kind">{t.sensors.type}</label>
               <select class="form-input" id="add-kind" name="kind">
-                {Object.entries(SENSOR_KIND_LABELS).map(([kind, label]) => <option value={kind}>{label}</option>)}
+                {kindOptions.map(([kind, label]) => <option value={kind}>{label}</option>)}
               </select>
             </div>
-            <button class="btn-secondary" type="submit">Add sensor</button>
+            <button class="btn-secondary" type="submit">{t.sensors.addSensor}</button>
           </form>
         </details>
       )}
@@ -300,42 +316,40 @@ const noticeIsError = Boolean(replaceError || params.get("error"));
 
     {canEdit && (
       <section class="card" aria-labelledby="device-settings-title" id="settings">
-        <h2 class="card-title" id="device-settings-title">Settings</h2>
+        <h2 class="card-title" id="device-settings-title">{t.settings.title}</h2>
         <form action="/api/devices" method="post" class="device-settings-form">
           <input type="hidden" name="action" value="update_device" />
           <input type="hidden" name="device_id" value={device.id} />
           <input type="hidden" name="redirect" value={`${self}#settings`} />
           {isPush ? (
             <div class="form-field mb-0">
-              <label class="form-label" for="device-name">Name</label>
+              <label class="form-label" for="device-name">{t.settings.name}</label>
               <input class="form-input" id="device-name" name="name" value={device.name} required maxlength="80" />
             </div>
           ) : (
-            <p class="form-hint m-0">
-              This feed's name and on/off live in <a class="text-link" href="/dashboard/devices?view=setup&tab=pull">Pull feeds</a>.
-            </p>
+            <p class="form-hint m-0" set:html={t.settings.pullFeedHtml} />
           )}
           <div class="form-field mb-0">
-            <label class="form-label" for="device-space">Space</label>
+            <label class="form-label" for="device-space">{t.settings.space}</label>
             <input
               class="form-input"
               id="device-space"
               name="space"
               value={device.space ?? ""}
               list="device-space-suggestions"
-              placeholder="Garage, attic, crawlspace…"
+              placeholder={t.settings.spacePlaceholder}
               maxlength="60"
             />
-            <p class="form-hint mb-0">Where it is. Used for protection coverage and alert wording.</p>
+            <p class="form-hint mb-0">{t.settings.spaceHint}</p>
           </div>
           {isPush && (
             <label class="checkbox-row mb-0">
               <input type="checkbox" name="enabled" value="true" checked={device.enabled} />
-              <span>Enabled (unticked: uploads are ignored and it won't raise alerts)</span>
+              <span>{t.settings.enabled}</span>
             </label>
           )}
           <div>
-            <button class="btn-primary" type="submit">Save</button>
+            <button class="btn-primary" type="submit">{t.settings.save}</button>
           </div>
         </form>
         <datalist id="device-space-suggestions">
@@ -346,84 +360,92 @@ const noticeIsError = Boolean(replaceError || params.get("error"));
 
     {isPush && (
       <section class="card" aria-labelledby="device-connection-title">
-        <h2 class="card-title" id="device-connection-title">Connection</h2>
-        <p class="card-subtitle mb-3">
-          The device sends JSON to <code>{Astro.url.origin}/api/ingest/&lt;key&gt;</code>. Its key starts with
-          <code>{device.ingest_key_prefix}</code>.
-        </p>
+        <h2 class="card-title" id="device-connection-title">{t.connection.title}</h2>
+        <p
+          class="card-subtitle mb-3"
+          set:html={fmt(t.connection.sendsJsonHtml, {
+            url: escapeHtml(`${Astro.url.origin}/api/ingest/<key>`),
+            prefix: escapeHtml(device.ingest_key_prefix ?? ""),
+          })}
+        />
         <div class="flex flex-wrap gap-3 items-center mb-3">
           {canEdit && ingestKeyVaultConfigured() && recoverableKey && (
-            <RevealIngestKeyButton client:visible deviceId={device.id} deviceName={device.name} />
+            <RevealIngestKeyButton
+              client:visible
+              deviceId={device.id}
+              deviceName={device.name}
+              text={deviceSetupPushMessages(locale).revealKey}
+            />
           )}
-          <a class="btn-ghost" href="/payload-checker">Check a payload</a>
-          <a class="btn-ghost" href="/flash">Browser flasher</a>
-          <a class="btn-ghost" href="/about/ingest-and-webhooks">Ingest docs</a>
+          <a class="btn-ghost" href="/payload-checker">{t.connection.checkPayload}</a>
+          <a class="btn-ghost" href="/flash">{t.connection.browserFlasher}</a>
+          <a class="btn-ghost" href="/about/ingest-and-webhooks">{t.connection.ingestDocs}</a>
         </div>
         <p class="m-0 text-sm text-[var(--color-text-muted)]">
-          {`Last 7 days: ${accepted.toLocaleString("en-US")} upload${accepted === 1 ? "" : "s"} accepted`}
-          {rejected > 0 && <span class="text-[var(--color-warning)]">{`, ${rejected.toLocaleString("en-US")} rejected`}</span>}.
+          {plural(t.connection.accepted, accepted, locale)}
+          {rejected > 0 && <span class="text-[var(--color-warning)]">{fmt(t.connection.rejected, { count: formatNumber(rejected, locale) })}</span>}{t.connection.end}
         </p>
       </section>
     )}
 
     <section class="card" aria-labelledby="device-maintenance-title">
-      <h2 class="card-title" id="device-maintenance-title">Maintenance</h2>
+      <h2 class="card-title" id="device-maintenance-title">{t.maintenance.title}</h2>
       <div class="flex flex-wrap gap-3">
-        <a class="btn-secondary" href={`/api/devices/diagnostics?device_id=${device.id}`} download>Download diagnostics</a>
-        <a class="btn-ghost" href={`/dashboard/history?feed=${encodeURIComponent(device.name)}`}>History chart</a>
+        <a class="btn-secondary" href={`/api/devices/diagnostics?device_id=${device.id}`} download>{t.maintenance.downloadDiagnostics}</a>
+        <a class="btn-ghost" href={`/dashboard/history?feed=${encodeURIComponent(device.name)}`}>{t.maintenance.historyChart}</a>
       </div>
-      <p class="form-hint mt-2 mb-0">Diagnostics is a redacted JSON file you can attach to a bug report or support email.</p>
+      <p class="form-hint mt-2 mb-0">{t.maintenance.diagnosticsHint}</p>
       {canEdit && isPush && transferTargets.length > 0 && (
         <form action="/api/devices" method="post" class="flex flex-wrap gap-2 items-end mt-4">
           <input type="hidden" name="action" value="transfer" />
           <input type="hidden" name="device_id" value={device.id} />
           <input type="hidden" name="redirect" value={listHref} />
           <div class="form-field mb-0">
-            <label class="form-label" for="transfer-target">Move to another property</label>
+            <label class="form-label" for="transfer-target">{t.maintenance.moveTo}</label>
             <select class="form-input" id="transfer-target" name="target_household_id" required>
               {transferTargets.map((h) => <option value={h.household_id}>{h.name ?? h.household_id}</option>)}
             </select>
           </div>
-          <button class="btn-secondary" type="submit">Move device</button>
+          <button class="btn-secondary" type="submit">{t.maintenance.moveDevice}</button>
         </form>
       )}
-      {canEdit && <SensorReplaceCard devices={devices} redirectTo={self} collapsed />}
+      {canEdit && <SensorReplaceCard devices={devices} redirectTo={self} collapsed text={t.replace} kindLabels={t.kinds} />}
     </section>
 
 
     {canEdit && isPush && (
       <section class="card device-danger" aria-labelledby="device-danger-title">
-        <h2 class="card-title" id="device-danger-title">Key and removal</h2>
+        <h2 class="card-title" id="device-danger-title">{t.danger.title}</h2>
         <div class="device-danger-row">
           <div>
-            <p class="m-0 font-medium">Rotate ingest key</p>
-            <p class="m-0 text-sm text-[var(--color-text-muted)]">Issues a new key. The old one stops working at once; reflash or update the device.</p>
+            <p class="m-0 font-medium">{t.danger.rotateTitle}</p>
+            <p class="m-0 text-sm text-[var(--color-text-muted)]">{t.danger.rotateBody}</p>
           </div>
           <form
             action="/api/devices"
             method="post"
-            onsubmit="return confirm('Rotate this ingest key? The old key stops working immediately.');"
+            onsubmit={`return confirm(${JSON.stringify(t.danger.rotateConfirm)});`}
           >
             <input type="hidden" name="action" value="rotate_key" />
             <input type="hidden" name="device_id" value={device.id} />
             <input type="hidden" name="redirect" value={`/dashboard/devices?view=setup&tab=push&focus_device=${device.id}`} />
-            <button class="btn-secondary" type="submit">Rotate key</button>
+            <button class="btn-secondary" type="submit">{t.danger.rotateButton}</button>
           </form>
         </div>
         <div class="device-danger-row">
           <div>
-            <p class="m-0 font-medium">Delete device</p>
-            <p class="m-0 text-sm text-[var(--color-text-muted)]">Removes it, its sensors, and their history. Can't be undone.</p>
+            <p class="m-0 font-medium">{t.danger.deleteTitle}</p>
+            <p class="m-0 text-sm text-[var(--color-text-muted)]">{t.danger.deleteBody}</p>
           </div>
           <form
             action="/api/devices"
             method="post"
-            onsubmit={`return confirm(${JSON.stringify(`Delete "${device.name}", its sensors, and their history?`)});`}
+            onsubmit={`return confirm(${JSON.stringify(fmt(t.danger.deleteConfirm, { name: device.name }))});`}
           >
             <input type="hidden" name="action" value="delete" />
             <input type="hidden" name="device_id" value={device.id} />
             <input type="hidden" name="redirect" value={listHref} />
-            <button class="btn-danger" type="submit">Delete device</button>
+            <button class="btn-danger" type="submit">{t.danger.deleteButton}</button>
           </form>
         </div>
       </section>

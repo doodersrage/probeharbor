@@ -1,9 +1,13 @@
-import { staleProbeDetail, wetFloodDetail } from "./falseAlarmHints";
 import {
   alertsSettingsPath,
   devicesOpsPath,
   devicesSetupPath,
 } from "./dashboardDeepLinks";
+import { fmt, formatNumber, plural } from "../i18n/format";
+import type { Locale } from "../i18n/locales";
+// English table only: this module also runs in the ProbeDemo island, so it
+// can't import a message getter. Server callers pass the translated table.
+import overviewCardsEn, { type GarageRiskText } from "../i18n/messages/app/overviewCards/en";
 
 /**
  * Single Overview status: is the monitored space OK, worth watching, or at freeze/flood risk?
@@ -21,28 +25,52 @@ export type GarageRiskStatus = {
   actionHref: string;
 };
 
-export function computeGarageRiskStatus(input: {
-  hasDevices: boolean;
-  hasLiveReading: boolean;
-  coldestProbeTempF: number | null;
-  freezeThresholdF: number;
-  staleSensorCount: number;
-  nightsRiskCount: number;
-  alertsEnabled: boolean;
-  hasEmailAlerts: boolean;
-  outdoorTempF: number | null;
-  showColdSnapChecklist: boolean;
-  hoursUntilFreeze?: number | null;
-  hitsAtLabel?: string | null;
-  /** Currently wet flood/leak contacts (from latest readings). */
-  wetFloodCount?: number;
-}): GarageRiskStatus {
+/** As before in English (`String(n)`); locale digits elsewhere. */
+function rawNumber(value: number, locale: Locale): string {
+  return locale === "en" ? String(value) : formatNumber(value, locale);
+}
+
+function fixed(value: number, digits: number, locale: Locale): string {
+  return formatNumber(value, locale, {
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits,
+    useGrouping: false,
+  });
+}
+
+/**
+ * `locale` formats numbers; `text` is the wording
+ * (`overviewCardsMessages(locale).garageRisk` on the server, English by default).
+ */
+export function computeGarageRiskStatus(
+  input: {
+    hasDevices: boolean;
+    hasLiveReading: boolean;
+    coldestProbeTempF: number | null;
+    freezeThresholdF: number;
+    staleSensorCount: number;
+    nightsRiskCount: number;
+    alertsEnabled: boolean;
+    hasEmailAlerts: boolean;
+    outdoorTempF: number | null;
+    showColdSnapChecklist: boolean;
+    hoursUntilFreeze?: number | null;
+    hitsAtLabel?: string | null;
+    /** Currently wet flood/leak contacts (from latest readings). */
+    wetFloodCount?: number;
+  },
+  locale: Locale = "en",
+  text: GarageRiskText = overviewCardsEn.garageRisk,
+): GarageRiskStatus {
+  const t = text;
+  const threshold = rawNumber(input.freezeThresholdF, locale);
+
   if (!input.hasDevices) {
     return {
       level: "watch",
-      title: "Add a probe to start",
-      detail: "Create a push device, then POST a reading, or try the demo feed without hardware.",
-      actionLabel: "Connect a device",
+      title: t.noDevices.title,
+      detail: t.noDevices.detail,
+      actionLabel: t.noDevices.action,
       actionHref: devicesSetupPath(),
     };
   }
@@ -50,10 +78,9 @@ export function computeGarageRiskStatus(input: {
   if (!input.hasLiveReading) {
     return {
       level: "offline",
-      title: "Waiting for a reading",
-      detail:
-        "Your device is set up but has not reported yet. Finish ingest, then confirm freeze and flood alerts.",
-      actionLabel: "Finish device setup",
+      title: t.waiting.title,
+      detail: t.waiting.detail,
+      actionLabel: t.waiting.action,
       actionHref: devicesSetupPath(),
     };
   }
@@ -62,9 +89,9 @@ export function computeGarageRiskStatus(input: {
   if (wetCount > 0) {
     return {
       level: "risk",
-      title: wetCount === 1 ? "Flood / leak wet now" : "Flood / leak sensors wet",
-      detail: wetFloodDetail(wetCount),
-      actionLabel: "Open Live",
+      title: wetCount === 1 ? t.wet.titleOne : t.wet.titleMany,
+      detail: plural(t.wet.detail, Math.max(1, wetCount), locale),
+      actionLabel: t.actions.openLive,
       actionHref: "/dashboard/live",
     };
   }
@@ -73,9 +100,9 @@ export function computeGarageRiskStatus(input: {
     return {
       level: "watch",
       reason: "stale",
-      title: "Probe may be unplugged",
-      detail: staleProbeDetail(input.staleSensorCount),
-      actionLabel: "Check devices",
+      title: t.stale.title,
+      detail: plural(t.stale.detail, Math.max(1, input.staleSensorCount), locale),
+      actionLabel: t.actions.checkDevices,
       actionHref: devicesOpsPath(),
     };
   }
@@ -88,22 +115,23 @@ export function computeGarageRiskStatus(input: {
   if (belowFreeze) {
     return {
       level: "risk",
-      title: "Freeze risk right now",
-      detail: `Coldest probe is ${input.coldestProbeTempF!.toFixed(1)}°F (threshold ${input.freezeThresholdF}°F).`,
-      actionLabel: "Open alerts",
+      title: t.freezeNow.title,
+      detail: fmt(t.freezeNow.detail, { temp: fixed(input.coldestProbeTempF!, 1, locale), threshold }),
+      actionLabel: t.actions.openAlerts,
       actionHref: "/dashboard/alerts",
     };
   }
 
   const hoursUntil = input.hoursUntilFreeze;
   if (hoursUntil != null && Number.isFinite(hoursUntil) && hoursUntil > 0) {
-    const clock = input.hitsAtLabel ? ` around ${input.hitsAtLabel}` : "";
     if (hoursUntil <= 4) {
       return {
         level: "risk",
-        title: "Freeze in a few hours",
-        detail: `This space is projected to hit ${input.freezeThresholdF}°F${clock}. Drip faucets or turn on heat while you still have time.`,
-        actionLabel: "Open time to freeze",
+        title: t.freezeSoon.title,
+        detail: input.hitsAtLabel
+          ? fmt(t.freezeSoon.detailAt, { threshold, time: input.hitsAtLabel })
+          : fmt(t.freezeSoon.detail, { threshold }),
+        actionLabel: t.actions.openTimeToFreeze,
         actionHref: "#time-to-freeze",
       };
     }
@@ -111,10 +139,13 @@ export function computeGarageRiskStatus(input: {
       return {
         level: "watch",
         title: input.hitsAtLabel
-          ? `Freeze around ${input.hitsAtLabel}`
-          : "Freeze later today",
-        detail: `About ${hoursUntil < 10 ? hoursUntil.toFixed(1) : Math.round(hoursUntil)} hours until ${input.freezeThresholdF}°F at this space's lag vs outdoor.`,
-        actionLabel: "Open time to freeze",
+          ? fmt(t.freezeLater.titleAt, { time: input.hitsAtLabel })
+          : t.freezeLater.title,
+        detail: fmt(t.freezeLater.detail, {
+          hours: hoursUntil < 10 ? fixed(hoursUntil, 1, locale) : fixed(hoursUntil, 0, locale),
+          threshold,
+        }),
+        actionLabel: t.actions.openTimeToFreeze,
         actionHref: "#time-to-freeze",
       };
     }
@@ -125,10 +156,10 @@ export function computeGarageRiskStatus(input: {
       level: "watch",
       title:
         input.nightsRiskCount > 0
-          ? `${input.nightsRiskCount} night${input.nightsRiskCount === 1 ? "" : "s"} at freeze risk`
-          : "Cold snap ahead",
-      detail: "Outdoor conditions look cold: run the checklist and confirm forecast alerts are on.",
-      actionLabel: "Cold-snap checklist",
+          ? plural(t.nightsAtRisk, input.nightsRiskCount, locale)
+          : t.coldSnap.title,
+      detail: t.coldSnap.detail,
+      actionLabel: t.actions.coldSnapChecklist,
       actionHref: "#cold-snap",
     };
   }
@@ -136,9 +167,9 @@ export function computeGarageRiskStatus(input: {
   if (input.nightsRiskCount > 0) {
     return {
       level: "watch",
-      title: `${input.nightsRiskCount} night${input.nightsRiskCount === 1 ? "" : "s"} at freeze risk`,
-      detail: "Outdoor conditions look cold: confirm probes on Live and that forecast alerts are on.",
-      actionLabel: "Open Live",
+      title: plural(t.nightsAtRisk, input.nightsRiskCount, locale),
+      detail: t.nights.detail,
+      actionLabel: t.actions.openLive,
       actionHref: "/dashboard/live",
     };
   }
@@ -146,10 +177,9 @@ export function computeGarageRiskStatus(input: {
   if (!input.alertsEnabled || !input.hasEmailAlerts) {
     return {
       level: "watch",
-      title: "Space looks fine: finish alerts",
-      detail:
-        "Turn on alerts and email so freeze and flood reach you: wet contacts auto-notify once alerts are on.",
-      actionLabel: "Set freeze + email",
+      title: t.finishAlerts.title,
+      detail: t.finishAlerts.detail,
+      actionLabel: t.finishAlerts.action,
       actionHref: alertsSettingsPath("alert-section-essentials"),
     };
   }
@@ -162,18 +192,18 @@ export function computeGarageRiskStatus(input: {
   if (nearFreeze) {
     return {
       level: "watch",
-      title: "Close to freeze threshold",
-      detail: `Coldest probe ${input.coldestProbeTempF!.toFixed(1)}°F, within 5°F of ${input.freezeThresholdF}°F.`,
-      actionLabel: "Open Live",
+      title: t.nearFreeze.title,
+      detail: fmt(t.nearFreeze.detail, { temp: fixed(input.coldestProbeTempF!, 1, locale), threshold }),
+      actionLabel: t.actions.openLive,
       actionHref: "/dashboard/live",
     };
   }
 
   return {
     level: "ok",
-    title: "Looking good",
-    detail: "Probes are reporting: nothing at freeze threshold, no wet flood contacts.",
-    actionLabel: "Open Live",
+    title: t.ok.title,
+    detail: t.ok.detail,
+    actionLabel: t.actions.openLive,
     actionHref: "/dashboard/live",
   };
 }

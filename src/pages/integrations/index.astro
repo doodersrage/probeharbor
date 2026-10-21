@@ -15,7 +15,7 @@ import {
     INTEGRATIONS_HUB_PATH,
 } from "../../lib/integrationsHub";
 import { getAuthFromCookies } from "../../lib/auth";
-import { getLocale } from "../../i18n";
+import { fmt, getLocale } from "../../i18n";
 import { integrationsMessages } from "../../i18n/messages/integrations";
 import { getLocalizedIntegrationCards } from "../../i18n/content/integrations";
 
@@ -60,7 +60,7 @@ const schema = [
         </a>
         <p class="text-sm text-[var(--color-text-muted)] mb-0">{t.hacsStatus}</p>
       </div>
-      <p class="text-sm text-[var(--color-text-muted)] mb-0" set:html={t.devDocsHtml(DEV_DOCS_BASE)} />
+      <p class="text-sm text-[var(--color-text-muted)] mb-0" set:html={fmt(t.devDocsHtml, { devDocsUrl: DEV_DOCS_BASE })} />
     </section>
 
     <section class="grid gap-4 sm:grid-cols-2">

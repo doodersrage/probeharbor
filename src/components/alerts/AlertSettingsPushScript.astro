@@ -1,13 +1,28 @@
 ---
+import { getLocale, LOCALE_META } from "../../i18n";
+import { alertSettingsMessages } from "../../i18n/messages/app/alertSettings";
+
 interface Props {
   vapidPublicKey: string;
 }
 
 const { vapidPublicKey } = Astro.props;
+const locale = getLocale(Astro);
+const text = alertSettingsMessages(locale).clientPush;
+const intlLocale = LOCALE_META[locale].intl;
 ---
-<script is:inline define:vars={{ vapidPublicKey }}>
+<script is:inline define:vars={{ vapidPublicKey, text, intlLocale }}>
+    function fill(template, vars) {
+      return template.replace(/\{(\w+)\}/g, (whole, name) => (name in vars ? String(vars[name]) : whole));
+    }
+    function androidDevices(count) {
+      const forms = text.androidDevices;
+      const form = forms[new Intl.PluralRules(intlLocale).select(count)] ?? forms.other;
+      return fill(form, { count: new Intl.NumberFormat(intlLocale).format(count) });
+    }
+
     function urlBase64ToUint8Array(base64String) {
-      if (!base64String) throw new Error("VAPID public key is not configured");
+      if (!base64String) throw new Error(text.noVapidKey);
       const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
       const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
       const rawData = atob(base64);
@@ -27,12 +42,12 @@ const { vapidPublicKey } = Astro.props;
 
     async function subscribeThisBrowser() {
       if (!vapidPublicKey) {
-        throw new Error("VAPID public key is not configured on the server");
+        throw new Error(text.noVapidKeyServer);
       }
       const reg = await ensureServiceWorker();
       const permission = await Notification.requestPermission();
       if (permission !== "granted") {
-        throw new Error("Notification permission was not granted");
+        throw new Error(text.permissionDenied);
       }
       let sub = await reg.pushManager.getSubscription();
       if (!sub) {
@@ -49,33 +64,32 @@ const { vapidPublicKey } = Astro.props;
       });
       if (!res.ok) {
         const err = await res.json().catch(() => null);
-        throw new Error(err?.error || "Server rejected subscription");
+        throw new Error(err?.error || text.serverRejected);
       }
       if (pushChannel instanceof HTMLInputElement) {
         pushChannel.checked = true;
       }
       if (status) {
-        status.textContent = "Subscribed on this browser. Save alert settings, then send a test.";
+        status.textContent = text.subscribed;
       }
       if (hint) {
-        hint.textContent =
-          'The "Push (browser + Android)" channel was checked: click Save alert settings before testing.';
+        hint.textContent = text.subscribedHint;
       }
-      if (btn) btn.textContent = "Re-enable / refresh push";
+      if (btn) btn.textContent = text.refresh;
     }
 
     async function refreshPushStatus() {
       if (!status) return;
       if (!("Notification" in window) || !("serviceWorker" in navigator) || !("PushManager" in window)) {
-        status.textContent = "Push is not supported in this browser.";
+        status.textContent = text.unsupported;
         if (btn) btn.hidden = true;
         return;
       }
 
       const permission = Notification.permission;
       if (permission === "denied") {
-        status.textContent = "Notifications are blocked for this site. Allow them in browser settings, then retry.";
-        if (btn) btn.textContent = "Retry enable push";
+        status.textContent = text.blocked;
+        if (btn) btn.textContent = text.retry;
         return;
       }
 
@@ -88,47 +102,45 @@ const { vapidPublicKey } = Astro.props;
         if (existing && server?.subscriptionCount > 0) {
           const androidNote =
             typeof server.fcmTokenCount === "number" && server.fcmTokenCount > 0
-              ? ` Also ${server.fcmTokenCount} Android device(s) registered.`
+              ? " " + androidDevices(server.fcmTokenCount)
               : "";
-          status.textContent = "Push enabled on this browser." + androidNote;
-          if (btn) btn.textContent = "Re-enable / refresh push";
+          status.textContent = text.enabled + androidNote;
+          if (btn) btn.textContent = text.refresh;
           if (hint) {
             hint.textContent = server.channelEnabled
-              ? "Push channel is on: test from below (browser + Android)."
-              : 'Check "Push (browser + Android)" under channels above, save settings, then send a test.';
+              ? text.channelOnHint
+              : text.channelOffHint;
           }
         } else if (permission === "granted") {
           // Permission alone is not enough — finish PushManager subscribe + POST to server.
           if (!autoSubscribeAttempted && vapidPublicKey) {
             autoSubscribeAttempted = true;
-            status.textContent = "Permission granted — finishing browser subscribe…";
+            status.textContent = text.finishing;
             try {
               await subscribeThisBrowser();
               await refreshPushStatus();
               return;
             } catch (e) {
-              status.textContent =
-                "Permission granted, but subscribe failed: " + (e?.message || e);
-              if (btn) btn.textContent = "Subscribe this browser";
+              status.textContent = fill(text.subscribeFailed, { error: e?.message || e });
+              if (btn) btn.textContent = text.subscribe;
             }
           } else {
-            status.textContent = "Permission granted, but this browser is not subscribed yet.";
-            if (btn) btn.textContent = "Subscribe this browser";
+            status.textContent = text.notSubscribed;
+            if (btn) btn.textContent = text.subscribe;
           }
         } else {
-          status.textContent = "Not enabled on this browser yet.";
-          if (btn) btn.textContent = "Enable browser push on this device";
+          status.textContent = text.notEnabled;
+          if (btn) btn.textContent = text.enable;
         }
 
         if (server && !server.vapidConfigured && hint) {
-          hint.textContent = "Server VAPID keys are missing: browser push cannot send until configured.";
+          hint.textContent = text.vapidMissing;
         }
         if (server && server.fcmTokenCount > 0 && !server.channelEnabled && hint) {
-          hint.textContent =
-            'Android app is registered: check "Push (browser + Android)", save, then test.';
+          hint.textContent = text.androidRegistered;
         }
       } catch {
-        status.textContent = "Could not read push status.";
+        status.textContent = text.statusFailed;
       }
     }
 
@@ -136,7 +148,7 @@ const { vapidPublicKey } = Astro.props;
       try {
         await subscribeThisBrowser();
       } catch (e) {
-        if (status) status.textContent = "Could not enable push: " + (e?.message || e);
+        if (status) status.textContent = fill(text.enableFailed, { error: e?.message || e });
         await refreshPushStatus();
       }
     });

@@ -4,11 +4,13 @@ import { getAlertSettingsForUser } from "../../../lib/notify";
 import { getUserPreferences } from "../../../lib/userPreferences";
 import { fetchNightsAtRisk } from "../../../lib/FetchWeather";
 import { buildFreezeOutlookIcal } from "../../../lib/icalFeed";
+import { apiLocale, apiMoreCommonMessages } from "../../../i18n/messages/app/apiMore/common";
 
-export const GET: APIRoute = async ({ cookies }) => {
+export const GET: APIRoute = async (context) => {
+  const { cookies } = context;
   const { session, user } = await getAuthFromCookies(cookies);
   if (!session || !user) {
-    return new Response("Unauthorized", { status: 401 });
+    return new Response(apiMoreCommonMessages(apiLocale(context)).unauthorized, { status: 401 });
   }
 
   const [settings, preferences] = await Promise.all([

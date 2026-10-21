@@ -7,30 +7,33 @@ import { getOrCreateHouseholdForUser } from "../../../lib/households";
 import { listIngestStatsForHousehold } from "../../../lib/ingestStats";
 import { fetchLatestSensorValues } from "../../../lib/sensorReadings";
 import { findStuckSensors } from "../../../lib/stuckSensors";
+import { apiCommonMessages, apiLocale } from "../../../i18n/messages/app/api/common";
 
 /** Download a redacted support bundle for one device in the active property. */
-export const GET: APIRoute = async ({ cookies, url }) => {
+export const GET: APIRoute = async ({ cookies, url, locals }) => {
+  const locale = apiLocale({ locals });
+  const tc = apiCommonMessages(locale);
   const { session, user } = await getAuthFromCookies(cookies);
-  if (!session || !user) return new Response("Unauthorized", { status: 401 });
+  if (!session || !user) return new Response(tc.unauthorized, { status: 401 });
 
   const deviceId = url.searchParams.get("device_id") ?? "";
   const household = await getOrCreateHouseholdForUser(user.id, user.email);
-  if (!household.householdId || !deviceId) return new Response("Not found", { status: 404 });
+  if (!household.householdId || !deviceId) return new Response(tc.notFound, { status: 404 });
 
   const { devices } = await listHouseholdDevices(household.householdId);
   const device = devices.find((d) => d.id === deviceId);
-  if (!device) return new Response("Not found", { status: 404 });
+  if (!device) return new Response(tc.notFound, { status: 404 });
 
   const now = Date.now();
   const [latest, stuck, ingestStats] = await Promise.all([
     fetchLatestSensorValues(household.householdId),
-    findStuckSensors([device], now),
+    findStuckSensors([device], now, locale),
     listIngestStatsForHousehold(household.householdId, 7),
   ]);
   const bundle = buildDeviceDiagnostics({
     device,
     latest,
-    health: scoreDeviceHealth(device, latest, now, -80, stuck),
+    health: scoreDeviceHealth(device, latest, now, -80, stuck, locale),
     stuck,
     ingestStats,
     now,

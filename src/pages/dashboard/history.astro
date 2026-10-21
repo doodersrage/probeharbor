@@ -43,6 +43,24 @@ import { getAlertSettingsForUser } from "../../lib/notify";
 import { listAlertEventsInRange } from "../../lib/alertEvents";
 import { toChartAlertMarkers } from "../../lib/chartAlertMarkers";
 import { listHistorySavedViews, searchParamsFromView } from "../../lib/historySavedViews";
+import { fmt, formatDateTime, formatNumber, getLocale, LOCALE_META, plural } from "../../i18n";
+import { appHistoryMessages } from "../../i18n/messages/app/history";
+import { appHistoryChartsMessages } from "../../i18n/messages/app/history/charts";
+
+const locale = getLocale(Astro);
+const t = appHistoryMessages(locale);
+const chartText = appHistoryChartsMessages(locale);
+/** Intl tag for chart islands; omitted for English so they format exactly as before. */
+const chartLocale = locale === "en" ? undefined : LOCALE_META[locale].intl;
+/** `toFixed` in English; the locale's decimal separator otherwise. */
+function num(value: number, digits: number): string {
+  if (locale === "en") return value.toFixed(digits);
+  return formatNumber(value, locale, { minimumFractionDigits: digits, maximumFractionDigits: digits, useGrouping: false });
+}
+/** A number as written before (no rounding) in English; locale separators otherwise. */
+function plain(value: number): string {
+  return locale === "en" ? String(value) : formatNumber(value, locale, { maximumFractionDigits: 2, useGrouping: false });
+}
 
 const shell = Astro.locals.dashboardShell ?? null;
 const { session, user } = shell
@@ -289,7 +307,7 @@ const indoorOutdoorSeries = outdoorDelta
   : [];
 const freezeHours = computeFreezeHours(chartData.points, alertSettings.freezeThresholdF);
 const coldSnapReplay =
-  historyTab === "chart" ? buildColdSnapReplay(chartData.points, alertSettings.freezeThresholdF, alertEvents) : null;
+  historyTab === "chart" ? buildColdSnapReplay(chartData.points, alertSettings.freezeThresholdF, alertEvents, locale) : null;
 const dailyFreezeHours = computeDailyFreezeHours(
   chartData.points,
   alertSettings.freezeThresholdF,
@@ -315,21 +333,26 @@ const overlayPoints = overlayColdest
 const overlayLegend = overlayColdest
   ? coldestOverlay.coldestDay
     ? priorYearBundle.source === "outdoor_estimate"
-      ? `Gray = coldest outdoor day last year (${coldestOverlay.coldestDay}, estimated)`
-      : `Gray = coldest day last year (${coldestOverlay.coldestDay}${
-        coldestOverlay.minTempF != null
-          ? `, low ${coldestOverlay.minTempF.toFixed(1)}°F`
-          : ""
-      })`
+      ? fmt(t.overlay.coldestOutdoorEstimated, { day: coldestOverlay.coldestDay })
+      : coldestOverlay.minTempF != null
+        ? fmt(t.overlay.coldestDayLow, { day: coldestOverlay.coldestDay, temp: num(coldestOverlay.minTempF, 1) })
+        : fmt(t.overlay.coldestDay, { day: coldestOverlay.coldestDay })
     : priorYearBundle.earliestLocalReadingAt
-      ? `Gray = no prior-year probe data (history starts ${new Date(priorYearBundle.earliestLocalReadingAt).toLocaleDateString()})`
-      : "Gray = coldest day last year (no prior-year data)"
+      ? fmt(t.overlay.noPriorProbeData, {
+          date:
+            locale === "en"
+              ? new Date(priorYearBundle.earliestLocalReadingAt).toLocaleDateString()
+              : formatDateTime(priorYearBundle.earliestLocalReadingAt, locale, { dateStyle: "medium" }),
+        })
+      : t.overlay.coldestNoData
   : hasCustomCompare
-    ? `Gray = compare window ${compareFromParam} → ${compareToParam}`
+    ? fmt(t.overlay.compareWindow, { from: compareFromParam, to: compareToParam })
     : compareYoy
       ? priorYearBundle.source === "outdoor_estimate"
-        ? `Gray = outdoor estimate last year${priorYearBundle.outdoorLocationLabel ? ` (${priorYearBundle.outdoorLocationLabel})` : ""}`
-        : "Gray = same window last year (time-aligned)"
+        ? priorYearBundle.outdoorLocationLabel
+          ? fmt(t.overlay.outdoorEstimateAt, { location: priorYearBundle.outdoorLocationLabel })
+          : t.overlay.outdoorEstimate
+        : t.overlay.sameWindow
       : null;
 
 if (loadTable && history.totalPages > 0 && pageParam > history.totalPages) {
@@ -337,8 +360,8 @@ if (loadTable && history.totalPages > 0 && pageParam > history.totalPages) {
 }
 
 const subscriptionNotice = Astro.url.searchParams.get("subscription");
-const anomalies = detectTemperatureAnomalies(chartData.points);
-const probeCompare = compareProbeAverages(chartData.points);
+const anomalies = detectTemperatureAnomalies(chartData.points, undefined, undefined, undefined, locale);
+const probeCompare = compareProbeAverages(chartData.points, locale);
 
 const houseChartOverlay =
   loadChartExtras && !historyEmpty && householdId
@@ -348,13 +371,17 @@ const houseChartOverlay =
         hasThermostatConnection: thermostatConnections.length > 0,
         referenceSensorId: indoorReferenceSensorId,
         filters: { from: chartFilters.from, to: chartFilters.to },
-      })
+      }, locale)
     : { points: [], source: null as "thermostat" | "reference" | null };
 const houseChartLegend =
   houseChartOverlay.source === "thermostat"
-    ? "House (thermostat)"
+    ? t.overlay.houseThermostat
     : houseChartOverlay.source === "reference"
-      ? `House (${findReferenceSensorLabel(householdDevicesResult.devices, indoorReferenceSensorId) ?? "reference"})`
+      ? fmt(t.overlay.houseReference, {
+          label:
+            findReferenceSensorLabel(householdDevicesResult.devices, indoorReferenceSensorId) ??
+            t.overlay.houseReferenceFallback,
+        })
       : null;
 const probeToSpace = new Map<string, string>();
 for (const device of householdDevicesResult.devices) {
@@ -365,12 +392,12 @@ for (const device of householdDevicesResult.devices) {
     }
   }
 }
-const spaceCompare = compareSpaceAverages(chartData.points, probeToSpace);
+const spaceCompare = compareSpaceAverages(chartData.points, probeToSpace, locale);
 
 const insights = loadExportsSummary
   ? (() => {
-      const rows = summarizeSeasonal(chartData.points, Math.min(30, historyDays));
-      const yoy = compareYearOverYear(chartData.points, priorYearBundle.points);
+      const rows = summarizeSeasonal(chartData.points, Math.min(30, historyDays), locale);
+      const yoy = compareYearOverYear(chartData.points, priorYearBundle.points, locale);
       if (yoy) rows.push(yoy);
       return rows;
     })()
@@ -389,18 +416,9 @@ const alertParam = Number(Astro.url.searchParams.get("alert") ?? "");
 const highlightAlertId =
   Number.isFinite(alertParam) && alertParam > 0 ? alertParam : null;
 const claimsErrorCode = Astro.url.searchParams.get("claims_error");
+const claimsErrors: Record<string, string> = t.exports.claimsErrors;
 const claimsErrorMessage =
-  claimsErrorCode === "pro_required"
-    ? "Pro plan required for the claims pack."
-    : claimsErrorCode === "invalid_email"
-      ? "Enter a valid adjuster email address."
-      : claimsErrorCode === "no_household"
-        ? "No household found to generate a claims pack for."
-        : claimsErrorCode === "recipient_not_allowed"
-          ? "That email address could not be delivered to."
-          : claimsErrorCode === "send_failed"
-            ? "Couldn't send the claims pack email. Try again."
-            : null;
+  claimsErrorCode && Object.hasOwn(claimsErrors, claimsErrorCode) ? claimsErrors[claimsErrorCode]! : null;
 
 function historyTabHref(tab: string): string {
   const params = new URLSearchParams(Astro.url.searchParams);
@@ -410,9 +428,9 @@ function historyTabHref(tab: string): string {
 }
 
 const historyTabs = [
-  { id: "chart", label: "Chart", href: historyTabHref("chart") },
-  { id: "table", label: "Table", href: historyTabHref("table") },
-  { id: "exports", label: "Exports", href: historyTabHref("exports") },
+  { id: "chart", label: t.page.tabs.chart, href: historyTabHref("chart") },
+  { id: "table", label: t.page.tabs.table, href: historyTabHref("table") },
+  { id: "exports", label: t.page.tabs.exports, href: historyTabHref("exports") },
 ];
 
 const historyUpgradeFeature =
@@ -423,19 +441,29 @@ const historyUpgradeFeature =
       : !entitlements.canUseClaimsPack && historyTab === "exports"
         ? ("claims_pack" as const)
         : null;
+
+/** Same wording as `formatHistoryRetention` (lib/entitlements), in the page language. */
+function historyRetentionText(days: number): string {
+  if (days >= 365) {
+    const years = days / 365;
+    const count = Number.isInteger(years) ? plain(years) : num(years, 1);
+    return plural(t.page.retentionYears, years, locale, { count });
+  }
+  return plural(t.page.retentionDays, days, locale, { count: plain(days) });
+}
+const freezeTemp = plain(alertSettings.freezeThresholdF);
 ---
-<DashboardLayout title="History" subtitle="Saved temperature and humidity snapshots, CSV, and claims pack.">
+<DashboardLayout title={t.page.title} subtitle={t.page.subtitle}>
   {historyEmpty && (
     <section class="card mb-6" aria-labelledby="history-empty-title">
-      <h2 class="card-title" id="history-empty-title">No history yet</h2>
+      <h2 class="card-title" id="history-empty-title">{t.page.empty.title}</h2>
       <p class="card-subtitle mb-4">
-        Charts and CSV fill in after the first collection (~15 minutes) or a live POST.
-        Confirm probe cards on Live, or wire a device first.
+        {t.page.empty.body}
       </p>
       <div class="flex flex-wrap gap-3">
-        <a class="btn-primary" href="/dashboard/live">Open Live</a>
-        <a class="btn-secondary" href="/dashboard/devices">Open Devices</a>
-        <a class="btn-ghost" href="/dashboard">Overview</a>
+        <a class="btn-primary" href="/dashboard/live">{t.page.empty.openLive}</a>
+        <a class="btn-secondary" href="/dashboard/devices">{t.page.empty.openDevices}</a>
+        <a class="btn-ghost" href="/dashboard">{t.page.empty.overview}</a>
       </div>
     </section>
   )}
@@ -457,20 +485,18 @@ const historyUpgradeFeature =
   <div class="space-y-6">
     <section class="card">
       <p class="card-subtitle mb-4">
-        Browse saved temperature and humidity snapshots by feed and probe.
-        {canDownloadCsv
-          ? " Download CSV from the Table tab or Exports below."
-          : " Subscribe to unlock CSV export of your saved history."}
+        {canDownloadCsv ? t.page.introCsv : t.page.introNoCsv}
       </p>
-      <DashboardTabNav tabs={historyTabs} activeId={historyTab} ariaLabel="History views" />
+      <DashboardTabNav tabs={historyTabs} activeId={historyTab} ariaLabel={t.page.tabsAria} />
       <p
         class="mt-3 mb-0 text-xs text-[var(--color-text-muted)]"
-        title="Raw readings older than 90 days roll into hourly averages for longer windows."
+        title={t.page.retentionTitle}
       >
-        Your {entitlements.tier === "admin" ? "Admin" : entitlements.tier} plan keeps{" "}
-        {formatHistoryRetention(historyDays)}
-        {entitlements.tier === "pro" || entitlements.tier === "admin" ? "+" : ""} of history;
-        readings older than 90 days are kept as hourly averages.
+        {fmt(t.page.retention, {
+          plan: entitlements.tier === "admin" ? t.page.adminPlan : entitlements.tier,
+          retention: locale === "en" ? formatHistoryRetention(historyDays) : historyRetentionText(historyDays),
+          plus: entitlements.tier === "pro" || entitlements.tier === "admin" ? "+" : "",
+        })}
       </p>
     </section>
 
@@ -525,36 +551,42 @@ const historyUpgradeFeature =
 
         {historyTab === "chart" && showHistoryCompare && (
           <details class="card">
-            <summary class="dashboard-recommendations-summary">Compare</summary>
+            <summary class="dashboard-recommendations-summary">{t.compare.summary}</summary>
             <div class="dashboard-recommendations-body">
               {outdoorDelta && (
                 <section class="history-compare-section" aria-labelledby="history-compare-outdoor">
-                  <h3 class="card-title" id="history-compare-outdoor">Indoor vs outdoor</h3>
+                  <h3 class="card-title" id="history-compare-outdoor">{t.compare.outdoorTitle}</h3>
                   <p class="card-subtitle">
-                    Chart-window probe average compared with current outdoor weather
-                    {outdoorDelta.cityName ? ` in ${outdoorDelta.cityName}` : ""}.
+                    {outdoorDelta.cityName
+                      ? fmt(t.compare.outdoorSubtitleCity, { city: outdoorDelta.cityName })
+                      : t.compare.outdoorSubtitle}
                   </p>
                   <div class="stat-grid">
                     <article class="stat-item">
-                      <span class="stat-label">Indoor avg</span>
-                      <p class="stat-value">{outdoorDelta.indoorAvgF.toFixed(1)}°F</p>
+                      <span class="stat-label">{t.compare.indoorAvg}</span>
+                      <p class="stat-value">{num(outdoorDelta.indoorAvgF, 1)}°F</p>
                     </article>
                     <article class="stat-item">
-                      <span class="stat-label">Outdoor now</span>
-                      <p class="stat-value">{outdoorDelta.outdoorF.toFixed(1)}°F</p>
+                      <span class="stat-label">{t.compare.outdoorNow}</span>
+                      <p class="stat-value">{num(outdoorDelta.outdoorF, 1)}°F</p>
                       <p class="stat-detail">{outdoorDelta.outdoorDescription}</p>
                     </article>
                     <article class="stat-item">
-                      <span class="stat-label">Delta</span>
+                      <span class="stat-label">{t.compare.delta}</span>
                       <p class="stat-value">
                         {outdoorDelta.deltaF > 0 ? "+" : ""}
-                        {outdoorDelta.deltaF.toFixed(1)}°F
+                        {num(outdoorDelta.deltaF, 1)}°F
                       </p>
                     </article>
                   </div>
                   {indoorOutdoorSeries.length >= 2 && (
                     <div class="mt-4">
-                      <IndoorOutdoorChart client:visible points={indoorOutdoorSeries} />
+                      <IndoorOutdoorChart
+                        client:visible
+                        points={indoorOutdoorSeries}
+                        text={chartText.indoorOutdoor}
+                        locale={chartLocale}
+                      />
                     </div>
                   )}
                 </section>
@@ -562,33 +594,38 @@ const historyUpgradeFeature =
 
               {probeSpreadSeries.length >= 2 && (
                 <section class="history-compare-section" aria-labelledby="history-compare-spread">
-                  <h3 class="card-title" id="history-compare-spread">Probe spread</h3>
+                  <h3 class="card-title" id="history-compare-spread">{t.compare.spreadTitle}</h3>
                   <p class="card-subtitle mb-4">
-                    Hourly gap between the warmest and coldest probe in this window.
+                    {t.compare.spreadSubtitle}
                   </p>
-                  <ProbeSpreadChart client:visible points={probeSpreadSeries} />
+                  <ProbeSpreadChart
+                    client:visible
+                    points={probeSpreadSeries}
+                    text={chartText.probeSpread}
+                    locale={chartLocale}
+                  />
                 </section>
               )}
 
               {chartData.points.length >= 2 && (
                 <section class="history-compare-section" aria-labelledby="history-compare-freeze">
-                  <h3 class="card-title" id="history-compare-freeze">Season freeze exposure</h3>
+                  <h3 class="card-title" id="history-compare-freeze">{t.compare.freezeTitle}</h3>
                   <p class="card-subtitle mb-4">
-                    Estimated time at or below {alertSettings.freezeThresholdF}°F in the selected chart window.
+                    {fmt(t.compare.freezeSubtitle, { temp: freezeTemp })}
                   </p>
                   <div class="stat-grid">
                     <article class="stat-item">
-                      <span class="stat-label">Hours ≤ {alertSettings.freezeThresholdF}°F</span>
-                      <p class="stat-value">{freezeHours.hoursBelow34.toFixed(1)}</p>
+                      <span class="stat-label">{fmt(t.compare.hoursAtOrBelow, { temp: freezeTemp })}</span>
+                      <p class="stat-value">{num(freezeHours.hoursBelow34, 1)}</p>
                     </article>
                     <article class="stat-item">
-                      <span class="stat-label">Readings ≤ {alertSettings.freezeThresholdF}°F</span>
-                      <p class="stat-value">{freezeHours.readingsBelow34}</p>
+                      <span class="stat-label">{fmt(t.compare.readingsAtOrBelow, { temp: freezeTemp })}</span>
+                      <p class="stat-value">{plain(freezeHours.readingsBelow34)}</p>
                     </article>
                     <article class="stat-item">
-                      <span class="stat-label">Coldest</span>
+                      <span class="stat-label">{t.compare.coldest}</span>
                       <p class="stat-value">
-                        {freezeHours.coldestF != null ? `${freezeHours.coldestF.toFixed(1)}°F` : "—"}
+                        {freezeHours.coldestF != null ? `${num(freezeHours.coldestF, 1)}°F` : "—"}
                       </p>
                     </article>
                   </div>
@@ -598,6 +635,8 @@ const historyUpgradeFeature =
                         client:visible
                         days={dailyFreezeHours}
                         thresholdF={alertSettings.freezeThresholdF}
+                        text={chartText.freezeHours}
+                        locale={chartLocale}
                       />
                     </div>
                   )}
@@ -612,38 +651,38 @@ const historyUpgradeFeature =
     {historyTab === "exports" && (
       <>
         <section class="card" id="season-summary">
-          <h2 class="card-title">Window summary</h2>
+          <h2 class="card-title">{t.exports.summaryTitle}</h2>
           <p class="card-subtitle">
-            Snapshot for {claimsFrom} → {claimsTo} (same window as claims pack below). Open the Chart tab to explore, or download evidence from Exports.
+            {fmt(t.exports.summarySubtitle, { from: claimsFrom, to: claimsTo })}
           </p>
           {chartData.points.length < 2 ? (
             <p class="mb-0 text-sm text-[var(--color-text-muted)]">
-              Not enough readings in this window for a summary yet.
+              {t.exports.notEnough}
             </p>
           ) : (
             <>
               <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 mb-4">
                 <div>
-                  <p class="m-0 text-xs text-[var(--color-text-muted)]">Coldest</p>
+                  <p class="m-0 text-xs text-[var(--color-text-muted)]">{t.exports.coldest}</p>
                   <p class="m-0 text-lg font-semibold">
-                    {freezeHours.coldestF != null ? `${freezeHours.coldestF.toFixed(1)}°F` : "—"}
+                    {freezeHours.coldestF != null ? `${num(freezeHours.coldestF, 1)}°F` : "—"}
                   </p>
                 </div>
                 <div>
                   <p class="m-0 text-xs text-[var(--color-text-muted)]">
-                    Hours ≤ {alertSettings.freezeThresholdF}°F
+                    {fmt(t.exports.hoursAtOrBelow, { temp: freezeTemp })}
                   </p>
                   <p class="m-0 text-lg font-semibold">
-                    {freezeHours.hoursBelow34.toFixed(1)} h
+                    {fmt(t.exports.hoursValue, { hours: num(freezeHours.hoursBelow34, 1) })}
                   </p>
                 </div>
                 <div>
-                  <p class="m-0 text-xs text-[var(--color-text-muted)]">Readings</p>
-                  <p class="m-0 text-lg font-semibold">{freezeHours.totalReadings}</p>
+                  <p class="m-0 text-xs text-[var(--color-text-muted)]">{t.exports.readings}</p>
+                  <p class="m-0 text-lg font-semibold">{plain(freezeHours.totalReadings)}</p>
                 </div>
                 <div>
-                  <p class="m-0 text-xs text-[var(--color-text-muted)]">Critical alert ticks</p>
-                  <p class="m-0 text-lg font-semibold">{chartAlertMarkers.length}</p>
+                  <p class="m-0 text-xs text-[var(--color-text-muted)]">{t.exports.criticalTicks}</p>
+                  <p class="m-0 text-lg font-semibold">{plain(chartAlertMarkers.length)}</p>
                 </div>
               </div>
               <p class="mb-3 text-sm">
@@ -651,12 +690,12 @@ const historyUpgradeFeature =
                   class="text-link"
                   href={`/dashboard/history?from=${claimsFrom}&to=${claimsTo}&tab=chart`}
                 >
-                  Open this window on the Chart tab
+                  {t.exports.openOnChart}
                 </a>
                 {entitlements.canUseClaimsPack && (
                   <>
                     {" · "}
-                    <a class="text-link" href={claimsPackHref}>Download claims pack (PDF)</a>
+                    <a class="text-link" href={claimsPackHref}>{t.exports.downloadClaimsPdf}</a>
                   </>
                 )}
               </p>
@@ -674,61 +713,57 @@ const historyUpgradeFeature =
         </section>
 
         <section class="card" id="claims-pack">
-      <h2 class="card-title">Claims / insurance pack</h2>
-      <p class="card-subtitle">
-        Printable evidence summary for a date range: freeze exposure, devices, and alert timeline, with links to matching readings and alert-event CSVs.
-        {" "}
-        <a class="text-link" href="/claims-pack">Learn more about the claims pack</a>.
-      </p>
-      {claimsEmailed && <p class="alert-success mt-0 mb-4">Claims pack emailed.</p>}
+      <h2 class="card-title">{t.exports.claimsTitle}</h2>
+      <p class="card-subtitle" set:html={t.exports.claimsIntroHtml} />
+      {claimsEmailed && <p class="alert-success mt-0 mb-4">{t.exports.claimsEmailed}</p>}
       {claimsErrorMessage && (
         <p class="alert-warning mt-0 mb-4" role="alert">{claimsErrorMessage}</p>
       )}
       {entitlements.canUseClaimsPack ? (
         <>
           <p class="mb-3 text-sm text-[var(--color-text-muted)]">
-            Uses the History filters above when set ({claimsFrom} → {claimsTo}). Downloads a PDF summary; companion CSVs cover the same window.
+            {fmt(t.exports.claimsUsesFilters, { from: claimsFrom, to: claimsTo })}
           </p>
-          <a class="btn-primary" href={claimsPackHref}>Download claims pack (PDF)</a>
-          <a class="btn-ghost text-sm ml-2" href={`${claimsPackHref}?format=html`}>HTML version</a>
+          <a class="btn-primary" href={claimsPackHref}>{t.exports.downloadClaimsPdf}</a>
+          <a class="btn-ghost text-sm ml-2" href={`${claimsPackHref}?format=html`}>{t.exports.htmlVersion}</a>
 
           <form action="/api/claims/email" method="post" class="mt-4 flex flex-wrap items-end gap-3">
             <input type="hidden" name="from" value={claimsFrom} />
             <input type="hidden" name="to" value={claimsTo} />
             <input type="hidden" name="redirect" value="/dashboard/history" />
             <div class="form-field mb-0">
-              <label class="form-label" for="adjuster_email">Email to adjuster</label>
+              <label class="form-label" for="adjuster_email">{t.exports.adjusterEmail}</label>
               <input
                 class="form-input"
                 type="email"
                 id="adjuster_email"
                 name="adjuster_email"
-                placeholder="adjuster@insurer.com"
+                placeholder={t.exports.adjusterPlaceholder}
                 required
               />
             </div>
-            <button type="submit" class="btn-secondary">Send claims pack</button>
+            <button type="submit" class="btn-secondary">{t.exports.sendClaims}</button>
           </form>
         </>
       ) : (
         <p class="mb-0 text-sm text-[var(--color-text-muted)]">
-          Upgrade to Pro to download the claims pack from this tab.
+          {t.exports.claimsUpgrade}
         </p>
       )}
     </section>
 
     <section class="card" id="monitoring-certificate">
-      <h2 class="card-title">Monitoring certificate</h2>
+      <h2 class="card-title">{t.exports.certificateTitle}</h2>
       <p class="card-subtitle mb-3">
-        One-page PDF summary of your alert configuration and monitored devices: useful for insurers, landlords, or property managers.
+        {t.exports.certificateSubtitle}
       </p>
-      <a class="btn-secondary" href="/api/monitoring/certificate">Download monitoring certificate (PDF)</a>
-      <a class="btn-ghost text-sm ml-2" href="/api/monitoring/certificate?format=html">HTML version</a>
+      <a class="btn-secondary" href="/api/monitoring/certificate">{t.exports.certificateDownload}</a>
+      <a class="btn-ghost text-sm ml-2" href="/api/monitoring/certificate?format=html">{t.exports.htmlVersion}</a>
     </section>
 
     {insights.length > 0 && (
       <section class="card">
-        <h2 class="card-title">Seasonal insights ({Math.min(30, historyDays)} days)</h2>
+        <h2 class="card-title">{plural(t.exports.seasonalTitle, Math.min(30, historyDays), locale)}</h2>
         <ul class="space-y-2 mb-0">
           {insights.map((insight) => (
             <li>
@@ -752,7 +787,7 @@ const historyUpgradeFeature =
     />
 
     <p class="mb-0 text-sm">
-      <a class="text-link" href="/api/ical/outlook">Subscribe to freeze outlook (iCal)</a>
+      <a class="text-link" href="/api/ical/outlook">{t.exports.icalLink}</a>
     </p>
       </>
     )}

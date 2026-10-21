@@ -21,6 +21,22 @@ import { householdRoleLabel } from "../../lib/householdRoleLabel";
 import { uniqueWeatherCityPresets } from "../../lib/weatherCities";
 import DashboardCard from "../../components/dashboard/DashboardCard.astro";
 import UpgradeNudge from "../../components/UpgradeNudge.astro";
+import I18nJson from "../../components/I18nJson.astro";
+import { fmt, formatDateTime, formatNumber, getLocale, plural } from "../../i18n";
+import { householdMessages } from "../../i18n/messages/app/household";
+
+const locale = getLocale(Astro);
+const t = householdMessages(locale);
+// Same fields as Date#toLocaleString(), so English output is unchanged.
+const DATE_TIME: Intl.DateTimeFormatOptions = {
+  year: "numeric",
+  month: "numeric",
+  day: "numeric",
+  hour: "numeric",
+  minute: "numeric",
+  second: "numeric",
+};
+const formatWhen = (value: string) => formatDateTime(value, locale, DATE_TIME);
 
 const shell = Astro.locals.dashboardShell ?? null;
 const { session, user } = shell
@@ -68,24 +84,19 @@ const membersWithEmail = await Promise.all(
 );
 
 const errorCode = Astro.url.searchParams.get("error");
-const errorMessage = getHouseholdErrorMessage(errorCode);
-const notice = Astro.url.searchParams.get("invited")
-  ? "Invite email sent."
-  : Astro.url.searchParams.get("removed")
-    ? "Member removed."
-    : Astro.url.searchParams.get("saved")
-      ? "Household updated."
-      : Astro.url.searchParams.get("switched")
-        ? "Active household switched."
-      : Astro.url.searchParams.get("joined")
-        ? "You joined the household."
-      : Astro.url.searchParams.get("invite_revoked")
-        ? "Invite cancelled."
-      : Astro.url.searchParams.get("left")
-        ? "You left the household."
-      : Astro.url.searchParams.get("property_created")
-        ? "New property created and set active."
-      : null;
+const errorMessage = getHouseholdErrorMessage(errorCode, locale);
+const NOTICE_PARAMS = [
+  ["invited", t.notices.invited],
+  ["removed", t.notices.removed],
+  ["saved", t.notices.saved],
+  ["switched", t.notices.switched],
+  ["joined", t.notices.joined],
+  ["invite_revoked", t.notices.inviteRevoked],
+  ["left", t.notices.left],
+  ["property_created", t.notices.propertyCreated],
+] as const;
+const notice =
+  NOTICE_PARAMS.find(([param]) => Astro.url.searchParams.get(param))?.[1] ?? null;
 
 const isOwner = Boolean(ownedId && ownedId === manageId);
 const manageRole = manageId
@@ -132,9 +143,10 @@ const digestSaved = Astro.url.searchParams.get("digest_saved");
 const digestError = Astro.url.searchParams.get("digest_error");
 ---
 <DashboardLayout
-  title="Household"
-  subtitle="Share devices and history. Invite by email — recipients don’t need an account yet."
+  title={t.title}
+  subtitle={t.subtitle}
 >
+  <I18nJson id="household-i18n" data={t.client} />
   <div class="space-y-6">
     {/* People first (members, invites); property settings after; activity last. */}
     {(notice || errorMessage || digestSaved || digestError) && (
@@ -142,18 +154,18 @@ const digestError = Astro.url.searchParams.get("digest_error");
         {notice && <p class="alert-success mt-0 mb-0">{notice}</p>}
         {errorMessage && <p class="alert-warning mt-0 mb-0" role="alert">{errorMessage}</p>}
         {digestSaved && (
-          <p class="alert-success mt-0 mb-0" role="status">Digest preference saved.</p>
+          <p class="alert-success mt-0 mb-0" role="status">{t.notices.digestSaved}</p>
         )}
         {digestError && (
-          <p class="alert-warning mt-0 mb-0" role="alert">Could not save digest preference.</p>
+          <p class="alert-warning mt-0 mb-0" role="alert">{t.notices.digestError}</p>
         )}
       </div>
     )}
 
     {householdsResult.households.length > 1 && (
       <DashboardCard>
-        <h2 class="card-title">Active household</h2>
-        <p class="card-subtitle">Choose which household’s devices and history you see.</p>
+        <h2 class="card-title">{t.active.heading}</h2>
+        <p class="card-subtitle">{t.active.subtitle}</p>
         <ul class="space-y-3">
           {householdsResult.households.map((h) => (
             <li class="flex items-center justify-between gap-4">
@@ -161,10 +173,10 @@ const digestError = Astro.url.searchParams.get("digest_error");
                 <strong>{h.name}</strong>
                 <span class="text-sm text-[var(--color-text-muted)]">
                   {" · "}
-                  {householdRoleLabel(h.role)}
+                  {householdRoleLabel(h.role, locale)}
                 </span>
                 {h.household_id === active.householdId && (
-                  <span class="feed-health-ok ml-2">Active</span>
+                  <span class="feed-health-ok ml-2">{t.active.badge}</span>
                 )}
               </div>
               {h.household_id !== active.householdId && (
@@ -172,7 +184,7 @@ const digestError = Astro.url.searchParams.get("digest_error");
                   <input type="hidden" name="action" value="switch" />
                   <input type="hidden" name="household_id" value={h.household_id} />
                   <input type="hidden" name="redirect" value="/dashboard/household" />
-                  <button class="btn-secondary" type="submit">Switch</button>
+                  <button class="btn-secondary" type="submit">{t.active.switch}</button>
                 </form>
               )}
             </li>
@@ -182,7 +194,7 @@ const digestError = Astro.url.searchParams.get("digest_error");
     )}
 
     <DashboardCard>
-      <h2 class="card-title">Members</h2>
+      <h2 class="card-title">{t.members.heading}</h2>
       <ul class="space-y-3">
         {membersWithEmail.map((member) => (
           <li class="flex items-center justify-between gap-4">
@@ -190,19 +202,19 @@ const digestError = Astro.url.searchParams.get("digest_error");
               <strong>{member.email}</strong>
               <span class="text-sm text-[var(--color-text-muted)]">
                 {" · "}
-                {householdRoleLabel(member.role)}
+                {householdRoleLabel(member.role, locale)}
               </span>
             </div>
             {member.role !== "owner" && ownedId === manageId && (
               <form
                 action="/api/household"
                 method="post"
-                onsubmit="return confirm('Remove this member from the household?');"
+                onsubmit={`return confirm(${JSON.stringify(t.members.confirmRemove)});`}
               >
                 <input type="hidden" name="action" value="remove" />
                 <input type="hidden" name="user_id" value={member.user_id} />
                 <input type="hidden" name="redirect" value="/dashboard/household" />
-                <button class="btn-ghost" type="submit">Remove</button>
+                <button class="btn-ghost" type="submit">{t.members.remove}</button>
               </form>
             )}
           </li>
@@ -213,15 +225,15 @@ const digestError = Astro.url.searchParams.get("digest_error");
           action="/api/household"
           method="post"
           class="mt-6 border-t border-[var(--color-border)] pt-4"
-          onsubmit="return confirm('Leave this household? You will lose access to its shared devices and history.');"
+          onsubmit={`return confirm(${JSON.stringify(t.members.confirmLeave)});`}
         >
           <input type="hidden" name="action" value="leave" />
           <input type="hidden" name="household_id" value={active.householdId} />
           <input type="hidden" name="redirect" value="/dashboard/household" />
           <p class="card-subtitle mb-3">
-            You are a member of this household. Leaving removes your access to its devices and history.
+            {t.members.leaveBody}
           </p>
-          <button class="btn-ghost" type="submit">Leave household</button>
+          <button class="btn-ghost" type="submit">{t.members.leave}</button>
         </form>
       )}
     </DashboardCard>
@@ -231,48 +243,47 @@ const digestError = Astro.url.searchParams.get("digest_error");
         <form method="POST" id="household-invite-form" data-invite-form>
           <input type="hidden" name="action" value="invite" />
           <input type="hidden" name="redirect" value="/dashboard/household" />
-          <h2 class="card-title">Invite by email</h2>
+          <h2 class="card-title">{t.invite.heading}</h2>
           <p class="card-subtitle mb-4">
-            Invites go to your owned household{householdRow.data?.name ? ` (${householdRow.data.name})` : ""}.
+            {householdRow.data?.name
+              ? fmt(t.invite.goesToNamed, { name: householdRow.data.name })
+              : t.invite.goesTo}
           </p>
           <p class="alert-success mt-0 mb-4 hidden" id="invite-status" role="status"></p>
           <p class="alert-warning mt-0 mb-4 hidden" id="invite-error" role="alert"></p>
           <div class="form-field">
-            <label class="form-label" for="email">Invitee email</label>
+            <label class="form-label" for="email">{t.invite.emailLabel}</label>
             <input class="form-input" type="email" id="email" name="email" required />
           </div>
           <div class="form-field">
-            <label class="form-label" for="invite_role">Role</label>
+            <label class="form-label" for="invite_role">{t.invite.roleLabel}</label>
             <select class="form-input" id="invite_role" name="role">
-              <option value="member">Editor (can edit devices & alerts)</option>
+              <option value="member">{t.invite.roleMember}</option>
               {canInvitePropertyManager ? (
-                <option value="property_manager">Property manager (devices & alerts only)</option>
+                <option value="property_manager">{t.invite.rolePropertyManager}</option>
               ) : null}
-              <option value="viewer">Viewer (read-only dashboard)</option>
-              <option value="alert_only">Alert only (notifications, read-only)</option>
+              <option value="viewer">{t.invite.roleViewer}</option>
+              <option value="alert_only">{t.invite.roleAlertOnly}</option>
             </select>
             {!canInvitePropertyManager && (
-              <p class="form-hint mb-0 mt-2">
-                <a class="text-link" href="/pricing#portfolio">Portfolio</a>
-                {" "}adds property-manager logins for on-site staff (no billing access).
-              </p>
+              <p class="form-hint mb-0 mt-2" set:html={t.invite.portfolioHintHtml} />
             )}
           </div>
-          <button class="btn-primary" type="submit" id="invite-submit">Send invite link</button>
+          <button class="btn-primary" type="submit" id="invite-submit">{t.invite.submit}</button>
         </form>
       </DashboardCard>
     ) : (
       <DashboardCard>
-        <h2 class="card-title">Invites</h2>
+        <h2 class="card-title">{t.invite.invitesHeading}</h2>
         <p class="mb-0 text-sm text-[var(--color-text-muted)]">
-          Only the household owner can send invites.
+          {t.invite.ownerOnly}
         </p>
       </DashboardCard>
     )}
 
     {canManage && (invitesResult.invites ?? []).length > 0 && (
       <DashboardCard>
-        <h2 class="card-title">Pending invites</h2>
+        <h2 class="card-title">{t.pending.heading}</h2>
         <ul class="space-y-3">
           {invitesResult.invites.map((invite) => {
             const href = `${siteOrigin}/invite/${invite.token}`;
@@ -281,26 +292,26 @@ const digestError = Astro.url.searchParams.get("digest_error");
                 <div>
                   <strong>{invite.email}</strong>
                   <p class="m-0 text-sm break-all text-[var(--color-text-muted)]">{href}</p>
-                  <p class="m-0 text-sm">Expires {new Date(invite.expires_at).toLocaleString()}</p>
+                  <p class="m-0 text-sm">{fmt(t.pending.expires, { time: formatWhen(invite.expires_at) })}</p>
                 </div>
                 <div class="flex flex-wrap gap-2">
                   <button
                     type="button"
                     class="btn-secondary shrink-0"
                     data-copy={href}
-                    data-copy-label="Copy link"
+                    data-copy-label={t.pending.copyLink}
                   >
-                    Copy link
+                    {t.pending.copyLink}
                   </button>
                   <form
                     action="/api/household"
                     method="post"
-                    onsubmit="return confirm('Cancel this invite?');"
+                    onsubmit={`return confirm(${JSON.stringify(t.pending.confirmCancel)});`}
                   >
                     <input type="hidden" name="action" value="revoke_invite" />
                     <input type="hidden" name="invite_id" value={invite.id} />
                     <input type="hidden" name="redirect" value="/dashboard/household" />
-                    <button class="btn-ghost" type="submit">Cancel</button>
+                    <button class="btn-ghost" type="submit">{t.pending.cancel}</button>
                   </form>
                 </div>
               </li>
@@ -315,11 +326,11 @@ const digestError = Astro.url.searchParams.get("digest_error");
         <form method="POST" data-rename-household-form>
           <input type="hidden" name="action" value="rename" />
           <input type="hidden" name="redirect" value="/dashboard/household" />
-          <h2 class="card-title">Household name</h2>
+          <h2 class="card-title">{t.rename.heading}</h2>
           <p class="alert-success mt-0 mb-3 hidden" data-form-status role="status"></p>
           <p class="alert-warning mt-0 mb-3 hidden" data-form-error role="alert"></p>
           <div class="form-field">
-            <label class="form-label" for="household-name">Name</label>
+            <label class="form-label" for="household-name">{t.rename.label}</label>
             <input
               class="form-input"
               id="household-name"
@@ -328,25 +339,25 @@ const digestError = Astro.url.searchParams.get("digest_error");
               required
             />
           </div>
-          <button class="btn-secondary" type="submit" data-form-submit>Save name</button>
+          <button class="btn-secondary" type="submit" data-form-submit>{t.rename.submit}</button>
         </form>
       </DashboardCard>
     )}
 
     {active.householdId && (
       <DashboardCard>
-        <h2 class="card-title">Weekly digest</h2>
+        <h2 class="card-title">{t.digest.heading}</h2>
         <p class="card-subtitle mb-4">
-          When the property owner has digests enabled, opt in to receive the same weekly probe summary.
+          {t.digest.subtitle}
         </p>
         <form action="/api/user/digest-opt-in" method="post" class="flex flex-wrap items-center gap-3">
           <input type="hidden" name="redirect" value="/dashboard/household" />
           <input type="hidden" name="digest_opt_in" value="0" />
           <label class="checkbox-row mb-0">
             <input type="checkbox" name="digest_opt_in" value="1" checked={digestOptIn} />
-            <span>Email me the weekly household digest</span>
+            <span>{t.digest.checkbox}</span>
           </label>
-          <button type="submit" class="btn-secondary btn-sm">Save</button>
+          <button type="submit" class="btn-secondary btn-sm">{t.digest.save}</button>
         </form>
       </DashboardCard>
     )}
@@ -376,10 +387,9 @@ const digestError = Astro.url.searchParams.get("digest_error");
           id="freeze_map_label"
           value={householdRow.data?.freeze_map_label ?? ""}
         />
-        <h2 class="card-title">Public freeze-risk map</h2>
+        <h2 class="card-title">{t.freezeMap.heading}</h2>
         <p class="card-subtitle mb-4">
-          Opt in to contribute anonymized indoor temperature averages for your city.
-          No household, device, or address is shown on the public map.
+          {t.freezeMap.subtitle}
         </p>
         <label class="checkbox-row mb-3">
           <input
@@ -388,12 +398,12 @@ const digestError = Astro.url.searchParams.get("digest_error");
             value="true"
             checked={householdRow.data?.freeze_map_opt_in === true}
           />
-          <span>Include this household in city aggregates</span>
+          <span>{t.freezeMap.optIn}</span>
         </label>
         <div class="form-field">
-          <label class="form-label" for="freeze_map_city_id">Preset city</label>
+          <label class="form-label" for="freeze_map_city_id">{t.freezeMap.presetLabel}</label>
           <select class="form-input" id="freeze_map_city_id" name="freeze_map_city_id">
-            <option value="">Select a preset (optional)</option>
+            <option value="">{t.freezeMap.presetPlaceholder}</option>
             {uniqueWeatherCityPresets().map((city) => (
               <option
                 value={city.id}
@@ -405,25 +415,23 @@ const digestError = Astro.url.searchParams.get("digest_error");
           </select>
         </div>
         <div class="form-field">
-          <label class="form-label" for="city-search">Or search any city</label>
+          <label class="form-label" for="city-search">{t.freezeMap.searchLabel}</label>
           <input
             class="form-input"
             type="search"
             id="city-search"
-            placeholder="e.g. Asheville, NC"
+            placeholder={t.freezeMap.searchPlaceholder}
             autocomplete="off"
           />
           <p class="form-hint mb-2" id="city-search-selected">
             {householdRow.data?.freeze_map_label
-              ? `Selected: ${householdRow.data.freeze_map_label}`
-              : "Search and pick a result if your city is not in the preset list."}
+              ? fmt(t.freezeMap.selected, { label: householdRow.data.freeze_map_label })
+              : t.freezeMap.searchHint}
           </p>
           <ul id="city-search-results" class="space-y-2 text-sm"></ul>
         </div>
-        <button class="btn-secondary" type="submit" data-form-submit>Save freeze map settings</button>
-        <p class="form-hint mt-2 mb-0">
-          View the public list at <a class="text-link" href="/freeze-map">/freeze-map</a>.
-        </p>
+        <button class="btn-secondary" type="submit" data-form-submit>{t.freezeMap.submit}</button>
+        <p class="form-hint mt-2 mb-0" set:html={t.freezeMap.publicListHtml} />
       </form>
       <script is:inline>
         (() => {
@@ -435,6 +443,13 @@ const digestError = Astro.url.searchParams.get("digest_error");
           const preset = document.getElementById("freeze_map_city_id");
           const selected = document.getElementById("city-search-selected");
           if (!(input instanceof HTMLInputElement) || !results) return;
+          let text = {};
+          try {
+            text = JSON.parse(document.getElementById("household-i18n")?.textContent || "{}");
+          } catch {}
+          const say = (key, fallback) => (typeof text[key] === "string" ? text[key] : fallback);
+          const selectedText = (label) =>
+            say("selected", "Selected: {label}").replace("{label}", () => label);
           let timer = null;
 
           preset?.addEventListener("change", () => {
@@ -442,7 +457,7 @@ const digestError = Astro.url.searchParams.get("digest_error");
               if (latEl) latEl.value = "";
               if (lonEl) lonEl.value = "";
               if (labelEl) labelEl.value = preset.options[preset.selectedIndex]?.text || "";
-              if (selected) selected.textContent = "Using preset city.";
+              if (selected) selected.textContent = say("usingPreset", "Using preset city.");
               results.innerHTML = "";
             }
           });
@@ -470,7 +485,7 @@ const digestError = Astro.url.searchParams.get("digest_error");
                     if (lonEl) lonEl.value = String(row.lon);
                     if (labelEl) labelEl.value = row.label;
                     if (preset) preset.value = "";
-                    if (selected) selected.textContent = "Selected: " + row.label;
+                    if (selected) selected.textContent = selectedText(row.label);
                     results.innerHTML = "";
                     input.value = row.label;
                   });
@@ -478,7 +493,10 @@ const digestError = Astro.url.searchParams.get("digest_error");
                   results.appendChild(li);
                 });
               } catch {
-                results.innerHTML = "<li>Search failed</li>";
+                results.innerHTML = "";
+                const li = document.createElement("li");
+                li.textContent = say("searchFailed", "Search failed");
+                results.appendChild(li);
               }
             }, 300);
           });
@@ -492,23 +510,23 @@ const digestError = Astro.url.searchParams.get("digest_error");
     <form action="/api/household" method="post">
       <input type="hidden" name="action" value="create_property" />
       <input type="hidden" name="redirect" value="/dashboard/household" />
-      <h2 class="card-title">Add another property</h2>
+      <h2 class="card-title">{t.property.heading}</h2>
       <p class="card-subtitle mb-4">
-        Create a second household (vacation home, rental, etc.) and switch between them from the dashboard.
+        {t.property.subtitle}
       </p>
       <div class="form-field">
-        <label class="form-label" for="property-name">Property name</label>
-        <input class="form-input" id="property-name" name="name" placeholder="Lake house" required />
+        <label class="form-label" for="property-name">{t.property.nameLabel}</label>
+        <input class="form-input" id="property-name" name="name" placeholder={t.property.namePlaceholder} required />
       </div>
-      <button class="btn-secondary mt-2" type="submit">Create property</button>
+      <button class="btn-secondary mt-2" type="submit">{t.property.submit}</button>
     </form>
     ) : (
       <>
-        <h2 class="card-title">Add another property</h2>
+        <h2 class="card-title">{t.property.heading}</h2>
         <p class="card-subtitle mb-4">
-          Your plan allows {entitlements.maxOwnedHouseholds} owned
-          {entitlements.maxOwnedHouseholds === 1 ? " household" : " households"}
-          ({ownedCount} in use). Upgrade to Pro for multiple properties.
+          {plural(t.property.limit, entitlements.maxOwnedHouseholds, locale, {
+            inUse: formatNumber(ownedCount, locale),
+          })}
         </p>
         <UpgradeNudge feature="multi_property" tier={entitlements.tier} />
       </>
@@ -517,23 +535,23 @@ const digestError = Astro.url.searchParams.get("digest_error");
 
     {canManage && (
       <DashboardCard>
-        <h2 class="card-title">Recent activity</h2>
+        <h2 class="card-title">{t.activity.heading}</h2>
         <p class="card-subtitle mb-4">
-          Invites, alert changes, device transfers, and ingest key reveals for this household.
+          {t.activity.subtitle}
         </p>
         {householdActivity.length === 0 ? (
-          <p class="text-sm text-[var(--color-text-muted)]">No activity yet.</p>
+          <p class="text-sm text-[var(--color-text-muted)]">{t.activity.empty}</p>
         ) : (
           <ul class="space-y-2 text-sm">
             {activityGroups.map(({ row, count, oldest }) => (
               <li>
-                <strong>{formatHouseholdActivityAction(row.action)}</strong>
+                <strong>{formatHouseholdActivityAction(row.action, locale)}</strong>
                 {row.detail ? `: ${row.detail}` : ""}
-                {count > 1 && <span> ×{count}</span>}
+                {count > 1 && <span> {fmt(t.activity.repeat, { count: formatNumber(count, locale) })}</span>}
                 <span class="text-[var(--color-text-muted)]">
                   {" "}
-                  · {new Date(row.created_at).toLocaleString()}
-                  {count > 1 && ` (back to ${new Date(oldest).toLocaleString()})`}
+                  · {formatWhen(row.created_at)}
+                  {count > 1 && ` ${fmt(t.activity.backTo, { time: formatWhen(oldest) })}`}
                 </span>
               </li>
             ))}
@@ -546,11 +564,14 @@ const digestError = Astro.url.searchParams.get("digest_error");
 
 <script>
   import { actions } from "astro:actions";
+  import { readI18nJson } from "../../i18n/client";
+  import en from "../../i18n/messages/app/household/en";
 
   const inviteForm = document.querySelector<HTMLFormElement>("[data-invite-form]");
   const inviteStatus = document.getElementById("invite-status");
   const inviteError = document.getElementById("invite-error");
   const inviteSubmit = document.getElementById("invite-submit");
+  const text = readI18nJson("household-i18n", en.client);
 
   inviteForm?.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -560,26 +581,26 @@ const digestError = Astro.url.searchParams.get("digest_error");
     inviteError?.classList.add("hidden");
     if (inviteSubmit instanceof HTMLButtonElement) {
       inviteSubmit.disabled = true;
-      inviteSubmit.textContent = "Sending…";
+      inviteSubmit.textContent = text.sending;
     }
 
     const { data, error } = await actions.inviteHouseholdMember(new FormData(inviteForm));
 
     if (inviteSubmit instanceof HTMLButtonElement) {
       inviteSubmit.disabled = false;
-      inviteSubmit.textContent = "Send invite link";
+      inviteSubmit.textContent = text.sendInvite;
     }
 
     if (error) {
       if (inviteError) {
-        inviteError.textContent = error.message || "Could not send invite.";
+        inviteError.textContent = error.message || text.inviteFailed;
         inviteError.classList.remove("hidden");
       }
       return;
     }
 
     if (inviteStatus) {
-      inviteStatus.textContent = data?.message ?? "Invite sent.";
+      inviteStatus.textContent = data?.message ?? text.inviteSent;
       inviteStatus.classList.remove("hidden");
     }
     inviteForm.reset();
@@ -603,7 +624,7 @@ const digestError = Astro.url.searchParams.get("digest_error");
       errorEl?.classList.add("hidden");
       if (submitBtn) {
         submitBtn.disabled = true;
-        submitBtn.textContent = "Saving…";
+        submitBtn.textContent = text.saving;
       }
       const formData = new FormData(form);
       if (!formData.has("freeze_map_opt_in")) formData.set("freeze_map_opt_in", "");
@@ -614,13 +635,13 @@ const digestError = Astro.url.searchParams.get("digest_error");
       }
       if (error) {
         if (errorEl) {
-          errorEl.textContent = error.message || "Could not save.";
+          errorEl.textContent = error.message || text.saveFailed;
           errorEl.classList.remove("hidden");
         }
         return;
       }
       if (statusEl) {
-        statusEl.textContent = data?.message ?? "Saved.";
+        statusEl.textContent = data?.message ?? text.saved;
         statusEl.classList.remove("hidden");
       }
     });
@@ -629,11 +650,11 @@ const digestError = Astro.url.searchParams.get("digest_error");
   wireStatusForm(
     "[data-rename-household-form]",
     (formData) => actions.renameHousehold(formData),
-    "Save name",
+    text.saveName,
   );
   wireStatusForm(
     "[data-freeze-map-form]",
     (formData) => actions.updateFreezeMapSettings(formData),
-    "Save freeze map settings",
+    text.saveFreezeMap,
   );
 </script>

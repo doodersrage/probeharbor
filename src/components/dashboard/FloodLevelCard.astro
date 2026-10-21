@@ -2,38 +2,50 @@
 import DashboardCard from "./DashboardCard.astro";
 import type { FloodLevelOverview } from "../../lib/overviewExtras";
 import { formatRelativeAge } from "../../lib/relativeTime";
+import { fmt, formatDateTime, formatNumber, getLocale } from "../../i18n";
+import { overviewCardsMessages } from "../../i18n/messages/app/overviewCards";
 
 interface Props {
   overview: FloodLevelOverview;
 }
 
 const { overview } = Astro.props;
+const locale = getLocale(Astro);
+const t = overviewCardsMessages(locale).floodCard;
+const one = (value: number) =>
+  formatNumber(value, locale, { minimumFractionDigits: 1, maximumFractionDigits: 1, useGrouping: false });
+/** Same fields as `Date#toLocaleString()`, in the page language. */
+const when = (iso: string) =>
+  formatDateTime(iso, locale, {
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    second: "2-digit",
+  });
 const hasWet =
   overview.floodOpen.length > 0 || overview.recentFlood.length > 0;
 const hasLevels = overview.levels.length > 0;
 if (!hasWet && !hasLevels) return null;
 ---
 <DashboardCard id="flood-level">
-  <h2 class="card-title">Flood &amp; level</h2>
-  <p class="card-subtitle mb-4">
-    Wet contacts auto-alert when flood sensors report wet (bypasses snooze/vacation).
-    Tank/sump levels need a <strong>Rules → level_above</strong> condition.
-  </p>
+  <h2 class="card-title">{t.title}</h2>
+  <p class="card-subtitle mb-4" set:html={t.subtitleHtml} />
 
   {hasWet ? (
     overview.floodOpen.length > 0 ? (
       <div class="alert-warning mb-3">
         {overview.floodOpen.map((row) => (
           <p class="m-0 mb-1">
-            <strong>{row.label}</strong> wet since{" "}
-            {new Date(row.since).toLocaleString()}
+            <strong>{row.label}</strong> {fmt(t.wetSince, { time: when(row.since) })}
           </p>
         ))}
       </div>
     ) : null
   ) : (
     <p class="text-sm text-[var(--color-text-muted)] mb-3">
-      No wet flood events right now.
+      {t.noWet}
     </p>
   )}
 
@@ -41,8 +53,7 @@ if (!hasWet && !hasLevels) return null;
     <ul class="space-y-2 mb-3">
       {overview.recentFlood.map((row) => (
         <li class="text-sm">
-          <strong>{row.label}</strong> wet event ·{" "}
-          {new Date(row.at).toLocaleString()}
+          <strong>{row.label}</strong> {fmt(t.wetEvent, { time: when(row.at) })}
         </li>
       ))}
     </ul>
@@ -51,18 +62,18 @@ if (!hasWet && !hasLevels) return null;
   {hasLevels && (
     <ul class="space-y-2 mb-0">
       {overview.levels.map((row) => {
-        const age = formatRelativeAge(row.at);
+        const age = formatRelativeAge(row.at, undefined, locale);
         return (
           <li class="text-sm flex flex-wrap justify-between gap-2">
             <span>
               <strong>{row.label}</strong>
               {" · "}
-              {row.value.toFixed(1)}
+              {one(row.value)}
               {row.risingPerHour != null && Math.abs(row.risingPerHour) >= 0.5 && (
                 <span class="text-[var(--color-text-muted)]">
                   {" "}
                   ({row.risingPerHour > 0 ? "+" : ""}
-                  {row.risingPerHour.toFixed(1)}/h)
+                  {one(row.risingPerHour)}/h)
                 </span>
               )}
             </span>

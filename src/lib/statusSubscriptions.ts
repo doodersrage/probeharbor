@@ -2,6 +2,9 @@ import { createServerClient } from "./supabase";
 import { sendEmail } from "./mailer";
 import { brandedEmailParts } from "./emailLayout";
 import { resolveSiteUrl } from "./schemaMarkup";
+import { ensureLocale } from "../i18n/catalog";
+import { isLocale, type Locale } from "../i18n/locales";
+import { statusEmailMessages } from "../i18n/messages/app/email/status";
 
 function randomToken(): string {
   const bytes = crypto.getRandomValues(new Uint8Array(24));
@@ -20,21 +23,22 @@ function unsubscribeUrl(token: string): string {
   return `${resolveSiteUrl(null)}/api/status/unsubscribe?token=${token}`;
 }
 
-async function sendConfirmEmail(email: string, token: string): Promise<void> {
-  const { text, html } = brandedEmailParts({
-    eyebrow: "Status updates",
-    title: "Confirm your subscription",
-    intro:
-      "Click below to start receiving an email whenever ProbeHarbor's system status changes.",
-    paragraphs: [
-      "If you didn't request this, you can ignore this message -- you won't be subscribed unless you confirm.",
-    ],
-    cta: { label: "Confirm subscription", url: confirmUrl(token) },
-    footerNote:
-      "You're receiving this because someone entered this address on the ProbeHarbor status page. Confirming subscribes you to status-change emails only.",
-  });
+async function sendConfirmEmail(email: string, token: string, locale: Locale = "en"): Promise<void> {
+  await ensureLocale(locale, ["app"]);
+  const t = statusEmailMessages(locale).confirm;
+  const { text, html } = brandedEmailParts(
+    {
+      eyebrow: t.eyebrow,
+      title: t.title,
+      intro: t.intro,
+      paragraphs: [t.body],
+      cta: { label: t.cta, url: confirmUrl(token) },
+      footerNote: t.footerNote,
+    },
+    locale,
+  );
 
-  await sendEmail(email, "Confirm your ProbeHarbor status subscription", text, {
+  await sendEmail(email, t.subject, text, {
     html,
   });
 }
@@ -48,6 +52,8 @@ async function sendConfirmEmail(email: string, token: string): Promise<void> {
  */
 export async function subscribeToStatusUpdates(
   rawEmail: string,
+  /** Language of the status page the visitor subscribed from (confirm email). */
+  locale: Locale = "en",
 ): Promise<{ ok: boolean; error?: string }> {
   const email = normalizeStatusEmail(rawEmail);
   if (!email || !email.includes("@")) {
@@ -94,7 +100,7 @@ export async function subscribeToStatusUpdates(
   }
 
   try {
-    await sendConfirmEmail(email, token);
+    await sendConfirmEmail(email, token, locale);
   } catch (error) {
     console.error("Failed to send status confirm email:", error);
     // The row exists either way; the confirm link still works if the user
@@ -146,12 +152,18 @@ export async function unsubscribeStatusSubscription(
   return { ok: true, message: "You've been unsubscribed from status updates." };
 }
 
-export type ConfirmedStatusSubscriber = { email: string; token: string };
+export type ConfirmedStatusSubscriber = {
+  email: string;
+  token: string;
+  /** Subscriber language when the table stores one; English otherwise. */
+  locale?: Locale;
+};
 
 export async function listConfirmedStatusSubscribers(): Promise<
   ConfirmedStatusSubscriber[]
 > {
   const supabase = createServerClient();
+  // No locale column yet: add "locale" here once status_subscriptions stores one.
   const { data, error } = await supabase
     .from("status_subscriptions")
     .select("email, token")
@@ -162,7 +174,11 @@ export async function listConfirmedStatusSubscribers(): Promise<
     return [];
   }
 
-  return (data ?? []) as ConfirmedStatusSubscriber[];
+  return ((data ?? []) as Array<{ email: string; token: string; locale?: unknown }>).map((row) => ({
+    email: row.email,
+    token: row.token,
+    ...(isLocale(row.locale) ? { locale: row.locale } : {}),
+  }));
 }
 
 export { unsubscribeUrl as buildStatusUnsubscribeUrl };

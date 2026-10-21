@@ -17,6 +17,8 @@ import {
   type MonthlyReportData,
 } from "./monthlyReportHtml";
 import { buildUnsubscribeUrl, unsubscribeHeaders } from "./emailUnsubscribe";
+import { getUserLocale } from "../i18n/userLocale";
+import { formatEmailDate } from "./emailLayout";
 
 export function shouldSendMonthlyReport(now = new Date()): boolean {
   return now.getUTCDate() === 1 && now.getUTCHours() === 8;
@@ -97,6 +99,7 @@ async function sendMonthlyReportForUser(userId: string): Promise<boolean> {
   if (!email || !authUser) return false;
 
   const preferences = await getUserPreferences(authUser);
+  const locale = getUserLocale(authUser);
   const { points } = await fetchGarageTempChartData(userId, 30);
   const nights = await fetchNightsAtRisk({
     cityId: preferences.weatherCityId,
@@ -111,11 +114,15 @@ async function sendMonthlyReportForUser(userId: string): Promise<boolean> {
     ? temps.reduce((a, b) => a + b, 0) / temps.length
     : null;
 
-  const monthLabel = new Date().toLocaleString("en-US", {
-    month: "long",
-    year: "numeric",
-    timeZone: "UTC",
-  });
+  const monthLabel = formatEmailDate(
+    new Date(),
+    {
+      month: "long",
+      year: "numeric",
+      timeZone: "UTC",
+    },
+    locale,
+  );
 
   const siteUrl = resolveSiteUrl(null);
   const reportData: MonthlyReportData = {
@@ -132,14 +139,14 @@ async function sendMonthlyReportForUser(userId: string): Promise<boolean> {
     freezeHours: computeFreezeHours(points, settings.freezeThresholdF),
     probes: summarizeProbesForReport(points),
     alertsUrl: `${siteUrl}/dashboard/alerts`,
-    unsubscribeUrl: await buildUnsubscribeUrl(siteUrl, userId, "monthly_report"),
+    unsubscribeUrl: await buildUnsubscribeUrl(siteUrl, userId, "monthly_report", locale),
     historyUrl: buildHistoryChartUrl(siteUrl, trailingHistoryWindowDays(30)),
   };
 
-  const subject = formatPeriodReportSubject(reportData);
-  const plainBody = buildMonthlyReportPlainText(reportData);
-  const htmlBody = buildMonthlyReportHtmlEmail(reportData);
-  const attachmentHtml = buildMonthlyReportHtmlDocument(reportData);
+  const subject = formatPeriodReportSubject(reportData, locale);
+  const plainBody = buildMonthlyReportPlainText(reportData, locale);
+  const htmlBody = buildMonthlyReportHtmlEmail(reportData, locale);
+  const attachmentHtml = buildMonthlyReportHtmlDocument(reportData, locale);
 
   await sendMonthlyReportEmail(
     email,

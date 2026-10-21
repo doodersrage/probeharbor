@@ -1,5 +1,8 @@
 ---
 import { formatRelativeAge } from "../../lib/relativeTime";
+import { getLocale } from "../../i18n";
+import { LOCALE_META } from "../../i18n/locales";
+import { shellMessages } from "../../i18n/messages/app/shell";
 
 interface Props {
   iso: string | null | undefined;
@@ -12,8 +15,19 @@ interface Props {
   quietWhenFresh?: boolean;
 }
 
-const { iso, emptyLabel = "Never", class: className, quietWhenFresh = false } = Astro.props;
-const age = formatRelativeAge(iso, emptyLabel);
+const locale = getLocale(Astro);
+const {
+  iso,
+  emptyLabel = shellMessages(locale).readingAge.never,
+  class: className,
+  quietWhenFresh = false,
+} = Astro.props;
+const age = formatRelativeAge(iso, emptyLabel, locale);
+const absoluteTitle = iso
+  ? locale === "en"
+    ? new Date(iso).toLocaleString()
+    : new Date(iso).toLocaleString(LOCALE_META[locale].intl)
+  : undefined;
 const tone =
   !iso
     ? "neutral"
@@ -32,7 +46,7 @@ const tone =
     `reading-age-badge--${tone}`,
     className,
   ]}
-  title={iso ? new Date(iso).toLocaleString() : undefined}
+  title={absoluteTitle}
   data-iso={iso || undefined}
   data-quiet-fresh={quietWhenFresh ? "" : undefined}
 >

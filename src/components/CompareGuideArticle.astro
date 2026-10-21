@@ -10,7 +10,7 @@ import {
   resolveSiteUrl,
 } from "../lib/schemaMarkup";
 import type { CompareGuide } from "../lib/compareGuides";
-import { getLocale } from "../i18n";
+import { fmt, getLocale } from "../i18n";
 import { compareGuideMessages } from "../i18n/messages/compareGuide";
 import { getLocalizedAnswersRelatedTo } from "../i18n/content/answers";
 import "../styles/about.css";
@@ -57,10 +57,10 @@ const schema = [
     {guide.photoId && <AboutCcFigure photoId={guide.photoId} />}
 
     <section class="card">
-      <h2 class="card-title">{t.versusTitle(guide.competitor)}</h2>
+      <h2 class="card-title">{fmt(t.versusTitle, { competitor: guide.competitor })}</h2>
       <div class="overflow-x-auto">
         <table class="plan-comparison-table">
-          <caption class="sr-only">{t.tableCaption(guide.headline)}</caption>
+          <caption class="sr-only">{fmt(t.tableCaption, { headline: guide.headline })}</caption>
           <thead>
             <tr>
               <th scope="col">{t.capability}</th>
@@ -93,7 +93,7 @@ const schema = [
           </ul>
         </div>
         <div>
-          <h3 class="text-base font-semibold mb-2">{t.chooseOther(guide.competitor)}</h3>
+          <h3 class="text-base font-semibold mb-2">{fmt(t.chooseOther, { competitor: guide.competitor })}</h3>
           <ul class="text-sm space-y-2 mb-0">
             {guide.whenOther.map((item) => (
               <li>{item}</li>
@@ -105,14 +105,14 @@ const schema = [
 
     <FaqSection
       faqs={guide.faqs}
-      lede={t.faqLede(guide.competitor)}
+      lede={fmt(t.faqLede, { competitor: guide.competitor })}
     />
 
     {guide.sources && (
       <section class="card">
         <h2 class="card-title">{t.sourcesTitle}</h2>
         <p class="card-subtitle mb-3">
-          {t.sourcesNote(guide.competitor, guide.sources.checkedOn)}
+          {fmt(t.sourcesNote, { competitor: guide.competitor, checkedOn: guide.sources.checkedOn })}
         </p>
         <ul class="text-sm space-y-1 mb-0">
           {guide.sources.links.map((link) => (
@@ -149,7 +149,7 @@ const schema = [
         )}
         {(guide.slug === "nest" || guide.slug === "ecobee") && (
           <a class="btn-secondary" href="/dashboard/devices?view=setup&tab=thermostat#thermostat-integration">
-            {t.connectThermostat(guide.competitor.replace(" Thermostat", ""))}
+            {fmt(t.connectThermostat, { brand: guide.competitor.replace(" Thermostat", "") })}
           </a>
         )}
         {guide.slug === "tempstick" && (

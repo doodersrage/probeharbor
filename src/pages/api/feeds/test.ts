@@ -4,12 +4,18 @@ import { discoverFeedProbes, formatProbeReading } from "../../../lib/feedDiscove
 import { isValidFeedUrl } from "../../../lib/tempFeedConfig";
 import { requireHouseholdEditor } from "../../../lib/householdAuth";
 import { checkFeedTestRateLimit } from "../../../lib/feedTestLimits";
+import { fmt, formatNumber, plural } from "../../../i18n";
+import { apiCommonMessages, apiLocale } from "../../../i18n/messages/app/api/common";
+import { apiDevicesMessages } from "../../../i18n/messages/app/api/devices";
 
-export const POST: APIRoute = async ({ request, cookies, clientAddress }) => {
+export const POST: APIRoute = async ({ request, cookies, clientAddress, locals }) => {
+  const locale = apiLocale({ locals });
+  const tc = apiCommonMessages(locale);
+  const t = apiDevicesMessages(locale).feedTest;
   const { session, user } = await getAuthFromCookies(cookies);
 
   if (!session || !user) {
-    return new Response(JSON.stringify({ ok: false, message: "Sign in required." }), {
+    return new Response(JSON.stringify({ ok: false, message: tc.signInRequired }), {
       status: 401,
       headers: { "Content-Type": "application/json" },
     });
@@ -18,7 +24,7 @@ export const POST: APIRoute = async ({ request, cookies, clientAddress }) => {
   const rate = checkFeedTestRateLimit(user.id || clientAddress || "unknown");
   if (!rate.ok) {
     return new Response(
-      JSON.stringify({ ok: false, message: "Too many feed tests. Try again shortly." }),
+      JSON.stringify({ ok: false, message: t.tooMany }),
       {
         status: 429,
         headers: {
@@ -31,7 +37,7 @@ export const POST: APIRoute = async ({ request, cookies, clientAddress }) => {
 
   const editor = await requireHouseholdEditor(user.id);
   if (!editor.ok) {
-    return new Response(JSON.stringify({ ok: false, message: "View-only access." }), {
+    return new Response(JSON.stringify({ ok: false, message: tc.viewOnly }), {
       status: 403,
       headers: { "Content-Type": "application/json" },
     });
@@ -42,7 +48,7 @@ export const POST: APIRoute = async ({ request, cookies, clientAddress }) => {
 
   if (!url || !isValidFeedUrl(url)) {
     return new Response(
-      JSON.stringify({ ok: false, message: "Enter a valid HTTPS feed URL." }),
+      JSON.stringify({ ok: false, message: t.invalidUrl }),
       { status: 400, headers: { "Content-Type": "application/json" } },
     );
   }
@@ -53,7 +59,7 @@ export const POST: APIRoute = async ({ request, cookies, clientAddress }) => {
       return new Response(
         JSON.stringify({
           ok: false,
-          message: `Feed request failed (${response.status}).`,
+          message: fmt(t.requestFailed, { status: String(response.status) }),
         }),
         { status: 200, headers: { "Content-Type": "application/json" } },
       );
@@ -67,7 +73,13 @@ export const POST: APIRoute = async ({ request, cookies, clientAddress }) => {
     return new Response(
       JSON.stringify({
         ok: true,
-        message: `Found ${probeCount} probe${probeCount === 1 ? "" : "s"} (${discovery.format} JSON)${avg?.tempF != null ? `, average ${avg.tempF.toFixed(1)}°F` : ""}.`,
+        message:
+          avg?.tempF != null
+            ? plural(t.foundWithAverage, probeCount, locale, {
+                format: discovery.format,
+                average: formatNumber(avg.tempF, locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 }),
+              })
+            : plural(t.found, probeCount, locale, { format: discovery.format }),
         format: discovery.format,
         jsonRoot: discovery.jsonRoot,
         probes: discovery.probes.map((probe) => ({
@@ -84,7 +96,7 @@ export const POST: APIRoute = async ({ request, cookies, clientAddress }) => {
       { status: 200, headers: { "Content-Type": "application/json" } },
     );
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Feed test failed";
+    const message = error instanceof Error ? error.message : t.failed;
     return new Response(JSON.stringify({ ok: false, message }), {
       status: 200,
       headers: { "Content-Type": "application/json" },

@@ -39,6 +39,7 @@ import {
 import { formatWatchdogFindings, runAlertDeliveryWatchdog } from "./lib/alertDeliveryWatchdog";
 import { checkStripeWebhookHealth } from "./lib/stripeWebhookHealth";
 import { createStripeClient } from "./lib/stripe";
+import { ensureAllLocales } from "./i18n/catalog";
 
 type WorkerEnv = Env & {
   SENTRY_DSN?: string;
@@ -511,6 +512,8 @@ const worker = {
   ) {
     ctx.waitUntil(
       (async () => {
+        // Alerts and emails go out in each user's language; load those tables once per isolate.
+        await ensureAllLocales(["app"]);
         await runCollectHistoryJob();
         if (!isFullHourlyCronRun(controller.cron)) {
           return;

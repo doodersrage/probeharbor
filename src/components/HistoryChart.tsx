@@ -35,7 +35,7 @@ import { findSharedGaps, gapThresholdMs } from "../lib/chartGaps";
 /**
  * Every visible string, aria-label and title. Plain strings only (island props
  * are serialized); `{name}` marks a placeholder. English is the default;
- * marketing pages pass a translation from `src/i18n/messages/demoIslands.ts`.
+ * marketing pages pass a translation from `src/i18n/messages/demoIslands/`.
  */
 export const HISTORY_CHART_UI_EN = {
   defaultTitle: "Temperature trend (last 7 days)",
@@ -110,6 +110,27 @@ export const HISTORY_CHART_UI_EN = {
 
 export type HistoryChartUi = typeof HISTORY_CHART_UI_EN;
 
+/** True when no locale (or an English one) is given: keep the original formatting. */
+function isEnglishLocale(locale?: string): boolean {
+  return !locale || locale.toLowerCase().startsWith("en");
+}
+
+/** `toFixed`, or the locale's decimal separator when a non-English locale is given. */
+function fixed(value: number, digits: number, locale?: string): string {
+  if (isEnglishLocale(locale)) return value.toFixed(digits);
+  return new Intl.NumberFormat(locale, {
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits,
+    useGrouping: false,
+  }).format(value);
+}
+
+/** `formatHoverTime`, in `locale` when a non-English one is given. */
+const hoverTime = (iso: string, locale?: string): string => formatHoverTime(iso, locale);
+
+/** `formatAxisTime`, in `locale` when a non-English one is given. */
+const axisTime = (ts: number, spanMs: number, locale?: string): string => formatAxisTime(ts, spanMs, locale);
+
 /** Replace `{name}` placeholders with plain values. */
 function fill(template: string, vars: Record<string, string | number>): string {
   return template.replace(/\{(\w+)\}/g, (m, k: string) => (k in vars ? String(vars[k]) : m));
@@ -158,6 +179,8 @@ interface Props {
   guest?: boolean;
   /** Translated UI strings; anything missing falls back to English. */
   ui?: Partial<HistoryChartUi>;
+  /** BCP 47 tag for number/date formatting. Omitted or English keeps the original formatting. */
+  locale?: string;
 }
 
 // Series avoid blue/orange (freeze/high guides and below/above segments) and
@@ -233,6 +256,7 @@ export default function HistoryChart({
   canShareChart = false,
   guest = false,
   ui,
+  locale,
 }: Props) {
   const t = useMemo<HistoryChartUi>(() => {
     const merged = { ...HISTORY_CHART_UI_EN };
@@ -497,8 +521,8 @@ export default function HistoryChart({
     }
     const latest = points[points.length - 1]!;
     const parts = [
-      fill(t.summaryLatest, { temp: latest.tempf.toFixed(1) }),
-      fill(t.summaryRange, { min: min.tempf.toFixed(1), max: max.tempf.toFixed(1) }),
+      fill(t.summaryLatest, { temp: fixed(latest.tempf, 1, locale) }),
+      fill(t.summaryRange, { min: fixed(min.tempf, 1, locale), max: fixed(max.tempf, 1, locale) }),
     ];
     if (freezeThresholdF != null) {
       parts.push(
@@ -508,7 +532,7 @@ export default function HistoryChart({
       );
     }
     return parts.join(" ");
-  }, [points, freezeThresholdF, t]);
+  }, [points, freezeThresholdF, t, locale]);
 
   const hoverLive = useMemo(() => {
     const parts: string[] = [];
@@ -516,13 +540,13 @@ export default function HistoryChart({
       parts.push(fill(t.hoverAlert, { title: hoverMarker.title }));
     }
     if (hoverHits.length) {
-      const when = formatHoverTime(hoverHits[0]!.timestamp);
+      const when = hoverTime(hoverHits[0]!.timestamp, locale);
       parts.push(
-        `${when}: ${hoverHits.map((h) => `${h.probeLabel} ${h.tempf.toFixed(1)}°F`).join(", ")}`,
+        `${when}: ${hoverHits.map((h) => `${h.probeLabel} ${fixed(h.tempf, 1, locale)}°F`).join(", ")}`,
       );
     }
     return parts.join(". ");
-  }, [hoverHits, hoverMarker, t]);
+  }, [hoverHits, hoverMarker, t, locale]);
 
   useEffect(() => {
     const canvasEl = canvasRef.current;
@@ -640,12 +664,12 @@ export default function HistoryChart({
         g.fillStyle = "#94a3b8";
         g.font = "10px system-ui, sans-serif";
         g.textAlign = "right";
-        g.fillText(`${val.toFixed(0)}°F`, pad.left - 6, y + 3);
+        g.fillText(`${fixed(val, 0, locale)}°F`, pad.left - 6, y + 3);
         if (plotHumidity) {
           const rh = 100 - (100 / 4) * i;
           g.textAlign = "left";
           g.fillStyle = HUMIDITY_COLOR;
-          g.fillText(`${rh.toFixed(0)}%`, width - pad.right + 6, y + 3);
+          g.fillText(`${fixed(rh, 0, locale)}%`, width - pad.right + 6, y + 3);
         }
       }
 
@@ -666,7 +690,7 @@ export default function HistoryChart({
           g.textAlign = "left";
           const stack = edgeLabels[off.side]++ * 12;
           const edgeY = off.side === "below" ? pad.top + innerH - 4 - stack : pad.top + 12 + stack;
-          g.fillText(`${label} ${tempf.toFixed(0)}°F ${off.side === "below" ? "↓" : "↑"}`, pad.left + 4, edgeY);
+          g.fillText(`${label} ${fixed(tempf, 0, locale)}°F ${off.side === "below" ? "↓" : "↑"}`, pad.left + 4, edgeY);
           g.restore();
           return;
         }
@@ -683,7 +707,7 @@ export default function HistoryChart({
         g.fillStyle = color;
         g.font = "10px system-ui, sans-serif";
         g.textAlign = "left";
-        g.fillText(`${label} ${tempf.toFixed(0)}°F`, pad.left + 4, y - 4);
+        g.fillText(`${label} ${fixed(tempf, 0, locale)}°F`, pad.left + 4, y - 4);
         g.restore();
       }
 
@@ -862,9 +886,9 @@ export default function HistoryChart({
       g.fillStyle = "#94a3b8";
       g.font = "10px system-ui, sans-serif";
       g.textAlign = "left";
-      g.fillText(formatAxisTime(minTs, tsRange), pad.left, height - 8);
+      g.fillText(axisTime(minTs, tsRange, locale), pad.left, height - 8);
       g.textAlign = "right";
-      g.fillText(formatAxisTime(maxTs, tsRange), width - pad.right, height - 8);
+      g.fillText(axisTime(maxTs, tsRange, locale), width - pad.right, height - 8);
     }
 
     draw();
@@ -898,6 +922,7 @@ export default function HistoryChart({
     alertMarkers,
     highlightAlertId,
     bindWheelZoom,
+    locale,
     t,
   ]);
 
@@ -1255,8 +1280,8 @@ export default function HistoryChart({
           >
             <p class="history-chart-tooltip-time">
               {hoverMarker
-                ? formatHoverTime(hoverMarker.createdAt)
-                : formatHoverTime(hoverHits[0]!.timestamp)}
+                ? hoverTime(hoverMarker.createdAt, locale)
+                : hoverTime(hoverHits[0]!.timestamp, locale)}
             </p>
             <ul class="history-chart-tooltip-list">
               {hoverMarker && (
@@ -1279,13 +1304,13 @@ export default function HistoryChart({
                   />
                   <span class="history-chart-tooltip-label">{hit.probeLabel}</span>
                   <span class="history-chart-tooltip-value">
-                    {hit.tempf.toFixed(1)}°F
+                    {fixed(hit.tempf, 1, locale)}°F
                     {humidityOn &&
                       Number.isFinite(hit.humidity) &&
                       hit.humidity > 0 &&
-                      ` · ${hit.humidity.toFixed(0)}%`}
+                      ` · ${fixed(hit.humidity, 0, locale)}%`}
                     {hit.dewPointF != null &&
-                      ` · ${t.tooltipDew} ${hit.dewPointF.toFixed(1)}°F`}
+                      ` · ${t.tooltipDew} ${fixed(hit.dewPointF, 1, locale)}°F`}
                   </span>
                 </li>
               ))}

@@ -35,7 +35,11 @@ export const POST: APIRoute = async ({ request, redirect, clientAddress }) => {
   }
 
   const email = formData.get("email")?.toString() ?? "";
-  const result = await subscribeToStatusUpdates(email);
+  // Confirmation email in the page's language (English when none was sent).
+  const result =
+    isLocale(formLocale) && formLocale !== "en"
+      ? await subscribeToStatusUpdates(email, formLocale)
+      : await subscribeToStatusUpdates(email);
   if (!result.ok) {
     return redirect(withQuery(redirectTo, { status_error: "invalid_email" }));
   }

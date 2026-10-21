@@ -6,8 +6,10 @@ import {
   requireHouseholdEditor,
 } from "../../../../lib/householdAuth";
 import { formRedirectPath } from "../../../../lib/siteUrl";
+import { apiLocale } from "../../../../i18n/messages/app/api/common";
+import { apiUserMessages } from "../../../../i18n/messages/app/api/user";
 
-export const POST: APIRoute = async ({ request, cookies, redirect }) => {
+export const POST: APIRoute = async ({ request, cookies, redirect, locals }) => {
   const { session, user } = await getAuthFromCookies(cookies);
 
   if (!session || !user) {
@@ -23,7 +25,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
 
   const feedId = formData.get("feed_id")?.toString().trim() ?? "";
   if (!feedId) {
-    return new Response("Feed id is required", { status: 400 });
+    return new Response(apiUserMessages(apiLocale({ locals })).feedIdRequired, { status: 400 });
   }
 
   const { error } = await deleteUserTempFeed(user.id, feedId);

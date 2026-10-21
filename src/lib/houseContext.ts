@@ -8,6 +8,8 @@ import {
 import { findReferenceSensorLabel } from "./indoorReference";
 import type { ChartPoint } from "./garageTempsHistory";
 import { fetchThermostatSnapshotChartPoints } from "./thermostatSnapshots";
+import { fmt, type Locale } from "../i18n";
+import { libFixed, libTextMessages } from "../i18n/messages/app/libText";
 
 export type HouseContext = {
   source: "thermostat" | "reference_sensor";
@@ -37,14 +39,14 @@ export function buildHouseContext(input: {
   referenceSensorId: string | null;
   latest: LatestSensorRow[];
   devices: DeviceWithSensors[];
-}): HouseContext | null {
+}, locale: Locale = "en"): HouseContext | null {
   if (input.thermostatSnapshot?.ambientTempF != null) {
     const ambientTempF = input.thermostatSnapshot.ambientTempF;
     return {
       source: "thermostat",
       ambientTempF,
-      metricValue: formatThermostatMetricValue(input.thermostatSnapshot),
-      metricDetail: formatThermostatMetricDetail(input.thermostatSnapshot),
+      metricValue: formatThermostatMetricValue(input.thermostatSnapshot, locale),
+      metricDetail: formatThermostatMetricDetail(input.thermostatSnapshot, locale),
       referenceLabel: null,
       thermostatSnapshot: input.thermostatSnapshot,
     };
@@ -64,8 +66,10 @@ export function buildHouseContext(input: {
   return {
     source: "reference_sensor",
     ambientTempF: referenceTempF,
-    metricValue: `${referenceTempF.toFixed(0)}°F`,
-    metricDetail: referenceLabel ? `From ${referenceLabel}` : "Indoor reference probe",
+    metricValue: `${libFixed(referenceTempF, 0, locale)}°F`,
+    metricDetail: referenceLabel
+      ? fmt(libTextMessages(locale).house.fromReference, { label: referenceLabel })
+      : libTextMessages(locale).house.indoorReference,
     referenceLabel,
     thermostatSnapshot: null,
   };
@@ -76,6 +80,7 @@ export async function fetchReferenceSensorChartPoints(
   sensorId: string,
   days: number,
   filters: { from?: string; to?: string } = {},
+  locale: Locale = "en",
 ): Promise<ChartPoint[]> {
   const supabase = (await import("./supabase")).createServerClient();
   const defaultFrom = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
@@ -113,7 +118,7 @@ export async function fetchReferenceSensorChartPoints(
   return (data ?? [])
     .map((row) => {
       const label =
-        (row.device_sensors as { label?: string } | null)?.label ?? "House";
+        (row.device_sensors as { label?: string } | null)?.label ?? libTextMessages(locale).house.house;
       const tempf = row.value_num;
       if (tempf == null || !Number.isFinite(tempf)) return null;
       return {
@@ -132,12 +137,13 @@ export async function fetchHouseChartOverlay(input: {
   hasThermostatConnection: boolean;
   referenceSensorId: string | null;
   filters?: { from?: string; to?: string };
-}): Promise<{ points: ChartPoint[]; source: "thermostat" | "reference" | null }> {
+}, locale: Locale = "en"): Promise<{ points: ChartPoint[]; source: "thermostat" | "reference" | null }> {
   if (input.hasThermostatConnection) {
     const points = await fetchThermostatSnapshotChartPoints(
       input.householdId,
       input.days,
       input.filters ?? {},
+      locale,
     );
     if (points.length >= 2) {
       return { points, source: "thermostat" };
@@ -150,6 +156,7 @@ export async function fetchHouseChartOverlay(input: {
       input.referenceSensorId,
       input.days,
       input.filters ?? {},
+      locale,
     );
     if (points.length >= 2) {
       return { points, source: "reference" };
@@ -161,6 +168,7 @@ export async function fetchHouseChartOverlay(input: {
 
 export async function fetchHouseContextForUser(
   userId: string,
+  locale: Locale = "en",
 ): Promise<HouseContext | null> {
   const { getUserHouseholdId } = await import("./households");
   const { getUserEntitlements } = await import("./entitlements");
@@ -182,6 +190,7 @@ export async function fetchHouseContextForUser(
       const result = await fetchThermostatContextWithStatus(
         householdId,
         connection.provider,
+        locale,
       );
       thermostatSnapshot = result.snapshot;
     }
@@ -198,5 +207,5 @@ export async function fetchHouseContextForUser(
     referenceSensorId,
     latest,
     devices: devicesResult.devices,
-  });
+  }, locale);
 }

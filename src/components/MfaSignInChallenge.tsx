@@ -1,19 +1,22 @@
 import { useRef, useState } from "preact/hooks";
-import {
-  YUBIKEY_OTP_SIGNIN_HINT,
-  YUBIKEY_TOTP_SIGNIN_HINT,
-} from "../lib/mfaWebAuthnUi";
+import { fmt } from "../i18n/format";
+import signinEn from "../i18n/messages/app/auth/signin/en";
+
+type ChallengeText = typeof signinEn.mfa.challenge;
 
 type Props = {
   safeNext: string;
   userEmail: string;
   initialError?: string | null;
+  /** Translated strings from the page (app/auth/signin `mfa.challenge`); English when missing. */
+  text?: ChallengeText;
 };
 
 export default function MfaSignInChallenge({
   safeNext,
   userEmail,
   initialError = null,
+  text = signinEn.mfa.challenge,
 }: Props) {
   // Uncontrolled: YubiKey types 44 chars + Enter faster than React state can sync.
   const yubikeyInputRef = useRef<HTMLInputElement>(null);
@@ -22,11 +25,8 @@ export default function MfaSignInChallenge({
   return (
     <div>
       <header class="auth-intro page-header">
-        <h1 class="page-header-title">Two-factor authentication</h1>
-        <p class="page-header-lede">
-          Complete sign-in for {userEmail} with an authenticator code or YubiKey
-          OTP.
-        </p>
+        <h1 class="page-header-title">{text.heading}</h1>
+        <p class="page-header-lede">{fmt(text.lede, { email: userEmail })}</p>
       </header>
 
       <div class="form-panel">
@@ -40,7 +40,7 @@ export default function MfaSignInChallenge({
           <input type="hidden" name="next" value={safeNext} />
           <div class="form-field">
             <label class="form-label" for="code">
-              Authenticator code
+              {text.codeLabel}
             </label>
             <input
               class="form-input"
@@ -54,10 +54,10 @@ export default function MfaSignInChallenge({
             />
           </div>
           <button class="btn-primary" type="submit">
-            Verify code
+            {text.verifyCode}
           </button>
           <p class="text-sm text-[var(--color-text-muted)] mt-3 mb-0">
-            {YUBIKEY_TOTP_SIGNIN_HINT}
+            {text.totpHint}
           </p>
         </form>
 
@@ -66,7 +66,7 @@ export default function MfaSignInChallenge({
             <input type="hidden" name="next" value={safeNext} />
             <div class="form-field">
               <label class="form-label" for="yubikey_otp">
-                YubiKey OTP
+                {text.yubikeyLabel}
               </label>
               <input
                 ref={yubikeyInputRef}
@@ -87,17 +87,17 @@ export default function MfaSignInChallenge({
               type="submit"
               disabled={!yubikeyReady}
             >
-              Verify with YubiKey
+              {text.verifyYubikey}
             </button>
             <p class="text-sm text-[var(--color-text-muted)] mt-3 mb-0">
-              {YUBIKEY_OTP_SIGNIN_HINT}
+              {text.otpHint}
             </p>
           </form>
         </div>
 
         <p class="m-0 mt-4 text-sm text-center">
           <a class="text-link" href="/api/auth/signout">
-            Use a different account
+            {text.differentAccount}
           </a>
         </p>
       </div>

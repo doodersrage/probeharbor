@@ -5,6 +5,11 @@ import ContactSubmissions from "../../components/ContactSubmissions.astro";
 import { fetchContactSubmissions } from "../../lib/contactSubmissions";
 import { getAuthFromCookies } from "../../lib/auth";
 import { isUserAdmin } from "../../lib/adminAccess";
+import { getLocale } from "../../i18n";
+import { adminMessages } from "../../i18n/messages/app/admin";
+
+const locale = getLocale(Astro);
+const a = adminMessages(locale);
 
 const { session, user } = await getAuthFromCookies(Astro.cookies);
 
@@ -37,7 +42,7 @@ if (submissions.totalPages > 0 && pageParam > submissions.totalPages) {
   return Astro.redirect(`/dashboard/contacts?page=${submissions.totalPages}`);
 }
 ---
-<DashboardLayout title="Contacts" subtitle="Review messages from the site contact form." requireAdmin>
+<DashboardLayout title={a.contacts.title} subtitle={a.contacts.subtitle} requireAdmin>
   <div class="space-y-6">
     <AdminNav />
 

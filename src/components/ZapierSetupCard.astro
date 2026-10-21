@@ -1,5 +1,7 @@
 ---
 import DashboardCard from "./dashboard/DashboardCard.astro";
+import { getLocale } from "../i18n";
+import { shareMessages } from "../i18n/messages/app/share";
 
 interface Props {
   siteUrl: string;
@@ -14,53 +16,43 @@ const {
   hasInboundWebhook = false,
 } = Astro.props;
 
+const t = shareMessages(getLocale(Astro)).zapier;
+
 const tipUrl =
   inboundWebhookUrl ??
   (hasInboundWebhook ? `${siteUrl}/api/inbound/<your-token>` : null);
 ---
 <DashboardCard>
-  <h2 class="card-title">Zapier / Make</h2>
+  <h2 class="card-title">{t.title}</h2>
   <p class="card-subtitle mb-4">
-    Automate freeze and leak alerts outbound, or call ProbeHarbor from Zapier/Make via inbound webhooks.
+    {t.subtitle}
   </p>
   <ul class="text-sm space-y-2 mb-4">
-    <li>
-      Outbound: configure a webhook channel on
-      <a class="text-link" href="/dashboard/alerts">Alerts</a>
-      so freeze, leak, and threshold events POST to your Zap or Make scenario.
-    </li>
-    <li>
-      Recipes and payload tips:
-      <a class="text-link" href="/about/zapier-make-recipes">Zapier / Make recipes</a>.
-    </li>
-    <li>
-      Inbound: create a webhook on this Share page, then POST
-      <code>{`{"action":"snooze","hours":24}`}</code> (or <code>status</code>, <code>vacation</code>).
-    </li>
+    <li set:html={t.outboundHtml} />
+    <li set:html={t.recipesHtml} />
+    <li set:html={t.inboundHtml} />
   </ul>
   {tipUrl ? (
     <div class="rounded-lg border border-[var(--color-border)] p-3">
-      <p class="form-label mb-1">Inbound webhook URL</p>
+      <p class="form-label mb-1">{t.urlLabel}</p>
       <p class="break-all font-mono text-xs mb-2" id="zapier-inbound-url">{tipUrl}</p>
       {inboundWebhookUrl && (
         <button
           type="button"
           class="btn-secondary"
           data-copy={inboundWebhookUrl}
-          data-copy-label="Copy URL"
+          data-copy-label={t.copyUrl}
         >
-          Copy URL
+          {t.copyUrl}
         </button>
       )}
       {!inboundWebhookUrl && hasInboundWebhook && (
         <p class="form-hint mb-0">
-          Token prefixes are listed under Inbound webhooks above, create a new one to reveal a full URL once.
+          {t.tokenHint}
         </p>
       )}
     </div>
   ) : (
-    <p class="mb-0 text-sm">
-      <a class="text-link" href="#inbound-webhooks">Create an inbound webhook</a> on this page to get a copy-ready URL for Zapier/Make.
-    </p>
+    <p class="mb-0 text-sm" set:html={t.createHtml} />
   )}
 </DashboardCard>

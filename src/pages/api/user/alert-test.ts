@@ -12,19 +12,23 @@ import {
 } from "../../../lib/householdAuth";
 import { formRedirectPath, withQuery } from "../../../lib/siteUrl";
 import { isAlertChannelName } from "../../../lib/channelDelivery";
+import { apiCommonMessages, apiLocale } from "../../../i18n/messages/app/api/common";
+import { apiUserMessages } from "../../../i18n/messages/app/api/user";
 
 function wantsJson(request: Request): boolean {
   const accept = request.headers.get("accept") ?? "";
   return accept.includes("application/json");
 }
 
-export const POST: APIRoute = async ({ request, cookies, redirect, url }) => {
+export const POST: APIRoute = async ({ request, cookies, redirect, url, locals }) => {
+  const locale = apiLocale({ locals });
+  const tc = apiCommonMessages(locale);
   const { session, user } = await getAuthFromRequest(request, cookies);
   const json = wantsJson(request);
 
   if (!session || !user) {
     if (json) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      return new Response(JSON.stringify({ error: tc.unauthorized }), {
         status: 401,
         headers: { "Content-Type": "application/json" },
       });
@@ -47,7 +51,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect, url }) => {
 
   if (channelRaw && !isAlertChannelName(channelRaw)) {
     if (json) {
-      return new Response(JSON.stringify({ error: "Unknown channel" }), {
+      return new Response(JSON.stringify({ error: apiUserMessages(locale).testAlert.unknownChannel }), {
         status: 400,
         headers: { "Content-Type": "application/json" },
       });
@@ -59,7 +63,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect, url }) => {
   const editor = await requireHouseholdEditor(user.id);
   if (!editor.ok) {
     if (json) {
-      return new Response(JSON.stringify({ error: "Editor role required" }), {
+      return new Response(JSON.stringify({ error: tc.editorRequired }), {
         status: 403,
         headers: { "Content-Type": "application/json" },
       });
@@ -91,18 +95,19 @@ export const POST: APIRoute = async ({ request, cookies, redirect, url }) => {
       user.email,
       settings,
       {
-        title: "ProbeHarbor test alert",
-        body: "This is a test notification from your ProbeHarbor dashboard. If you received this, your alert channels are working.",
+        title: apiUserMessages(locale).testAlert.title,
+        body: apiUserMessages(locale).testAlert.body,
         kind: "generic",
       },
       channel ? { channelFilter: [channel] } : undefined,
+      locale,
     );
 
     if (sent.length === 0) {
       const reason = skipped.length > 0 ? "incomplete" : "none";
       if (json) {
         return new Response(
-          JSON.stringify({ ok: false, error: "No channels delivered", reason, skipped }),
+          JSON.stringify({ ok: false, error: apiUserMessages(locale).testAlert.noChannels, reason, skipped }),
           { status: 400, headers: { "Content-Type": "application/json" } },
         );
       }
@@ -122,7 +127,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect, url }) => {
   } catch (error) {
     console.error("Test alert failed:", error);
     if (json) {
-      return new Response(JSON.stringify({ error: "Test alert failed" }), {
+      return new Response(JSON.stringify({ error: apiUserMessages(locale).testAlert.failed }), {
         status: 500,
         headers: { "Content-Type": "application/json" },
       });

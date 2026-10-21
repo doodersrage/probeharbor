@@ -5,6 +5,7 @@ import {
   computeClaimsPackHash,
   getClaimsPackExportByToken,
 } from "../../../../lib/claimsPackExports";
+import { apiLocale, apiMoreCommonMessages } from "../../../../i18n/messages/app/apiMore/common";
 
 /**
  * Public, token-gated view of a previously generated claims pack -- same
@@ -12,15 +13,17 @@ import {
  * the (long, random) token can view it. Meant for opening directly in a
  * browser (an adjuster clicking a link), not a forced download.
  */
-export const GET: APIRoute = async ({ params, request }) => {
+export const GET: APIRoute = async (context) => {
+  const { params, request } = context;
+  const notFound = apiMoreCommonMessages(apiLocale(context)).notFound;
   const token = params.token?.trim();
   if (!token) {
-    return new Response("Not found", { status: 404 });
+    return new Response(notFound, { status: 404 });
   }
 
   const pack = await getClaimsPackExportByToken(token);
   if (!pack) {
-    return new Response("Not found", { status: 404 });
+    return new Response(notFound, { status: 404 });
   }
 
   // Recompute the hash from the stored data on every view -- if the row

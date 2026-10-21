@@ -1,14 +1,10 @@
-import { FREEZE_MAP_SAMPLE_FLOOR } from "../../../../lib/freezeMapSeed";
-import { brandMessages } from "../../../messages/brand";
 import type { MarketingFaqOverlay } from "../index";
-
-const brand = brandMessages("pt-br");
 
 export default {
   home: [
     {
       question: "O que é o ProbeHarbor?",
-      answer: `${brand.description} Você monta com ESP32, Pico W ou Arduino; o ProbeHarbor cuida do painel hospedado, do histórico e dos alertas para a sua casa.`,
+      answer: `ProbeHarbor é monitoramento de congelamento e alagamento open source para garagens, oficinas e sótãos: ingestão ESP/Arduino, curvas ao vivo e alertas. Você monta com ESP32, Pico W ou Arduino; o ProbeHarbor cuida do painel hospedado, do histórico e dos alertas para a sua casa.`,
     },
     {
       question: "Como conecto sensores ESP32, Pico W ou Arduino?",
@@ -81,7 +77,7 @@ export default {
   pricing: [
     {
       question: "O que está incluído no plano Free?",
-      answer: `Leituras ao vivo de temperatura, umidade, qualidade do ar, portas, vazamentos, energia e movimento em ${brand.spaces}; 7 dias de histórico; alertas de limite de congelamento e de vazamento, além de um relógio de tempo até o congelamento; e-mail e canais estilo chat; um número limitado de dispositivos; um link de compartilhamento ao vivo para a família; e compartilhamento com a casa para que a família acompanhe os mesmos sensores.`,
+      answer: `Leituras ao vivo de temperatura, umidade, qualidade do ar, portas, vazamentos, energia e movimento em garagens, oficinas, sótãos, porões e galpões; 7 dias de histórico; alertas de limite de congelamento e de vazamento, além de um relógio de tempo até o congelamento; e-mail e canais estilo chat; um número limitado de dispositivos; um link de compartilhamento ao vivo para a família; e compartilhamento com a casa para que a família acompanhe os mesmos sensores.`,
     },
     {
       question: "Quando devo fazer upgrade para Member ou Pro?",
@@ -122,7 +118,7 @@ export default {
     },
     {
       question: "Como o ProbeHarbor se compara ao Govee ou ao SmartThings?",
-      answer: `Govee e SmartThings são apps gerais de consumo/casa inteligente. O ProbeHarbor é feito sob medida para ${brand.spaces}: ingestão ESP/Arduino ou JSON, fluxos para congelamento, qualidade do ar, portas, vazamentos, energia e histórico em CSV, em vez de um painel genérico para qualquer dispositivo.`,
+      answer: `Govee e SmartThings são apps gerais de consumo/casa inteligente. O ProbeHarbor é feito sob medida para garagens, oficinas, sótãos, porões e galpões: ingestão ESP/Arduino ou JSON, fluxos para congelamento, qualidade do ar, portas, vazamentos, energia e histórico em CSV, em vez de um painel genérico para qualquer dispositivo.`,
     },
     {
       question: "Preciso de um IP público para o meu Arduino?",
@@ -146,7 +142,7 @@ export default {
     },
     {
       question: "Já tenho um Govee ou um Tempest: ainda preciso disto?",
-      answer: `O Govee é um sensor de ambiente para consumidores; o Tempest é uma estação de clima externo. O ProbeHarbor acompanha as curvas das sondas em ${brand.spaces}, em hardware que você controla. Eles podem conviver: veja as páginas de comparação com Govee e Tempest para saber quando cada ferramenta se encaixa melhor.`,
+      answer: `O Govee é um sensor de ambiente para consumidores; o Tempest é uma estação de clima externo. O ProbeHarbor acompanha as curvas das sondas em garagens, oficinas, sótãos, porões e galpões, em hardware que você controla. Eles podem conviver: veja as páginas de comparação com Govee e Tempest para saber quando cada ferramenta se encaixa melhor.`,
     },
   ],
   "freeze-map": [
@@ -167,7 +163,7 @@ export default {
     },
     {
       question: "Quantas casas são necessárias para a minha cidade mostrar dados reais?",
-      answer: `Uma cidade aparece no mapa padrão quando pelo menos ${FREEZE_MAP_SAMPLE_FLOOR} casas participantes com uma sonda de temperatura ativa contribuem na mesma janela de snapshot. Cidades com poucos dados (abaixo desse mínimo) ficam ocultas por padrão, mas podem ser exibidas com a opção de cidades esparsas. Enquanto nenhuma cidade atinge o mínimo, a página mostra uma prévia de exemplo claramente identificada.`,
+      answer: `Uma cidade aparece no mapa padrão quando pelo menos 3 casas participantes com uma sonda de temperatura ativa contribuem na mesma janela de snapshot. Cidades com poucos dados (abaixo desse mínimo) ficam ocultas por padrão, mas podem ser exibidas com a opção de cidades esparsas. Enquanto nenhuma cidade atinge o mínimo, a página mostra uma prévia de exemplo claramente identificada.`,
     },
     {
       question: "E se eu tiver só uma sonda: ela conta?",

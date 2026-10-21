@@ -1,4 +1,48 @@
 import { resolveSiteUrl } from "./schemaMarkup";
+import { formatDateTime, formatNumber, fmt, plural, type PluralForms } from "../i18n/format";
+import { LOCALE_META, type Locale } from "../i18n/locales";
+import { emailLayoutMessages } from "../i18n/messages/app/email/layout";
+
+/**
+ * Fixed-decimal number for email text: `toFixed` in English (unchanged
+ * output), locale separators elsewhere ("28,5" in German).
+ */
+export function formatEmailNumber(value: number, digits: number, locale: Locale = "en"): string {
+  if (locale === "en") return value.toFixed(digits);
+  return formatNumber(value, locale, {
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits,
+    useGrouping: false,
+  });
+}
+
+/** Number as written before in English (`String(n)`), locale-formatted elsewhere. */
+export function formatEmailValue(value: number, locale: Locale = "en"): string {
+  return locale === "en" ? String(value) : formatNumber(value, locale);
+}
+
+/**
+ * Plural phrase for email text. English keeps the bare count ("2016 readings",
+ * as before); other locales group digits ("2.016 Messwerte").
+ */
+export function formatEmailCount(
+  forms: PluralForms,
+  count: number,
+  locale: Locale = "en",
+  vars: Record<string, string | number> = {},
+): string {
+  return plural(forms, count, locale, { ...vars, count: formatEmailValue(count, locale) });
+}
+
+/** Date/time for email text in the recipient's language (explicit options, keep `timeZone`). */
+export function formatEmailDate(
+  value: Date | string | number,
+  options: Intl.DateTimeFormatOptions,
+  locale: Locale = "en",
+): string {
+  if (locale === "en") return new Date(value).toLocaleString("en-US", options);
+  return formatDateTime(value, locale, options);
+}
 
 export type EmailCta = {
   label: string;
@@ -195,7 +239,8 @@ function linkifyPlainUrls(text: string): string {
   );
 }
 
-export function buildBrandedEmailText(content: BrandedEmailContent): string {
+export function buildBrandedEmailText(content: BrandedEmailContent, locale: Locale = "en"): string {
+  const t = emailLayoutMessages(locale);
   const lines: string[] = [];
   lines.push(content.title);
   lines.push("");
@@ -224,17 +269,18 @@ export function buildBrandedEmailText(content: BrandedEmailContent): string {
     lines.push(`${content.secondaryCta.label}: ${content.secondaryCta.url}`);
     lines.push("");
   }
-  lines.push(content.footerNote ?? "ProbeHarbor — live probe curves, freeze and flood/leak alerts, and history.");
+  lines.push(content.footerNote ?? t.textFooterDefault);
   const siteUrl = resolveSiteUrl(null);
   lines.push(`${siteUrl}/dashboard`);
   if (content.unsubscribeUrl) {
     lines.push("");
-    lines.push(`Unsubscribe: ${content.unsubscribeUrl}`);
+    lines.push(fmt(t.unsubscribeText, { url: content.unsubscribeUrl }));
   }
   return lines.join("\n").trim() + "\n";
 }
 
-export function buildBrandedEmailHtml(content: BrandedEmailContent): string {
+export function buildBrandedEmailHtml(content: BrandedEmailContent, locale: Locale = "en"): string {
+  const t = emailLayoutMessages(locale);
   const siteUrl = resolveSiteUrl(null);
   const accent = accentForTone(content.tone ?? "brand");
   const preheader = content.preheader ?? content.intro ?? content.title;
@@ -278,13 +324,10 @@ export function buildBrandedEmailHtml(content: BrandedEmailContent): string {
     ? `<p style="margin:0 0 18px;color:${COLORS.text};font-size:17px;line-height:1.55;font-weight:500">${linkifyPlainUrls(content.intro).replace(/\n/g, "<br />")}</p>`
     : "";
 
-  const footerNote = escapeEmailHtml(
-    content.footerNote ??
-      "You’re receiving this because you have a ProbeHarbor account. Manage email preferences in Dashboard → Alerts.",
-  );
+  const footerNote = escapeEmailHtml(content.footerNote ?? t.htmlFooterDefault);
 
   return `<!DOCTYPE html>
-<html lang="en">
+<html lang="${LOCALE_META[locale].htmlLang}">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -319,15 +362,15 @@ export function buildBrandedEmailHtml(content: BrandedEmailContent): string {
             <td style="padding:18px 28px 24px;border-top:1px solid ${COLORS.border};background:#10151d">
               <p style="margin:0 0 8px;color:${COLORS.muted};font-size:12px;line-height:1.55">${footerNote}</p>
               <p style="margin:0;font-size:12px;line-height:1.5">
-                <a href="${escapeEmailHtml(siteUrl)}/dashboard" style="color:${COLORS.brandSoft};text-decoration:none">Dashboard</a>
+                <a href="${escapeEmailHtml(siteUrl)}/dashboard" style="color:${COLORS.brandSoft};text-decoration:none">${escapeEmailHtml(t.links.dashboard)}</a>
                 <span style="color:${COLORS.border}"> · </span>
-                <a href="${escapeEmailHtml(siteUrl)}/dashboard/alerts" style="color:${COLORS.brandSoft};text-decoration:none">Alert settings</a>
+                <a href="${escapeEmailHtml(siteUrl)}/dashboard/alerts" style="color:${COLORS.brandSoft};text-decoration:none">${escapeEmailHtml(t.links.alertSettings)}</a>
                 <span style="color:${COLORS.border}"> · </span>
-                <a href="${escapeEmailHtml(siteUrl)}/about" style="color:${COLORS.brandSoft};text-decoration:none">Guides</a>${
+                <a href="${escapeEmailHtml(siteUrl)}/about" style="color:${COLORS.brandSoft};text-decoration:none">${escapeEmailHtml(t.links.guides)}</a>${
                   content.unsubscribeUrl
                     ? `
                 <span style="color:${COLORS.border}"> · </span>
-                <a href="${escapeEmailHtml(content.unsubscribeUrl)}" style="color:${COLORS.brandSoft};text-decoration:none">Unsubscribe</a>`
+                <a href="${escapeEmailHtml(content.unsubscribeUrl)}" style="color:${COLORS.brandSoft};text-decoration:none">${escapeEmailHtml(t.links.unsubscribe)}</a>`
                     : ""
                 }
               </p>
@@ -342,12 +385,15 @@ export function buildBrandedEmailHtml(content: BrandedEmailContent): string {
 </html>`;
 }
 
-export function brandedEmailParts(content: BrandedEmailContent): {
+export function brandedEmailParts(
+  content: BrandedEmailContent,
+  locale: Locale = "en",
+): {
   text: string;
   html: string;
 } {
   return {
-    text: buildBrandedEmailText(content),
-    html: buildBrandedEmailHtml(content),
+    text: buildBrandedEmailText(content, locale),
+    html: buildBrandedEmailHtml(content, locale),
   };
 }

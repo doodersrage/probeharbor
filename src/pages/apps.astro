@@ -9,7 +9,7 @@ import {
   resolvePageUrl,
   resolveSiteUrl,
 } from "../lib/schemaMarkup";
-import { getLocale, localizePath } from "../i18n";
+import { fmt, getLocale, localizePath } from "../i18n";
 import { appsMessages } from "../i18n/messages/apps";
 import { getLocalizedCompanionApps } from "../i18n/content/apps";
 import {
@@ -33,7 +33,7 @@ const schema = [
 ---
 <Layout
   title={t.title}
-  description={t.description(BRAND_NAME)}
+  description={fmt(t.description, { brand: BRAND_NAME })}
   schema={schema}
   speakableSelectors={[".page-header-title", ".page-header-lede", ".faq-answer"]}
 >
@@ -41,7 +41,7 @@ const schema = [
     <PageHeader
       kicker={t.kicker}
       title={t.title}
-      lede={t.lede(BRAND_NAME)}
+      lede={fmt(t.lede, { brand: BRAND_NAME })}
     >
       <a slot="actions" class="btn-primary" href="/android">{t.android}</a>
       <a slot="actions" class="btn-secondary" href="/desktop">{t.desktop}</a>

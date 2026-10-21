@@ -1,4 +1,7 @@
 ---
+import { fmt, getLocale } from "../../i18n";
+import { overviewCardsMessages } from "../../i18n/messages/app/overviewCards";
+
 interface Props {
   label: string;
   value: string;
@@ -29,6 +32,10 @@ const {
   liveAgeIso = null,
   statusVisible = true,
 } = Astro.props;
+
+const t = overviewCardsMessages(getLocale(Astro)).metricCard;
+const pinLabel = fmt(t.pin, { label });
+const unpinLabel = fmt(t.unpin, { label });
 
 const toneClass =
   tone === "success"
@@ -66,8 +73,12 @@ const Tag = href && !canPin ? "a" : "article";
         class="metric-card-pin"
         data-pin-metric={metricId}
         data-pinned={pinned ? "1" : "0"}
-        aria-label={pinned ? `Unpin ${label}` : `Pin ${label}`}
-        title={pinned ? "Unpin from Status" : "Pin to Status"}
+        aria-label={pinned ? unpinLabel : pinLabel}
+        title={pinned ? t.unpinTitle : t.pinTitle}
+        data-pin-label={pinLabel}
+        data-unpin-label={unpinLabel}
+        data-pin-title={t.pinTitle}
+        data-unpin-title={t.unpinTitle}
       >
         {pinned ? "★" : "☆"}
       </button>

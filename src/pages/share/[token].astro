@@ -1,5 +1,13 @@
 ---
 import Layout from "../../layouts/Layout.astro";
+import I18nJson from "../../components/I18nJson.astro";
+import { getLocale, LOCALE_META } from "../../i18n";
+import { publicShareMessages } from "../../i18n/messages/app/publicShare";
+
+const locale = getLocale(Astro);
+const t = publicShareMessages(locale).share;
+// English keeps the browser's default formatting, as before.
+const intl = locale === "en" ? null : LOCALE_META[locale].intl;
 
 const token = Astro.params.token;
 if (!token) {
@@ -8,19 +16,20 @@ if (!token) {
 
 const readingsUrl = `/api/share/${token}/readings`;
 ---
-<Layout title="Shared live view" description="Read-only shared probe sensor readings." noindex>
+<Layout title={t.title} description={t.description} noindex>
   <div class="mx-auto w-full max-w-3xl px-4 py-10 sm:px-6">
-    <h1 class="text-3xl font-semibold mb-2" id="share-title">Shared sensors</h1>
-    <p class="text-[var(--color-text-muted)] mb-2" id="share-subtitle">Live read-only view</p>
+    <h1 class="text-3xl font-semibold mb-2" id="share-title">{t.heading}</h1>
+    <p class="text-[var(--color-text-muted)] mb-2" id="share-subtitle">{t.subtitleLive}</p>
     <p class="text-sm text-[var(--color-text-muted)] mb-8" id="share-meta"></p>
     <div id="share-root" class="space-y-4" data-url={readingsUrl}>
-      <p>Loading…</p>
+      <p>{t.loading}</p>
     </div>
     <p class="mt-10 text-sm text-[var(--color-text-muted)]">
-      Want your own probe monitor?
-      <a class="text-link" href="/register?next=/dashboard/devices">Create a free account</a>
+      {t.cta}
+      <a class="text-link" href="/register?next=/dashboard/devices">{t.ctaLink}</a>
     </p>
   </div>
+  <I18nJson id="share-i18n" data={{ text: t.client, intl }} />
 </Layout>
 
 <script is:inline>
@@ -30,6 +39,14 @@ const readingsUrl = `/api/share/${token}/readings`;
     const subtitleEl = document.getElementById("share-subtitle");
     const metaEl = document.getElementById("share-meta");
     if (!root) return;
+    let i18n = {};
+    try {
+      i18n = JSON.parse(document.getElementById("share-i18n")?.textContent || "{}");
+    } catch {}
+    const T = i18n.text || {};
+    const intl = i18n.intl || undefined;
+    const fill = (template, vars) =>
+      String(template).replace(/\{(\w+)\}/g, (m, k) => (k in vars ? String(vars[k]) : m));
     const url = root.getAttribute("data-url");
     const STALE_MS = 2 * 60 * 60 * 1000;
     let pollTimer = null;
@@ -40,50 +57,37 @@ const readingsUrl = `/api/share/${token}/readings`;
       if (Number.isNaN(ms) || ms < 0) return null;
       const minutes = Math.floor(ms / 60000);
       let label;
-      if (minutes < 1) label = "Updated just now";
-      else if (minutes < 60) label = "Updated " + minutes + "m ago";
+      if (minutes < 1) label = T.updatedJustNow;
+      else if (minutes < 60) label = fill(T.updatedMinutes, { count: minutes });
       else {
         const hours = Math.floor(minutes / 60);
         label =
           hours < 48
-            ? "Updated " + hours + "h ago"
-            : "Updated " + Math.floor(hours / 24) + "d ago";
+            ? fill(T.updatedHours, { count: hours })
+            : fill(T.updatedDays, { count: Math.floor(hours / 24) });
       }
       return { label, stale: ms >= STALE_MS };
     }
 
     function formatValue(r) {
       if (r.value_bool != null) {
-        if (r.kind === "door") return r.value_bool ? "Open" : "Closed";
-        if (r.kind === "power") return r.value_bool ? "On" : "Off";
-        if (r.kind === "flood") return r.value_bool ? "Wet" : "Dry";
-        if (r.kind === "motion") return r.value_bool ? "Detected" : "Clear";
-        return r.value_bool ? "On / Open" : "Off / Closed";
+        if (r.kind === "door") return r.value_bool ? T.open : T.closed;
+        if (r.kind === "power") return r.value_bool ? T.on : T.off;
+        if (r.kind === "flood") return r.value_bool ? T.wet : T.dry;
+        if (r.kind === "motion") return r.value_bool ? T.detected : T.clear;
+        return r.value_bool ? T.onOpen : T.offClosed;
       }
       if (r.value_num != null) {
-        return Number(r.value_num).toFixed(1) + (r.unit ? " " + r.unit : "");
+        const num = intl
+          ? Number(r.value_num).toLocaleString(intl, { minimumFractionDigits: 1, maximumFractionDigits: 1 })
+          : Number(r.value_num).toFixed(1);
+        return num + (r.unit ? " " + r.unit : "");
       }
       return r.value_text || "—";
     }
 
     function kindLabel(kind) {
-      return (
-        {
-          temperature: "Temperature",
-          humidity: "Humidity",
-          co2: "CO₂",
-          pressure: "Pressure",
-          pm25: "PM2.5",
-          voc: "VOC",
-          level: "Level",
-          energy: "Energy",
-          door: "Door",
-          power: "Power",
-          flood: "Flood",
-          motion: "Motion",
-          generic: "Sensor",
-        }[kind] || kind
-      );
+      return (T.kinds && T.kinds[kind]) || kind;
     }
 
     function escapeHtml(value) {
@@ -96,12 +100,12 @@ const readingsUrl = `/api/share/${token}/readings`;
     }
 
     function retryButtonHtml() {
-      return '<p class="mt-4 mb-0"><button type="button" class="btn-secondary" id="share-retry">Retry</button></p>';
+      return '<p class="mt-4 mb-0"><button type="button" class="btn-secondary" id="share-retry">' + escapeHtml(T.retry) + "</button></p>";
     }
 
     function bindRetry() {
       document.getElementById("share-retry")?.addEventListener("click", () => {
-        root.innerHTML = "<p>Loading…</p>";
+        root.innerHTML = "<p>" + escapeHtml(T.loading) + "</p>";
         load();
       });
     }
@@ -111,20 +115,20 @@ const readingsUrl = `/api/share/${token}/readings`;
       if (subtitleEl) {
         subtitleEl.textContent =
           data.scope === "history"
-            ? "History read-only view (7 days)"
+            ? T.subtitleHistory
             : data.scope === "metrics"
-              ? "Metrics share"
-              : "Live read-only view";
+              ? T.subtitleMetrics
+              : T.subtitleLive;
       }
       if (metaEl) {
         const parts = [];
         if (data.expires_at) {
-          parts.push("Expires " + new Date(data.expires_at).toLocaleString());
+          parts.push(fill(T.expires, { date: new Date(data.expires_at).toLocaleString(intl) }));
         } else {
-          parts.push("No expiry");
+          parts.push(T.noExpiry);
         }
         if (data.scope !== "history") {
-          parts.push("Updates every 90 seconds");
+          parts.push(T.updatesEvery);
         }
         metaEl.textContent = parts.join(" · ");
       }
@@ -146,12 +150,16 @@ const readingsUrl = `/api/share/${token}/readings`;
           })
           .join(" ");
         historyHtml =
-          '<div class="card mb-4"><p class="m-0 mb-2 text-sm text-[var(--color-text-muted)]">7-day temperature trend</p>' +
+          '<div class="card mb-4"><p class="m-0 mb-2 text-sm text-[var(--color-text-muted)]">' +
+          escapeHtml(T.trendTitle) +
+          "</p>" +
           '<svg viewBox="0 0 ' +
           w +
           " " +
           h +
-          '" width="100%" height="120" role="img" aria-label="Temperature history chart">' +
+          '" width="100%" height="120" role="img" aria-label="' +
+          escapeHtml(T.trendAria) +
+          '">' +
           '<path d="' +
           path +
           '" fill="none" stroke="#22b8d4" stroke-width="2" /></svg></div>';
@@ -161,8 +169,12 @@ const readingsUrl = `/api/share/${token}/readings`;
       if (readings.length === 0 && !historyHtml) {
         root.innerHTML =
           '<div class="empty-state">' +
-          "<p>No readings yet. Sensors on this link may not have posted data.</p>" +
-          '<p class="text-sm text-[var(--color-text-muted)] mb-0">This page keeps checking automatically.</p>' +
+          "<p>" +
+          escapeHtml(T.emptyTitle) +
+          "</p>" +
+          '<p class="text-sm text-[var(--color-text-muted)] mb-0">' +
+          escapeHtml(T.emptyNote) +
+          "</p>" +
           retryButtonHtml() +
           "</div>";
         bindRetry();
@@ -178,7 +190,7 @@ const readingsUrl = `/api/share/${token}/readings`;
             const ageHtml = age
               ? `<p class="m-0 mt-1 text-sm ${
                   age.stale ? "text-[var(--color-warning)]" : "text-[var(--color-text-muted)]"
-                }">${age.stale ? "Stale · " + age.label : age.label}</p>`
+                }">${escapeHtml(age.stale ? fill(T.stale, { age: age.label }) : age.label)}</p>`
               : "";
             return `<div class="card${staleClass}">
             <strong>${escapeHtml(r.label)}</strong>
@@ -199,7 +211,7 @@ const readingsUrl = `/api/share/${token}/readings`;
         if (!res.ok) {
           root.innerHTML =
             `<div class="empty-state"><p>${escapeHtml(
-              data.error || "Unable to load this share link.",
+              data.error || T.loadError,
             )}</p>${retryButtonHtml()}</div>`;
           if (metaEl) metaEl.textContent = "";
           bindRetry();
@@ -208,7 +220,9 @@ const readingsUrl = `/api/share/${token}/readings`;
         render(data);
       } catch {
         root.innerHTML =
-          '<div class="empty-state"><p>Failed to load shared readings.</p>' +
+          '<div class="empty-state"><p>' +
+          escapeHtml(T.fetchError) +
+          "</p>" +
           retryButtonHtml() +
           "</div>";
         bindRetry();

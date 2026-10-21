@@ -1,6 +1,8 @@
 ---
 import PlansCard from "./PlansCard.astro";
 import type { UserSubscription } from "../lib/stripeSubscriptions";
+import { getLocale } from "../i18n";
+import { plansMessages } from "../i18n/messages/app/plans";
 
 interface Props {
   canDownloadCsv: boolean;
@@ -13,12 +15,13 @@ const {
   subscription,
   subscriptionNotice = null,
 } = Astro.props;
+const title = plansMessages(getLocale(Astro)).card.titleWithCsv;
 ---
 
 <PlansCard
   canDownloadCsv={canDownloadCsv}
   subscription={subscription}
   subscriptionNotice={subscriptionNotice}
-  title="Plans & CSV export"
+  title={title}
   showCsvNote={true}
 />

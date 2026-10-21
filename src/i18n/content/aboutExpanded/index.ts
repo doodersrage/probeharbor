@@ -1,7 +1,7 @@
 import { type AboutContentBlock, getExpandedAboutContent } from "../../../lib/aboutExpandedContent";
 import type { Locale } from "../../locales";
 import { type DeepPartial, mergeTranslation } from "../../translate";
-import { collectKeyedOverlays } from "../collect";
+import { keyedOverlays } from "../collect";
 
 /**
  * Translation file shape: `{ [aboutSlug]: [block, block, ...] }`, one entry per
@@ -10,9 +10,7 @@ import { collectKeyedOverlays } from "../collect";
  */
 export type AboutExpandedOverlay = Record<string, DeepPartial<AboutContentBlock>[]>;
 
-const overlays = collectKeyedOverlays<DeepPartial<AboutContentBlock>[]>(
-  import.meta.glob("./*/*.ts", { eager: true }),
-);
+const overlays = () => keyedOverlays<DeepPartial<AboutContentBlock>[]>("aboutExpanded");
 
 export function getLocalizedExpandedAboutContent(
   slug: string,
@@ -20,5 +18,5 @@ export function getLocalizedExpandedAboutContent(
 ): AboutContentBlock[] | undefined {
   const base = getExpandedAboutContent(slug);
   if (!base || locale === "en") return base;
-  return mergeTranslation(base, overlays[locale]?.[slug] as DeepPartial<AboutContentBlock[]> | undefined);
+  return mergeTranslation(base, overlays()[locale]?.[slug] as DeepPartial<AboutContentBlock[]> | undefined);
 }

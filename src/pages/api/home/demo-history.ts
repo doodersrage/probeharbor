@@ -6,15 +6,19 @@ import {
   fetchDemoHourlyWeather,
   outdoorHistoryPoints,
 } from "../../../lib/demoHistory";
+import { apiCommonMessages, apiLocale } from "../../../i18n/messages/app/api/common";
+import { apiUserMessages } from "../../../i18n/messages/app/api/user";
 
 const CACHE_MS = 30 * 60 * 1000;
 let cached: { at: number; body: string } | null = null;
 
 /** Public 7-day history for the demo shop, rebuilt from real hourly weather. */
-export const GET: APIRoute = async ({ clientAddress }) => {
+export const GET: APIRoute = async ({ clientAddress, locals }) => {
+  const locale = apiLocale({ locals });
+  const tc = apiCommonMessages(locale);
   const rate = checkDemoTempsRateLimit(`history:${clientAddress || "unknown"}`);
   if (!rate.ok) {
-    return new Response(JSON.stringify({ error: "Too many requests" }), {
+    return new Response(JSON.stringify({ error: tc.tooManyRequests }), {
       status: 429,
       headers: {
         "Content-Type": "application/json",
@@ -30,7 +34,7 @@ export const GET: APIRoute = async ({ clientAddress }) => {
         ? await fetchDemoHourlyWeather(weather.lat, weather.lon)
         : [];
     if (hourly.length < 2) {
-      return new Response(JSON.stringify({ error: "Weather history unavailable" }), {
+      return new Response(JSON.stringify({ error: apiUserMessages(locale).weather.historyUnavailable }), {
         status: 503,
         headers: { "Content-Type": "application/json", "Retry-After": "300" },
       });

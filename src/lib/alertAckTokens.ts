@@ -1,4 +1,6 @@
 import { acknowledgeLatestUnackedAlert } from "./alertEvents";
+import type { Locale } from "../i18n/locales";
+import { alertJobsMessages } from "../i18n/messages/app/alertJobs";
 import { timingSafeEqualHex } from "./timingSafeEqual";
 
 /**
@@ -97,16 +99,18 @@ export async function applyAckToken(
   userId: string,
   expMs: number,
   sig: string,
+  locale: Locale = "en",
 ): Promise<{ ok: boolean; message: string }> {
+  const t = alertJobsMessages(locale).ackPage;
   const valid = await verifyAckPayload(userId, expMs, sig);
   if (!valid) {
-    return { ok: false, message: "Invalid or expired acknowledgment link." };
+    return { ok: false, message: t.resultInvalid };
   }
 
-  const result = await acknowledgeLatestUnackedAlert(userId);
+  const result = await acknowledgeLatestUnackedAlert(userId, locale);
   if (!result.ok) {
-    return { ok: false, message: result.error ?? "No unhandled alerts to acknowledge." };
+    return { ok: false, message: result.error ?? t.resultNone };
   }
 
-  return { ok: true, message: "Alert marked as handled." };
+  return { ok: true, message: t.resultHandled };
 }

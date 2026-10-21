@@ -16,17 +16,74 @@ import { useHistoryChartInteraction } from "../lib/useHistoryChartInteraction";
 import type { IndoorOutdoorPoint } from "../lib/indoorOutdoorDelta";
 import { expandedChartDialogAttrs } from "../lib/chartLightbox";
 
+/**
+ * Every visible string, aria-label and title. Plain strings only (island
+ * props are serialized). Dashboard → History passes a translation from
+ * `src/i18n/messages/app/history/charts`.
+ */
+export const INDOOR_OUTDOOR_CHART_TEXT_EN = {
+  title: "Indoor vs outdoor delta",
+  closeExpandedAria: "Close expanded chart",
+  controlsAria: "Chart controls",
+  resetZoomAria: "Reset zoom",
+  reset: "Reset",
+  downloadPngAria: "Download chart PNG",
+  png: "PNG",
+  close: "Close",
+  expandAria: "Expand chart",
+  expand: "Expand",
+  presetsAria: "Time range presets",
+  presetLabels: { "24h": "24h", "7d": "7d", "30d": "30d" } as Record<string, string>,
+  presetAll: "All",
+  hint: "Blue line = indoor minus outdoor forecast reference. Drag to select a range; hover for readings.",
+  delta: "ΔT",
+  indoor: "Indoor",
+  outdoor: "Outdoor",
+};
+
+export type IndoorOutdoorChartText = typeof INDOOR_OUTDOOR_CHART_TEXT_EN;
+
 interface Props {
   points: IndoorOutdoorPoint[];
   title?: string;
+  text?: Partial<IndoorOutdoorChartText>;
+  /** BCP 47 tag for number/date formatting. Omitted or English keeps the original formatting. */
+  locale?: string;
 }
 
 const LINE_COLOR = "#e2e8f0";
 
+function isEnglishLocale(locale?: string): boolean {
+  return !locale || locale.toLowerCase().startsWith("en");
+}
+
+/** `toFixed`, or the locale's decimal separator when a non-English locale is given. */
+function fixed(value: number, digits: number, locale?: string): string {
+  if (isEnglishLocale(locale)) return value.toFixed(digits);
+  return new Intl.NumberFormat(locale, {
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits,
+    useGrouping: false,
+  }).format(value);
+}
+
+/** `formatHoverTime`, in `locale` when a non-English one is given. */
+const hoverTime = (iso: string, locale?: string): string => formatHoverTime(iso, locale);
+
+/** `formatAxisTime`, in `locale` when a non-English one is given. */
+const axisTime = (ts: number, spanMs: number, locale?: string): string => formatAxisTime(ts, spanMs, locale);
+
 export default function IndoorOutdoorChart({
   points,
-  title = "Indoor vs outdoor delta",
+  title: titleProp,
+  text: textProp,
+  locale,
 }: Props) {
+  const text = useMemo<IndoorOutdoorChartText>(
+    () => ({ ...INDOOR_OUTDOOR_CHART_TEXT_EN, ...textProp }),
+    [textProp],
+  );
+  const title = titleProp ?? text.title;
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const plotBoundsRef = useRef<import("../lib/historyChartInteraction").PlotBounds | null>(
@@ -216,7 +273,7 @@ export default function IndoorOutdoorChart({
         g.fillStyle = "#94a3b8";
         g.font = "10px system-ui, sans-serif";
         g.textAlign = "right";
-        g.fillText(`${val >= 0 ? "+" : ""}${val.toFixed(0)}°F`, pad.left - 6, y + 3);
+        g.fillText(`${val >= 0 ? "+" : ""}${fixed(val, 0, locale)}°F`, pad.left - 6, y + 3);
       }
 
       const zeroY = yFor(0);
@@ -280,9 +337,9 @@ export default function IndoorOutdoorChart({
       g.fillStyle = "#94a3b8";
       g.font = "10px system-ui, sans-serif";
       g.textAlign = "left";
-      g.fillText(formatAxisTime(minTs, tsRange), pad.left, height - 8);
+      g.fillText(axisTime(minTs, tsRange, locale), pad.left, height - 8);
       g.textAlign = "right";
-      g.fillText(formatAxisTime(maxTs, tsRange), width - pad.right, height - 8);
+      g.fillText(axisTime(maxTs, tsRange, locale), width - pad.right, height - 8);
     }
 
     draw();
@@ -294,7 +351,7 @@ export default function IndoorOutdoorChart({
       ro.disconnect();
       unbindWheel();
     };
-  }, [points, activeView, hover, brushRange, bindWheelZoom, plotBoundsRef]);
+  }, [points, activeView, hover, brushRange, bindWheelZoom, plotBoundsRef, locale]);
 
   if (points.length < 2) return null;
 
@@ -311,7 +368,7 @@ export default function IndoorOutdoorChart({
         <button
           type="button"
           class="history-chart-lightbox-scrim"
-          aria-label="Close expanded chart"
+          aria-label={text.closeExpandedAria}
           onClick={closeLightbox}
         />
       )}
@@ -323,51 +380,51 @@ export default function IndoorOutdoorChart({
         <div class="history-chart-header">
           <p class="history-chart-title">{title}</p>
           {/* biome-ignore lint/a11y/useSemanticElements: button toolbar; <fieldset> would add form semantics and default borders */}
-          <div class="history-chart-zoom" role="group" aria-label="Chart controls">
+          <div class="history-chart-zoom" role="group" aria-label={text.controlsAria}>
             <button
               type="button"
               class="history-chart-zoom-btn"
-              aria-label="Reset zoom"
+              aria-label={text.resetZoomAria}
               disabled={!zoomed}
               onClick={resetZoom}
             >
-              Reset
+              {text.reset}
             </button>
             <button
               type="button"
               class="history-chart-zoom-btn history-chart-expand-btn"
-              aria-label="Download chart PNG"
+              aria-label={text.downloadPngAria}
               onClick={exportPng}
             >
-              PNG
+              {text.png}
             </button>
             {expanded ? (
               <button
                 ref={closeBtnRef}
                 type="button"
                 class="history-chart-zoom-btn history-chart-expand-btn"
-                aria-label="Close expanded chart"
+                aria-label={text.closeExpandedAria}
                 onClick={closeLightbox}
               >
-                Close
+                {text.close}
               </button>
             ) : (
               <button
                 ref={expandBtnRef}
                 type="button"
                 class="history-chart-zoom-btn history-chart-expand-btn"
-                aria-label="Expand chart"
+                aria-label={text.expandAria}
                 aria-haspopup="dialog"
                 onClick={openLightbox}
               >
-                Expand
+                {text.expand}
               </button>
             )}
           </div>
         </div>
 
         {/* biome-ignore lint/a11y/useSemanticElements: button toolbar; <fieldset> would add form semantics and default borders */}
-        <div class="history-chart-presets" role="group" aria-label="Time range presets">
+        <div class="history-chart-presets" role="group" aria-label={text.presetsAria}>
           {CHART_VIEW_PRESETS.map((preset) => {
             const canNarrow = domain ? presetNarrowsDomain(domain, preset.spanMs) : false;
             const domainSpan = domain ? domain.maxTs - domain.minTs : 0;
@@ -384,7 +441,7 @@ export default function IndoorOutdoorChart({
                 disabled={!domain || (!canNarrow && !isCurrentWindow)}
                 onClick={() => applyPreset(preset.spanMs)}
               >
-                {preset.label}
+                {text.presetLabels[preset.id] ?? preset.label}
               </button>
             );
           })}
@@ -394,13 +451,12 @@ export default function IndoorOutdoorChart({
             aria-pressed={activePreset === "all"}
             onClick={() => applyPreset(null)}
           >
-            All
+            {text.presetAll}
           </button>
         </div>
 
         <p class="m-0 mb-2 text-xs text-[var(--color-text-muted)]">
-          Blue line = indoor minus outdoor forecast reference. Drag to select a range;
-          hover for readings.
+          {text.hint}
         </p>
 
         <div
@@ -429,7 +485,7 @@ export default function IndoorOutdoorChart({
               role="status"
             >
               <p class="history-chart-tooltip-time">
-                {formatHoverTime(hover.point.timestamp)}
+                {hoverTime(hover.point.timestamp, locale)}
               </p>
               <ul class="history-chart-tooltip-list">
                 <li>
@@ -437,24 +493,24 @@ export default function IndoorOutdoorChart({
                     class="history-chart-tooltip-swatch"
                     style={{ background: LINE_COLOR }}
                   />
-                  <span class="history-chart-tooltip-label">ΔT</span>
+                  <span class="history-chart-tooltip-label">{text.delta}</span>
                   <span class="history-chart-tooltip-value">
                     {hover.point.deltaF > 0 ? "+" : ""}
-                    {hover.point.deltaF.toFixed(1)}°F
+                    {fixed(hover.point.deltaF, 1, locale)}°F
                   </span>
                 </li>
                 <li>
                   <span class="history-chart-tooltip-swatch" style={{ background: "#94a3b8" }} />
-                  <span class="history-chart-tooltip-label">Indoor</span>
+                  <span class="history-chart-tooltip-label">{text.indoor}</span>
                   <span class="history-chart-tooltip-value">
-                    {hover.point.indoorF.toFixed(1)}°F
+                    {fixed(hover.point.indoorF, 1, locale)}°F
                   </span>
                 </li>
                 <li>
                   <span class="history-chart-tooltip-swatch" style={{ background: "#fbbf24" }} />
-                  <span class="history-chart-tooltip-label">Outdoor</span>
+                  <span class="history-chart-tooltip-label">{text.outdoor}</span>
                   <span class="history-chart-tooltip-value">
-                    {hover.point.outdoorF.toFixed(1)}°F
+                    {fixed(hover.point.outdoorF, 1, locale)}°F
                   </span>
                 </li>
               </ul>

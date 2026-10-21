@@ -8,6 +8,9 @@ import {
   kioskLandingPath,
   kioskRouteToRecord,
 } from "../lib/dashboardKiosk";
+import shellEn from "../i18n/messages/app/shell/en";
+
+type KioskText = typeof shellEn.kiosk;
 
 type WakeLockSentinelLike = {
   release: () => Promise<void>;
@@ -44,7 +47,7 @@ function writeLastRoute(path: string | null) {
   }
 }
 
-export default function KioskModeToggle() {
+export default function KioskModeToggle({ text = shellEn.kiosk }: { text?: KioskText }) {
   const [active, setActive] = useState(false);
   const [supported, setSupported] = useState(true);
 
@@ -142,14 +145,10 @@ export default function KioskModeToggle() {
       type="button"
       class="btn-ghost dashboard-kiosk-toggle"
       aria-pressed={active}
-      title={
-        active
-          ? "Exit kiosk / shop mode"
-          : "Kiosk / shop mode — fullscreen and keep screen awake"
-      }
+      title={active ? text.exitTitle : text.enterTitle}
       onClick={() => setActive((v) => !v)}
     >
-      {active ? "Exit kiosk" : "Kiosk mode"}
+      {active ? text.exit : text.enter}
     </button>
   );
 }

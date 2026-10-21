@@ -6,21 +6,41 @@
 (function () {
   var LAG_MS = 30 * 60 * 1000;
   var STALE_MS = 2 * 60 * 60 * 1000;
+  // Page language from <html lang/data-intl> (set by the layouts). English keeps
+  // the compact "15m ago"; other locales use Intl.RelativeTimeFormat, matching
+  // formatRelativeAge in src/lib/relativeTime.ts.
+  var htmlEl = document.documentElement;
+  var intl = htmlEl.getAttribute("data-intl") || "en-US";
+  var english = !htmlEl.lang || /^en\b/i.test(htmlEl.lang);
+  var rtf = null;
+  var justNowText = "just now";
+  if (!english && typeof Intl !== "undefined" && Intl.RelativeTimeFormat) {
+    try {
+      rtf = new Intl.RelativeTimeFormat(intl, { style: "short", numeric: "always" });
+      justNowText = new Intl.RelativeTimeFormat(intl, { numeric: "auto" }).format(0, "second");
+    } catch (e) {
+      rtf = null;
+    }
+  }
+
+  function ageLabel(minutes) {
+    if (minutes < 1) return justNowText;
+    var hours = Math.floor(minutes / 60);
+    if (rtf) {
+      if (minutes < 60) return rtf.format(-minutes, "minute");
+      return hours < 48 ? rtf.format(-hours, "hour") : rtf.format(-Math.floor(hours / 24), "day");
+    }
+    if (minutes < 60) return minutes + "m ago";
+    return hours < 48 ? hours + "h ago" : Math.floor(hours / 24) + "d ago";
+  }
 
   function formatRelativeAge(iso) {
     if (!iso) return { label: "Never", lagging: true, stale: true };
     var parsed = Date.parse(iso);
     if (!Number.isFinite(parsed)) return { label: "Never", lagging: true, stale: true };
     var ms = Date.now() - parsed;
-    if (ms < 0) return { label: "just now", lagging: false, stale: false };
-    var minutes = Math.floor(ms / 60000);
-    var label;
-    if (minutes < 1) label = "just now";
-    else if (minutes < 60) label = minutes + "m ago";
-    else {
-      var hours = Math.floor(minutes / 60);
-      label = hours < 48 ? hours + "h ago" : Math.floor(hours / 24) + "d ago";
-    }
+    if (ms < 0) return { label: justNowText, lagging: false, stale: false };
+    var label = ageLabel(Math.floor(ms / 60000));
     return {
       label: label,
       lagging: ms >= LAG_MS,
@@ -84,7 +104,7 @@
     if (iso) {
       document.querySelectorAll(".dashboard-topbar-freshness .reading-age-badge").forEach(function (el) {
         el.setAttribute("data-iso", iso);
-        el.setAttribute("title", new Date(iso).toLocaleString());
+        el.setAttribute("title", english ? new Date(iso).toLocaleString() : new Date(iso).toLocaleString(intl));
       });
     }
     tick();

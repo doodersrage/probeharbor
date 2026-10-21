@@ -28,6 +28,7 @@ import {
   clearSigninFailures,
   recordSigninFailure,
 } from "../../../lib/signinLimits";
+import { requestLocale, saveLocaleIfMissing } from "./_locale";
 
 function oauthProviderOptions(provider: string, redirectTo: string) {
   const options: { redirectTo: string; scopes?: string } = { redirectTo };
@@ -40,7 +41,8 @@ function oauthProviderOptions(provider: string, redirectTo: string) {
   return options;
 }
 
-export const POST: APIRoute = async ({ request, cookies, redirect, clientAddress, site }) => {
+export const POST: APIRoute = async (context) => {
+  const { request, cookies, redirect, clientAddress, site } = context;
   const formData = await request.formData();
   const email = formData.get("email")?.toString();
   const password = formData.get("password")?.toString();
@@ -151,9 +153,12 @@ export const POST: APIRoute = async ({ request, cookies, redirect, clientAddress
 
   clearSigninFailures(email);
 
+  // First sign-in from a translated page: remember that language on the account.
+  const session = await saveLocaleIfMissing(createAuthClient(), data.session, data.user, requestLocale(context));
+
   const { redirectTo } = await applySessionCookiesAfterAuth(
     cookies,
-    data.session,
+    session,
     safeNext,
   );
   return redirect(redirectTo);

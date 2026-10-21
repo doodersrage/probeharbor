@@ -6,19 +6,19 @@ import {
   type CoverageState,
   type SpaceCoverage,
 } from "../../lib/protectionCoverage";
+import { fmt, getLocale, plural } from "../../i18n";
+import { devicesListMessages } from "../../i18n/messages/app/devices/list";
 
 interface Props {
   coverage: SpaceCoverage[];
 }
 
 const { coverage } = Astro.props;
+const locale = getLocale(Astro);
+const t = devicesListMessages(locale).coverage;
 const risks = Object.keys(COVERAGE_RISK_LABELS) as CoverageRisk[];
 const stateText: Record<CoverageState, string> = { live: "✓", stale: "!", none: "—" };
-const stateLabel: Record<CoverageState, string> = {
-  live: "reporting",
-  stale: "not reporting",
-  none: "not monitored",
-};
+const stateLabel: Record<CoverageState, string> = t.states;
 const stateTone: Record<CoverageState, string> = {
   live: "text-[var(--color-success)]",
   stale: "text-[var(--color-warning)] font-semibold",
@@ -28,19 +28,19 @@ const withGaps = coverage.filter((row) => row.gaps.length > 0).length;
 ---
 {coverage.length > 0 && (
   <DashboardCard id="protection-coverage">
-    <h2 class="card-title">Protection coverage</h2>
+    <h2 class="card-title">{t.title}</h2>
     <p class="card-subtitle mb-3">
-      What each space is watched for, from the sensors on its devices.
-      {withGaps === 0 ? " No gaps found." : ` ${withGaps} of ${coverage.length} spaces have a gap.`}
+      {t.subtitle}
+      {withGaps === 0 ? ` ${t.noGaps}` : ` ${fmt(t.gapCount, { gaps: withGaps, total: coverage.length })}`}
     </p>
     <div class="overflow-x-auto">
       <table class="w-full text-sm">
-        <caption class="sr-only">Monitoring coverage by space</caption>
+        <caption class="sr-only">{t.caption}</caption>
         <thead>
           <tr class="text-left text-xs text-[var(--color-text-muted)]">
-            <th scope="col" class="py-1 pr-3 font-medium">Space</th>
+            <th scope="col" class="py-1 pr-3 font-medium">{t.spaceColumn}</th>
             {risks.map((risk) => (
-              <th scope="col" class="py-1 px-2 font-medium text-center">{COVERAGE_RISK_LABELS[risk]}</th>
+              <th scope="col" class="py-1 px-2 font-medium text-center">{t.risks[risk]}</th>
             ))}
           </tr>
         </thead>
@@ -48,9 +48,9 @@ const withGaps = coverage.filter((row) => row.gaps.length > 0).length;
           {coverage.map((row) => (
             <tr class="border-t border-[var(--color-border)] align-top">
               <th scope="row" class="py-2 pr-3 text-left font-medium">
-                {row.space}
+                {row.unassigned ? t.unassigned : row.space}
                 <span class="block text-xs font-normal text-[var(--color-text-muted)]">
-                  {row.deviceCount} device{row.deviceCount === 1 ? "" : "s"}
+                  {plural(t.devices, row.deviceCount, locale)}
                 </span>
                 {row.gaps.map((gap) => (
                   <span class="block text-xs font-normal text-[var(--color-text-muted)]">○ {gap}</span>
@@ -59,7 +59,7 @@ const withGaps = coverage.filter((row) => row.gaps.length > 0).length;
               {risks.map((risk) => (
                 <td class:list={["py-2 px-2 text-center", stateTone[row.risks[risk]]]}>
                   <span aria-hidden="true">{stateText[row.risks[risk]]}</span>
-                  <span class="sr-only">{COVERAGE_RISK_LABELS[risk]}: {stateLabel[row.risks[risk]]}</span>
+                  <span class="sr-only">{t.risks[risk]}: {stateLabel[row.risks[risk]]}</span>
                 </td>
               ))}
             </tr>
@@ -68,8 +68,7 @@ const withGaps = coverage.filter((row) => row.gaps.length > 0).length;
       </table>
     </div>
     <p class="mt-3 mb-0 text-xs text-[var(--color-text-muted)]">
-      ✓ reporting · ! sensor exists but hasn't reported recently · — not monitored. Spaces come from each device's
-      space setting.
+      {t.legend}
     </p>
   </DashboardCard>
 )}

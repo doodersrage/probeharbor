@@ -4,6 +4,8 @@ import { STALE_MS } from "./relativeTime";
 import { parseBatteryHistory } from "./batterySparkline";
 import { estimateBatteryDaysRemaining } from "./batteryTrend";
 import type { StuckSensor } from "./stuckSensors";
+import { fmt, plural, type Locale } from "../i18n";
+import { libNumber, libTextMessages } from "../i18n/messages/app/libText";
 
 export type DeviceHealthLabel = "healthy" | "watch" | "at_risk" | "offline";
 
@@ -33,7 +35,9 @@ export function scoreDeviceHealth(
   nowMs = Date.now(),
   rssiThreshold = -80,
   stuck: StuckSensor[] = [],
+  locale: Locale = "en",
 ): DeviceHealthScore {
+  const t = libTextMessages(locale).health;
   const batteryPct = readMetaNumber(device.meta, "battery_pct");
   const rssi = readMetaNumber(device.meta, "rssi");
   const history = parseBatteryHistory(device.meta);
@@ -43,7 +47,7 @@ export function scoreDeviceHealth(
     return {
       score: 25,
       label: "offline",
-      detail: "Device disabled",
+      detail: t.disabled,
       batteryPct,
       rssi,
       daysRemaining,
@@ -54,7 +58,7 @@ export function scoreDeviceHealth(
     return {
       score: 30,
       label: "offline",
-      detail: "Waiting for first reading",
+      detail: t.waiting,
       batteryPct,
       rssi,
       daysRemaining,
@@ -73,7 +77,7 @@ export function scoreDeviceHealth(
     return {
       score: stale ? 10 : 20,
       label: "at_risk",
-      detail: "Flood / leak contact wet",
+      detail: t.floodWet,
       batteryPct,
       rssi,
       daysRemaining,
@@ -86,7 +90,7 @@ export function scoreDeviceHealth(
     return {
       score: 20,
       label: "offline",
-      detail: `No data for ${days} day${days === 1 ? "" : "s"}, check power/Wi‑Fi`,
+      detail: plural(t.noData, days, locale, { count: libNumber(days, locale) }),
       batteryPct,
       rssi,
       daysRemaining,
@@ -97,7 +101,7 @@ export function scoreDeviceHealth(
     return {
       score: 45,
       label: "watch",
-      detail: "Probe data stale, check power/Wi‑Fi",
+      detail: t.stale,
       batteryPct,
       rssi,
       daysRemaining,
@@ -121,7 +125,7 @@ export function scoreDeviceHealth(
     return {
       score: 55,
       label: "watch",
-      detail: `Battery ${batteryPct}% — replace soon`,
+      detail: fmt(t.batteryLow, { pct: libNumber(batteryPct, locale) }),
       batteryPct,
       rssi,
       daysRemaining,
@@ -132,7 +136,7 @@ export function scoreDeviceHealth(
     return {
       score: 60,
       label: "watch",
-      detail: `Battery ~${Math.round(daysRemaining)} days left`,
+      detail: plural(t.batteryDays, Math.round(daysRemaining), locale),
       batteryPct,
       rssi,
       daysRemaining,
@@ -143,7 +147,7 @@ export function scoreDeviceHealth(
     return {
       score: 65,
       label: "watch",
-      detail: `Weak RSSI (${rssi} dBm)`,
+      detail: fmt(t.weakRssi, { rssi: libNumber(rssi, locale) }),
       batteryPct,
       rssi,
       daysRemaining,
@@ -153,16 +157,17 @@ export function scoreDeviceHealth(
   return {
     score: 95,
     label: "healthy",
-    detail: "Reporting, dry flood contacts",
+    detail: t.healthy,
     batteryPct,
     rssi,
     daysRemaining,
   };
 }
 
-export function formatBatteryEta(daysRemaining: number | null): string {
+export function formatBatteryEta(daysRemaining: number | null, locale: Locale = "en"): string {
   if (daysRemaining == null) return "—";
-  if (daysRemaining < 2) return "Replace soon";
-  if (daysRemaining < 60) return `~${Math.round(daysRemaining)} days`;
-  return `~${Math.round(daysRemaining / 7)} wk`;
+  const t = libTextMessages(locale).health;
+  if (daysRemaining < 2) return t.etaReplaceSoon;
+  if (daysRemaining < 60) return plural(t.etaDays, Math.round(daysRemaining), locale);
+  return fmt(t.etaWeeks, { weeks: libNumber(Math.round(daysRemaining / 7), locale) });
 }

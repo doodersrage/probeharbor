@@ -6,6 +6,11 @@ vi.mock("../../../lib/alertAckTokens", () => ({
   applyAckToken: (...a: unknown[]) => mockApplyAckToken(...a),
 }));
 
+const mockGetUserById = vi.fn();
+vi.mock("../../../lib/supabase", () => ({
+  createAdminClient: () => ({ auth: { admin: { getUserById: (...a: unknown[]) => mockGetUserById(...a) } } }),
+}));
+
 function makeContext(query: string): APIContext {
   const url = new URL(`https://example.com/api/alerts/ack${query}`);
   return { url } as unknown as APIContext;
@@ -13,6 +18,7 @@ function makeContext(query: string): APIContext {
 
 beforeEach(() => {
   mockApplyAckToken.mockReset();
+  mockGetUserById.mockReset().mockResolvedValue({ data: { user: { user_metadata: {} } } });
 });
 
 describe("POST /api/alerts/ack", () => {
@@ -44,7 +50,7 @@ describe("POST /api/alerts/ack", () => {
 
     const response = await POST(makeContext("?uid=user-1&exp=123&sig=abc"));
 
-    expect(mockApplyAckToken).toHaveBeenCalledWith("user-1", 123, "abc");
+    expect(mockApplyAckToken).toHaveBeenCalledWith("user-1", 123, "abc", "en");
     const location = new URL(response.headers.get("Location")!);
     expect(location.searchParams.get("ack_ok")).toBe("1");
     expect(location.searchParams.get("ack_msg")).toBe("Marked handled.");
@@ -68,7 +74,7 @@ describe("POST /api/alerts/ack", () => {
 
     await POST(makeContext("?uid=user-1&exp=123"));
 
-    expect(mockApplyAckToken).toHaveBeenCalledWith("user-1", 123, "");
+    expect(mockApplyAckToken).toHaveBeenCalledWith("user-1", 123, "", "en");
   });
 });
 
@@ -102,5 +108,23 @@ describe("GET /api/alerts/ack", () => {
     await GET(makeContext("?uid=user-1&exp=123&sig=abc"));
 
     expect(mockApplyAckToken).not.toHaveBeenCalled();
+  });
+});
+
+describe("ack links in the alert owner's language", () => {
+  it("renders the confirm page and the result in German", async () => {
+    const { ensureLocale } = await import("../../../i18n/catalog");
+    await ensureLocale("de", ["app"]);
+    mockGetUserById.mockResolvedValue({ data: { user: { user_metadata: { locale: "de" } } } });
+    const { GET, POST } = await import("./ack");
+
+    const html = await (await GET(makeContext("?uid=user-1&exp=123&sig=abc"))).text();
+    expect(html).toContain('<html lang="de">');
+    expect(html).toContain("<h1>Alarm bestätigen?</h1>");
+    expect(html).toContain("Ja, als erledigt markieren");
+
+    mockApplyAckToken.mockResolvedValue({ ok: true, message: "Alarm als erledigt markiert." });
+    await POST(makeContext("?uid=user-1&exp=123&sig=abc"));
+    expect(mockApplyAckToken).toHaveBeenCalledWith("user-1", 123, "abc", "de");
   });
 });

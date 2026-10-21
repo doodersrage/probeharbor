@@ -1,6 +1,8 @@
 import type { DeviceWithSensors } from "./devices";
 import type { LatestSensorRow } from "./sensorReadings";
 import { isSensorLagging } from "./sensorFreshness";
+import type { Locale } from "../i18n/locales";
+import { devicesListMessages } from "../i18n/messages/app/devices/list";
 
 /**
  * Which risks each space is actually watched for. "stale" means a sensor
@@ -45,7 +47,9 @@ export function buildProtectionCoverage(
   devices: DeviceWithSensors[],
   latest: LatestSensorRow[],
   now = Date.now(),
+  locale: Locale = "en",
 ): SpaceCoverage[] {
+  const g = devicesListMessages(locale).coverage.gaps;
   const recordedBySensor = new Map(latest.map((row) => [row.sensor.id, row.recorded_at]));
   const bySpace = new Map<string, DeviceWithSensors[]>();
   for (const device of devices) {
@@ -68,20 +72,20 @@ export function buildProtectionCoverage(
 
     const gaps: string[] = [];
     if (unassigned) {
-      gaps.push("Set a space on these devices so coverage is tracked per room.");
+      gaps.push(g.unassigned);
     }
     if (risks.freeze === "none") {
-      gaps.push("No temperature probe: freeze alerts can't cover this space.");
+      gaps.push(g.noTemperature);
     } else if (risks.freeze === "stale") {
-      gaps.push("Temperature probe hasn't reported recently, so freeze alerts can't fire here.");
+      gaps.push(g.staleTemperature);
     }
     if (risks.leak === "stale") {
-      gaps.push("Leak sensor hasn't reported recently.");
+      gaps.push(g.staleLeak);
     } else if (risks.leak === "none" && !unassigned && isWetSpace(space)) {
-      gaps.push("No leak sensor here, and this kind of space usually has plumbing.");
+      gaps.push(g.noLeakWetSpace);
     }
-    if (risks.door === "stale") gaps.push("Door sensor hasn't reported recently.");
-    if (risks.power === "stale") gaps.push("Power sensor hasn't reported recently.");
+    if (risks.door === "stale") gaps.push(g.staleDoor);
+    if (risks.power === "stale") gaps.push(g.stalePower);
 
     result.push({ space, unassigned, deviceCount: spaceDevices.length, risks, gaps });
   }

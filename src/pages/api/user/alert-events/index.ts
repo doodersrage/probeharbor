@@ -4,11 +4,14 @@ import {
   countUnacknowledgedAlerts,
   listRecentAlertEvents,
 } from "../../../../lib/alertEvents";
+import { apiCommonMessages, apiLocale } from "../../../../i18n/messages/app/api/common";
 
-export const GET: APIRoute = async ({ request, cookies, url }) => {
+export const GET: APIRoute = async ({ request, cookies, url, locals }) => {
+  const locale = apiLocale({ locals });
+  const tc = apiCommonMessages(locale);
   const { session, user } = await getAuthFromRequest(request, cookies);
   if (!session || !user) {
-    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+    return new Response(JSON.stringify({ error: tc.unauthorized }), {
       status: 401,
       headers: { "Content-Type": "application/json" },
     });

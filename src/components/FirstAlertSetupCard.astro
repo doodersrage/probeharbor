@@ -1,5 +1,8 @@
 ---
 /** Inline freeze + email setup on Devices after first ingest. */
+import { getLocale } from "../i18n";
+import { devicesSetupMessages } from "../i18n/messages/app/devices/setup";
+
 interface Props {
   show: boolean;
   freezeThresholdF?: number;
@@ -19,32 +22,32 @@ const {
 } = Astro.props;
 
 const redirectTo = "/dashboard/devices";
+const t = devicesSetupMessages(getLocale(Astro)).firstAlert;
 ---
 
 {show && (
   <section class="card" id="first-alert-setup">
-    <h2 class="card-title">Set your first cold + water alert</h2>
+    <h2 class="card-title">{t.title}</h2>
     <p class="card-subtitle mb-4">
-      One threshold and an email, no need to leave Devices. Wet flood/leak contacts auto-alert once alerts are on (and bypass snooze/vacation).
-      Add Telegram, Discord, and more later.
+      {t.subtitle}
     </p>
     {alertSaved && !testError && (
       <p class="alert-success mt-0 mb-4">
         {testSent
-          ? "Cold + water alert saved and test sent, check your inbox."
-          : "Cold + water alert saved."}
+          ? t.savedAndTested
+          : t.saved}
       </p>
     )}
     {testError && (
       <p class="alert-warning mt-0 mb-4">
-        Settings saved, but the test could not be delivered. Confirm the email address or try again from Alerts.
+        {t.testFailed}
       </p>
     )}
     <form action="/api/user/alert-essentials" method="post" class="space-y-3">
       <input type="hidden" name="redirect" value={redirectTo} />
       <div class="flex flex-wrap gap-4">
         <div class="form-field mb-0">
-          <label class="form-label" for="first-alert-freeze">Freeze threshold (°F)</label>
+          <label class="form-label" for="first-alert-freeze">{t.freezeLabel}</label>
           <input
             class="form-input"
             type="number"
@@ -56,24 +59,24 @@ const redirectTo = "/dashboard/devices";
           />
         </div>
         <div class="form-field mb-0 min-w-[16rem] flex-1">
-          <label class="form-label" for="first-alert-email">Alert email</label>
+          <label class="form-label" for="first-alert-email">{t.emailLabel}</label>
           <input
             class="form-input"
             type="email"
             id="first-alert-email"
             name="alert_email"
             value={email ?? ""}
-            placeholder="you@example.com"
+            placeholder={t.emailPlaceholder}
             required
           />
         </div>
       </div>
       <div class="flex flex-wrap gap-3">
         <button class="btn-primary" type="submit" name="also_test" value="1">
-          Save + send test
+          {t.saveAndTest}
         </button>
-        <button class="btn-secondary" type="submit">Save only</button>
-        <a class="btn-ghost" href="/dashboard/alerts?tab=settings#alert-section-essentials">Full alert settings</a>
+        <button class="btn-secondary" type="submit">{t.saveOnly}</button>
+        <a class="btn-ghost" href="/dashboard/alerts?tab=settings#alert-section-essentials">{t.fullSettings}</a>
       </div>
     </form>
   </section>

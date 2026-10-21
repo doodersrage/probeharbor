@@ -1,6 +1,9 @@
 ---
 import DemoPullQuickStart from "./DemoPullQuickStart";
 import { getExampleFeedUrl } from "../lib/exampleFeed";
+import { getLocale } from "../i18n";
+import { overviewNudgesMessages } from "../i18n/messages/app/overview/nudges";
+import { deviceSetupPullMessages } from "../i18n/messages/app/deviceSetup/pull";
 
 interface Props {
   show: boolean;
@@ -9,19 +12,23 @@ interface Props {
 
 const { show, redirectTo = "/dashboard" } = Astro.props;
 const exampleFeedUrl = getExampleFeedUrl(Astro.site);
+const locale = getLocale(Astro);
+const t = overviewNudgesMessages(locale).demoPull;
+const demoText = deviceSetupPullMessages(locale).demo;
 ---
 
 {show && (
   <section class="card" id="demo-pull-nudge">
-    <h2 class="card-title">Try without hardware</h2>
+    <h2 class="card-title">{t.title}</h2>
     <p class="card-subtitle mb-4">
-      One click adds our public example HTTPS feed. Overview shows live temperatures with no ESP required.
+      {t.body}
     </p>
     <DemoPullQuickStart
       client:visible
       exampleFeedUrl={exampleFeedUrl}
       redirectTo={redirectTo}
-      buttonLabel="Try demo feed"
+      buttonLabel={t.button}
+      text={demoText}
     />
   </section>
 )}

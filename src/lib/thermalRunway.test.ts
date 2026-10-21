@@ -30,3 +30,16 @@ describe("buildThermalRunway", () => {
     expect(result.annotations.some((a) => a.includes("Forecast"))).toBe(true);
   });
 });
+
+describe("thermal runway (translated)", () => {
+  it("words the forecast annotation in French", async () => {
+    const { ensureLocale } = await import("../i18n");
+    const { buildThermalRunway } = await import("./thermalRunway");
+    await ensureLocale("fr", ["app"]);
+    const runway = buildThermalRunway(
+      { currentTempF: 40, freezeThresholdF: 32, recentSamples: [], forecastMinTempF: 30.5, forecastHoursAhead: 12 },
+      "fr",
+    );
+    expect(runway.annotations[0]).toContain("environ 30,5 °F dans les 12 prochaines heures");
+  });
+});

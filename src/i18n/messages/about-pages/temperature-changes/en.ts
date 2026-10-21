@@ -1,0 +1,33 @@
+
+/** /about/temperature-changes body copy. `*Html` keys are trusted inline HTML (English hrefs). */
+
+const en = {
+  introHtml:
+    "Temperature in unheated spaces rarely sits still. It climbs when the sun hits the roof, drops after a cold front passes, and spikes the moment a bay door opens. Understanding what drives those changes helps you interpret probe readings instead of treating every swing as an equipment fault.",
+  dailyTitle: "Daily patterns",
+  dailyHtml:
+    "Even without HVAC, most of these spaces follow a diurnal rhythm. Overnight, the structure radiates heat to the sky and interior air cools. Morning sun warms the roof deck first; that heat conducts downward over the next several hours. A probe on an east wall may peak before noon while a west wall sensor peaks near sunset. Humidity often rises when warm air cools against a cold concrete slab.",
+  seasonalTitle: "Seasonal shifts",
+  seasonalHtml:
+    "Winter brings longer cold-soak periods: the slab, framing, and contents all act as thermal mass that resists quick recovery. Summer inverts the problem: attic heat and radiant roof load can push indoor air above outdoor temperature unless ventilation or insulation intervenes. Historical data makes seasonal comparison obvious: the same probe in January and July tells two different stories.",
+  suddenTitle: "What causes sudden changes",
+  sudden: [
+    "<strong>Door operation:</strong> A single open bay can exchange a large fraction of air in minutes.",
+    "<strong>Vehicle entry:</strong> Warm engines, wet tires, and snow melt add heat and moisture pulses.",
+    "<strong>Weather fronts:</strong> Rapid outdoor drops pull air in attached or semi-conditioned spaces down with a delay of one to three hours.",
+    "<strong>Sun breaks after cloud cover:</strong> Roof surfaces can jump tens of degrees in under an hour.",
+    "<strong>Running equipment:</strong> Compressors, dryers, and space heaters create localized hot spots.",
+  ],
+  massTitle: "Thermal mass and lag",
+  massHtml:
+    "Concrete floors and masonry walls store energy. That is why probe temperature often peaks hours after maximum outdoor temperature. It also explains slow recovery after a cold snap: the space may stay below freezing inside even when the afternoon air outside is above 32 °F. When you review charts, compare probe trends with outdoor weather on the home page block to separate building effects from ambient weather.",
+  humidityTitle: "Humidity moves differently than temperature",
+  humidityHtml:
+    "Relative humidity rises when air cools without removing moisture: common when a warm day gives way to a clear night against a cold slab. Absolute moisture sources (rain on cars, snow melt, leaks) can spike humidity without much temperature change. Watching both values together prevents false conclusions: a “dry cold” day outdoors can still feel damp inside the space.",
+  decisionsTitle: "Using changes for decisions",
+  decisionsHtml:
+    'Short-term swings suggest ventilation or door habits. Multi-day trends suggest insulation or dehumidification work. Saved history on the <a class="text-link" href="/dashboard/history">reading history</a> page turns those patterns into evidence for maintenance budgets. For how snapshots are stored and exported, see <a class="text-link" href="/about/historical-data">historical temperature data usage</a>.',
+};
+
+export type Messages = typeof en;
+export default en;

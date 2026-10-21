@@ -1,10 +1,14 @@
 import { createServerClient } from "./supabase";
 import { sendEmail } from "./mailer";
-import { brandedEmailParts } from "./emailLayout";
+import { brandedEmailParts, formatEmailDate } from "./emailLayout";
 import { unsubscribeHeaders } from "./emailUnsubscribe";
 import { resolveSiteUrl } from "./schemaMarkup";
-import { describeFreezeNight, type FreezeNight } from "./pipeFreezeForecast";
+import { describeFreezeNight, HIGH_RISK_LOW_F, WINDY_MPH, type FreezeNight } from "./pipeFreezeForecast";
 import { fetchPipeFreezeForecast, pipeFreezeCacheKey } from "./pipeFreezeForecastFetch";
+import { formatTemp, formatWind } from "./tempUnits";
+import type { Locale } from "../i18n/locales";
+import { fmt, plural } from "../i18n/format";
+import { alertJobsMessages } from "../i18n/messages/app/alertJobs";
 
 /**
  * Hardware-free freeze alerts: an email the afternoon before a freezing night
@@ -62,19 +66,20 @@ export function freezeForecastUrl(sub: Pick<FreezeAlertSubscriber, "lat" | "lon"
   return `${siteUrl()}/pipe-freeze-forecast?${params.toString()}`;
 }
 
-async function sendConfirmEmail(email: string, token: string, place: string): Promise<void> {
-  const { text, html } = brandedEmailParts({
-    eyebrow: "Freeze alerts",
-    title: "Confirm your freeze alerts",
-    intro: `Click below and we'll email you the afternoon before a freezing night in ${place}.`,
-    paragraphs: [
-      "If you didn't ask for this, ignore this message. You won't get anything unless you confirm.",
-    ],
-    cta: { label: "Confirm freeze alerts", url: freezeAlertConfirmUrl(token) },
-    footerNote:
-      "You're receiving this because someone entered this address on the ProbeHarbor pipe freeze forecast.",
-  });
-  await sendEmail(email, `Confirm freeze alerts for ${place}`, text, { html });
+async function sendConfirmEmail(email: string, token: string, place: string, locale: Locale = "en"): Promise<void> {
+  const t = alertJobsMessages(locale).freeze.confirm;
+  const { text, html } = brandedEmailParts(
+    {
+      eyebrow: t.eyebrow,
+      title: t.title,
+      intro: fmt(t.intro, { place }),
+      paragraphs: [t.ignore],
+      cta: { label: t.cta, url: freezeAlertConfirmUrl(token) },
+      footerNote: t.footerNote,
+    },
+    locale,
+  );
+  await sendEmail(email, fmt(t.subject, { place }), text, { html });
 }
 
 /**
@@ -88,13 +93,14 @@ export async function subscribeToFreezeAlerts(input: {
   lat: number;
   lon: number;
   label: string;
-}): Promise<{ ok: boolean; error?: string }> {
+}, locale: Locale = "en"): Promise<{ ok: boolean; error?: string }> {
+  const errors = alertJobsMessages(locale).freeze.errors;
   const email = normalizeFreezeAlertEmail(input.email);
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    return { ok: false, error: "Enter a valid email address." };
+    return { ok: false, error: errors.invalidEmail };
   }
   if (!Number.isFinite(input.lat) || !Number.isFinite(input.lon) || Math.abs(input.lat) > 90 || Math.abs(input.lon) > 180) {
-    return { ok: false, error: "Pick a location first." };
+    return { ok: false, error: errors.pickLocation };
   }
   const lat = roundCoordinate(input.lat);
   const lon = roundCoordinate(input.lon);
@@ -108,7 +114,7 @@ export async function subscribeToFreezeAlerts(input: {
     .maybeSingle();
   if (lookupError) {
     console.error("freeze alert subscribe lookup failed:", lookupError.message);
-    return { ok: false, error: "Something went wrong. Please try again." };
+    return { ok: false, error: errors.generic };
   }
   if (existing?.confirmed_at && existing.lat === lat && existing.lon === lon) {
     return { ok: true };
@@ -121,11 +127,11 @@ export async function subscribeToFreezeAlerts(input: {
     : await supabase.from("freeze_alert_subscriptions").insert({ email, ...row });
   if (error) {
     console.error("freeze alert subscribe write failed:", error.message);
-    return { ok: false, error: "Something went wrong. Please try again." };
+    return { ok: false, error: errors.generic };
   }
 
   try {
-    await sendConfirmEmail(email, token, label);
+    await sendConfirmEmail(email, token, label, locale);
   } catch (sendError) {
     // The row exists; a later re-subscribe re-sends. Don't fail the form over a send hiccup.
     console.error("Failed to send freeze alert confirm email:", sendError);
@@ -216,42 +222,78 @@ export function decideFreezeAlert(
 // ---------------------------------------------------------------------------
 // The email
 
+/** Forecast low in the email: °F in English (as before), °C (°F) elsewhere. */
+function freezeTemp(f: number, locale: Locale): string {
+  return locale === "en" ? `${f}°F` : `${formatTemp(f, "C")} (${formatTemp(f, "F")})`;
+}
+
+/** `describeFreezeNight` for the email, in the recipient's language. */
+export function describeFreezeNightLocalized(night: FreezeNight, locale: Locale = "en"): string {
+  if (locale === "en") return describeFreezeNight(night);
+  const t = alertJobsMessages(locale).freeze.night;
+  const low = freezeTemp(night.lowF, locale);
+  const parts: string[] = [];
+  if (night.risk === "high") parts.push(fmt(t.high, { low, mark: freezeTemp(HIGH_RISK_LOW_F, locale) }));
+  else if (night.risk === "watch") parts.push(plural(t.watch, night.hoursAtOrBelow32, locale, { low }));
+  else parts.push(fmt(t.above, { low }));
+  if (night.maxFreezingWindMph != null && night.maxFreezingWindMph >= WINDY_MPH) {
+    const wind = `${formatWind(night.maxFreezingWindMph, "C")} (${formatWind(night.maxFreezingWindMph, "F")})`;
+    parts.push(fmt(t.wind, { wind }));
+  }
+  if (night.staysBelowFreezingNextDay) parts.push(t.nextDay);
+  return parts.join(" ");
+}
+
+function nightDate(date: string, locale: Locale): string {
+  if (locale === "en") return date;
+  return formatEmailDate(
+    `${date}T12:00:00Z`,
+    { weekday: "short", month: "short", day: "numeric", timeZone: "UTC" },
+    locale,
+  );
+}
+
 export function buildFreezeAlertEmail(
   sub: Pick<FreezeAlertSubscriber, "token" | "place_label" | "lat" | "lon">,
   night: FreezeNight,
   laterNights: FreezeNight[],
+  locale: Locale = "en",
 ): { subject: string; text: string; html: string; unsubscribeUrl: string } {
+  const t = alertJobsMessages(locale).freeze.alert;
   const place = sub.place_label;
   const high = night.risk === "high";
-  const subject = high
-    ? `High pipe-freeze risk tonight in ${place}: low ${night.lowF}°F`
-    : `Freezing tonight in ${place}: low ${night.lowF}°F`;
+  const low = freezeTemp(night.lowF, locale);
+  const subject = fmt(high ? t.subjectHigh : t.subjectWatch, { place, low });
   const unsubscribeUrl = freezeAlertUnsubscribeUrl(sub.token);
   const coming = laterNights.filter((n) => n.risk !== "low");
-  const { text, html } = brandedEmailParts({
-    preheader: describeFreezeNight(night),
-    eyebrow: "Freeze alert",
-    title: high ? `High freeze risk tonight in ${place}` : `Below freezing tonight in ${place}`,
-    intro: describeFreezeNight(night),
-    tone: high ? "alert" : "brand",
-    bullets: [
-      "Open cabinet doors under sinks on exterior walls.",
-      "Keep the garage door closed.",
-      "Let a faucet on an exposed line drip.",
-      "Know where your main water shutoff is.",
-    ],
-    paragraphs: [
-      ...(coming.length
-        ? [`Also below freezing later this week: ${coming.map((n) => `${n.date} (low ${n.lowF}°F)`).join(", ")}.`]
-        : []),
-      "This is the outdoor forecast. An attached or insulated garage can stay much warmer, and a drafty one can get nearly as cold. A $25 probe next to the pipe tells you what the space is actually doing and alerts you before it reaches freezing.",
-    ],
-    cta: { label: "See the 5-night forecast", url: freezeForecastUrl(sub) },
-    secondaryCta: { label: "Add a probe to your garage", url: `${siteUrl()}/about/esp32-freeze-kit` },
-    footerNote:
-      "We email the afternoon before the first freezing night of a cold spell and before every night at 20°F or colder. Forecast from the National Weather Service.",
-    unsubscribeUrl,
-  });
+  const description = describeFreezeNightLocalized(night, locale);
+  const { text, html } = brandedEmailParts(
+    {
+      preheader: description,
+      eyebrow: t.eyebrow,
+      title: fmt(high ? t.titleHigh : t.titleWatch, { place }),
+      intro: description,
+      tone: high ? "alert" : "brand",
+      bullets: [...t.bullets],
+      paragraphs: [
+        ...(coming.length
+          ? [
+              fmt(t.alsoLater, {
+                nights: coming
+                  .map((n) => fmt(t.laterNight, { date: nightDate(n.date, locale), low: freezeTemp(n.lowF, locale) }))
+                  .join(", "),
+              }),
+            ]
+          : []),
+        t.outdoorNote,
+      ],
+      cta: { label: t.ctaForecast, url: freezeForecastUrl(sub) },
+      secondaryCta: { label: t.ctaProbe, url: `${siteUrl()}/about/esp32-freeze-kit` },
+      footerNote: t.footerNote,
+      unsubscribeUrl,
+    },
+    locale,
+  );
   return { subject, text, html, unsubscribeUrl };
 }
 

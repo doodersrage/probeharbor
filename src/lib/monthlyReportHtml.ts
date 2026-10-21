@@ -3,8 +3,15 @@ import type { NightRisk } from "./FetchWeather";
 import type { FreezeHoursSummary } from "./freezeHours";
 import {
   buildBrandedEmailHtml,
+  formatEmailCount,
+  formatEmailDate,
+  formatEmailNumber,
+  formatEmailValue,
   type EmailSection,
 } from "./emailLayout";
+import { fmt } from "../i18n/format";
+import { LOCALE_META, type Locale } from "../i18n/locales";
+import { reportEmailMessages } from "../i18n/messages/app/email/reports";
 
 export type MonthlyProbeSummary = {
   label: string;
@@ -42,16 +49,23 @@ function escapeHtml(value: string): string {
     .replace(/"/g, "&quot;");
 }
 
-function formatTemp(value: number | null): string {
-  return value != null ? `${value.toFixed(1)}°F` : "—";
+function formatTemp(value: number | null, locale: Locale = "en"): string {
+  return value != null ? `${formatEmailNumber(value, 1, locale)}°F` : "—";
 }
 
-function reportTitle(data: MonthlyReportData): string {
-  return data.reportKind === "quarterly" ? "Quarterly report" : "Monthly report";
+function reportTitle(data: MonthlyReportData, locale: Locale = "en"): string {
+  const t = reportEmailMessages(locale);
+  return data.reportKind === "quarterly" ? t.titleQuarterly : t.titleMonthly;
 }
 
-function periodPhrase(data: MonthlyReportData): string {
-  return `${data.periodDays}-day`;
+/** Forecast night label: English keeps the weather feed's label, others re-format the date. */
+function nightLabel(night: NightRisk, locale: Locale): string {
+  if (locale === "en" || !/^\d{4}-\d{2}-\d{2}$/.test(night.date ?? "")) return night.dateLabel;
+  return formatEmailDate(
+    `${night.date}T12:00:00Z`,
+    { weekday: "short", month: "short", day: "numeric", timeZone: "UTC" },
+    locale,
+  );
 }
 
 export function summarizeProbesForReport(points: ChartPoint[]): MonthlyProbeSummary[] {
@@ -76,44 +90,59 @@ export function summarizeProbesForReport(points: ChartPoint[]): MonthlyProbeSumm
   });
 }
 
-export function buildMonthlyReportPlainText(data: MonthlyReportData): string {
+export function buildMonthlyReportPlainText(data: MonthlyReportData, locale: Locale = "en"): string {
+  const t = reportEmailMessages(locale);
+  const p = t.plain;
+  const num = (value: number, digits: number) => formatEmailNumber(value, digits, locale);
   const lines = [
-    `ProbeHarbor ${data.reportKind} report — ${data.monthLabel}`,
+    fmt(data.reportKind === "quarterly" ? p.headerQuarterly : p.headerMonthly, { label: data.monthLabel }),
     "",
-    `Readings (${periodPhrase(data)}): ${data.readingCount}`,
-    `Coldest: ${formatTemp(data.minTempF)}`,
-    `Warmest: ${formatTemp(data.maxTempF)}`,
-    `Average: ${formatTemp(data.avgTempF)}`,
-    `Hours at or below ${data.freezeThresholdF}°F: ${data.freezeHours.hoursBelow34.toFixed(1)}`,
-    `Forecast nights at risk (next 7d): ${data.nightsAtRisk}`,
+    fmt(p.readings, { days: data.periodDays, count: formatEmailValue(data.readingCount, locale) }),
+    fmt(p.coldest, { temp: formatTemp(data.minTempF, locale) }),
+    fmt(p.warmest, { temp: formatTemp(data.maxTempF, locale) }),
+    fmt(p.average, { temp: formatTemp(data.avgTempF, locale) }),
+    fmt(p.freezeHours, {
+      threshold: formatEmailValue(data.freezeThresholdF, locale),
+      hours: num(data.freezeHours.hoursBelow34, 1),
+    }),
+    fmt(p.nightsAtRisk, { count: formatEmailValue(data.nightsAtRisk, locale) }),
     "",
   ];
 
   if (data.probes.length > 0) {
-    lines.push("By probe:");
+    lines.push(p.byProbe);
     for (const probe of data.probes) {
       lines.push(
-        `  ${probe.label}: ${probe.minF.toFixed(1)}–${probe.maxF.toFixed(1)} °F, avg humidity ${probe.avgHumidity.toFixed(0)}% (${probe.readingCount} readings)`,
+        `  ${fmt(p.probeLine, {
+          probe: probe.label,
+          min: num(probe.minF, 1),
+          max: num(probe.maxF, 1),
+          humidity: num(probe.avgHumidity, 0),
+          readings: formatEmailCount(t.readings, probe.readingCount, locale),
+        })}`,
       );
     }
     lines.push("");
   }
 
   if (data.nights.length > 0) {
-    lines.push("Upcoming nights:");
+    lines.push(p.upcomingNights);
     for (const night of data.nights) {
       lines.push(
-        `  ${night.dateLabel}: ${night.minTempF.toFixed(0)}°F ${night.atRisk ? "(at risk)" : "(OK)"}`,
+        `  ${fmt(night.atRisk ? p.nightAtRisk : p.nightOk, {
+          night: nightLabel(night, locale),
+          low: num(night.minTempF, 0),
+        })}`,
       );
     }
     lines.push("");
   }
 
-  lines.push(`Manage alerts: ${data.alertsUrl}`);
-  if (data.unsubscribeUrl) lines.push(`Unsubscribe: ${data.unsubscribeUrl}`);
-  lines.push(`View history: ${data.historyUrl}`);
+  lines.push(fmt(p.manageAlerts, { url: data.alertsUrl }));
+  if (data.unsubscribeUrl) lines.push(fmt(p.unsubscribe, { url: data.unsubscribeUrl }));
+  lines.push(fmt(p.viewHistory, { url: data.historyUrl }));
   lines.push("");
-  lines.push("A full HTML report is attached — open it in your browser or print to PDF.");
+  lines.push(p.attached);
 
   return lines.join("\n");
 }
@@ -126,69 +155,71 @@ function statBlock(label: string, value: string, detail?: string): string {
   </div>`;
 }
 
-export function buildMonthlyReportHtmlDocument(data: MonthlyReportData): string {
+export function buildMonthlyReportHtmlDocument(data: MonthlyReportData, locale: Locale = "en"): string {
+  const t = reportEmailMessages(locale);
+  const num = (value: number, digits: number) => formatEmailNumber(value, digits, locale);
   const probeRows =
     data.probes.length === 0
-      ? `<tr><td colspan="4" style="padding:12px;color:#94a3b8">No probe readings in the last ${data.periodDays} days.</td></tr>`
+      ? `<tr><td colspan="4" style="padding:12px;color:#94a3b8">${escapeHtml(fmt(t.noProbeReadings, { days: data.periodDays }))}</td></tr>`
       : data.probes
           .map(
             (probe) =>
               `<tr>
                 <td style="padding:10px 12px;border-top:1px solid #1e3a4d">${escapeHtml(probe.label)}</td>
-                <td style="padding:10px 12px;border-top:1px solid #1e3a4d">${probe.minF.toFixed(1)}–${probe.maxF.toFixed(1)}°F</td>
-                <td style="padding:10px 12px;border-top:1px solid #1e3a4d">${probe.avgHumidity.toFixed(0)}%</td>
-                <td style="padding:10px 12px;border-top:1px solid #1e3a4d">${probe.readingCount}</td>
+                <td style="padding:10px 12px;border-top:1px solid #1e3a4d">${num(probe.minF, 1)}–${num(probe.maxF, 1)}°F</td>
+                <td style="padding:10px 12px;border-top:1px solid #1e3a4d">${num(probe.avgHumidity, 0)}%</td>
+                <td style="padding:10px 12px;border-top:1px solid #1e3a4d">${formatEmailValue(probe.readingCount, locale)}</td>
               </tr>`,
           )
           .join("");
 
   const nightRows =
     data.nights.length === 0
-      ? `<tr><td colspan="3" style="padding:12px;color:#94a3b8">No forecast data available.</td></tr>`
+      ? `<tr><td colspan="3" style="padding:12px;color:#94a3b8">${escapeHtml(t.noForecast)}</td></tr>`
       : data.nights
           .map(
             (night) =>
               `<tr>
-                <td style="padding:10px 12px;border-top:1px solid #1e3a4d">${escapeHtml(night.dateLabel)}</td>
-                <td style="padding:10px 12px;border-top:1px solid #1e3a4d">${night.minTempF.toFixed(0)}°F</td>
-                <td style="padding:10px 12px;border-top:1px solid #1e3a4d;color:${night.atRisk ? "#f87171" : "#4ade80"}">${night.atRisk ? "At risk" : "OK"}</td>
+                <td style="padding:10px 12px;border-top:1px solid #1e3a4d">${escapeHtml(nightLabel(night, locale))}</td>
+                <td style="padding:10px 12px;border-top:1px solid #1e3a4d">${num(night.minTempF, 0)}°F</td>
+                <td style="padding:10px 12px;border-top:1px solid #1e3a4d;color:${night.atRisk ? "#f87171" : "#4ade80"}">${escapeHtml(night.atRisk ? t.atRisk : t.ok)}</td>
               </tr>`,
           )
           .join("");
 
   return `<!DOCTYPE html>
-<html lang="en">
+<html lang="${LOCALE_META[locale].htmlLang}">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>ProbeHarbor report — ${escapeHtml(data.monthLabel)}</title>
+  <title>${escapeHtml(fmt(t.documentTitle, { label: data.monthLabel }))}</title>
 </head>
 <body style="margin:0;padding:24px;background:#07111a;color:#e2e8f0;font-family:system-ui,-apple-system,sans-serif;line-height:1.5">
   <div style="max-width:720px;margin:0 auto">
     <header style="margin-bottom:24px">
       <p style="margin:0 0 8px;font-size:13px;font-weight:800;letter-spacing:-0.02em"><span style="color:#c5cbd3">Probe</span><span style="color:#22b8d4">Harbor</span></p>
-      <h1 style="margin:0 0 8px;font-size:28px;color:#f8fafc">${escapeHtml(reportTitle(data))} — ${escapeHtml(data.monthLabel)}</h1>
-      <p style="margin:0;color:#94a3b8">${escapeHtml(periodPhrase(data))} snapshot from your saved readings and forecast outlook.</p>
+      <h1 style="margin:0 0 8px;font-size:28px;color:#f8fafc">${escapeHtml(reportTitle(data, locale))} — ${escapeHtml(data.monthLabel)}</h1>
+      <p style="margin:0;color:#94a3b8">${escapeHtml(fmt(t.snapshotIntro, { days: data.periodDays }))}</p>
     </header>
 
     <section style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:24px">
-      ${statBlock("Readings", String(data.readingCount))}
-      ${statBlock("Coldest", formatTemp(data.minTempF))}
-      ${statBlock("Warmest", formatTemp(data.maxTempF))}
-      ${statBlock("Average", formatTemp(data.avgTempF))}
-      ${statBlock("Freeze hours", `${data.freezeHours.hoursBelow34.toFixed(1)} h`, `≤ ${data.freezeThresholdF}°F`)}
-      ${statBlock("Nights at risk", String(data.nightsAtRisk), "Next 7 days forecast")}
+      ${statBlock(t.statReadings, formatEmailValue(data.readingCount, locale))}
+      ${statBlock(t.statColdest, formatTemp(data.minTempF, locale))}
+      ${statBlock(t.statWarmest, formatTemp(data.maxTempF, locale))}
+      ${statBlock(t.statAverage, formatTemp(data.avgTempF, locale))}
+      ${statBlock(t.statFreezeHours, fmt(t.hoursValue, { hours: num(data.freezeHours.hoursBelow34, 1) }), `≤ ${formatEmailValue(data.freezeThresholdF, locale)}°F`)}
+      ${statBlock(t.statNightsAtRisk, formatEmailValue(data.nightsAtRisk, locale), t.next7Days)}
     </section>
 
     <section style="margin-bottom:24px">
-      <h2 style="margin:0 0 12px;font-size:18px;color:#f8fafc">By probe</h2>
+      <h2 style="margin:0 0 12px;font-size:18px;color:#f8fafc">${escapeHtml(t.byProbe)}</h2>
       <table style="width:100%;border-collapse:collapse;background:#0b1a25;border:1px solid #1e3a4d;border-radius:12px;overflow:hidden">
         <thead>
           <tr style="background:#0f1f2c;color:#94a3b8;text-align:left;font-size:12px">
-            <th style="padding:10px 12px">Probe</th>
-            <th style="padding:10px 12px">Range</th>
-            <th style="padding:10px 12px">Avg humidity</th>
-            <th style="padding:10px 12px">Readings</th>
+            <th style="padding:10px 12px">${escapeHtml(t.colProbe)}</th>
+            <th style="padding:10px 12px">${escapeHtml(t.colRange)}</th>
+            <th style="padding:10px 12px">${escapeHtml(t.colAvgHumidity)}</th>
+            <th style="padding:10px 12px">${escapeHtml(t.colReadings)}</th>
           </tr>
         </thead>
         <tbody>${probeRows}</tbody>
@@ -196,13 +227,13 @@ export function buildMonthlyReportHtmlDocument(data: MonthlyReportData): string 
     </section>
 
     <section style="margin-bottom:24px">
-      <h2 style="margin:0 0 12px;font-size:18px;color:#f8fafc">Forecast nights</h2>
+      <h2 style="margin:0 0 12px;font-size:18px;color:#f8fafc">${escapeHtml(t.forecastNights)}</h2>
       <table style="width:100%;border-collapse:collapse;background:#0b1a25;border:1px solid #1e3a4d;border-radius:12px;overflow:hidden">
         <thead>
           <tr style="background:#0f1f2c;color:#94a3b8;text-align:left;font-size:12px">
-            <th style="padding:10px 12px">Night</th>
-            <th style="padding:10px 12px">Low</th>
-            <th style="padding:10px 12px">Status</th>
+            <th style="padding:10px 12px">${escapeHtml(t.colNight)}</th>
+            <th style="padding:10px 12px">${escapeHtml(t.colLow)}</th>
+            <th style="padding:10px 12px">${escapeHtml(t.colStatus)}</th>
           </tr>
         </thead>
         <tbody>${nightRows}</tbody>
@@ -211,59 +242,69 @@ export function buildMonthlyReportHtmlDocument(data: MonthlyReportData): string 
 
     <footer style="border-top:1px solid #1e3a4d;padding-top:16px;color:#94a3b8;font-size:13px">
       <p style="margin:0 0 8px">
-        <a href="${escapeHtml(data.historyUrl)}" style="color:#67d3e6">View history</a>
+        <a href="${escapeHtml(data.historyUrl)}" style="color:#67d3e6">${escapeHtml(t.viewHistory)}</a>
         ·
-        <a href="${escapeHtml(data.alertsUrl)}" style="color:#67d3e6">Manage alerts</a>
+        <a href="${escapeHtml(data.alertsUrl)}" style="color:#67d3e6">${escapeHtml(t.manageAlerts)}</a>
       </p>
-      <p style="margin:0">Print this page (Ctrl/Cmd+P) to save as PDF.</p>
+      <p style="margin:0">${escapeHtml(t.printHint)}</p>
     </footer>
   </div>
 </body>
 </html>`;
 }
 
-function freezeCalloutBody(data: MonthlyReportData): string {
+function freezeCalloutBody(data: MonthlyReportData, locale: Locale = "en"): string {
+  const t = reportEmailMessages(locale);
+  const threshold = formatEmailValue(data.freezeThresholdF, locale);
   if (data.freezeHours.readingsBelow34 === 0) {
-    return `None at or below ${data.freezeThresholdF}°F`;
+    return fmt(t.freezeNone, { threshold });
   }
-  const coldest =
-    data.freezeHours.coldestF != null
-      ? ` · coldest ${data.freezeHours.coldestF.toFixed(1)}°F`
-      : "";
-  return `${data.freezeHours.hoursBelow34.toFixed(1)} h at or below ${data.freezeThresholdF}°F (${data.freezeHours.readingsBelow34} readings${coldest})`;
+  const vars = {
+    hours: formatEmailNumber(data.freezeHours.hoursBelow34, 1, locale),
+    threshold,
+    readings: formatEmailCount(t.readings, data.freezeHours.readingsBelow34, locale),
+  };
+  return data.freezeHours.coldestF != null
+    ? fmt(t.freezeSomeColdest, { ...vars, coldest: formatEmailNumber(data.freezeHours.coldestF, 1, locale) })
+    : fmt(t.freezeSome, vars);
 }
 
 /** Shorter HTML for the email body (stats, freeze callout, compact tables). */
-export function buildMonthlyReportHtmlEmail(data: MonthlyReportData): string {
-  const kindLabel = data.reportKind === "quarterly" ? "Quarterly report" : "Monthly report";
+export function buildMonthlyReportHtmlEmail(data: MonthlyReportData, locale: Locale = "en"): string {
+  const t = reportEmailMessages(locale);
+  const num = (value: number, digits: number) => formatEmailNumber(value, digits, locale);
+  const kindLabel = reportTitle(data, locale);
   const sections: EmailSection[] = [
     {
       type: "callout",
       tone: data.freezeHours.readingsBelow34 === 0 ? "success" : "alert",
-      title: "Freeze exposure",
-      body: freezeCalloutBody(data),
+      title: t.freezeTitle,
+      body: freezeCalloutBody(data, locale),
     },
     {
       type: "stats",
       items: [
-        { label: "Readings", value: String(data.readingCount) },
-        { label: "Coldest", value: formatTemp(data.minTempF) },
-        { label: "Warmest", value: formatTemp(data.maxTempF) },
-        { label: "Average", value: formatTemp(data.avgTempF) },
+        { label: t.statReadings, value: formatEmailValue(data.readingCount, locale) },
+        { label: t.statColdest, value: formatTemp(data.minTempF, locale) },
+        { label: t.statWarmest, value: formatTemp(data.maxTempF, locale) },
+        { label: t.statAverage, value: formatTemp(data.avgTempF, locale) },
       ],
     },
   ];
 
   if (data.probes.length > 0) {
     sections.push(
-      { type: "heading", text: "By probe" },
+      { type: "heading", text: t.byProbe },
       {
         type: "table",
-        headers: ["Probe", "Range", "Humidity"],
+        headers: [t.colProbe, t.colRange, t.colHumidity],
         rows: data.probes.map((probe) => [
           probe.label,
-          `${probe.minF.toFixed(1)}–${probe.maxF.toFixed(1)}°F`,
-          `${probe.avgHumidity.toFixed(0)}% · ${probe.readingCount} readings`,
+          `${num(probe.minF, 1)}–${num(probe.maxF, 1)}°F`,
+          fmt(t.humidityCell, {
+            humidity: num(probe.avgHumidity, 0),
+            readings: formatEmailCount(t.readings, probe.readingCount, locale),
+          }),
         ]),
       },
     );
@@ -271,14 +312,14 @@ export function buildMonthlyReportHtmlEmail(data: MonthlyReportData): string {
 
   if (data.nights.length > 0) {
     sections.push(
-      { type: "heading", text: "Forecast nights" },
+      { type: "heading", text: t.forecastNights },
       {
         type: "table",
-        headers: ["Night", "Low", "Status"],
+        headers: [t.colNight, t.colLow, t.colStatus],
         rows: data.nights.map((night) => [
-          night.dateLabel,
-          `${night.minTempF.toFixed(0)}°F`,
-          night.atRisk ? "At risk" : "OK",
+          nightLabel(night, locale),
+          `${num(night.minTempF, 0)}°F`,
+          night.atRisk ? t.atRisk : t.ok,
         ]),
       },
     );
@@ -286,27 +327,35 @@ export function buildMonthlyReportHtmlEmail(data: MonthlyReportData): string {
 
   sections.push({
     type: "note",
-    text: "A full HTML report is attached — open it in a browser or print to PDF.",
+    text: t.attachedEmail,
   });
 
-  return buildBrandedEmailHtml({
-    eyebrow: kindLabel,
-    title: `Probe report — ${data.monthLabel}`,
-    intro: `${periodPhrase(data)} snapshot from your saved readings and forecast outlook.`,
-    sections,
-    cta: { label: "View history", url: data.historyUrl },
-    secondaryCta: { label: "Manage alerts", url: data.alertsUrl },
-    unsubscribeUrl: data.unsubscribeUrl,
-    tone: "brand",
-  });
+  return buildBrandedEmailHtml(
+    {
+      eyebrow: kindLabel,
+      title: fmt(t.emailTitle, { label: data.monthLabel }),
+      intro: fmt(t.snapshotIntro, { days: data.periodDays }),
+      sections,
+      cta: { label: t.viewHistory, url: data.historyUrl },
+      secondaryCta: { label: t.manageAlerts, url: data.alertsUrl },
+      unsubscribeUrl: data.unsubscribeUrl,
+      tone: "brand",
+    },
+    locale,
+  );
 }
 
 /** Subject line with coldest reading for inbox scanability. */
-export function formatPeriodReportSubject(data: MonthlyReportData): string {
-  const kind = data.reportKind === "quarterly" ? "Quarterly" : "Monthly";
-  const coldest =
-    data.minTempF != null ? ` · coldest ${data.minTempF.toFixed(1)}°F` : "";
-  return `${kind} probe report — ${data.monthLabel}${coldest}`;
+export function formatPeriodReportSubject(data: MonthlyReportData, locale: Locale = "en"): string {
+  const t = reportEmailMessages(locale);
+  const quarterly = data.reportKind === "quarterly";
+  if (data.minTempF == null) {
+    return fmt(quarterly ? t.subjectQuarterly : t.subjectMonthly, { label: data.monthLabel });
+  }
+  return fmt(quarterly ? t.subjectQuarterlyColdest : t.subjectMonthlyColdest, {
+    label: data.monthLabel,
+    temp: formatEmailNumber(data.minTempF, 1, locale),
+  });
 }
 
 export function encodeBase64Utf8(text: string): string {

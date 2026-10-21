@@ -1,4 +1,7 @@
 ---
+import { getLocale } from "../../i18n";
+import { alertSettingsMessages } from "../../i18n/messages/app/alertSettings";
+
 interface Props {
   initialPlaybooks: unknown[];
   alertChannels: ReadonlyArray<{ id: string; label: string }>;
@@ -6,8 +9,9 @@ interface Props {
 }
 
 const { initialPlaybooks, alertChannels, playbookKinds } = Astro.props;
+const text = alertSettingsMessages(getLocale(Astro)).clientPlaybooks;
 ---
-<script is:inline define:vars={{ initialPlaybooks, alertChannels, playbookKinds }}>
+<script is:inline define:vars={{ initialPlaybooks, alertChannels, playbookKinds, text }}>
   (() => {
     const form = document.getElementById("alert-settings-form");
     if (!(form instanceof HTMLFormElement)) return;
@@ -43,17 +47,17 @@ const { initialPlaybooks, alertChannels, playbookKinds } = Astro.props;
           .join("");
         wrap.innerHTML = `
           <div class="flex flex-wrap gap-2 mb-2 items-center">
-            <input class="form-input flex-1" data-field="name" value="${(step.name || "").replace(/"/g, "&quot;")}" placeholder="Step name" />
+            <input class="form-input flex-1" data-field="name" value="${(step.name || "").replace(/"/g, "&quot;")}" placeholder="${text.namePlaceholder}" />
             <div class="form-field mb-0">
-              <label class="form-label text-xs">After (min)</label>
+              <label class="form-label text-xs">${text.afterMinutes}</label>
               <input class="form-input" type="number" data-field="afterMinutes" min="1" value="${step.afterMinutes ?? 15}" style="max-width:6rem" />
             </div>
-            <label class="checkbox-row mb-0"><input type="checkbox" data-field="ifUnacked" ${step.ifUnacked !== false ? "checked" : ""} /> <span>Only if unacked</span></label>
-            <button type="button" class="btn-secondary text-sm" data-remove-step>Delete</button>
+            <label class="checkbox-row mb-0"><input type="checkbox" data-field="ifUnacked" ${step.ifUnacked !== false ? "checked" : ""} /> <span>${text.onlyIfUnacked}</span></label>
+            <button type="button" class="btn-secondary text-sm" data-remove-step>${text.delete}</button>
           </div>
-          <p class="text-sm text-[var(--color-text-muted)] mb-1">Channels</p>
+          <p class="text-sm text-[var(--color-text-muted)] mb-1">${text.channels}</p>
           <div class="flex flex-wrap gap-2 mb-2">${channelChecks}</div>
-          <p class="text-sm text-[var(--color-text-muted)] mb-1">Kinds (none = all)</p>
+          <p class="text-sm text-[var(--color-text-muted)] mb-1">${text.kinds}</p>
           <div class="flex flex-wrap gap-2">${kindChecks}</div>
         `;
         wrap.querySelector("[data-remove-step]")?.addEventListener("click", () => {
@@ -98,7 +102,7 @@ const { initialPlaybooks, alertChannels, playbookKinds } = Astro.props;
     addBtn?.addEventListener("click", () => {
       steps.push({
         id: crypto.randomUUID(),
-        name: "Escalation step",
+        name: text.newStepName,
         afterMinutes: 15,
         ifUnacked: true,
         channels: ["sms"],

@@ -3,6 +3,9 @@ import DashboardCard from "./DashboardCard.astro";
 import ChartSkeleton from "./ChartSkeleton.astro";
 import HistoryChart from "../HistoryChart";
 import type { ChartPoint } from "../../lib/garageTempsHistory";
+import { fmt, formatNumber, getLocale } from "../../i18n";
+import { overviewCardsMessages } from "../../i18n/messages/app/overviewCards";
+import { demoIslandMessages } from "../../i18n/messages/demoIslands";
 
 interface Props {
   points: ChartPoint[];
@@ -26,22 +29,24 @@ const {
   alertMarkers = [],
 } = Astro.props;
 
-const chartTitle = title ?? `Temperature trend (${days} days)`;
-const cardTitle = `Temperature (last ${days} days)`;
+const locale = getLocale(Astro);
+const t = overviewCardsMessages(locale).weekChart;
+const daysLabel = locale === "en" ? String(days) : formatNumber(days, locale);
+const chartTitle = title ?? fmt(t.chartTitle, { days: daysLabel });
+const cardTitle = fmt(t.cardTitle, { days: daysLabel });
+// Chart chrome: the same translated HistoryChart copy as the public demo.
+const chartUi = locale === "en" ? undefined : demoIslandMessages(locale).chart;
 ---
 <DashboardCard>
   <div class="card-header-row">
     <div>
       <h2 class="card-title">{cardTitle}</h2>
-      <p class="card-subtitle mb-0">
-        Every probe against your freeze line.
-        <a class="text-link" href="/dashboard/history">Open History</a> for filters, exports, and year-over-year.
-      </p>
+      <p class="card-subtitle mb-0" set:html={t.subtitleHtml} />
     </div>
   </div>
   {points.length < 2 ? (
     <p class="mt-4 mb-0 text-sm text-[var(--color-text-muted)]">
-      The chart fills in as readings arrive: give it an hour or two after your first reading.
+      {t.empty}
     </p>
   ) : (
     <div class="relative mt-4 history-chart-host">
@@ -55,6 +60,7 @@ const cardTitle = `Temperature (last ${days} days)`;
         freezeThresholdF={freezeThresholdF}
         showHumidity={showHumidity}
         alertMarkers={alertMarkers}
+        ui={chartUi}
       >
         <ChartSkeleton slot="fallback" />
       </HistoryChart>

@@ -3,6 +3,9 @@ import { sendEmail } from "./mailer";
 import { brandedEmailParts } from "./emailLayout";
 import { resolveSiteUrl } from "./schemaMarkup";
 import { canEditHousehold, getUserHouseholdRole } from "./households";
+import type { Locale } from "../i18n/locales";
+import { fmt } from "../i18n/format";
+import { alertJobsMessages } from "../i18n/messages/app/alertJobs";
 
 export type TenantNotifySettings = {
   email: string | null;
@@ -28,12 +31,13 @@ export async function getTenantNotifySettings(
 export async function updateTenantNotifySettings(
   householdId: string,
   settings: TenantNotifySettings,
+  locale: Locale = "en",
 ): Promise<{ error: string | null }> {
   const email = settings.email?.trim() || null;
   const name = settings.name?.trim() || null;
 
   if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    return { error: "Invalid email address." };
+    return { error: alertJobsMessages(locale).tenant.errors.invalidEmail };
   }
 
   const supabase = createServerClient();
@@ -55,31 +59,36 @@ export async function sendTenantFreezeRelay(input: {
   alertTitle: string;
   alertBody: string;
   siteUrl?: string;
+  /** Language of the email (the account owner's; tenants have no account). */
+  locale?: Locale;
 }): Promise<{ ok: boolean; error?: string }> {
+  const locale = input.locale ?? "en";
+  const t = alertJobsMessages(locale).tenant;
   const role = await getUserHouseholdRole(input.managerUserId, input.householdId);
   if (!canEditHousehold(role)) {
-    return { ok: false, error: "Not authorized to notify tenant." };
+    return { ok: false, error: t.errors.notAuthorized };
   }
 
   const tenant = await getTenantNotifySettings(input.householdId);
   if (!tenant.email) {
-    return { ok: false, error: "No tenant contact configured." };
+    return { ok: false, error: t.errors.noContact };
   }
 
   const siteUrl = input.siteUrl ?? resolveSiteUrl(null);
-  const greeting = tenant.name ? `Hi ${tenant.name},` : "Hello,";
-  const intro = `${greeting}\n\nThe property manager for ${input.householdName} asked us to pass along a freeze-risk alert:`;
+  const greeting = tenant.name ? fmt(t.greetingName, { name: tenant.name }) : t.greeting;
+  const intro = `${greeting}\n\n${fmt(t.intro, { household: input.householdName })}`;
 
-  const parts = brandedEmailParts({
-    eyebrow: "Tenant alert relay",
+  const content: Parameters<typeof brandedEmailParts>[0] = {
+    eyebrow: t.eyebrow,
     preheader: input.alertTitle,
     title: input.alertTitle,
     intro: `${intro}\n\n${input.alertBody}`,
     cta: { label: "ProbeHarbor", url: siteUrl },
     tone: "alert",
-    footerNote:
-      "You received this because the property owner listed you as an on-site contact. This is not a full dashboard login.",
-  });
+    footerNote: t.footerNote,
+  };
+  // English keeps the original single-argument call.
+  const parts = locale === "en" ? brandedEmailParts(content) : brandedEmailParts(content, locale);
 
   try {
     await sendEmail(tenant.email, `[${input.householdName}] ${input.alertTitle}`, parts.text, {
@@ -88,6 +97,6 @@ export async function sendTenantFreezeRelay(input: {
     return { ok: true };
   } catch (error) {
     console.error("tenant relay email failed:", error);
-    return { ok: false, error: "Email delivery failed." };
+    return { ok: false, error: t.errors.deliveryFailed };
   }
 }

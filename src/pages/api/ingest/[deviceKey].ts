@@ -1,4 +1,5 @@
 import type { APIRoute } from "astro";
+import { localeFromMetadata } from "../../../i18n/userLocale";
 import {
   findDeviceByIngestKeyHash,
   touchDeviceLastSeen,
@@ -226,6 +227,8 @@ export const POST: APIRoute = async ({ params, request }) => {
         const { data } = await admin.auth.admin.getUserById(member.user_id);
         const userMetadata = data.user?.user_metadata as Record<string, unknown> | undefined;
         const settings = await getAlertSettingsForUser(member.user_id, userMetadata);
+        // Alerts go out in each member's account language.
+        const locale = localeFromMetadata(userMetadata);
         const weatherCityId =
           typeof userMetadata?.weather_city_id === "string"
             ? userMetadata.weather_city_id.trim()
@@ -237,12 +240,14 @@ export const POST: APIRoute = async ({ params, request }) => {
           readings,
           device.household_id,
           { weatherCityId, latestSensors: latest },
+          locale,
         );
         await sendFloodAlertsIfNeeded(
           member.user_id,
           data.user?.email,
           settings,
           floodReadings,
+          locale,
         );
         await maybeSendRuleAlerts(
           member.user_id,
@@ -251,6 +256,7 @@ export const POST: APIRoute = async ({ params, request }) => {
           settings,
           readings,
           device.household_id,
+          locale,
         );
       } catch (memberError) {
         console.error(`Ingest alerts failed for member ${member.user_id}:`, memberError);

@@ -13,6 +13,8 @@ import {
   getCompanionClientCookie,
   type CompanionClient,
 } from "../../lib/companionAuth";
+import { getLocale } from "../../i18n";
+import { authHandoffMessages } from "../../i18n/messages/app/auth/handoff";
 
 const exchange = Astro.url.searchParams.get("exchange")?.trim() ?? "";
 const client = (Astro.url.searchParams.get("client")?.trim().toLowerCase() ||
@@ -41,36 +43,18 @@ const customUrl = exchange
   : "";
 const openHref = intentUrl || customUrl;
 
-const title = isBayBuddy
-  ? "Return to Bay Buddy"
+const handoffText = authHandoffMessages(getLocale(Astro)).appOAuth;
+const clientText = isBayBuddy
+  ? handoffText.baybuddy
   : isDesktop
-    ? "Return to ProbeHarbor Desktop"
-    : "Return to the Android app";
-const description = isBayBuddy
-  ? "Finish ProbeHarbor sign-in by returning to Bay Buddy."
-  : isDesktop
-    ? "Finish ProbeHarbor sign-in by returning to ProbeHarbor Desktop."
-    : "Finish ProbeHarbor sign-in by returning to the Android app.";
-const openLabel = isBayBuddy
-  ? "Open Bay Buddy"
-  : isDesktop
-    ? "Open ProbeHarbor Desktop"
-    : "Open ProbeHarbor";
-const handoffHint = isBayBuddy
-  ? " If Bay Buddy is waiting, it should pick up automatically. If not, tap the button below."
-  : isDesktop
-    ? " If ProbeHarbor Desktop is waiting on the loopback handoff, it should finish automatically. If not, this page is a fallback — reopen the app and Connect again."
-    : " Chrome often stays here after a Google or YubiKey security step: tap the button to return to the app and finish MFA there if needed.";
-const closeHint = isBayBuddy
-  ? "You can close this tab once Bay Buddy shows your live garage mood."
-  : isDesktop
-    ? "You can close this tab once ProbeHarbor Desktop shows your dashboard."
-    : "If nothing happens, use the phone’s back button to return to the app, or open ProbeHarbor from your app drawer.";
-const missingHint = isBayBuddy
-  ? "This page returns you to Bay Buddy after sign-in. Open Bay Buddy and choose Connect again."
-  : isDesktop
-    ? "This page returns you to ProbeHarbor Desktop after sign-in. Open the desktop app and choose Connect again."
-    : "This page is only used to return to the Android app after Google sign-in. Open ProbeHarbor on your phone and try Google again.";
+    ? handoffText.desktop
+    : handoffText.android;
+const title = clientText.title;
+const description = clientText.description;
+const openLabel = clientText.open;
+const handoffHint = ` ${clientText.handoff}`;
+const closeHint = clientText.close;
+const missingHint = clientText.missing;
 ---
 <Layout
   title={title}
@@ -85,7 +69,7 @@ const missingHint = isBayBuddy
         <>
           <h1 class="card-title">{openLabel}</h1>
           <p class="card-subtitle">
-            Sign-in finished in the browser.
+            {handoffText.signInFinished}
             {handoffHint}
           </p>
           <p class="mt-4 mb-2">
@@ -118,7 +102,7 @@ const missingHint = isBayBuddy
         </>
       ) : (
         <>
-          <h1 class="card-title">Missing sign-in token</h1>
+          <h1 class="card-title">{handoffText.missingTitle}</h1>
           <p class="card-subtitle mb-0">
             {missingHint}
           </p>

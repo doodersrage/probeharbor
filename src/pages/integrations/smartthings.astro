@@ -9,7 +9,7 @@ import {
   resolvePageUrl,
   resolveSiteUrl,
 } from "../../lib/schemaMarkup";
-import { getLocale } from "../../i18n";
+import { fmt, getLocale } from "../../i18n";
 import { integrationsMessages } from "../../i18n/messages/integrations";
 import { getLocalizedIntegrationTaglines } from "../../i18n/content/integrations";
 import {
@@ -74,7 +74,7 @@ const schema = [
       <h2 class="card-title">{t.setupTitle}</h2>
       <ol class="text-sm space-y-2 pl-5 list-decimal mb-0">
         <li set:html={t.setupStep1Html} />
-        <li set:html={t.setupStep2Html(MATTER_REPO_URL)} />
+        <li set:html={fmt(t.setupStep2Html, { href: MATTER_REPO_URL })} />
         <li>{t.setupStep3}</li>
         <li>{t.setupStep4}</li>
       </ol>

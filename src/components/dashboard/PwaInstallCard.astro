@@ -1,18 +1,22 @@
 ---
 import DashboardCard from "./DashboardCard.astro";
+import { getLocale } from "../../i18n";
+import { settingsMessages } from "../../i18n/messages/app/settings";
+
+const t = settingsMessages(getLocale(Astro)).pwa;
 ---
 <DashboardCard class="col-span-12" id="pwa-install">
-  <h2 class="card-title">Install the app</h2>
+  <h2 class="card-title">{t.heading}</h2>
   <p class="card-subtitle mb-3">
-    Add ProbeHarbor to your home screen for faster access.
+    {t.subtitle}
   </p>
   <div class="flex flex-wrap gap-3">
     <button type="button" class="btn-primary" id="pwa-install-btn" hidden>
-      Install app
+      {t.install}
     </button>
-    <a class="btn-secondary" href="/about/install-pwa">PWA install guide</a>
+    <a class="btn-secondary" href="/about/install-pwa">{t.guide}</a>
   </div>
-  <p class="card-subtitle mt-2 mb-0" id="pwa-install-status"></p>
+  <p class="card-subtitle mt-2 mb-0" id="pwa-install-status" data-i18n={JSON.stringify(t.client)}></p>
 </DashboardCard>
 
 <script is:inline>
@@ -20,6 +24,14 @@ import DashboardCard from "./DashboardCard.astro";
     const btn = document.getElementById("pwa-install-btn");
     const status = document.getElementById("pwa-install-status");
     let deferredPrompt = null;
+    let text = {
+      accepted: "Install started.",
+      dismissed: "Install dismissed. You can still use the guide below.",
+      installed: "App installed.",
+    };
+    try {
+      text = Object.assign(text, JSON.parse((status && status.dataset.i18n) || "{}"));
+    } catch (e) {}
 
     window.addEventListener("beforeinstallprompt", (event) => {
       event.preventDefault();
@@ -33,16 +45,14 @@ import DashboardCard from "./DashboardCard.astro";
       const choice = await deferredPrompt.userChoice;
       if (status) {
         status.textContent =
-          choice.outcome === "accepted"
-            ? "Install started."
-            : "Install dismissed. You can still use the guide below.";
+          choice.outcome === "accepted" ? text.accepted : text.dismissed;
       }
       deferredPrompt = null;
       if (btn) btn.hidden = true;
     });
 
     window.addEventListener("appinstalled", () => {
-      if (status) status.textContent = "App installed.";
+      if (status) status.textContent = text.installed;
       if (btn) btn.hidden = true;
     });
   })();

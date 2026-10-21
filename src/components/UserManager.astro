@@ -2,10 +2,11 @@
 import type { PaginatedManagedUsers, ManagedUserListQuery } from "../lib/userManager";
 import {
   formatUserGroups,
-  formatUserTimestamp,
   managedUserListQueryString,
 } from "../lib/userManager";
 import DashboardCard from "./dashboard/DashboardCard.astro";
+import { fmt, formatDateTime, getLocale } from "../i18n";
+import { adminMessages } from "../i18n/messages/app/admin";
 
 interface Props {
   users: PaginatedManagedUsers;
@@ -22,6 +23,9 @@ const {
   basePath = "/dashboard/users",
   status = null,
 } = Astro.props;
+const locale = getLocale(Astro);
+const a = adminMessages(locale);
+const t = a.users.manager;
 const { users: rows, page, pageSize, totalCount, totalPages, error } = users;
 const { search, group, sort } = query;
 
@@ -41,73 +45,73 @@ function pageHref(next: number): string {
 <DashboardCard>
   <div class="card-header-row">
     <div>
-      <h2 class="card-title">Registered users</h2>
+      <h2 class="card-title">{t.title}</h2>
       <p class="card-subtitle">
-        Review accounts, group memberships, and grant or revoke admin access.
+        {t.subtitle}
       </p>
     </div>
   </div>
 
   {status === "updated" && (
     <div class="alert-success mb-4" role="status">
-      <p class="m-0">User access updated.</p>
+      <p class="m-0">{t.updated}</p>
     </div>
   )}
 
   {status === "error" && (
     <div class="alert-warning mb-4" role="alert">
-      <p class="m-0">Unable to update user access. Please try again.</p>
+      <p class="m-0">{t.updateError}</p>
     </div>
   )}
 
   <form class="history-filters" method="get" action={basePath}>
     <div class="form-field mb-0">
-      <label class="form-label" for="user-search">Search</label>
+      <label class="form-label" for="user-search">{a.common.search}</label>
       <input
         class="form-input"
         type="search"
         id="user-search"
         name="q"
         value={search}
-        placeholder="Email or user id"
+        placeholder={t.searchPlaceholder}
       />
     </div>
     <div class="form-field mb-0">
-      <label class="form-label" for="user-group">Group</label>
+      <label class="form-label" for="user-group">{t.group}</label>
       <select class="form-input" id="user-group" name="group">
-        <option value="" selected={group === ""}>All groups</option>
-        <option value="admin" selected={group === "admin"}>Admin</option>
+        <option value="" selected={group === ""}>{t.allGroups}</option>
+        <option value="admin" selected={group === "admin"}>{t.admin}</option>
         <option value="portfolio" selected={group === "portfolio"}>Portfolio</option>
         <option value="pro" selected={group === "pro"}>Pro</option>
         <option value="member" selected={group === "member"}>Member</option>
-        <option value="user" selected={group === "user"}>User</option>
+        <option value="user" selected={group === "user"}>{t.groupUser}</option>
       </select>
     </div>
     <div class="form-field mb-0">
-      <label class="form-label" for="user-sort">Sort</label>
+      <label class="form-label" for="user-sort">{t.sort}</label>
       <select class="form-input" id="user-sort" name="sort">
-        <option value="created_desc" selected={sort === "created_desc"}>Newest first</option>
-        <option value="created_asc" selected={sort === "created_asc"}>Oldest first</option>
-        <option value="email_asc" selected={sort === "email_asc"}>Email A–Z</option>
-        <option value="email_desc" selected={sort === "email_desc"}>Email Z–A</option>
+        <option value="created_desc" selected={sort === "created_desc"}>{t.newest}</option>
+        <option value="created_asc" selected={sort === "created_asc"}>{t.oldest}</option>
+        <option value="email_asc" selected={sort === "email_asc"}>{t.emailAz}</option>
+        <option value="email_desc" selected={sort === "email_desc"}>{t.emailZa}</option>
       </select>
     </div>
-    <button type="submit" class="btn-secondary self-end">Apply</button>
+    <button type="submit" class="btn-secondary self-end">{t.apply}</button>
     {hasFilters && (
-      <a class="btn-ghost self-end" href={basePath}>Clear</a>
+      <a class="btn-ghost self-end" href={basePath}>{t.clear}</a>
     )}
   </form>
   <p class="preference-hint mb-4">
-    Search matches email or user id. Pro and Portfolio accounts also belong to Member.
+    {t.hint}
   </p>
 
   {error ? (
     <div class="empty-state">
-      <p>Unable to load users: {error}</p>
+      <p>{fmt(t.loadError, { error })}</p>
     </div>
   ) : rows.length === 0 ? (
     <div class="empty-state">
-      <p>{hasFilters ? "No registered users match these filters." : "No registered users were found."}</p>
+      <p>{hasFilters ? t.noMatch : t.noUsers}</p>
     </div>
   ) : (
     <>
@@ -115,10 +119,10 @@ function pageHref(next: number): string {
         <table class="data-table data-table-users">
           <thead>
             <tr>
-              <th scope="col">Email</th>
-              <th scope="col">Joined</th>
-              <th scope="col">Groups</th>
-              <th scope="col">Admin</th>
+              <th scope="col">{a.common.email}</th>
+              <th scope="col">{t.joined}</th>
+              <th scope="col">{t.groups}</th>
+              <th scope="col">{t.admin}</th>
             </tr>
           </thead>
           <tbody>
@@ -131,17 +135,17 @@ function pageHref(next: number): string {
                     {managedUser.email}
                     {isSelf && (
                       <span class="ml-2 rounded-full bg-[rgb(252_222_156/0.55)] px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-[var(--color-accent-hover)]">
-                        You
+                        {t.you}
                       </span>
                     )}
                   </td>
-                  <td>{formatUserTimestamp(managedUser.created_at)}</td>
-                  <td>{formatUserGroups(managedUser.groups)}</td>
+                  <td>{formatDateTime(managedUser.created_at, locale, { dateStyle: "medium", timeStyle: "short" })}</td>
+                  <td>{managedUser.groups.length === 0 ? t.noGroups : formatUserGroups(managedUser.groups)}</td>
                   <td>
                     {managedUser.is_admin ? (
                       isSelf ? (
                         <span class="rounded-full bg-[rgb(252_222_156/0.55)] px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-[var(--color-accent-hover)]">
-                          Admin
+                          {t.admin}
                         </span>
                       ) : (
                         <form action="/api/admin/users/toggle-admin" method="post">
@@ -149,7 +153,7 @@ function pageHref(next: number): string {
                           <input type="hidden" name="user_id" value={managedUser.user_id} />
                           <input type="hidden" name="make_admin" value="false" />
                           <button class="btn-danger" type="submit">
-                            Revoke admin
+                            {t.revoke}
                           </button>
                         </form>
                       )
@@ -159,7 +163,7 @@ function pageHref(next: number): string {
                         <input type="hidden" name="user_id" value={managedUser.user_id} />
                         <input type="hidden" name="make_admin" value="true" />
                         <button class="btn-secondary" type="submit">
-                          Grant admin
+                          {t.grant}
                         </button>
                       </form>
                     )}
@@ -173,19 +177,19 @@ function pageHref(next: number): string {
 
       <div class="pagination">
         <p class="pagination-summary">
-          Showing {showingFrom}–{showingTo} of {totalCount} users
+          {fmt(t.showing, { from: showingFrom, to: showingTo, total: totalCount })}
         </p>
         <div class="pagination-controls">
           {prevPage ? (
-            <a class="btn-secondary" href={pageHref(prevPage)}>Previous</a>
+            <a class="btn-secondary" href={pageHref(prevPage)}>{a.common.previous}</a>
           ) : (
-            <span class="btn-secondary pagination-disabled">Previous</span>
+            <span class="btn-secondary pagination-disabled">{a.common.previous}</span>
           )}
-          <span class="pagination-current">Page {page} of {Math.max(totalPages, 1)}</span>
+          <span class="pagination-current">{fmt(a.common.pageOf, { page, total: Math.max(totalPages, 1) })}</span>
           {nextPage ? (
-            <a class="btn-secondary" href={pageHref(nextPage)}>Next</a>
+            <a class="btn-secondary" href={pageHref(nextPage)}>{a.common.next}</a>
           ) : (
-            <span class="btn-secondary pagination-disabled">Next</span>
+            <span class="btn-secondary pagination-disabled">{a.common.next}</span>
           )}
         </div>
       </div>

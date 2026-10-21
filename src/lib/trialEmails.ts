@@ -1,6 +1,10 @@
 import { createAdminClient } from "./supabase";
 import { resolveSiteUrl } from "./schemaMarkup";
-import { brandedEmailParts } from "./emailLayout";
+import { brandedEmailParts, formatEmailValue } from "./emailLayout";
+import { fmt } from "../i18n/format";
+import type { Locale } from "../i18n/locales";
+import { getUserLocale } from "../i18n/userLocale";
+import { trialEmailMessages } from "../i18n/messages/app/email/trial";
 import {
   isMailerRecipientNotAllowed,
   partitionMailErrors,
@@ -20,35 +24,34 @@ export function trialJobShouldFail(errors: string[]): boolean {
   return partitionMailErrors(errors).hardErrors.length > 0;
 }
 
-export function buildTrialReminderEmail(options: {
-  plan: string;
-  remaining: number;
-  siteUrl?: string;
-}): { subject: string; text: string; html: string } {
+export function buildTrialReminderEmail(
+  options: {
+    plan: string;
+    remaining: number;
+    siteUrl?: string;
+  },
+  locale: Locale = "en",
+): { subject: string; text: string; html: string } {
+  const t = trialEmailMessages(locale);
   const siteUrl = options.siteUrl ?? resolveSiteUrl(null);
   const { plan, remaining } = options;
-  const subject =
-    remaining === 1
-      ? `Your ProbeHarbor ${plan} trial ends tomorrow`
-      : `Your ProbeHarbor ${plan} trial ends in ${remaining} days`;
-  const when = remaining === 1 ? "tomorrow" : `in ${remaining} days`;
-  const parts = brandedEmailParts({
-    eyebrow: "Trial reminder",
-    preheader: `Your ${plan} trial ends ${when}. Keep SMS, webhooks, and share links without interruption.`,
-    title: remaining === 1 ? "Trial ends tomorrow" : `Trial ends in ${remaining} days`,
-    intro: `Your ${plan} trial wraps up ${when}. Stay on Pro to keep SMS, share links, and webhooks active.`,
-    paragraphs: [
-      "Billing is managed in the Stripe customer portal from your dashboard — no surprise lockout if you renew before the trial ends.",
-    ],
-    bullets: [
-      "SMS freeze and leak alerts",
-      "Public share links and embeds",
-      "Outbound webhooks and higher device limits",
-    ],
-    cta: { label: "Review plans & billing", url: `${siteUrl}/dashboard/plans` },
-    secondaryCta: { label: "Compare features", url: `${siteUrl}/pricing` },
-    tone: "brand",
-  });
+  const tomorrow = remaining === 1;
+  const vars = { plan, days: formatEmailValue(remaining, locale) };
+  const subject = fmt(tomorrow ? t.subjectTomorrow : t.subjectDays, vars);
+  const parts = brandedEmailParts(
+    {
+      eyebrow: t.eyebrow,
+      preheader: fmt(tomorrow ? t.preheaderTomorrow : t.preheaderDays, vars),
+      title: fmt(tomorrow ? t.titleTomorrow : t.titleDays, vars),
+      intro: fmt(tomorrow ? t.introTomorrow : t.introDays, vars),
+      paragraphs: [t.billing],
+      bullets: [...t.bullets],
+      cta: { label: t.ctaPlans, url: `${siteUrl}/dashboard/plans` },
+      secondaryCta: { label: t.ctaCompare, url: `${siteUrl}/pricing` },
+      tone: "brand",
+    },
+    locale,
+  );
   return { subject, ...parts };
 }
 
@@ -105,7 +108,7 @@ export async function sendTrialRemindersForAllUsers(): Promise<{
           : sub.plan_tier === "pro"
             ? "Pro"
             : "Member";
-      const mail = buildTrialReminderEmail({ plan, remaining, siteUrl });
+      const mail = buildTrialReminderEmail({ plan, remaining, siteUrl }, getUserLocale(userData.user));
       await sendEmail(email, mail.subject, mail.text, { html: mail.html });
       await supabase
         .from("alert_settings")

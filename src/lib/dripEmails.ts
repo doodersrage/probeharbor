@@ -12,91 +12,86 @@ import {
 } from "./mailer";
 import { buildUnsubscribeUrl, unsubscribeHeaders } from "./emailUnsubscribe";
 import { isEmailSuppressed } from "./emailSuppressions";
+import { fmt, formatNumber } from "../i18n/format";
+import type { Locale } from "../i18n/locales";
+import { getUserLocale } from "../i18n/userLocale";
+import { dripEmailMessages, type DripEmailMessages } from "../i18n/messages/app/email/drip";
 
 export type DripStageId = "day1" | "day3" | "day7";
 /** Stage ids plus the variants sent to people who have no reading yet. */
 export type DripEmailId = DripStageId | "day3_setup" | "day7_setup" | "confirm";
 
+type DripCopyKey = keyof DripEmailMessages;
+
 type DripStage = {
   id: DripStageId;
   day: number;
+  /** English subject (the recipient's language comes from `buildDripEmail`). */
   subject: string;
-  content: (siteUrl: string) => BrandedEmailContent;
+  content: (siteUrl: string, locale?: Locale) => BrandedEmailContent;
 };
 
 type DripEmail = Omit<DripStage, "id" | "day">;
+
+type DripLinks = {
+  cta: string;
+  secondaryCta: string;
+  tone: BrandedEmailContent["tone"];
+};
+
+function dripEmail(key: DripCopyKey, links: (site: string) => DripLinks): DripEmail {
+  return {
+    subject: dripEmailMessages.en[key].subject,
+    content: (site, locale = "en") => {
+      const copy = dripEmailMessages(locale)[key];
+      const urls = links(site);
+      const content: BrandedEmailContent = {
+        eyebrow: copy.eyebrow,
+        preheader: copy.preheader,
+        title: copy.title,
+        intro: copy.intro,
+      };
+      if (copy.paragraphs.length > 0) content.paragraphs = [...copy.paragraphs];
+      if (copy.bullets.length > 0) {
+        content.bullets = copy.bullets.map((bullet) =>
+          fmt(bullet, { maxDevices: formatNumber(PRO_MAX_DEVICES, locale) }),
+        );
+      }
+      content.cta = { label: copy.cta, url: urls.cta };
+      content.secondaryCta = { label: copy.secondaryCta, url: urls.secondaryCta };
+      content.tone = urls.tone;
+      return content;
+    },
+  };
+}
 
 export const DRIP_STAGES: DripStage[] = [
   {
     id: "day1",
     day: 1,
-    subject: "Add your first probe to ProbeHarbor",
-    content: (site) => ({
-      eyebrow: "Getting started",
-      preheader: "Create a device key, POST JSON, sensors auto-import — about 10 minutes.",
-      title: "Connect your first probe",
-      intro:
-        "Welcome to ProbeHarbor. Your free account is ready — next step is a live reading on Home.",
-      paragraphs: [
-        "Open Devices and pick what you have. Each path creates a device and hands you a snippet with its key; sensors auto-import on the first reading.",
-      ],
-      bullets: [
-        "Sensors in Home Assistant, ESPHome, or MQTT: copy-paste YAML or a relay, about 5 minutes",
-        "An ESP32, Pico W, or Arduino: download a sketch pre-filled with your ingest URL",
-        "No hardware yet: one click adds a live demo feed so you can see the dashboard work",
-      ],
-      cta: { label: "Open Devices", url: `${site}/dashboard/devices?view=setup` },
-      secondaryCta: { label: "Adding devices guide", url: `${site}/about/adding-devices` },
+    ...dripEmail("day1", (site) => ({
+      cta: `${site}/dashboard/devices?view=setup`,
+      secondaryCta: `${site}/about/adding-devices`,
       tone: "brand",
-    }),
+    })),
   },
   {
     id: "day3",
     day: 3,
-    subject: "Turn on freeze and leak alerts before the next surprise",
-    content: (site) => ({
-      eyebrow: "Freeze and flood protection",
-      preheader:
-        "Most unconditioned spaces start freeze alerts around 34°F — and wet flood contacts notify automatically once alerts are on.",
-      title: "Don’t wait for the cold snap or a wet pad",
-      intro:
-        "ProbeHarbor can reach you when temperatures drop toward freezing or a leak contact goes wet — email and push now, plus SMS on Pro.",
-      paragraphs: [
-        "Set a freeze threshold on your coldest zone, enable the channels you actually check, and send a test while you’re awake. Add a wet/dry flood contact on a heater pan, laundry, or sump when you have one.",
-      ],
-      bullets: [
-        "Start freeze near 34–38°F, then tune after you see overnight lows",
-        "Enable quiet-hour bypass for freeze and flood alerts",
-        "Optional: invite household members so someone else sees the ping",
-      ],
-      cta: { label: "Configure alerts", url: `${site}/dashboard/alerts` },
-      secondaryCta: { label: "Cold-snap playbook", url: `${site}/about/cold-snap-playbook` },
+    ...dripEmail("day3", (site) => ({
+      cta: `${site}/dashboard/alerts`,
+      secondaryCta: `${site}/about/cold-snap-playbook`,
       tone: "alert",
-    }),
+    })),
   },
   {
     id: "day7",
     day: 7,
-    subject: "Try Pro free — SMS, webhooks, and more share scopes",
-    content: (site) => ({
-      eyebrow: "Pro trial",
-      preheader:
-        "SMS, WhatsApp, Pro share scopes, and webhooks — 14-day free trial.",
-      title: "Level up with a free Pro trial",
-      intro:
-        "You’ve had a week to explore ProbeHarbor. Pro adds the channels and sharing tools that matter at 2 a.m. (Free already includes one family live link.)",
-      paragraphs: [
-        "Start a 14-day trial from Pricing — cancel anytime from the dashboard billing portal.",
-      ],
-      bullets: [
-        "SMS and browser push freeze and leak alerts",
-        "History, metrics, and never-expire share links plus embeds",
-        `Outbound webhooks plus up to ${PRO_MAX_DEVICES} devices per property`,
-      ],
-      cta: { label: "Compare plans & start trial", url: `${site}/pricing` },
-      secondaryCta: { label: "Open dashboard", url: `${site}/dashboard` },
+    ...dripEmail("day7", (site) => ({
+      cta: `${site}/pricing`,
+      secondaryCta: `${site}/dashboard`,
       tone: "brand",
-    }),
+    })),
   },
 ];
 
@@ -105,67 +100,42 @@ export const DRIP_STAGES: DripStage[] = [
  * stall never got a first reading, so they get setup help instead.
  */
 export const DRIP_SETUP_EMAILS: Record<"day3_setup" | "day7_setup", DripEmail> = {
-  day3_setup: {
-    subject: "Still setting up? Three quick ways to a first reading",
-    content: (site) => ({
-      eyebrow: "Getting started",
-      preheader: "Home Assistant, a flashed ESP32, or a one-click demo feed.",
-      title: "Your dashboard is waiting for a first reading",
-      intro:
-        "Nothing has reported in yet. Pick whichever you have today; each takes a few minutes from Devices → Setup.",
-      bullets: [
-        "Home Assistant, ESPHome, or MQTT: we generate the YAML or relay command with your key",
-        "ESP32 + DS18B20 (about $25): download a sketch with your ingest URL already filled in",
-        "Nothing yet: add the demo feed to see charts and alerts work before buying parts",
-      ],
-      cta: { label: "Open Devices setup", url: `${site}/dashboard/devices?view=setup` },
-      secondaryCta: { label: "ESP32 freeze kit parts", url: `${site}/about/esp32-freeze-kit` },
-      tone: "brand",
-    }),
-  },
-  day7_setup: {
-    subject: "What are you trying to connect?",
-    content: (site) => ({
-      eyebrow: "Setup help",
-      preheader: "Tell us your sensor or hub and we'll point you at the shortest path.",
-      title: "Stuck on setup? Tell us what you have",
-      intro:
-        "Your account still has no readings. If a sensor, hub, or board didn't fit one of the setup paths, send a note with what you're using and we'll help you get it reporting.",
-      paragraphs: [
-        "Freeze season is close. A single probe near the coldest pipe is enough to get an alert before it matters.",
-      ],
-      cta: { label: "Ask for setup help", url: `${site}/contact` },
-      secondaryCta: { label: "Open Devices setup", url: `${site}/dashboard/devices?view=setup` },
-      tone: "brand",
-    }),
-  },
+  day3_setup: dripEmail("day3Setup", (site) => ({
+    cta: `${site}/dashboard/devices?view=setup`,
+    secondaryCta: `${site}/about/esp32-freeze-kit`,
+    tone: "brand",
+  })),
+  day7_setup: dripEmail("day7Setup", (site) => ({
+    cta: `${site}/contact`,
+    secondaryCta: `${site}/dashboard/devices?view=setup`,
+    tone: "brand",
+  })),
 };
 
 /**
  * For accounts that never confirmed their address: they can't sign in, so
  * device setup and the Pro pitch are useless until they confirm.
  */
-export const DRIP_CONFIRM_EMAIL: DripEmail = {
-  subject: "Confirm your email to finish setting up ProbeHarbor",
-  content: (site) => ({
-    eyebrow: "One step left",
-    preheader: "Your account is waiting on email confirmation; links expire, so grab a fresh one.",
-    title: "Confirm your email to sign in",
-    intro:
-      "You started a ProbeHarbor account but the address was never confirmed, so sign-in is still locked.",
-    paragraphs: [
-      "Confirmation links expire. Request a fresh one, click it, and you'll land on Devices ready to connect a first sensor (or a demo feed if you have no hardware yet).",
-    ],
-    cta: { label: "Send a new confirmation link", url: `${site}/resend-confirmation` },
-    secondaryCta: { label: "Sign in", url: `${site}/signin` },
-    tone: "brand",
-  }),
+export const DRIP_CONFIRM_EMAIL: DripEmail = dripEmail("confirm", (site) => ({
+  cta: `${site}/resend-confirmation`,
+  secondaryCta: `${site}/signin`,
+  tone: "brand",
+}));
+
+const DRIP_COPY_KEY: Record<DripEmailId, DripCopyKey> = {
+  day1: "day1",
+  day3: "day3",
+  day7: "day7",
+  day3_setup: "day3Setup",
+  day7_setup: "day7Setup",
+  confirm: "confirm",
 };
 
 export function buildDripEmail(
   emailId: DripEmailId,
   siteUrl = resolveSiteUrl(null),
   unsubscribeUrl: string | null = null,
+  locale: Locale = "en",
 ): { subject: string; text: string; html: string } {
   const email: DripEmail =
     emailId === "confirm"
@@ -173,8 +143,9 @@ export function buildDripEmail(
       : emailId === "day3_setup" || emailId === "day7_setup"
         ? DRIP_SETUP_EMAILS[emailId]
         : (DRIP_STAGES.find((item) => item.id === emailId) ?? DRIP_STAGES[0]);
-  const parts = brandedEmailParts({ ...email.content(siteUrl), unsubscribeUrl });
-  return { subject: email.subject, ...parts };
+  const parts = brandedEmailParts({ ...email.content(siteUrl, locale), unsubscribeUrl }, locale);
+  const key = DRIP_COPY_KEY[emailId] ?? "day1";
+  return { subject: dripEmailMessages(locale)[key].subject, ...parts };
 }
 
 /**
@@ -289,8 +260,8 @@ export async function sendDripEmailsForAllUsers(
           ? nextStage.id
           : dripEmailIdForStage(nextStage.id, await hasFirstReading(row.user_id));
       if (emailId) {
-        const unsubscribeUrl = await buildUnsubscribeUrl(siteUrl, row.user_id, "drip");
-        const mail = buildDripEmail(emailId, siteUrl, unsubscribeUrl);
+        const unsubscribeUrl = await buildUnsubscribeUrl(siteUrl, row.user_id, "drip", getUserLocale(user));
+        const mail = buildDripEmail(emailId, siteUrl, unsubscribeUrl, getUserLocale(user));
         await sendEmail(user.email, mail.subject, mail.text, {
           html: mail.html,
           headers: unsubscribeHeaders(unsubscribeUrl),

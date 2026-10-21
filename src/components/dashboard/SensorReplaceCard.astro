@@ -2,6 +2,8 @@
 import DashboardCard from "./DashboardCard.astro";
 import type { DeviceWithSensors } from "../../lib/devices";
 import { replacementOptionsByKind } from "../../lib/sensorReplacement";
+import type { SensorKind } from "../../lib/sensorKinds";
+import en from "../../i18n/messages/app/deviceDetail/en";
 
 /**
  * Swap a failed probe for a new one: history, name, thresholds, and indoor
@@ -12,39 +14,42 @@ interface Props {
   redirectTo: string;
   /** Collapsed "Replace a sensor…" inside another card (the device page). */
   collapsed?: boolean;
+  /** Translated strings (app/deviceDetail `replace`); English when omitted. */
+  text?: typeof en.replace;
+  /** Translated sensor type names for the option groups; English when omitted. */
+  kindLabels?: Record<SensorKind, string>;
 }
 
-const { devices, redirectTo, collapsed = false } = Astro.props;
+const { devices, redirectTo, collapsed = false, text = en.replace, kindLabels } = Astro.props;
 const Wrapper = collapsed ? "details" : DashboardCard;
 const groups = replacementOptionsByKind(devices);
 ---
 {groups.length > 0 && (
   <Wrapper id="replace-sensor" class={collapsed ? "mt-4" : undefined}>
     {collapsed ? (
-      <summary class="cursor-pointer text-sm font-semibold">Replace a sensor…</summary>
+      <summary class="cursor-pointer text-sm font-semibold">{text.summary}</summary>
     ) : (
-      <h2 class="card-title">Replace a sensor</h2>
+      <h2 class="card-title">{text.title}</h2>
     )}
     <p class:list={["card-subtitle mb-3", collapsed && "mt-2"]}>
-      Swapped a dead probe or a whole board? Once the new sensor has posted a reading, move the old one's history
-      onto it so charts, reports, and alerts carry on as one sensor.
+      {text.intro}
     </p>
     <form
       action="/api/devices"
       method="post"
       class="space-y-3"
       data-sensor-replace-form
-      onsubmit="return confirm('Move all history from the old sensor to the new one and delete the old sensor? This can\'t be undone.');"
+      onsubmit={`return confirm(${JSON.stringify(text.confirm)});`}
     >
       <input type="hidden" name="action" value="replace_sensor" />
       <input type="hidden" name="redirect" value={redirectTo} />
       <div class="grid gap-3 sm:grid-cols-2">
         <div class="form-field mb-0">
-          <label class="form-label" for="replace-old-sensor">Old sensor (retired)</label>
+          <label class="form-label" for="replace-old-sensor">{text.oldSensor}</label>
           <select class="form-input" id="replace-old-sensor" name="old_sensor_id" required>
-            <option value="">Choose…</option>
+            <option value="">{text.choose}</option>
             {groups.map((group) => (
-              <optgroup label={group.kindLabel}>
+              <optgroup label={kindLabels?.[group.kind] ?? group.kindLabel}>
                 {group.options.map((option) => (
                   <option value={option.sensorId} data-kind={option.kind}>{option.label}</option>
                 ))}
@@ -53,11 +58,11 @@ const groups = replacementOptionsByKind(devices);
           </select>
         </div>
         <div class="form-field mb-0">
-          <label class="form-label" for="replace-new-sensor">New sensor</label>
+          <label class="form-label" for="replace-new-sensor">{text.newSensor}</label>
           <select class="form-input" id="replace-new-sensor" name="new_sensor_id" required>
-            <option value="">Choose…</option>
+            <option value="">{text.choose}</option>
             {groups.map((group) => (
-              <optgroup label={group.kindLabel}>
+              <optgroup label={kindLabels?.[group.kind] ?? group.kindLabel}>
                 {group.options.map((option) => (
                   <option value={option.sensorId} data-kind={option.kind}>{option.label}</option>
                 ))}
@@ -67,15 +72,9 @@ const groups = replacementOptionsByKind(devices);
         </div>
       </div>
       <ul class="m-0 pl-5 text-sm text-[var(--color-text-muted)] list-disc">
-        <li>The new sensor takes the old one's name, so rules that match by name keep working.</li>
-        <li>Per-sensor thresholds, the indoor reference, and door history follow it.</li>
-        <li>
-          Each probe keeps its own calibration offset; old readings are adjusted so past charts look exactly the
-          same.
-        </li>
-        <li>The old sensor is deleted. If it posts again, it comes back as a new, empty sensor.</li>
+        {text.bullets.map((item) => <li>{item}</li>)}
       </ul>
-      <button class="btn-secondary" type="submit">Replace sensor</button>
+      <button class="btn-secondary" type="submit">{text.button}</button>
     </form>
   </Wrapper>
 )}

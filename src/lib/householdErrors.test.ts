@@ -33,3 +33,14 @@ describe("getHouseholdErrorMessage", () => {
     );
   });
 });
+
+describe("getHouseholdErrorMessage (translated)", () => {
+  it("returns the German message when the locale is loaded", async () => {
+    const { ensureLocale } = await import("../i18n/catalog");
+    await ensureLocale("de", ["app"]);
+    expect(getHouseholdErrorMessage("expired", "de")).toBe(
+      "Diese Einladung ist abgelaufen. Bitte um eine neue.",
+    );
+    expect(getHouseholdErrorMessage("x".repeat(200), "de")).toContain("Haushalt");
+  });
+});

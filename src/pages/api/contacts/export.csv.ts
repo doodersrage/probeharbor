@@ -5,18 +5,21 @@ import {
   buildContactsCsv,
   fetchAllContactSubmissions,
 } from "../../../lib/contactSubmissions";
+import { apiLocale, apiMoreCommonMessages } from "../../../i18n/messages/app/apiMore/common";
 
-export const GET: APIRoute = async ({ cookies }) => {
+export const GET: APIRoute = async (context) => {
+  const { cookies } = context;
+  const t = apiMoreCommonMessages(apiLocale(context));
   const { session, user } = await getAuthFromCookies(cookies);
 
   if (!session || !user) {
-    return new Response("Unauthorized", { status: 401 });
+    return new Response(t.unauthorized, { status: 401 });
   }
 
   const admin = await isUserAdmin(user.id);
 
   if (!admin) {
-    return new Response("Forbidden", { status: 403 });
+    return new Response(t.forbidden, { status: 403 });
   }
 
   const { submissions, error } = await fetchAllContactSubmissions();

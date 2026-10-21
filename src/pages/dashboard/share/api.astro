@@ -3,6 +3,8 @@ import DashboardLayout from "../../../layouts/DashboardLayout.astro";
 import ShareNav from "../../../components/dashboard/ShareNav.astro";
 import UpgradeNudge from "../../../components/UpgradeNudge.astro";
 import { loadShareDashboardContext } from "../../../lib/shareDashboardContext";
+import { getLocale } from "../../../i18n";
+import { shareMessages, shareNotice } from "../../../i18n/messages/app/share";
 
 const ctx = await loadShareDashboardContext(Astro.cookies, Astro.request, Astro.url);
 if (ctx.redirect) return Astro.redirect(ctx.redirect);
@@ -17,15 +19,17 @@ const {
   newApiKey,
   inboundToken,
   inboundSigningSecret,
-  notice,
   noticeIsError,
 } = ctx;
+const msgs = shareMessages(getLocale(Astro));
+const t = msgs.api;
+const notice = ctx.notice ? (shareNotice(Astro.url, msgs.notices) ?? ctx.notice) : null;
 
 const redirectTo = "/dashboard/share/api";
 const showWebhookNudge =
   !entitlements.canUseOutboundWebhook && !entitlements.canCreateShareLinks;
 ---
-<DashboardLayout title="Share" subtitle="API keys, inbound webhooks, and ingest stats.">
+<DashboardLayout title={msgs.title} subtitle={t.subtitle}>
   <ShareNav active="api">
     <div class="space-y-6">
       {notice && (
@@ -35,15 +39,14 @@ const showWebhookNudge =
       )}
 
       <section class="card">
-        <h2 class="card-title">First success path</h2>
+        <h2 class="card-title">{t.firstTitle}</h2>
         <p class="card-subtitle mb-4">
-          Most integrators start with device ingest (not Prometheus). Create a push device, then POST JSON
-          with the per-device key: curl example lives on the HTTP API docs.
+          {t.firstBody}
         </p>
         <div class="flex flex-wrap gap-3">
-          <a class="btn-primary" href="/dashboard/devices">Create push device</a>
-          <a class="btn-secondary" href="/docs/api#ingest">API docs: ingest curl</a>
-          <a class="btn-ghost" href="/about/probe-demo">Copy sample JSON from simulator</a>
+          <a class="btn-primary" href="/dashboard/devices">{t.createPushDevice}</a>
+          <a class="btn-secondary" href="/docs/api#ingest">{t.apiDocsIngest}</a>
+          <a class="btn-ghost" href="/about/probe-demo">{t.copySample}</a>
         </div>
       </section>
 
@@ -53,16 +56,13 @@ const showWebhookNudge =
 
       {entitlements.canCreateShareLinks && canManage && (
         <section class="card">
-          <h2 class="card-title">Dashboard API keys</h2>
-          <p class="card-subtitle mb-4">
-            Scrape Prometheus metrics with <code>Authorization: Bearer &lt;key&gt;</code> at
-            <code>/api/v1/metrics</code>.
-          </p>
+          <h2 class="card-title">{t.keysTitle}</h2>
+          <p class="card-subtitle mb-4" set:html={t.keysBodyHtml} />
           {newApiKey && (
             <div class="ingest-key-callout mb-4">
               <p class="ingest-key-value break-all text-sm mb-2">{newApiKey}</p>
-              <button type="button" class="btn-primary" data-copy={newApiKey} data-copy-label="Copy key">
-                Copy key
+              <button type="button" class="btn-primary" data-copy={newApiKey} data-copy-label={t.copyKey}>
+                {t.copyKey}
               </button>
             </div>
           )}
@@ -70,13 +70,13 @@ const showWebhookNudge =
             <input type="hidden" name="action" value="create" />
             <input type="hidden" name="redirect" value={redirectTo} />
             <div class="form-field mb-0">
-              <label class="form-label" for="api-key-name">Name</label>
-              <input class="form-input" id="api-key-name" name="name" value="Metrics key" />
+              <label class="form-label" for="api-key-name">{t.name}</label>
+              <input class="form-input" id="api-key-name" name="name" value={t.keyDefaultName} />
             </div>
-            <button class="btn-secondary" type="submit">Create API key</button>
+            <button class="btn-secondary" type="submit">{t.createKey}</button>
           </form>
           {apiKeys.length === 0 ? (
-            <p class="mb-0 text-sm text-[var(--color-text-muted)]">No active API keys.</p>
+            <p class="mb-0 text-sm text-[var(--color-text-muted)]">{t.noKeys}</p>
           ) : (
             <ul class="space-y-3">
               {apiKeys.map((key) => (
@@ -89,7 +89,7 @@ const showWebhookNudge =
                     <input type="hidden" name="action" value="revoke" />
                     <input type="hidden" name="id" value={key.id} />
                     <input type="hidden" name="redirect" value={redirectTo} />
-                    <button class="btn-ghost" type="submit">Revoke</button>
+                    <button class="btn-ghost" type="submit">{t.revoke}</button>
                   </form>
                 </li>
               ))}
@@ -97,7 +97,7 @@ const showWebhookNudge =
           )}
           <p class="mt-4 mb-0 text-sm">
             <a class="text-link" href="/grafana/probeharbor-dashboard.json" download>
-              Download Grafana dashboard JSON
+              {t.downloadGrafana}
             </a>
           </p>
         </section>
@@ -109,27 +109,23 @@ const showWebhookNudge =
 
       {entitlements.canUseOutboundWebhook && (
         <section class="card" id="inbound-webhooks">
-          <h2 class="card-title">Inbound webhooks</h2>
-          <p class="card-subtitle mb-4">
-            Let Home Assistant or Zapier POST to ProbeHarbor. Actions:
-            <code>snooze</code>, <code>vacation</code>, <code>clear_snooze</code>, <code>clear_vacation</code>, <code>status</code>.
-            Example: <code>{`{"action":"snooze","hours":24}`}</code> to <code>POST /api/inbound/&lt;token&gt;</code>.
-          </p>
+          <h2 class="card-title">{t.inboundTitle}</h2>
+          <p class="card-subtitle mb-4" set:html={t.inboundBodyHtml} />
           {!canManage && (
-            <p class="alert-warning mb-4" role="status">View-only: cannot create or revoke inbound webhooks.</p>
+            <p class="alert-warning mb-4" role="status">{t.inboundViewOnly}</p>
           )}
           {inboundToken && (
             <div class="ingest-key-callout mb-4">
-              <p class="text-sm mb-2">New webhook URL (copy now):</p>
+              <p class="text-sm mb-2">{t.newWebhookUrl}</p>
               <p class="ingest-key-value break-all text-sm mb-2">{siteUrl}/api/inbound/{inboundToken}</p>
               {inboundSigningSecret && (
                 <>
-                  <p class="text-sm mb-2">Signing secret (for X-ProbeHarbor-Signature, copy now):</p>
+                  <p class="text-sm mb-2">{t.signingSecret}</p>
                   <p class="ingest-key-value break-all text-sm mb-2">{inboundSigningSecret}</p>
                 </>
               )}
-              <button type="button" class="btn-primary" data-copy={`${siteUrl}/api/inbound/${inboundToken}`} data-copy-label="Copy URL">
-                Copy URL
+              <button type="button" class="btn-primary" data-copy={`${siteUrl}/api/inbound/${inboundToken}`} data-copy-label={t.copyUrl}>
+                {t.copyUrl}
               </button>
             </div>
           )}
@@ -138,14 +134,14 @@ const showWebhookNudge =
               <input type="hidden" name="action" value="create" />
               <input type="hidden" name="redirect" value={redirectTo} />
               <div class="form-field mb-0">
-                <label class="form-label" for="inbound-name">Name</label>
-                <input class="form-input" id="inbound-name" name="name" value="HA automation" />
+                <label class="form-label" for="inbound-name">{t.name}</label>
+                <input class="form-input" id="inbound-name" name="name" value={t.inboundDefaultName} />
               </div>
-              <button class="btn-secondary" type="submit">Create inbound webhook</button>
+              <button class="btn-secondary" type="submit">{t.createInbound}</button>
             </form>
           )}
           {inboundWebhooks.length === 0 ? (
-            <p class="mb-0 text-sm text-[var(--color-text-muted)]">No inbound webhooks yet.</p>
+            <p class="mb-0 text-sm text-[var(--color-text-muted)]">{t.noInbound}</p>
           ) : (
             <ul class="space-y-3">
               {inboundWebhooks.map((wh) => (
@@ -158,7 +154,7 @@ const showWebhookNudge =
                     <input type="hidden" name="action" value="revoke" />
                     <input type="hidden" name="webhook_id" value={wh.id} />
                     <input type="hidden" name="redirect" value={redirectTo} />
-                    <button class="btn-ghost" type="submit">Revoke</button>
+                    <button class="btn-ghost" type="submit">{t.revoke}</button>
                   </form>
                 </li>
               ))}
@@ -168,20 +164,20 @@ const showWebhookNudge =
       )}
 
       <section class="card">
-        <h2 class="card-title">Ingest stats (7 days)</h2>
+        <h2 class="card-title">{t.statsTitle}</h2>
         <p class="card-subtitle mb-4">
-          Daily POST success and error counts per push device.
-          {ingestStats.length === 0 && " No ingest activity recorded yet. POST from a push device to populate."}
+          {t.statsBody}
+          {ingestStats.length === 0 && ` ${t.statsEmpty}`}
         </p>
         {ingestStats.length > 0 && (
           <div class="overflow-x-auto">
             <table class="w-full text-sm">
               <thead>
                 <tr class="text-left text-[var(--color-text-muted)]">
-                  <th class="py-2 pr-3">Device</th>
-                  <th class="py-2 pr-3">Day</th>
-                  <th class="py-2 pr-3">OK</th>
-                  <th class="py-2">Errors</th>
+                  <th class="py-2 pr-3">{t.colDevice}</th>
+                  <th class="py-2 pr-3">{t.colDay}</th>
+                  <th class="py-2 pr-3">{t.colOk}</th>
+                  <th class="py-2">{t.colErrors}</th>
                 </tr>
               </thead>
               <tbody>

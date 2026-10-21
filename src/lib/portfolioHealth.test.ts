@@ -59,3 +59,18 @@ describe("scorePropertyHealth", () => {
     expect(health.detail).toMatch(/stale/i);
   });
 });
+
+describe("scorePropertyHealth (localized)", () => {
+  it("writes details in the requested locale", async () => {
+    const { ensureLocale } = await import("../i18n/catalog");
+    await ensureLocale("de", ["app"]);
+    const health = scorePropertyHealth(
+      { ...base, deviceCount: 11, silentDeviceCount: 10 },
+      Date.now(),
+      "de",
+    );
+    expect(health.detail).toBe("10 von 11 Geräten still, Stromversorgung/WLAN prüfen");
+    const cold = scorePropertyHealth({ ...base, atRisk: true, minTempF: 30.25 }, Date.now(), "de");
+    expect(cold.detail).toBe("30,3 °F ≤ 34 °F");
+  });
+});

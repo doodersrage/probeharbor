@@ -149,6 +149,9 @@ jobs:
             echo "::notice::Deploy skipped — Cloudflare token invalid or lacks Workers permissions."
             exit 0
           fi
+          # Translations first: the main Worker binds to it (I18N) and falls back to English without it.
+          node scripts/gen-i18n-catalog.mjs --check
+          npx wrangler deploy --config workers/i18n/wrangler.jsonc
           npx wrangler deploy --config dist/server/wrangler.json
 
       # Static files (OG images, assetlinks.json, /developers docs) otherwise stay

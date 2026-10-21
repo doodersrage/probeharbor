@@ -2,8 +2,11 @@ import type { APIRoute } from "astro";
 import { getAuthFromCookies } from "../../../lib/auth";
 import { createStripeClient, buildSiteUrl } from "../../../lib/stripe";
 import { getUserSubscription } from "../../../lib/stripeSubscriptions";
+import { apiLocale } from "../../../i18n/messages/app/apiMore/common";
+import { apiMoreBillingMessages } from "../../../i18n/messages/app/apiMore/billing";
 
-export const POST: APIRoute = async ({ request, cookies, redirect }) => {
+export const POST: APIRoute = async (context) => {
+  const { request, cookies, redirect } = context;
   const { session, user } = await getAuthFromCookies(cookies);
 
   if (!session || !user) {
@@ -26,7 +29,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     return redirect(portalSession.url);
   } catch (error) {
     const message =
-      error instanceof Error ? error.message : "Unable to open billing portal";
+      error instanceof Error ? error.message : apiMoreBillingMessages(apiLocale(context)).stripe.portalFailed;
     return new Response(message, { status: 500 });
   }
 };

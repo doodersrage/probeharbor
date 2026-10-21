@@ -1,7 +1,7 @@
 ---
 import type { AlertChannelName, AlertSettings } from "../lib/alerts";
 import type { Entitlements } from "../lib/entitlements";
-import { CONDITION_OPTIONS, HEAT_THRESHOLD_F } from "../lib/alertRules";
+import { HEAT_THRESHOLD_F } from "../lib/alertRules";
 import AlertSettingsPanel from "./alerts/AlertSettingsPanel.astro";
 import AlertSettingsFormSubmit from "./alerts/AlertSettingsFormSubmit.astro";
 import AlertSettingsRulesScript from "./alerts/AlertSettingsRulesScript.astro";
@@ -10,6 +10,8 @@ import AlertSettingsPlaybooksScript from "./alerts/AlertSettingsPlaybooksScript.
 import AlertSettingsPushScript from "./alerts/AlertSettingsPushScript.astro";
 import ChannelDeliveryStatus from "./alerts/ChannelDeliveryStatus.astro";
 import type { ChannelDelivery } from "../lib/channelDelivery";
+import { fmt, getLocale, LOCALE_META } from "../i18n";
+import { alertSettingsMessages } from "../i18n/messages/app/alertSettings";
 
 interface Props {
   userEmail: string;
@@ -46,6 +48,10 @@ const {
   thresholdSensors = [],
 } = Astro.props;
 
+const locale = getLocale(Astro);
+const t = alertSettingsMessages(locale);
+const intlLocale = LOCALE_META[locale].intl;
+
 const includedIds = new Set(settings.thresholdSensorScope.includedSensorIds);
 const scopeAllSensors = settings.thresholdSensorScope.includedSensorIds.length === 0;
 
@@ -76,7 +82,7 @@ const quietStartValue = toTimeInputValue(settings.quietHoursStart, "22:00");
 const quietEndValue = toTimeInputValue(settings.quietHoursEnd, "07:00");
 
 const ALERT_CHANNELS = [
-  { id: "email", label: "Email" },
+  { id: "email", label: t.channelLabels.email },
   { id: "sms", label: "SMS" },
   { id: "discord", label: "Discord" },
   { id: "push", label: "Push" },
@@ -91,15 +97,15 @@ const ALERT_CHANNELS = [
 
 /** Space routing matrix kinds (subset of NotifyKind; preserve others on merge). */
 const SPACE_ROUTING_KINDS = [
-  { id: "threshold", label: "Threshold" },
-  { id: "flood", label: "Flood / leak" },
-  { id: "power", label: "Power off" },
-  { id: "runway", label: "Time to freeze" },
-  { id: "forecast", label: "Forecast" },
-  { id: "nws", label: "NWS" },
-  { id: "rule", label: "Rule" },
-  { id: "outage", label: "Outage" },
-  { id: "rate", label: "Rate drop" },
+  { id: "threshold", label: t.kindLabels.threshold },
+  { id: "flood", label: t.kindLabels.flood },
+  { id: "power", label: t.kindLabels.power },
+  { id: "runway", label: t.kindLabels.runway },
+  { id: "forecast", label: t.kindLabels.forecast },
+  { id: "nws", label: t.kindLabels.nws },
+  { id: "rule", label: t.kindLabels.rule },
+  { id: "outage", label: t.kindLabels.outage },
+  { id: "rate", label: t.kindLabels.rate },
 ] as const;
 
 const templateKinds = [
@@ -122,25 +128,25 @@ const needsPro =
   !entitlements.canUseOutboundWebhook;
 
 const PLAYBOOK_KINDS = [
-  { id: "threshold", label: "Threshold" },
-  { id: "flood", label: "Flood / leak" },
-  { id: "power", label: "Power off" },
-  { id: "runway", label: "Time to freeze" },
-  { id: "forecast", label: "Forecast" },
-  { id: "nws", label: "NWS" },
-  { id: "rate", label: "Rate drop" },
-  { id: "outage", label: "Outage" },
-  { id: "rule", label: "Rule" },
-  { id: "battery", label: "Battery" },
-  { id: "rssi", label: "Signal" },
-  { id: "generic", label: "Generic" },
+  { id: "threshold", label: t.kindLabels.threshold },
+  { id: "flood", label: t.kindLabels.flood },
+  { id: "power", label: t.kindLabels.power },
+  { id: "runway", label: t.kindLabels.runway },
+  { id: "forecast", label: t.kindLabels.forecast },
+  { id: "nws", label: t.kindLabels.nws },
+  { id: "rate", label: t.kindLabels.rate },
+  { id: "outage", label: t.kindLabels.outage },
+  { id: "rule", label: t.kindLabels.rule },
+  { id: "battery", label: t.kindLabels.battery },
+  { id: "rssi", label: t.kindLabels.rssi },
+  { id: "generic", label: t.kindLabels.generic },
 ] as const;
 
 const rulesJson = JSON.stringify(settings.alertRules ?? []);
 ---
 {!canEdit && (
   <p class="alert-warning mb-4" role="status">
-    View-only: alert settings cannot be changed on this account.
+    {t.viewOnly}
   </p>
 )}
 <p class="alert-success mt-0 mb-4 hidden" id="alert-action-status" role="status"></p>
@@ -153,31 +159,29 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
   <input type="hidden" name="alert_templates_json" id="alert_templates_json" value={JSON.stringify(settings.alertTemplates ?? {})} />
 
   {essentialsFirst && (
-    <p class="alert-success mt-0 mb-4" role="status">
-      Start with <strong>When to alert</strong> and <strong>How you're told</strong>, save, then send a test alert below.
-    </p>
+    <p class="alert-success mt-0 mb-4" role="status" set:html={t.essentialsIntroHtml} />
   )}
 
   <AlertSettingsPanel
     id="alert-section-essentials"
-    title="When to alert"
-    subtitle="Freeze, leaks, silent sensors, and early warnings."
+    title={t.essentials.title}
+    subtitle={t.essentials.subtitle}
     collapsible
     open
   >
     <label class="checkbox-row mb-4">
       <input type="checkbox" name="alerts_enabled" value="true" checked={settings.enabled} />
-      <span>Turn on alerts</span>
+      <span>{t.essentials.turnOn}</span>
     </label>
 
     <div class="config-row-grid mb-4">
       <div class="form-field mb-0">
-        <label class="form-label" for="freeze_threshold_f">Freeze below (°F)</label>
+        <label class="form-label" for="freeze_threshold_f">{t.essentials.freezeBelow}</label>
         <input class="form-input" type="number" step="0.5" id="freeze_threshold_f" name="freeze_threshold_f" value={settings.freezeThresholdF} />
-        <p class="form-hint mb-0">Alert when a probe is at or below this temperature.</p>
+        <p class="form-hint mb-0">{t.essentials.freezeHint}</p>
       </div>
       <div class="form-field">
-        <label class="form-label" for="freeze_dwell_minutes">Wait before alerting (minutes)</label>
+        <label class="form-label" for="freeze_dwell_minutes">{t.essentials.dwellLabel}</label>
         <input
           class="form-input"
           type="number"
@@ -189,15 +193,15 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
           value={settings.freezeDwellMinutes}
         />
         <p class="form-hint mb-0">
-          How long a probe must stay at or below freeze first. 5–15 ignores a door left open for a moment; 0 alerts on the first cold reading.
+          {t.essentials.dwellHint}
         </p>
       </div>
     </div>
 
-    <p class="form-hint mb-2">Leak sensors alert automatically the moment they read wet.</p>
+    <p class="form-hint mb-2">{t.essentials.leakHint}</p>
     <label class="checkbox-row mb-4" id="setting-power">
       <input type="checkbox" name="power_alerts_enabled" value="true" checked={settings.powerAlertsEnabled} />
-      <span>Alert when a power sensor reads off (heaters, heat tape, and sump pumps may be off too)</span>
+      <span>{t.essentials.powerAlerts}</span>
     </label>
 
     <label class="checkbox-row mb-2">
@@ -207,10 +211,10 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
         value="true"
         checked={settings.outageHours > 0}
       />
-      <span>Alert if a sensor stops reporting</span>
+      <span>{t.essentials.outageToggle}</span>
     </label>
     <div class="form-field mb-4 max-w-xs">
-      <label class="form-label" for="outage_hours">After this many silent hours</label>
+      <label class="form-label" for="outage_hours">{t.essentials.outageHours}</label>
       <input
         class="form-input"
         type="number"
@@ -220,10 +224,10 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
         name="outage_hours"
         value={settings.outageHours > 0 ? settings.outageHours : 2}
       />
-      <p class="form-hint mb-0">A silent probe can't warn you about a freeze, so this is often the most useful alert.</p>
+      <p class="form-hint mb-0">{t.essentials.outageHint}</p>
     </div>
 
-    <h3 class="alert-settings-subheading">Early warnings</h3>
+    <h3 class="alert-settings-subheading">{t.essentials.earlyWarnings}</h3>
     <label class="checkbox-row mb-2" id="setting-runway">
       <input
         type="checkbox"
@@ -231,10 +235,10 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
         value="true"
         checked={settings.runwayAlertEnabled}
       />
-      <span>Warn before a probe reaches freeze, while there's still time to act</span>
+      <span>{t.essentials.runwayToggle}</span>
     </label>
     <p class="form-hint mb-4">
-      Estimates when each space will hit your freeze line from its cooling rate (and the outdoor forecast when a weather location is set), then warns inside the window above so you can drip faucets or add heat.
+      {t.essentials.runwayHint}
     </p>
     <label class="checkbox-row mb-2" id="setting-forecast-freeze">
       <input
@@ -245,14 +249,14 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
         disabled={!entitlements.canUseForecastAlerts}
       />
       <span>
-        Warn when the outdoor forecast drops below freezing
+        {t.essentials.forecastToggle}
         {!entitlements.canUseForecastAlerts && (
           <span class="text-[var(--color-text-muted)]"> (Member)</span>
         )}
       </span>
     </label>
     <div class="form-field mb-4 max-w-xs">
-      <label class="form-label" for="forecast_hours_ahead">How far ahead (hours)</label>
+      <label class="form-label" for="forecast_hours_ahead">{t.essentials.forecastHours}</label>
       <input
         class="form-input"
         type="number"
@@ -263,36 +267,35 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
         name="forecast_hours_ahead"
         value={settings.forecastHoursAhead}
       />
-      <p class="form-hint mb-0">Used by both early warnings: the forecast warning and the time-to-freeze warning.</p>
+      <p class="form-hint mb-0">{t.essentials.forecastHoursHint}</p>
     </div>
 
     <details class="alert-settings-nested mb-4" id="setting-nws">
-      <summary>Humidity, fast drops, and official freeze warnings</summary>
+      <summary>{t.essentials.nwsSummary}</summary>
       <div class="alert-settings-nested-body">
         <div class="config-row-grid mb-4">
           <div class="form-field mb-0">
-            <label class="form-label" for="humidity_threshold">Humidity above (%)</label>
+            <label class="form-label" for="humidity_threshold">{t.essentials.humidityAbove}</label>
             <input class="form-input" type="number" step="1" id="humidity_threshold" name="humidity_threshold" value={settings.humidityThreshold} />
           </div>
           <div class="form-field mb-0">
-            <label class="form-label" for="rate_change_f">Rate drop (°F / hour)</label>
+            <label class="form-label" for="rate_change_f">{t.essentials.rateDrop}</label>
             <input class="form-input" type="number" step="0.5" id="rate_change_f" name="rate_change_f" value={settings.rateChangeF} />
           </div>
         </div>
         <label class="checkbox-row mb-0">
           <input type="checkbox" name="nws_freeze_alerts_enabled" value="true" checked={settings.nwsFreezeAlertsEnabled} disabled={!entitlements.canUseNwsAlerts} />
-          <span>NWS official freeze / cold alerts {!entitlements.canUseNwsAlerts && <span class="text-[var(--color-text-muted)]">(Pro)</span>}</span>
+          <span>{t.essentials.nwsToggle} {!entitlements.canUseNwsAlerts && <span class="text-[var(--color-text-muted)]">(Pro)</span>}</span>
         </label>
       </div>
     </details>
 
     {thresholdSensors.length > 0 && (
       <details class="alert-settings-nested mb-4">
-        <summary>Different thresholds per sensor</summary>
+        <summary>{t.essentials.perSensorSummary}</summary>
         <div class="alert-settings-nested-body">
           <p class="form-hint mb-3">
-            By default every temperature sensor uses the household freeze and humidity thresholds above.
-            Check specific sensors to limit threshold alerts, or set an optional override per sensor.
+            {t.essentials.perSensorHint}
           </p>
           <label class="checkbox-row mb-3">
             <input
@@ -301,7 +304,7 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
               checked={scopeAllSensors}
               disabled={!canEdit}
             />
-            <span>All temperature sensors (default)</span>
+            <span>{t.essentials.allSensors}</span>
           </label>
           <div class="space-y-3" id="threshold-sensor-scope-editor">
             {thresholdSensors.map((sensor) => {
@@ -327,7 +330,7 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
                   </label>
                   <div class="form-field mb-0">
                     <label class="form-label" for={`sensor-freeze-${sensor.id}`}>
-                      Optional freeze override (°F)
+                      {t.essentials.freezeOverride}
                     </label>
                     <input
                       class="form-input threshold-sensor-override"
@@ -337,13 +340,13 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
                       data-sensor-id={sensor.id}
                       data-override-kind="freezeThresholdF"
                       value={override?.freezeThresholdF ?? ""}
-                      placeholder={`Default ${settings.freezeThresholdF}`}
+                      placeholder={fmt(t.defaultValue, { value: settings.freezeThresholdF })}
                       disabled={!canEdit}
                     />
                   </div>
                   <div class="form-field mb-0">
                     <label class="form-label" for={`sensor-humidity-${sensor.id}`}>
-                      Optional humidity override (%)
+                      {t.essentials.humidityOverride}
                     </label>
                     <input
                       class="form-input threshold-sensor-override"
@@ -353,7 +356,7 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
                       data-sensor-id={sensor.id}
                       data-override-kind="humidityThreshold"
                       value={override?.humidityThreshold ?? ""}
-                      placeholder={`Default ${settings.humidityThreshold}`}
+                      placeholder={fmt(t.defaultValue, { value: settings.humidityThreshold })}
                       disabled={!canEdit}
                     />
                   </div>
@@ -373,33 +376,33 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
     )}
 
     <details class="alert-settings-nested">
-      <summary>Battery, Wi-Fi signal, and feed checks</summary>
+      <summary>{t.essentials.healthSummary}</summary>
       <div class="alert-settings-nested-body">
         <div class="config-row-grid mb-4">
           <label class="checkbox-row mb-0">
             <input type="checkbox" name="battery_alerts_enabled" value="true" checked={settings.batteryAlertsEnabled} />
-            <span>Low battery alerts</span>
+            <span>{t.essentials.lowBattery}</span>
           </label>
           <label class="checkbox-row mb-0">
             <input type="checkbox" name="battery_trend_alerts_enabled" value="true" checked={settings.batteryTrendAlertsEnabled} />
-            <span>Battery trend drop</span>
+            <span>{t.essentials.batteryTrend}</span>
           </label>
           <div class="form-field mb-0">
-            <label class="form-label" for="battery_threshold_pct">Battery below (%)</label>
+            <label class="form-label" for="battery_threshold_pct">{t.essentials.batteryBelow}</label>
             <input class="form-input" type="number" id="battery_threshold_pct" name="battery_threshold_pct" value={settings.batteryThresholdPct} />
           </div>
           <label class="checkbox-row mb-0">
             <input type="checkbox" name="rssi_alerts_enabled" value="true" checked={settings.rssiAlertsEnabled} />
-            <span>Weak WiFi signal</span>
+            <span>{t.essentials.weakWifi}</span>
           </label>
           <div class="form-field mb-0">
-            <label class="form-label" for="rssi_threshold">RSSI below (dBm)</label>
+            <label class="form-label" for="rssi_threshold">{t.essentials.rssiBelow}</label>
             <input class="form-input" type="number" id="rssi_threshold" name="rssi_threshold" value={settings.rssiThreshold} />
           </div>
         </div>
         <label class="checkbox-row mb-0">
           <input type="checkbox" name="feed_uptime_alerts_enabled" value="true" checked={settings.feedUptimeAlertsEnabled} />
-          <span>Feed unreachable (hourly check on pull JSON feeds)</span>
+          <span>{t.essentials.feedUptime}</span>
         </label>
       </div>
     </details>
@@ -407,14 +410,14 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
 
   <AlertSettingsPanel
     id="alert-section-channels"
-    title="How you're told"
-    subtitle="Email plus any chat app, SMS, push, or webhook. Every checked channel gets every alert."
+    title={t.channels.title}
+    subtitle={t.channels.subtitle}
     collapsible
     open
   >
     <div class="config-row-grid mb-2">
       <div class="form-field mb-0">
-        <label class="form-label" for="alert_email">Alert email</label>
+        <label class="form-label" for="alert_email">{t.channels.alertEmail}</label>
         <input
           class="form-input"
           type="email"
@@ -433,13 +436,13 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
         checked={settings.channelEmail}
         data-channel-toggle="email"
       />
-      <span>Send alerts by email</span>
+      <span>{t.channels.sendByEmail}</span>
     </label>
     <div class="mb-4 -mt-2">
       <ChannelDeliveryStatus channel="email" delivery={channelDelivery.email} enabledSaved={settings.channelEmail} canEdit={canEdit} />
     </div>
 
-    <h3 class="alert-settings-subheading">Other channels</h3>
+    <h3 class="alert-settings-subheading">{t.channels.otherChannels}</h3>
     <div class="alert-channel-grid mb-4">
       <label class="checkbox-row mb-0">
         <input type="checkbox" name="channel_discord" value="true" checked={settings.channelDiscord} data-channel-toggle="discord" />
@@ -475,24 +478,22 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
       </label>
       <label class="checkbox-row mb-0">
         <input type="checkbox" name="channel_push" value="true" checked={settings.channelPush} disabled={!entitlements.canUsePush} data-channel-toggle="push" />
-        <span>Push (browser + Android) {!entitlements.canUsePush && <span class="text-[var(--color-text-muted)]">(Pro)</span>}</span>
+        <span>{t.channels.push} {!entitlements.canUsePush && <span class="text-[var(--color-text-muted)]">(Pro)</span>}</span>
       </label>
       <label class="checkbox-row mb-0">
         <input type="checkbox" name="channel_webhook" value="true" checked={settings.channelWebhook} disabled={!entitlements.canUseOutboundWebhook} data-channel-toggle="webhook" />
-        <span>Outbound webhook {!entitlements.canUseOutboundWebhook && <span class="text-[var(--color-text-muted)]">(Pro)</span>}</span>
+        <span>{t.channels.outboundWebhook} {!entitlements.canUseOutboundWebhook && <span class="text-[var(--color-text-muted)]">(Pro)</span>}</span>
       </label>
     </div>
 
     {entitlements.canUseSms && !twilioConfigured && (
       <p class="alert-warning mb-4 text-sm" role="status">
-        SMS is on your plan but Twilio is not configured on this server. Messages will be skipped until `TWILIO_*` secrets are set.
+        {t.channels.twilioMissing}
       </p>
     )}
 
     {needsPro && (
-      <p class="mb-4 text-sm text-[var(--color-text-muted)]">
-        Unlock SMS and webhooks with <a class="text-link" href="/dashboard/plans">Pro</a>.
-      </p>
+      <p class="mb-4 text-sm text-[var(--color-text-muted)]" set:html={t.channels.unlockProHtml} />
     )}
 
     <div class="alert-channel-panels">
@@ -500,7 +501,7 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
         <p class="alert-channel-panel-label">Discord</p>
         <ChannelDeliveryStatus channel="discord" delivery={channelDelivery.discord} enabledSaved={settings.channelDiscord} canEdit={canEdit} />
         <div class="form-field mb-0">
-          <label class="form-label" for="discord_webhook_url">Webhook URL</label>
+          <label class="form-label" for="discord_webhook_url">{t.channels.webhookUrl}</label>
           <input class="form-input" type="url" id="discord_webhook_url" name="discord_webhook_url" value={settings.discordWebhookUrl ?? ""} placeholder="https://discord.com/api/webhooks/..." />
         </div>
       </div>
@@ -509,21 +510,17 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
         <p class="alert-channel-panel-label">Telegram</p>
         <ChannelDeliveryStatus channel="telegram" delivery={channelDelivery.telegram} enabledSaved={settings.channelTelegram} canEdit={canEdit} />
         <div class="form-field">
-          <label class="form-label" for="telegram_bot_token">Bot token</label>
+          <label class="form-label" for="telegram_bot_token">{t.channels.botToken}</label>
           <input class="form-input" type="text" id="telegram_bot_token" name="telegram_bot_token" value={settings.telegramBotToken ?? ""} placeholder="123456:ABC..." autocomplete="off" />
         </div>
         <div class="form-field">
-          <label class="form-label" for="telegram_chat_id">Chat ID (required for commands)</label>
+          <label class="form-label" for="telegram_chat_id">{t.channels.chatId}</label>
           <input class="form-input" type="text" id="telegram_chat_id" name="telegram_chat_id" value={settings.telegramChatId ?? ""} placeholder="-100..." />
         </div>
         <div class="form-field mb-0">
-          <label class="form-label" for="telegram_command_secret">Webhook secret (optional)</label>
+          <label class="form-label" for="telegram_command_secret">{t.channels.webhookSecret}</label>
           <input class="form-input" type="text" id="telegram_command_secret" name="telegram_command_secret" value={settings.telegramCommandSecret ?? ""} placeholder="random-secret" autocomplete="off" />
-          <p class="form-hint mb-0">
-            Use Telegram <code>setWebhook</code> with <code>secret_token</code> so Telegram sends
-            <code>X-Telegram-Bot-Api-Secret-Token</code> (query <code>?secret=</code> is not accepted).
-            Save a Chat ID above: commands only run from that chat (/status [name], /snooze [hours], /vacation [days]).
-          </p>
+          <p class="form-hint mb-0" set:html={t.channels.telegramHintHtml} />
         </div>
       </div>
 
@@ -531,7 +528,7 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
         <p class="alert-channel-panel-label">Slack</p>
         <ChannelDeliveryStatus channel="slack" delivery={channelDelivery.slack} enabledSaved={settings.channelSlack} canEdit={canEdit} />
         <div class="form-field mb-0">
-          <label class="form-label" for="slack_webhook_url">Incoming webhook URL</label>
+          <label class="form-label" for="slack_webhook_url">{t.channels.incomingWebhookUrl}</label>
           <input class="form-input" type="url" id="slack_webhook_url" name="slack_webhook_url" value={settings.slackWebhookUrl ?? ""} placeholder="https://hooks.slack.com/services/..." />
         </div>
       </div>
@@ -540,7 +537,7 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
         <p class="alert-channel-panel-label">Microsoft Teams</p>
         <ChannelDeliveryStatus channel="teams" delivery={channelDelivery.teams} enabledSaved={settings.channelTeams} canEdit={canEdit} />
         <div class="form-field mb-0">
-          <label class="form-label" for="teams_webhook_url">Webhook URL</label>
+          <label class="form-label" for="teams_webhook_url">{t.channels.webhookUrl}</label>
           <input class="form-input" type="url" id="teams_webhook_url" name="teams_webhook_url" value={settings.teamsWebhookUrl ?? ""} placeholder="https://outlook.office.com/webhook/..." />
         </div>
       </div>
@@ -549,11 +546,11 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
         <p class="alert-channel-panel-label">ntfy</p>
         <ChannelDeliveryStatus channel="ntfy" delivery={channelDelivery.ntfy} enabledSaved={settings.channelNtfy} canEdit={canEdit} />
         <div class="form-field">
-          <label class="form-label" for="ntfy_topic">Topic</label>
+          <label class="form-label" for="ntfy_topic">{t.channels.topic}</label>
           <input class="form-input" type="text" id="ntfy_topic" name="ntfy_topic" value={settings.ntfyTopic ?? ""} placeholder="space-freeze-alerts" />
         </div>
         <div class="form-field mb-0">
-          <label class="form-label" for="ntfy_server">Server (optional)</label>
+          <label class="form-label" for="ntfy_server">{t.channels.serverOptional}</label>
           <input class="form-input" type="url" id="ntfy_server" name="ntfy_server" value={settings.ntfyServer} placeholder="https://ntfy.sh" />
         </div>
       </div>
@@ -562,11 +559,11 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
         <p class="alert-channel-panel-label">Pushover</p>
         <ChannelDeliveryStatus channel="pushover" delivery={channelDelivery.pushover} enabledSaved={settings.channelPushover} canEdit={canEdit} />
         <div class="form-field">
-          <label class="form-label" for="pushover_user_key">User key</label>
+          <label class="form-label" for="pushover_user_key">{t.channels.userKey}</label>
           <input class="form-input" type="text" id="pushover_user_key" name="pushover_user_key" value={settings.pushoverUserKey ?? ""} />
         </div>
         <div class="form-field mb-0">
-          <label class="form-label" for="pushover_app_token">App token</label>
+          <label class="form-label" for="pushover_app_token">{t.channels.appToken}</label>
           <input class="form-input" type="text" id="pushover_app_token" name="pushover_app_token" value={settings.pushoverAppToken ?? ""} autocomplete="off" />
         </div>
       </div>
@@ -575,7 +572,7 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
         <p class="alert-channel-panel-label">WhatsApp</p>
         <ChannelDeliveryStatus channel="whatsapp" delivery={channelDelivery.whatsapp} enabledSaved={settings.channelWhatsapp} canEdit={canEdit} />
         <div class="form-field mb-0">
-          <label class="form-label" for="whatsapp_phone">Phone number</label>
+          <label class="form-label" for="whatsapp_phone">{t.channels.phoneNumber}</label>
           <input class="form-input" type="tel" id="whatsapp_phone" name="whatsapp_phone" value={settings.whatsappPhone ?? ""} placeholder="+15551234567" disabled={!entitlements.canUseSms} />
         </div>
       </div>
@@ -584,39 +581,36 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
         <p class="alert-channel-panel-label">SMS</p>
         <ChannelDeliveryStatus channel="sms" delivery={channelDelivery.sms} enabledSaved={settings.channelSms} canEdit={canEdit} />
         <div class="form-field mb-0">
-          <label class="form-label" for="sms_phone">Phone number</label>
+          <label class="form-label" for="sms_phone">{t.channels.phoneNumber}</label>
           <input class="form-input" type="tel" id="sms_phone" name="sms_phone" value={settings.smsPhone ?? ""} placeholder="+15551234567" disabled={!entitlements.canUseSms} />
-          <p class="form-hint mb-0">International format, e.g. +1 for US numbers.</p>
+          <p class="form-hint mb-0">{t.channels.smsHint}</p>
         </div>
       </div>
 
       <div class="alert-channel-panel" data-channel-panel="webhook" hidden={!settings.channelWebhook}>
-        <p class="alert-channel-panel-label">Outbound webhook</p>
+        <p class="alert-channel-panel-label">{t.channels.outboundWebhook}</p>
         <ChannelDeliveryStatus channel="webhook" delivery={channelDelivery.webhook} enabledSaved={settings.channelWebhook} canEdit={canEdit} />
         <div class="form-field">
-          <label class="form-label" for="outbound_webhook_url">URL</label>
+          <label class="form-label" for="outbound_webhook_url">{t.channels.url}</label>
           <input class="form-input" type="url" id="outbound_webhook_url" name="outbound_webhook_url" value={settings.outboundWebhookUrl ?? ""} placeholder="https://hooks.example.com/..." disabled={!entitlements.canUseOutboundWebhook} />
         </div>
         <div class="form-field mb-0">
-          <label class="form-label" for="outbound_webhook_secret">Signing secret (optional)</label>
+          <label class="form-label" for="outbound_webhook_secret">{t.channels.signingSecret}</label>
           <input class="form-input" type="text" id="outbound_webhook_secret" name="outbound_webhook_secret" value={settings.outboundWebhookSecret ?? ""} disabled={!entitlements.canUseOutboundWebhook} />
         </div>
       </div>
 
       <div class="alert-channel-panel" data-channel-panel="push" hidden={!settings.channelPush}>
-        <p class="alert-channel-panel-label">Push (browser + Android)</p>
+        <p class="alert-channel-panel-label">{t.channels.push}</p>
         <ChannelDeliveryStatus channel="push" delivery={channelDelivery.push} enabledSaved={settings.channelPush} canEdit={canEdit} />
-        <p class="form-hint mb-3">
-          One channel covers <strong>this browser</strong> (Web Push) and the
-          <strong>ProbeHarbor Android app</strong> (FCM). Enable below for this browser; the Android app registers automatically when you sign in on Pro.
-        </p>
+        <p class="form-hint mb-3" set:html={t.channels.pushHintHtml} />
         {!vapidPublicKey ? (
-          <p class="form-hint mb-2">Browser push is not configured on the server yet (missing VAPID keys).</p>
+          <p class="form-hint mb-2">{t.channels.pushNotConfigured}</p>
         ) : (
           <>
-            <p class="form-hint mb-3" id="push-status">Checking push status…</p>
+            <p class="form-hint mb-3" id="push-status">{t.channels.pushChecking}</p>
             <button type="button" class="btn-secondary" id="enable-push-btn" data-vapid={vapidPublicKey}>
-              Enable browser push on this device
+              {t.channels.pushEnable}
             </button>
             <p class="form-hint mt-2 mb-0" id="push-hint"></p>
           </>
@@ -627,39 +621,37 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
 
   <AlertSettingsPanel
     id="alert-section-quiet"
-    title="Pausing alerts"
-    subtitle="Quiet hours overnight, or snooze and vacation when you know about it already."
+    title={t.quiet.title}
+    subtitle={t.quiet.subtitle}
     collapsible
     open={essentialsFirst}
   >
     <label class="checkbox-row mb-2">
       <input type="checkbox" name="quiet_hours_enabled" value="true" checked={settings.quietHoursEnabled} />
-      <span>Enable alert quiet hours</span>
+      <span>{t.quiet.enable}</span>
     </label>
     <label class="checkbox-row mb-3">
       <input type="checkbox" name="quiet_hours_bypass_freeze" value="true" checked={settings.quietHoursBypassFreeze} />
-      <span>Always deliver freeze, flood, and forecast alerts</span>
+      <span>{t.quiet.bypassFreeze}</span>
     </label>
     <label class="checkbox-row mb-4">
       <input type="checkbox" name="quiet_hours_sms_critical" value="true" checked={settings.quietHoursSmsCritical} disabled={!entitlements.canUseSms} />
       <span>
-        Still send critical freeze/flood/forecast via SMS (Pro)
-        {!entitlements.canUseSms && (
-          <>: <a class="text-link" href="/dashboard/plans">Upgrade</a></>
-        )}
+        {t.quiet.smsCritical}
+        {!entitlements.canUseSms && <Fragment set:html={t.quiet.upgradeLinkHtml} />}
       </span>
     </label>
     <div class="config-row-grid">
       <div class="form-field mb-0">
-        <label class="form-label" for="quiet_hours_start">Start</label>
+        <label class="form-label" for="quiet_hours_start">{t.quiet.start}</label>
         <input class="form-input" type="time" id="quiet_hours_start" name="quiet_hours_start" value={quietStartValue} />
       </div>
       <div class="form-field mb-0">
-        <label class="form-label" for="quiet_hours_end">End</label>
+        <label class="form-label" for="quiet_hours_end">{t.quiet.end}</label>
         <input class="form-input" type="time" id="quiet_hours_end" name="quiet_hours_end" value={quietEndValue} />
       </div>
       <div class="form-field mb-0">
-        <label class="form-label" for="quiet_hours_timezone">Timezone</label>
+        <label class="form-label" for="quiet_hours_timezone">{t.quiet.timezone}</label>
         <select class="form-input" id="quiet_hours_timezone" name="quiet_hours_timezone">
           {QUIET_TIMEZONES.map((tz) => (
             <option value={tz} selected={settings.quietHoursTimezone === tz}>
@@ -676,30 +668,30 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
       </div>
     </div>
     <details class="alert-settings-nested mt-4" id="setting-snooze">
-      <summary>Snooze or vacation</summary>
+      <summary>{t.quiet.snoozeSummary}</summary>
       <div class="alert-settings-nested-body">
         <p class="form-hint mb-3">
-          Snooze pauses most alerts (outage and flood still fire). Vacation mutes routine alerts (rate of change, rules, battery, digests) until a return date or for a set number of days; freeze, forecast, and flood alerts still fire.
+          {t.quiet.snoozeHint}
           {settings.snoozeUntil && (
-            <span class="block mt-1">Snoozed until {new Date(settings.snoozeUntil).toLocaleString()}.</span>
+            <span class="block mt-1">{fmt(t.quiet.snoozedUntil, { date: new Date(settings.snoozeUntil).toLocaleString(intlLocale) })}</span>
           )}
           {settings.vacationUntil && (
-            <span class="block mt-1">Vacation until {new Date(settings.vacationUntil).toLocaleString()}.</span>
+            <span class="block mt-1">{fmt(t.quiet.vacationUntil, { date: new Date(settings.vacationUntil).toLocaleString(intlLocale) })}</span>
           )}
         </p>
         <div class="flex flex-wrap gap-2 items-end mb-3">
-          <button type="button" class="btn-secondary" data-snooze-action="snooze_24">Snooze 24h</button>
-          <button type="button" class="btn-secondary" data-snooze-action="vacation_7">Vacation 7d</button>
+          <button type="button" class="btn-secondary" data-snooze-action="snooze_24">{t.quiet.snooze24}</button>
+          <button type="button" class="btn-secondary" data-snooze-action="vacation_7">{t.quiet.vacation7}</button>
           {settings.snoozeUntil && (
-            <button type="button" class="btn-secondary" data-snooze-action="clear_snooze">Clear snooze</button>
+            <button type="button" class="btn-secondary" data-snooze-action="clear_snooze">{t.quiet.clearSnooze}</button>
           )}
           {settings.vacationUntil && (
-            <button type="button" class="btn-secondary" data-snooze-action="clear_vacation">End vacation</button>
+            <button type="button" class="btn-secondary" data-snooze-action="clear_vacation">{t.quiet.endVacation}</button>
           )}
         </div>
         <div class="flex flex-wrap gap-2 items-end">
           <div class="form-field mb-0">
-            <label class="form-label" for="vacation_until_date">Vacation until</label>
+            <label class="form-label" for="vacation_until_date">{t.quiet.vacationUntilLabel}</label>
             <input
               class="form-input"
               type="date"
@@ -709,7 +701,7 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
             />
           </div>
           <button type="button" class="btn-secondary" data-snooze-action="vacation_until">
-            Set vacation until date
+            {t.quiet.setVacationUntil}
           </button>
         </div>
       </div>
@@ -718,8 +710,8 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
 
   <AlertSettingsPanel
     id="alert-section-reports"
-    title="Summary emails"
-    subtitle="Weekly digest and longer reports. None of these are alerts."
+    title={t.reports.title}
+    subtitle={t.reports.subtitle}
     collapsible
   >
     <label class="checkbox-row mb-3">
@@ -729,7 +721,7 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
         value="true"
         checked={settings.digestEnabled}
       />
-      <span>Weekly email digest (Mondays): coldest night, leaks, and outages</span>
+      <span>{t.reports.weeklyDigest}</span>
     </label>
     {entitlements.canUsePortfolio && (
       <label class="checkbox-row mb-4">
@@ -739,46 +731,46 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
           value="true"
           checked={settings.portfolioAlertsEnabled}
         />
-        <span>Properties-at-risk digest: email when any property crosses freeze</span>
+        <span>{t.reports.portfolioDigest}</span>
       </label>
     )}
         <label class="checkbox-row mb-3">
           <input type="checkbox" name="monthly_report_enabled" value="true" checked={settings.monthlyReportEnabled} />
-          <span>Monthly freeze report (1st of month, HTML attachment)</span>
+          <span>{t.reports.monthlyReport}</span>
         </label>
         <label class="checkbox-row mb-3">
           <input type="checkbox" name="quarterly_report_enabled" value="true" checked={settings.quarterlyReportEnabled} />
-          <span>Quarterly seasonal report (Jan, Apr, Jul, Oct)</span>
+          <span>{t.reports.quarterlyReport}</span>
         </label>
         <label class="checkbox-row mb-3">
           <input type="checkbox" name="drip_emails_enabled" value="true" checked={settings.dripEmailsEnabled} />
-          <span>Onboarding tips (days 1, 3, and 7 after signup)</span>
+          <span>{t.reports.dripEmails}</span>
         </label>
         <label class="checkbox-row mb-0">
           <input type="checkbox" name="freeze_drill_enabled" value="true" checked={settings.freezeDrillEnabled} />
-          <span>Pre-season freeze drill (Sep–Nov email with readiness score)</span>
+          <span>{t.reports.freezeDrill}</span>
         </label>
   </AlertSettingsPanel>
 
   <AlertSettingsPanel
     id="alert-section-automation"
-    title="Rules & escalation"
-    subtitle="Your own conditions (e.g. pipe below 38°F while a door is open), follow-up steps, and SMS re-sends."
+    title={t.automation.title}
+    subtitle={t.automation.subtitle}
     collapsible
   >
-    <h3 class="alert-settings-subheading">Composite rules</h3>
-    <p class="form-hint mb-3">Fire when all (or any) of a rule's conditions are true, e.g. pipe below 38°F AND outdoor below 20°F. Flood already alerts when wet; add a flood condition here only to combine it with other checks. Door + cold example: <a class="text-link" href="/about/garage-door-cold-playbook">garage door playbook</a>.</p>
+    <h3 class="alert-settings-subheading">{t.automation.compositeRules}</h3>
+    <p class="form-hint mb-3" set:html={t.automation.compositeHintHtml} />
     <div id="alert-rules-list" class="space-y-3 mb-3"></div>
     <div class="flex flex-wrap gap-2 mb-4">
-      <button type="button" class="btn-secondary" id="add-alert-rule">Add rule</button>
-      <button type="button" class="btn-secondary" id="add-heat-rule">Add heat rule ({HEAT_THRESHOLD_F}°F)</button>
+      <button type="button" class="btn-secondary" id="add-alert-rule">{t.automation.addRule}</button>
+      <button type="button" class="btn-secondary" id="add-heat-rule">{fmt(t.automation.addHeatRule, { threshold: HEAT_THRESHOLD_F })}</button>
     </div>
     <RuleCheckPanel />
 
-    <h3 class="alert-settings-subheading">Alert playbooks</h3>
-    <p class="form-hint mb-3">Follow-up steps after the initial alert: e.g. SMS 15 minutes later if still unacknowledged.</p>
+    <h3 class="alert-settings-subheading">{t.automation.playbooks}</h3>
+    <p class="form-hint mb-3">{t.automation.playbooksHint}</p>
     <div id="alert-playbooks-list" class="space-y-3 mb-3"></div>
-    <button type="button" class="btn-secondary mb-4" id="add-playbook-step">Add step</button>
+    <button type="button" class="btn-secondary mb-4" id="add-playbook-step">{t.automation.addStep}</button>
     <textarea
       class="form-textarea font-mono text-xs sr-only"
       id="alert_playbooks_editor"
@@ -786,14 +778,14 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
       aria-hidden="true"
     >{JSON.stringify(settings.alertPlaybooks ?? [], null, 2)}</textarea>
 
-    <h3 class="alert-settings-subheading">SMS escalation</h3>
+    <h3 class="alert-settings-subheading">{t.automation.smsEscalation}</h3>
     <div class="config-row-grid">
       <label class="checkbox-row mb-0">
         <input type="checkbox" name="escalation_enabled" value="true" checked={settings.escalationEnabled} />
-        <span>Re-send threshold alerts via SMS</span>
+        <span>{t.automation.escalationToggle}</span>
       </label>
       <div class="form-field mb-0">
-        <label class="form-label" for="escalation_minutes">After (minutes)</label>
+        <label class="form-label" for="escalation_minutes">{t.automation.afterMinutes}</label>
         <input class="form-input" type="number" id="escalation_minutes" name="escalation_minutes" value={settings.escalationMinutes} min="5" />
       </div>
     </div>
@@ -801,21 +793,21 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
 
   <AlertSettingsPanel
     id="alert-section-advanced"
-    title="Advanced"
-    subtitle="Per-kind and per-space channel routing, custom message text, and reading webhooks."
+    title={t.advanced.title}
+    subtitle={t.advanced.subtitle}
     collapsible
   >
     <details class="alert-settings-nested">
-      <summary>Severity routing (optional)</summary>
+      <summary>{t.advanced.severitySummary}</summary>
       <div class="alert-settings-nested-body">
-        <p class="form-hint mb-3">Leave empty to use global channel checkboxes. Otherwise only selected channels fire for that kind.</p>
+        <p class="form-hint mb-3">{t.advanced.severityHint}</p>
         <input type="hidden" name="channel_severity_json" id="channel_severity_json" value={JSON.stringify(settings.channelSeverity ?? {})} />
         <div class="space-y-3" id="severity-routing">
           {(["threshold", "flood", "power", "forecast", "rate", "outage", "rule", "battery", "rssi", "stuck", "recovery"] as const).map((kind) => {
             const selected = settings.channelSeverity?.[kind] ?? [];
             return (
               <div class="form-field mb-0">
-                <label class="form-label capitalize">{kind}</label>
+                <label class="form-label capitalize">{t.kindIds[kind] ?? kind}</label>
                 <div class="flex flex-wrap gap-2">
                   {(["email", "discord", "telegram", "slack", "sms", "push", "webhook"] as const).map((ch) => (
                     <label class="checkbox-row mb-0 text-sm">
@@ -825,7 +817,7 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
                         data-severity-channel={ch}
                         checked={selected.includes(ch)}
                       />
-                      <span>{ch}</span>
+                      <span>{t.channelIds[ch] ?? ch}</span>
                     </label>
                   ))}
                 </div>
@@ -837,16 +829,16 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
     </details>
 
     <details class="alert-settings-nested">
-      <summary>Per-space channel routing</summary>
+      <summary>{t.advanced.spaceSummary}</summary>
       <div class="alert-settings-nested-body">
         {deviceSpaces.length === 0 ? (
           <p class="form-hint mb-0">
-            Assign a space label on devices (Dashboard → Devices) to route alerts by location.
+            {t.advanced.spaceEmpty}
           </p>
         ) : (
           <div class="space-y-4">
             <p class="form-hint mb-0">
-              Pick channels per space and alert kind. Unchecked kinds use global / severity routing.
+              {t.advanced.spaceHint}
             </p>
             {deviceSpaces.map((space) => {
               const key = space.toLowerCase();
@@ -896,19 +888,22 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
     </details>
 
     <details class="alert-settings-nested">
-      <summary>Custom alert messages</summary>
+      <summary>{t.advanced.templatesSummary}</summary>
       <div class="alert-settings-nested-body">
-        <p class="form-hint mb-3">
-          Override title/body per alert kind. Variables: <code>{`{{kind}}`}</code>, <code>{`{{title}}`}</code>, <code>{`{{body}}`}</code>.
-        </p>
+        <p
+          class="form-hint mb-3"
+          set:html={fmt(t.advanced.templatesHintHtml, {
+            vars: "<code>{{kind}}</code>, <code>{{title}}</code>, <code>{{body}}</code>",
+          })}
+        />
         <div class="space-y-3" id="alert-templates-editor">
           {templateKinds.map((kind) => {
             const tpl = settings.alertTemplates?.[kind] ?? {};
             return (
               <div class="rounded border border-[var(--color-border)] p-3">
-                <p class="text-sm font-semibold mb-2 capitalize">{kind}</p>
+                <p class="text-sm font-semibold mb-2 capitalize">{t.kindIds[kind] ?? kind}</p>
                 <div class="form-field mb-2">
-                  <label class="form-label" for={`tpl-title-${kind}`}>Title</label>
+                  <label class="form-label" for={`tpl-title-${kind}`}>{t.advanced.templateTitle}</label>
                   <input
                     class="form-input"
                     type="text"
@@ -916,11 +911,11 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
                     data-template-kind={kind}
                     data-template-field="title"
                     value={tpl.title ?? ""}
-                    placeholder="Leave blank for default"
+                    placeholder={t.advanced.templatePlaceholder}
                   />
                 </div>
                 <div class="form-field mb-0">
-                  <label class="form-label" for={`tpl-body-${kind}`}>Body</label>
+                  <label class="form-label" for={`tpl-body-${kind}`}>{t.advanced.templateBody}</label>
                   <input
                     class="form-input"
                     type="text"
@@ -928,7 +923,7 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
                     data-template-kind={kind}
                     data-template-field="body"
                     value={tpl.body ?? ""}
-                    placeholder="Leave blank for default"
+                    placeholder={t.advanced.templatePlaceholder}
                   />
                 </div>
               </div>
@@ -939,15 +934,15 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
     </details>
 
     <details class="alert-settings-nested">
-      <summary>Reading webhooks (Pro)</summary>
+      <summary>{t.advanced.readingSummary}</summary>
       <div class="alert-settings-nested-body">
         <div class="form-field">
-          <label class="form-label" for="reading_webhook_url">Reading webhook URL</label>
+          <label class="form-label" for="reading_webhook_url">{t.advanced.readingUrl}</label>
           <input class="form-input" type="url" id="reading_webhook_url" name="reading_webhook_url" value={settings.readingWebhookUrl ?? ""} placeholder="https://hooks.example.com/readings" disabled={!entitlements.canUseOutboundWebhook} />
-          <p class="form-hint">POST on every successful device ingest with latest readings JSON.</p>
+          <p class="form-hint">{t.advanced.readingHint}</p>
         </div>
         <div class="form-field mb-0">
-          <label class="form-label" for="reading_webhook_secret">Signing secret (optional)</label>
+          <label class="form-label" for="reading_webhook_secret">{t.channels.signingSecret}</label>
           <input class="form-input" type="text" id="reading_webhook_secret" name="reading_webhook_secret" value={settings.readingWebhookSecret ?? ""} disabled={!entitlements.canUseOutboundWebhook} />
         </div>
       </div>
@@ -957,13 +952,13 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
   <section class="card alert-settings-save sticky-alert-save" hidden={!canEdit}>
     <div class="sticky-alert-save-inner">
       <button type="submit" class="btn-primary" id="alert-settings-submit">
-        Save alert settings
+        {t.save.button}
       </button>
       <p class="form-hint mt-0 mb-0" id="channel-incomplete-hint" hidden>
-        A checked channel needs its destination filled in, or it will be skipped when alerts fire.
+        {t.save.incompleteHint}
       </p>
       <p class="form-hint mt-0 mb-0 text-[var(--color-text-muted)] sticky-alert-save-hint">
-        Changes are not applied until you save.
+        {t.save.notApplied}
       </p>
     </div>
   </section>

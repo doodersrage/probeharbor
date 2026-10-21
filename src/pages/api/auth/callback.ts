@@ -22,8 +22,10 @@ import {
 } from "../../../lib/mobileAuthRedirect";
 import { setAuthCookies } from "../../../lib/auth";
 import { setMfaRequiredCookie, needsMfaStepUp, getAssuranceLevels, createAuthClient } from "../../../lib/mfa";
+import { requestLocale, saveLocaleIfMissing } from "./_locale";
 
-export const GET: APIRoute = async ({ url, cookies, redirect }) => {
+export const GET: APIRoute = async (context) => {
+  const { url, cookies, redirect } = context;
   const oauthError = url.searchParams.get("error");
   const oauthErrorDescription = url.searchParams.get("error_description");
   const authCode = url.searchParams.get("code");
@@ -58,6 +60,13 @@ export const GET: APIRoute = async ({ url, cookies, redirect }) => {
     return redirect(buildSignInRedirectUrl("oauth_exchange_failed", undefined, detail));
   }
 
+  // New OAuth accounts get the language they signed up in; existing accounts
+  // without one get it when signing in from a translated page.
+  const isNewUser = Boolean(data.user && isLikelyNewUser(data.user.created_at));
+  const session = await saveLocaleIfMissing(createAuthClient(), data.session, data.user, requestLocale(context), {
+    always: isNewUser,
+  });
+
   const refCode = cookies.get(OAUTH_REF_COOKIE)?.value?.trim().toLowerCase() ?? "";
   cookies.delete(OAUTH_REF_COOKIE, { path: "/" });
 
@@ -77,18 +86,18 @@ export const GET: APIRoute = async ({ url, cookies, redirect }) => {
   // runs YubiKey/TOTP itself. Chrome will not follow custom-scheme 302s after
   // Google security-key auth, so we hand off via HTTPS /app/oauth.
   if (hasMobileOAuthCookie(cookies)) {
-    setAuthCookies(cookies, data.session.access_token, data.session.refresh_token);
+    setAuthCookies(cookies, session.access_token, session.refresh_token);
     const stepClient = createAuthClient();
     await stepClient.auth.setSession({
-      access_token: data.session.access_token,
-      refresh_token: data.session.refresh_token,
+      access_token: session.access_token,
+      refresh_token: session.refresh_token,
     });
     const levels = await getAssuranceLevels(stepClient);
     setMfaRequiredCookie(cookies, needsMfaStepUp(levels));
     const mobileRedirect = await maybeRedirectMobileOAuth(
       cookies,
-      data.session.access_token,
-      data.session.refresh_token,
+      session.access_token,
+      session.refresh_token,
       url.origin,
     );
     if (mobileRedirect) return mobileRedirect;
@@ -96,7 +105,7 @@ export const GET: APIRoute = async ({ url, cookies, redirect }) => {
 
   const { redirectTo } = await applySessionCookiesAfterAuth(
     cookies,
-    data.session,
+    session,
     safeNext,
   );
   return redirect(redirectTo);

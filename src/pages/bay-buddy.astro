@@ -14,7 +14,7 @@ import {
   resolvePageUrl,
   resolveSiteUrl,
 } from "../lib/schemaMarkup";
-import { getLocale, localizePath } from "../i18n";
+import { fmt, getLocale, localizePath } from "../i18n";
 import { bayBuddyMessages } from "../i18n/messages/bayBuddy";
 import { getLocalizedBayBuddyTagline } from "../i18n/content/apps";
 import {
@@ -65,7 +65,7 @@ const schema = [
     <PageHeader
       kicker={t.kicker}
       title={BAYBUDDY_NAME}
-      lede={t.lede(BAYBUDDY_NAME, BRAND_NAME)}
+      lede={fmt(t.lede, { name: BAYBUDDY_NAME, brand: BRAND_NAME })}
     >
       <a slot="actions" class="btn-primary" href={BAYBUDDY_RELEASES_URL} target="_blank" rel="noreferrer">
         {t.download}
@@ -92,7 +92,7 @@ const schema = [
         {t.installCopy}
       </p>
       <ol class="text-sm space-y-2 pl-5 list-decimal mb-4">
-        {t.installStepsHtml(BAYBUDDY_RELEASES_URL).map((item) => <li set:html={item} />)}
+        {t.installStepsHtml.map((item) => <li set:html={fmt(item, { releasesUrl: BAYBUDDY_RELEASES_URL })} />)}
       </ol>
       <a class="btn-primary" href={BAYBUDDY_RELEASES_URL} target="_blank" rel="noreferrer">
         {t.openReleases}

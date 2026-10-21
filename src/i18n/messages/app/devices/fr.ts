@@ -1,0 +1,123 @@
+import type { DevicesMessages } from "./en";
+
+const fr: DevicesMessages = {
+  title: "Appareils",
+  subtitle: {
+    ops: "Tous les appareils, du plus critique au moins critique. Ouvrez-en un pour le gérer.",
+    pull: "Flux JSON HTTPS que nous récupérons selon un calendrier.",
+    thermostat: "Le thermostat de votre logement et la référence intérieure, pour mettre vos sondes en contexte.",
+    push: "Connectez un nouvel appareil ou terminez la configuration d’un appareil.",
+  },
+  indoorRefError: {
+    saveFailed: "Impossible d’enregistrer la référence intérieure, réessayez.",
+    forbidden: "Vous n’avez pas l’autorisation de modifier ce paramètre.",
+    noHousehold: "Aucun foyer trouvé.",
+  },
+  notice: {
+    deviceTransferred: "Appareil déplacé vers l’autre bien.",
+    deviceNotFound: "Cet appareil ne fait plus partie de ce bien.",
+    sensorReplaced: {
+      one: "Capteur remplacé : {count} mesure d’historique a été transférée vers le nouveau capteur.",
+      other: "Capteur remplacé : {count} mesures d’historique ont été transférées vers le nouveau capteur.",
+    },
+    deviceDeleted: "Appareil supprimé.",
+    bulkDeleted: { one: "{count} élément supprimé.", other: "{count} éléments supprimés." },
+    bulkUpdated: { one: "{count} élément mis à jour.", other: "{count} éléments mis à jour." },
+    bulkError: "Impossible de terminer l’action groupée. Réessayez.",
+    deviceRenamed: "Appareil renommé.",
+    sensorAdded: "Capteur ajouté.",
+    sensorUpdated: "Capteur mis à jour.",
+    sensorDeleted: "Capteur supprimé.",
+    pullSavedDiscovered:
+      "Configuration de récupération enregistrée : {count} clé(s) de sonde importée(s). Renommez-les ci-dessous si besoin.",
+    pullSaved: "Configuration de récupération enregistrée.",
+    probesSaved: "Libellés des sondes enregistrés.",
+    sensorsRenamed: "Noms des capteurs enregistrés.",
+    feedDeleted: "Flux supprimé.",
+    probeDeleted: "Sonde supprimée.",
+    saveFailed: "Impossible d’enregistrer les modifications. Veuillez réessayer.",
+    deviceLimit: "Limite d’appareils push atteinte ({max} par bien). Changez d’offre pour en ajouter.",
+    viewer: "Accès en lecture seule : vous ne pouvez pas modifier les appareils ni les flux.",
+    deviceActionFailed: "Impossible de terminer cette action sur l’appareil. Vérifiez le formulaire et réessayez.",
+    actionFailed: "Impossible de terminer cette action ({code}). Veuillez réessayer.",
+    viewPlans: "Voir les offres",
+  },
+  tabs: {
+    ariaLabel: "Sections des appareils",
+    ops: "Appareils",
+    push: "Ajouter un appareil",
+    pull: "Flux récupérés",
+    thermostat: "Thermostat",
+  },
+  keyCallout: {
+    titleRotated: "Enregistrez votre nouvelle clé d’ingestion",
+    title: "Enregistrez votre clé d’ingestion",
+    subtitleReporting:
+      "Votre appareil est connecté. Gardez une copie de la clé au cas où vous le reflasheriez ; elle reste affichée ici pendant 30 minutes.",
+    subtitle:
+      "Scannez le QR, téléchargez un sketch ESP32 prérempli ou copiez l’URL. Cette clé reste disponible pendant 30 minutes, même après actualisation, jusqu’à ce que vous la masquiez.",
+    summaryReporting: "Afficher la clé et les étapes de configuration",
+    summary: "Clé et étapes de configuration",
+    copySnippet: "Copier l’extrait",
+    qrAria: "QR code de l’URL d’ingestion",
+    ingestUrl: "URL d’ingestion",
+    postJsonTo: "Envoyez du JSON en POST à",
+    copyUrl: "Copier l’URL",
+    copyKey: "Copier la clé",
+    downloadSvg: "Télécharger le SVG",
+    printLabel: "Imprimer l’étiquette",
+    dismiss: "Je l’ai enregistrée",
+    printTitle: "Étiquette d’ingestion",
+    defaultDeviceName: "Appareil push",
+  },
+  via: {
+    ha: {
+      title: "À coller dans Home Assistant",
+      hint: "Remplacez par vos identifiants d’entité, rechargez le YAML et la première mesure arrive en moins de 5 minutes. Les capteurs en °C sont convertis pour vous.",
+      guide: "Guide Home Assistant",
+    },
+    esphome: {
+      title: "À ajouter à votre nœud ESPHome",
+      hint: "Appelez-le depuis une automatisation interval ou on_value, puis flashez le nœud.",
+      guide: "Recettes ESPHome et Shelly",
+    },
+    mqtt: {
+      title: "Relayer MQTT via HTTPS",
+      hint: "Gardez votre broker sur le réseau local. Importez le flux Node-RED et collez cette clé, ou faites un POST comme ceci depuis n’importe quel relais.",
+      guide: "Flux Node-RED",
+    },
+  },
+  waiting: {
+    titleWaiting: "En attente du premier POST",
+    titleVerify: "Étape suivante : vérifier l’ingestion",
+    subtitle:
+      "Pointez le firmware vers votre URL d’ingestion et envoyez du JSON en POST. Les capteurs sont importés automatiquement au premier POST : renommez-les plus tard si vous le souhaitez.",
+    stepCreated: "Appareil push créé",
+    stepPost: "Premier POST d’ingestion",
+    statusListening: " : en écoute…",
+    statusSendTest: ", envoyez un POST de test",
+    sampleSummary: "Exemple curl / payload",
+    kitGuide: "Guide QR du kit matériel",
+    checkNow: "Vérifier maintenant",
+    metaAuto: "Vérification automatique toutes les 5 secondes tant que cette page est ouverte.",
+    metaManual: "Envoyez un POST, puis cliquez sur Vérifier maintenant ou actualisez.",
+  },
+  wizard: {
+    title: "Configuration de l’appareil",
+    step: "Étape {step} sur 2 : créez un appareil push, envoyez du JSON en POST (import automatique des capteurs), puis vérifiez les mesures.",
+    createStep: "Créer un appareil push",
+    postStep: "POST JSON : import automatique des capteurs ; renommez-les ensuite si besoin",
+    showAll: "Afficher tous les paramètres de l’appareil",
+  },
+  client: {
+    stillWaiting: "Toujours en attente : dernière vérification à {time}. Vérification automatique toutes les 5 secondes.",
+    lastCheck: "Dernière vérification à {time}.",
+    received: " : reçu !",
+    listening: " : en écoute…",
+    checkFailed: "Impossible de vérifier l’état, essayez Vérifier maintenant.",
+    couldNotSave: "Impossible d’enregistrer.",
+    saved: "Enregistré.",
+  },
+};
+
+export default fr;

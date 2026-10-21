@@ -11,3 +11,12 @@ describe("formatHouseholdActivityAction", () => {
     expect(formatHouseholdActivityAction("custom_event")).toBe("custom event");
   });
 });
+
+describe("formatHouseholdActivityAction (translated)", () => {
+  it("returns the Spanish label when the locale is loaded", async () => {
+    const { ensureLocale } = await import("../i18n/catalog");
+    await ensureLocale("es", ["app"]);
+    expect(formatHouseholdActivityAction("device_transfer", "es")).toBe("Dispositivo transferido");
+    expect(formatHouseholdActivityAction("custom_event", "es")).toBe("custom event");
+  });
+});

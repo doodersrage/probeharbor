@@ -1,3 +1,5 @@
+import alertJobsEn from "../i18n/messages/app/alertJobs/en";
+
 const SNOOZE_MAX_HOURS = 168;
 const VACATION_MAX_DAYS = 30;
 
@@ -23,8 +25,8 @@ export function parseTelegramVacationDays(text: string, fallback = 7): number {
   return Math.min(days, VACATION_MAX_DAYS);
 }
 
-export const TELEGRAM_HELP =
-  "Commands: /status [name], /snooze [hours], /vacation [days], /help";
+/** English /help reply; the webhook uses `app/alertJobs` telegram.help for other languages. */
+export const TELEGRAM_HELP = alertJobsEn.telegram.help;
 
 export function telegramStatusQuery(text: string): string {
   return text.trim().split(/\s+/).slice(1).join(" ").toLowerCase();

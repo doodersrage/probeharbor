@@ -28,27 +28,27 @@ export type ProbeDemoText = {
   conditionsSubtitleHtml: string;
   presetsAria: string;
   spaceLabel: string;
-  /** {f} °F, {c} °C */
+  /** {temp} */
   outdoorLabel: string;
   /** {pct} */
   sunLabel: string;
-  /** {f} °F, {c} °C */
+  /** {temp} */
   freezeLabel: string;
-  /** {spread} °F difference, {spreadC} °C difference */
+  /** {spread}: a temperature difference */
   draftCalloutHtml: string;
   reset: string;
   /** {time} */
   updated: string;
   statusEyebrow: string;
-  /** {coldest} {coldestC} {threshold} {thresholdC} {outdoor} {outdoorC} */
+  /** {coldest} {threshold} {outdoor} */
   coldestLine: string;
   riskNote: string;
   readingsTitle: string;
   readingsSubtitle: string;
   draftBadge: string;
-  /** {f} {c} */
+  /** {primary}: the temperature in the main unit */
   statValue: string;
-  /** {f} {c} {h} */
+  /** {secondary}: the temperature in the other unit, {h} humidity */
   statDetail: string;
   belowFreeze: string;
   nearFreeze: string;
@@ -57,11 +57,11 @@ export type ProbeDemoText = {
   comparisonOpen: string;
   comparisonClosed: string;
   barsAria: string;
-  /** {threshold} {thresholdC} */
+  /** {threshold} */
   barThresholdTitle: string;
-  /** {f} {c} */
+  /** {primary} */
   barValue: string;
-  /** {threshold} {thresholdC} */
+  /** {threshold} */
   thresholdNote: string;
   jsonTitle: string;
   jsonSubtitleHtml: string;
@@ -105,22 +105,22 @@ export const PROBE_DEMO_TEXT_EN: ProbeDemoText = {
     "Pick a space, tweak weather, and watch zones respond the way Overview and Devices do with live ingest. Try <strong>Door draft</strong> or <strong>Cold snap</strong> first — cause the change, then read the bars.",
   presetsAria: "Scenario presets",
   spaceLabel: "Monitored space",
-  outdoorLabel: "Outdoor temperature ({f} °F)",
+  outdoorLabel: "Outdoor temperature ({temp})",
   sunLabel: "Sun / heat load ({pct}%)",
-  freezeLabel: "Freeze threshold ({f} °F)",
+  freezeLabel: "Freeze threshold ({temp})",
   draftCalloutHtml:
-    "Door/entry zone is about <strong>{spread}°F</strong> colder than the warmest other probe — same reason a single workbench sensor can miss freeze risk at the door.",
+    "Door/entry zone is about <strong>{spread}</strong> colder than the warmest other probe — same reason a single workbench sensor can miss freeze risk at the door.",
   reset: "Reset demo",
   updated: "Simulated refresh every 2 seconds · Last update {time}",
   statusEyebrow: "Space status (simulated)",
-  coldestLine: "Coldest probe {coldest}°F · threshold {threshold}°F · outdoor {outdoor}°F",
+  coldestLine: "Coldest probe {coldest} · threshold {threshold} · outdoor {outdoor}",
   riskNote:
     "In the real app this would fire your freeze essentials (email by default) — same logic as Overview’s space status card.",
   readingsTitle: "Live probe readings",
   readingsSubtitle: "Each card mirrors a sensor label you’d rename on Devices after first POST.",
   draftBadge: " draft",
-  statValue: "{f} °F",
-  statDetail: "{c} °C · {h}% humidity",
+  statValue: "{primary}",
+  statDetail: "{secondary} · {h}% humidity",
   belowFreeze: " · below freeze",
   nearFreeze: " · near freeze",
   averageLabel: "Average · avg",
@@ -130,9 +130,9 @@ export const PROBE_DEMO_TEXT_EN: ProbeDemoText = {
   comparisonClosed:
     "Relative temperature by zone — dashed line is your freeze threshold. Toggle the door open to widen the gap.",
   barsAria: "Bar chart comparing probe temperatures",
-  barThresholdTitle: "Freeze {threshold}°F",
-  barValue: "{f} °F",
-  thresholdNote: "Vertical marks show the {threshold}°F freeze threshold on each bar.",
+  barThresholdTitle: "Freeze {threshold}",
+  barValue: "{primary}",
+  thresholdNote: "Vertical marks show the {threshold} freeze threshold on each bar.",
   jsonTitle: "JSON feed preview",
   jsonSubtitleHtml:
     "Push ingest is what ESP/Arduino POST to Devices. Pull nests the same named probes under <code>temp</code> for scheduled HTTPS JSON.",
@@ -211,6 +211,17 @@ export default function ProbeDemo({ text = PROBE_DEMO_TEXT_EN, locale }: ProbeDe
   /** Slider values as entered (integers, or .5 steps). */
   const nRaw = (value: number) => (looseFormat ? looseFormat.format(value) : String(value));
   const cRaw = (f: number) => n1(fToC(f));
+  /**
+   * A temperature for `{temp}`-style placeholders: English as before ("28°F",
+   * or "28 °F" when `spaced`), translations °C first with °F in parentheses.
+   */
+  const temp = (f: string, c: string, spaced = false) =>
+    locale ? `${c} °C (${f} °F)` : spaced ? `${f} °F` : `${f}°F`;
+  /** Main / secondary unit for a reading: °F then °C in English, °C then °F in translations. */
+  const units = (f: number, c: number) =>
+    locale
+      ? { primary: `${n1(c)} °C`, secondary: `${n1(f)} °F` }
+      : { primary: `${n1(f)} °F`, secondary: `${n1(c)} °C` };
   const [controls, setControls] = useState<DemoControls>(() => {
     const preset = presetFromLocation();
     if (!preset) return defaultDemoControls;
@@ -384,7 +395,7 @@ export default function ProbeDemo({ text = PROBE_DEMO_TEXT_EN, locale }: ProbeDe
 
           <label class="probe-demo-control">
             <span class="form-label">
-              {fill(t.outdoorLabel, { f: nRaw(controls.outdoorF), c: cRaw(controls.outdoorF) })}
+              {fill(t.outdoorLabel, { temp: temp(nRaw(controls.outdoorF), cRaw(controls.outdoorF), true) })}
             </span>
             <input
               class="probe-demo-range"
@@ -423,8 +434,7 @@ export default function ProbeDemo({ text = PROBE_DEMO_TEXT_EN, locale }: ProbeDe
           <label class="probe-demo-control">
             <span class="form-label">
               {fill(t.freezeLabel, {
-                f: nRaw(controls.freezeThresholdF),
-                c: cRaw(controls.freezeThresholdF),
+                temp: temp(nRaw(controls.freezeThresholdF), cRaw(controls.freezeThresholdF), true),
               })}
             </span>
             <input
@@ -464,8 +474,7 @@ export default function ProbeDemo({ text = PROBE_DEMO_TEXT_EN, locale }: ProbeDe
             role="status"
             dangerouslySetInnerHTML={{
               __html: fill(t.draftCalloutHtml, {
-                spread: n1(draftSpread),
-                spreadC: n1((draftSpread * 5) / 9),
+                spread: temp(n1(draftSpread), n1((draftSpread * 5) / 9)),
               }),
             }}
           />
@@ -491,12 +500,9 @@ export default function ProbeDemo({ text = PROBE_DEMO_TEXT_EN, locale }: ProbeDe
         {coldest != null && (
           <p class="text-sm text-[var(--color-text-muted)] mb-0">
             {fill(t.coldestLine, {
-              coldest: n1(coldest),
-              coldestC: cRaw(coldest),
-              threshold: nRaw(controls.freezeThresholdF),
-              thresholdC: cRaw(controls.freezeThresholdF),
-              outdoor: nRaw(controls.outdoorF),
-              outdoorC: cRaw(controls.outdoorF),
+              coldest: temp(n1(coldest), cRaw(coldest)),
+              threshold: temp(nRaw(controls.freezeThresholdF), cRaw(controls.freezeThresholdF)),
+              outdoor: temp(nRaw(controls.outdoorF), cRaw(controls.outdoorF)),
             })}
           </p>
         )}
@@ -528,12 +534,11 @@ export default function ProbeDemo({ text = PROBE_DEMO_TEXT_EN, locale }: ProbeDe
                   ) : null}
                 </span>
                 <p class="stat-value m-0">
-                  {fill(t.statValue, { f: n1(probe.reading.f), c: n1(probe.reading.c) })}
+                  {fill(t.statValue, units(probe.reading.f, probe.reading.c))}
                 </p>
                 <p class="stat-detail m-0">
                   {fill(t.statDetail, {
-                    f: n1(probe.reading.f),
-                    c: n1(probe.reading.c),
+                    ...units(probe.reading.f, probe.reading.c),
                     h: n1(probe.reading.h),
                   })}
                   {atRisk ? t.belowFreeze : near ? t.nearFreeze : ""}
@@ -543,9 +548,9 @@ export default function ProbeDemo({ text = PROBE_DEMO_TEXT_EN, locale }: ProbeDe
           })}
           <article class="stat-item">
             <span class="stat-label">{t.averageLabel}</span>
-            <p class="stat-value m-0">{fill(t.statValue, { f: n1(average.f), c: n1(average.c) })}</p>
+            <p class="stat-value m-0">{fill(t.statValue, units(average.f, average.c))}</p>
             <p class="stat-detail m-0">
-              {fill(t.statDetail, { f: n1(average.f), c: n1(average.c), h: n1(average.h) })}
+              {fill(t.statDetail, { ...units(average.f, average.c), h: n1(average.h) })}
             </p>
           </article>
         </div>
@@ -578,21 +583,19 @@ export default function ProbeDemo({ text = PROBE_DEMO_TEXT_EN, locale }: ProbeDe
                   class="probe-demo-bar-threshold"
                   style={{ left: `${freezeBarPct}%` }}
                   title={fill(t.barThresholdTitle, {
-                    threshold: nRaw(controls.freezeThresholdF),
-                    thresholdC: cRaw(controls.freezeThresholdF),
+                    threshold: temp(nRaw(controls.freezeThresholdF), cRaw(controls.freezeThresholdF)),
                   })}
                 />
               </div>
               <span class="probe-demo-bar-value">
-                {fill(t.barValue, { f: n1(probe.reading.f), c: n1(probe.reading.c) })}
+                {fill(t.barValue, units(probe.reading.f, probe.reading.c))}
               </span>
             </div>
           ))}
         </div>
         <p class="mt-3 mb-0 text-sm text-[var(--color-text-muted)]">
           {fill(t.thresholdNote, {
-            threshold: nRaw(controls.freezeThresholdF),
-            thresholdC: cRaw(controls.freezeThresholdF),
+            threshold: temp(nRaw(controls.freezeThresholdF), cRaw(controls.freezeThresholdF)),
           })}
         </p>
       </section>

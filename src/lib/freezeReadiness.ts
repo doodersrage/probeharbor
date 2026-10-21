@@ -3,6 +3,9 @@ import type { DeviceWithSensors } from "./devices";
 import { resolveAlertEmail, type AlertSettings } from "./alerts";
 import type { LatestSensorRow } from "./sensorReadings";
 import { listLowBatteryDevices } from "./deviceBatteryUi";
+import { plural } from "../i18n/format";
+import type { Locale } from "../i18n/locales";
+import { overviewCardsMessages } from "../i18n/messages/app/overviewCards";
 
 export type ReadinessCheck = {
   id: string;
@@ -52,7 +55,9 @@ export function computeFreezeReadiness(input: {
   canUseNws: boolean;
   hasSentAnyAlert: boolean;
   nowMs?: number;
-}): FreezeReadinessResult {
+}, locale: Locale = "en"): FreezeReadinessResult {
+  const c = overviewCardsMessages(locale).readiness.checks;
+  const readinessText = overviewCardsMessages(locale).readiness;
   const {
     alertSettings,
     devices,
@@ -63,7 +68,7 @@ export function computeFreezeReadiness(input: {
     hasSentAnyAlert,
   } = input;
 
-  const stale: StaleSensorSummary = summarizeStaleSensors(latest, devices);
+  const stale: StaleSensorSummary = summarizeStaleSensors(latest, devices, undefined, locale);
   const lowBattery = listLowBatteryDevices(devices, alertSettings.batteryThresholdPct);
 
   const channelOk = alertSettings.enabled && hasConfiguredAlertChannel(alertSettings);
@@ -73,130 +78,133 @@ export function computeFreezeReadiness(input: {
   const checks: ReadinessCheck[] = [
     {
       id: "alerts_on",
-      label: "Alerts enabled (freeze + auto flood)",
+      label: c.alerts_on.label,
       ok: alertSettings.enabled,
       hint: alertSettings.enabled
         ? undefined
-        : "Turn alerts on under Dashboard → Alerts: flood/leak contacts notify automatically when wet.",
+        : c.alerts_on.hint,
       href: "/dashboard/alerts?tab=settings#alert-section-essentials",
-      action: "Turn on",
+      action: c.alerts_on.action,
     },
     {
       id: "channel",
-      label: "At least one alert channel configured",
+      label: c.channel.label,
       ok: channelOk,
-      hint: channelOk ? undefined : "Enable email, SMS, or another channel with a destination.",
+      hint: channelOk ? undefined : c.channel.hint,
       href: "/dashboard/alerts?tab=settings#alert-section-channels",
-      action: "Set up channels",
+      action: c.channel.action,
     },
     {
       id: "test_alert",
-      label: "Test alert sent at least once",
+      label: c.test_alert.label,
       ok: hasSentAnyAlert,
-      hint: hasSentAnyAlert ? undefined : "Send a test from Dashboard → Alerts before cold season.",
+      hint: hasSentAnyAlert ? undefined : c.test_alert.hint,
       href: "/dashboard/alerts?tab=settings#send-test-alert",
-      action: "Send a test",
+      action: c.test_alert.action,
     },
     {
       id: "devices",
-      label: "Push or pull device registered",
+      label: c.devices.label,
       ok: devices.length > 0,
-      hint: devices.length > 0 ? undefined : "Add a push device or pull feed under Dashboard → Devices.",
+      hint: devices.length > 0 ? undefined : c.devices.hint,
       href: "/dashboard/devices?view=setup",
-      action: "Add a device",
+      action: c.devices.action,
     },
     {
       id: "flood_sensor",
-      label: "Flood / leak contact registered",
+      label: c.flood_sensor.label,
       ok: hasFloodSensor,
       hint: hasFloodSensor
         ? undefined
-        : "This is a sensor, not a setting: add a wet/dry leak contact under a water heater, laundry, or sump. It alerts automatically when wet. On an ESP32, wire it and tick \"Leak\" in the web flasher.",
+        : c.flood_sensor.hint,
       href: "/flash",
-      action: "Web flasher",
+      action: c.flood_sensor.action,
     },
     {
       id: "fresh",
-      label: "All probes reporting (not stale)",
+      label: c.fresh.label,
       ok: stale.total === 0,
       hint:
         stale.total === 0
           ? undefined
-          : stale.bannerMessage ?? `${stale.total} probe(s) haven't reported recently.`,
+          : (locale === "en" ? stale.bannerMessage : null) ??
+            plural(readinessText.staleHint, stale.total, locale),
       href: "/dashboard/devices?view=ops",
-      action: "Check devices",
+      action: c.fresh.action,
     },
     {
       id: "battery",
-      label: "No critically low probe batteries",
+      label: c.battery.label,
       ok: lowBattery.length === 0,
       hint:
         lowBattery.length === 0
           ? undefined
-          : `${lowBattery.length} device(s) below ${alertSettings.batteryThresholdPct}% battery.`,
+          : plural(readinessText.batteryHint, lowBattery.length, locale, {
+              pct: alertSettings.batteryThresholdPct,
+            }),
       href: "/dashboard/devices?view=ops",
-      action: "Check batteries",
+      action: c.battery.action,
     },
     {
       id: "weather",
-      label: "Weather / NWS location configured",
+      label: c.weather.label,
       ok: weatherLocationConfigured,
       hint: weatherLocationConfigured
         ? undefined
-        : "Set outdoor weather in Dashboard → Settings (OpenWeather city, Ambient station, or WeatherFlow).",
+        : c.weather.hint,
       href: "/dashboard/settings",
-      action: "Set location",
+      action: c.weather.action,
     },
     {
       id: "runway",
-      label: "Time-to-freeze warning on",
+      label: c.runway.label,
       ok: alertSettings.runwayAlertEnabled,
       hint: alertSettings.runwayAlertEnabled
         ? undefined
-        : "Turn on the time-to-freeze warning so you hear before a probe crosses freeze, while there's still time to act.",
+        : c.runway.hint,
       href: "/dashboard/alerts?tab=settings#setting-runway",
-      action: "Turn on",
+      action: c.runway.action,
     },
   ];
 
   if (hasLevelSensor) {
     checks.push({
       id: "level_rule",
-      label: "Optional: sump/tank level_above rule",
+      label: c.level_rule.label,
       ok: (alertSettings.alertRules ?? []).some(
         (rule) =>
           rule.enabled !== false &&
           (rule.all ?? []).some((c) => c.type === "level_above"),
       ),
-      hint: "Level sensors display on Overview; add a Rules → level_above condition if you want pump-failure early warning.",
+      hint: c.level_rule.hint,
       href: "/dashboard/alerts?tab=settings#alert-section-automation",
-      action: "Add a rule",
+      action: c.level_rule.action,
     });
   }
 
   if (canUseForecast) {
     checks.push({
       id: "forecast",
-      label: "Forecast freeze warning on",
+      label: c.forecast.label,
       ok: alertSettings.forecastFreezeEnabled,
       hint: alertSettings.forecastFreezeEnabled
         ? undefined
-        : "Turn on \"Warn when the outdoor forecast drops below freezing\" under Alerts → Settings → When to alert.",
+        : c.forecast.hint,
       href: "/dashboard/alerts?tab=settings#setting-forecast-freeze",
-      action: "Turn on",
+      action: c.forecast.action,
     });
   }
 
   if (canUseNws) {
     checks.push({
       id: "nws",
-      label: "Official NWS freeze alerts enabled",
+      label: c.nws.label,
       ok: alertSettings.nwsFreezeAlertsEnabled,
       hint: alertSettings.nwsFreezeAlertsEnabled
         ? undefined
-        : "Turn on official freeze warnings under Alerts → Settings → When to alert → Humidity, fast drops, and official freeze warnings.",
+        : c.nws.hint,
       href: "/dashboard/alerts?tab=settings#setting-nws",
-      action: "Turn on",
+      action: c.nws.action,
     });
   }
 

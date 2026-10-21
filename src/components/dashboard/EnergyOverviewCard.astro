@@ -1,7 +1,9 @@
 ---
 import DashboardCard from "./DashboardCard.astro";
 import type { EnergyOverview } from "../../lib/overviewExtras";
-import { formatRelativeAge } from "../../lib/relativeTime";
+import { localizedAgeLabel } from "../../lib/overviewExtras";
+import { fmt, formatNumber, getLocale } from "../../i18n";
+import { overviewInsightsMessages } from "../../i18n/messages/app/overviewInsights";
 
 interface Props {
   energy: EnergyOverview;
@@ -9,25 +11,30 @@ interface Props {
 }
 
 const { energy, coolingRateFPerHour = null } = Astro.props;
-const age = formatRelativeAge(energy.at);
+const locale = getLocale(Astro);
+const t = overviewInsightsMessages(locale).energy;
+const age = localizedAgeLabel(energy.at, locale);
+/** `toFixed(digits)` with the locale's decimal mark. */
+const fixed = (value: number, digits: number) =>
+  formatNumber(value, locale, { minimumFractionDigits: digits, maximumFractionDigits: digits, useGrouping: false });
 ---
 <DashboardCard>
-  <h2 class="card-title">Power draw</h2>
+  <h2 class="card-title">{t.title}</h2>
   <p class="card-subtitle mb-3">
-    {energy.label}: heater / load proxy from energy sensor.
+    {fmt(t.subtitle, { label: energy.label })}
   </p>
-  <p class="stat-value m-0">{energy.latestW.toFixed(0)} W</p>
+  <p class="stat-value m-0">{fixed(energy.latestW, 0)} W</p>
   <p class="m-0 mt-1 text-sm text-[var(--color-text-muted)]">
-    Avg {energy.avgW.toFixed(0)} W · ~{energy.estimatedKWh.toFixed(1)} kWh over samples · {age.label}
+    {fmt(t.stats, { avg: fixed(energy.avgW, 0), kwh: fixed(energy.estimatedKWh, 1), age })}
   </p>
   {coolingRateFPerHour != null && coolingRateFPerHour < -0.5 && energy.latestW < 50 && (
     <p class="alert-warning mt-3 mb-0 text-sm">
-      Space cooling ~{Math.abs(coolingRateFPerHour).toFixed(1)}°F/h while power is low.      heater may be off or undersized.
+      {fmt(t.coolingLowPower, { rate: fixed(Math.abs(coolingRateFPerHour), 1) })}
     </p>
   )}
   {coolingRateFPerHour != null && coolingRateFPerHour > 0.3 && energy.latestW > 200 && (
     <p class="mt-3 mb-0 text-sm text-[var(--color-text-muted)]">
-      Load active (~{energy.latestW.toFixed(0)} W) while space is warming.
+      {fmt(t.loadActive, { watts: fixed(energy.latestW, 0) })}
     </p>
   )}
 </DashboardCard>

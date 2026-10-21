@@ -2,7 +2,7 @@
 import AboutArticle from "../../components/AboutArticle.astro";
 import { commerceLinkRel } from "../../lib/affiliateLinks";
 import { BOM } from "../../lib/bomLinks";
-import { getLocale } from "../../i18n";
+import { fmt, getLocale } from "../../i18n";
 import { getLocalizedAboutPage } from "../../i18n/content/aboutPages";
 import { getLocalizedAboutHeroPhoto } from "../../i18n/content/aboutPhotos";
 import { teensy41IngestMessages } from "../../i18n/messages/about-pages/teensy41-ingest";
@@ -91,7 +91,7 @@ const QNETH = "https://github.com/ssilverman/QNEthernet";
       <pre><code>{`python3 sketches/relay/push_https_forward.py --listen 0.0.0.0:8080 \\
   --upstream https://probeharbor.dev`}</code></pre>
     </li>
-    <li set:html={t.stepInstallHtml(QNETH)} />
+    <li set:html={fmt(t.stepInstallHtml, { qneth: QNETH })} />
     <li set:html={t.stepSerialHtml} />
   </ol>
   <p>

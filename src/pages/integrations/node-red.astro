@@ -9,7 +9,7 @@ import {
   resolvePageUrl,
   resolveSiteUrl,
 } from "../../lib/schemaMarkup";
-import { getLocale } from "../../i18n";
+import { fmt, getLocale } from "../../i18n";
 import { integrationsMessages } from "../../i18n/messages/integrations";
 import { getLocalizedIntegrationTaglines } from "../../i18n/content/integrations";
 import {
@@ -67,7 +67,7 @@ const schema = [
       <h2 class="card-title">{t.installTitle}</h2>
       <ol class="text-sm space-y-2 pl-5 list-decimal mb-4">
         <li set:html={t.step1Html} />
-        <li set:html={t.step2Html(NODERED_FLOW_URL)} />
+        <li set:html={fmt(t.step2Html, { href: NODERED_FLOW_URL })} />
         <li set:html={t.step3Html} />
         <li>{t.step4}</li>
       </ol>

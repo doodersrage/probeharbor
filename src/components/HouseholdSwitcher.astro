@@ -1,6 +1,11 @@
 ---
 import DashboardCard from "./dashboard/DashboardCard.astro";
 import { householdRoleLabel } from "../lib/householdRoleLabel";
+import { getLocale } from "../i18n";
+import { shellMessages } from "../i18n/messages/app/shell";
+
+const locale = getLocale(Astro);
+const t = shellMessages(locale).switcher;
 
 interface Props {
   households: Array<{ household_id: string; name: string; role: string }>;
@@ -29,13 +34,13 @@ if (variant === "card" && !canSwitch) {
   <DashboardCard class="household-switcher">
     <div class="household-switcher-row">
       <div>
-        <p class="household-switcher-label">Active property</p>
+        <p class="household-switcher-label">{t.activeProperty}</p>
         <p class="household-switcher-name mb-0">
-          {active?.name ?? "Select a household"}
+          {active?.name ?? t.selectHousehold}
           {active && (
             <span class="text-muted-foreground font-normal">
               {" · "}
-              {householdRoleLabel(active.role)}
+              {householdRoleLabel(active.role, locale)}
             </span>
           )}
         </p>
@@ -48,11 +53,11 @@ if (variant === "card" && !canSwitch) {
           data-household-switch-form
         >
           <input type="hidden" name="redirect" value={redirectTo} />
-          <label class="sr-only" for={selectId}>Switch household</label>
+          <label class="sr-only" for={selectId}>{t.switchHousehold}</label>
           <select class="form-input" id={selectId} name="household_id" required>
             {households.map((h) => (
               <option value={h.household_id} selected={h.household_id === activeHouseholdId}>
-                {h.name} ({householdRoleLabel(h.role)})
+                {h.name} ({householdRoleLabel(h.role, locale)})
               </option>
             ))}
           </select>
@@ -70,7 +75,7 @@ if (variant === "card" && !canSwitch) {
         data-household-switch-form
       >
         <input type="hidden" name="redirect" value={redirectTo} />
-        <label class="sr-only" for={selectId}>Active property</label>
+        <label class="sr-only" for={selectId}>{t.activeProperty}</label>
         <select
           class="form-input household-switcher-select"
           id={selectId}
@@ -86,7 +91,7 @@ if (variant === "card" && !canSwitch) {
       </form>
     ) : (
       <p class="household-switcher-chrome-name mb-0" title={active?.name ?? undefined}>
-        {active?.name ?? "Property"}
+        {active?.name ?? t.property}
       </p>
     )}
   </div>

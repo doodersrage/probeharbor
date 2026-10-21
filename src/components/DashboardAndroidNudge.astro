@@ -1,28 +1,32 @@
 ---
+import { getLocale } from "../i18n";
+import { overviewNudgesMessages } from "../i18n/messages/app/overview/nudges";
+
 interface Props {
   show: boolean;
 }
 
 const { show } = Astro.props;
+const t = overviewNudgesMessages(getLocale(Astro)).android;
 const playStoreUrl = String(import.meta.env.PUBLIC_PLAY_STORE_URL ?? "").trim();
 const playStoreLive = playStoreUrl.startsWith("https://play.google.com/");
 ---
 
 {show && (
   <section class="card" id="android-companion-nudge" aria-labelledby="android-companion-nudge-title">
-    <h2 class="card-title" id="android-companion-nudge-title">Android companion</h2>
+    <h2 class="card-title" id="android-companion-nudge-title">{t.title}</h2>
     <p class="card-subtitle mb-4">
-      Live probes, alerts, and household tools on your phone: the phone is not a sensor.
+      {t.body}
     </p>
     <div class="flex flex-wrap gap-3">
       {playStoreLive ? (
         <a class="btn-secondary" href={playStoreUrl} target="_blank" rel="noreferrer">
-          Get it on Google Play
+          {t.googlePlay}
         </a>
       ) : (
-        <a class="btn-secondary" href="/android">Android early access</a>
+        <a class="btn-secondary" href="/android">{t.earlyAccess}</a>
       )}
-      <a class="btn-ghost" href="/about/install-pwa">Or install the PWA</a>
+      <a class="btn-ghost" href="/about/install-pwa">{t.orPwa}</a>
     </div>
   </section>
 )}

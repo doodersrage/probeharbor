@@ -22,6 +22,45 @@ import { readDeviceMetaNumber } from "./deviceHealth";
 import type { FeedHealthStatus } from "./collectHistory";
 import { formatRelativeAge } from "./relativeTime";
 import { SENSOR_KIND_LABELS, type SensorKind } from "./sensorKinds";
+import { fmt, formatNumber, LOCALE_META, plural, type Locale } from "../i18n";
+import { overviewInsightsMessages } from "../i18n/messages/app/overviewInsights";
+
+const msgs = (locale: Locale) => overviewInsightsMessages(locale);
+
+/** `value.toFixed(digits)` with the locale's decimal mark (no grouping, like toFixed). */
+function fixed(value: number, digits: number, locale: Locale): string {
+  return formatNumber(value, locale, {
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits,
+    useGrouping: false,
+  });
+}
+
+/**
+ * Short relative age ("5m ago") for the locale. English is exactly
+ * `formatRelativeAge(iso).label`; other locales use the same thresholds.
+ */
+export function localizedAgeLabel(iso: string | null | undefined, locale: Locale = "en"): string {
+  const age = formatRelativeAge(iso);
+  if (locale === "en") return age.label;
+  const t = msgs(locale).age;
+  const parsed = iso ? Date.parse(iso) : Number.NaN;
+  if (Number.isNaN(parsed)) return t.never;
+  const ms = Date.now() - parsed;
+  const minutes = Math.floor(ms / 60000);
+  const n = (value: number) => fixed(value, 0, locale);
+  if (ms < 0 || minutes < 1) return t.justNow;
+  if (minutes < 60) return fmt(t.minutesAgo, { count: n(minutes) });
+  const hours = Math.floor(minutes / 60);
+  return hours < 48
+    ? fmt(t.hoursAgo, { count: n(hours) })
+    : fmt(t.daysAgo, { count: n(Math.floor(hours / 24)) });
+}
+
+/** Battery drop line for the Overview card (English: `detectBatteryTrendDrop`). */
+function batteryDropMessage(samples: BatterySample[], locale: Locale): string | null {
+  return detectBatteryTrendDrop(samples, undefined, undefined, locale);
+}
 
 export type BatteryOverviewRow = {
   deviceName: string;
@@ -123,27 +162,33 @@ export function buildDoorTempSummary(
   sessions: DoorOpenSession[],
   points: ChartPoint[],
   outdoorTempF: number | null,
+  locale: Locale = "en",
 ): { title: string; detail: string; tone: "warning" | "info" } | null {
+  const t = msgs(locale).summaries;
   const minutes = doorOpenMinutesFromSessions(sessions);
   const openNow = sessions.filter((s) => s.stillOpen);
   const rate = estimateHeatingLossRate(points, outdoorTempF);
   if (openNow.length > 0) {
     const labels = openNow.map((s) => s.label).join(", ");
     return {
-      title: "Door open now",
+      title: t.doorOpenNow,
       detail:
         rate != null && rate < 0
-          ? `${labels}: space falling ~${Math.abs(rate).toFixed(1)}°F/h while open.`
-          : `${labels} still open (${formatDurationMs(
-              Date.now() - Date.parse(openNow[0]!.openedAt),
-            )}).`,
+          ? fmt(t.doorOpenFalling, { labels, rate: fixed(Math.abs(rate), 1, locale) })
+          : fmt(t.doorStillOpen, {
+              labels,
+              duration: formatDurationMs(Date.now() - Date.parse(openNow[0]!.openedAt), locale),
+            }),
       tone: "warning",
     };
   }
   if (minutes >= 10 && rate != null && rate < -0.5) {
     return {
-      title: "Door vs temperature",
-      detail: `Doors open ~${Math.round(minutes)} min in 24h; space cooled ~${Math.abs(rate).toFixed(1)}°F/h recently.`,
+      title: t.doorVsTemp,
+      detail: fmt(t.doorVsTempDetail, {
+        minutes: fixed(Math.round(minutes), 0, locale),
+        rate: fixed(Math.abs(rate), 1, locale),
+      }),
       tone: "warning",
     };
   }
@@ -154,28 +199,35 @@ export function buildDoorTempSummary(
   ) {
     const coldAirIndex = Math.round(minutes * Math.max(0, 32 - outdoorTempF));
     return {
-      title: "Cold air admitted",
-      detail: `Doors open ~${Math.round(minutes)} min with outdoor ${outdoorTempF.toFixed(0)}°F (cold-air index ~${coldAirIndex}).`,
+      title: t.coldAir,
+      detail: fmt(t.coldAirDetail, {
+        minutes: fixed(Math.round(minutes), 0, locale),
+        outdoor: fixed(outdoorTempF, 0, locale),
+        index: fixed(coldAirIndex, 0, locale),
+      }),
       tone: "warning",
     };
   }
   if (minutes >= 5) {
     return {
-      title: "Door activity",
-      detail: `About ${Math.round(minutes)} minutes open in the last 24 hours.`,
+      title: t.doorActivity,
+      detail: fmt(t.doorActivityDetail, { minutes: fixed(Math.round(minutes), 0, locale) }),
       tone: "info",
     };
   }
   return null;
 }
 
-export function buildBatteryOverview(devices: DeviceWithSensors[]): BatteryOverviewRow[] {
+export function buildBatteryOverview(
+  devices: DeviceWithSensors[],
+  locale: Locale = "en",
+): BatteryOverviewRow[] {
   const rows: BatteryOverviewRow[] = [];
   for (const device of devices) {
     const samples = parseBatteryHistory(device.meta);
     if (samples.length < 2) continue;
     const newest = [...samples].sort((a, b) => Date.parse(a.at) - Date.parse(b.at)).at(-1)!;
-    const message = detectBatteryTrendDrop(samples);
+    const message = batteryDropMessage(samples, locale);
     const daysRemaining = estimateBatteryDaysRemaining(samples);
     rows.push({
       deviceName: device.name,
@@ -391,7 +443,11 @@ export function computeFeedUptimePct(statuses: FeedHealthStatus[]): {
 }
 
 /** Last-seen proxy for Overview so we do not HTTP-probe pull feeds on every render. */
-export function feedHealthFromDevices(devices: DeviceWithSensors[]): FeedHealthStatus[] {
+export function feedHealthFromDevices(
+  devices: DeviceWithSensors[],
+  locale: Locale = "en",
+): FeedHealthStatus[] {
+  const t = msgs(locale).summaries;
   const checkedAt = new Date().toISOString();
   return devices
     .filter(
@@ -405,43 +461,53 @@ export function feedHealthFromDevices(devices: DeviceWithSensors[]): FeedHealthS
         feedName: device.name,
         url: device.pull_url ?? "",
         ok: !age.stale,
-        message: age.stale ? `Last seen ${age.label}` : `${device.sensors.length} sensor(s)`,
+        message: age.stale
+          ? fmt(t.feedLastSeen, { age: localizedAgeLabel(device.last_seen_at, locale) })
+          : plural(t.feedSensors, device.sensors.length, locale),
         probeCount: device.sensors.length,
         checkedAt,
       };
     });
 }
 
-export function buildAirQualityOverview(latest: LatestSensorRow[]): AirQualityOverview {
+export function buildAirQualityOverview(
+  latest: LatestSensorRow[],
+  locale: Locale = "en",
+): AirQualityOverview {
+  const kindLabels: Record<string, string> = msgs(locale).airQuality.kinds;
   const kinds = new Set(["co2", "pm25", "voc", "pressure"]);
   const rows: AirQualityRow[] = [];
   for (const row of latest) {
     if (!kinds.has(row.sensor.kind) || row.value_num == null) continue;
     const value = row.value_num;
     const kind = row.sensor.kind as SensorKind;
-    let display = `${value.toFixed(kind === "pressure" ? 1 : 0)}`;
+    let display = fixed(value, kind === "pressure" ? 1 : 0, locale);
     let watch = false;
     if (kind === "co2") {
-      display = `${Math.round(value)} ppm`;
+      display = `${fixed(Math.round(value), 0, locale)} ppm`;
       watch = value >= 1000;
     } else if (kind === "pm25") {
-      display = `${value.toFixed(1)} µg/m³`;
+      display = `${fixed(value, 1, locale)} µg/m³`;
       watch = value >= 35;
     } else if (kind === "voc") {
-      display = `${Math.round(value)} ppb`;
+      display = `${fixed(Math.round(value), 0, locale)} ppb`;
       watch = value >= 400;
     } else if (kind === "pressure") {
-      display = `${value.toFixed(1)} hPa`;
+      display = `${fixed(value, 1, locale)} hPa`;
     }
     rows.push({
       label: row.sensor.label,
       kind,
-      kindLabel: SENSOR_KIND_LABELS[kind] ?? kind,
+      kindLabel: kindLabels[kind] ?? SENSOR_KIND_LABELS[kind] ?? kind,
       display,
       watch,
     });
   }
-  rows.sort((a, b) => Number(b.watch) - Number(a.watch) || a.label.localeCompare(b.label));
+  rows.sort(
+    (a, b) =>
+      Number(b.watch) - Number(a.watch) ||
+      a.label.localeCompare(b.label, locale === "en" ? undefined : LOCALE_META[locale].intl),
+  );
   return {
     rows: rows.slice(0, 8),
     watchCount: rows.filter((r) => r.watch).length,
@@ -512,7 +578,9 @@ export function buildPowerTempSummary(
   powerOffSessions: DoorOpenSession[],
   points: ChartPoint[],
   outdoorTempF: number | null,
+  locale: Locale = "en",
 ): InsightCallout | null {
+  const t = msgs(locale).summaries;
   const offNow = powerOffSessions.filter((s) => s.stillOpen);
   const rate = estimateHeatingLossRate(points, outdoorTempF);
   const offMinutes = doorOpenMinutesFromSessions(powerOffSessions);
@@ -520,11 +588,11 @@ export function buildPowerTempSummary(
   if (offNow.length > 0) {
     const labels = offNow.map((s) => s.label).join(", ");
     return {
-      title: "Power off now",
+      title: t.powerOffNow,
       detail:
         rate != null && rate < 0
-          ? `${labels} Off: space falling ~${Math.abs(rate).toFixed(1)}°F/h.`
-          : `${labels} currently Off.`,
+          ? fmt(t.powerOffFalling, { labels, rate: fixed(Math.abs(rate), 1, locale) })
+          : fmt(t.powerOffCurrently, { labels }),
       tone: "warning",
     };
   }
@@ -536,35 +604,43 @@ export function buildPowerTempSummary(
     outdoorTempF < 40
   ) {
     return {
-      title: "Power off vs temperature",
-      detail: `Circuits Off ~${Math.round(offMinutes)} min in 24h; space cooled ~${Math.abs(rate).toFixed(1)}°F/h (outdoor ${outdoorTempF.toFixed(0)}°F).`,
+      title: t.powerOffVsTemp,
+      detail: fmt(t.powerOffVsTempDetail, {
+        minutes: fixed(Math.round(offMinutes), 0, locale),
+        rate: fixed(Math.abs(rate), 1, locale),
+        outdoor: fixed(outdoorTempF, 0, locale),
+      }),
       tone: "warning",
     };
   }
   return null;
 }
 
-export function buildMotionSummary(sessions: DoorOpenSession[]): InsightCallout | null {
+export function buildMotionSummary(
+  sessions: DoorOpenSession[],
+  locale: Locale = "en",
+): InsightCallout | null {
+  const t = msgs(locale).summaries;
   const activeNow = sessions.filter((s) => s.stillOpen);
   const minutes = doorOpenMinutesFromSessions(sessions);
   if (activeNow.length > 0) {
     return {
-      title: "Motion detected",
-      detail: `${activeNow.map((s) => s.label).join(", ")} active now.`,
+      title: t.motionDetected,
+      detail: fmt(t.motionActiveNow, { labels: activeNow.map((s) => s.label).join(", ") }),
       tone: "info",
     };
   }
   if (minutes >= 30) {
     return {
-      title: "Recent activity",
-      detail: `Motion sensors active ~${Math.round(minutes)} min in the last 24 hours: useful when correlating door opens.`,
+      title: t.recentActivity,
+      detail: fmt(t.recentActivityDetail, { minutes: fixed(Math.round(minutes), 0, locale) }),
       tone: "info",
     };
   }
   if (sessions.length > 0 && minutes < 5) {
     return {
-      title: "Quiet space",
-      detail: "Little motion in the last 24 hours: empty garages stay colder overnight.",
+      title: t.quietSpace,
+      detail: t.quietSpaceDetail,
       tone: "info",
     };
   }

@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { ensureLocale } from "../i18n";
 import {
   SIGNIN_ERROR_MESSAGES,
   buildSignInRedirectUrl,
@@ -17,6 +18,13 @@ describe("getSignInErrorMessage", () => {
 
   it("falls back to the generic message for an unknown code", () => {
     expect(getSignInErrorMessage("totally_bogus")).toBe(SIGNIN_ERROR_MESSAGES.generic);
+  });
+
+  it("translates for a locale", async () => {
+    await ensureLocale("de", ["app"]);
+    const message = getSignInErrorMessage("rate_limited", "de");
+    expect(message).toContain("Anmeldeversuche");
+    expect(getSignInErrorMessage("totally_bogus", "de")).not.toBe(SIGNIN_ERROR_MESSAGES.generic);
   });
 });
 

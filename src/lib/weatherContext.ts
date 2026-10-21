@@ -19,6 +19,8 @@ import {
   getDisplayPreferencesFromMetadata,
 } from "./userPreferences";
 
+import type { Locale } from "../i18n/locales";
+
 export type { PersonalWeatherConfig };
 
 export function getPersonalWeatherConfig(
@@ -87,6 +89,7 @@ export async function fetchNightsAtRiskForConfig(
   freezeThresholdF: number,
   /** Pass an already-fetched snapshot to avoid a duplicate weather API call. */
   existingSnapshot?: WeatherSnapshot | null,
+  locale: Locale = "en",
 ): Promise<NightRisk[]> {
   const snapshot =
     existingSnapshot !== undefined
@@ -97,11 +100,11 @@ export async function fetchNightsAtRiskForConfig(
       lat: snapshot.lat,
       lon: snapshot.lon,
       freezeThresholdF,
-    });
+    }, locale);
   }
 
   return fetchNightsAtRisk({
     cityId: resolveWeatherCityId(config.openWeatherCityId),
     freezeThresholdF,
-  });
+  }, locale);
 }

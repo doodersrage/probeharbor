@@ -18,11 +18,14 @@ import {
   FLASH_STATUS_TOKEN,
   consumeSecretFlash,
 } from "./secretFlash";
+import type { Locale } from "../i18n/locales";
+import { shareMessages, shareNotice } from "../i18n/messages/app/share";
 
 export async function loadShareDashboardContext(
   cookies: AstroCookies,
   request: Request,
   url: URL,
+  locale: Locale = "en",
 ) {
   const { session, user } = await getAuthFromCookies(cookies);
   if (!session || !user) {
@@ -88,25 +91,7 @@ export async function loadShareDashboardContext(
   const newHref = newToken ? `${siteUrl}/share/${newToken}` : null;
   const newApiKey = consumeSecretFlash(cookies, FLASH_API_KEY);
 
-  const notice = url.searchParams.get("created")
-    ? "Share link created, copy it below to send to family."
-    : url.searchParams.get("revoked")
-      ? "Share link revoked."
-      : url.searchParams.get("api_key_created")
-        ? "API key created, copy it now; it will not be shown again."
-        : url.searchParams.get("api_key_revoked")
-          ? "API key revoked."
-          : url.searchParams.get("status_created")
-            ? "Status page created, copy the link below."
-            : url.searchParams.get("status_revoked")
-              ? "Status page revoked."
-              : url.searchParams.get("error") === "family_limit"
-                ? "You already have a family live link. Revoke it first, or upgrade to Pro for more."
-                : url.searchParams.get("error") === "pro_required"
-                  ? "That option needs Pro. You can still create one family live link on Free."
-                  : url.searchParams.get("error")
-                    ? "Could not update share links."
-                    : null;
+  const notice = shareNotice(url, shareMessages(locale).notices);
   const noticeIsError = Boolean(url.searchParams.get("error"));
 
   return {

@@ -6,10 +6,10 @@ import {
   STATUS_SUBSCRIBE_HONEYPOT_FIELD,
 } from "../../../lib/statusSubscribeLimits";
 import { subscribeToFreezeAlerts } from "../../../lib/freezeAlerts";
+import { apiLocale } from "../../../i18n/messages/app/apiMore/common";
+import { apiMorePublicFormsMessages } from "../../../i18n/messages/app/apiMore/publicForms";
 
 export const prerender = false;
-
-const SUCCESS = "Check your email to confirm. Alerts start the next freezing night after you do.";
 
 function json(body: Record<string, unknown>, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -19,7 +19,11 @@ function json(body: Record<string, unknown>, status = 200): Response {
 }
 
 /** Form POST from the pipe freeze forecast: email + the place the visitor just looked up. */
-export const POST: APIRoute = async ({ request, clientAddress }) => {
+export const POST: APIRoute = async (context) => {
+  const { request, clientAddress } = context;
+  const locale = apiLocale(context);
+  const t = apiMorePublicFormsMessages(locale).freezeAlerts;
+  const SUCCESS = t.success;
   const formData = await request.formData();
 
   // Bots that fill the hidden field get the normal success message and nothing else.
@@ -28,14 +32,14 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
   }
 
   // Same per-IP limit as status subscriptions, in its own bucket.
-  const rate = checkStatusSubscribeRateLimit(`freeze-alerts:${clientAddress || "unknown"}`);
+  const rate = checkStatusSubscribeRateLimit(`freeze-alerts:${clientAddress || "unknown"}`, Date.now(), locale);
   if (!rate.ok) {
-    return json({ ok: false, message: rate.error ?? "Too many attempts. Try again in a few minutes." }, 429);
+    return json({ ok: false, message: rate.error ?? t.tooMany }, 429);
   }
 
-  const turnstile = await verifyTurnstileToken(getTurnstileToken(formData), clientAddress);
+  const turnstile = await verifyTurnstileToken(getTurnstileToken(formData), clientAddress, locale);
   if (!turnstile.success) {
-    return json({ ok: false, message: "Verification failed. Please try again." }, 400);
+    return json({ ok: false, message: t.verificationFailed }, 400);
   }
 
   const result = await subscribeToFreezeAlerts({
@@ -43,9 +47,9 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
     lat: Number(formData.get("lat")),
     lon: Number(formData.get("lon")),
     label: formData.get("label")?.toString() ?? "",
-  });
+  }, locale);
   if (!result.ok) {
-    return json({ ok: false, message: result.error ?? "Something went wrong. Please try again." }, 400);
+    return json({ ok: false, message: result.error ?? t.genericError }, 400);
   }
   return json({ ok: true, message: SUCCESS });
 };

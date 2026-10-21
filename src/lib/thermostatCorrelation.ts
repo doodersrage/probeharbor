@@ -5,6 +5,15 @@
  * thermostatConnections.ts -- there is no global/site-wide credential here.
  */
 import { getRuntimeEnv } from "./runtimeEnv";
+import { fmt, formatNumber, type Locale } from "../i18n";
+import { overviewInsightsMessages } from "../i18n/messages/app/overviewInsights";
+
+const thermostatText = (locale: Locale) => overviewInsightsMessages(locale).thermostat;
+
+/** Whole degrees like `toFixed(0)`, with the locale's digits. */
+function wholeDegrees(value: number, locale: Locale): string {
+  return formatNumber(value, locale, { maximumFractionDigits: 0, useGrouping: false });
+}
 
 export type ThermostatSnapshot = {
   provider: "nest" | "ecobee";
@@ -86,36 +95,38 @@ function parseNestApiFailure(
 
 function nestFetchFailureMessage(
   result: Extract<NestSnapshotResult, { ok: false }>,
+  locale: Locale = "en",
 ): { fetchError: ThermostatFetchError; fetchHint: string } {
+  const t = thermostatText(locale).hints;
   if (result.reason === "no_project") {
     return {
       fetchError: "no_project",
-      fetchHint: "NEST_PROJECT_ID is missing on this deployment.",
+      fetchHint: t.noProject,
     };
   }
   if (result.reason === "network") {
     return {
       fetchError: "network",
-      fetchHint: "Could not reach Google Nest, try again in a minute.",
+      fetchHint: t.nestNetwork,
     };
   }
   if (result.errorCode === "sdm_api_disabled") {
     return {
       fetchError: "sdm_api_disabled",
       fetchHint: result.activationUrl
-        ? `Enable the Smart Device Management API in Google Cloud, then refresh: ${result.activationUrl}`
-        : "Enable the Smart Device Management API in the Google Cloud project that owns your Nest OAuth client.",
+        ? fmt(t.sdmDisabledUrl, { url: result.activationUrl })
+        : t.sdmDisabled,
     };
   }
   if (result.errorCode === "api_auth") {
     return {
       fetchError: "api_auth",
-      fetchHint: "Nest authorization may have expired, try Disconnect, then Connect again.",
+      fetchHint: t.nestAuth,
     };
   }
   return {
     fetchError: "api_error",
-    fetchHint: "Nest returned an error, try again or reconnect.",
+    fetchHint: t.nestError,
   };
 }
 
@@ -239,7 +250,9 @@ export async function fetchEcobeeSnapshotDetailed(
 export async function fetchThermostatContextWithStatus(
   householdId: string,
   provider: "nest" | "ecobee",
+  locale: Locale = "en",
 ): Promise<ThermostatContextResult> {
+  const hints = thermostatText(locale).hints;
   const { resolveAccessTokenForHousehold, forceRefreshAccessTokenForHousehold } =
     await import("./thermostatOAuth");
   const accessToken = await resolveAccessTokenForHousehold(householdId, provider);
@@ -247,7 +260,7 @@ export async function fetchThermostatContextWithStatus(
     return {
       snapshot: null,
       fetchError: "no_token",
-      fetchHint: "Reconnect your thermostat to restore access.",
+      fetchHint: hints.noToken,
     };
   }
 
@@ -261,13 +274,13 @@ export async function fetchThermostatContextWithStatus(
       return {
         snapshot: null,
         fetchError: "network",
-        fetchHint: "Could not reach Ecobee, try again in a minute.",
+        fetchHint: hints.ecobeeNetwork,
       };
     }
     return {
       snapshot: null,
       fetchError: "api_error",
-      fetchHint: "Could not reach Ecobee, try again or reconnect.",
+      fetchHint: hints.ecobeeError,
     };
   }
 
@@ -288,7 +301,7 @@ export async function fetchThermostatContextWithStatus(
     }
   }
 
-  const { fetchError, fetchHint } = nestFetchFailureMessage(result);
+  const { fetchError, fetchHint } = nestFetchFailureMessage(result, locale);
   return { snapshot: null, fetchError, fetchHint };
 }
 
@@ -303,23 +316,29 @@ export async function fetchThermostatContext(
 const HEATING_MODES = new Set(["HEAT", "HEATCOOL", "heat", "auxHeatOnly"]);
 const COOLING_MODES = new Set(["COOL", "cool"]);
 
-export function formatThermostatMode(mode: string | null): string | null {
+export function formatThermostatMode(mode: string | null, locale: Locale = "en"): string | null {
   if (!mode) return null;
-  return mode.charAt(0).toUpperCase() + mode.slice(1).toLowerCase();
+  const capitalized = mode.charAt(0).toUpperCase() + mode.slice(1).toLowerCase();
+  if (locale === "en") return capitalized;
+  const modes: Record<string, string> = thermostatText(locale).modes;
+  return modes[mode.toLowerCase()] ?? capitalized;
 }
 
 /** Overview Status metric: whole °F when available. */
-export function formatThermostatMetricValue(snapshot: ThermostatSnapshot): string {
-  return snapshot.ambientTempF != null ? `${snapshot.ambientTempF.toFixed(0)}°F` : "—";
+export function formatThermostatMetricValue(snapshot: ThermostatSnapshot, locale: Locale = "en"): string {
+  return snapshot.ambientTempF != null ? `${wholeDegrees(snapshot.ambientTempF, locale)}°F` : "—";
 }
 
 /** Subline for Status metric, e.g. "Cool · set 80°F". */
-export function formatThermostatMetricDetail(snapshot: ThermostatSnapshot): string | null {
+export function formatThermostatMetricDetail(
+  snapshot: ThermostatSnapshot,
+  locale: Locale = "en",
+): string | null {
   const parts: string[] = [];
-  const mode = formatThermostatMode(snapshot.hvacMode);
+  const mode = formatThermostatMode(snapshot.hvacMode, locale);
   if (mode) parts.push(mode);
   if (snapshot.heatSetpointF != null) {
-    parts.push(`set ${snapshot.heatSetpointF.toFixed(0)}°F`);
+    parts.push(fmt(thermostatText(locale).setpoint, { temp: wholeDegrees(snapshot.heatSetpointF, locale) }));
   }
   return parts.length > 0 ? parts.join(" · ") : null;
 }
@@ -338,22 +357,26 @@ export function isThermostatCooling(mode: string | null): boolean {
  * "annotate, don't suppress" note: a probe reading below the freeze
  * threshold is real regardless of what an unrelated house thermostat says.
  */
-export function buildThermostatAnnotation(snapshot: ThermostatSnapshot | null): string | null {
+export function buildThermostatAnnotation(
+  snapshot: ThermostatSnapshot | null,
+  locale: Locale = "en",
+): string | null {
   if (!snapshot || snapshot.ambientTempF == null) return null;
+  const t = thermostatText(locale).annotation;
   const isHeating = snapshot.hvacMode ? HEATING_MODES.has(snapshot.hvacMode) : false;
   const isCooling = snapshot.hvacMode ? COOLING_MODES.has(snapshot.hvacMode) : false;
-  const parts = [`House thermostat: ${snapshot.ambientTempF.toFixed(0)}°F`];
+  const parts = [fmt(t.house, { temp: wholeDegrees(snapshot.ambientTempF, locale) })];
   if (snapshot.heatSetpointF != null) {
-    parts.push(`set to ${snapshot.heatSetpointF.toFixed(0)}°F`);
+    parts.push(fmt(t.setTo, { temp: wholeDegrees(snapshot.heatSetpointF, locale) }));
   }
   if (isHeating) {
-    parts.push("actively heating");
+    parts.push(t.heating);
   } else if (isCooling) {
-    parts.push("actively cooling");
+    parts.push(t.cooling);
   } else {
-    parts.push("not actively heating");
+    parts.push(t.notHeating);
   }
-  return `${parts.join(", ")} -- this alert is from an unconditioned space and is expected to run colder.`;
+  return fmt(t.sentence, { parts: parts.join(t.separator) });
 }
 
 /**
@@ -365,6 +388,7 @@ export function buildThermostatAnnotation(snapshot: ThermostatSnapshot | null): 
  */
 export async function fetchThermostatAnnotationForHousehold(
   householdId: string | null | undefined,
+  locale: Locale = "en",
 ): Promise<string | null> {
   if (!householdId) return null;
   try {
@@ -373,7 +397,7 @@ export async function fetchThermostatAnnotationForHousehold(
     const connection = connections[0];
     if (!connection) return null;
     const snapshot = await fetchThermostatContext(householdId, connection.provider);
-    return buildThermostatAnnotation(snapshot);
+    return buildThermostatAnnotation(snapshot, locale);
   } catch {
     return null;
   }

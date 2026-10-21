@@ -1,4 +1,5 @@
 import { createAdminClient } from "./supabase";
+import { localeFromMetadata } from "../i18n/userLocale";
 import { fetchTemps } from "./FetchTemps";
 import { getUserDevicesAsTempConfig } from "./devices";
 import {
@@ -13,7 +14,8 @@ import {
 } from "./alertNotifications";
 import { getAlertSettingsForUser } from "./notify";
 import { collectThermostatSnapshotsForAllHouseholds } from "./thermostatSnapshots";
-import { findStuckSensors } from "./stuckSensors";
+import { findStuckSensors, type StuckSensor } from "./stuckSensors";
+import type { Locale } from "../i18n/locales";
 
 export type FeedHealthStatus = {
   feedId: string;
@@ -152,8 +154,18 @@ export async function collectHistoryForAllUsers(): Promise<{
         sendAlerts: false,
       });
 
-      // Once per household, not per member: it's a handful of queries per probe.
-      const stuck = await findStuckSensors(config.devices).catch(() => undefined);
+      // Once per household and language, not per member: it's a handful of
+      // queries per probe, and the alert text follows each member's language.
+      const stuckNowMs = Date.now();
+      const stuckByLocale = new Map<Locale, Promise<StuckSensor[] | undefined>>();
+      const stuckFor = (locale: Locale) => {
+        let pending = stuckByLocale.get(locale);
+        if (!pending) {
+          pending = findStuckSensors(config.devices, stuckNowMs, locale).catch(() => undefined);
+          stuckByLocale.set(locale, pending);
+        }
+        return pending;
+      };
 
       const members = await listHouseholdMembers(config.householdId || householdId);
       for (const member of members.members) {
@@ -161,6 +173,10 @@ export async function collectHistoryForAllUsers(): Promise<{
         try {
           const { data: memberData } = await admin.auth.admin.getUserById(member.user_id);
           const memberUser = memberData.user;
+          // Alerts go out in each member's account language.
+          const memberLocale = localeFromMetadata(
+            memberUser?.user_metadata as Record<string, unknown> | undefined,
+          );
           await maybeSendThresholdAlerts(
             member.user_id,
             memberUser?.email,
@@ -170,6 +186,7 @@ export async function collectHistoryForAllUsers(): Promise<{
             results,
             config.householdId || householdId,
             config.devices,
+            memberLocale,
           );
 
           const settings = await getAlertSettingsForUser(
@@ -182,6 +199,8 @@ export async function collectHistoryForAllUsers(): Promise<{
             config.devices,
             settings,
             config.householdId || householdId,
+            undefined,
+            memberLocale,
           );
           await maybeSendDeviceHealthAlerts(
             member.user_id,
@@ -189,7 +208,8 @@ export async function collectHistoryForAllUsers(): Promise<{
             config.devices,
             settings,
             undefined,
-            stuck,
+            await stuckFor(memberLocale),
+            memberLocale,
           );
           usersProcessed += 1;
         } catch (memberError) {

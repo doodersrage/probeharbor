@@ -3,11 +3,15 @@ import { getAuthFromRequest } from "../../../lib/auth";
 import { createChartShare } from "../../../lib/chartShare";
 import { getUserEntitlements } from "../../../lib/entitlements";
 import { buildSiteUrl } from "../../../lib/siteUrl";
+import { apiCommonMessages, apiLocale } from "../../../i18n/messages/app/api/common";
+import { apiUserMessages } from "../../../i18n/messages/app/api/user";
 
-export const POST: APIRoute = async ({ request, cookies }) => {
+export const POST: APIRoute = async ({ request, cookies, locals }) => {
+  const locale = apiLocale({ locals });
+  const tc = apiCommonMessages(locale);
   const { session, user } = await getAuthFromRequest(request, cookies);
   if (!session || !user) {
-    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+    return new Response(JSON.stringify({ error: tc.unauthorized }), {
       status: 401,
       headers: { "Content-Type": "application/json" },
     });
@@ -15,7 +19,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
   const entitlements = await getUserEntitlements(user.id);
   if (!entitlements.canDownloadCsv) {
-    return new Response(JSON.stringify({ error: "Upgrade required for chart share" }), {
+    return new Response(JSON.stringify({ error: apiUserMessages(locale).chartShare.upgradeRequired }), {
       status: 403,
       headers: { "Content-Type": "application/json" },
     });
@@ -41,7 +45,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       pngBytes = bytes.buffer;
       title = body.title;
     } catch {
-      return new Response(JSON.stringify({ error: "Invalid JSON" }), {
+      return new Response(JSON.stringify({ error: tc.invalidJson }), {
         status: 400,
         headers: { "Content-Type": "application/json" },
       });
@@ -56,7 +60,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   }
 
   if (!pngBytes || pngBytes.byteLength < 32 || pngBytes.byteLength > 8_000_000) {
-    return new Response(JSON.stringify({ error: "Invalid PNG" }), {
+    return new Response(JSON.stringify({ error: apiUserMessages(locale).chartShare.invalidPng }), {
       status: 400,
       headers: { "Content-Type": "application/json" },
     });

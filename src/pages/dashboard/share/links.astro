@@ -4,6 +4,8 @@ import ShareNav from "../../../components/dashboard/ShareNav.astro";
 import UpgradeNudge from "../../../components/UpgradeNudge.astro";
 import ProductAnalyticsTracker from "../../../components/ProductAnalyticsTracker.astro";
 import { loadShareDashboardContext } from "../../../lib/shareDashboardContext";
+import { fmt, formatDateTime, getLocale } from "../../../i18n";
+import { shareMessages, shareNotice } from "../../../i18n/messages/app/share";
 
 const ctx = await loadShareDashboardContext(Astro.cookies, Astro.request, Astro.url);
 if (ctx.redirect) return Astro.redirect(ctx.redirect);
@@ -16,17 +18,23 @@ const {
   newToken,
   statusToken,
   newHref,
-  notice,
   noticeIsError,
   statusPages,
 } = ctx;
+const locale = getLocale(Astro);
+const msgs = shareMessages(locale);
+const t = msgs.links;
+const notice = ctx.notice ? (shareNotice(Astro.url, msgs.notices) ?? ctx.notice) : null;
+const formatDate = (iso: string) => formatDateTime(iso, locale, {});
+const scopeName = (scope: string) => (msgs.scopes as Record<string, string>)[scope] ?? scope;
+const confirmRevoke = `return confirm('${t.confirmRevoke.replace(/\\/g, "\\\\").replace(/'/g, "\\'")}');`;
 
 const redirectTo = "/dashboard/share/links";
 const analyticsEvents = Astro.url.searchParams.get("created")
   ? [{ name: "family_share_created" as const }]
   : [];
 ---
-<DashboardLayout title="Share" subtitle="One-click live view. Anyone with the link can see live sensors.">
+<DashboardLayout title={msgs.title} subtitle={t.subtitle}>
   <ProductAnalyticsTracker events={analyticsEvents} />
   <ShareNav active="links">
     <div class="space-y-6">
@@ -37,7 +45,7 @@ const analyticsEvents = Astro.url.searchParams.get("created")
           )}
           {!canManage && (
             <p class="alert-warning mt-0 mb-0" role="status">
-              View-only: you cannot create or revoke share links.
+              {t.viewOnly}
             </p>
           )}
         </div>
@@ -45,8 +53,8 @@ const analyticsEvents = Astro.url.searchParams.get("created")
 
       {newHref && (
         <section class="card ingest-key-callout" id="new-share-link">
-          <h2 class="card-title">New share link</h2>
-          <p class="card-subtitle">Copy and send this link. Anyone with it can view live sensors.</p>
+          <h2 class="card-title">{t.newTitle}</h2>
+          <p class="card-subtitle">{t.newSubtitle}</p>
           <p class="ingest-key-value break-all text-sm mb-4">
             <a href={newHref}>{newHref}</a>
           </p>
@@ -54,29 +62,23 @@ const analyticsEvents = Astro.url.searchParams.get("created")
             type="button"
             class="btn-primary"
             data-copy={newHref}
-            data-copy-label="Copy link"
+            data-copy-label={t.copyLink}
             id="copy-new-share"
           >
-            Copy link
+            {t.copyLink}
           </button>
         </section>
       )}
 
       {newHref && entitlements.canCreateShareLinks && (
         <section class="card" id="ha-hacs-nudge">
-          <h2 class="card-title">Use this link in Home Assistant or Apple Home</h2>
-          <p class="card-subtitle mb-4">
-            Install the official
-            <a class="text-link" href="/integrations/home-assistant">HACS integration</a>
-            or the
-            <a class="text-link" href="/integrations/matter">Matter / Apple Home bridge</a>,
-            then paste the token from your share URL (<code>/share/YOUR_TOKEN</code>).
-          </p>
+          <h2 class="card-title">{t.haTitle}</h2>
+          <p class="card-subtitle mb-4" set:html={t.haBodyHtml} />
           <div class="flex flex-wrap gap-3">
-            <a class="btn-primary" href="/integrations/home-assistant">HACS install guide</a>
-            <a class="btn-secondary" href="/integrations/matter">Matter bridge guide</a>
+            <a class="btn-primary" href="/integrations/home-assistant">{t.haGuide}</a>
+            <a class="btn-secondary" href="/integrations/matter">{t.matterGuide}</a>
             <a class="btn-ghost" href="https://github.com/doodersrage/probeharbor-home-assistant" target="_blank" rel="noreferrer">
-              HACS repo
+              {t.hacsRepo}
             </a>
           </div>
         </section>
@@ -90,48 +92,48 @@ const analyticsEvents = Astro.url.searchParams.get("created")
             <input type="hidden" name="family_quick" value="1" />
             <input type="hidden" name="scope" value="live" />
             <input type="hidden" name="expires_days" value="7" />
-            <input type="hidden" name="label" value="Family live view" />
-            <h2 class="card-title">Create family link</h2>
+            <input type="hidden" name="label" value={t.familyDefaultLabel} />
+            <h2 class="card-title">{t.familyTitle}</h2>
             <p class="card-subtitle mb-4">
-              Live sensors, expires in 7 days. Revoke anytime.
+              {t.familyBody}
               {!entitlements.canCreateShareLinks && (
-                <> Free includes one live family link. Pro adds history, metrics, and never-expire.</>
+                <> {t.familyFreeNote}</>
               )}
             </p>
-            <button class="btn-primary" type="submit">Create family live link</button>
+            <button class="btn-primary" type="submit">{t.familySubmit}</button>
           </form>
 
           {entitlements.canCreateShareLinks && (
             <details class="card">
-              <summary class="card-title cursor-pointer">More share options (Pro)</summary>
+              <summary class="card-title cursor-pointer">{t.moreOptions}</summary>
               <form action="/api/share/manage" method="post" class="mt-4">
                 <input type="hidden" name="action" value="create" />
                 <input type="hidden" name="redirect" value={redirectTo} />
                 <div class="config-row-grid">
                   <div class="form-field mb-0">
-                    <label class="form-label" for="label">Label</label>
-                    <input class="form-input" id="label" name="label" placeholder="Family live view" />
+                    <label class="form-label" for="label">{t.label}</label>
+                    <input class="form-input" id="label" name="label" placeholder={t.familyDefaultLabel} />
                   </div>
                   <div class="form-field mb-0">
-                    <label class="form-label" for="scope">Scope</label>
+                    <label class="form-label" for="scope">{t.scope}</label>
                     <select class="form-input" id="scope" name="scope">
-                      <option value="live">Live sensors</option>
-                      <option value="history">History (7-day chart)</option>
-                      <option value="metrics">Metrics (Prometheus / Grafana)</option>
+                      <option value="live">{t.scopeLive}</option>
+                      <option value="history">{t.scopeHistory}</option>
+                      <option value="metrics">{t.scopeMetrics}</option>
                     </select>
                   </div>
                   <div class="form-field mb-0">
-                    <label class="form-label" for="expires_days">Expires</label>
+                    <label class="form-label" for="expires_days">{t.expires}</label>
                     <select class="form-input" id="expires_days" name="expires_days">
-                      <option value="0">Never (household)</option>
-                      <option value="2">2 days</option>
-                      <option value="7" selected>7 days (guest / renter)</option>
-                      <option value="14">14 days</option>
-                      <option value="30">30 days</option>
+                      <option value="0">{t.expiresNever}</option>
+                      <option value="2">{t.expires2}</option>
+                      <option value="7" selected>{t.expires7}</option>
+                      <option value="14">{t.expires14}</option>
+                      <option value="30">{t.expires30}</option>
                     </select>
                   </div>
                 </div>
-                <button class="btn-secondary mt-4" type="submit">Create</button>
+                <button class="btn-secondary mt-4" type="submit">{t.create}</button>
               </form>
             </details>
           )}
@@ -143,9 +145,9 @@ const analyticsEvents = Astro.url.searchParams.get("created")
       )}
 
       <section class="card">
-        <h2 class="card-title">Your links</h2>
+        <h2 class="card-title">{t.yourLinks}</h2>
         {(links ?? []).length === 0 ? (
-          <p class="mb-0">No share links yet.</p>
+          <p class="mb-0">{t.noLinks}</p>
         ) : (
           <ul class="space-y-4">
             {(links ?? []).map((link) => {
@@ -172,9 +174,9 @@ const analyticsEvents = Astro.url.searchParams.get("created")
                   id={isNew ? "share-link-highlighted" : undefined}
                 >
                   <div>
-                    <strong>{link.label || link.scope}</strong>
-                    {isNew && <span class="feed-health-ok ml-2">New</span>}
-                    {expired && <span class="feed-health-error ml-2">Expired</span>}
+                    <strong>{link.label || scopeName(link.scope)}</strong>
+                    {isNew && <span class="feed-health-ok ml-2">{t.badgeNew}</span>}
+                    {expired && <span class="feed-health-error ml-2">{t.badgeExpired}</span>}
                     <p class="m-0 text-sm break-all">
                       {href ? (
                         expired ? (
@@ -187,21 +189,21 @@ const analyticsEvents = Astro.url.searchParams.get("created")
                       )}
                     </p>
                     <p class="m-0 text-sm text-[var(--color-text-muted)]">
-                      Scope: {link.scope}
+                      {fmt(t.scopeLine, { scope: scopeName(link.scope) })}
                       {link.expires_at
                         ? expired
-                          ? ` · Expired ${new Date(link.expires_at).toLocaleDateString()}`
-                          : ` · Expires ${new Date(link.expires_at).toLocaleDateString()}`
-                        : " · No expiry"}
+                          ? fmt(t.expiredOn, { date: formatDate(link.expires_at) })
+                          : fmt(t.expiresOn, { date: formatDate(link.expires_at) })
+                        : t.noExpiry}
                     </p>
                     {canManage && link.token && link.scope === "live" && !expired && (
                       <p class="m-0 text-sm break-all text-[var(--color-text-muted)]">
-                        Embed: {siteUrl}/embed/{link.token}
+                        {fmt(t.embed, { url: `${siteUrl}/embed/${link.token}` })}
                       </p>
                     )}
                     {canManage && link.token && link.scope === "metrics" && !expired && (
                       <p class="m-0 text-sm break-all text-[var(--color-text-muted)]">
-                        Scrape: {siteUrl}/api/share/{link.token}/readings?format=prometheus
+                        {fmt(t.scrape, { url: `${siteUrl}/api/share/${link.token}/readings?format=prometheus` })}
                       </p>
                     )}
                   </div>
@@ -211,9 +213,9 @@ const analyticsEvents = Astro.url.searchParams.get("created")
                         type="button"
                         class="btn-secondary"
                         data-copy={href}
-                        data-copy-label="Copy link"
+                        data-copy-label={t.copyLink}
                       >
-                        Copy link
+                        {t.copyLink}
                       </button>
                     )}
                     {canManage && (
@@ -221,8 +223,8 @@ const analyticsEvents = Astro.url.searchParams.get("created")
                         <input type="hidden" name="action" value="revoke" />
                         <input type="hidden" name="id" value={link.id} />
                         <input type="hidden" name="redirect" value={redirectTo} />
-                        <button class="btn-ghost" type="submit" onclick="return confirm('Revoke this share link?');">
-                          {expired ? "Remove" : "Revoke"}
+                        <button class="btn-ghost" type="submit" onclick={confirmRevoke}>
+                          {expired ? t.remove : t.revoke}
                         </button>
                       </form>
                     )}
@@ -236,16 +238,13 @@ const analyticsEvents = Astro.url.searchParams.get("created")
 
       {entitlements.canCreateShareLinks && canManage && (
         <section class="card">
-          <h2 class="card-title">Public status pages</h2>
-          <p class="card-subtitle mb-4">
-            Minimal read-only status board at <code>/status/&lt;token&gt;</code>, no login required.
-            Embed a live SVG badge at <code>/badge/status/&lt;token&gt;.svg</code> on property pages or tenant portals.
-          </p>
+          <h2 class="card-title">{t.statusTitle}</h2>
+          <p class="card-subtitle mb-4" set:html={t.statusBodyHtml} />
           {statusToken && (
             <div class="ingest-key-callout mb-4">
               <p class="ingest-key-value break-all text-sm mb-2">{siteUrl}/status/{statusToken}</p>
-              <button type="button" class="btn-primary" data-copy={`${siteUrl}/status/${statusToken}`} data-copy-label="Copy link">
-                Copy status URL
+              <button type="button" class="btn-primary" data-copy={`${siteUrl}/status/${statusToken}`} data-copy-label={t.copyLink}>
+                {t.copyStatusUrl}
               </button>
             </div>
           )}
@@ -253,13 +252,13 @@ const analyticsEvents = Astro.url.searchParams.get("created")
             <input type="hidden" name="action" value="create" />
             <input type="hidden" name="redirect" value={redirectTo} />
             <div class="form-field mb-0">
-              <label class="form-label" for="status-label">Label</label>
-              <input class="form-input" id="status-label" name="label" value="Household status" />
+              <label class="form-label" for="status-label">{t.label}</label>
+              <input class="form-input" id="status-label" name="label" value={t.statusDefaultLabel} />
             </div>
-            <button class="btn-secondary" type="submit">Create status page</button>
+            <button class="btn-secondary" type="submit">{t.createStatus}</button>
           </form>
           {statusPages.length === 0 ? (
-            <p class="mb-0 text-sm text-[var(--color-text-muted)]">No status pages yet.</p>
+            <p class="mb-0 text-sm text-[var(--color-text-muted)]">{t.noStatusPages}</p>
           ) : (
             <ul class="space-y-3">
               {statusPages.map((page) => (
@@ -270,16 +269,16 @@ const analyticsEvents = Astro.url.searchParams.get("created")
                       <a href={`${siteUrl}/status/${page.token}`}>{siteUrl}/status/{page.token}</a>
                     </p>
                     <p class="m-0 text-xs text-[var(--color-text-muted)] break-all">
-                      Badge: <code>{siteUrl}/badge/status/{page.token}.svg</code>
+                      {t.badgeLabel} <code>{siteUrl}/badge/status/{page.token}.svg</code>
                       {" · "}
-                      <a class="text-link" href={`${siteUrl}/badge/status/${page.token}.svg`}>preview</a>
+                      <a class="text-link" href={`${siteUrl}/badge/status/${page.token}.svg`}>{t.preview}</a>
                     </p>
                   </div>
                   <form action="/api/status/manage" method="post">
                     <input type="hidden" name="action" value="revoke" />
                     <input type="hidden" name="id" value={page.id} />
                     <input type="hidden" name="redirect" value={redirectTo} />
-                    <button class="btn-ghost" type="submit">Revoke</button>
+                    <button class="btn-ghost" type="submit">{t.revoke}</button>
                   </form>
                 </li>
               ))}

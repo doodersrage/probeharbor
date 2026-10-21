@@ -3,17 +3,43 @@
  * "Why did / didn't my rule fire?" Evaluates the saved rules against the
  * latest readings (GET /api/user/rule-check) and lists each condition's result.
  */
+import { getLocale, LOCALE_META } from "../../i18n";
+import { ruleCheckMessages } from "../../i18n/messages/app/ruleCheck";
+import { conditionOptions } from "../../lib/alertRules";
+
+const locale = getLocale(Astro);
+const t = ruleCheckMessages(locale);
+// English keeps the raw condition type names ("outdoor below") it always showed.
+const conditions =
+  locale === "en" ? {} : Object.fromEntries(conditionOptions(locale).map((o) => [o.value, o.label]));
+const client = { ...t.client, conditions, intl: LOCALE_META[locale].intl };
 ---
-<div class="rule-check rounded-lg border border-[var(--color-border)] p-3 mb-4" data-rule-check>
+<div
+  class="rule-check rounded-lg border border-[var(--color-border)] p-3 mb-4"
+  data-rule-check
+  data-i18n={JSON.stringify(client)}
+>
   <div class="flex flex-wrap items-center gap-2">
-    <button type="button" class="btn-secondary" data-rule-check-run>Check saved rules now</button>
-    <span class="form-hint m-0">Uses the latest readings and your saved rules (save first). Sends nothing.</span>
+    <button type="button" class="btn-secondary" data-rule-check-run>{t.run}</button>
+    <span class="form-hint m-0">{t.hint}</span>
   </div>
   <p class="mt-3 mb-0 text-sm hidden" role="status" data-rule-check-status></p>
   <ul class="mt-3 mb-0 space-y-3 list-none p-0" data-rule-check-results></ul>
 </div>
 
 <script>
+  import { fmt, readI18n } from "../../i18n/client";
+  import en from "../../i18n/messages/app/ruleCheck/en";
+
+  type Text = typeof en.client & { intl?: string };
+  // `intl` is not an English key, so read it alongside the merged strings.
+  function readIntl(root: HTMLElement): string | undefined {
+    try {
+      return (JSON.parse(root.dataset.i18n || "{}") as { intl?: string }).intl;
+    } catch {
+      return undefined;
+    }
+  }
   type Check = {
     matched: boolean;
     detail: string;
@@ -22,6 +48,16 @@
   type Rule = { name: string; enabled: boolean; match: "all" | "any"; matched: boolean; conditions: Check[] };
   type Report = { checkedAt: string; alertsEnabled: boolean; cooldownUntil: string | null; rules: Rule[] };
 
+  /** mergeTranslation keeps only English keys, and English has no condition labels: read them directly. */
+  function readConditions(root: HTMLElement): Record<string, string> {
+    try {
+      const parsed = JSON.parse(root.dataset.i18n || "{}") as { conditions?: Record<string, string> };
+      return parsed.conditions ?? {};
+    } catch {
+      return {};
+    }
+  }
+
   function el<K extends keyof HTMLElementTagNameMap>(tag: K, className: string, text?: string) {
     const node = document.createElement(tag);
     node.className = className;
@@ -29,23 +65,27 @@
     return node;
   }
 
-  function verdict(rule: Rule, report: Report): string {
-    if (!rule.enabled) return "Off: this rule is disabled.";
-    if (rule.conditions.length === 0) return "Has no conditions, so it never fires.";
+  function timeLabel(iso: string, text: Text): string {
+    // English keeps the browser's own locale, as before.
+    const tag = text.intl && text.intl !== "en-US" ? text.intl : [];
+    return new Date(iso).toLocaleTimeString(tag, { hour: "numeric", minute: "2-digit" });
+  }
+
+  function verdict(rule: Rule, report: Report, text: Text): string {
+    if (!rule.enabled) return text.disabled;
+    if (rule.conditions.length === 0) return text.noConditions;
     if (!rule.matched) {
-      return rule.match === "any"
-        ? "Wouldn't fire: none of its conditions is true."
-        : "Wouldn't fire: at least one condition isn't true.";
+      return rule.match === "any" ? text.noneTrue : text.notAllTrue;
     }
-    if (!report.alertsEnabled) return "Matches, but alerts are turned off, so nothing would send.";
+    if (!report.alertsEnabled) return text.alertsOff;
     if (report.cooldownUntil) {
-      const until = new Date(report.cooldownUntil).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
-      return `Matches, but a rule alert went out recently; the next one can send after ${until}.`;
+      return fmt(text.cooldown, { time: timeLabel(report.cooldownUntil, text) });
     }
-    return "Matches: the next alert check (every few minutes) would send it, unless alerts are snoozed or it's quiet hours.";
+    return text.fires;
   }
 
   document.querySelectorAll<HTMLElement>("[data-rule-check]").forEach((root) => {
+    const text: Text = { ...readI18n(root, en.client), conditions: readConditions(root), intl: readIntl(root) };
     const button = root.querySelector<HTMLButtonElement>("[data-rule-check-run]");
     const status = root.querySelector<HTMLElement>("[data-rule-check-status]");
     const list = root.querySelector<HTMLElement>("[data-rule-check-results]");
@@ -53,7 +93,7 @@
 
     button.addEventListener("click", async () => {
       button.disabled = true;
-      status.textContent = "Checking…";
+      status.textContent = text.checking;
       status.classList.remove("hidden");
       list.replaceChildren();
       try {
@@ -61,25 +101,25 @@
         if (!response.ok) throw new Error(String(response.status));
         const report = (await response.json()) as Report;
         if (report.rules.length === 0) {
-          status.textContent = "No saved rules yet. Add one above and save.";
+          status.textContent = text.noRules;
           return;
         }
-        status.textContent = `Checked ${new Date(report.checkedAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}.`;
+        status.textContent = fmt(text.checkedAt, { time: timeLabel(report.checkedAt, text) });
         for (const rule of report.rules) {
           const item = el("li", "");
           const fires = rule.enabled && rule.matched && report.alertsEnabled && !report.cooldownUntil;
-          item.appendChild(el("p", "m-0 font-semibold", rule.name || "Untitled rule"));
+          item.appendChild(el("p", "m-0 font-semibold", rule.name || text.untitled));
           item.appendChild(
             el(
               "p",
               `m-0 text-sm ${fires ? "text-[var(--color-danger)]" : "text-[var(--color-text-muted)]"}`,
-              verdict(rule, report),
+              verdict(rule, report, text),
             ),
           );
           const conditions = el("ul", "mt-1 mb-0 pl-5 text-sm list-disc");
           rule.conditions.forEach((check, index) => {
-            const joiner = index === 0 ? "" : rule.match === "any" ? "OR " : "AND ";
-            const name = check.condition.type.replace(/_/g, " ");
+            const joiner = index === 0 ? "" : rule.match === "any" ? text.or : text.and;
+            const name = text.conditions[check.condition.type] || check.condition.type.replace(/_/g, " ");
             const scope = check.condition.labelIncludes ? ` ("${check.condition.labelIncludes}")` : "";
             conditions.appendChild(
               el("li", "", `${joiner}${check.matched ? "✓" : "✗"} ${name}${scope}: ${check.detail}`),
@@ -89,7 +129,7 @@
           list.appendChild(item);
         }
       } catch {
-        status.textContent = "Couldn't check rules right now. Try again in a minute.";
+        status.textContent = text.failed;
       } finally {
         button.disabled = false;
       }

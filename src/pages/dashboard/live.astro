@@ -11,6 +11,11 @@ import { fetchLatestSensorValues } from "../../lib/sensorReadings";
 import { latestFromShell } from "../../lib/dashboardShell";
 import { getAlertSettingsForUser } from "../../lib/notify";
 import { hasConfiguredAlertChannel } from "../../lib/freezeReadiness";
+import { getLocale, LOCALE_META } from "../../i18n";
+import { liveMessages } from "../../i18n/messages/app/live";
+
+const locale = getLocale(Astro);
+const t = liveMessages(locale);
 
 const shell = Astro.locals.dashboardShell ?? null;
 const { session, user } = shell
@@ -55,16 +60,16 @@ const hasEmailAlerts =
 const panelsHidden = !showGarageTemps && !showWeather;
 ---
 <DashboardLayout
-  title="Live"
-  subtitle="Every probe’s current reading, plus outdoor weather."
+  title={t.title}
+  subtitle={t.subtitle}
 >
   <div class="space-y-6">
 
     {panelsHidden && (
       <div class="empty-state">
-        <p class="empty-state-title">Live panels are hidden</p>
+        <p class="empty-state-title">{t.hiddenTitle}</p>
         <p class="mb-0">
-          Display preferences currently hide probe cards and weather.
+          {t.hiddenBody}
         </p>
         <div class="empty-state-actions">
           <form action="/api/user/preferences" method="post" class="inline">
@@ -80,32 +85,30 @@ const panelsHidden = !showGarageTemps && !showWeather;
               name="weather_city_id"
               value={preferences.weatherCityId ?? ""}
             />
-            <button type="submit" class="btn-primary">Show probes + weather</button>
+            <button type="submit" class="btn-primary">{t.showBoth}</button>
           </form>
-          <a class="btn-secondary" href="/dashboard/settings">Open settings</a>
+          <a class="btn-secondary" href="/dashboard/settings">{t.openSettings}</a>
         </div>
       </div>
     )}
 
     {!panelsHidden && !hasLive && (
       <section class="card" aria-labelledby="live-first-run-title" data-live-waiting>
-        <h2 class="card-title" id="live-first-run-title">Waiting for a reading</h2>
+        <h2 class="card-title" id="live-first-run-title">{t.waitingTitle}</h2>
         <p class="card-subtitle mb-4">
-          {hasDevices
-            ? "POST JSON once (or fetch a pull feed) so probe cards appear here, then set freeze + email under Alerts."
-            : "Create a push device, try the demo feed, or open Devices to wire ingest — then confirm cards here."}
+          {hasDevices ? t.waitingWithDevices : t.waitingNoDevices}
         </p>
         <div class="flex flex-wrap gap-3">
-          <a class="btn-primary" href="/dashboard/devices?view=setup">Open Devices</a>
+          <a class="btn-primary" href="/dashboard/devices?view=setup">{t.openDevices}</a>
           {showDemoPullNudge && (
-            <a class="btn-secondary" href="#demo-pull-nudge">Try demo feed</a>
+            <a class="btn-secondary" href="#demo-pull-nudge">{t.tryDemo}</a>
           )}
           {!hasEmailAlerts && (
             <a class="btn-secondary" href="/dashboard/alerts?tab=settings#alert-section-essentials">
-              Alert essentials
+              {t.alertEssentials}
             </a>
           )}
-          <a class="btn-ghost" href="/about/probe-demo">Probe simulator</a>
+          <a class="btn-ghost" href="/about/probe-demo">{t.probeSimulator}</a>
         </div>
       </section>
     )}
@@ -113,9 +116,11 @@ const panelsHidden = !showGarageTemps && !showWeather;
     <DemoPullNudge show={showDemoPullNudge} />
 
     <div class="grid gap-6">
-      {showGarageTemps && <LiveTempsPanel client:visible />}
+      {showGarageTemps && (
+        <LiveTempsPanel client:visible text={t.panel} locale={LOCALE_META[locale].intl} />
+      )}
       {showWeather && (
-        <WeatherPanel client:visible cityId={preferences.weatherCityId ?? null} />
+        <WeatherPanel client:visible cityId={preferences.weatherCityId ?? null} text={t.weather} />
       )}
     </div>
   </div>

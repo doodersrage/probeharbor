@@ -1,7 +1,7 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import PageHeader from "../../components/PageHeader.astro";
-import { getLocale, localizePath } from "../../i18n";
+import { fmt, getLocale, localizePath } from "../../i18n";
 import { storiesMessages } from "../../i18n/messages/stories";
 import { getLocalizedStories } from "../../i18n/content/stories";
 import EditorialPhotoStrip from "../../components/EditorialPhotoStrip.astro";
@@ -60,7 +60,7 @@ const schema = [
       {
         stories.map((story) => (
           <section class="card">
-            <p class="text-sm text-[var(--color-text-muted)] mb-2">{m.article.scenarioLabel(story.setting)}</p>
+            <p class="text-sm text-[var(--color-text-muted)] mb-2">{fmt(m.article.scenarioLabel, { setting: story.setting })}</p>
             <h2 class="card-title">{story.title}</h2>
             <p class="card-subtitle">{story.description}</p>
             <p class="mb-0">

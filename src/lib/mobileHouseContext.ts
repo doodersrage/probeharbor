@@ -3,6 +3,7 @@ import { fetchHouseContextForUser } from "./houseContext";
 import type { RegionalBenchmark } from "./regionalBenchmark";
 import { fetchRegionalBenchmark } from "./regionalBenchmark";
 import { fetchLatestSensorValues } from "./sensorReadings";
+import type { Locale } from "../i18n/locales";
 
 export type MobileHousePayload = {
   source: "thermostat" | "reference_sensor";
@@ -48,13 +49,15 @@ export function regionalBenchmarkToMobilePayload(
 
 export async function fetchMobileHousePayloadForUser(
   userId: string,
+  locale: Locale = "en",
 ): Promise<MobileHousePayload | null> {
-  const context = await fetchHouseContextForUser(userId);
+  const context = await fetchHouseContextForUser(userId, locale);
   return context ? houseContextToMobilePayload(context) : null;
 }
 
 export async function fetchMobileRegionalBenchmarkForUser(
   userId: string,
+  locale: Locale = "en",
 ): Promise<MobileRegionalBenchmarkPayload | null> {
   const householdId = await (await import("./households")).getUserHouseholdId(userId);
   if (!householdId) return null;
@@ -68,6 +71,6 @@ export async function fetchMobileRegionalBenchmarkForUser(
   const benchmark = await fetchRegionalBenchmark({
     householdId,
     yourTempF: Math.min(...coldest),
-  });
+  }, locale);
   return benchmark ? regionalBenchmarkToMobilePayload(benchmark) : null;
 }

@@ -8,6 +8,8 @@ import {
   fetchAllGarageTempReadings,
   type HistoryFilters,
 } from "../../../lib/garageTempsHistory";
+import { apiCommonMessages, apiLocale } from "../../../i18n/messages/app/api/common";
+import { apiUserMessages } from "../../../i18n/messages/app/api/user";
 
 function parseDateParam(value: string | null, endOfDay = false): string | undefined {
   if (!value?.trim()) return undefined;
@@ -21,17 +23,19 @@ function parseDateParam(value: string | null, endOfDay = false): string | undefi
   return parsed.toISOString();
 }
 
-export const GET: APIRoute = async ({ cookies, url }) => {
+export const GET: APIRoute = async ({ cookies, url, locals }) => {
+  const locale = apiLocale({ locals });
+  const tc = apiCommonMessages(locale);
   const { session, user } = await getAuthFromCookies(cookies);
 
   if (!session || !user) {
-    return new Response("Unauthorized", { status: 401 });
+    return new Response(tc.unauthorized, { status: 401 });
   }
 
   const allowed = await canDownloadHistoryCsv(user.id);
 
   if (!allowed) {
-    return new Response("CSV export requires an active subscription or admin access", {
+    return new Response(apiUserMessages(locale).csvRequiresPlan, {
       status: 403,
     });
   }

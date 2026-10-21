@@ -10,7 +10,7 @@ import {
 } from "../../../lib/claimPuck";
 import type { Locale } from "../../locales";
 import { type DeepPartial, mergeTranslation, translateList } from "../../translate";
-import { collectKeyedOverlays } from "../collect";
+import { keyedOverlays } from "../collect";
 
 /** Visible text of one accessory (name, shortName, tagline); ids, paths, kinds come from English. */
 export type AccessoryText = Pick<AccessoryDef, "name" | "shortName" | "tagline">;
@@ -27,12 +27,8 @@ export interface ClaimPuckText {
 /** `<locale>/claimPuck.ts`: `{ claimPuck: { name?, tagline?, bayBuddyNote? } }`. */
 export type ClaimPuckOverlay = { claimPuck: DeepPartial<ClaimPuckText> };
 
-const accessoryOverlays = collectKeyedOverlays<DeepPartial<AccessoryDef>>(
-  import.meta.glob("./*/accessories.ts", { eager: true }),
-);
-const claimPuckOverlays = collectKeyedOverlays<DeepPartial<ClaimPuckText>>(
-  import.meta.glob("./*/claimPuck.ts", { eager: true }),
-);
+const accessoryOverlays = () => keyedOverlays<DeepPartial<AccessoryDef>>("accessories", "accessories");
+const claimPuckOverlays = () => keyedOverlays<DeepPartial<ClaimPuckText>>("accessories", "claimPuck");
 
 const CLAIM_PUCK_EN: ClaimPuckText = {
   name: CLAIM_PUCK_NAME,
@@ -41,7 +37,7 @@ const CLAIM_PUCK_EN: ClaimPuckText = {
 };
 
 export function getLocalizedAccessories(locale: Locale): AccessoryDef[] {
-  return translateList(locale, ACCESSORIES, accessoryOverlays, (a) => a.id);
+  return translateList(locale, ACCESSORIES, accessoryOverlays(), (a) => a.id);
 }
 
 export function getLocalizedAccessory(id: AccessoryId, locale: Locale): AccessoryDef {
@@ -56,5 +52,5 @@ export function getLocalizedAccessoriesExcluding(id: AccessoryId, locale: Locale
 
 export function getLocalizedClaimPuckText(locale: Locale): ClaimPuckText {
   if (locale === "en") return CLAIM_PUCK_EN;
-  return mergeTranslation(CLAIM_PUCK_EN, claimPuckOverlays[locale]?.claimPuck);
+  return mergeTranslation(CLAIM_PUCK_EN, claimPuckOverlays()[locale]?.claimPuck);
 }

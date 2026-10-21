@@ -7,6 +7,16 @@ import {
   resolveFreezeMapDisplay,
 } from "../../lib/freezeMapSeed";
 import { formatRelativeAge } from "../../lib/relativeTime";
+import { fmt, formatNumber, getLocale, LOCALE_META } from "../../i18n";
+import { publicShareMessages } from "../../i18n/messages/app/publicShare";
+import { freezeMapNumber, freezeMapTemp } from "../../i18n/messages/freezeMap";
+
+const locale = getLocale(Astro);
+const t = publicShareMessages(locale).freezeMap;
+const popupText = t.client.popup;
+// Pins carry the number already formatted for the locale (en: toFixed(1)).
+const num = (value: number) => freezeMapNumber(value, locale);
+const pct = (value: number) => (locale === "en" ? `${value}%` : formatNumber(value / 100, locale, { style: "percent" }));
 
 const resolved = resolveFreezeMapDisplay(
   await listLatestFreezeMapSnapshots(),
@@ -18,7 +28,7 @@ const visible = snapshots.filter(
   (row) => row.sample_count >= FREEZE_MAP_SAMPLE_FLOOR,
 );
 const capturedAt = isSeed ? null : (snapshots[0]?.captured_at ?? null);
-const captureAge = formatRelativeAge(capturedAt, "not yet");
+const captureAge = formatRelativeAge(capturedAt, t.notYet, locale);
 const compact = Astro.url.searchParams.get("compact") === "1";
 
 const coldest = [...visible]
@@ -32,7 +42,7 @@ const mapPins = visible
     lat: row.lat!,
     lon: row.lon!,
     label: row.city_label,
-    avg: row.avg_temp_f,
+    avg: row.avg_temp_f != null ? num(row.avg_temp_f) : null,
     riskPct:
       row.sample_count > 0
         ? Math.round((row.freeze_risk_count / row.sample_count) * 100)
@@ -41,11 +51,11 @@ const mapPins = visible
 const mapPinsJson = JSON.stringify(mapPins);
 ---
 <!doctype html>
-<html lang="en">
+<html lang={LOCALE_META[locale].htmlLang}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Freeze map embed</title>
+    <title>{t.title}</title>
     <meta name="robots" content="noindex, nofollow" />
     <style>
       :root {
@@ -73,17 +83,15 @@ const mapPinsJson = JSON.stringify(mapPins);
     />
   </head>
   <body>
-    <h1>Regional freeze-risk map</h1>
+    <h1>{t.heading}</h1>
     <p>
-      {isSeed
-        ? "Illustrative sample cities · not live opt-ins yet"
-        : `Opt-in city aggregates · updated ${captureAge.label}`}
+      {isSeed ? t.seed : fmt(t.live, { age: captureAge.label })}
     </p>
     {coldest.length > 0 && (
       <ul class="coldest">
         {coldest.map((row, i) => (
           <li>
-            <strong>#{i + 1} {row.city_label}</strong> · min {row.min_temp_f?.toFixed(1)}°F
+            <strong>#{i + 1} {row.city_label}</strong> · {fmt(t.coldest, { temp: freezeMapTemp(row.min_temp_f!, locale) })}
           </li>
         ))}
       </ul>
@@ -92,23 +100,23 @@ const mapPinsJson = JSON.stringify(mapPins);
     {!compact && visible.length > 0 && (
       <table>
         <thead>
-          <tr><th>City</th><th>Avg °F</th><th>Risk</th></tr>
+          <tr><th>{t.city}</th><th>{t.avg}</th><th>{t.risk}</th></tr>
         </thead>
         <tbody>
           {visible.slice(0, 8).map((row) => (
             <tr>
               <td>{row.city_label}</td>
-              <td>{row.avg_temp_f?.toFixed(1) ?? "—"}</td>
-              <td>{row.sample_count > 0 ? `${Math.round((row.freeze_risk_count / row.sample_count) * 100)}%` : "—"}</td>
+              <td>{row.avg_temp_f != null ? num(row.avg_temp_f) : "—"}</td>
+              <td>{row.sample_count > 0 ? pct(Math.round((row.freeze_risk_count / row.sample_count) * 100)) : "—"}</td>
             </tr>
           ))}
         </tbody>
       </table>
     )}
     <p style="margin-top:12px">
-      <a href="/freeze-map" target="_blank" rel="noopener">Full map on ProbeHarbor</a>
+      <a href="/freeze-map" target="_blank" rel="noopener">{t.fullMap}</a>
     </p>
-    <script is:inline define:vars={{ mapPinsJson }}>
+    <script is:inline define:vars={{ mapPinsJson, popupText }}>
       (() => {
         const pins = JSON.parse(mapPinsJson);
         function init() {
@@ -128,7 +136,10 @@ const mapPinsJson = JSON.stringify(mapPins);
               weight: 1,
               fillOpacity: 0.85,
             })
-              .bindPopup(`<strong>${pin.label}</strong><br/>${pin.avg?.toFixed(1) ?? "—"}°F · ${pin.riskPct}% at risk`)
+              .bindPopup(
+                `<strong>${pin.label}</strong><br/>` +
+                  popupText.replace("{avg}", pin.avg ?? "—").replace("{risk}", String(pin.riskPct)),
+              )
               .addTo(map);
           }
           if (pins.length > 0) {

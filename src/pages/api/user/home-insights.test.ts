@@ -178,6 +178,7 @@ describe("GET /api/user/home-insights", () => {
     expect(body.time_to_freeze).toEqual({ hours_to_freeze: 5 });
     expect(mockBuildTimeToFreezeProjection).toHaveBeenCalledWith(
       expect.objectContaining({ currentTempF: 38, freezeThresholdF: 32 }),
+      "en",
     );
   });
 });

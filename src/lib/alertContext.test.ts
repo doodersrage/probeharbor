@@ -106,7 +106,7 @@ describe("buildFreezeAlertContext", () => {
     expect(mockFetchRegionalBenchmark).not.toHaveBeenCalled();
 
     await buildFreezeAlertContext({ householdId: "house-1", settings: settings(), coldestTempF: 30 });
-    expect(mockFetchRegionalBenchmark).toHaveBeenCalledWith({ householdId: "house-1", yourTempF: 30 });
+    expect(mockFetchRegionalBenchmark).toHaveBeenCalledWith({ householdId: "house-1", yourTempF: 30 }, "en");
   });
 
   it("includes the benchmark line when formatBenchmarkAlertSuffix returns one", async () => {
@@ -190,7 +190,7 @@ describe("buildFreezeAlertContext", () => {
       forecastMinTempF: 20,
       forecastHoursAhead: 12,
       doorOpenNearby: false,
-    });
+    }, "en");
     expect(result).toContain("Cooling fast.");
   });
 
@@ -206,6 +206,7 @@ describe("buildFreezeAlertContext", () => {
     expect(mockFetchForecastMinTemp).not.toHaveBeenCalled();
     expect(mockBuildThermalRunway).toHaveBeenCalledWith(
       expect.objectContaining({ forecastMinTempF: null }),
+      "en",
     );
   });
 
@@ -223,6 +224,7 @@ describe("buildFreezeAlertContext", () => {
 
     expect(mockBuildThermalRunway).toHaveBeenCalledWith(
       expect.objectContaining({ recentSamples: [], forecastMinTempF: null }),
+      "en",
     );
   });
 

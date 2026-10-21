@@ -11,6 +11,11 @@ import {
 } from "../lib/mfa";
 import { buildRegisterHref, REGISTER_NEXT_DEVICES } from "../lib/registerUrl";
 import { sanitizeNextPath } from "../lib/siteUrl";
+import { getLocale } from "../i18n";
+import { authSigninMessages } from "../i18n/messages/app/auth/signin";
+
+const locale = getLocale(Astro);
+const t = authSigninMessages(locale).signin;
 
 const { session, user } = await getAuthFromCookies(Astro.cookies);
 
@@ -31,7 +36,7 @@ if (session && user) {
 }
 
 const errorCode = Astro.url.searchParams.get("error");
-const errorMessage = getSignInErrorMessage(errorCode);
+const errorMessage = getSignInErrorMessage(errorCode, locale);
 const oauthDetail = Astro.url.searchParams.get("oauth_detail")?.trim() ?? "";
 const registered = Astro.url.searchParams.get("registered") === "1";
 const confirmed = Astro.url.searchParams.get("confirmed") === "1";
@@ -44,8 +49,8 @@ const registerHref = buildRegisterHref({ next: safeNext || REGISTER_NEXT_DEVICES
 ---
 
 <Layout
-  title="Sign in"
-  description="Sign in to your dashboard to manage display preferences, probe feeds, reading history, and CSV export."
+  title={t.title}
+  description={t.description}
   noindex
 >
   {registered && (
@@ -53,32 +58,24 @@ const registerHref = buildRegisterHref({ next: safeNext || REGISTER_NEXT_DEVICES
   )}
   <div class="auth-page">
     <header class="auth-intro page-header">
-      <h1 class="page-header-title">Sign in</h1>
-      <p class="page-header-lede">
-        Pick up where you left off: preferences, feeds, and saved readings are in your dashboard.
-      </p>
+      <h1 class="page-header-title">{t.heading}</h1>
+      <p class="page-header-lede">{t.lede}</p>
     </header>
 
     <div class="form-panel">
       {registered && (
         <div class="alert-success mb-4" role="status">
-          <p class="m-0">
-            Account created. Check your email to confirm, then sign in.
-            Next step after sign-in: <strong>Devices</strong>: create a push key and POST your first reading.
-          </p>
+          <p class="m-0" set:html={t.registeredHtml} />
         </div>
       )}
       {confirmed && (
         <div class="alert-success mb-4" role="status">
-          <p class="m-0">
-            Email confirmed. Sign in to finish setup: next stop is <strong>Devices</strong>,
-            where you connect your first sensor.
-          </p>
+          <p class="m-0" set:html={t.confirmedHtml} />
         </div>
       )}
       {signedOutAll && (
         <div class="alert-success mb-4" role="status">
-          <p class="m-0">Signed out on every device. Sign in again here when you're ready.</p>
+          <p class="m-0">{t.signedOutAll}</p>
         </div>
       )}
       {errorMessage && (
@@ -89,7 +86,7 @@ const registerHref = buildRegisterHref({ next: safeNext || REGISTER_NEXT_DEVICES
           )}
           {(errorCode === "email_not_confirmed" || errorCode === "confirm_link") && (
             <p class="m-0 mt-2">
-              <a class="text-link" href="/resend-confirmation">Resend the confirmation email</a>
+              <a class="text-link" href="/resend-confirmation">{t.resendConfirmation}</a>
             </p>
           )}
         </div>
@@ -100,7 +97,7 @@ const registerHref = buildRegisterHref({ next: safeNext || REGISTER_NEXT_DEVICES
       <form action="/api/auth/signin" method="post">
         {safeNext && <input type="hidden" name="next" value={safeNext} />}
         <div class="form-field">
-          <label class="form-label" for="email">Email</label>
+          <label class="form-label" for="email">{t.email}</label>
           <input
             class="form-input"
             type="email"
@@ -111,29 +108,29 @@ const registerHref = buildRegisterHref({ next: safeNext || REGISTER_NEXT_DEVICES
           />
         </div>
         <div class="form-field">
-          <label class="form-label" for="password">Password</label>
+          <label class="form-label" for="password">{t.password}</label>
           <input class="form-input" type="password" name="password" id="password" required />
         </div>
         <div class="form-field">
           <div class="cf-turnstile" data-sitekey={import.meta.env.TURNSTILE_SITE_KEY}></div>
         </div>
         <div class="flex flex-col gap-3">
-          <button class="btn-primary" type="submit">Sign in with email</button>
+          <button class="btn-primary" type="submit">{t.submit}</button>
           <p class="m-0 text-sm text-center">
-            <a class="text-link" href="/forgot-password">Forgot password?</a>
+            <a class="text-link" href="/forgot-password">{t.forgotPassword}</a>
           </p>
         </div>
       </form>
     </div>
 
     <p class="auth-switch">
-      New here?
-      <a class="text-link" href={registerHref}>Create a free account</a>
+      {t.newHere}
+      <a class="text-link" href={registerHref}>{t.createAccount}</a>
     </p>
     <p class="form-hint text-center mt-3 mb-0">
-      <a class="text-link" href="/privacy">Privacy</a>
+      <a class="text-link" href="/privacy">{t.privacy}</a>
       {" · "}
-      <a class="text-link" href="/terms">Terms</a>
+      <a class="text-link" href="/terms">{t.terms}</a>
     </p>
   </div>
 </Layout>

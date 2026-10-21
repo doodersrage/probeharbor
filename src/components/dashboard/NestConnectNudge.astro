@@ -1,27 +1,29 @@
 ---
+import { getLocale } from "../../i18n";
+import { overviewNudgesMessages } from "../../i18n/messages/app/overview/nudges";
+
 interface Props {
   show: boolean;
   nestEntitled: boolean;
 }
 
 const { show, nestEntitled } = Astro.props;
+const t = overviewNudgesMessages(getLocale(Astro)).nest;
 ---
 {show && (
   <section class="card" id="nest-connect-nudge" aria-labelledby="nest-connect-nudge-title">
-    <h2 class="card-title" id="nest-connect-nudge-title">Nest or Ecobee?</h2>
+    <h2 class="card-title" id="nest-connect-nudge-title">{t.title}</h2>
     <p class="card-subtitle mb-4">
-      {nestEntitled
-        ? "Connect Nest/Ecobee under Devices → Pull feeds for indoor house context alongside your probes."
-        : "Thermostat OAuth for Nest/Ecobee is on Pro. Free/Member can still push climate temperature from Home Assistant as an Indoor reference."}
+      {nestEntitled ? t.bodyEntitled : t.bodyNotEntitled}
     </p>
     <div class="flex flex-wrap gap-3">
       <a class="btn-secondary" href="/dashboard/devices?view=setup&tab=thermostat#thermostat-connect">
-        Open Pull feeds & thermostats
+        {t.open}
       </a>
       {nestEntitled ? (
-        <a class="btn-ghost" href="/about/thermostat-oauth">Thermostat OAuth guide</a>
+        <a class="btn-ghost" href="/about/thermostat-oauth">{t.guide}</a>
       ) : (
-        <a class="btn-ghost" href="/dashboard/plans">View Pro</a>
+        <a class="btn-ghost" href="/dashboard/plans">{t.viewPro}</a>
       )}
     </div>
   </section>

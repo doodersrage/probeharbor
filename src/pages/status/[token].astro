@@ -2,6 +2,12 @@
 export const prerender = false;
 import Layout from "../../layouts/Layout.astro";
 import { resolveStatusPageToken, buildStatusPageSnapshot } from "../../lib/statusPage";
+import { formatRelativeAge } from "../../lib/relativeTime";
+import { fmt, getLocale, LOCALE_META } from "../../i18n";
+import { publicShareMessages } from "../../i18n/messages/app/publicShare";
+
+const locale = getLocale(Astro);
+const t = publicShareMessages(locale).status;
 
 const token = Astro.params.token;
 if (!token) {
@@ -14,31 +20,37 @@ if (!resolved) {
 }
 
 const snapshot = await buildStatusPageSnapshot(resolved.householdId);
+const updatedLabel =
+  locale === "en" ? snapshot.lastReadingLabel : formatRelativeAge(snapshot.updatedAt, t.never, locale).label;
+const formatValue = (value: number) =>
+  locale === "en"
+    ? value.toFixed(1)
+    : value.toLocaleString(LOCALE_META[locale].intl, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 ---
-<Layout title="Live status" description="Live household sensor status" noindex>
+<Layout title={t.title} description={t.description} noindex>
   <div class="page-shell page-stack" style="max-width:640px">
     <section class="card">
-      <h1 class="card-title">Household status</h1>
+      <h1 class="card-title">{t.heading}</h1>
       <p class="card-subtitle mb-4">
-        Read-only snapshot · Updated {snapshot.lastReadingLabel}
-        {snapshot.stale ? " · data may be stale" : ""}
+        {fmt(t.subtitle, { age: updatedLabel })}
+        {snapshot.stale ? t.mayBeStale : ""}
       </p>
       <div class="stat-grid mb-4">
         <article class="stat-item">
-          <span class="stat-label">Devices</span>
+          <span class="stat-label">{t.devices}</span>
           <p class="stat-value">{snapshot.deviceCount}</p>
         </article>
         <article class="stat-item">
-          <span class="stat-label">Sensors</span>
+          <span class="stat-label">{t.sensors}</span>
           <p class="stat-value">{snapshot.sensorCount}</p>
         </article>
         <article class="stat-item">
-          <span class="stat-label">Stale</span>
+          <span class="stat-label">{t.stale}</span>
           <p class="stat-value">{snapshot.staleSensorCount}</p>
         </article>
       </div>
       {snapshot.sensors.length === 0 ? (
-        <p class="mb-0 text-[var(--color-text-muted)]">No sensor readings yet.</p>
+        <p class="mb-0 text-[var(--color-text-muted)]">{t.empty}</p>
       ) : (
         <ul class="space-y-2 mb-0">
           {snapshot.sensors.map((sensor) => (
@@ -49,11 +61,11 @@ const snapshot = await buildStatusPageSnapshot(resolved.householdId);
               </span>
               <span>
                 {sensor.value_num != null
-                  ? `${sensor.value_num.toFixed(1)}`
+                  ? formatValue(sensor.value_num)
                   : sensor.value_bool != null
                     ? sensor.value_bool
-                      ? "Open"
-                      : "Closed"
+                      ? t.open
+                      : t.closed
                     : "—"}
               </span>
             </li>

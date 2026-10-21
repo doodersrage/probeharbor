@@ -1,3 +1,6 @@
+import { fmt, plural, type Locale } from "../i18n";
+import { libDate, libFixed, libNumber, libTextMessages } from "../i18n/messages/app/libText";
+
 export type BatterySample = { pct: number; at: string };
 
 export function appendBatterySample(
@@ -38,6 +41,7 @@ export function detectBatteryTrendDrop(
   history: BatterySample[],
   dropPct = 20,
   windowDays = 7,
+  locale: Locale = "en",
 ): string | null {
   if (history.length < 2) return null;
   const sorted = [...history].sort((a, b) => Date.parse(a.at) - Date.parse(b.at));
@@ -46,11 +50,17 @@ export function detectBatteryTrendDrop(
   const oldestInWindow = sorted.find((s) => Date.parse(s.at) >= cutoff) ?? sorted[0];
   const drop = oldestInWindow.pct - newest.pct;
   if (drop < dropPct) return null;
-  const base = `Battery dropped ${drop.toFixed(0)}% since ${new Date(oldestInWindow.at).toLocaleDateString()} (${oldestInWindow.pct}% → ${newest.pct}%).`;
+  const t = libTextMessages(locale).battery;
+  const base = fmt(t.dropped, {
+    drop: libFixed(drop, 0, locale),
+    date: libDate(oldestInWindow.at, locale),
+    from: libNumber(oldestInWindow.pct, locale),
+    to: libNumber(newest.pct, locale),
+  });
   const daysLeft = estimateBatteryDaysRemaining(sorted, windowDays);
   if (daysLeft != null && daysLeft <= 60) {
-    const rounded = daysLeft < 2 ? "~1 day" : `~${Math.round(daysLeft)} days`;
-    return `${base} At this drain rate the pack may last ${rounded}.`;
+    const rounded = daysLeft < 2 ? t.aboutOneDay : plural(t.aboutDays, Math.round(daysLeft), locale);
+    return fmt(t.mayLast, { base, duration: rounded });
   }
   return base;
 }

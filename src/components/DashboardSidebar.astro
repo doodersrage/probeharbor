@@ -14,6 +14,11 @@ import Activity from "@lucide/astro/icons/activity";
 import logo from "../assets/gtm.svg";
 import logoLight from "../assets/gtm-light.svg";
 import { isAdminDashboardPath, mobileMonitorHrefs } from "../lib/dashboardNav";
+import { fmt, getLocale } from "../i18n";
+import { shellMessages } from "../i18n/messages/app/shell";
+
+const t = shellMessages(getLocale(Astro));
+const nav = t.nav;
 
 interface Props {
   currentPath: string;
@@ -46,7 +51,7 @@ type NavItem = {
 
 const portfolioItem: NavItem = {
   href: "/dashboard/portfolio",
-  label: "Portfolio",
+  label: nav.portfolio,
   isActive: currentPath.startsWith("/dashboard/portfolio"),
   Icon: Building2,
 };
@@ -54,13 +59,13 @@ const portfolioItem: NavItem = {
 const monitorItems: NavItem[] = [
   {
     href: "/dashboard",
-    label: "Overview",
+    label: nav.overview,
     isActive: currentPath === "/dashboard",
     Icon: LayoutDashboard,
   },
   {
     href: "/dashboard/live",
-    label: "Live",
+    label: nav.live,
     isActive: currentPath.startsWith("/dashboard/live"),
     Icon: Thermometer,
     warn: liveLagging,
@@ -68,7 +73,7 @@ const monitorItems: NavItem[] = [
   ...(showPortfolioInMonitor ? [portfolioItem] : []),
   {
     href: "/dashboard/devices",
-    label: "Devices",
+    label: nav.devices,
     isActive:
       currentPath.startsWith("/dashboard/devices") ||
       currentPath.startsWith("/dashboard/temperature"),
@@ -76,14 +81,14 @@ const monitorItems: NavItem[] = [
   },
   {
     href: "/dashboard/alerts",
-    label: "Alerts",
+    label: nav.alerts,
     isActive: currentPath.startsWith("/dashboard/alerts"),
     Icon: Bell,
     badge: unackedAlerts > 0 ? unackedAlerts : null,
   },
   {
     href: "/dashboard/history",
-    label: "History",
+    label: nav.history,
     isActive: currentPath.startsWith("/dashboard/history"),
     Icon: History,
   },
@@ -93,25 +98,25 @@ const accountItems: NavItem[] = [
   ...(!showPortfolioInMonitor ? [portfolioItem] : []),
   {
     href: "/dashboard/household",
-    label: "Household",
+    label: nav.household,
     isActive: currentPath.startsWith("/dashboard/household"),
     Icon: Users,
   },
   {
     href: "/dashboard/share",
-    label: "Share",
+    label: nav.share,
     isActive: currentPath.startsWith("/dashboard/share"),
     Icon: Share2,
   },
   {
     href: "/dashboard/plans",
-    label: "Plans",
+    label: nav.plans,
     isActive: currentPath.startsWith("/dashboard/plans"),
     Icon: CreditCard,
   },
   {
     href: "/dashboard/settings",
-    label: "Settings",
+    label: nav.settings,
     isActive: currentPath.startsWith("/dashboard/settings"),
     Icon: Settings,
   },
@@ -121,7 +126,7 @@ const adminItems: NavItem[] = isAdmin
   ? [
       {
         href: "/dashboard/ops",
-        label: "Ops",
+        label: nav.ops,
         isActive: isAdminDashboardPath(currentPath),
         Icon: Activity,
       },
@@ -129,14 +134,14 @@ const adminItems: NavItem[] = isAdmin
   : [];
 
 const groups = [
-  { label: "Monitor", items: monitorItems },
-  { label: "Account", items: accountItems },
-  ...(adminItems.length > 0 ? [{ label: "Admin", items: adminItems }] : []),
+  { label: t.sidebar.groups.monitor, items: monitorItems },
+  { label: t.sidebar.groups.account, items: accountItems },
+  ...(adminItems.length > 0 ? [{ label: t.sidebar.groups.admin, items: adminItems }] : []),
 ];
 
 const activeLabel =
   [...monitorItems, ...accountItems, ...adminItems].find((item) => item.isActive)?.label ??
-  "Dashboard";
+  nav.dashboard;
 
 const monitorByHref = new Map(monitorItems.map((item) => [item.href, item]));
 const mobileMonitor = mobileMonitorHrefs(showPortfolioInMonitor)
@@ -145,7 +150,7 @@ const mobileMonitor = mobileMonitorHrefs(showPortfolioInMonitor)
 ---
 
 <aside class="dashboard-sidebar">
-  <nav class="dashboard-sidebar-inner" aria-label="Dashboard" id="dashboard-nav">
+  <nav class="dashboard-sidebar-inner" aria-label={t.sidebar.ariaLabel} id="dashboard-nav">
     <div class="dashboard-sidebar-top">
       <a href="/dashboard" class="dashboard-sidebar-brand">
         <Image src={logo} height={32} width={162} alt="ProbeHarbor" class="dashboard-sidebar-logo logo-on-dark" />
@@ -160,7 +165,7 @@ const mobileMonitor = mobileMonitorHrefs(showPortfolioInMonitor)
           aria-expanded="false"
           aria-controls="dashboard-nav-panel"
         >
-          <span class="dashboard-nav-toggle-label">Menu</span>
+          <span class="dashboard-nav-toggle-label">{t.sidebar.menu}</span>
           <span class="dashboard-nav-toggle-page">{activeLabel}</span>
         </button>
       </div>
@@ -187,12 +192,12 @@ const mobileMonitor = mobileMonitorHrefs(showPortfolioInMonitor)
                   <Icon class="dashboard-nav-icon" size={16} aria-hidden="true" />
                   <span class="dashboard-nav-label">{label}</span>
                   {typeof badge === "number" && badge > 0 && (
-                    <span class="dashboard-nav-badge" aria-label={`${badge} unhandled`}>
+                    <span class="dashboard-nav-badge" aria-label={fmt(t.sidebar.unhandledBadge, { count: badge })}>
                       {badge > 99 ? "99+" : badge}
                     </span>
                   )}
                   {warn && !badge && (
-                    <span class="dashboard-nav-dot" aria-label="Lagging probes"></span>
+                    <span class="dashboard-nav-dot" aria-label={t.sidebar.laggingProbes}></span>
                   )}
                 </a>
               </li>
@@ -206,14 +211,14 @@ const mobileMonitor = mobileMonitorHrefs(showPortfolioInMonitor)
           class="dashboard-nav-link dashboard-shortcut-help"
           data-tt-shortcut-help
         >
-          Search <kbd>/</kbd>
+          {t.sidebar.search} <kbd>/</kbd>
         </button>
         <button
           type="button"
           class="dashboard-nav-link dashboard-sidebar-phone-tools"
           data-dashboard-refresh
         >
-          Refresh
+          {t.sidebar.refresh}
         </button>
         <button
           type="button"
@@ -221,16 +226,16 @@ const mobileMonitor = mobileMonitorHrefs(showPortfolioInMonitor)
           data-tt-kiosk-proxy
           aria-pressed="false"
         >
-          Kiosk mode
+          {t.kiosk.enter}
         </button>
-        <a class="dashboard-nav-link" href="/">Back to site</a>
-        <a class="dashboard-nav-link" href="/api/auth/signout">Sign out</a>
+        <a class="dashboard-nav-link" href="/">{t.sidebar.backToSite}</a>
+        <a class="dashboard-nav-link" href="/api/auth/signout">{t.sidebar.signOut}</a>
       </div>
     </div>
   </nav>
 </aside>
 
-<nav class="dashboard-mobile-monitor" aria-label="Monitor shortcuts">
+<nav class="dashboard-mobile-monitor" aria-label={t.sidebar.mobileAriaLabel}>
   {mobileMonitor.map(({ href, label, isActive, Icon, badge, warn }) => (
     <a
       href={href}

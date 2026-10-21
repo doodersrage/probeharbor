@@ -2,10 +2,17 @@ import { alertSettingsToRow, rowToAlertSettings, type AlertSettings } from "./al
 import { getAlertSettingsForUser, saveAlertSettingsForUser } from "./notify";
 import { createServerClient } from "./supabase";
 import type { Json } from "../types/supabase";
+import { fmt, formatNumber, plural } from "../i18n/format";
+import type { Locale } from "../i18n/locales";
+import {
+  alertSettingsHistoryMessages,
+  type AlertSettingsHistoryMessages,
+} from "../i18n/messages/app/alertSettings/history";
 
 /**
  * Alert settings history: each save keeps the version it replaced, with a
  * short list of what changed, so a bad save can be undone from Alerts.
+ * The list is stored as text in the saver's language (pass `locale`).
  */
 
 /** Saves kept per user; older ones are pruned. */
@@ -45,68 +52,22 @@ const SECRET_KEYS = new Set<keyof AlertSettings>([
   "telegramChatId",
 ]);
 
-const LABELS: Partial<Record<keyof AlertSettings, string>> = {
-  enabled: "Alerts",
-  freezeThresholdF: "Freeze line (°F)",
-  freezeDwellMinutes: "Wait before alerting (min)",
-  humidityThreshold: "Humidity alert (%)",
-  rateChangeF: "Fast-drop alert (°F/hr)",
-  outageHours: "Silent-sensor alert (hours)",
-  email: "Alert email",
-  channelEmail: "Email",
-  channelSms: "SMS",
-  channelDiscord: "Discord",
-  channelPush: "Push",
-  channelWebhook: "Outbound webhook",
-  channelTelegram: "Telegram",
-  channelSlack: "Slack",
-  channelTeams: "Teams",
-  channelNtfy: "ntfy",
-  channelPushover: "Pushover",
-  channelWhatsapp: "WhatsApp",
-  forecastFreezeEnabled: "Forecast freeze warning",
-  runwayAlertEnabled: "Time-to-freeze warning",
-  nwsFreezeAlertsEnabled: "Official freeze warnings",
-  powerAlertsEnabled: "Power-off alerts",
-  forecastHoursAhead: "Early-warning window (hours)",
-  quietHoursEnabled: "Quiet hours",
-  quietHoursStart: "Quiet hours start",
-  quietHoursEnd: "Quiet hours end",
-  digestEnabled: "Weekly digest",
-  alertRules: "Rules",
-  alertPlaybooks: "Playbooks",
-  escalationEnabled: "SMS escalation",
-  batteryAlertsEnabled: "Low-battery alerts",
-  rssiAlertsEnabled: "Weak Wi-Fi alerts",
-  thresholdSensorScope: "Per-sensor thresholds",
-  spaceChannelRouting: "Per-space routing",
-  channelSeverity: "Per-kind routing",
-  alertTemplates: "Custom messages",
-  discordWebhookUrl: "Discord webhook",
-  teamsWebhookUrl: "Teams webhook",
-  slackWebhookUrl: "Slack webhook",
-  outboundWebhookUrl: "Outbound webhook URL",
-  outboundWebhookSecret: "Outbound webhook secret",
-  readingWebhookUrl: "Reading webhook URL",
-  readingWebhookSecret: "Reading webhook secret",
-  telegramBotToken: "Telegram bot token",
-  telegramCommandSecret: "Telegram webhook secret",
-  telegramChatId: "Telegram chat",
-  pushoverUserKey: "Pushover user key",
-  pushoverAppToken: "Pushover app token",
-  ntfyTopic: "ntfy topic",
-  smsPhone: "SMS number",
-  whatsappPhone: "WhatsApp number",
-};
-
-function shown(value: unknown): string {
-  if (typeof value === "boolean") return value ? "on" : "off";
-  if (value == null || value === "") return "none";
+function shown(value: unknown, t: AlertSettingsHistoryMessages, locale: Locale): string {
+  if (typeof value === "boolean") return value ? t.valueOn : t.valueOff;
+  if (value == null || value === "") return t.valueNone;
+  if (typeof value === "number" && locale !== "en") {
+    return formatNumber(value, locale, { useGrouping: false, maximumFractionDigits: 6 });
+  }
   return String(value);
 }
 
 /** What changed between two versions, in plain words. Values of secrets stay hidden. */
-export function describeAlertSettingsChanges(before: AlertSettings, after: AlertSettings): string[] {
+export function describeAlertSettingsChanges(
+  before: AlertSettings,
+  after: AlertSettings,
+  locale: Locale = "en",
+): string[] {
+  const t = alertSettingsHistoryMessages(locale);
   const named: string[] = [];
   let unnamed = 0;
   for (const key of Object.keys(after) as Array<keyof AlertSettings>) {
@@ -114,20 +75,20 @@ export function describeAlertSettingsChanges(before: AlertSettings, after: Alert
     const a = before[key];
     const b = after[key];
     if (JSON.stringify(a ?? null) === JSON.stringify(b ?? null)) continue;
-    const label = LABELS[key];
+    const label = t.labels[key];
     if (!label) {
       unnamed += 1;
     } else if (SECRET_KEYS.has(key)) {
-      named.push(`${label} changed`);
+      named.push(fmt(t.changed, { label }));
     } else if (typeof b === "boolean") {
-      named.push(`${label} turned ${b ? "on" : "off"}`);
+      named.push(fmt(b ? t.turnedOn : t.turnedOff, { label }));
     } else if (typeof b === "object") {
-      named.push(`${label} edited`);
+      named.push(fmt(t.edited, { label }));
     } else {
-      named.push(`${label} ${shown(a)} → ${shown(b)}`);
+      named.push(fmt(t.fromTo, { label, from: shown(a, t, locale), to: shown(b, t, locale) }));
     }
   }
-  if (unnamed > 0) named.push(`${unnamed} other setting${unnamed === 1 ? "" : "s"}`);
+  if (unnamed > 0) named.push(plural(t.otherSettings, unnamed, locale));
   return named;
 }
 
@@ -144,8 +105,9 @@ export async function recordAlertSettingsChange(
   userId: string,
   before: AlertSettings,
   after: AlertSettings,
+  locale: Locale = "en",
 ): Promise<void> {
-  const changes = describeAlertSettingsChanges(before, after);
+  const changes = describeAlertSettingsChanges(before, after, locale);
   if (changes.length === 0) return;
   try {
     const supabase = createServerClient();
@@ -191,7 +153,11 @@ export function mergeSnapshotOntoCurrent(snapshotRow: Record<string, unknown>, c
  * Put back the settings as they were before entry `id` was saved. The
  * current version is kept first, so a restore can be undone the same way.
  */
-export async function restoreAlertSettings(userId: string, id: number): Promise<{ error: string | null }> {
+export async function restoreAlertSettings(
+  userId: string,
+  id: number,
+  locale: Locale = "en",
+): Promise<{ error: string | null }> {
   const supabase = createServerClient();
   const { data, error } = await supabase
     .from("alert_settings_history")
@@ -204,6 +170,6 @@ export async function restoreAlertSettings(userId: string, id: number): Promise<
   const restored = mergeSnapshotOntoCurrent(data.settings as Record<string, unknown>, current);
   const saved = await saveAlertSettingsForUser(userId, restored);
   if (saved.error) return { error: saved.error };
-  await recordAlertSettingsChange(userId, current, restored);
+  await recordAlertSettingsChange(userId, current, restored, locale);
   return { error: null };
 }

@@ -2,6 +2,7 @@ import type { APIRoute } from "astro";
 import { createAuthClient } from "../../../lib/supabase";
 import { getAuthFromCookies, setAuthCookies } from "../../../lib/auth";
 import { formRedirectPath, withQuery } from "../../../lib/siteUrl";
+import { apiCommonMessages, apiLocale } from "../../../i18n/messages/app/api/common";
 
 type SpaceCheckedMap = Record<string, string>;
 
@@ -25,7 +26,9 @@ export function spaceCheckedKey(
   return trimmed ? `${householdId}::${trimmed}` : householdId;
 }
 
-export const POST: APIRoute = async ({ request, cookies, redirect }) => {
+export const POST: APIRoute = async ({ request, cookies, redirect, locals }) => {
+  const locale = apiLocale({ locals });
+  const tc = apiCommonMessages(locale);
   const { session, user } = await getAuthFromCookies(cookies);
   const wantsJson =
     (request.headers.get("accept") ?? "").includes("application/json") ||
@@ -33,7 +36,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
 
   if (!session || !user) {
     if (wantsJson) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      return new Response(JSON.stringify({ error: tc.unauthorized }), {
         status: 401,
         headers: { "Content-Type": "application/json" },
       });
@@ -63,7 +66,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
         space = body.space.trim();
       }
     } catch {
-      return new Response(JSON.stringify({ error: "Invalid JSON" }), {
+      return new Response(JSON.stringify({ error: tc.invalidJson }), {
         status: 400,
         headers: { "Content-Type": "application/json" },
       });
@@ -86,7 +89,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   });
   if (sessionError) {
     if (wantsJson) {
-      return new Response(JSON.stringify({ error: "Session error" }), {
+      return new Response(JSON.stringify({ error: tc.sessionError }), {
         status: 400,
         headers: { "Content-Type": "application/json" },
       });

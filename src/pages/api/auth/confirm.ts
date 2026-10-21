@@ -3,6 +3,9 @@ import type { EmailOtpType } from "@supabase/supabase-js";
 import { applySessionCookiesAfterAuth, createAuthClient } from "../../../lib/mfa";
 import { sanitizeNextPath } from "../../../lib/siteUrl";
 import { REGISTER_NEXT_DEVICES } from "../../../lib/registerUrl";
+import { localizePath } from "../../../i18n/locales";
+import { isLocalizablePath } from "../../../i18n/routes";
+import { getSavedUserLocale } from "../../../i18n/userLocale";
 
 /**
  * Email-link landing for the token_hash templates
@@ -28,6 +31,19 @@ function defaultNext(type: EmailOtpType): string {
   return "/dashboard";
 }
 
+/**
+ * Email links are often opened on another device, without the `ph_locale`
+ * cookie: send sign-in pages (/reset-password, /signin/mfa) to the account
+ * language. Other paths, and accounts without a language, are left to middleware.
+ */
+function localizeForAccount(target: string, locale: ReturnType<typeof getSavedUserLocale>): string {
+  if (!locale || !target.startsWith("/") || target.startsWith("//")) return target;
+  const cut = target.search(/[?#]/);
+  const path = cut === -1 ? target : target.slice(0, cut);
+  if (!isLocalizablePath(path)) return target;
+  return `${localizePath(path, locale)}${cut === -1 ? "" : target.slice(cut)}`;
+}
+
 export const GET: APIRoute = async ({ url, cookies, redirect }) => {
   const tokenHash = url.searchParams.get("token_hash")?.trim() ?? "";
   const rawType = url.searchParams.get("type") ?? "";
@@ -50,5 +66,5 @@ export const GET: APIRoute = async ({ url, cookies, redirect }) => {
 
   const next = sanitizeNextPath(url.searchParams.get("next") ?? undefined) ?? defaultNext(type);
   const { redirectTo } = await applySessionCookiesAfterAuth(cookies, data.session, next);
-  return redirect(redirectTo);
+  return redirect(localizeForAccount(redirectTo, getSavedUserLocale(data.user ?? data.session.user)));
 };

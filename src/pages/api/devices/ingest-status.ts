@@ -3,12 +3,15 @@ import { getAuthFromCookies } from "../../../lib/auth";
 import { getOrCreateHouseholdForUser } from "../../../lib/households";
 import { listHouseholdDevices } from "../../../lib/devices";
 import { fetchLatestSensorValues } from "../../../lib/sensorReadings";
+import { apiCommonMessages, apiLocale } from "../../../i18n/messages/app/api/common";
 
 /** Lightweight status for the Devices “waiting for first POST” poller. */
-export const GET: APIRoute = async ({ cookies }) => {
+export const GET: APIRoute = async ({ cookies, locals }) => {
+  const locale = apiLocale({ locals });
+  const tc = apiCommonMessages(locale);
   const { user } = await getAuthFromCookies(cookies);
   if (!user) {
-    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+    return new Response(JSON.stringify({ error: tc.unauthorized }), {
       status: 401,
       headers: { "Content-Type": "application/json" },
     });

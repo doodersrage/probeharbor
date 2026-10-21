@@ -1,13 +1,16 @@
 import type { User } from "@supabase/supabase-js";
 import type { ChartPoint } from "./garageTempsHistory";
+import { fmt, plural, type Locale } from "../i18n";
+import { libDateTime, libFixed, libNumber, libTextMessages } from "../i18n/messages/app/libText";
 
 export type SeasonalInsight = {
   title: string;
   detail: string;
 };
 
-export function summarizeSeasonal(points: ChartPoint[], days: number): SeasonalInsight[] {
+export function summarizeSeasonal(points: ChartPoint[], days: number, locale: Locale = "en"): SeasonalInsight[] {
   if (points.length === 0) return [];
+  const t = libTextMessages(locale).seasonal;
 
   const insights: SeasonalInsight[] = [];
   const coldest = points.reduce((a, b) => (a.tempf <= b.tempf ? a : b));
@@ -17,26 +20,41 @@ export function summarizeSeasonal(points: ChartPoint[], days: number): SeasonalI
     points.reduce((sum, p) => sum + p.tempf, 0) / points.length;
 
   insights.push({
-    title: "Coldest reading",
-    detail: `${coldest.tempf.toFixed(1)}°F on ${new Date(coldest.timestamp).toLocaleString()} (${coldest.probeLabel})`,
+    title: t.coldestTitle,
+    detail: fmt(t.tempOn, {
+      temp: libFixed(coldest.tempf, 1, locale),
+      time: libDateTime(coldest.timestamp, locale),
+      probe: coldest.probeLabel,
+    }),
   });
   insights.push({
-    title: "Warmest reading",
-    detail: `${hottest.tempf.toFixed(1)}°F on ${new Date(hottest.timestamp).toLocaleString()} (${hottest.probeLabel})`,
+    title: t.warmestTitle,
+    detail: fmt(t.tempOn, {
+      temp: libFixed(hottest.tempf, 1, locale),
+      time: libDateTime(hottest.timestamp, locale),
+      probe: hottest.probeLabel,
+    }),
   });
   insights.push({
-    title: "Highest humidity",
-    detail: `${wettest.humidity.toFixed(0)}% on ${new Date(wettest.timestamp).toLocaleString()} (${wettest.probeLabel})`,
+    title: t.humidityTitle,
+    detail: fmt(t.humidityOn, {
+      humidity: libFixed(wettest.humidity, 0, locale),
+      time: libDateTime(wettest.timestamp, locale),
+      probe: wettest.probeLabel,
+    }),
   });
   insights.push({
-    title: `${days}-day average`,
-    detail: `${avgTemp.toFixed(1)}°F across ${points.length} readings`,
+    title: fmt(t.averageTitle, { days: libNumber(days, locale) }),
+    detail: plural(t.averageDetail, points.length, locale, {
+      temp: libFixed(avgTemp, 1, locale),
+      count: libNumber(points.length, locale),
+    }),
   });
 
   return insights;
 }
 
-export function compareProbeAverages(points: ChartPoint[]): string[] {
+export function compareProbeAverages(points: ChartPoint[], locale: Locale = "en"): string[] {
   const byProbe = new Map<string, number[]>();
   for (const point of points) {
     const list = byProbe.get(point.probeLabel) ?? [];
@@ -57,7 +75,11 @@ export function compareProbeAverages(points: ChartPoint[]): string[] {
   const delta = warmest.avg - coolest.avg;
 
   return [
-    `${warmest.label} averages ${delta.toFixed(1)}°F warmer than ${coolest.label} in this window.`,
+    fmt(libTextMessages(locale).seasonal.warmerThan, {
+      warmer: warmest.label,
+      delta: libFixed(delta, 1, locale),
+      cooler: coolest.label,
+    }),
   ];
 }
 
@@ -65,6 +87,7 @@ export function compareProbeAverages(points: ChartPoint[]): string[] {
 export function compareSpaceAverages(
   points: ChartPoint[],
   probeToSpace: Map<string, string>,
+  locale: Locale = "en",
 ): string[] {
   const bySpace = new Map<string, number[]>();
   for (const point of points) {
@@ -84,13 +107,18 @@ export function compareSpaceAverages(
   const coolest = averages[0];
   const warmest = averages[averages.length - 1];
   return [
-    `${warmest.space} averages ${(warmest.avg - coolest.avg).toFixed(1)}°F warmer than ${coolest.space} in this window.`,
+    fmt(libTextMessages(locale).seasonal.warmerThan, {
+      warmer: warmest.space,
+      delta: libFixed(warmest.avg - coolest.avg, 1, locale),
+      cooler: coolest.space,
+    }),
   ];
 }
 
 export function compareYearOverYear(
   current: ChartPoint[],
   priorYear: ChartPoint[],
+  locale: Locale = "en",
 ): SeasonalInsight | null {
   if (current.length === 0 || priorYear.length === 0) return null;
   const avg = (pts: ChartPoint[]) =>
@@ -98,9 +126,14 @@ export function compareYearOverYear(
   const currentAvg = avg(current);
   const priorAvg = avg(priorYear);
   const delta = currentAvg - priorAvg;
+  const t = libTextMessages(locale).seasonal;
   return {
-    title: "Year-over-year",
-    detail: `This window averages ${currentAvg.toFixed(1)}°F vs ${priorAvg.toFixed(1)}°F last year (${delta >= 0 ? "+" : ""}${delta.toFixed(1)}°F).`,
+    title: t.yoyTitle,
+    detail: fmt(t.yoyDetail, {
+      current: libFixed(currentAvg, 1, locale),
+      prior: libFixed(priorAvg, 1, locale),
+      delta: `${delta >= 0 ? "+" : ""}${libFixed(delta, 1, locale)}`,
+    }),
   };
 }
 
@@ -108,6 +141,7 @@ export async function computeSeasonalInsights(
   userId: string,
   days = 30,
   user?: User | null,
+  locale: Locale = "en",
 ): Promise<SeasonalInsight[]> {
   const { fetchGarageTempChartData } = await import("./garageTempsHistory");
   const { fetchPriorYearCompareBundle } = await import("./priorYearCompare");
@@ -115,14 +149,16 @@ export async function computeSeasonalInsights(
   if (chart.error || chart.points.length === 0) {
     return [];
   }
-  const insights = summarizeSeasonal(chart.points, days);
+  const insights = summarizeSeasonal(chart.points, days, locale);
   const prior = await fetchPriorYearCompareBundle(userId, days, {}, user);
-  const yoy = compareYearOverYear(chart.points, prior.points);
+  const yoy = compareYearOverYear(chart.points, prior.points, locale);
   if (yoy) {
     if (prior.source === "outdoor_estimate") {
-      yoy.detail = `${yoy.detail.replace(/\.$/, "")} (outdoor estimate${
-        prior.outdoorLocationLabel ? ` at ${prior.outdoorLocationLabel}` : ""
-      }).`;
+      const t = libTextMessages(locale).seasonal;
+      const detail = yoy.detail.replace(/\.$/, "");
+      yoy.detail = prior.outdoorLocationLabel
+        ? fmt(t.outdoorEstimateAt, { detail, location: prior.outdoorLocationLabel })
+        : fmt(t.outdoorEstimate, { detail });
     }
     insights.push(yoy);
   }

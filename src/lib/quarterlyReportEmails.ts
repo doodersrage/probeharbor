@@ -17,6 +17,11 @@ import {
   type MonthlyReportData,
 } from "./monthlyReportHtml";
 import { buildUnsubscribeUrl, unsubscribeHeaders } from "./emailUnsubscribe";
+import { getUserLocale } from "../i18n/userLocale";
+import { formatEmailDate } from "./emailLayout";
+import { fmt } from "../i18n/format";
+import type { Locale } from "../i18n/locales";
+import { reportEmailMessages } from "../i18n/messages/app/email/reports";
 
 export function shouldSendQuarterlyReport(now = new Date()): boolean {
   const month = now.getUTCMonth();
@@ -25,19 +30,21 @@ export function shouldSendQuarterlyReport(now = new Date()): boolean {
 }
 
 /** Label for the 90-day window ending at a quarter-start send. */
-export function formatQuarterlyWindowLabel(now = new Date()): string {
+export function formatQuarterlyWindowLabel(now = new Date(), locale: Locale = "en"): string {
   const month = now.getUTCMonth();
   const year = now.getUTCFullYear();
   // Sent on quarter start looking back ~90 days → previous calendar quarter.
   const completedQuarter = month === 0 ? 4 : month / 3;
   const qYear = month === 0 ? year - 1 : year;
-  const ranges: Record<number, string> = {
-    1: "Jan–Mar",
-    2: "Apr–Jun",
-    3: "Jul–Sep",
-    4: "Oct–Dec",
-  };
-  return `Q${completedQuarter} ${qYear} (${ranges[completedQuarter]})`;
+  const firstMonth = (completedQuarter - 1) * 3;
+  const monthName = (m: number) =>
+    formatEmailDate(Date.UTC(qYear, m, 15), { month: "short", timeZone: "UTC" }, locale);
+  return fmt(reportEmailMessages(locale).quarterLabel, {
+    quarter: completedQuarter,
+    year: qYear,
+    start: monthName(firstMonth),
+    end: monthName(firstMonth + 2),
+  });
 }
 
 async function sendQuarterlyReportEmail(
@@ -115,6 +122,7 @@ async function sendQuarterlyReportForUser(userId: string): Promise<boolean> {
   if (!email || !authUser) return false;
 
   const preferences = await getUserPreferences(authUser);
+  const locale = getUserLocale(authUser);
   const { points } = await fetchGarageTempChartData(userId, 90);
   const nights = await fetchNightsAtRisk({
     cityId: preferences.weatherCityId,
@@ -129,7 +137,7 @@ async function sendQuarterlyReportForUser(userId: string): Promise<boolean> {
     ? temps.reduce((a, b) => a + b, 0) / temps.length
     : null;
 
-  const quarterLabel = formatQuarterlyWindowLabel();
+  const quarterLabel = formatQuarterlyWindowLabel(new Date(), locale);
 
   const siteUrl = resolveSiteUrl(null);
   const reportData: MonthlyReportData = {
@@ -146,14 +154,14 @@ async function sendQuarterlyReportForUser(userId: string): Promise<boolean> {
     freezeHours: computeFreezeHours(points, settings.freezeThresholdF),
     probes: summarizeProbesForReport(points),
     alertsUrl: `${siteUrl}/dashboard/alerts`,
-    unsubscribeUrl: await buildUnsubscribeUrl(siteUrl, userId, "quarterly_report"),
+    unsubscribeUrl: await buildUnsubscribeUrl(siteUrl, userId, "quarterly_report", locale),
     historyUrl: buildHistoryChartUrl(siteUrl, trailingHistoryWindowDays(90)),
   };
 
-  const subject = formatPeriodReportSubject(reportData);
-  const plainBody = buildMonthlyReportPlainText(reportData);
-  const htmlBody = buildMonthlyReportHtmlEmail(reportData);
-  const attachmentHtml = buildMonthlyReportHtmlDocument(reportData);
+  const subject = formatPeriodReportSubject(reportData, locale);
+  const plainBody = buildMonthlyReportPlainText(reportData, locale);
+  const htmlBody = buildMonthlyReportHtmlEmail(reportData, locale);
+  const attachmentHtml = buildMonthlyReportHtmlDocument(reportData, locale);
 
   await sendQuarterlyReportEmail(
     email,

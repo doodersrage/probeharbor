@@ -1,4 +1,6 @@
 import type { ChartPoint } from "./garageTempsHistory";
+import { plural, type Locale } from "../i18n";
+import { libFixed, libTextMessages } from "../i18n/messages/app/libText";
 
 export type AnomalyNotice = {
   probeLabel: string;
@@ -18,7 +20,9 @@ export function detectTemperatureAnomalies(
   dropThresholdF = 10,
   windowMs = 60 * 60 * 1000,
   doorEvents: DoorStateAtTime[] = [],
+  locale: Locale = "en",
 ): AnomalyNotice[] {
+  const t = libTextMessages(locale).anomaly;
   const notices: AnomalyNotice[] = [];
   const byProbe = new Map<string, ChartPoint[]>();
 
@@ -46,13 +50,15 @@ export function detectTemperatureAnomalies(
           Date.parse(current.timestamp),
           30 * 60 * 1000,
         );
-        const doorHint = doorOpen
-          ? " A door sensor was open around this time."
-          : "";
         notices.push({
           probeLabel,
           severity: "warning",
-          message: `${probeLabel} dropped ${drop.toFixed(1)}°F within ${Math.round(elapsed / 60000)} minutes (${prev.tempf.toFixed(1)}°F → ${current.tempf.toFixed(1)}°F).${doorHint}`,
+          message: plural(doorOpen ? t.dropDoor : t.drop, Math.round(elapsed / 60000), locale, {
+            probe: probeLabel,
+            drop: libFixed(drop, 1, locale),
+            from: libFixed(prev.tempf, 1, locale),
+            to: libFixed(current.tempf, 1, locale),
+          }),
         });
         break;
       }

@@ -1,8 +1,17 @@
 ---
 export const prerender = false;
 
-import { describeFreezeNight, type FreezeRisk } from "../../lib/pipeFreezeForecast";
-import { formatTemp, type TempUnit } from "../../lib/tempUnits";
+import {
+  describeFreezeNight,
+  HIGH_RISK_LOW_F,
+  WINDY_MPH,
+  type FreezeNight,
+  type FreezeRisk,
+} from "../../lib/pipeFreezeForecast";
+import { formatTemp, formatWind, type TempUnit } from "../../lib/tempUnits";
+import { fmt, getLocale, LOCALE_META } from "../../i18n";
+import { publicShareMessages } from "../../i18n/messages/app/publicShare";
+import { freezePipeForecastMessages } from "../../i18n/messages/freezePipeForecast";
 import { fetchPipeFreezeForecast, parseCoordinates } from "../../lib/pipeFreezeForecastFetch";
 
 /**
@@ -10,6 +19,9 @@ import { fetchPipeFreezeForecast, parseCoordinates } from "../../lib/pipeFreezeF
  * managers, HOAs): /embed/pipe-freeze?lat=..&lon=..&place=..
  * Server-rendered, no client JS; snippet lives on /pipe-freeze-forecast.
  */
+const locale = getLocale(Astro);
+const t = publicShareMessages(locale).pipeFreeze;
+const tool = freezePipeForecastMessages(locale).tool;
 const coords = parseCoordinates(Astro.url.searchParams.get("lat"), Astro.url.searchParams.get("lon"));
 const place = Astro.url.searchParams.get("place")?.slice(0, 80) ?? null;
 // ?unit=c for sites whose readers use Celsius; everything else is °F.
@@ -17,7 +29,7 @@ const unit: TempUnit = Astro.url.searchParams.get("unit")?.toLowerCase() === "c"
 const result = coords ? await fetchPipeFreezeForecast(coords.lat, coords.lon, 3) : null;
 const forecast = result?.ok ? result.body : null;
 const label =
-  place || [forecast?.location.city, forecast?.location.state].filter(Boolean).join(", ") || "This area";
+  place || [forecast?.location.city, forecast?.location.state].filter(Boolean).join(", ") || t.thisArea;
 const toolUrl = new URL("/pipe-freeze-forecast", Astro.url.origin);
 if (unit === "C") toolUrl.searchParams.set("unit", "c");
 if (coords) {
@@ -29,19 +41,38 @@ if (coords) {
 const alertsUrl = new URL(toolUrl);
 if (coords) alertsUrl.searchParams.set("signup", "1");
 
-const RISK_LABEL: Record<FreezeRisk, string> = { high: "High risk", watch: "Watch", low: "Low risk" };
+const RISK_LABEL: Record<FreezeRisk, string> = { high: tool.riskHigh, watch: tool.riskWatch, low: tool.riskLow };
 const nightName = (date: string, index: number) =>
   index === 0
-    ? "Tonight"
-    : new Date(`${date}T12:00:00`).toLocaleDateString("en-US", { weekday: "long" });
+    ? tool.tonight
+    : new Date(`${date}T12:00:00`).toLocaleDateString(LOCALE_META[locale].intl, { weekday: "long" });
+/** `describeFreezeNight` (English) from the forecast tool's translated templates. */
+function describeNight(night: FreezeNight): string {
+  if (locale === "en") return describeFreezeNight(night, unit);
+  const low = formatTemp(night.lowF, unit);
+  const parts: string[] = [];
+  if (night.risk === "high") parts.push(fmt(tool.describeHigh, { low, mark: formatTemp(HIGH_RISK_LOW_F, unit) }));
+  else if (night.risk === "watch") {
+    const template = night.hoursAtOrBelow32 === 1 ? tool.describeWatchOne : tool.describeWatchMany;
+    parts.push(fmt(template, { hours: night.hoursAtOrBelow32, low }));
+  } else parts.push(fmt(tool.describeAbove, { low }));
+  if (night.maxFreezingWindMph != null && night.maxFreezingWindMph >= WINDY_MPH) {
+    parts.push(fmt(tool.describeWind, { wind: formatWind(night.maxFreezingWindMph, unit) }));
+  }
+  if (night.staysBelowFreezingNextDay) parts.push(tool.describeNextDay);
+  return parts.join(" ");
+}
+const heading = fmt(t.heading, { place: label });
 Astro.response.headers.set("Cache-Control", "public, max-age=900");
+// The language follows the visitor's cookie / Accept-Language.
+Astro.response.headers.set("Vary", "Accept-Language, Cookie");
 ---
 <!doctype html>
-<html lang="en">
+<html lang={LOCALE_META[locale].htmlLang}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Pipe freeze forecast · {label}</title>
+    <title>{heading}</title>
     <meta name="robots" content="noindex, nofollow" />
     <style>
       :root {
@@ -75,19 +106,19 @@ Astro.response.headers.set("Cache-Control", "public, max-age=900");
     </style>
   </head>
   <body>
-    <h1>Pipe freeze forecast · {label}</h1>
+    <h1>{heading}</h1>
     {forecast ? (
       <>
-        <p class="sub">Outdoor lows from the National Weather Service, rated for pipes in unheated spaces.</p>
+        <p class="sub">{t.source}</p>
         <div class="nights">
           {forecast.nights.map((night, index) => (
-            <div class={`night ${night.risk}`} title={describeFreezeNight(night, unit)}>
+            <div class={`night ${night.risk}`} title={describeNight(night)}>
               <div class="row">
                 <span>{nightName(night.date, index)}</span>
                 <span class="risk">{RISK_LABEL[night.risk]}</span>
               </div>
               <p class="low-temp">{formatTemp(night.lowF, unit)}</p>
-              <p class="detail">{night.hoursAtOrBelow32}h at or below {formatTemp(32, unit)}</p>
+              <p class="detail">{fmt(t.hours, { hours: night.hoursAtOrBelow32, temp: formatTemp(32, unit) })}</p>
             </div>
           ))}
         </div>
@@ -95,20 +126,20 @@ Astro.response.headers.set("Cache-Control", "public, max-age=900");
     ) : (
       <p class="sub">
         {!coords
-          ? "Add ?lat= and ?lon= for a US location."
+          ? t.needCoords
           : result && !result.ok && result.error === "us_only"
-            ? "The forecast covers US locations only."
-            : "Forecast temporarily unavailable."}
+            ? t.usOnly
+            : t.unavailable}
       </p>
     )}
     {coords && (
       <p class="alerts">
-        <a href={alertsUrl.toString()} target="_blank" rel="noopener">Get free freeze alerts for {label} →</a>
+        <a href={alertsUrl.toString()} target="_blank" rel="noopener">{fmt(t.alerts, { place: label })}</a>
       </p>
     )}
     <p class="credit">
-      <a href={toolUrl.toString()} target="_blank" rel="noopener">Full 5-night pipe freeze forecast</a>
-      {" "}by <a href="https://probeharbor.dev/" target="_blank" rel="noopener">ProbeHarbor</a>
+      <a href={toolUrl.toString()} target="_blank" rel="noopener">{t.fullForecast}</a>
+      {" "}{t.by} <a href="https://probeharbor.dev/" target="_blank" rel="noopener">ProbeHarbor</a>
     </p>
   </body>
 </html>

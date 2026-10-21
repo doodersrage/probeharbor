@@ -1,7 +1,27 @@
+---
+import I18nJson from "../I18nJson.astro";
+import { getLocale } from "../../i18n";
+import { alertSettingsMessages } from "../../i18n/messages/app/alertSettings";
+import { ALERT_CHANNEL_LABELS, formatAlertChannelList } from "../../lib/alertChannelLabels";
+
+const locale = getLocale(Astro);
+const t = alertSettingsMessages(locale);
+// Channel / skip-reason names for "Sent. Check …" and "Not sent: …".
+const channelLabels = Object.fromEntries(
+  Object.keys(ALERT_CHANNEL_LABELS).map((key) => [key, formatAlertChannelList([key], locale)]),
+);
+---
+<I18nJson id="alert-settings-submit-i18n" data={t.clientSubmit} />
+<I18nJson id="alert-settings-channel-labels" data={channelLabels} />
 <script>
   import { actions } from "astro:actions";
   import { prepareAlertSettingsFormData } from "../../lib/alertSettingsForm";
-  import { ALERT_CHANNEL_LABELS } from "../../lib/alertChannelLabels";
+  import alertMessagesEn from "../../i18n/messages/app/alertMessages/en";
+  import { fmt, readI18nJson } from "../../i18n/client";
+  import en from "../../i18n/messages/app/alertSettings/en";
+
+  const text = readI18nJson("alert-settings-submit-i18n", en.clientSubmit);
+  const channelLabels = readI18nJson<Record<string, string>>("alert-settings-channel-labels", alertMessagesEn.channelLabels);
 
   const form = document.querySelector<HTMLFormElement>("[data-alert-settings-form]");
   const statusEl = document.getElementById("alert-action-status");
@@ -33,7 +53,7 @@
     errorEl?.classList.add("hidden");
     if (submitBtn instanceof HTMLButtonElement) {
       submitBtn.disabled = true;
-      submitBtn.textContent = "Saving…";
+      submitBtn.textContent = text.saving;
     }
 
     const formData = prepareAlertSettingsFormData(new FormData(form));
@@ -41,11 +61,11 @@
 
     if (submitBtn instanceof HTMLButtonElement) {
       submitBtn.disabled = false;
-      submitBtn.textContent = "Save alert settings";
+      submitBtn.textContent = text.saveButton;
     }
 
     if (error) {
-      showError(error.message || "Could not save alert settings.");
+      showError(error.message || text.saveFailed);
       return;
     }
 
@@ -67,7 +87,7 @@
         const until = document.querySelector<HTMLInputElement>("[data-vacation-until-date]")?.value;
         if (!until) {
           btn.disabled = false;
-          showError("Pick a vacation return date.");
+          showError(text.pickVacationDate);
           return;
         }
         formData.set("until", until);
@@ -75,10 +95,10 @@
       const { data, error } = await actions.updateAlertSnooze(formData);
       btn.disabled = false;
       if (error) {
-        showError(error.message || "Could not update snooze.");
+        showError(error.message || text.snoozeFailed);
         return;
       }
-      showStatus(data?.message ?? "Updated.");
+      showStatus(data?.message ?? text.updated);
       window.setTimeout(() => window.location.reload(), 600);
     });
   });
@@ -95,7 +115,7 @@
         out.dataset.state = state;
       };
       btn.disabled = true;
-      say("Sending…", "pending");
+      say(text.sending, "pending");
       try {
         const res = await fetch(`/api/user/alert-test?channel=${encodeURIComponent(channel)}`, {
           method: "POST",
@@ -108,20 +128,20 @@
           skipped?: string[];
         };
         if (res.ok && body.ok) {
-          say(`Sent. Check ${ALERT_CHANNEL_LABELS[channel] ?? channel}.`, "ok");
+          say(fmt(text.sent, { channel: channelLabels[channel] ?? channel }), "ok");
           return;
         }
         const reasons = (body.skipped ?? [])
           .filter((reason) => reason !== channel)
-          .map((reason) => ALERT_CHANNEL_LABELS[reason] ?? reason);
+          .map((reason) => channelLabels[reason] ?? reason);
         say(
           reasons.length > 0
-            ? `Not sent: ${reasons.join(", ")}.`
-            : "Not sent. Check this channel's destination, save, and try again.",
+            ? fmt(text.notSentReasons, { reasons: reasons.join(", ") })
+            : text.notSent,
           "error",
         );
       } catch {
-        say("Could not reach the server. Try again.", "error");
+        say(text.unreachable, "error");
       } finally {
         btn.disabled = false;
       }

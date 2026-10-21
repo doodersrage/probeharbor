@@ -1,6 +1,7 @@
 ---
 import DashboardCard from "./dashboard/DashboardCard.astro";
-import { formatHistoryRetention } from "../lib/entitlements";
+import { fmt, formatNumber, getLocale, plural } from "../i18n";
+import { settingsMessages } from "../i18n/messages/app/settings";
 
 interface Props {
   userEmail: string;
@@ -21,19 +22,30 @@ const {
   deleteError,
 } = Astro.props;
 const maxCustomDays = historyDays >= 365 ? 730 : historyDays;
+const locale = getLocale(Astro);
+const t = settingsMessages(locale).lifecycle;
+
+/** Same wording as formatHistoryRetention (src/lib/entitlements), in the page language. */
+function retentionLabel(days: number): string {
+  if (days < 365) return plural(t.retentionDays, days, locale);
+  const years = days / 365;
+  if (years === 1 || Number.isInteger(years)) return plural(t.retentionYears, years, locale);
+  const count = formatNumber(years, locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  return fmt(t.retentionYears.other, { count });
+}
 ---
 <DashboardCard>
-  <h2 class="card-title">Account & data</h2>
+  <h2 class="card-title">{t.heading}</h2>
   <p class="card-subtitle mb-3">
-    Export: <a class="text-link" href="/api/user/export">JSON export</a>.
-    Plan default for {tierLabel}: <strong>{formatHistoryRetention(historyDays)}</strong>
-    {historyDays >= 365 ? "+" : ""}.
+    <Fragment set:html={t.exportHtml} />
+    {fmt(t.planDefault, { tier: tierLabel })} <strong>{retentionLabel(historyDays)}</strong>
+    {historyDays >= 365 ? "+" : ""}{t.planDefaultEnd}
   </p>
   {canCustomizeRetention ? (
     <form action="/api/user/retention" method="post" class="mb-4">
       <input type="hidden" name="redirect" value="/dashboard/settings" />
       <div class="form-field mb-3">
-        <label class="form-label" for="data_retention_days">Custom retention (days)</label>
+        <label class="form-label" for="data_retention_days">{t.customRetentionLabel}</label>
         <input
           class="form-input"
           type="number"
@@ -42,49 +54,44 @@ const maxCustomDays = historyDays >= 365 ? 730 : historyDays;
           id="data_retention_days"
           name="data_retention_days"
           value={dataRetentionDays ?? ""}
-          placeholder={`Plan default (${historyDays})`}
+          placeholder={fmt(t.customRetentionPlaceholder, { days: historyDays })}
         />
       </div>
-      <button type="submit" class="btn-secondary">Save retention</button>
+      <button type="submit" class="btn-secondary">{t.saveRetention}</button>
     </form>
   ) : (
-    <p class="mb-4 text-sm text-[var(--color-text-muted)]">
-      Upgrade to Member for 90-day history, or Pro for 1 year+, to keep a longer window.
-      <a class="text-link" href="/pricing#data-retention">Compare retention</a>.
-    </p>
+    <p class="mb-4 text-sm text-[var(--color-text-muted)]" set:html={t.upgradeHtml} />
   )}
 
-  <h3 class="text-base font-semibold mb-2 text-[var(--color-danger)]">Delete account</h3>
+  <h3 class="text-base font-semibold mb-2 text-[var(--color-danger)]">{t.deleteHeading}</h3>
   <p class="card-subtitle mb-3">
-    Permanently deletes {userEmail}, alert settings, and sole-owned households.
-    {hasPasswordAuth
-      ? " Re-enter your password and type DELETE to confirm."
-      : " Confirm your email and type DELETE to confirm."}
+    {fmt(t.deleteBody, { email: userEmail })}
+    {hasPasswordAuth ? t.deleteConfirmPassword : t.deleteConfirmEmail}
   </p>
   {deleteError === "confirm" && (
-    <p class="alert-warning mb-3" role="alert">Type DELETE exactly to confirm.</p>
+    <p class="alert-warning mb-3" role="alert">{t.errorConfirm}</p>
   )}
   {deleteError === "password" && (
-    <p class="alert-warning mb-3" role="alert">Password required (or incorrect).</p>
+    <p class="alert-warning mb-3" role="alert">{t.errorPassword}</p>
   )}
   {deleteError === "email" && (
-    <p class="alert-warning mb-3" role="alert">Re-type your account email to confirm.</p>
+    <p class="alert-warning mb-3" role="alert">{t.errorEmail}</p>
   )}
   {deleteError === "mfa" && (
-    <p class="alert-warning mb-3" role="alert">Verify MFA, then try deleting again.</p>
+    <p class="alert-warning mb-3" role="alert">{t.errorMfa}</p>
   )}
   {deleteError &&
     deleteError !== "confirm" &&
     deleteError !== "password" &&
     deleteError !== "email" &&
     deleteError !== "mfa" && (
-      <p class="alert-warning mb-3" role="alert">Could not delete account.</p>
+      <p class="alert-warning mb-3" role="alert">{t.errorGeneric}</p>
     )}
   <form action="/api/user/account/delete" method="post">
     <input type="hidden" name="redirect" value="/" />
     {hasPasswordAuth ? (
       <div class="form-field mb-3">
-        <label class="form-label" for="delete_password">Password</label>
+        <label class="form-label" for="delete_password">{t.passwordLabel}</label>
         <input
           class="form-input"
           type="password"
@@ -96,7 +103,7 @@ const maxCustomDays = historyDays >= 365 ? 730 : historyDays;
       </div>
     ) : (
       <div class="form-field mb-3">
-        <label class="form-label" for="confirm_email">Account email</label>
+        <label class="form-label" for="confirm_email">{t.emailLabel}</label>
         <input
           class="form-input"
           type="email"
@@ -109,9 +116,9 @@ const maxCustomDays = historyDays >= 365 ? 730 : historyDays;
       </div>
     )}
     <div class="form-field mb-3">
-      <label class="form-label" for="confirm_delete">Confirmation</label>
+      <label class="form-label" for="confirm_delete">{t.confirmLabel}</label>
       <input class="form-input" type="text" id="confirm_delete" name="confirm" placeholder="DELETE" required />
     </div>
-    <button type="submit" class="btn-secondary">Delete my account</button>
+    <button type="submit" class="btn-secondary">{t.deleteSubmit}</button>
   </form>
 </DashboardCard>

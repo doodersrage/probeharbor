@@ -1,22 +1,25 @@
 ---
 import { BAYBUDDY_NAME } from "../lib/bayBuddy";
+import { fmt, getLocale } from "../i18n";
+import { overviewNudgesMessages } from "../i18n/messages/app/overview/nudges";
 
 interface Props {
   show: boolean;
 }
 
 const { show } = Astro.props;
+const t = overviewNudgesMessages(getLocale(Astro)).bayBuddy;
 ---
 
 {show && (
   <section class="card" id="bay-buddy-nudge" aria-labelledby="bay-buddy-nudge-title">
     <h2 class="card-title" id="bay-buddy-nudge-title">{BAYBUDDY_NAME}</h2>
     <p class="card-subtitle mb-4">
-      Desktop glance for one space: freeze and flood moods without opening the full dashboard.
+      {t.body}
     </p>
     <div class="flex flex-wrap gap-3">
-      <a class="btn-secondary" href="/bay-buddy">Get {BAYBUDDY_NAME}</a>
-      <a class="btn-ghost" href="/android">Android companion</a>
+      <a class="btn-secondary" href="/bay-buddy">{fmt(t.get, { name: BAYBUDDY_NAME })}</a>
+      <a class="btn-ghost" href="/android">{t.android}</a>
     </div>
   </section>
 )}

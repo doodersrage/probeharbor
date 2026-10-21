@@ -10,6 +10,12 @@ import {
   parseManagedUserListQuery,
 } from "../../lib/userManager";
 import { fetchReferralAdminStats } from "../../lib/referrals";
+import { getLocale, plural } from "../../i18n";
+import { adminMessages } from "../../i18n/messages/app/admin";
+
+const locale = getLocale(Astro);
+const a = adminMessages(locale);
+const t = a.users;
 
 const { session, user } = await getAuthFromCookies(Astro.cookies);
 
@@ -42,20 +48,20 @@ if (users.totalPages > 0 && pageParam > users.totalPages) {
   return Astro.redirect(`/dashboard/users${queryString(users.totalPages)}`);
 }
 ---
-<DashboardLayout title="Users" subtitle="Manage registered accounts and admin group membership." requireAdmin>
+<DashboardLayout title={t.title} subtitle={t.subtitle} requireAdmin>
   <div class="space-y-6">
     <AdminNav />
 
     <section class="card">
-      <h2 class="card-title">Referral program</h2>
-      <p class="card-subtitle mb-4">Signups and referrer rewards granted on Pro subscription.</p>
+      <h2 class="card-title">{t.referralTitle}</h2>
+      <p class="card-subtitle mb-4">{t.referralSubtitle}</p>
       <div class="stat-grid mb-4">
         <article class="stat-item">
-          <span class="stat-label">Total signups</span>
+          <span class="stat-label">{a.common.totalSignups}</span>
           <p class="stat-value">{referralStats.totalSignups}</p>
         </article>
         <article class="stat-item">
-          <span class="stat-label">Referrer rewards granted</span>
+          <span class="stat-label">{t.referrerRewards}</span>
           <p class="stat-value">{referralStats.rewardedSignups}</p>
         </article>
       </div>
@@ -63,7 +69,7 @@ if (users.totalPages > 0 && pageParam > users.totalPages) {
         <ul class="space-y-2 text-sm mb-0">
           {referralStats.topReferrers.map((row) => (
             <li>
-              <code>{row.userId.slice(0, 8)}…</code>: {row.count} signup{row.count === 1 ? "" : "s"}
+              <code>{row.userId.slice(0, 8)}…</code>: {plural(t.signups, row.count, locale)}
             </li>
           ))}
         </ul>

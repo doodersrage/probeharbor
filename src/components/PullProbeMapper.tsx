@@ -2,6 +2,9 @@ import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import type { TempFeedConfig, TempProbeConfig } from "../lib/tempFeedConfig";
 import { mergeDiscoveredProbes, type DiscoveredProbe } from "../lib/feedDiscovery";
 import { trackProductEvent } from "../lib/productAnalytics";
+import { plural } from "../i18n/format";
+import type { Locale } from "../i18n/locales";
+import en, { type PullProbeMapperText } from "../i18n/messages/app/deviceSetup/pull/en";
 
 type DiscoveredProbeRow = {
   key: string;
@@ -26,6 +29,10 @@ interface Props {
   feeds: TempFeedConfig[];
   probes: TempProbeConfig[];
   redirectTo?: string;
+  /** Page locale, for plural forms. */
+  locale?: Locale;
+  /** Translated strings from the server; English when missing. */
+  text?: PullProbeMapperText;
 }
 
 type EditableProbe = TempProbeConfig & { reading?: string };
@@ -34,6 +41,8 @@ export default function PullProbeMapper({
   feeds,
   probes: initialProbes,
   redirectTo = "/dashboard/devices",
+  locale = "en",
+  text = en.probeMapper,
 }: Props) {
   const [probes, setProbes] = useState<EditableProbe[]>(
     initialProbes.filter((probe) => Boolean(probe.key)),
@@ -115,7 +124,7 @@ export default function PullProbeMapper({
       }
       if (merged.length > initialProbes.length) {
         setProbes(merged);
-        setStatus("Imported probe keys from your feed — rename below, then save.");
+        setStatus(text.importedAuto);
       }
     })();
   }, [feedsWithUrls, initialProbes]);
@@ -124,7 +133,7 @@ export default function PullProbeMapper({
     const { url, jsonRoot, rootInput } = readFeedFormValues(feed);
 
     if (!url) {
-      setStatus("Enter a feed URL first.");
+      setStatus(text.enterUrl);
       return;
     }
 
@@ -139,7 +148,7 @@ export default function PullProbeMapper({
       });
       const data = (await response.json()) as DiscoverResponse;
       if (!data.ok || !data.probes?.length) {
-        setStatus(data.message ?? "No probes found in feed.");
+        setStatus(data.message ?? text.noProbes);
         return;
       }
 
@@ -162,11 +171,10 @@ export default function PullProbeMapper({
         })),
       );
       setStatus(
-        data.message ??
-          `Imported ${data.probes.length} probe${data.probes.length === 1 ? "" : "s"}. Rename below, then save.`,
+        data.message ?? plural(text.imported, data.probes.length, locale),
       );
     } catch {
-      setStatus("Unable to read feed.");
+      setStatus(text.unableRead);
     } finally {
       setLoadingFeedId(null);
     }
@@ -242,7 +250,7 @@ export default function PullProbeMapper({
         label: probe.label.match(/^Probe \d+$/) ? humanizeKey(probe.key) : probe.label,
       })),
     );
-    setStatus("Applied suggested names — edit below, then save.");
+    setStatus(text.appliedSuggested);
   }
 
   function hideAverageProbes() {
@@ -251,7 +259,7 @@ export default function PullProbeMapper({
         probe.key === "avg" ? { ...probe, visible: false } : probe,
       ),
     );
-    setStatus('Hidden "avg" probes from Home — save pull setup to persist.');
+    setStatus(text.hiddenAvg);
   }
 
   async function savePullSetupInternal() {
@@ -283,10 +291,10 @@ export default function PullProbeMapper({
         discoveredProbes?: number;
       };
       if (!response.ok || !data.ok) {
-        setStatus(data.error ?? "Failed to save pull setup.");
+        setStatus(data.error ?? text.saveFailed);
         window.dispatchEvent(
           new CustomEvent("pull-setup:save-error", {
-            detail: data.error ?? "Failed to save pull setup.",
+            detail: data.error ?? text.saveFailed,
           }),
         );
         return;
@@ -296,9 +304,9 @@ export default function PullProbeMapper({
       });
       window.location.href = data.redirect ?? `${redirectTo}?pull_saved=1&tab=pull`;
     } catch {
-      setStatus("Unable to save pull setup.");
+      setStatus(text.unableSave);
       window.dispatchEvent(
-        new CustomEvent("pull-setup:save-error", { detail: "Unable to save pull setup." }),
+        new CustomEvent("pull-setup:save-error", { detail: text.unableSave }),
       );
     } finally {
       setSaving(false);
@@ -322,7 +330,7 @@ export default function PullProbeMapper({
   if (feedsWithUrls.length === 0) {
     return (
       <p class="mb-0 text-sm text-[var(--color-text-muted)]">
-        Save a feed URL first, then discover probe keys here.
+        {text.saveFeedFirst}
       </p>
     );
   }
@@ -330,11 +338,8 @@ export default function PullProbeMapper({
   return (
     <form class="space-y-4" onSubmit={savePullSetup}>
       <div>
-        <h3 class="text-base font-semibold m-0">Probe labels</h3>
-        <p class="card-subtitle mb-0 mt-1">
-          Discover probes from your feed JSON, then rename them for Home. Keys stay tied to the feed;
-          you only edit display names.
-        </p>
+        <h3 class="text-base font-semibold m-0">{text.heading}</h3>
+        <p class="card-subtitle mb-0 mt-1">{text.intro}</p>
       </div>
 
       <div class="flex flex-col gap-2">
@@ -350,7 +355,7 @@ export default function PullProbeMapper({
               disabled={loadingFeedId === feed.id}
               onClick={() => discoverFeed(feed)}
             >
-              {loadingFeedId === feed.id ? "Reading feed…" : "Discover from feed"}
+              {loadingFeedId === feed.id ? text.readingFeed : text.discover}
             </button>
           </div>
         ))}
@@ -364,18 +369,18 @@ export default function PullProbeMapper({
               <div class="sensor-map-row" key={`${probe.feedId}-${probe.key}-${probe.id}`}>
                 <div class="sensor-map-primary">
                   <div class="form-field mb-0">
-                    <span class="form-label">Feed</span>
+                    <span class="form-label">{text.feed}</span>
                     <div class="form-input bg-[var(--color-bg-muted)]">
                       {feed?.name || probe.feedId}
                     </div>
                   </div>
                   <div class="form-field mb-0">
-                    <span class="form-label">JSON key</span>
+                    <span class="form-label">{text.jsonKey}</span>
                     <div class="form-input font-mono bg-[var(--color-bg-muted)]">{probe.key}</div>
                   </div>
                   <div class="form-field mb-0">
                     <label class="form-label" for={`probe-label-${index}`}>
-                      Name on Home
+                      {text.nameOnHome}
                     </label>
                     <input
                       id={`probe-label-${index}`}
@@ -404,14 +409,14 @@ export default function PullProbeMapper({
                           })
                         }
                       />
-                      <span>Show on Home</span>
+                      <span>{text.showOnHome}</span>
                     </label>
                     <button
                       type="button"
                       class="btn-ghost"
                       onClick={() => removeProbe(index)}
                     >
-                      Remove
+                      {text.remove}
                     </button>
                   </div>
                 </div>
@@ -422,24 +427,24 @@ export default function PullProbeMapper({
       ) : (
         <p class="mb-0 text-sm text-[var(--color-text-muted)]">
           {loadingFeedId
-            ? "Reading feed and importing probe keys…"
-            : "Save a feed URL to auto-import keys, or click Discover from feed."}
+            ? text.importing
+            : text.emptyHint}
         </p>
       )}
 
       <div class="flex flex-wrap items-center gap-3">
         {/* Saving is the "Save pull setup" bar below; this keeps Enter-to-save in the form. */}
         <button type="submit" class="sr-only" id="pull-setup-save-btn" disabled={saving} tabIndex={-1}>
-          Save pull setup
+          {text.savePullSetup}
         </button>
         {probes.length > 0 ? (
           <button type="button" class="btn-secondary" onClick={acceptSuggestedNames}>
-            Accept suggested names
+            {text.acceptSuggested}
           </button>
         ) : null}
         {probes.some((probe) => probe.key === "avg") ? (
           <button type="button" class="btn-secondary" onClick={hideAverageProbes}>
-            Hide avg on Home
+            {text.hideAvg}
           </button>
         ) : null}
         {status ? <span class="text-sm text-[var(--color-text-muted)]">{status}</span> : null}

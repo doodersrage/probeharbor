@@ -3,6 +3,8 @@ import { probePairingKey } from "./probePairing";
 import { escapeCsvField } from "./csvEscape";
 import { getUserHouseholdId } from "./households";
 import { applySensorOffset } from "./sensorCalibration";
+import { formatDateTime } from "../i18n/format";
+import type { Locale } from "../i18n/locales";
 
 export type GarageTempReading = {
   tempc: number;
@@ -113,11 +115,8 @@ const POSTGREST_PAGE_SIZE = 1000;
 /** Max chart points after full-window fetch; applied per-probe so lines stay balanced. */
 export const CHART_DISPLAY_CAP = 500;
 
-export function formatReadingTimestamp(timestamp: string): string {
-  return new Intl.DateTimeFormat("en-US", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(timestamp));
+export function formatReadingTimestamp(timestamp: string, locale: Locale = "en"): string {
+  return formatDateTime(timestamp, locale, { dateStyle: "medium", timeStyle: "short" });
 }
 
 export function getReadingFeedName(reading: GarageTempReading): string {

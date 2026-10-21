@@ -10,7 +10,7 @@ import {
   resolvePageUrl,
   resolveSiteUrl,
 } from "../lib/schemaMarkup";
-import { getLocale, localizePath } from "../i18n";
+import { fmt, getLocale, localizePath } from "../i18n";
 import { androidMessages } from "../i18n/messages/android";
 import {
   getLocalizedMarketingFaqs,
@@ -38,7 +38,7 @@ const schema = [
   {
     ...software,
     "@type": ["SoftwareApplication", "MobileApplication"],
-    name: t.schemaName(BRAND_NAME),
+    name: fmt(t.schemaName, { brand: BRAND_NAME }),
     operatingSystem: "Android",
     applicationCategory: "UtilitiesApplication",
     url: pageUrl,
@@ -57,8 +57,8 @@ const schema = [
 ].filter(Boolean) as Record<string, unknown>[];
 
 const description = playStoreLive
-  ? t.descriptionLive(BRAND_NAME)
-  : t.descriptionPwa(BRAND_NAME);
+  ? fmt(t.descriptionLive, { brand: BRAND_NAME })
+  : fmt(t.descriptionPwa, { brand: BRAND_NAME });
 ---
 <Layout
   title={t.title}
@@ -95,7 +95,7 @@ const description = playStoreLive
     <figure class="card overflow-hidden p-0 mb-0">
       <Image
         src={garageInstallLifestyle}
-        alt={t.imageAlt(BRAND_NAME)}
+        alt={fmt(t.imageAlt, { brand: BRAND_NAME })}
         widths={[640, 960, 1280]}
         sizes="(max-width: 960px) 100vw, 900px"
         class="w-full h-auto block"
@@ -157,7 +157,7 @@ const description = playStoreLive
 
     <section class="card">
       <h2 class="card-title">{t.ossTitle}</h2>
-      <p class="card-subtitle mb-0" set:html={t.ossHtml(ANDROID_REPO)} />
+      <p class="card-subtitle mb-0" set:html={fmt(t.ossHtml, { repo: ANDROID_REPO })} />
     </section>
 
     <FaqSection

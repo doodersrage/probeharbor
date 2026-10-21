@@ -1,7 +1,29 @@
 import type { APIRoute } from "astro";
 import { applyAckToken } from "../../../lib/alertAckTokens";
+import { LOCALE_META, type Locale } from "../../../i18n/locales";
+import { ensureLocale } from "../../../i18n/catalog";
+import { localeFromMetadata } from "../../../i18n/userLocale";
+import { alertJobsMessages } from "../../../i18n/messages/app/alertJobs";
 
-async function handleAck(url: URL): Promise<Response> {
+/** The alert owner's language (the person who tapped the email link). */
+async function ownerLocale(userId: string, fallback: Locale | undefined): Promise<Locale> {
+  let locale: Locale = fallback ?? "en";
+  try {
+    const { createAdminClient } = await import("../../../lib/supabase");
+    const { data } = await createAdminClient().auth.admin.getUserById(userId);
+    if (data.user) locale = localeFromMetadata(data.user.user_metadata as Record<string, unknown> | undefined);
+  } catch {
+    // Keep the request language.
+  }
+  await ensureLocale(locale, ["app"]);
+  return locale;
+}
+
+function escapeHtml(value: string): string {
+  return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+async function handleAck(url: URL, requestLocale: Locale | undefined): Promise<Response> {
   const userId = url.searchParams.get("uid")?.trim();
   const expRaw = url.searchParams.get("exp");
   const sig = url.searchParams.get("sig")?.trim() ?? "";
@@ -11,7 +33,8 @@ async function handleAck(url: URL): Promise<Response> {
     return Response.redirect(new URL("/dashboard/alerts?ack_error=1", url.origin), 302);
   }
 
-  const result = await applyAckToken(userId, expMs, sig);
+  const locale = await ownerLocale(userId, requestLocale);
+  const result = await applyAckToken(userId, expMs, sig, locale);
   const params = new URLSearchParams({
     ack_ok: result.ok ? "1" : "0",
     ack_msg: result.message,
@@ -24,12 +47,12 @@ async function handleAck(url: URL): Promise<Response> {
 }
 
 /** Prefer POST so email prefetchers / CSRF GETs cannot acknowledge. */
-export const POST: APIRoute = async ({ url }) => handleAck(url);
+export const POST: APIRoute = async ({ url, locals }) => handleAck(url, locals?.locale);
 
 /**
  * GET shows a confirm page for email links (no side effects until POST).
  */
-export const GET: APIRoute = async ({ url }) => {
+export const GET: APIRoute = async ({ url, locals }) => {
   const userId = url.searchParams.get("uid")?.trim() ?? "";
   const exp = url.searchParams.get("exp")?.trim() ?? "";
   const sig = url.searchParams.get("sig")?.trim() ?? "";
@@ -37,17 +60,19 @@ export const GET: APIRoute = async ({ url }) => {
     return Response.redirect(new URL("/dashboard/alerts?ack_error=1", url.origin), 302);
   }
 
+  const locale = await ownerLocale(userId, locals?.locale);
+  const t = alertJobsMessages(locale).ackPage;
   const action = `/api/alerts/ack?uid=${encodeURIComponent(userId)}&exp=${encodeURIComponent(exp)}&sig=${encodeURIComponent(sig)}`;
   const html = `<!DOCTYPE html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Acknowledge alert</title></head>
+<html lang="${LOCALE_META[locale].htmlLang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${escapeHtml(t.title)}</title></head>
 <body style="font-family:system-ui,sans-serif;max-width:28rem;margin:3rem auto;padding:0 1rem">
-<h1>Acknowledge alert?</h1>
-<p>Confirm that you are handling this freeze or flood alert. Prefetchers will not complete this action.</p>
+<h1>${escapeHtml(t.heading)}</h1>
+<p>${escapeHtml(t.body)}</p>
 <form method="post" action="${action}">
-<button type="submit" style="font-size:1rem;padding:0.6rem 1rem">Yes, mark as handled</button>
+<button type="submit" style="font-size:1rem;padding:0.6rem 1rem">${escapeHtml(t.button)}</button>
 </form>
-<p><a href="/dashboard/alerts">Cancel</a></p>
+<p><a href="/dashboard/alerts">${escapeHtml(t.cancel)}</a></p>
 </body></html>`;
   return new Response(html, {
     status: 200,

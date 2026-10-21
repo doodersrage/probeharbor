@@ -1,4 +1,7 @@
 ---
+import { fmt, getLocale } from "../../i18n";
+import { overviewNudgesMessages } from "../../i18n/messages/app/overview/nudges";
+
 interface Props {
   show?: boolean;
   canEdit?: boolean;
@@ -10,19 +13,19 @@ const { show = true, canEdit = true, cityLabel = null } = Astro.props;
 if (!show || !canEdit) {
   return null;
 }
+const t = overviewNudgesMessages(getLocale(Astro));
+const tf = t.freezeMap;
 ---
 <aside class="card" data-nudge-key="freeze_map_opt_in_nudge" role="note">
-  <h2 class="card-title">Compare your probes to the neighborhood</h2>
+  <h2 class="card-title">{tf.title}</h2>
   <p class="card-subtitle mb-4">
-    Opt in to the public freeze map to see how your coldest probe compares to other
-    ProbeHarbor households{cityLabel ? ` in ${cityLabel}` : " in your city"}: anonymized
-    averages only, no address or device names.
+    {cityLabel ? fmt(tf.bodyCity, { city: cityLabel }) : tf.bodyNoCity}
   </p>
   <div class="flex flex-wrap gap-2">
-    <a class="btn-primary" href="/dashboard/household#freeze-map">Opt in on household settings</a>
-    <a class="btn-secondary" href="/freeze-map">View the map</a>
+    <a class="btn-primary" href="/dashboard/household#freeze-map">{tf.optIn}</a>
+    <a class="btn-secondary" href="/freeze-map">{tf.viewMap}</a>
     <button type="button" class="btn-ghost" data-dismiss="freeze_map_opt_in_nudge">
-      Dismiss
+      {t.dismiss}
     </button>
   </div>
 </aside>

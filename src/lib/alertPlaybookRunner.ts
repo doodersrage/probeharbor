@@ -4,6 +4,10 @@ import { listRecentAlertEvents, type AlertEventRow } from "./alertEvents";
 import { getAlertSettingsForUser, notifyUser, saveAlertSettingsForUser } from "./notify";
 import { createAdminClient } from "./supabase";
 import { listAllHouseholdOwnerUserIds } from "./households";
+import type { Locale } from "../i18n/locales";
+import { fmt } from "../i18n/format";
+import { localeFromMetadata } from "../i18n/userLocale";
+import { alertJobsMessages } from "../i18n/messages/app/alertJobs";
 
 type PlaybookFiredMap = Record<string, string>;
 
@@ -26,6 +30,7 @@ export async function runPlaybooksForUser(
   userId: string,
   email: string | null | undefined,
   settings: AlertSettings,
+  locale: Locale = "en",
 ): Promise<number> {
   if (!settings.enabled || settings.alertPlaybooks.length === 0) return 0;
 
@@ -52,11 +57,12 @@ export async function runPlaybooksForUser(
         email,
         settings,
         {
-          title: step.name || `Playbook: ${event.title}`,
+          title: step.name || fmt(alertJobsMessages(locale).playbook.titleFallback, { title: event.title }),
           body: event.body,
           kind: "generic",
         },
         { channelFilter: step.channels },
+        locale,
       );
 
       fired[key] = new Date().toISOString();
@@ -90,7 +96,8 @@ export async function runPlaybooksForAllUsers(): Promise<{
         userId,
         data.user?.user_metadata as Record<string, unknown>,
       );
-      stepsExecuted += await runPlaybooksForUser(userId, email, settings);
+      const locale = localeFromMetadata(data.user?.user_metadata as Record<string, unknown> | undefined);
+      stepsExecuted += await runPlaybooksForUser(userId, email, settings, locale);
     } catch (err) {
       errors.push(
         `${userId}: ${err instanceof Error ? err.message : "Unknown error"}`,

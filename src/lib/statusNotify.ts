@@ -3,6 +3,8 @@ import { fetchAppStatusSummary } from "./appStatus";
 import { sendEmail } from "./mailer";
 import { brandedEmailParts } from "./emailLayout";
 import { resolveSiteUrl } from "./schemaMarkup";
+import type { Locale } from "../i18n/locales";
+import { statusEmailMessages } from "../i18n/messages/app/email/status";
 import {
   buildStatusUnsubscribeUrl,
   listConfirmedStatusSubscribers,
@@ -37,29 +39,29 @@ async function sendStatusChangeEmail(
   to: string,
   token: string,
   healthy: boolean,
+  locale: Locale = "en",
 ): Promise<void> {
   const siteUrl = resolveSiteUrl(null);
-  const { text, html } = brandedEmailParts({
-    eyebrow: "Status update",
-    title: healthy
-      ? "ProbeHarbor is back to normal"
-      : "ProbeHarbor is degraded",
-    intro: healthy
-      ? "Scheduled jobs and ingest monitoring are healthy again."
-      : "We're seeing job failures or missed schedules. We're investigating.",
-    cta: { label: "View system status", url: `${siteUrl}/system-status` },
-    secondaryCta: {
-      label: "Unsubscribe from status updates",
-      url: buildStatusUnsubscribeUrl(token),
+  const t = statusEmailMessages(locale).change;
+  const { text, html } = brandedEmailParts(
+    {
+      eyebrow: t.eyebrow,
+      title: healthy ? t.titleHealthy : t.titleDegraded,
+      intro: healthy ? t.introHealthy : t.introDegraded,
+      cta: { label: t.cta, url: `${siteUrl}/system-status` },
+      secondaryCta: {
+        label: t.unsubscribe,
+        url: buildStatusUnsubscribeUrl(token),
+      },
+      tone: healthy ? "success" : "alert",
+      footerNote: t.footerNote,
     },
-    tone: healthy ? "success" : "alert",
-    footerNote:
-      "You're receiving this because you subscribed to ProbeHarbor status updates.",
-  });
+    locale,
+  );
 
   await sendEmail(
     to,
-    healthy ? "ProbeHarbor: back to normal" : "ProbeHarbor: service degraded",
+    healthy ? t.subjectHealthy : t.subjectDegraded,
     text,
     { html },
   );
@@ -106,7 +108,12 @@ export async function checkAndNotifyStatusSubscribers(): Promise<StatusNotifyRes
 
   for (const subscriber of subscribers) {
     try {
-      await sendStatusChangeEmail(subscriber.email, subscriber.token, summary.healthy);
+      await sendStatusChangeEmail(
+        subscriber.email,
+        subscriber.token,
+        summary.healthy,
+        subscriber.locale ?? "en",
+      );
       sent += 1;
     } catch (error) {
       errors.push(

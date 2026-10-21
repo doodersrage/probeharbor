@@ -107,7 +107,7 @@ describe("POST /api/household/tenant-notify", () => {
     expect(mockUpdateTenantNotifySettings).toHaveBeenCalledWith("house-1", {
       email: "tenant@example.com",
       name: "Alex",
-    });
+    }, "en");
     expect(context.redirect).toHaveBeenCalledWith("/dashboard/settings?tenant_saved=1");
   });
 

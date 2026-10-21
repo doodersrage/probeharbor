@@ -1,5 +1,8 @@
 import type { DeviceWithSensors } from "./devices";
 import { createServerClient } from "./supabase";
+import type { Locale } from "../i18n/locales";
+import { fmt, formatNumber, plural } from "../i18n/format";
+import { alertJobsMessages } from "../i18n/messages/app/alertJobs";
 
 /**
  * A probe that keeps posting the same number looks healthy -- fresh
@@ -20,9 +23,9 @@ const FRESH_MS = 2 * 60 * 60 * 1000;
  * sketches often don't.
  */
 const FAULT_VALUES_F = [
-  { value: 185, why: "the value a DS18B20 reports after a reset (often weak power or a long cable)" },
-  { value: -196.6, why: "the value a DS18B20 library reports when the probe is disconnected" },
-];
+  { value: 185, why: "faultReset" },
+  { value: -196.6, why: "faultDisconnected" },
+] as const;
 
 export type StuckSensorInput = {
   sensorId: string;
@@ -45,7 +48,19 @@ export type StuckSensor = {
   detail: string;
 };
 
-export function evaluateStuckSensor(input: StuckSensorInput, nowMs = Date.now()): StuckSensor | null {
+function oneDecimal(value: number, locale: Locale): string {
+  return locale === "en"
+    ? value.toFixed(1)
+    : formatNumber(value, locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+}
+
+export function evaluateStuckSensor(
+  input: StuckSensorInput,
+  nowMs = Date.now(),
+  locale: Locale = "en",
+): StuckSensor | null {
+  const t = alertJobsMessages(locale).stuck;
+  const value = oneDecimal(input.latestValue, locale);
   const latestMs = Date.parse(input.latestAt);
   if (!Number.isFinite(latestMs) || nowMs - latestMs > FRESH_MS) return null;
 
@@ -54,8 +69,8 @@ export function evaluateStuckSensor(input: StuckSensorInput, nowMs = Date.now())
     return {
       sensorId: input.sensorId,
       label: input.label,
-      message: `${input.label} reads ${input.latestValue.toFixed(1)}°F, ${fault.why}. Check the probe's wiring; this isn't a real temperature.`,
-      detail: `${input.label} reads ${input.latestValue.toFixed(1)}°F (sensor fault), check wiring`,
+      message: fmt(t.faultMessage, { label: input.label, value, why: t[fault.why] }),
+      detail: fmt(t.faultDetail, { label: input.label, value }),
     };
   }
 
@@ -64,17 +79,21 @@ export function evaluateStuckSensor(input: StuckSensorInput, nowMs = Date.now())
   if (nowMs - changedMs < STUCK_WINDOW_MS) return null;
 
   const hours = Number.isFinite(changedMs) ? Math.floor((nowMs - changedMs) / (60 * 60 * 1000)) : null;
-  const span = hours != null && hours < 72 ? `${hours} hours` : "over a day";
+  const span = hours != null && hours < 72 ? plural(t.spanHours, hours, locale) : t.spanOverDay;
   return {
     sensorId: input.sensorId,
     label: input.label,
-    message: `${input.label} has reported exactly ${input.latestValue.toFixed(1)}°F for ${span}. The probe may be stuck or the board may be resending an old value; a freeze here could go unnoticed.`,
-    detail: `${input.label} stuck at ${input.latestValue.toFixed(1)}°F for ${span}`,
+    message: fmt(t.stuckMessage, { label: input.label, value, span }),
+    detail: fmt(t.stuckDetail, { label: input.label, value, span }),
   };
 }
 
 /** Visible temperature sensors on enabled devices whose readings have stopped changing. */
-export async function findStuckSensors(devices: DeviceWithSensors[], nowMs = Date.now()): Promise<StuckSensor[]> {
+export async function findStuckSensors(
+  devices: DeviceWithSensors[],
+  nowMs = Date.now(),
+  locale: Locale = "en",
+): Promise<StuckSensor[]> {
   const supabase = createServerClient();
   const windowStart = new Date(nowMs - STUCK_WINDOW_MS).toISOString();
   const lookbackStart = new Date(nowMs - 3 * STUCK_WINDOW_MS).toISOString();
@@ -131,6 +150,7 @@ export async function findStuckSensors(devices: DeviceWithSensors[], nowMs = Dat
             samplesInWindow: count.count ?? 0,
           },
           nowMs,
+          locale,
         );
       } catch {
         // A failed lookup means "don't know", never "stuck".

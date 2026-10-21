@@ -1,5 +1,7 @@
 import { createServerClient } from "./supabase";
 import { escapeCsvField } from "./csvEscape";
+import type { Locale } from "../i18n/locales";
+import { alertJobsMessages } from "../i18n/messages/app/alertJobs";
 
 export type AlertEventMeta = {
   thresholdF?: number;
@@ -73,10 +75,11 @@ export async function updateAlertEventMeta(
   userId: string,
   eventId: number,
   patch: AlertEventMeta,
+  locale: Locale = "en",
 ): Promise<{ ok: boolean; error?: string }> {
   const supabase = createServerClient();
   const existing = await getAlertEventForUser(userId, eventId);
-  if (!existing) return { ok: false, error: "Alert event not found." };
+  if (!existing) return { ok: false, error: alertJobsMessages(locale).events.notFound };
 
   const { error } = await supabase
     .from("alert_events")
@@ -128,6 +131,7 @@ export async function acknowledgeAlertEvent(
 /** Acknowledge the most recent delivered alert that is still unhandled. */
 export async function acknowledgeLatestUnackedAlert(
   userId: string,
+  locale: Locale = "en",
 ): Promise<{ ok: boolean; eventId?: number; error?: string }> {
   const supabase = createServerClient();
   const { data, error: fetchError } = await supabase
@@ -142,7 +146,7 @@ export async function acknowledgeLatestUnackedAlert(
     .maybeSingle();
 
   if (fetchError) return { ok: false, error: fetchError.message };
-  if (!data) return { ok: false, error: "No unhandled alerts." };
+  if (!data) return { ok: false, error: alertJobsMessages(locale).events.noUnhandled };
 
   const result = await acknowledgeAlertEvent(userId, data.id);
   if (!result.ok) return result;
@@ -153,6 +157,7 @@ export async function acknowledgeLatestUnackedAlert(
 export async function acknowledgeAllUnackedAlerts(
   userId: string,
   limit = 50,
+  locale: Locale = "en",
 ): Promise<{ ok: boolean; count: number; error?: string }> {
   const supabase = createServerClient();
   const { data, error: fetchError } = await supabase
@@ -167,7 +172,7 @@ export async function acknowledgeAllUnackedAlerts(
 
   if (fetchError) return { ok: false, count: 0, error: fetchError.message };
   const ids = (data ?? []).map((row) => row.id as number);
-  if (ids.length === 0) return { ok: false, count: 0, error: "No unhandled alerts." };
+  if (ids.length === 0) return { ok: false, count: 0, error: alertJobsMessages(locale).events.noUnhandled };
 
   const acknowledgedAt = new Date().toISOString();
   const { error } = await supabase

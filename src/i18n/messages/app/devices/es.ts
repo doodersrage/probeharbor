@@ -1,0 +1,123 @@
+import type { DevicesMessages } from "./en";
+
+const es: DevicesMessages = {
+  title: "Dispositivos",
+  subtitle: {
+    ops: "Todos los dispositivos, del peor al mejor. Abre uno para gestionarlo.",
+    pull: "Feeds JSON por HTTPS que consultamos según una programación.",
+    thermostat: "El termostato de tu casa y la referencia interior, como contexto junto a tus sondas.",
+    push: "Conecta un dispositivo nuevo o termina de configurar uno.",
+  },
+  indoorRefError: {
+    saveFailed: "No se pudo guardar la referencia interior, inténtalo de nuevo.",
+    forbidden: "No tienes permiso para cambiar este ajuste.",
+    noHousehold: "No se encontró ningún hogar.",
+  },
+  notice: {
+    deviceTransferred: "Dispositivo movido a la otra propiedad.",
+    deviceNotFound: "Ese dispositivo ya no está en esta propiedad.",
+    sensorReplaced: {
+      one: "Sensor reemplazado: {count} lectura del historial se movió al nuevo sensor.",
+      other: "Sensor reemplazado: {count} lecturas del historial se movieron al nuevo sensor.",
+    },
+    deviceDeleted: "Dispositivo eliminado.",
+    bulkDeleted: { one: "Se eliminó {count} elemento.", other: "Se eliminaron {count} elementos." },
+    bulkUpdated: { one: "Se actualizó {count} elemento.", other: "Se actualizaron {count} elementos." },
+    bulkError: "No se pudo completar la acción en lote. Inténtalo de nuevo.",
+    deviceRenamed: "Dispositivo renombrado.",
+    sensorAdded: "Sensor añadido.",
+    sensorUpdated: "Sensor actualizado.",
+    sensorDeleted: "Sensor eliminado.",
+    pullSavedDiscovered:
+      "Configuración de consulta guardada: se importaron {count} clave(s) de sonda. Cámbiales el nombre abajo si hace falta.",
+    pullSaved: "Configuración de consulta guardada.",
+    probesSaved: "Etiquetas de sonda guardadas.",
+    sensorsRenamed: "Nombres de sensor guardados.",
+    feedDeleted: "Feed eliminado.",
+    probeDeleted: "Sonda eliminada.",
+    saveFailed: "No se pudieron guardar los cambios. Inténtalo de nuevo.",
+    deviceLimit: "Límite de dispositivos push alcanzado ({max} por propiedad). Mejora tu plan para añadir más.",
+    viewer: "Acceso de solo lectura: no puedes cambiar dispositivos ni feeds.",
+    deviceActionFailed: "No se pudo completar esa acción del dispositivo. Revisa el formulario e inténtalo de nuevo.",
+    actionFailed: "No se pudo completar esa acción ({code}). Inténtalo de nuevo.",
+    viewPlans: "Ver planes",
+  },
+  tabs: {
+    ariaLabel: "Secciones de dispositivos",
+    ops: "Dispositivos",
+    push: "Añadir dispositivo",
+    pull: "Feeds de consulta",
+    thermostat: "Termostato",
+  },
+  keyCallout: {
+    titleRotated: "Guarda tu nueva clave de ingesta",
+    title: "Guarda tu clave de ingesta",
+    subtitleReporting:
+      "Tu dispositivo está conectado. Guarda una copia de la clave por si vuelves a flashearlo; se queda aquí 30 minutos.",
+    subtitle:
+      "Escanea el QR, descarga un sketch de ESP32 ya rellenado o copia la URL. Esta clave está disponible durante 30 minutos y sigue aquí al recargar hasta que la descartes.",
+    summaryReporting: "Mostrar clave y pasos de configuración",
+    summary: "Clave y pasos de configuración",
+    copySnippet: "Copiar fragmento",
+    qrAria: "Código QR de la URL de ingesta",
+    ingestUrl: "URL de ingesta",
+    postJsonTo: "Envía JSON por POST a",
+    copyUrl: "Copiar URL",
+    copyKey: "Copiar clave",
+    downloadSvg: "Descargar SVG",
+    printLabel: "Imprimir etiqueta",
+    dismiss: "Ya la guardé",
+    printTitle: "Etiqueta de ingesta",
+    defaultDeviceName: "Dispositivo push",
+  },
+  via: {
+    ha: {
+      title: "Pega esto en Home Assistant",
+      hint: "Pon tus ids de entidad, recarga el YAML y la primera lectura llega en menos de 5 minutos. Los sensores en °C se convierten automáticamente.",
+      guide: "Guía de Home Assistant",
+    },
+    esphome: {
+      title: "Añádelo a tu nodo ESPHome",
+      hint: "Llámalo desde una automatización interval u on_value y luego flashea el nodo.",
+      guide: "Recetas de ESPHome y Shelly",
+    },
+    mqtt: {
+      title: "Reenvía MQTT por HTTPS",
+      hint: "Mantén tu broker en la red local. Importa el flujo de Node-RED y pega esta clave, o haz POST así desde cualquier relé.",
+      guide: "Flujo de Node-RED",
+    },
+  },
+  waiting: {
+    titleWaiting: "Esperando el primer POST",
+    titleVerify: "Siguiente: verifica la ingesta",
+    subtitle:
+      "Apunta el firmware a tu URL de ingesta y envía JSON por POST. Los sensores se importan solos con el primer POST: cámbiales el nombre después si quieres.",
+    stepCreated: "Dispositivo push creado",
+    stepPost: "Primer POST de ingesta",
+    statusListening: ": escuchando…",
+    statusSendTest: ", envía un POST de prueba",
+    sampleSummary: "Ejemplo de curl / payload",
+    kitGuide: "Guía QR del kit de hardware",
+    checkNow: "Comprobar ahora",
+    metaAuto: "Comprobando automáticamente cada 5 segundos mientras esta página esté abierta.",
+    metaManual: "Envía un POST y luego pulsa Comprobar ahora o recarga.",
+  },
+  wizard: {
+    title: "Configuración del dispositivo",
+    step: "Paso {step} de 2: crea un dispositivo push, envía JSON por POST (los sensores se importan solos) y luego verifica las lecturas.",
+    createStep: "Crear dispositivo push",
+    postStep: "POST de JSON: los sensores se importan solos; cámbiales el nombre después si hace falta",
+    showAll: "Mostrar todos los ajustes del dispositivo",
+  },
+  client: {
+    stillWaiting: "Aún esperando: última comprobación {time}. Comprobando automáticamente cada 5 segundos.",
+    lastCheck: "Última comprobación {time}.",
+    received: ": ¡recibido!",
+    listening: ": escuchando…",
+    checkFailed: "No se pudo comprobar el estado, prueba Comprobar ahora.",
+    couldNotSave: "No se pudo guardar.",
+    saved: "Guardado.",
+  },
+};
+
+export default es;

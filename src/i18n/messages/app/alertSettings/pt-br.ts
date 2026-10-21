@@ -1,0 +1,283 @@
+import type { AlertSettingsMessages } from "./en";
+
+const ptBr: AlertSettingsMessages = {
+  viewOnly: "Somente leitura: as configurações de alerta não podem ser alteradas nesta conta.",
+  essentialsIntroHtml:
+    "Comece por <strong>Quando alertar</strong> e <strong>Como você é avisado</strong>, salve e depois envie um alerta de teste abaixo.",
+  defaultValue: "Padrão: {value}",
+
+  essentials: {
+    title: "Quando alertar",
+    subtitle: "Congelamento, vazamentos, sensores em silêncio e avisos antecipados.",
+    turnOn: "Ativar alertas",
+    freezeBelow: "Congelamento abaixo de (°F)",
+    freezeHint: "Alerta quando uma sonda estiver nesta temperatura ou abaixo dela.",
+    dwellLabel: "Esperar antes de alertar (minutos)",
+    dwellHint:
+      "Quanto tempo uma sonda precisa ficar no limite de congelamento ou abaixo antes do alerta. Com 5–15, uma porta aberta por um instante é ignorada; com 0, o alerta sai na primeira leitura fria.",
+    leakHint: "Os sensores de vazamento alertam automaticamente assim que detectam umidade.",
+    powerAlerts:
+      "Alertar quando um sensor de energia indicar desligado (aquecedores, cabos de aquecimento e bombas de poço também podem estar desligados)",
+    outageToggle: "Alertar se um sensor parar de enviar dados",
+    outageHours: "Depois de quantas horas sem dados",
+    outageHint:
+      "Uma sonda em silêncio não consegue avisar sobre congelamento, por isso este costuma ser o alerta mais útil.",
+    earlyWarnings: "Avisos antecipados",
+    runwayToggle: "Avisar antes de uma sonda chegar ao congelamento, enquanto ainda há tempo para agir",
+    runwayHint:
+      "Estima quando cada espaço vai atingir seu limite de congelamento pela velocidade de resfriamento (e pela previsão externa, se houver um local de clima definido) e avisa dentro da janela acima para você deixar as torneiras pingando ou ligar um aquecedor.",
+    forecastToggle: "Avisar quando a previsão externa ficar abaixo de zero",
+    forecastHours: "Com quantas horas de antecedência",
+    forecastHoursHint: "Usado pelos dois avisos antecipados: o da previsão e o do tempo até o congelamento.",
+    nwsSummary: "Umidade, quedas rápidas e avisos oficiais de geada",
+    humidityAbove: "Umidade acima de (%)",
+    rateDrop: "Queda rápida (°F / hora)",
+    nwsToggle: "Avisos oficiais de geada / frio do NWS (EUA)",
+    perSensorSummary: "Limites diferentes por sensor",
+    perSensorHint:
+      "Por padrão, todo sensor de temperatura usa os limites de congelamento e umidade da casa definidos acima. Marque sensores específicos para restringir os alertas de limite ou defina um valor próprio por sensor.",
+    allSensors: "Todos os sensores de temperatura (padrão)",
+    freezeOverride: "Limite de congelamento próprio (°F, opcional)",
+    humidityOverride: "Limite de umidade próprio (%, opcional)",
+    healthSummary: "Bateria, sinal de Wi-Fi e verificação de feeds",
+    lowBattery: "Alertas de bateria fraca",
+    batteryTrend: "Queda contínua da bateria",
+    batteryBelow: "Bateria abaixo de (%)",
+    weakWifi: "Sinal de Wi-Fi fraco",
+    rssiBelow: "RSSI abaixo de (dBm)",
+    feedUptime: "Feed inacessível (verificação de hora em hora dos feeds JSON consultados)",
+  },
+
+  channels: {
+    title: "Como você é avisado",
+    subtitle:
+      "E-mail e qualquer app de chat, SMS, push ou webhook. Todo canal marcado recebe todos os alertas.",
+    alertEmail: "E-mail para alertas",
+    sendByEmail: "Enviar alertas por e-mail",
+    otherChannels: "Outros canais",
+    push: "Push (navegador + Android)",
+    outboundWebhook: "Webhook de saída",
+    twilioMissing:
+      "Seu plano inclui SMS, mas o Twilio não está configurado neste servidor. As mensagens serão ignoradas até que os segredos `TWILIO_*` sejam definidos.",
+    unlockProHtml: 'Libere SMS e webhooks com o <a class="text-link" href="/dashboard/plans">Pro</a>.',
+    webhookUrl: "URL do webhook",
+    botToken: "Token do bot",
+    chatId: "ID do chat (necessário para comandos)",
+    webhookSecret: "Segredo do webhook (opcional)",
+    telegramHintHtml:
+      "Use o <code>setWebhook</code> do Telegram com <code>secret_token</code> para que o Telegram envie <code>X-Telegram-Bot-Api-Secret-Token</code> (o parâmetro <code>?secret=</code> não é aceito). Salve um ID de chat acima: os comandos só funcionam a partir desse chat (/status [nome], /snooze [horas], /vacation [dias]).",
+    incomingWebhookUrl: "URL do webhook de entrada",
+    topic: "Tópico",
+    serverOptional: "Servidor (opcional)",
+    userKey: "Chave de usuário",
+    appToken: "Token do app",
+    phoneNumber: "Número de telefone",
+    smsHint: "Formato internacional, por ex. +1 para números dos EUA.",
+    url: "URL",
+    signingSecret: "Segredo de assinatura (opcional)",
+    pushHintHtml:
+      "Um único canal cobre <strong>este navegador</strong> (Web Push) e o <strong>app ProbeHarbor para Android</strong> (FCM). Ative abaixo para este navegador; o app Android se registra sozinho quando você entra com o Pro.",
+    pushNotConfigured: "O push do navegador ainda não está configurado no servidor (faltam as chaves VAPID).",
+    pushChecking: "Verificando o status do push…",
+    pushEnable: "Ativar push do navegador neste dispositivo",
+  },
+
+  quiet: {
+    title: "Pausar alertas",
+    subtitle: "Horário silencioso à noite, ou adiar e modo férias quando você já está ciente.",
+    enable: "Ativar horário silencioso",
+    bypassFreeze: "Sempre enviar alertas de congelamento, alagamento e previsão",
+    smsCritical: "Continuar enviando por SMS os alertas críticos de congelamento/alagamento/previsão (Pro)",
+    upgradeLinkHtml: ': <a class="text-link" href="/dashboard/plans">Fazer upgrade</a>',
+    start: "Início",
+    end: "Fim",
+    timezone: "Fuso horário",
+    snoozeSummary: "Adiar ou férias",
+    snoozeHint:
+      "Adiar pausa a maioria dos alertas (os de sensor em silêncio e alagamento continuam). O modo férias silencia os alertas de rotina (taxa de variação, regras, bateria, resumos) até uma data de volta ou por alguns dias; os alertas de congelamento, previsão e alagamento continuam.",
+    snoozedUntil: "Adiado até {date}.",
+    vacationUntil: "De férias até {date}.",
+    snooze24: "Adiar 24 h",
+    vacation7: "Férias de 7 dias",
+    clearSnooze: "Cancelar adiamento",
+    endVacation: "Encerrar férias",
+    vacationUntilLabel: "Férias até",
+    setVacationUntil: "Definir data de volta",
+  },
+
+  reports: {
+    title: "E-mails de resumo",
+    subtitle: "Resumo semanal e relatórios mais longos. Nenhum deles é um alerta.",
+    weeklyDigest: "Resumo semanal por e-mail (segundas-feiras): noite mais fria, vazamentos e quedas",
+    portfolioDigest: "Resumo de imóveis em risco: e-mail quando qualquer imóvel atingir o congelamento",
+    monthlyReport: "Relatório mensal de congelamento (dia 1º, anexo HTML)",
+    quarterlyReport: "Relatório sazonal trimestral (jan, abr, jul, out)",
+    dripEmails: "Dicas para começar (1, 3 e 7 dias após o cadastro)",
+    freezeDrill: "Simulado de congelamento antes da temporada (e-mail de set a nov com nota de preparo)",
+  },
+
+  automation: {
+    title: "Regras e escalonamento",
+    subtitle:
+      "Suas próprias condições (por ex. cano abaixo de 3 °C (38 °F) com uma porta aberta), etapas de acompanhamento e reenvios por SMS.",
+    compositeRules: "Regras combinadas",
+    compositeHintHtml:
+      'Disparam quando todas (ou alguma) das condições de uma regra forem verdadeiras, por ex. cano abaixo de 3 °C (38 °F) E área externa abaixo de −7 °C (20 °F). Alagamento já alerta quando molha; adicione uma condição de alagamento aqui só para combiná-la com outras verificações. Exemplo de porta + frio: <a class="text-link" href="/about/garage-door-cold-playbook">guia do portão da garagem</a>.',
+    addRule: "Adicionar regra",
+    addHeatRule: "Adicionar regra de calor ({threshold} °F)",
+    playbooks: "Roteiros de alerta",
+    playbooksHint: "Etapas de acompanhamento após o alerta inicial: por ex. SMS 15 minutos depois se ainda não foi confirmado.",
+    addStep: "Adicionar etapa",
+    smsEscalation: "Escalonamento por SMS",
+    escalationToggle: "Reenviar alertas de limite por SMS",
+    afterMinutes: "Depois de (minutos)",
+  },
+
+  advanced: {
+    title: "Avançado",
+    subtitle: "Roteamento de canais por tipo e por espaço, textos de mensagem próprios e webhooks de leituras.",
+    severitySummary: "Roteamento por gravidade (opcional)",
+    severityHint:
+      "Deixe vazio para usar as caixas de canal gerais. Caso contrário, só os canais selecionados disparam para aquele tipo.",
+    spaceSummary: "Roteamento de canais por espaço",
+    spaceEmpty: "Defina um espaço nos dispositivos (Painel → Dispositivos) para rotear alertas por local.",
+    spaceHint:
+      "Escolha canais por espaço e tipo de alerta. Tipos desmarcados usam o roteamento geral ou por gravidade.",
+    templatesSummary: "Mensagens de alerta personalizadas",
+    templatesHintHtml: "Substitua o título ou o corpo por tipo de alerta. Variáveis: {vars}.",
+    templateTitle: "Título",
+    templateBody: "Corpo",
+    templatePlaceholder: "Deixe em branco para usar o padrão",
+    readingSummary: "Webhooks de leituras (Pro)",
+    readingUrl: "URL do webhook de leituras",
+    readingHint: "POST a cada ingestão bem-sucedida de um dispositivo, com o JSON das leituras mais recentes.",
+  },
+
+  save: {
+    button: "Salvar configurações de alerta",
+    incompleteHint: "Um canal marcado precisa do destino preenchido, ou será ignorado quando os alertas dispararem.",
+    notApplied: "As alterações só valem depois que você salvar.",
+  },
+
+  channelLabels: {
+    email: "E-mail",
+  },
+  channelIds: {
+    email: "e-mail",
+  },
+  kindIds: {
+    threshold: "limite",
+    flood: "alagamento",
+    power: "energia",
+    runway: "tempo até congelar",
+    forecast: "previsão",
+    nws: "NWS",
+    rate: "variação",
+    outage: "sem dados",
+    rule: "regra",
+    battery: "bateria",
+    rssi: "RSSI",
+    stuck: "sonda travada",
+    recovery: "normalização",
+  },
+  kindLabels: {
+    threshold: "Limite",
+    flood: "Alagamento / vazamento",
+    power: "Sem energia",
+    runway: "Tempo até congelar",
+    forecast: "Previsão",
+    nws: "NWS",
+    rule: "Regra",
+    outage: "Sem dados",
+    rate: "Queda rápida",
+    battery: "Bateria",
+    rssi: "Sinal",
+    generic: "Genérico",
+  },
+
+  delivery: {
+    lastFailed: "Última tentativa falhou {age}",
+    lastDelivered: "Última entrega {age}",
+    none: "Nenhuma entrega ainda",
+    failedTitle: "Confira o destino abaixo e depois envie um teste.",
+    sendTest: "Enviar teste",
+    sendTestTitle: "Enviar um teste só para este canal",
+    saveFirstTitle: "Primeiro salve as configurações com este canal ativado",
+  },
+
+  clientSubmit: {
+    saving: "Salvando…",
+    saveButton: "Salvar configurações de alerta",
+    saveFailed: "Não foi possível salvar as configurações de alerta.",
+    pickVacationDate: "Escolha uma data de volta das férias.",
+    snoozeFailed: "Não foi possível atualizar o adiamento.",
+    updated: "Atualizado.",
+    sending: "Enviando…",
+    sent: "Enviado. Confira {channel}.",
+    notSentReasons: "Não enviado: {reasons}.",
+    notSent: "Não enviado. Confira o destino deste canal, salve e tente de novo.",
+    unreachable: "Não foi possível acessar o servidor. Tente de novo.",
+  },
+
+  clientRules: {
+    valuePlaceholder: "valor",
+    labelPlaceholder: "nome contém",
+    remove: "Remover",
+    on: "Ativa",
+    namePlaceholder: "Nome da regra",
+    deleteRule: "Excluir regra",
+    fireWhen: "Disparar quando",
+    allOf: "todas",
+    anyOf: "alguma",
+    theseAreTrue: "destas forem verdadeiras:",
+    addCondition: "Adicionar condição",
+    newRuleName: "Nova regra",
+    heatRuleName: "Calor demais",
+  },
+
+  clientPlaybooks: {
+    namePlaceholder: "Nome da etapa",
+    afterMinutes: "Depois de (min)",
+    onlyIfUnacked: "Só se não confirmado",
+    delete: "Excluir",
+    channels: "Canais",
+    kinds: "Tipos (nenhum = todos)",
+    newStepName: "Etapa de escalonamento",
+  },
+
+  clientPush: {
+    noVapidKey: "A chave pública VAPID não está configurada",
+    noVapidKeyServer: "A chave pública VAPID não está configurada no servidor",
+    permissionDenied: "A permissão de notificações não foi concedida",
+    serverRejected: "O servidor recusou a inscrição",
+    subscribed: "Inscrito neste navegador. Salve as configurações de alerta e depois envie um teste.",
+    subscribedHint:
+      "O canal “Push (navegador + Android)” foi marcado: clique em Salvar configurações de alerta antes de testar.",
+    refresh: "Reativar / atualizar push",
+    unsupported: "Este navegador não oferece suporte a push.",
+    blocked:
+      "As notificações estão bloqueadas para este site. Permita nas configurações do navegador e tente de novo.",
+    retry: "Tentar ativar push de novo",
+    enabled: "Push ativado neste navegador.",
+    androidDevices: {
+      one: "Também há {count} dispositivo Android registrado.",
+      other: "Também há {count} dispositivos Android registrados.",
+    },
+    channelOnHint: "O canal push está ativado: teste abaixo (navegador + Android).",
+    channelOffHint:
+      "Marque “Push (navegador + Android)” nos canais acima, salve as configurações e depois envie um teste.",
+    finishing: "Permissão concedida — concluindo a inscrição do navegador…",
+    subscribeFailed: "Permissão concedida, mas a inscrição falhou: {error}",
+    subscribe: "Inscrever este navegador",
+    notSubscribed: "Permissão concedida, mas este navegador ainda não está inscrito.",
+    notEnabled: "Ainda não ativado neste navegador.",
+    enable: "Ativar push do navegador neste dispositivo",
+    vapidMissing: "Faltam as chaves VAPID do servidor: o push do navegador só funciona depois de configurá-las.",
+    androidRegistered:
+      "O app Android está registrado: marque “Push (navegador + Android)”, salve e depois teste.",
+    statusFailed: "Não foi possível ler o status do push.",
+    enableFailed: "Não foi possível ativar o push: {error}",
+  },
+};
+
+export default ptBr;

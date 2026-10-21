@@ -45,3 +45,21 @@ describe("evaluateStuckSensor", () => {
     expect(gone?.message).toContain("disconnected");
   });
 });
+
+describe("evaluateStuckSensor in other languages", () => {
+  it("writes the stuck-sensor notice in German, keeping the value, unit, label and hours", async () => {
+    const { ensureLocale } = await import("../i18n/catalog");
+    await ensureLocale("de", ["app"]);
+    const result = evaluateStuckSensor({ ...base, latestValue: 41.25 }, now, "de");
+    expect(result?.detail).toBe("Garage pipe hängt seit 30 Stunden bei 41,3 °F");
+    expect(result?.message).toContain("Garage pipe meldet seit 30 Stunden genau 41,3 °F.");
+  });
+
+  it("explains a DS18B20 fault value in Spanish", async () => {
+    const { ensureLocale } = await import("../i18n/catalog");
+    await ensureLocale("es", ["app"]);
+    const result = evaluateStuckSensor({ ...base, latestValue: 185 }, now, "es");
+    expect(result?.message).toContain("Garage pipe marca 185,0 °F, el valor que envía un DS18B20 tras un reinicio");
+    expect(result?.detail).toBe("Garage pipe marca 185,0 °F (fallo del sensor), revisa el cableado");
+  });
+});

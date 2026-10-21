@@ -1,3 +1,6 @@
+import type { Locale } from "../i18n/locales";
+import { libTextMessages } from "../i18n/messages/app/libText";
+
 export const SENSOR_KINDS = [
   "temperature",
   "humidity",
@@ -31,6 +34,16 @@ export const SENSOR_KIND_LABELS: Record<SensorKind, string> = {
   motion: "Motion",
   generic: "Generic",
 };
+
+/** {@link SENSOR_KIND_LABELS} in the given language. */
+export function sensorKindLabels(locale: Locale = "en"): Record<SensorKind, string> {
+  return locale === "en" ? SENSOR_KIND_LABELS : libTextMessages(locale).sensorKinds;
+}
+
+/** One kind's label in the given language; unknown kinds come back as given. */
+export function sensorKindLabel(kind: string, locale: Locale = "en"): string {
+  return isSensorKind(kind) ? sensorKindLabels(locale)[kind] : kind;
+}
 
 export const SENSOR_KIND_UNITS: Partial<Record<SensorKind, string>> = {
   temperature: "°F",
@@ -69,12 +82,13 @@ export function isNumericSensorKind(kind: string): boolean {
   return (NUMERIC_SENSOR_KINDS as readonly string[]).includes(kind);
 }
 
-export function formatBoolSensorValue(kind: string, value: boolean): string {
-  if (kind === "door") return value ? "Open" : "Closed";
-  if (kind === "power") return value ? "On" : "Off";
-  if (kind === "flood") return value ? "Wet" : "Dry";
-  if (kind === "motion") return value ? "Detected" : "Clear";
-  return value ? "On" : "Off";
+export function formatBoolSensorValue(kind: string, value: boolean, locale: Locale = "en"): string {
+  const t = libTextMessages(locale).sensorValues;
+  if (kind === "door") return value ? t.open : t.closed;
+  if (kind === "power") return value ? t.on : t.off;
+  if (kind === "flood") return value ? t.wet : t.dry;
+  if (kind === "motion") return value ? t.detected : t.clear;
+  return value ? t.on : t.off;
 }
 
 export function defaultUnitForKind(kind: SensorKind): string | null {

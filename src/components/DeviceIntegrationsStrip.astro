@@ -1,108 +1,76 @@
 ---
 /** Quick links and short setup wizards for non-ESP paths. */
+import { getLocale } from "../i18n";
+import { devicesSetupMessages } from "../i18n/messages/app/devices/setup";
+
+const t = devicesSetupMessages(getLocale(Astro)).integrations;
 ---
 
 <section class="card" id="device-integrations">
-  <h2 class="card-title">Other ways to connect</h2>
+  <h2 class="card-title">{t.title}</h2>
   <p class="card-subtitle mb-4">
-    ESP32, Pico W, STM32, CH32V, or AVR assembly push ingest is the default. Expand a path below for copy-paste setup.
+    {t.subtitle}
   </p>
 
   <div class="space-y-3">
     <details class="rounded-lg border border-[var(--color-border)] p-3">
-      <summary class="cursor-pointer font-medium">Claim puck (RP2040-Zero)</summary>
+      <summary class="cursor-pointer font-medium">{t.claimPuck.summary}</summary>
       <ol class="mt-3 mb-0 text-sm space-y-2 pl-4 list-decimal">
-        <li>Flash claim-puck firmware and wire a button from GP4 to GND.</li>
-        <li>Set device <code>space</code> labels to match the bay you will claim (e.g. garage).</li>
+        {t.claimPuck.stepsHtml.map((step) => <li set:html={step} />)}
         <li>
-          In
-          <a class="text-link" href="/bay-buddy">Bay Buddy</a>,
-          connect your account, plug in the puck, claim the bay, then optionally drive the mood LED.
-        </li>
-        <li>
-          <a class="text-link" href="/claim-puck">Product page</a>
+          <a class="text-link" href="/claim-puck">{t.claimPuck.productPage}</a>
           ·
-          <a class="text-link" href="/claim-puck-case">Case / diffuser</a>
+          <a class="text-link" href="/claim-puck-case">{t.claimPuck.caseDiffuser}</a>
           ·
-          <a class="text-link" href="/docs/api#claim-puck">Claim API</a>
+          <a class="text-link" href="/docs/api#claim-puck">{t.claimPuck.claimApi}</a>
         </li>
       </ol>
     </details>
 
     <details class="rounded-lg border border-[var(--color-border)] p-3">
-      <summary class="cursor-pointer font-medium">Door / leak / power contacts</summary>
+      <summary class="cursor-pointer font-medium">{t.contacts.summary}</summary>
       <ol class="mt-3 mb-0 text-sm space-y-2 pl-4 list-decimal">
+        {t.contacts.stepsHtml.map((step) => <li set:html={step} />)}
         <li>
-          Flash ESP32 sketches under <code>sketches/arduino/door_contact_ingest</code>,
-          <code>leak_contact_ingest</code>, or <code>power_sense_ingest</code>.
-        </li>
-        <li>POST <code>door1</code> / <code>leak1</code> / <code>power1</code> bools to your ingest URL.</li>
-        <li>
-          <a class="text-link" href="/door-puck">Door puck</a>
+          <a class="text-link" href="/door-puck">{t.contacts.doorPuck}</a>
           ·
-          <a class="text-link" href="/leak-puck">Leak puck</a>
+          <a class="text-link" href="/leak-puck">{t.contacts.leakPuck}</a>
           ·
-          <a class="text-link" href="/power-nudge">Power nudge</a>
+          <a class="text-link" href="/power-nudge">{t.contacts.powerNudge}</a>
           ·
-          <a class="text-link" href="/accessories">All accessories</a>
+          <a class="text-link" href="/accessories">{t.contacts.allAccessories}</a>
         </li>
       </ol>
     </details>
 
     <details class="rounded-lg border border-[var(--color-border)] p-3">
-      <summary class="cursor-pointer font-medium">Alert beacon &amp; kit pieces</summary>
-      <p class="mt-3 mb-2 text-sm">
-        Mood NeoPixel
-        <a class="text-link" href="/alert-beacon">alert beacon</a>,
-        <a class="text-link" href="/kit-labels">QR / NFC labels</a>,
-        and
-        <a class="text-link" href="/probe-mount-kit">probe mount kit</a>
-        — companions and merch, not freeze probes.
-      </p>
+      <summary class="cursor-pointer font-medium">{t.beacon.summary}</summary>
+      <p class="mt-3 mb-2 text-sm" set:html={t.beacon.bodyHtml} />
     </details>
 
     <details class="rounded-lg border border-[var(--color-border)] p-3">
-      <summary class="cursor-pointer font-medium">Home Assistant REST</summary>
+      <summary class="cursor-pointer font-medium">{t.homeAssistant.summary}</summary>
       <ol class="mt-3 mb-0 text-sm space-y-2 pl-4 list-decimal">
-        <li>Create a push device above and copy the ingest URL.</li>
-        <li>
-          In HA, use a <code>rest</code> sensor or automation with
-          <code>resource: https://probeharbor.dev/api/ingest/YOUR_KEY</code>.
-        </li>
-        <li>
-          POST entity JSON. ProbeHarbor reads <code>friendly_name</code> for labels.
-          <a class="text-link" href="/integrations/home-assistant">Full HA guide</a>
-        </li>
+        {t.homeAssistant.stepsHtml.map((step) => <li set:html={step} />)}
       </ol>
     </details>
 
     <details class="rounded-lg border border-[var(--color-border)] p-3">
-      <summary class="cursor-pointer font-medium">MQTT → HTTPS bridge</summary>
+      <summary class="cursor-pointer font-medium">{t.mqtt.summary}</summary>
       <ol class="mt-3 mb-0 text-sm space-y-2 pl-4 list-decimal">
-        <li>Keep Mosquitto on your LAN. ProbeHarbor is not an MQTT broker.</li>
-        <li>
-          Import the Node-RED flow from
-          <a class="text-link" href="/dashboard/share/integrations#node-red">Integrations → Node-RED</a>
-          or run the Python bridge in <code>scripts/mqtt-bridge.py</code>.
-        </li>
-        <li>Set <code>PROBEHARBOR_INGEST_KEY</code> to your push device key.</li>
-        <li>
-          <a class="text-link" href="/about/mqtt-bridge">MQTT bridge docs</a>
-        </li>
+        {t.mqtt.stepsHtml.map((step) => <li set:html={step} />)}
       </ol>
     </details>
 
     <details class="rounded-lg border border-[var(--color-border)] p-3">
-      <summary class="cursor-pointer font-medium">ESPHome / Shelly LAN</summary>
-      <p class="mt-3 mb-2 text-sm">
-        Point ESPHome <code>rest</code> or Shelly HTTP at your ingest URL, or expose HTTPS JSON for a pull feed.
-      </p>
-      <a class="text-link text-sm" href="/dashboard/share/integrations#esphome">ESPHome &amp; Shelly recipes</a>
+      <summary class="cursor-pointer font-medium">{t.esphome.summary}</summary>
+      <p class="mt-3 mb-2 text-sm" set:html={t.esphome.bodyHtml} />
+      <a class="text-link text-sm" href="/dashboard/share/integrations#esphome">{t.esphome.recipes}</a>
     </details>
   </div>
 
   <div class="flex flex-wrap gap-3 mt-4">
-    <a class="btn-ghost" href="/about/ingest-and-webhooks">Ingest formats</a>
-    <a class="btn-ghost" href="/integrations">All integrations</a>
+    <a class="btn-ghost" href="/about/ingest-and-webhooks">{t.ingestFormats}</a>
+    <a class="btn-ghost" href="/integrations">{t.allIntegrations}</a>
   </div>
 </section>

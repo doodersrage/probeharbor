@@ -1,5 +1,5 @@
 ---
-import { getLocale } from "../i18n";
+import { fmt, getLocale, plural } from "../i18n";
 import { aboutArticleMessages } from "../i18n/messages/aboutArticle";
 import { getLocalizedAboutMegaGroupSections } from "../i18n/content/aboutNavigation";
 import { getAboutStats } from "../lib/aboutPages";
@@ -11,7 +11,7 @@ const stats = getAboutStats();
 ---
 <nav class="about-hub-toc card" aria-label={t.label}>
   <h2 class="about-hub-toc-title">{t.title}</h2>
-  <p class="about-hub-toc-lead">{t.lead(stats.coreCount, stats.guideCount)}</p>
+  <p class="about-hub-toc-lead">{fmt(t.lead, { core: stats.coreCount, guides: stats.guideCount })}</p>
   <ol class="about-hub-toc-list">
     {megaGroups.map(({ group, coreCount, guideCount }) => (
       <li>
@@ -19,7 +19,7 @@ const stats = getAboutStats();
           <span class="about-hub-toc-link-title">{group.title}</span>
           <span class="about-hub-toc-link-desc">{group.description}</span>
           <span class="about-hub-toc-link-meta">
-            {coreCount} {t.topics(coreCount)} · {guideCount} {t.guides}
+            {coreCount} {plural(t.topics, coreCount, locale)} · {guideCount} {t.guides}
           </span>
         </a>
       </li>
@@ -34,7 +34,7 @@ const stats = getAboutStats();
       <p class="about-mega-group-desc">
         {group.description}
         <span class="about-mega-group-meta">
-          {sections.length} {t.topics(sections.length)} · {guideCount} {t.guides}
+          {sections.length} {plural(t.topics, sections.length, locale)} · {guideCount} {t.guides}
         </span>
       </p>
     </header>

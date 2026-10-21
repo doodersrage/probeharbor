@@ -159,6 +159,18 @@ describe("applySnoozeToken", () => {
     );
     expect(result).toEqual({ ok: true, message: "Alerts snoozed for 12 hours." });
   });
+
+  it("reports the result in the owner's language", async () => {
+    const { ensureLocale } = await import("../i18n/catalog");
+    await ensureLocale("de", ["app"]);
+    mockFrom.mockReturnValue(
+      mockQuery({ data: { user_id: "user-1", hours: 12, expires_at: "2099-01-01T00:00:00.000Z", used_at: null } }),
+    );
+    mockGetAlertSettingsForUser.mockResolvedValue({});
+    const { applySnoozeToken } = await import("./alertSnoozeTokens");
+
+    expect(await applySnoozeToken("good-token", "de")).toEqual({ ok: true, message: "Alarme für 12 Stunden pausiert." });
+  });
 });
 
 describe("buildSnoozeUrl", () => {

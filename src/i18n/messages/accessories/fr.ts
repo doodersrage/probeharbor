@@ -1,11 +1,4 @@
-import { BRAND_NAME } from "../../../lib/brand";
-import { BAYBUDDY_NAME } from "../../../lib/bayBuddy";
-import { CLAIM_PUCK_REPO_URL } from "../../../lib/claimPuck";
 import type { AccessoriesMessages } from "./en";
-
-const BB = BAYBUDDY_NAME;
-const repo = (label: string) =>
-  `<a class="text-link" href="${CLAIM_PUCK_REPO_URL}" target="_blank" rel="noreferrer">${label}</a>`;
 
 const fr: AccessoriesMessages = {
   common: {
@@ -13,7 +6,7 @@ const fr: AccessoriesMessages = {
     breadcrumbAccessories: "Accessoires",
     defaultKicker: "Accessoire matériel",
     kitKicker: "Kit / goodies",
-    faqTitle: (title: string) => `FAQ – ${title}`,
+    faqTitle: "FAQ – {title}",
     faqLede: "Ce qu’il fait, ce qu’il ne remplace pas et comment il s’intègre à ProbeHarbor.",
     relatedTitle: "Accessoires associés",
     allAccessories: "Tous les accessoires",
@@ -30,7 +23,7 @@ const fr: AccessoriesMessages = {
     devices: "Devices",
     alerts: "Alerts",
     sketch: "Sketch ↗",
-    getBayBuddy: `Télécharger ${BB}`,
+    getBayBuddy: "Télécharger Bay Buddy",
     alertBeacon: "Alert beacon",
     momentaryButton: "Bouton poussoir",
     buttonWhy: "GP4 vers GND pour confirmer la revendication.",
@@ -39,9 +32,9 @@ const fr: AccessoriesMessages = {
   },
   hub: {
     title: "Accessoires matériels",
-    description: `Appareils compagnons et éléments de kit pour ${BRAND_NAME} : voyants d’ambiance, contacts de porte et de fuite, étiquettes et fixations.`,
+    description: "Appareils compagnons et éléments de kit pour ProbeHarbor : voyants d’ambiance, contacts de porte et de fuite, étiquettes et fixations.",
     kicker: "Matériel",
-    lede: `Appareils compagnons et éléments de kit pour ${BRAND_NAME}. Les sondes de température relèvent du kit antigel ; ces accessoires prouvent une présence, affichent des ambiances, envoient des contacts en POST ou complètent une installation au garage.`,
+    lede: "Appareils compagnons et éléments de kit pour ProbeHarbor. Les sondes de température relèvent du kit antigel ; ces accessoires prouvent une présence, affichent des ambiances, envoient des contacts en POST ou complètent une installation au garage.",
     freezeKitBom: "Nomenclature du kit antigel",
     companionApps: "Applications compagnons",
     catalog: "Catalogue",
@@ -68,9 +61,9 @@ const fr: AccessoriesMessages = {
     caseWhy: "Boîtier adapté au bureau et lueur d’ambiance plus douce.",
     caseBuy: "Boîtier du Claim puck",
     stepsHtml: [
-      `Flashez ${repo("claim-puck CircuitPython")} sur un RP2040-Zero. Câblez un bouton poussoir entre <strong>GP4</strong> et GND.`,
+      'Flashez <a class="text-link" href="https://github.com/doodersrage/probeharbor-claim-puck" target="_blank" rel="noreferrer">claim-puck CircuitPython</a> sur un RP2040-Zero. Câblez un bouton poussoir entre <strong>GP4</strong> et GND.',
       'Connectez au moins une sonde (ou un flux de démo) dans <a class="text-link" href="/dashboard/devices">Devices</a> pour que l’espace ait des relevés. Donnez aux appareils une étiquette <code>space</code> identique (par ex. garage).',
-      `Installez <a class="text-link" href="/bay-buddy">${BB}</a>, connectez-vous, branchez le puck, puis utilisez <strong>Claim this bay</strong> et appuyez sur le bouton quand la LED passe au jaune.`,
+      'Installez <a class="text-link" href="/bay-buddy">Bay Buddy</a>, connectez-vous, branchez le puck, puis utilisez <strong>Claim this bay</strong> et appuyez sur le bouton quand la LED passe au jaune.',
       "Activez éventuellement <strong>Drive puck mood</strong> pour que la LED suive <code>GET /api/bays/&lt;bay&gt;/mood</code>.",
     ],
     openBayBuddy: "Voir la page Bay Buddy",
@@ -79,7 +72,7 @@ const fr: AccessoriesMessages = {
   },
   claimPuckCase: {
     title: "Boîtier du Claim puck",
-    description: `Boîtier, bouton de revendication et diffuseur LED facultatif pour le claim puck ${BRAND_NAME} sur RP2040-Zero : finalisez le montage sur carte nue.`,
+    description: "Boîtier, bouton de revendication et diffuseur LED facultatif pour le claim puck ProbeHarbor sur RP2040-Zero : finalisez le montage sur carte nue.",
     firmware: "Firmware ↗",
     doesHtml:
       "Transforme le Waveshare RP2040-Zero et son bouton GP4 en clé de présence adaptée au bureau, avec une lueur d’ambiance plus douce.",
@@ -102,9 +95,9 @@ const fr: AccessoriesMessages = {
   },
   alertBeacon: {
     title: "Alert beacon",
-    description: `Voyant d’ambiance de bureau ou de couloir qui reflète les ambiances gel et inondation de ${BRAND_NAME}. Même API d’ambiance Bay Buddy que le claim puck.`,
+    description: "Voyant d’ambiance de bureau ou de couloir qui reflète les ambiances gel et inondation de ProbeHarbor. Même API d’ambiance Bay Buddy que le claim puck.",
     moodApi: "API d’ambiance",
-    doesHtml: `Affiche en direct l’ambiance de l’espace (cozy, drafty, shiver, panic, offline, hero) sur une barrette ou un anneau NeoPixel plus lumineux, piloté par <code>GET /api/bays/&lt;bay&gt;/mood</code> via ${BB}.`,
+    doesHtml: "Affiche en direct l’ambiance de l’espace (cozy, drafty, shiver, panic, offline, hero) sur une barrette ou un anneau NeoPixel plus lumineux, piloté par <code>GET /api/bays/&lt;bay&gt;/mood</code> via Bay Buddy.",
     doesNotHtml:
       'Il ne mesure pas la température, ne remplace pas les SMS/e-mails d’Alerts et ne revendique pas un espace à lui seul. Associez-le à une sonde antigel et, si vous le souhaitez, à un <a class="text-link" href="/claim-puck">claim puck</a> pour la présence.',
     caption: "Composants de l’Alert beacon",
@@ -119,14 +112,14 @@ const fr: AccessoriesMessages = {
     powerWhy: "Bloc secteur de bureau ou mural ; gardez le fil de données court.",
     powerBuy: "Toute alimentation USB de qualité.",
     stepsHtml: [
-      `Flashez le ${repo("firmware claim-puck")} (ou le brochage alert-beacon de ce dépôt) et reliez la ligne de données NeoPixel au GPIO indiqué.`,
-      `Revendiquez l’espace une fois avec un <a class="text-link" href="/claim-puck">claim puck</a> (ou en CLI), puis activez <strong>Drive puck mood</strong> dans ${BB} pour le port série du beacon.`,
+      'Flashez le <a class="text-link" href="https://github.com/doodersrage/probeharbor-claim-puck" target="_blank" rel="noreferrer">firmware claim-puck</a> (ou le brochage alert-beacon de ce dépôt) et reliez la ligne de données NeoPixel au GPIO indiqué.',
+      'Revendiquez l’espace une fois avec un <a class="text-link" href="/claim-puck">claim puck</a> (ou en CLI), puis activez <strong>Drive puck mood</strong> dans Bay Buddy pour le port série du beacon.',
       'Vérifiez que l’ambiance change quand la marge avant le gel diminue ou quand un <a class="text-link" href="/leak-puck">leak puck</a> détecte de l’eau.',
     ],
   },
   doorPuck: {
     title: "Door puck (contact de porte)",
-    description: `Contact à lame souple ou bouton qui envoie en POST l’ouverture/fermeture de porte à ${BRAND_NAME}. Alimente l’ambiance « drafty » et des alertes.`,
+    description: "Contact à lame souple ou bouton qui envoie en POST l’ouverture/fermeture de porte à ProbeHarbor. Alimente l’ambiance « drafty » et des alertes.",
     addingDevices: "Ajouter des appareils",
     doesHtml:
       'Envoie en POST <code>{ "door1": true }</code> (ouverte) / <code>false</code> (fermée) à votre URL d’ingestion push environ une fois par minute ou à chaque changement.',
@@ -146,7 +139,7 @@ const fr: AccessoriesMessages = {
   },
   leakPuck: {
     title: "Leak puck (contact de fuite)",
-    description: `Plaques de contact qui envoient en POST l’état mouillé/sec de capteurs d’inondation à ${BRAND_NAME}. Alerte automatique en présence d’eau.`,
+    description: "Plaques de contact qui envoient en POST l’état mouillé/sec de capteurs d’inondation à ProbeHarbor. Alerte automatique en présence d’eau.",
     doesHtml:
       'Envoie en POST <code>{ "leak1": true }</code> en présence d’eau (ou <code>flood1</code>). Les clés contenant leak/flood sont importées comme capteurs d’inondation.',
     doesNotHtml:
@@ -165,7 +158,7 @@ const fr: AccessoriesMessages = {
   },
   powerNudge: {
     title: "Power nudge (coupure de courant)",
-    description: `Contact de détection secteur USB ou onduleur qui envoie en POST la perte/le retour du courant à ${BRAND_NAME}. Sachez quand l’espace a été privé de courant.`,
+    description: "Contact de détection secteur USB ou onduleur qui envoie en POST la perte/le retour du courant à ProbeHarbor. Sachez quand l’espace a été privé de courant.",
     staleReadings: "Relevés figés",
     doesHtml:
       'Envoie en POST <code>{ "power1": true }</code> tant que la détection secteur/USB est présente, <code>false</code> en cas de perte (les clés contenant power/relay sont importées comme capteurs d’alimentation).',
@@ -185,7 +178,7 @@ const fr: AccessoriesMessages = {
   },
   kitLabels: {
     title: "Étiquettes QR et NFC du kit",
-    description: `Autocollants QR imprimables et tags NFC facultatifs contenant votre URL d’ingestion push ${BRAND_NAME} : configurez le firmware sans saisir la clé.`,
+    description: "Autocollants QR imprimables et tags NFC facultatifs contenant votre URL d’ingestion push ProbeHarbor : configurez le firmware sans saisir la clé.",
     kitQrGuide: "Guide QR du kit",
     claimsPack: "Dossier de sinistre",
     doesHtml:
@@ -208,7 +201,7 @@ const fr: AccessoriesMessages = {
   },
   probeMountKit: {
     title: "Kit de fixation de sonde",
-    description: `Colliers, clips de tuyau, pastilles adhésives, pull-up 4,7k et conseils de fixation du DS18B20 étanche pour une sonde antigel ${BRAND_NAME} fiable.`,
+    description: "Colliers, clips de tuyau, pastilles adhésives, pull-up 4,7k et conseils de fixation du DS18B20 étanche pour une sonde antigel ProbeHarbor fiable.",
     mountingGuide: "Guide de fixation",
     picoIngest: "Ingestion Pico W",
     doesHtml:

@@ -1,5 +1,7 @@
 import type { DeviceWithSensors } from "./devices";
 import { readDeviceMetaNumber } from "./deviceHealth";
+import { fmt, type Locale } from "../i18n";
+import { libNumber, libTextMessages } from "../i18n/messages/app/libText";
 
 export type LowBatteryDevice = {
   id: string;
@@ -22,15 +24,18 @@ export function listLowBatteryDevices(
     .sort((a, b) => a.batteryPct - b.batteryPct);
 }
 
-export function lowBatteryBannerMessage(devices: LowBatteryDevice[]): string {
+export function lowBatteryBannerMessage(devices: LowBatteryDevice[], locale: Locale = "en"): string {
   if (devices.length === 0) return "";
+  const t = libTextMessages(locale).lowBattery;
   if (devices.length === 1) {
-    return `${devices[0]!.name} battery is ${devices[0]!.batteryPct}%: charge or replace before it stops posting.`;
+    return fmt(t.single, { name: devices[0]!.name, pct: libNumber(devices[0]!.batteryPct, locale) });
   }
   const names = devices
     .slice(0, 3)
-    .map((d) => `${d.name} (${d.batteryPct}%)`)
+    .map((d) => fmt(t.item, { name: d.name, pct: libNumber(d.batteryPct, locale) }))
     .join(", ");
-  const extra = devices.length > 3 ? ` and ${devices.length - 3} more` : "";
-  return `Low battery on ${devices.length} devices: ${names}${extra}.`;
+  const count = libNumber(devices.length, locale);
+  return devices.length > 3
+    ? fmt(t.listMore, { count, names, more: libNumber(devices.length - 3, locale) })
+    : fmt(t.list, { count, names });
 }

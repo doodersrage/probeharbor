@@ -4,7 +4,7 @@ import { Image } from "astro:assets";
 import Layout from "../layouts/Layout.astro";
 import FaqSection from "./FaqSection.astro";
 import type { Story } from "../lib/stories";
-import { getLocale, localizePath } from "../i18n";
+import { fmt, getLocale, localizePath } from "../i18n";
 import { storiesMessages } from "../i18n/messages/stories";
 import { getLocalizedAnswersRelatedTo } from "../i18n/content/answers";
 import { getLocalizedAboutPhoto } from "../i18n/content/aboutPhotos";
@@ -34,7 +34,7 @@ const resolvedImage = heroImage ?? ccHero?.image;
 const resolvedCaption = heroCaption ?? ccHero?.caption;
 const resolvedCredit = heroCredit ?? ccHero?.credit;
 const resolvedCreditHref = heroCreditHref ?? ccHero?.sourceUrl;
-const resolvedAlt = ccHero?.alt ?? t.illustrationAlt(story.headline);
+const resolvedAlt = ccHero?.alt ?? fmt(t.illustrationAlt, { headline: story.headline });
 
 const relatedAnswers = getLocalizedAnswersRelatedTo(story.path, locale, [
   "how-long-for-pipes-to-freeze",
@@ -76,7 +76,7 @@ const schema = [
   <div class="page-shell page-stack">
     <section class="card animate-slide-in-left">
       <p class="text-sm text-[var(--color-text-muted)] mb-2">
-        {t.scenarioLabel(story.setting)}
+        {fmt(t.scenarioLabel, { setting: story.setting })}
       </p>
       <h1 class="card-title">{story.title}</h1>
       <p class="card-subtitle">{story.description}</p>
@@ -125,7 +125,7 @@ const schema = [
         {
           story.timeline.map((step) => (
             <li>
-              <strong>{t.timeLabel(step.time)}</strong> {step.detail}
+              <strong>{fmt(t.timeLabel, { time: step.time })}</strong> {step.detail}
             </li>
           ))
         }

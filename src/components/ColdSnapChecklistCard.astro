@@ -1,6 +1,8 @@
 ---
 import DashboardCard from "./dashboard/DashboardCard.astro";
 import { COLD_SNAP_CHECKLIST } from "../lib/coldSnapChecklist";
+import { getLocale } from "../i18n";
+import { overviewNudgesMessages } from "../i18n/messages/app/overview/nudges";
 
 interface Props {
   show: boolean;
@@ -14,34 +16,29 @@ const {
   canUseForecast = false,
 } = Astro.props;
 if (!show) return null;
+const t = overviewNudgesMessages(getLocale(Astro)).coldSnap;
+const checklist = COLD_SNAP_CHECKLIST.map((item, i) => t.checklist[i] ?? item);
 ---
 <DashboardCard id="cold-snap">
-  <h2 class="card-title">Cold-snap checklist</h2>
+  <h2 class="card-title">{t.title}</h2>
   <p class="card-subtitle mb-4">
-    Forecast or outdoor temps look cold. Quick household steps while freeze alerts watch the probes.
+    {t.body}
   </p>
   {!coldSnapEnabled && canUseForecast && (
-    <p class="alert-warning mb-4" role="status">
-      The forecast freeze warning is off.
-      <a class="text-link" href="/dashboard/alerts?tab=settings#alert-section-essentials">Turn it on</a>
-      so you get warned before outdoor lows hit your threshold.
-    </p>
+    <p class="alert-warning mb-4" role="status" set:html={t.forecastOffHtml} />
   )}
   {!canUseForecast && (
-    <p class="form-hint mb-4">
-      Forecast cold-snap alerts unlock on Member.
-      <a class="text-link" href="/dashboard/plans">Compare plans</a>
-    </p>
+    <p class="form-hint mb-4" set:html={t.memberHtml} />
   )}
   <ol class="mb-4 space-y-2 pl-5 text-sm">
-    {COLD_SNAP_CHECKLIST.map((item) => (
+    {checklist.map((item) => (
       <li>{item}</li>
     ))}
   </ol>
   <div class="flex flex-wrap gap-3">
-    <a class="btn-secondary" href="/freeze-season">Full freeze-season guide</a>
-    <a class="btn-ghost" href="/about/cold-snap-playbook">Cold-snap playbook</a>
-    <a class="btn-ghost" href="/dashboard/alerts?tab=settings#alert-section-essentials">Alert essentials</a>
-    <a class="btn-ghost" href="/dashboard/alerts?tab=settings#send-test-alert">Send a test alert</a>
+    <a class="btn-secondary" href="/freeze-season">{t.seasonGuide}</a>
+    <a class="btn-ghost" href="/about/cold-snap-playbook">{t.playbook}</a>
+    <a class="btn-ghost" href="/dashboard/alerts?tab=settings#alert-section-essentials">{t.essentials}</a>
+    <a class="btn-ghost" href="/dashboard/alerts?tab=settings#send-test-alert">{t.sendTest}</a>
   </div>
 </DashboardCard>

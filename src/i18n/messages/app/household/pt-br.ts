@@ -1,0 +1,148 @@
+import type { HouseholdMessages } from "./en";
+
+const ptBr: HouseholdMessages = {
+  title: "Casa",
+  subtitle: "Compartilhe dispositivos e histórico. Convide por e-mail — os convidados ainda não precisam ter conta.",
+  notices: {
+    invited: "Convite enviado por e-mail.",
+    removed: "Membro removido.",
+    saved: "Casa atualizada.",
+    switched: "Casa ativa alterada.",
+    joined: "Você entrou na casa.",
+    inviteRevoked: "Convite cancelado.",
+    left: "Você saiu da casa.",
+    propertyCreated: "Novo imóvel criado e definido como ativo.",
+    digestSaved: "Preferência de resumo salva.",
+    digestError: "Não foi possível salvar a preferência de resumo.",
+  },
+  active: {
+    heading: "Casa ativa",
+    subtitle: "Escolha de qual casa você vê os dispositivos e o histórico.",
+    badge: "Ativa",
+    switch: "Alternar",
+  },
+  members: {
+    heading: "Membros",
+    remove: "Remover",
+    confirmRemove: "Remover este membro da casa?",
+    confirmLeave: "Sair desta casa? Você perderá o acesso aos dispositivos compartilhados e ao histórico dela.",
+    leaveBody: "Você é membro desta casa. Ao sair, você perde o acesso aos dispositivos e ao histórico dela.",
+    leave: "Sair da casa",
+  },
+  invite: {
+    heading: "Convidar por e-mail",
+    goesTo: "Os convites são para a casa da qual você é proprietário.",
+    goesToNamed: "Os convites são para a casa da qual você é proprietário ({name}).",
+    emailLabel: "E-mail do convidado",
+    roleLabel: "Função",
+    roleMember: "Editor (pode editar dispositivos e alertas)",
+    rolePropertyManager: "Administrador do imóvel (apenas dispositivos e alertas)",
+    roleViewer: "Leitor (painel somente leitura)",
+    roleAlertOnly: "Somente alertas (notificações, somente leitura)",
+    portfolioHintHtml:
+      '<a class="text-link" href="/pricing#portfolio">Portfolio</a> adiciona acessos de administrador do imóvel para a equipe no local (sem acesso ao faturamento).',
+    submit: "Enviar link de convite",
+    invitesHeading: "Convites",
+    ownerOnly: "Somente o proprietário da casa pode enviar convites.",
+  },
+  pending: {
+    heading: "Convites pendentes",
+    expires: "Expira em {time}",
+    copyLink: "Copiar link",
+    confirmCancel: "Cancelar este convite?",
+    cancel: "Cancelar",
+  },
+  rename: {
+    heading: "Nome da casa",
+    label: "Nome",
+    submit: "Salvar nome",
+  },
+  digest: {
+    heading: "Resumo semanal",
+    subtitle:
+      "Se o proprietário tiver os resumos ativados, inscreva-se para receber o mesmo resumo semanal das sondas.",
+    checkbox: "Receber por e-mail o resumo semanal da casa",
+    save: "Salvar",
+  },
+  freezeMap: {
+    heading: "Mapa público de risco de congelamento",
+    subtitle:
+      "Contribua com médias anônimas de temperatura interna da sua cidade. Nenhuma casa, dispositivo ou endereço aparece no mapa público.",
+    optIn: "Incluir esta casa nas médias da cidade",
+    presetLabel: "Cidade predefinida",
+    presetPlaceholder: "Escolha uma cidade predefinida (opcional)",
+    searchLabel: "Ou pesquise qualquer cidade",
+    searchPlaceholder: "ex.: Asheville, NC",
+    selected: "Selecionada: {label}",
+    searchHint: "Se a sua cidade não estiver na lista, pesquise e escolha um resultado.",
+    submit: "Salvar configurações do mapa de congelamento",
+    publicListHtml: 'Veja a lista pública em <a class="text-link" href="/freeze-map">/freeze-map</a>.',
+  },
+  property: {
+    heading: "Adicionar outro imóvel",
+    subtitle:
+      "Crie uma segunda casa (casa de férias, imóvel alugado etc.) e alterne entre elas pelo painel.",
+    nameLabel: "Nome do imóvel",
+    namePlaceholder: "Casa do lago",
+    submit: "Criar imóvel",
+    limit: {
+      one: "Seu plano permite {count} casa própria ({inUse} em uso). Faça upgrade para o Pro para ter vários imóveis.",
+      other: "Seu plano permite {count} casas próprias ({inUse} em uso). Faça upgrade para o Pro para ter vários imóveis.",
+    },
+  },
+  activity: {
+    heading: "Atividade recente",
+    subtitle:
+      "Convites, alterações de alertas, transferências de dispositivos e exibições de chaves de ingestão nesta casa.",
+    empty: "Nenhuma atividade ainda.",
+    repeat: "×{count}",
+    backTo: "(desde {time})",
+  },
+  client: {
+    sending: "Enviando…",
+    sendInvite: "Enviar link de convite",
+    inviteFailed: "Não foi possível enviar o convite.",
+    inviteSent: "Convite enviado.",
+    saving: "Salvando…",
+    saveFailed: "Não foi possível salvar.",
+    saved: "Salvo.",
+    saveName: "Salvar nome",
+    saveFreezeMap: "Salvar configurações do mapa de congelamento",
+    usingPreset: "Usando a cidade predefinida.",
+    selected: "Selecionada: {label}",
+    searchFailed: "A pesquisa falhou",
+  },
+  errors: {
+    missing_email: "Informe um endereço de e-mail para enviar o convite.",
+    "1": "Não foi possível concluir essa ação na casa. Tente novamente.",
+    email_mismatch: "Entre com o e-mail para o qual este convite foi enviado.",
+    already_member: "Você já é membro desta casa.",
+    expired: "Este convite expirou. Peça um novo.",
+    invalid: "Este link de convite é inválido.",
+    cannot_leave_owner:
+      "O proprietário não pode sair da casa. Transfira a propriedade ou exclua a casa.",
+    manager_required:
+      "Somente proprietários e membros com acesso completo podem gerenciar convites, links de compartilhamento e integrações de faturamento.",
+    viewer: "Somente leitura. Você não pode alterar as configurações desta conta.",
+    property_limit:
+      "Você atingiu o limite de imóveis próprios do seu plano. Faça upgrade para ter mais casas.",
+    portfolio_required: "Convites de administrador do imóvel exigem o plano Portfolio.",
+  },
+  actions: {
+    ingest_key_revealed: "Chave de ingestão exibida",
+    device_transfer: "Dispositivo transferido",
+    sensor_replaced: "Sensor substituído",
+    alert_settings_saved: "Configurações de alerta salvas",
+    alert_settings_restored: "Configurações de alerta restauradas",
+    share_link_created: "Link de compartilhamento criado",
+    api_key_created: "Chave de API criada",
+    checkout_started: "Pagamento iniciado",
+    household_created: "Casa criada",
+    status_page_created: "Página de status criada",
+    status_page_revoked: "Página de status revogada",
+    inbound_snooze: "Alertas adiados (entrada)",
+    inbound_vacation: "Modo férias (entrada)",
+  },
+};
+
+export default ptBr;

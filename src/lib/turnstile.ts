@@ -1,11 +1,15 @@
+import type { Locale } from "../i18n/locales";
+import { miscMessages } from "../i18n/messages/app/misc";
+
 export async function verifyTurnstileToken(
   token: string | null | undefined,
   remoteIp?: string | null,
+  locale: Locale = "en",
 ): Promise<{ success: boolean; error?: string }> {
   const secret = import.meta.env.TURNSTILE_SECRET_TOKEN;
 
   if (!token) {
-    return { success: false, error: "Missing Turnstile verification." };
+    return { success: false, error: miscMessages(locale).forms.turnstileMissing };
   }
 
   if (!secret) {
@@ -28,7 +32,7 @@ export async function verifyTurnstileToken(
   const outcome = (await result.json()) as { success?: boolean };
 
   if (!outcome.success) {
-    return { success: false, error: "Turnstile verification failed." };
+    return { success: false, error: miscMessages(locale).forms.turnstileFailed };
   }
 
   return { success: true };

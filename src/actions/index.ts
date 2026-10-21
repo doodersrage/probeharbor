@@ -53,27 +53,31 @@ import {
   updateDeviceSpace,
   upsertDeviceSensor,
 } from "../lib/devices";
+import { fmt, type Locale } from "../i18n";
+import { apiLocale, apiMoreCommonMessages } from "../i18n/messages/app/apiMore/common";
+import { apiMoreActionsMessages } from "../i18n/messages/app/apiMore/actions";
 
-async function requireAuthed(cookies: Parameters<typeof getAuthFromCookies>[0]) {
+async function requireAuthed(cookies: Parameters<typeof getAuthFromCookies>[0], locale: Locale = "en") {
   const { session, user } = await getAuthFromCookies(cookies);
   if (!session || !user) {
     throw new ActionError({
       code: "UNAUTHORIZED",
-      message: "Sign in to continue.",
+      message: apiMoreActionsMessages(locale).signInToContinue,
     });
   }
   return { session, user };
 }
 
-async function requireEditor(userId: string) {
+async function requireEditor(userId: string, locale: Locale = "en") {
   const editor = await requireHouseholdEditor(userId);
   if (!editor.ok) {
+    const t = apiMoreActionsMessages(locale);
     throw new ActionError({
       code: "FORBIDDEN",
       message:
         editor.error === "viewer"
-          ? "View-only members cannot change this."
-          : "No household found.",
+          ? t.viewOnly
+          : t.noHousehold,
     });
   }
   return householdEditorCtx(editor);
@@ -96,14 +100,16 @@ export const server = {
       redirect: z.string().optional(),
     }),
     handler: async (input, context) => {
-      await requireAuthed(context.cookies);
+      const locale = apiLocale(context);
+      const t = apiMoreActionsMessages(locale);
+      await requireAuthed(context.cookies, locale);
 
       const accessToken = context.cookies.get("sb-access-token")?.value;
       const refreshToken = context.cookies.get("sb-refresh-token")?.value;
       if (!accessToken || !refreshToken) {
         throw new ActionError({
           code: "UNAUTHORIZED",
-          message: "Session expired. Sign in again.",
+          message: t.sessionExpired,
         });
       }
 
@@ -114,7 +120,7 @@ export const server = {
       if (error) {
         throw new ActionError({
           code: "BAD_REQUEST",
-          message: error.message || "Could not save display preferences.",
+          message: error.message || t.displayPrefsSaveFailed,
         });
       }
 
@@ -145,7 +151,7 @@ export const server = {
       return {
         ok: true as const,
         theme: prefs.theme,
-        message: "Display preferences saved.",
+        message: t.displayPrefsSaved,
       };
     },
   }),
@@ -155,13 +161,15 @@ export const server = {
     // No Zod input schema: alert forms are dynamic. z.record fails Astro form
     // parsing (FormData is passed through and fails "expected record").
     handler: async (formData, context) => {
-      const { session, user } = await requireAuthed(context.cookies);
-      await requireEditor(user.id);
+      const locale = apiLocale(context);
+      const t = apiMoreActionsMessages(locale);
+      const { session, user } = await requireAuthed(context.cookies, locale);
+      await requireEditor(user.id, locale);
 
       if (!(formData instanceof FormData)) {
         throw new ActionError({
           code: "BAD_REQUEST",
-          message: "Expected form data.",
+          message: t.expectedFormData,
         });
       }
 
@@ -180,14 +188,14 @@ export const server = {
       if (invalidWebhookField) {
         throw new ActionError({
           code: "BAD_REQUEST",
-          message: "One of your webhook URLs isn't a valid https:// address, or points to a private network.",
+          message: t.invalidWebhookUrl,
         });
       }
 
       if (isWeakTelegramSecret(settings.telegramCommandSecret)) {
         throw new ActionError({
           code: "BAD_REQUEST",
-          message: `Telegram webhook secret must be at least 16 characters.`,
+          message: t.weakTelegramSecret,
         });
       }
 
@@ -201,11 +209,11 @@ export const server = {
       if (error) {
         throw new ActionError({
           code: "BAD_REQUEST",
-          message: error.message || "Could not save alert settings.",
+          message: error.message || t.alertSettingsSaveFailed,
         });
       }
 
-      await recordAlertSettingsChange(user.id, existing, settings);
+      await recordAlertSettingsChange(user.id, existing, settings, locale);
 
       const householdId = await getUserHouseholdId(user.id);
       if (householdId) {
@@ -221,8 +229,8 @@ export const server = {
         ok: true as const,
         channelsIncomplete: alertChannelsIncomplete(settings),
         message: alertChannelsIncomplete(settings)
-          ? "Alert settings saved — some channels are missing destinations."
-          : "Alert settings saved.",
+          ? t.alertSettingsSavedIncomplete
+          : t.alertSettingsSaved,
         snoozeUntil: settings.snoozeUntil,
         vacationUntil: settings.vacationUntil,
       };
@@ -243,8 +251,10 @@ export const server = {
       redirect: z.string().optional(),
     }),
     handler: async (input, context) => {
-      const { user } = await requireAuthed(context.cookies);
-      await requireEditor(user.id);
+      const locale = apiLocale(context);
+      const t = apiMoreActionsMessages(locale);
+      const { user } = await requireAuthed(context.cookies, locale);
+      await requireEditor(user.id, locale);
 
       const settings = await getAlertSettingsForUser(
         user.id,
@@ -259,7 +269,7 @@ export const server = {
         return {
           ok: true as const,
           kind: "snooze" as const,
-          message: "Alerts snoozed for 24 hours.",
+          message: t.snoozed24h,
         };
       }
 
@@ -271,7 +281,7 @@ export const server = {
         return {
           ok: true as const,
           kind: "vacation" as const,
-          message: "Vacation mode on for 7 days.",
+          message: t.vacation7d,
         };
       }
 
@@ -280,7 +290,7 @@ export const server = {
         if (!vacationUntil) {
           throw new ActionError({
             code: "BAD_REQUEST",
-            message: "Pick a future return date.",
+            message: t.pickFutureDate,
           });
         }
         await saveAlertSettingsForUser(user.id, {
@@ -290,7 +300,7 @@ export const server = {
         return {
           ok: true as const,
           kind: "vacation" as const,
-          message: `Vacation until ${input.until}.`,
+          message: fmt(t.vacationUntil, { date: input.until ?? "" }),
         };
       }
 
@@ -302,7 +312,7 @@ export const server = {
         return {
           ok: true as const,
           kind: "snooze_cleared" as const,
-          message: "Snooze cleared.",
+          message: t.snoozeCleared,
         };
       }
 
@@ -313,7 +323,7 @@ export const server = {
       return {
         ok: true as const,
         kind: "vacation_cleared" as const,
-        message: "Vacation ended.",
+        message: t.vacationEnded,
       };
     },
   }),
@@ -329,7 +339,9 @@ export const server = {
       action: z.string().optional(),
     }),
     handler: async (input, context) => {
-      const { user } = await requireAuthed(context.cookies);
+      const locale = apiLocale(context);
+      const t = apiMoreActionsMessages(locale);
+      const { user } = await requireAuthed(context.cookies, locale);
       // Targets the household the user owns (checked below), so the role in
       // the active household doesn't matter here.
       const ownedId = await getOwnedHouseholdId(user.id);
@@ -338,7 +350,7 @@ export const server = {
       if (!manageId || !ownedId || ownedId !== manageId) {
         throw new ActionError({
           code: "FORBIDDEN",
-          message: "Only the household owner can send invites.",
+          message: t.ownerOnlyInvite,
         });
       }
 
@@ -350,7 +362,7 @@ export const server = {
           throw new ActionError({
             code: "FORBIDDEN",
             message:
-              "Property-manager invites require the Portfolio plan.",
+              t.portfolioRequired,
           });
         }
       }
@@ -364,7 +376,7 @@ export const server = {
       if (error || !invite) {
         throw new ActionError({
           code: "BAD_REQUEST",
-          message: error || "Could not create invite.",
+          message: error || t.inviteFailed,
         });
       }
 
@@ -379,13 +391,14 @@ export const server = {
       await sendInviteEmail(
         email,
         acceptUrl,
-        householdRow?.name ?? "a household",
+        householdRow?.name ?? apiMoreCommonMessages(locale).defaults.aHousehold,
         user.email ?? null,
+        locale,
       );
 
       return {
         ok: true as const,
-        message: `Invite sent to ${email}.`,
+        message: fmt(t.inviteSent, { email }),
         email,
       };
     },
@@ -399,14 +412,16 @@ export const server = {
       action: z.string().optional(),
     }),
     handler: async (input, context) => {
-      const { user } = await requireAuthed(context.cookies);
+      const locale = apiLocale(context);
+      const t = apiMoreActionsMessages(locale);
+      const { user } = await requireAuthed(context.cookies, locale);
       // Targets the household the user owns (checked below), so the role in
       // the active household doesn't matter here.
       const ownedId = await getOwnedHouseholdId(user.id);
       if (!ownedId) {
         throw new ActionError({
           code: "FORBIDDEN",
-          message: "Only the household owner can rename it.",
+          message: t.ownerOnlyRename,
         });
       }
 
@@ -414,7 +429,7 @@ export const server = {
       await updateHouseholdName(ownedId, name);
       return {
         ok: true as const,
-        message: "Household name saved.",
+        message: t.householdNameSaved,
         name,
       };
     },
@@ -432,14 +447,16 @@ export const server = {
       action: z.string().optional(),
     }),
     handler: async (input, context) => {
-      const { user } = await requireAuthed(context.cookies);
+      const locale = apiLocale(context);
+      const t = apiMoreActionsMessages(locale);
+      const { user } = await requireAuthed(context.cookies, locale);
       // Targets the household the user owns (checked below), so the role in
       // the active household doesn't matter here.
       const ownedId = await getOwnedHouseholdId(user.id);
       if (!ownedId) {
         throw new ActionError({
           code: "FORBIDDEN",
-          message: "Only the household owner can update freeze-map settings.",
+          message: t.ownerOnlyFreezeMap,
         });
       }
 
@@ -465,7 +482,7 @@ export const server = {
 
       return {
         ok: true as const,
-        message: "Freeze map settings saved.",
+        message: t.freezeMapSaved,
       };
     },
   }),
@@ -479,13 +496,16 @@ export const server = {
       action: z.string().optional(),
     }),
     handler: async (input, context) => {
-      const { user } = await requireAuthed(context.cookies);
-      const { householdId } = await requireEditor(user.id);
+      const locale = apiLocale(context);
+      const t = apiMoreActionsMessages(locale);
+      const { user } = await requireAuthed(context.cookies, locale);
+      const { householdId } = await requireEditor(user.id, locale);
 
       const result = await renamePushDevice(
         householdId,
         input.device_id,
         input.name.trim(),
+        locale,
       );
       if (result.error) {
         throw new ActionError({
@@ -496,7 +516,7 @@ export const server = {
 
       return {
         ok: true as const,
-        message: "Device renamed.",
+        message: t.deviceRenamed,
         name: input.name.trim(),
       };
     },
@@ -511,13 +531,16 @@ export const server = {
       action: z.string().optional(),
     }),
     handler: async (input, context) => {
-      const { user } = await requireAuthed(context.cookies);
-      const { householdId } = await requireEditor(user.id);
+      const locale = apiLocale(context);
+      const t = apiMoreActionsMessages(locale);
+      const { user } = await requireAuthed(context.cookies, locale);
+      const { householdId } = await requireEditor(user.id, locale);
 
       const result = await updateDeviceSpace(
         householdId,
         input.device_id,
         input.space?.trim() ?? "",
+        locale,
       );
       if (result.error) {
         throw new ActionError({
@@ -528,7 +551,7 @@ export const server = {
 
       return {
         ok: true as const,
-        message: "Device space saved.",
+        message: t.deviceSpaceSaved,
         space: input.space?.trim() ?? "",
       };
     },
@@ -547,11 +570,13 @@ export const server = {
       visible: z.string().optional(),
     }),
     handler: async (input, context) => {
-      const { user } = await requireAuthed(context.cookies);
-      const { householdId } = await requireEditor(user.id);
+      const locale = apiLocale(context);
+      const t = apiMoreActionsMessages(locale);
+      const { user } = await requireAuthed(context.cookies, locale);
+      const { householdId } = await requireEditor(user.id, locale);
       const owned = await listHouseholdDevices(householdId);
       if (!owned.devices.some((d) => d.id === input.device_id)) {
-        throw new ActionError({ code: "FORBIDDEN", message: "Device not found." });
+        throw new ActionError({ code: "FORBIDDEN", message: t.deviceNotFound });
       }
       const kindRaw = input.kind ?? "generic";
       const kind = isSensorKind(kindRaw) ? kindRaw : ("generic" as const);
@@ -567,7 +592,7 @@ export const server = {
       if (result.error) {
         throw new ActionError({ code: "BAD_REQUEST", message: result.error });
       }
-      return { ok: true as const, message: "Sensor saved." };
+      return { ok: true as const, message: t.sensorSaved };
     },
   }),
 
@@ -581,11 +606,13 @@ export const server = {
       unit: z.string().optional(),
     }),
     handler: async (input, context) => {
-      const { user } = await requireAuthed(context.cookies);
-      const { householdId } = await requireEditor(user.id);
+      const locale = apiLocale(context);
+      const t = apiMoreActionsMessages(locale);
+      const { user } = await requireAuthed(context.cookies, locale);
+      const { householdId } = await requireEditor(user.id, locale);
       const owned = await listHouseholdDevices(householdId);
       if (!owned.devices.some((d) => d.id === input.device_id)) {
-        throw new ActionError({ code: "FORBIDDEN", message: "Device not found." });
+        throw new ActionError({ code: "FORBIDDEN", message: t.deviceNotFound });
       }
       const kindRaw = input.kind ?? "generic";
       const kind = isSensorKind(kindRaw) ? kindRaw : ("generic" as const);
@@ -599,7 +626,7 @@ export const server = {
       if (result.error) {
         throw new ActionError({ code: "BAD_REQUEST", message: result.error });
       }
-      return { ok: true as const, message: "Sensor added." };
+      return { ok: true as const, message: t.sensorAdded };
     },
   }),
 
@@ -611,11 +638,13 @@ export const server = {
       label: z.string().optional(),
     }),
     handler: async (input, context) => {
-      const { user } = await requireAuthed(context.cookies);
-      const { householdId } = await requireEditor(user.id);
+      const locale = apiLocale(context);
+      const t = apiMoreActionsMessages(locale);
+      const { user } = await requireAuthed(context.cookies, locale);
+      const { householdId } = await requireEditor(user.id, locale);
       const owned = await listHouseholdDevices(householdId);
       if (!owned.devices.some((d) => d.id === input.device_id)) {
-        throw new ActionError({ code: "FORBIDDEN", message: "Device not found." });
+        throw new ActionError({ code: "FORBIDDEN", message: t.deviceNotFound });
       }
       const label = input.label?.trim() || "Probe";
       const temp = await upsertDeviceSensor(
@@ -638,7 +667,7 @@ export const server = {
       if (humidity.error) {
         throw new ActionError({ code: "BAD_REQUEST", message: humidity.error });
       }
-      return { ok: true as const, message: "Sensor pair added." };
+      return { ok: true as const, message: t.sensorPairAdded };
     },
   }),
 
@@ -649,17 +678,19 @@ export const server = {
       device_id: z.string().min(1),
     }),
     handler: async (input, context) => {
-      const { user } = await requireAuthed(context.cookies);
-      const { householdId } = await requireEditor(user.id);
+      const locale = apiLocale(context);
+      const t = apiMoreActionsMessages(locale);
+      const { user } = await requireAuthed(context.cookies, locale);
+      const { householdId } = await requireEditor(user.id, locale);
       const owned = await listHouseholdDevices(householdId);
       if (!owned.devices.some((d) => d.id === input.device_id)) {
-        throw new ActionError({ code: "FORBIDDEN", message: "Device not found." });
+        throw new ActionError({ code: "FORBIDDEN", message: t.deviceNotFound });
       }
       const result = await deleteDeviceSensor(input.sensor_id, input.device_id);
       if (result.error) {
         throw new ActionError({ code: "BAD_REQUEST", message: result.error });
       }
-      return { ok: true as const, message: "Sensor deleted." };
+      return { ok: true as const, message: t.sensorDeleted };
     },
   }),
 };

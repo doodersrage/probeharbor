@@ -5,6 +5,8 @@ import { firmwareUpdateAvailable } from "./firmwareVersion";
 import type { LatestSensorRow } from "./sensorReadings";
 import { formatBoolSensorValue } from "./sensorKinds";
 import type { StuckSensor } from "./stuckSensors";
+import type { Locale } from "../i18n/locales";
+import { libFixed } from "../i18n/messages/app/libText";
 
 /** One row in the Devices list: enough to tell probes apart and spot trouble. */
 export type DeviceListRow = {
@@ -30,10 +32,10 @@ export function deviceHref(deviceId: string): string {
   return `/dashboard/devices/${encodeURIComponent(deviceId)}`;
 }
 
-export function formatSensorValue(row: LatestSensorRow): string | null {
-  if (row.value_bool != null) return formatBoolSensorValue(row.sensor.kind, row.value_bool);
+export function formatSensorValue(row: LatestSensorRow, locale: Locale = "en"): string | null {
+  if (row.value_bool != null) return formatBoolSensorValue(row.sensor.kind, row.value_bool, locale);
   // fetchLatestSensorValues has already applied the calibration offset.
-  if (row.value_num != null) return `${row.value_num.toFixed(1)}${row.sensor.unit ? ` ${row.sensor.unit}` : ""}`;
+  if (row.value_num != null) return `${libFixed(row.value_num, 1, locale)}${row.sensor.unit ? ` ${row.sensor.unit}` : ""}`;
   return row.value_text ?? null;
 }
 
@@ -53,13 +55,13 @@ export function buildDeviceListRows(input: {
   stuck?: StuckSensor[];
   feedStatuses?: FeedHealthStatus[];
   now?: number;
-}): DeviceListRow[] {
+}, locale: Locale = "en"): DeviceListRow[] {
   const now = input.now ?? Date.now();
   const latestBySensor = new Map(input.latest.map((row) => [row.sensor.id, row]));
   const rows = input.devices.map((device) => {
-    const health = scoreDeviceHealth(device, input.latest, now, -80, input.stuck ?? []);
+    const health = scoreDeviceHealth(device, input.latest, now, -80, input.stuck ?? [], locale);
     const headlineRow = headlineSensor(device.sensors, latestBySensor);
-    const value = headlineRow ? formatSensorValue(headlineRow) : null;
+    const value = headlineRow ? formatSensorValue(headlineRow, locale) : null;
     const feed = input.feedStatuses?.find((status) => status.feedId === device.id);
     const firmware = device.meta?.firmware_version;
     return {

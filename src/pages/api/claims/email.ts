@@ -7,6 +7,9 @@ import { generateClaimsPackForUser } from "../../../lib/claimsPackGenerate";
 import { createClaimsPackExport } from "../../../lib/claimsPackExports";
 import { sendEmail, isMailerRecipientNotAllowed } from "../../../lib/mailer";
 import { brandedEmailParts } from "../../../lib/emailLayout";
+import { fmt } from "../../../i18n";
+import { apiLocale } from "../../../i18n/messages/app/apiMore/common";
+import { apiMoreBillingMessages } from "../../../i18n/messages/app/apiMore/billing";
 
 function wantsJson(request: Request): boolean {
   const accept = request.headers.get("accept") ?? "";
@@ -21,7 +24,8 @@ function jsonResponse(body: Record<string, unknown>, status = 200): Response {
   });
 }
 
-export const POST: APIRoute = async ({ request, cookies, redirect }) => {
+export const POST: APIRoute = async (context) => {
+  const { request, cookies, redirect } = context;
   const { session, user } = await getAuthFromRequest(request, cookies);
   const asJson = wantsJson(request);
 
@@ -93,27 +97,29 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   }
 
   const verifyUrl = `${siteUrl}/api/claims/pack/${token}`;
-  const rangeLabel = `${pack.rangeFrom.slice(0, 10)} to ${pack.rangeTo.slice(0, 10)}`;
+  // Written in the sender's language: the adjuster's language isn't known.
+  const t = apiMoreBillingMessages(apiLocale(context)).claimsEmail;
+  const household = pack.householdLabel;
+  const rangeLabel = fmt(t.range, { from: pack.rangeFrom.slice(0, 10), to: pack.rangeTo.slice(0, 10) });
 
   try {
     const parts = brandedEmailParts({
-      eyebrow: "Claims pack",
-      preheader: `A ProbeHarbor freeze-exposure report for ${pack.householdLabel} is ready to view.`,
-      title: `Claims pack: ${pack.householdLabel}`,
-      intro: `A ProbeHarbor household member shared a freeze-exposure and alert-history report covering ${rangeLabel}.`,
+      eyebrow: t.eyebrow,
+      preheader: fmt(t.preheader, { household }),
+      title: fmt(t.title, { household }),
+      intro: fmt(t.intro, { range: rangeLabel }),
       paragraphs: [
-        "The report includes freeze-exposure stats, device and probe tables, and a timeline of critical alerts for the selected period, with a verification code so this specific export can be reconfirmed later.",
-        `Verification code: ${contentHash}`,
+        t.body,
+        fmt(t.verificationCode, { code: String(contentHash) }),
       ],
-      cta: { label: "View claims pack", url: verifyUrl },
+      cta: { label: t.cta, url: verifyUrl },
       secondaryCta: pack.historyUrl
-        ? { label: "Open this window on History", url: pack.historyUrl }
+        ? { label: t.historyCta, url: pack.historyUrl }
         : undefined,
       tone: "brand",
-      footerNote:
-        "This report was sent by a ProbeHarbor household member. It's a monitoring summary, not a certified inspection -- see the report itself for full context.",
-    });
-    await sendEmail(adjusterEmail, `Claims pack: ${pack.householdLabel}`, parts.text, {
+      footerNote: t.footerNote,
+    }, apiLocale(context));
+    await sendEmail(adjusterEmail, fmt(t.subject, { household }), parts.text, {
       html: parts.html,
     });
   } catch (err) {

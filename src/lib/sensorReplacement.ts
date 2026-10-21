@@ -1,5 +1,7 @@
 import type { DeviceWithSensors } from "./devices";
 import { SENSOR_KIND_LABELS, type SensorKind } from "./sensorKinds";
+import type { Locale } from "../i18n/locales";
+import { apiDevicesMessages } from "../i18n/messages/app/api/devices";
 
 export type ReplacementOption = {
   sensorId: string;
@@ -31,12 +33,7 @@ export function replacementOptionsByKind(
     .sort((a, b) => a.kindLabel.localeCompare(b.kindLabel));
 }
 
-const REPLACEMENT_ERRORS = {
-  same_sensor: "Pick two different sensors.",
-  kind_mismatch: "Both sensors need to be the same type (temperature with temperature).",
-  sensor_not_found: "One of those sensors isn't in this property anymore.",
-  failed: "Couldn't replace the sensor. Nothing was changed.",
-} as const;
+const REPLACEMENT_ERRORS = apiDevicesMessages.en.replaceErrors;
 
 export type ReplacementErrorCode = keyof typeof REPLACEMENT_ERRORS;
 
@@ -49,8 +46,9 @@ export function replacementErrorCode(raw: string | null | undefined): Replacemen
 }
 
 /** Flash text for a code; unknown codes get the generic message, never the raw value. */
-export function replacementErrorMessage(code: string | null | undefined): string {
-  return code && code in REPLACEMENT_ERRORS
-    ? REPLACEMENT_ERRORS[code as ReplacementErrorCode]
-    : REPLACEMENT_ERRORS.failed;
+export function replacementErrorMessage(code: string | null | undefined, locale: Locale = "en"): string {
+  const messages = apiDevicesMessages(locale).replaceErrors;
+  return code && Object.hasOwn(REPLACEMENT_ERRORS, code)
+    ? messages[code as ReplacementErrorCode]
+    : messages.failed;
 }

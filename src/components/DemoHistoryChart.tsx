@@ -7,7 +7,7 @@ type DemoHistory = { location: string | null; points: Point[]; outdoor: Point[] 
 /**
  * Visible copy. Plain strings only (island props are serialized); `{location}`
  * is a placeholder. Marketing pages pass a translation from
- * `src/i18n/messages/demoIslands.ts`.
+ * `src/i18n/messages/demoIslands/`.
  */
 export const DEMO_HISTORY_TEXT_EN = {
   unavailable: "The 7-day chart is unavailable right now. Live readings above still update.",

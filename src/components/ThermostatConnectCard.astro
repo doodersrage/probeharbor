@@ -5,6 +5,8 @@ import UpgradeNudge from "./UpgradeNudge.astro";
 import type { PlanTier } from "../lib/entitlements";
 import type { ThermostatProvider } from "../lib/thermostatConnections";
 import type { ThermostatSnapshot, ThermostatFetchError } from "../lib/thermostatCorrelation";
+import { fmt, getLocale } from "../i18n";
+import { deviceSetupThermostatMessages } from "../i18n/messages/app/deviceSetup/thermostat";
 
 interface Props {
   entitled: boolean;
@@ -21,6 +23,10 @@ interface Props {
 }
 
 const { entitled, tier, canManage, availableProviders, connections } = Astro.props;
+const t = deviceSetupThermostatMessages(getLocale(Astro)).thermostat;
+const KNOWN_ERRORS = ["state_mismatch", "denied", "not_configured", "exchange_failed", "save_failed"] as const;
+type KnownError = (typeof KNOWN_ERRORS)[number];
+const isKnownError = (code: string): code is KnownError => (KNOWN_ERRORS as readonly string[]).includes(code);
 
 const PROVIDER_LABEL: Record<ThermostatProvider, string> = {
   nest: "Nest",
@@ -50,7 +56,7 @@ function connectionFor(provider: ThermostatProvider) {
 
 function formatMode(mode: string | null): string | null {
   if (!mode) return null;
-  return mode.charAt(0).toUpperCase() + mode.slice(1).toLowerCase();
+  return t.modes[mode.toLowerCase()] ?? mode.charAt(0).toUpperCase() + mode.slice(1).toLowerCase();
 }
 
 const showCard = entitled
@@ -60,47 +66,35 @@ const showCard = entitled
 {showCard && (
   entitled ? (
     <DashboardCard id="thermostat-integration">
-      <h2 class="card-title">Thermostat</h2>
-      <p class="card-subtitle mb-4">
-        Connect your house thermostat to see its reading and setpoint next to this
-        probe, and add that context to freeze alerts.
-      </p>
+      <h2 class="card-title">{t.title}</h2>
+      <p class="card-subtitle mb-4">{t.intro}</p>
       {connectedThermostat && (
         <p class="alert-success text-sm mb-4" role="status">
-          {PROVIDER_LABEL[connectedThermostat as ThermostatProvider] ?? connectedThermostat} connected.
+          {fmt(t.connected, { provider: PROVIDER_LABEL[connectedThermostat as ThermostatProvider] ?? connectedThermostat })}
         </p>
       )}
       {disconnectedThermostat && (
         <p class="text-sm text-[var(--color-text-muted)] mb-4" role="status">
-          {PROVIDER_LABEL[disconnectedThermostat as ThermostatProvider] ?? disconnectedThermostat} disconnected.
+          {fmt(t.disconnected, {
+            provider: PROVIDER_LABEL[disconnectedThermostat as ThermostatProvider] ?? disconnectedThermostat,
+          })}
         </p>
       )}
       {thermostatError && (
         <p class="alert-warning text-sm mb-4" role="alert">
-          {thermostatError === "state_mismatch" &&
-            "That connection attempt expired -- try again."}
-          {thermostatError === "denied" && "Connection was cancelled."}
-          {thermostatError === "not_configured" &&
-            "This provider isn't set up on this deployment yet."}
-          {thermostatError === "exchange_failed" &&
-            "Couldn't complete the connection -- try again."}
-          {thermostatError === "save_failed" && "Connected, but saving the connection failed -- try again."}
+          {isKnownError(thermostatError) && t.errors[thermostatError]}
           {thermostatError === "sdm_api_disabled" && (
             <>
-              Nest connected, but the <strong>Smart Device Management API</strong> is not enabled in
-              your Google Cloud project. Enable it in APIs &amp; Services, wait a minute, then refresh
-              this page.{" "}
+              <Fragment set:html={t.sdmDisabledHtml} />{" "}
               <a
                 class="text-link"
                 href="https://console.cloud.google.com/apis/library/smartdevicemanagement.googleapis.com"
                 target="_blank"
                 rel="noreferrer"
-              >Enable SDM API</a>
+              >{t.enableSdm}</a>
             </>
           )}
-          {!["state_mismatch", "denied", "not_configured", "exchange_failed", "save_failed", "sdm_api_disabled"].includes(
-            thermostatError,
-          ) && "Something went wrong connecting your thermostat."}
+          {!isKnownError(thermostatError) && thermostatError !== "sdm_api_disabled" && t.errors.generic}
         </p>
       )}
       <div class="space-y-4">
@@ -118,41 +112,36 @@ const showCard = entitled
                     <p class="mb-0 text-sm text-[var(--color-text-muted)]">
                       {snapshot.ambientTempF != null
                         ? `${snapshot.ambientTempF.toFixed(0)}°F`
-                        : "Reading unavailable"}
-                      {snapshot.heatSetpointF != null && `, set to ${snapshot.heatSetpointF.toFixed(0)}°F`}
+                        : t.readingUnavailable}
+                      {snapshot.heatSetpointF != null && fmt(t.setTo, { temp: `${snapshot.heatSetpointF.toFixed(0)}°F` })}
                       {formatMode(snapshot.hvacMode) && `, ${formatMode(snapshot.hvacMode)}`}
                     </p>
                   ) : (
                     <p class="mb-0 text-sm text-[var(--color-text-muted)]">
-                      {fetchHint ?? "Connected -- couldn't fetch a live reading right now."}
+                      {fetchHint ?? t.noLiveReading}
                     </p>
                   )
                 ) : (
-                  <p class="mb-0 text-sm text-[var(--color-text-muted)]">Not connected</p>
+                  <p class="mb-0 text-sm text-[var(--color-text-muted)]">{t.notConnected}</p>
                 )}
                 {provider === "ecobee" && !canConnect && !connection && (
-                  <p class="mb-0 mt-2 text-xs text-[var(--color-text-muted)]">
-                    Ecobee developer signups are closed: use
-                    <a class="text-link" href="/integrations/home-assistant#indoor-temperature">Home Assistant</a>
-                    to push indoor temp, then pick it under
-                    <a class="text-link" href="#indoor-reference">Indoor reference</a> above.
-                  </p>
+                  <p class="mb-0 mt-2 text-xs text-[var(--color-text-muted)]" set:html={t.ecobeeClosedHtml} />
                 )}
               </div>
               {canManage ? (
                 connection ? (
                   <form action={`/api/integrations/${provider}/disconnect`} method="post">
                     <input type="hidden" name="redirect" value={THERMOSTAT_CARD_PATH} />
-                    <button type="submit" class="btn-secondary">Disconnect</button>
+                    <button type="submit" class="btn-secondary">{t.disconnect}</button>
                   </form>
                 ) : canConnect ? (
-                  <a class="btn-secondary" href={`/api/integrations/${provider}/connect`}>Connect</a>
+                  <a class="btn-secondary" href={`/api/integrations/${provider}/connect`}>{t.connect}</a>
                 ) : (
-                  <span class="text-xs text-[var(--color-text-muted)]">Unavailable</span>
+                  <span class="text-xs text-[var(--color-text-muted)]">{t.unavailable}</span>
                 )
               ) : (
                 connection ? null : (
-                  <span class="text-xs text-[var(--color-text-muted)]">Owner/member only</span>
+                  <span class="text-xs text-[var(--color-text-muted)]">{t.ownerOnly}</span>
                 )
               )}
             </div>

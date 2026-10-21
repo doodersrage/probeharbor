@@ -1,4 +1,7 @@
 import { estimateTimeToFreeze, type TempSample } from "./timeToFreeze";
+import { localizedTrendMessage } from "./spaceThermalModel";
+import { fmt, type Locale } from "../i18n";
+import { libFixed, libNumber, libTextMessages } from "../i18n/messages/app/libText";
 
 export type ThermalRunwayResult = ReturnType<typeof estimateTimeToFreeze> & {
   forecastAdjustedHours: number | null;
@@ -13,7 +16,8 @@ export function buildThermalRunway(input: {
   forecastMinTempF?: number | null;
   forecastHoursAhead?: number;
   doorOpenNearby?: boolean;
-}): ThermalRunwayResult {
+}, locale: Locale = "en"): ThermalRunwayResult {
+  const t = libTextMessages(locale).runway;
   const base = estimateTimeToFreeze(
     input.currentTempF,
     input.freezeThresholdF,
@@ -22,7 +26,7 @@ export function buildThermalRunway(input: {
 
   const annotations: string[] = [];
   if (input.doorOpenNearby) {
-    annotations.push("A door sensor is open: expect faster heat loss until it closes.");
+    annotations.push(t.doorOpen);
   }
 
   let forecastAdjustedHours: number | null = null;
@@ -33,7 +37,7 @@ export function buildThermalRunway(input: {
   ) {
     const ahead = input.forecastHoursAhead ?? 24;
     annotations.push(
-      `Forecast low ~${input.forecastMinTempF.toFixed(1)}°F in the next ${ahead}h: outdoor cold may accelerate indoor cooling.`,
+      fmt(t.forecastLow, { temp: libFixed(input.forecastMinTempF, 1, locale), hours: libNumber(ahead, locale) }),
     );
     if (base.hours != null && base.hours > 0) {
       forecastAdjustedHours = Math.min(base.hours, ahead);
@@ -42,15 +46,20 @@ export function buildThermalRunway(input: {
 
   return {
     ...base,
+    message: localizedTrendMessage(
+      base,
+      { currentTempF: input.currentTempF, freezeThresholdF: input.freezeThresholdF, indoorSamples: input.recentSamples },
+      locale,
+    ),
     forecastAdjustedHours,
     annotations,
   };
 }
 
-export function formatRunwayAlertSuffix(runway: ThermalRunwayResult): string | null {
+export function formatRunwayAlertSuffix(runway: ThermalRunwayResult, locale: Locale = "en"): string | null {
   const parts: string[] = [];
   if (runway.hours != null && runway.hours > 0 && runway.rateFPerHour != null && runway.rateFPerHour < -0.05) {
-    parts.push(`Thermal runway: ${runway.message}`);
+    parts.push(fmt(libTextMessages(locale).runway.prefix, { message: runway.message }));
   }
   if (runway.annotations.length > 0) {
     parts.push(...runway.annotations);

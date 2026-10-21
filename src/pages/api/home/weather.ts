@@ -6,11 +6,15 @@ import {
   fetchWeatherSnapshotForConfig,
   getPersonalWeatherConfig,
 } from "../../../lib/weatherContext";
+import { apiCommonMessages, apiLocale } from "../../../i18n/messages/app/api/common";
+import { apiUserMessages } from "../../../i18n/messages/app/api/user";
 
-export const GET: APIRoute = async ({ url, cookies, clientAddress }) => {
+export const GET: APIRoute = async ({ url, cookies, clientAddress, locals }) => {
+  const locale = apiLocale({ locals });
+  const tc = apiCommonMessages(locale);
   const rate = checkWeatherSearchRateLimit(clientAddress || "unknown");
   if (!rate.ok) {
-    return new Response(JSON.stringify({ error: "Too many requests" }), {
+    return new Response(JSON.stringify({ error: tc.tooManyRequests }), {
       status: 429,
       headers: {
         "Content-Type": "application/json",
@@ -53,7 +57,7 @@ export const GET: APIRoute = async ({ url, cookies, clientAddress }) => {
   if (!weather) {
     return new Response(
       JSON.stringify({
-        error: "Unable to load weather for this location.",
+        error: apiUserMessages(locale).weather.locationUnavailable,
         cityId: cityId || null,
       }),
       {

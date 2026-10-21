@@ -14,8 +14,10 @@ import {
 import { recordHouseholdActivity } from "../../../lib/householdActivity";
 import { formRedirectPath, withQuery } from "../../../lib/siteUrl";
 import { FLASH_API_KEY, setSecretFlash } from "../../../lib/secretFlash";
+import { apiLocale, apiMoreCommonMessages } from "../../../i18n/messages/app/apiMore/common";
 
-export const POST: APIRoute = async ({ request, cookies, redirect }) => {
+export const POST: APIRoute = async (context) => {
+  const { request, cookies, redirect } = context;
   const { user } = await getAuthFromCookies(cookies);
   if (!user) return redirect("/signin");
 
@@ -46,7 +48,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     return redirect(withQuery(redirectTo, { error: "pro_required" }));
   }
 
-  const name = formData.get("name")?.toString() ?? "Metrics key";
+  const name = formData.get("name")?.toString() ?? apiMoreCommonMessages(apiLocale(context)).defaults.metricsKey;
   const result = await createHouseholdApiKey({
     householdId: household.householdId,
     name,

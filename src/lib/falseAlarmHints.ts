@@ -1,6 +1,10 @@
 /**
  * Copy helpers for noisy alerts — freeze placement, leak contact bounce, and smarter snooze.
+ * English tip text lives here; translations are in src/i18n/messages/app/alerts (`tips`).
  */
+import { fmt, formatNumber, plural } from "../i18n/format";
+import type { Locale } from "../i18n/locales";
+import { alertsMessages } from "../i18n/messages/app/alerts";
 
 export type FalseAlarmHint = {
   id: string;
@@ -68,61 +72,102 @@ export const FLOOD_FALSE_ALARM_TIPS: FalseAlarmHint[] = [
   },
 ];
 
-export function staleProbeDetail(staleCount: number): string {
+/** A tip with its text in `locale` (English when untranslated). */
+export function localizeFalseAlarmTip(tip: FalseAlarmHint, locale: Locale = "en"): FalseAlarmHint {
+  if (locale === "en") return tip;
+  const text = alertsMessages(locale).tips[tip.id];
+  if (!text) return tip;
+  return {
+    ...tip,
+    title: text.title || tip.title,
+    detail: text.detail || tip.detail,
+    ...(tip.hrefLabel ? { hrefLabel: text.hrefLabel || tip.hrefLabel } : {}),
+  };
+}
+
+/** {@link FALSE_ALARM_TIPS} in `locale`. */
+export function getFalseAlarmTips(locale: Locale = "en"): FalseAlarmHint[] {
+  return FALSE_ALARM_TIPS.map((tip) => localizeFalseAlarmTip(tip, locale));
+}
+
+/** {@link FLOOD_FALSE_ALARM_TIPS} in `locale`. */
+export function getFloodFalseAlarmTips(locale: Locale = "en"): FalseAlarmHint[] {
+  return FLOOD_FALSE_ALARM_TIPS.map((tip) => localizeFalseAlarmTip(tip, locale));
+}
+
+export function staleProbeDetail(staleCount: number, locale: Locale = "en"): string {
   const n = Math.max(1, staleCount);
-  const probe = n === 1 ? "probe looks" : "probes look";
-  return `${n} ${probe} stale: likely unplugged, offline Wi‑Fi, or a dead battery. Check power and Devices before treating it as a freeze.`;
+  return plural(alertsMessages(locale).staleProbes, n, locale);
 }
 
 export function likelyFalseAlarmFromStale(staleSensorCount: number): boolean {
   return staleSensorCount > 0;
 }
 
-export function wetFloodDetail(wetCount: number): string {
+export function wetFloodDetail(wetCount: number, locale: Locale = "en"): string {
   const n = Math.max(1, wetCount);
-  const sensor = n === 1 ? "flood/leak sensor is" : "flood/leak sensors are";
-  return `${n} ${sensor} wet right now: flood alerts bypass snooze and vacation. Check the pan, sump, or supply line.`;
+  return plural(alertsMessages(locale).wetFlood, n, locale);
 }
 
-export function suggestFalseAlarmTip(kind: string): FalseAlarmHint {
+export function suggestFalseAlarmTip(kind: string, locale: Locale = "en"): FalseAlarmHint {
+  let tip: FalseAlarmHint;
   if (kind === "flood") {
-    return FLOOD_FALSE_ALARM_TIPS[0] ?? FALSE_ALARM_TIPS[0]!;
+    tip = FLOOD_FALSE_ALARM_TIPS[0] ?? FALSE_ALARM_TIPS[0]!;
+  } else if (kind === "outage" || kind.includes("stale")) {
+    tip = FALSE_ALARM_TIPS.find((t) => t.id === "unplugged") ?? FALSE_ALARM_TIPS[0]!;
+  } else {
+    tip = FALSE_ALARM_TIPS.find((t) => t.id === "threshold") ?? FALSE_ALARM_TIPS[0]!;
   }
-  if (kind === "outage" || kind.includes("stale")) {
-    return FALSE_ALARM_TIPS.find((t) => t.id === "unplugged") ?? FALSE_ALARM_TIPS[0]!;
-  }
-  return FALSE_ALARM_TIPS.find((t) => t.id === "threshold") ?? FALSE_ALARM_TIPS[0]!;
+  return localizeFalseAlarmTip(tip, locale);
 }
 
-export function formatAlertWhyMeta(meta: {
-  thresholdF?: number;
-  probeLabel?: string;
-  probeTempF?: number;
-  outdoorTempF?: number | null;
-  deltaTF?: number | null;
-  runwayHours?: number | null;
-  doorOpen?: boolean;
-  reasonSummary?: string;
-}): string | null {
+export function formatAlertWhyMeta(
+  meta: {
+    thresholdF?: number;
+    probeLabel?: string;
+    probeTempF?: number;
+    outdoorTempF?: number | null;
+    deltaTF?: number | null;
+    runwayHours?: number | null;
+    doorOpen?: boolean;
+    reasonSummary?: string;
+  },
+  locale: Locale = "en",
+): string | null {
+  // Stored text written when the alert fired; shown as is.
   if (meta.reasonSummary?.trim()) return meta.reasonSummary.trim();
+  const t = alertsMessages(locale).why;
+  const fixed = (value: number, digits: number) =>
+    formatNumber(Number(value.toFixed(digits)), locale, {
+      minimumFractionDigits: digits,
+      maximumFractionDigits: digits,
+      useGrouping: false,
+    });
   const parts: string[] = [];
   if (meta.probeLabel && meta.probeTempF != null) {
-    parts.push(`${meta.probeLabel} at ${meta.probeTempF.toFixed(1)}°F`);
+    parts.push(fmt(t.probeAt, { probe: meta.probeLabel, temp: fixed(meta.probeTempF, 1) }));
   } else if (meta.probeTempF != null) {
-    parts.push(`Probe at ${meta.probeTempF.toFixed(1)}°F`);
+    parts.push(fmt(t.probeAtUnnamed, { temp: fixed(meta.probeTempF, 1) }));
   }
   if (meta.thresholdF != null) {
-    parts.push(`threshold ${meta.thresholdF}°F`);
+    parts.push(
+      fmt(t.threshold, {
+        temp:
+          locale === "en"
+            ? String(meta.thresholdF)
+            : formatNumber(meta.thresholdF, locale, { maximumFractionDigits: 3, useGrouping: false }),
+      }),
+    );
   }
   if (meta.outdoorTempF != null) {
-    parts.push(`outdoor ${meta.outdoorTempF.toFixed(0)}°F`);
+    parts.push(fmt(t.outdoor, { temp: fixed(meta.outdoorTempF, 0) }));
   }
   if (meta.deltaTF != null) {
-    parts.push(`ΔT ${meta.deltaTF >= 0 ? "+" : ""}${meta.deltaTF.toFixed(1)}°F`);
+    parts.push(fmt(t.deltaT, { delta: `${meta.deltaTF >= 0 ? "+" : ""}${fixed(meta.deltaTF, 1)}` }));
   }
   if (meta.runwayHours != null) {
-    parts.push(`~${meta.runwayHours.toFixed(1)}h runway`);
+    parts.push(fmt(t.runway, { hours: fixed(meta.runwayHours, 1) }));
   }
-  if (meta.doorOpen) parts.push("door open nearby");
+  if (meta.doorOpen) parts.push(t.doorOpen);
   return parts.length > 0 ? parts.join(" · ") : null;
 }

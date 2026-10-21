@@ -4,11 +4,14 @@ import { fetchTemps } from "../../../../lib/FetchTemps";
 import { getUserPreferences } from "../../../../lib/userPreferences";
 import { getUserDevicesAsTempConfig } from "../../../../lib/devices";
 import { fetchLatestSensorValues } from "../../../../lib/sensorReadings";
+import { apiCommonMessages, apiLocale } from "../../../../i18n/messages/app/api/common";
 
-export const GET: APIRoute = async ({ cookies, request }) => {
+export const GET: APIRoute = async ({ cookies, request, locals }) => {
+  const locale = apiLocale({ locals });
+  const tc = apiCommonMessages(locale);
   const { session, user } = await getAuthFromCookies(cookies);
   if (!session || !user) {
-    return new Response("Unauthorized", { status: 401 });
+    return new Response(tc.unauthorized, { status: 401 });
   }
 
   const encoder = new TextEncoder();

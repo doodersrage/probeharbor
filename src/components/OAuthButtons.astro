@@ -1,4 +1,7 @@
 ---
+import { getLocale } from "../i18n";
+import { authSigninMessages } from "../i18n/messages/app/auth/signin";
+
 interface Props {
   action?: string;
   next?: string;
@@ -16,16 +19,17 @@ const {
 const safeNext = next.startsWith("/") && !next.startsWith("//") ? next : "";
 const safeRef = ref.trim().toLowerCase();
 
+const t = authSigninMessages(getLocale(Astro)).oauth;
 const providers = [
-  { id: "google", label: "Continue with Google" },
-  { id: "github", label: "Continue with GitHub" },
-  { id: "discord", label: "Continue with Discord" },
+  { id: "google", label: t.google },
+  { id: "github", label: t.github },
+  { id: "discord", label: t.discord },
 ];
 ---
 
 <div class:list={["oauth-buttons", primary && "oauth-buttons--primary"]}>
   {!primary && (
-    <p class="oauth-divider"><span>or continue with</span></p>
+    <p class="oauth-divider"><span>{t.orContinueWith}</span></p>
   )}
   <div class="flex flex-col gap-2">
     {providers.map(({ id, label }) => (
@@ -43,7 +47,7 @@ const providers = [
     ))}
   </div>
   {primary && (
-    <p class="oauth-divider"><span>or use email</span></p>
+    <p class="oauth-divider"><span>{t.orUseEmail}</span></p>
   )}
 </div>
 

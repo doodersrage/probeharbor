@@ -33,6 +33,16 @@ describe("formatRelativeAge", () => {
     expect(stale.stale).toBe(true);
   });
 
+  it("formats ages for other locales with Intl", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-01-15T12:00:00Z"));
+    expect(formatRelativeAge("2026-01-15T11:45:00Z", "nie", "de").label).toBe("vor 15 Min.");
+    expect(formatRelativeAge("2026-01-15T09:00:00Z", "nunca", "es").label).toBe("hace 3 h");
+    expect(formatRelativeAge("2026-01-15T11:59:40Z", "jamais", "fr").label).toBe("maintenant");
+    expect(formatRelativeAge(null, "nunca", "pt-br").label).toBe("nunca");
+    expect(formatRelativeAge("2026-01-15T11:45:00Z", "never", "en").label).toBe("15m ago");
+  });
+
   it("builds live freshness copy", () => {
     expect(
       freshnessDetail({

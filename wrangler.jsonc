@@ -66,6 +66,15 @@
 	"triggers": {
 		"crons": ["0 * * * *", "15,30,45 * * * *"]
 	},
+	// es/fr/de/pt-br translation tables (workers/i18n), kept out of this
+	// bundle for the 3 MB limit. See src/i18n/catalog.ts.
+	"services": [
+		{
+			"binding": "I18N",
+			"service": "probeharbor-i18n",
+			"entrypoint": "I18n"
+		}
+	],
 	"r2_buckets": [
 		{
 			"binding": "HISTORY_ARCHIVE",

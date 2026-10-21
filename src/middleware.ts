@@ -28,7 +28,10 @@ import {
 import { THERMALTRACE_STATIC_REDIRECTS } from "./lib/rebrand";
 import type { AstroCookies } from "astro";
 import { DEFAULT_LOCALE, LOCALE_META, localizePath, splitLocalePath } from "./i18n/locales";
+import { ensureLocale } from "./i18n/catalog";
+import { resolveRequestLocale, translationGroupsForPath } from "./i18n/requestLocale";
 import { isLocalizablePath, localizeHtmlLinks } from "./i18n/routes";
+import { LOCALE_COOKIE, LOCALE_COOKIE_MAX_AGE } from "./i18n/userLocale";
 
 const LEGACY_STATIC_REDIRECTS: Record<string, string> = {
   [HA_BLUEPRINT_LEGACY_URL]: HA_BLUEPRINT_URL,
@@ -85,14 +88,24 @@ export const onRequest = defineMiddleware(async (context, next) => {
   }
 
   // /es/pricing → render /pricing in Spanish. Untranslated paths go to English.
-  const { locale, path: unprefixedPath } = splitLocalePath(pathname);
-  const localized = locale !== DEFAULT_LOCALE;
+  const { locale: prefixLocale, path: unprefixedPath } = splitLocalePath(pathname);
+  const localized = prefixLocale !== DEFAULT_LOCALE;
   if (localized) {
     if (!isLocalizablePath(unprefixedPath)) {
       return context.redirect(`${unprefixedPath}${context.url.search}`, 302);
     }
     pathname = unprefixedPath;
   }
+  const cookieLocale = context.cookies.get(LOCALE_COOKIE)?.value;
+  // Before auth: URL prefix, cookie or browser language. Signed-in routes
+  // switch to the account language below once the user is known.
+  let locale = resolveRequestLocale({
+    path: pathname,
+    prefixLocale,
+    user: null,
+    cookieLocale,
+    acceptLanguage: context.request.headers.get("Accept-Language"),
+  });
   context.locals.locale = locale;
 
   let userId: string | null = null;
@@ -111,10 +124,18 @@ export const onRequest = defineMiddleware(async (context, next) => {
             headers: { "Content-Type": "application/json" },
           });
         }
-        return context.redirect("/signin");
+        return context.redirect(localizePath("/signin", locale));
       }
 
       userId = user?.id ?? null;
+      locale = resolveRequestLocale({
+        path: pathname,
+        prefixLocale,
+        user: user ?? null,
+        cookieLocale,
+        acceptLanguage: context.request.headers.get("Accept-Language"),
+      });
+      context.locals.locale = locale;
 
       context.locals.session = session;
       context.locals.user = user ?? null;
@@ -174,6 +195,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
       }
     }
 
+    await ensureLocale(locale, translationGroupsForPath(pathname));
     const response = localized ? await next(`${pathname}${context.url.search}`) : await next();
     const headers = new Headers(response.headers);
     if (!headers.has("X-Content-Type-Options")) {
@@ -217,7 +239,8 @@ export const onRequest = defineMiddleware(async (context, next) => {
       );
     }
     // Page redirects (e.g. a missing story → /stories) keep the visitor's language.
-    const location = localized ? headers.get("Location") : null;
+    const translated = locale !== DEFAULT_LOCALE;
+    const location = translated ? headers.get("Location") : null;
     if (location?.startsWith("/") && !location.startsWith("//")) {
       const cut = location.search(/[?#]/);
       const target = cut === -1 ? location : location.slice(0, cut);
@@ -228,8 +251,26 @@ export const onRequest = defineMiddleware(async (context, next) => {
     const isHtml = headers.get("Content-Type")?.includes("text/html") ?? false;
     if (isHtml) {
       headers.set("Content-Language", LOCALE_META[locale].htmlLang);
+      // Single-URL pages pick their language from the cookie/browser, so caches must key on them.
+      if (!isLocalizablePath(pathname)) {
+        for (const name of ["Cookie", "Accept-Language"]) {
+          const vary = headers.get("Vary") ?? "";
+          if (!vary.toLowerCase().split(/\s*,\s*/).includes(name.toLowerCase())) {
+            headers.set("Vary", vary ? `${vary}, ${name}` : name);
+          }
+        }
+      }
+      // Remember the language of the last marketing/sign-in page viewed, so
+      // the dashboard and emails can follow it before an account language is saved.
+      if (isLocalizablePath(pathname) && cookieLocale !== locale && response.status === 200) {
+        const secure = context.url.protocol === "https:" ? "; Secure" : "";
+        headers.append(
+          "Set-Cookie",
+          `${LOCALE_COOKIE}=${locale}; Path=/; Max-Age=${LOCALE_COOKIE_MAX_AGE}; HttpOnly; SameSite=Lax${secure}`,
+        );
+      }
     }
-    if (localized && isHtml) {
+    if (translated && isHtml) {
       const html = localizeHtmlLinks(await response.text(), locale);
       headers.delete("Content-Length");
       return new Response(html, {

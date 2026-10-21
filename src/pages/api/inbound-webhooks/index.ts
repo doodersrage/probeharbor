@@ -17,6 +17,7 @@ import {
   FLASH_INBOUND_TOKEN,
   setSecretFlash,
 } from "../../../lib/secretFlash";
+import { apiLocale, apiMoreCommonMessages } from "../../../i18n/messages/app/apiMore/common";
 
 export const GET: APIRoute = async ({ cookies }) => {
   const { session, user } = await getAuthFromCookies(cookies);
@@ -37,7 +38,8 @@ export const GET: APIRoute = async ({ cookies }) => {
   });
 };
 
-export const POST: APIRoute = async ({ request, cookies, redirect }) => {
+export const POST: APIRoute = async (context) => {
+  const { request, cookies, redirect } = context;
   const { session, user } = await getAuthFromCookies(cookies);
   if (!session || !user) {
     return redirect("/signin");
@@ -62,7 +64,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     if (!entitlements.canUseOutboundWebhook) {
       return redirect("/dashboard/share?inbound_error=pro");
     }
-    const name = formData.get("name")?.toString() || "Inbound webhook";
+    const name = formData.get("name")?.toString() || apiMoreCommonMessages(apiLocale(context)).defaults.inboundWebhook;
     const { token, signingSecret, error } = await createInboundWebhook(householdId, user.id, name);
     if (error || !token) {
       return redirect(withQuery(redirectTo, { inbound_error: "1" }));

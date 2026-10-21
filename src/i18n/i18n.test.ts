@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { localizePath, splitLocalePath } from "./locales";
 import { getAlternatePaths, isLocalizablePath, localizeHtmlLinks } from "./routes";
-import { defineMessages, mergeTranslation, translateList } from "./translate";
+import { mergeTranslation, translateList } from "./translate";
 
 describe("locale paths", () => {
   it("splits a locale prefix", () => {
@@ -42,7 +42,7 @@ describe("localizeHtmlLinks", () => {
     const out = localizeHtmlLinks(html, "es");
     expect(out).toContain('href="/es/pricing#faq"');
     expect(out).toContain('href="/es/about/probe-demo?preset=coldSnap"');
-    expect(out).toContain('href="/signin"');
+    expect(out).toContain('href="/es/signin"');
     expect(out).toContain('href="/privacy"');
     expect(out).toContain('href="https://github.com/x"');
     expect(out).toContain('<a href="/" data-locale-switch>');
@@ -67,17 +67,5 @@ describe("translations", () => {
     const out = translateList("fr", list, { fr: { b: { t: "Deux" } } }, (i) => i.slug);
     expect(out.map((i) => i.t)).toEqual(["One", "Deux"]);
     expect(translateList("de", list, { fr: { b: { t: "Deux" } } }, (i) => i.slug)).toEqual(list);
-  });
-
-  it("picks messages by locale", () => {
-    const m = defineMessages({
-      en: { hi: "Hi" },
-      es: { hi: "Hola" },
-      fr: { hi: "Salut" },
-      de: { hi: "Hallo" },
-      "pt-br": { hi: "Oi" },
-    });
-    expect(m("de").hi).toBe("Hallo");
-    expect(m("en").hi).toBe("Hi");
   });
 });

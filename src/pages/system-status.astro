@@ -8,7 +8,7 @@ import {
   getBreadcrumbSchema,
   resolveSiteUrl,
 } from "../lib/schemaMarkup";
-import { getLocale, localizePath } from "../i18n";
+import { fmt, getLocale, localizePath, plural } from "../i18n";
 import {
   formatLocalizedAge,
   formatStatusDateTime,
@@ -36,7 +36,7 @@ const bannerTitle = !status.healthy
 const bannerDetail = !status.healthy
   ? [
       status.historyPollStale ? t.banner.pollOverdue : null,
-      status.recentJobErrors > 0 ? t.banner.jobErrors(status.recentJobErrors) : null,
+      status.recentJobErrors > 0 ? plural(t.banner.jobErrors, status.recentJobErrors, locale) : null,
       status.lastCronStatus === "error" ? t.banner.latestFailed : null,
       !status.lastCronAt ? t.banner.noCron : null,
     ]
@@ -138,7 +138,7 @@ const statusErrorMessage = statusError ? (t.notify.errors[statusError] ?? null) 
         <div class="alert-warning mt-0 mb-0" role="status">
           <p class="m-0 font-semibold">{t.incidents.open}</p>
           <p class="m-0 text-sm mt-1">{bannerDetail}</p>
-          <p class="m-0 text-sm mt-2 text-[var(--color-text-muted)]">{t.incidents.started(checkedAtLabel)}</p>
+          <p class="m-0 text-sm mt-2 text-[var(--color-text-muted)]">{fmt(t.incidents.started, { when: checkedAtLabel })}</p>
         </div>
       )}
     </section>

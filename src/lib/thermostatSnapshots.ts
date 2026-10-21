@@ -5,6 +5,8 @@ import { listConnectionsForHousehold } from "./thermostatConnections";
 import { fetchThermostatContextWithStatus } from "./thermostatCorrelation";
 import type { ThermostatSnapshot } from "./thermostatCorrelation";
 import { listHouseholdIdsForCron } from "./households";
+import type { Locale } from "../i18n/locales";
+import { libTextMessages } from "../i18n/messages/app/libText";
 
 /**
  * Thermostat fetch failures that should not fail collect-history / page ops.
@@ -120,13 +122,14 @@ export async function collectThermostatSnapshotsForAllHouseholds(): Promise<{
 function chartPointFromSnapshot(
   recordedAt: string,
   ambientTempF: number | null,
+  locale: Locale = "en",
 ): ChartPoint | null {
   if (ambientTempF == null || !Number.isFinite(ambientTempF)) return null;
   return {
     timestamp: recordedAt,
     tempf: ambientTempF,
     humidity: 0,
-    probeLabel: "House",
+    probeLabel: libTextMessages(locale).house.house,
   };
 }
 
@@ -134,6 +137,7 @@ export async function fetchThermostatSnapshotChartPoints(
   householdId: string,
   days: number,
   filters: { from?: string; to?: string } = {},
+  locale: Locale = "en",
 ): Promise<ChartPoint[]> {
   const supabase = createServerClient();
   const defaultFrom = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
@@ -158,16 +162,17 @@ export async function fetchThermostatSnapshotChartPoints(
 
   return (data ?? [])
     .map((row) =>
-      chartPointFromSnapshot(row.recorded_at, row.ambient_temp_f),
+      chartPointFromSnapshot(row.recorded_at, row.ambient_temp_f, locale),
     )
     .filter((point): point is ChartPoint => point != null);
 }
 
 export function latestThermostatSnapshotToDisplay(
   snapshot: ThermostatSnapshot | null,
+  locale: Locale = "en",
 ): { ambientTempF: number; label: string } | null {
   if (snapshot?.ambientTempF == null || !Number.isFinite(snapshot.ambientTempF)) {
     return null;
   }
-  return { ambientTempF: snapshot.ambientTempF, label: "House" };
+  return { ambientTempF: snapshot.ambientTempF, label: libTextMessages(locale).house.house };
 }

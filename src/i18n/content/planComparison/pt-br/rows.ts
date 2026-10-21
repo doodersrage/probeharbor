@@ -1,20 +1,8 @@
-import {
-  FREE_HISTORY_DAYS,
-  FREE_MAX_DEVICES,
-  MEMBER_HISTORY_DAYS,
-  MEMBER_MAX_DEVICES,
-  PORTFOLIO_MAX_OWNED_HOUSEHOLDS,
-  PRO_HISTORY_DAYS,
-  PRO_MAX_DEVICES,
-  PRO_MAX_OWNED_HOUSEHOLDS,
-} from "../../../../lib/entitlements";
-import { formatRetention } from "../format";
 import type { PlanComparisonOverlay } from "../index";
 
 const Y = "Sim";
 const all = { free: Y, member: Y, pro: Y, portfolio: Y };
 const paid = { pro: Y, portfolio: Y };
-const r = (days: number) => formatRetention(days, "pt-br");
 const sensors = "Temperatura, umidade, CO₂, qualidade do ar, portas, vazamentos, energia, movimento";
 const forecastNws = "Limite + contagem regressiva até o congelamento + previsão + NWS (EUA)";
 const trial = "14 dias (+7 com indicação)";
@@ -23,18 +11,18 @@ export default {
   push_devices: {
     category: "Limites",
     label: "Dispositivos de envio push (por imóvel)",
-    free: `${FREE_MAX_DEVICES} dispositivos`,
-    member: `${MEMBER_MAX_DEVICES} dispositivos`,
-    pro: `${PRO_MAX_DEVICES} dispositivos`,
-    portfolio: `${PRO_MAX_DEVICES} dispositivos`,
+    free: `2 dispositivos`,
+    member: `6 dispositivos`,
+    pro: `24 dispositivos`,
+    portfolio: `24 dispositivos`,
   },
   data_retention: {
     category: "Limites",
     label: "Retenção de dados",
-    free: r(FREE_HISTORY_DAYS),
-    member: r(MEMBER_HISTORY_DAYS),
-    pro: `${r(PRO_HISTORY_DAYS)}+`,
-    portfolio: `${r(PRO_HISTORY_DAYS)}+`,
+    free: "7 dias",
+    member: "90 dias",
+    pro: `1 ano+`,
+    portfolio: `1 ano+`,
   },
   pull_feeds: {
     category: "Limites",
@@ -110,8 +98,8 @@ export default {
   multi_property: {
     category: "Residências",
     label: "Imóveis próprios",
-    pro: `Até ${PRO_MAX_OWNED_HOUSEHOLDS}`,
-    portfolio: `Até ${PORTFOLIO_MAX_OWNED_HOUSEHOLDS}`,
+    pro: `Até 50`,
+    portfolio: `Até 500`,
   },
   property_manager: {
     category: "Residências",

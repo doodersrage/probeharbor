@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { findAlertMoment } from "./alertMomentNudge";
+import { ensureLocale } from "../i18n/catalog";
+import { alertMomentKey, findAlertMoment } from "./alertMomentNudge";
 
 const now = Date.parse("2026-10-10T12:00:00Z");
 const ev = (id: number, kind: string, daysAgo: number, channels: string[]) => ({
@@ -30,5 +31,12 @@ describe("findAlertMoment", () => {
 
   it("ignores undelivered and old alerts", () => {
     expect(findAlertMoment([ev(1, "threshold", 1, []), ev(2, "threshold", 20, ["email"])], now)).toBeNull();
+  });
+
+  it("labels the alert in the account language", async () => {
+    await ensureLocale("de", ["app"]);
+    const moment = findAlertMoment([ev(2, "flood", 1, ["email"])], now, "de");
+    expect(moment?.label).toBe("Leckalarm");
+    expect(alertMomentKey("nws")).toBe("forecast");
   });
 });

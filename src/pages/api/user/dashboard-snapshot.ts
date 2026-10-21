@@ -10,11 +10,15 @@ import { computeGarageRiskStatus } from "../../../lib/garageRiskStatus";
 import { countUnacknowledgedAlerts } from "../../../lib/alertEvents";
 import { isSnoozeActive, isVacationActive } from "../../../lib/alertSnooze";
 import { fetchWeatherForUser } from "../../../lib/weatherContext";
+import { overviewCardsMessages } from "../../../i18n/messages/app/overviewCards";
+import { apiCommonMessages, apiLocale } from "../../../i18n/messages/app/api/common";
 
-export const GET: APIRoute = async ({ cookies }) => {
+export const GET: APIRoute = async ({ cookies, locals }) => {
+  const locale = apiLocale({ locals });
+  const tc = apiCommonMessages(locale);
   const { session, user } = await getAuthFromCookies(cookies);
   if (!session || !user) {
-    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+    return new Response(JSON.stringify({ error: tc.unauthorized }), {
       status: 401,
       headers: { "Content-Type": "application/json" },
     });
@@ -42,8 +46,8 @@ export const GET: APIRoute = async ({ cookies }) => {
       .map((row) => row.recorded_at)
       .filter(Boolean)
       .sort((a, b) => Date.parse(b!) - Date.parse(a!))[0] ?? null;
-  const lastAge = formatRelativeAge(newestReading);
-  const staleSummary = summarizeStaleSensors(latest, devices);
+  const lastAge = formatRelativeAge(newestReading, tc.never, locale);
+  const staleSummary = summarizeStaleSensors(latest, devices, undefined, locale);
   const coldestProbeTempF = (() => {
     // Match Overview: skip probes whose last reading is stale.
     const temps = latest
@@ -61,7 +65,7 @@ export const GET: APIRoute = async ({ cookies }) => {
   ).length;
   const sensorCount = devices.reduce((sum, device) => sum + device.sensors.length, 0);
   const liveSensorCount = latest.filter(
-    (row) => row.recorded_at && !formatRelativeAge(row.recorded_at).stale,
+    (row) => row.recorded_at && !formatRelativeAge(row.recorded_at, tc.never, locale).stale,
   ).length;
   const coldestMarginF =
     coldestProbeTempF != null
@@ -90,7 +94,7 @@ export const GET: APIRoute = async ({ cookies }) => {
     hoursUntilFreeze: null,
     hitsAtLabel: null,
     wetFloodCount,
-  });
+  }, locale, overviewCardsMessages(locale).garageRisk);
 
   const body = {
     at: new Date().toISOString(),

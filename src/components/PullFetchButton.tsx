@@ -1,8 +1,12 @@
 import { useEffect, useState } from "preact/hooks";
+import { fmt } from "../i18n/format";
+import en, { type PullFetchText } from "../i18n/messages/app/deviceSetup/pull/en";
 
 interface Props {
   feedIds?: string[];
   autoFetch?: boolean;
+  /** Translated strings from the server; English when missing. */
+  text?: PullFetchText;
 }
 
 type FetchResult = {
@@ -11,7 +15,7 @@ type FetchResult = {
   feeds?: Array<{ feedId: string; name: string; ok: boolean; message: string }>;
 };
 
-export default function PullFetchButton({ feedIds = [], autoFetch = false }: Props) {
+export default function PullFetchButton({ feedIds = [], autoFetch = false, text = en.fetch }: Props) {
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
 
@@ -29,7 +33,7 @@ export default function PullFetchButton({ feedIds = [], autoFetch = false }: Pro
     setLoading(true);
     setStatus(null);
     for (const feedId of feedIds) {
-      setFeedStatus(feedId, "Fetching…", true);
+      setFeedStatus(feedId, text.fetching, true);
     }
     try {
       const response = await fetch("/api/devices/pull-fetch", {
@@ -39,7 +43,7 @@ export default function PullFetchButton({ feedIds = [], autoFetch = false }: Pro
       });
       const data = (await response.json()) as FetchResult;
       if (!response.ok || !data.ok) {
-        const message = data.error ?? "Fetch failed.";
+        const message = data.error ?? text.fetchFailed;
         setStatus(message);
         for (const feedId of feedIds) {
           setFeedStatus(feedId, message, false);
@@ -50,16 +54,16 @@ export default function PullFetchButton({ feedIds = [], autoFetch = false }: Pro
       for (const feedId of feedIds) {
         const row = byId.get(feedId);
         if (row) {
-          setFeedStatus(feedId, row.ok ? row.message : `Error: ${row.message}`, row.ok);
+          setFeedStatus(feedId, row.ok ? row.message : fmt(text.errorPrefix, { message: row.message }), row.ok);
         } else {
-          setFeedStatus(feedId, "Not fetched", false);
+          setFeedStatus(feedId, text.notFetched, false);
         }
       }
-      setStatus("Fetch complete — refresh Home to see new readings.");
+      setStatus(text.complete);
     } catch {
-      setStatus("Could not fetch feeds.");
+      setStatus(text.couldNotFetch);
       for (const feedId of feedIds) {
-        setFeedStatus(feedId, "Fetch failed", false);
+        setFeedStatus(feedId, text.rowFailed, false);
       }
     } finally {
       setLoading(false);
@@ -74,10 +78,10 @@ export default function PullFetchButton({ feedIds = [], autoFetch = false }: Pro
   return (
     <div class="flex flex-wrap items-center gap-3">
       <button type="button" class="btn-secondary" disabled={loading} onClick={() => void fetchNow()}>
-        {loading ? "Fetching…" : "Fetch now"}
+        {loading ? text.fetching : text.fetchNow}
       </button>
       <span class="text-sm text-[var(--color-text-muted)]">
-        Pull readings immediately instead of waiting for the next scheduled poll.
+        {text.hint}
       </span>
       {status ? <span class="text-sm text-[var(--color-text-muted)]">{status}</span> : null}
     </div>

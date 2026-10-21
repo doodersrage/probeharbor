@@ -7,6 +7,8 @@ import {
   sendTwilioSms,
 } from "../../../lib/notify";
 import { isVapidConfigured, sendWebPushToUser } from "../../../lib/webPush";
+import { getLocale } from "../../../i18n";
+import { adminMessages } from "../../../i18n/messages/app/admin";
 
 function opsRedirect(params: Record<string, string>): Response {
   const qs = new URLSearchParams(params);
@@ -16,11 +18,13 @@ function opsRedirect(params: Record<string, string>): Response {
   });
 }
 
-export const POST: APIRoute = async ({ request, cookies }) => {
+export const POST: APIRoute = async ({ request, cookies, locals }) => {
   const { session, user } = await getAuthFromCookies(cookies);
   if (!session || !user || !(await isUserAdmin(user.id))) {
     return new Response("Forbidden", { status: 403 });
   }
+  // Tests call the route without locals; fall back to English.
+  const t = adminMessages(getLocale({ locals: locals ?? ({} as App.Locals) })).api;
 
   const formData = await request.formData().catch(() => null);
   const kind = formData?.get("kind")?.toString() ?? "sms";
@@ -42,7 +46,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
     const ok = await sendTwilioSms(
       phone,
-      "[Test] ProbeHarbor SMS channel smoke test",
+      t.smsTest,
     );
     if (!ok) {
       return opsRedirect({ channel_error: "sms_send_failed" });
@@ -57,8 +61,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     }
 
     const result = await sendWebPushToUser(user.id, {
-      title: "[Test] ProbeHarbor push",
-      body: "Channel smoke test: browser push is working.",
+      title: t.pushTestTitle,
+      body: t.pushTestBody,
     });
 
     if (result.delivered <= 0) {

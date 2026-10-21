@@ -1,4 +1,6 @@
 /** Per-isolate abuse controls for the public status-page subscribe form. */
+import type { Locale } from "../i18n/locales";
+import { miscMessages } from "../i18n/messages/app/misc";
 
 export const STATUS_SUBSCRIBE_RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
 export const STATUS_SUBSCRIBE_RATE_LIMIT_MAX = 5;
@@ -21,6 +23,7 @@ export function isStatusSubscribeHoneypotTriggered(
 export function checkStatusSubscribeRateLimit(
   key: string,
   now = Date.now(),
+  locale: Locale = "en",
 ): { ok: boolean; retryAfterSec?: number; error?: string } {
   const existing = rateBuckets.get(key);
   if (!existing || now >= existing.resetAt) {
@@ -36,7 +39,7 @@ export function checkStatusSubscribeRateLimit(
     return {
       ok: false,
       retryAfterSec,
-      error: "Too many attempts. Please try again in a few minutes.",
+      error: miscMessages(locale).forms.tooManyAttempts,
     };
   }
 

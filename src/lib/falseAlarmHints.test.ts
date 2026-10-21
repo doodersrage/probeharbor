@@ -22,3 +22,23 @@ describe("falseAlarmHints", () => {
     expect(wetFloodDetail(1)).toMatch(/wet right now/i);
   });
 });
+
+describe("falseAlarmHints in German", () => {
+  it("translates tips, counts and the Why line", async () => {
+    const { ensureLocale } = await import("../i18n/catalog");
+    const { formatAlertWhyMeta, getFalseAlarmTips, suggestFalseAlarmTip } = await import("./falseAlarmHints");
+    await ensureLocale("de", ["app"]);
+    expect(staleProbeDetail(3, "de")).toMatch(/^3 Fühler wirken veraltet/);
+    expect(wetFloodDetail(1, "de")).toMatch(/^1 Wasserschaden-\/Leck-Sensor ist gerade nass/);
+    const placement = getFalseAlarmTips("de").find((t) => t.id === "placement");
+    expect(placement?.title).toBe("Platzierung des Fühlers prüfen");
+    expect(placement?.href).toBe("/about/probe-demo");
+    expect(suggestFalseAlarmTip("flood", "de").id).toBe("splash");
+    expect(
+      formatAlertWhyMeta({ probeLabel: "Garage", probeTempF: 31.25, thresholdF: 34, deltaTF: -2 }, "de"),
+    ).toBe("Garage bei 31,3 °F · Schwellenwert 34 °F · ΔT -2,0 °F");
+    expect(formatAlertWhyMeta({ probeLabel: "Garage", probeTempF: 31.25, thresholdF: 34 })).toBe(
+      "Garage at 31.3°F · threshold 34°F",
+    );
+  });
+});

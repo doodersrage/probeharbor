@@ -13,7 +13,7 @@ import {
 } from "../lib/schemaMarkup";
 import type { MarketingFaqKey } from "../lib/marketingFaqs";
 import AffiliateDisclosure from "../components/AffiliateDisclosure.astro";
-import { getLocale } from "../i18n";
+import { fmt, getLocale } from "../i18n";
 import { accessoriesMessages } from "../i18n/messages/accessories";
 import {
   getLocalizedAccessoriesExcluding,
@@ -43,7 +43,7 @@ const {
   title,
   description,
   kicker = t.defaultKicker,
-  faqTitle = t.faqTitle(title),
+  faqTitle = fmt(t.faqTitle, { title }),
   faqLede = t.faqLede,
 } = Astro.props;
 

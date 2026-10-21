@@ -135,10 +135,19 @@ export function collectHoverHits(options: {
   return hits;
 }
 
-export function formatHoverTime(iso: string): string {
+/**
+ * Intl tag for chart labels: `undefined` (the runtime default, as before) for
+ * no locale or an English one; otherwise the given tag ("de-DE", or an app
+ * locale such as "pt-br"). Browser-safe: no translation tables.
+ */
+function chartIntl(locale?: string): string | undefined {
+  return !locale || locale.toLowerCase().startsWith("en") ? undefined : locale;
+}
+
+export function formatHoverTime(iso: string, locale?: string): string {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return iso;
-  return d.toLocaleString(undefined, {
+  return d.toLocaleString(chartIntl(locale), {
     month: "short",
     day: "numeric",
     hour: "numeric",
@@ -234,18 +243,18 @@ export function isFullyZoomedOut(
   );
 }
 
-export function formatAxisTime(ts: number, spanMs: number): string {
+export function formatAxisTime(ts: number, spanMs: number, locale?: string): string {
   const d = new Date(ts);
   if (Number.isNaN(d.getTime())) return "";
   if (spanMs <= 36 * 60 * 60 * 1000) {
-    return d.toLocaleString(undefined, {
+    return d.toLocaleString(chartIntl(locale), {
       month: "short",
       day: "numeric",
       hour: "numeric",
       minute: "2-digit",
     });
   }
-  return d.toLocaleDateString();
+  return d.toLocaleDateString(chartIntl(locale));
 }
 
 export const CHART_VIEW_PRESETS = [

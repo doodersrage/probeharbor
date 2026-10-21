@@ -6,8 +6,10 @@ const mockEq = vi.fn();
 const mockSelect = vi.fn();
 const mockFrom = vi.fn();
 const mockCreateServerClient = vi.fn();
+const mockGetUserById = vi.fn();
 vi.mock("../../../lib/supabase", () => ({
   createServerClient: () => mockCreateServerClient(),
+  createAdminClient: () => ({ auth: { admin: { getUserById: (...a: unknown[]) => mockGetUserById(...a) } } }),
 }));
 
 const mockGetAlertSettingsForUser = vi.fn();
@@ -109,6 +111,7 @@ beforeEach(() => {
   mockFilterRowsByLabel.mockReset().mockReturnValue([]);
   mockTimingSafeEqual.mockReset().mockReturnValue(true);
   mockFetch.mockReset().mockResolvedValue(new Response("ok"));
+  mockGetUserById.mockReset().mockResolvedValue({ data: { user: { user_metadata: {} } } });
 });
 
 describe("POST /api/telegram/webhook", () => {
@@ -163,5 +166,18 @@ describe("POST /api/telegram/webhook", () => {
     );
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({ ok: true });
+  });
+
+  it("replies in the linked account's language", async () => {
+    const { ensureLocale } = await import("../../../i18n/catalog");
+    await ensureLocale("de", ["app"]);
+    mockGetUserById.mockResolvedValue({ data: { user: { user_metadata: { locale: "de" } } } });
+    const { POST } = await import("./webhook");
+
+    await POST(makeContext({ body: { message: { text: "/snooze 4", chat: { id: 42 } } } }));
+
+    const body = JSON.parse(String(mockFetch.mock.calls[0]?.[1]?.body)) as { text: string };
+    expect(body.text).toBe("Alarme für 4 Stunden pausiert. Frost- und Leckalarme kommen trotzdem.");
+    expect(mockGetUserById).toHaveBeenCalledWith("user-1");
   });
 });

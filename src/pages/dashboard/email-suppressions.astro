@@ -4,6 +4,13 @@ import AdminNav from "../../components/dashboard/AdminNav.astro";
 import { getAuthFromCookies } from "../../lib/auth";
 import { isUserAdmin } from "../../lib/adminAccess";
 import { listEmailSuppressions } from "../../lib/emailSuppressions";
+import { fmt, getLocale, LOCALE_META, plural } from "../../i18n";
+import { adminMessages } from "../../i18n/messages/app/admin";
+
+const locale = getLocale(Astro);
+const a = adminMessages(locale);
+const t = a.suppressions;
+const intl = LOCALE_META[locale].intl;
 
 const { session, user } = await getAuthFromCookies(Astro.cookies);
 if (!session || !user) {
@@ -19,31 +26,31 @@ const added = Astro.url.searchParams.get("added") === "1";
 const formError = Astro.url.searchParams.get("error")?.trim() ?? "";
 const { rows, error } = await listEmailSuppressions(200);
 ---
-<DashboardLayout title="Email suppressions" subtitle="Addresses we will not send to (bounces, noreply, invalid)." requireAdmin>
+<DashboardLayout title={t.title} subtitle={t.subtitle} requireAdmin>
   <div class="space-y-6">
     <AdminNav />
     {(added || removed || formError) && (
       <div>
         {added && (
-          <p class="alert-success mt-0 mb-0" role="status">Address suppressed.</p>
+          <p class="alert-success mt-0 mb-0" role="status">{t.added}</p>
         )}
         {removed && (
-          <p class="alert-success mt-0 mb-0" role="status">Suppression removed.</p>
+          <p class="alert-success mt-0 mb-0" role="status">{t.removed}</p>
         )}
         {formError && (
-          <p class="alert-warning mt-0 mb-0" role="alert">Could not update: {formError}</p>
+          <p class="alert-warning mt-0 mb-0" role="alert">{fmt(t.updateError, { error: formError })}</p>
         )}
       </div>
     )}
 
     <section class="card">
-      <h2 class="card-title">Add suppression</h2>
+      <h2 class="card-title">{t.addTitle}</h2>
       <p class="card-subtitle mb-4">
-        Manually block an address before the next send (known bounce, noreply, test junk).
+        {t.addSubtitle}
       </p>
       <form method="POST" action="/api/admin/email-suppressions/add" class="space-y-4">
         <div class="form-field">
-          <label class="form-label" for="suppress-email">Email</label>
+          <label class="form-label" for="suppress-email">{a.common.email}</label>
           <input
             class="form-input"
             type="email"
@@ -55,44 +62,44 @@ const { rows, error } = await listEmailSuppressions(200);
           />
         </div>
         <div class="form-field">
-          <label class="form-label" for="suppress-reason">Reason</label>
+          <label class="form-label" for="suppress-reason">{t.reason}</label>
           <select class="form-input" id="suppress-reason" name="reason">
-            <option value="manual">manual</option>
-            <option value="bounce">bounce</option>
-            <option value="invalid">invalid</option>
-            <option value="noreply">noreply</option>
-            <option value="complaint">complaint</option>
+            <option value="manual">{t.reasons.manual}</option>
+            <option value="bounce">{t.reasons.bounce}</option>
+            <option value="invalid">{t.reasons.invalid}</option>
+            <option value="noreply">{t.reasons.noreply}</option>
+            <option value="complaint">{t.reasons.complaint}</option>
           </select>
         </div>
         <div class="form-field">
-          <label class="form-label" for="suppress-note">Note (optional)</label>
+          <label class="form-label" for="suppress-note">{t.note}</label>
           <input
             class="form-input"
             type="text"
             id="suppress-note"
             name="note"
             maxlength="500"
-            placeholder="Why this address is blocked"
+            placeholder={t.notePlaceholder}
           />
         </div>
-        <button class="btn-primary" type="submit">Suppress address</button>
+        <button class="btn-primary" type="submit">{t.submit}</button>
       </form>
     </section>
 
     <section class="card">
       {error ? (
-        <p class="alert-warning mb-0">Unable to load suppressions: {error}</p>
+        <p class="alert-warning mb-0">{fmt(t.loadError, { error })}</p>
       ) : rows.length === 0 ? (
-        <p class="mb-0 text-sm text-[var(--color-text-muted)]">No suppressed addresses yet.</p>
+        <p class="mb-0 text-sm text-[var(--color-text-muted)]">{t.empty}</p>
       ) : (
         <div class="table-wrap">
           <table class="data-table">
             <thead>
               <tr>
-                <th>Email</th>
-                <th>Reason</th>
-                <th>Updated</th>
-                <th>Last error</th>
+                <th>{a.common.email}</th>
+                <th>{t.reason}</th>
+                <th>{t.updated}</th>
+                <th>{t.lastError}</th>
                 <th></th>
               </tr>
             </thead>
@@ -103,15 +110,15 @@ const { rows, error } = await listEmailSuppressions(200);
                     <code>{row.email}</code>
                   </td>
                   <td>{row.reason}</td>
-                  <td>{new Date(row.updated_at).toLocaleString()}</td>
+                  <td>{new Date(row.updated_at).toLocaleString(intl)}</td>
                   <td class="contact-message-cell">
-                    {row.last_error ? <code>{row.last_error}</code> : "—"}
+                    {row.last_error ? <code>{row.last_error}</code> : a.common.dash}
                   </td>
                   <td>
                     <form method="POST" action="/api/admin/email-suppressions/remove">
                       <input type="hidden" name="email" value={row.email} />
                       <button type="submit" class="btn-ghost text-sm">
-                        Remove
+                        {t.remove}
                       </button>
                     </form>
                   </td>
@@ -122,7 +129,7 @@ const { rows, error } = await listEmailSuppressions(200);
         </div>
       )}
       <p class="mt-4 mb-0 text-sm text-[var(--color-text-muted)]">
-        Showing {rows.length} row{rows.length === 1 ? "" : "s"} (max 200). Also review Cloudflare Email Service suppressions in the dashboard.
+        {plural(t.showing, rows.length, locale)}
       </p>
     </section>
   </div>

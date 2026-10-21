@@ -24,11 +24,14 @@ import {
   fetchOpenMeteoHourlyWindow,
   splitOpenMeteoPastAndForecast,
 } from "../../../lib/openMeteoHistory";
+import { apiCommonMessages, apiLocale } from "../../../i18n/messages/app/api/common";
 
-export const GET: APIRoute = async ({ cookies, request }) => {
+export const GET: APIRoute = async ({ cookies, request, locals }) => {
+  const locale = apiLocale({ locals });
+  const tc = apiCommonMessages(locale);
   const { session, user } = await getAuthFromRequest(request, cookies);
   if (!session || !user) {
-    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+    return new Response(JSON.stringify({ error: tc.unauthorized }), {
       status: 401,
       headers: { "Content-Type": "application/json" },
     });
@@ -43,10 +46,10 @@ export const GET: APIRoute = async ({ cookies, request }) => {
   const weatherConfig = getPersonalWeatherConfig(user);
   const [nightsAtRisk, weatherSnapshot, house, regionalBenchmark, chartWeek, latest] =
     await Promise.all([
-      fetchNightsAtRiskForConfig(weatherConfig, alertSettings.freezeThresholdF),
+      fetchNightsAtRiskForConfig(weatherConfig, alertSettings.freezeThresholdF, undefined, locale),
       fetchWeatherSnapshotForConfig(weatherConfig),
-      fetchMobileHousePayloadForUser(user.id),
-      fetchMobileRegionalBenchmarkForUser(user.id),
+      fetchMobileHousePayloadForUser(user.id, locale),
+      fetchMobileRegionalBenchmarkForUser(user.id, locale),
       fetchGarageTempChartData(user.id, 7),
       householdId ? fetchLatestSensorValues(householdId) : Promise.resolve([]),
     ]);
@@ -90,7 +93,7 @@ export const GET: APIRoute = async ({ cookies, request }) => {
             timeZone: alertSettings.quietHoursTimezone,
             lookAheadHours: alertSettings.forecastHoursAhead,
             useCelsius: preferences.useCelsius,
-          }),
+          }, locale),
         )
       : null;
 

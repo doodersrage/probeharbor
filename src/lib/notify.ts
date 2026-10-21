@@ -23,6 +23,10 @@ import { createServerClient } from "./supabase";
 import { getUserEntitlements } from "./entitlements";
 import { sendPushChannelToUser } from "./pushChannel";
 import { getRuntimeEnv, hasRuntimeEnv } from "./runtimeEnv";
+import type { Locale } from "../i18n/locales";
+import { ensureLocale } from "../i18n/catalog";
+import { fmt } from "../i18n/format";
+import { alertMessages } from "../i18n/messages/app/alertMessages";
 
 export type NotifyPayload = {
   title: string;
@@ -39,23 +43,24 @@ async function sendEmail(
   subject: string,
   body: string,
   kind?: NotifyKind,
+  locale: Locale = "en",
 ): Promise<boolean> {
   try {
+    const t = alertMessages(locale).delivery;
     const { sendEmail: send } = await import("./mailer");
     const { brandedEmailParts } = await import("./emailLayout");
     const { resolveSiteUrl } = await import("./schemaMarkup");
     const siteUrl = resolveSiteUrl(null);
     const parts = brandedEmailParts({
-      eyebrow: alertEmailEyebrow(kind),
+      eyebrow: alertEmailEyebrow(kind, locale),
       preheader: body.slice(0, 120),
       title: subject,
       intro: body,
-      cta: { label: "Open dashboard", url: `${siteUrl}/dashboard` },
-      secondaryCta: { label: "Alert settings", url: `${siteUrl}/dashboard/alerts` },
+      cta: { label: t.openDashboard, url: `${siteUrl}/dashboard` },
+      secondaryCta: { label: t.alertSettings, url: `${siteUrl}/dashboard/alerts` },
       tone: "alert",
-      footerNote:
-        "You’re receiving this because alerts are enabled for your account.",
-    });
+      footerNote: t.footerNote,
+    }, locale);
     await send(to, subject, parts.text, { html: parts.html });
     return true;
   } catch (error) {
@@ -64,35 +69,26 @@ async function sendEmail(
   }
 }
 
-function alertEmailEyebrow(kind?: NotifyKind): string {
+function alertEmailEyebrow(kind?: NotifyKind, locale: Locale = "en"): string {
+  const t = alertMessages(locale).delivery.eyebrow;
   switch (kind) {
     case "flood":
-      return "Leak alert";
     case "power":
-      return "Power off";
     case "outage":
-      return "Outage";
     case "forecast":
-    case "nws":
-      return "Forecast";
     case "battery":
-      return "Battery";
     case "runway":
-      return "Runway";
     case "rate":
-      return "Rate of change";
     case "rssi":
-      return "Signal";
     case "stuck":
-      return "Sensor check";
     case "rule":
-      return "Rule";
     case "threshold":
-      return "Freeze / threshold";
     case "recovery":
-      return "All clear";
+      return t[kind];
+    case "nws":
+      return t.forecast;
     default:
-      return "Alert";
+      return t.default;
   }
 }
 
@@ -568,6 +564,11 @@ export async function notifyUser(
     /** When set, only these channels may fire (must also be enabled in settings). */
     channelFilter?: AlertChannelName[];
   },
+  /**
+   * Recipient language for the text notifyUser adds (snooze/ack lines, email
+   * chrome). Callers word title/body in the same language.
+   */
+  locale: Locale = "en",
 ): Promise<{ sent: string[]; skipped: string[] }> {
   if (
     !options?.smsOnly &&
@@ -634,9 +635,11 @@ export async function notifyUser(
   const routedSet = routedChannels ? new Set(routedChannels) : null;
   const baseUrl = buildSiteUrl();
   const ackUrl = kind === "recovery" ? null : await buildUserAckUrl(baseUrl, userId);
+  await ensureLocale(locale, ["app"]);
+  const delivery = alertMessages(locale).delivery;
   const footerLines: string[] = [];
-  if (options?.snoozeUrl) footerLines.push(`Snooze 24h: ${options.snoozeUrl}`);
-  if (ackUrl) footerLines.push(`Mark as handled: ${ackUrl}`);
+  if (options?.snoozeUrl) footerLines.push(fmt(delivery.snooze, { url: options.snoozeUrl }));
+  if (ackUrl) footerLines.push(fmt(delivery.ack, { url: ackUrl }));
   const bodyWithSnooze =
     footerLines.length > 0
       ? `${payloadResolved.body}\n\n${footerLines.join("\n")}`
@@ -654,7 +657,7 @@ export async function notifyUser(
 
   if (settings.channelEmail && allowChannel("email")) {
     if (email) {
-      if (await sendEmail(email, payloadResolved.title, bodyWithSnooze, kind)) sent.push("email");
+      if (await sendEmail(email, payloadResolved.title, bodyWithSnooze, kind, locale)) sent.push("email");
       else skipped.push("email");
     } else {
       skipped.push("email");
@@ -731,7 +734,7 @@ export async function notifyUser(
     if (settings.whatsappPhone && entitlements.canUseSms) {
       const ok = await sendTwilioWhatsApp(
         settings.whatsappPhone,
-        `${payloadResolved.title}: ${bodyWithSnooze}`,
+        fmt(delivery.smsLine, { title: payloadResolved.title, body: bodyWithSnooze }),
       );
       if (ok) sent.push("whatsapp");
       else skipped.push("whatsapp");
@@ -759,7 +762,7 @@ export async function notifyUser(
     if (settings.smsPhone && entitlements.canUseSms) {
       const smsOk = await sendTwilioSms(
         settings.smsPhone,
-        `${payloadResolved.title}: ${bodyWithSnooze}`,
+        fmt(delivery.smsLine, { title: payloadResolved.title, body: bodyWithSnooze }),
       );
       if (smsOk) {
         sent.push("sms");

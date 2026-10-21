@@ -1,6 +1,6 @@
 ---
 import type { ComparisonTier, PlanFeatureRow } from "../lib/planComparison";
-import { getLocale } from "../i18n";
+import { fmt, getLocale } from "../i18n";
 import { getLocalizedPlanFeatureRows } from "../i18n/content/planComparison";
 import { pricingMessages } from "../i18n/messages/pricing";
 import {
@@ -23,7 +23,7 @@ const proSave = getProPriceDisplay().annualSavingsPct;
 const portfolioSave = getPortfolioPriceDisplay().annualSavingsPct;
 
 function annualDiscountLabel(pct: number | null): string {
-  if (pct != null && pct > 0) return t.save(pct);
+  if (pct != null && pct > 0) return fmt(t.save, { pct });
   return t.saveApprox;
 }
 

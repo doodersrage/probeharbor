@@ -2,12 +2,17 @@
 import { listDoorEvents } from "../lib/doorEvents";
 import { formatDurationMs } from "../lib/doorDuration";
 import DashboardCard from "./dashboard/DashboardCard.astro";
+import { getLocale, LOCALE_META } from "../i18n";
+import { overviewInsightsMessages } from "../i18n/messages/app/overviewInsights";
 
 interface Props {
   householdId: string | null;
 }
 
 const { householdId } = Astro.props;
+const locale = getLocale(Astro);
+const t = overviewInsightsMessages(locale).door;
+const intl = locale === "en" ? undefined : LOCALE_META[locale].intl;
 const events = householdId ? await listDoorEvents(householdId, 12) : [];
 
 if (events.length === 0) {
@@ -15,18 +20,18 @@ if (events.length === 0) {
 }
 ---
 <DashboardCard>
-  <h2 class="card-title">Door open history</h2>
-  <p class="card-subtitle mb-4">Recent closed door sessions (last 48h).</p>
+  <h2 class="card-title">{t.historyTitle}</h2>
+  <p class="card-subtitle mb-4">{t.historySubtitle}</p>
   <ul class="space-y-2 mb-0 text-sm">
     {events.map((event) => (
       <li class="flex flex-wrap justify-between gap-2 border-b border-border pb-2 last:border-0 last:pb-0">
         <span>
           <strong>{event.label}</strong>
           {" · "}
-          {new Date(event.opened_at).toLocaleString()}
+          {new Date(event.opened_at).toLocaleString(intl)}
         </span>
         <span class="text-muted-foreground">
-          {event.duration_ms != null ? formatDurationMs(event.duration_ms) : "—"}
+          {event.duration_ms != null ? formatDurationMs(event.duration_ms, locale) : "—"}
         </span>
       </li>
     ))}

@@ -1,5 +1,8 @@
 import type { PropertySnapshot } from "./crossProperty";
 import { STALE_MS } from "./relativeTime";
+import { fmt, formatNumber, plural } from "../i18n/format";
+import type { Locale } from "../i18n/locales";
+import { portfolioMessages } from "../i18n/messages/app/portfolio";
 
 export type PropertyHealth = {
   score: number;
@@ -8,12 +11,17 @@ export type PropertyHealth = {
 };
 
 /** Score a portfolio property for the table + coldest-properties digest. */
-export function scorePropertyHealth(property: PropertySnapshot, nowMs = Date.now()): PropertyHealth {
+export function scorePropertyHealth(
+  property: PropertySnapshot,
+  nowMs = Date.now(),
+  locale: Locale = "en",
+): PropertyHealth {
+  const t = portfolioMessages(locale).health;
   if (property.deviceCount <= 0) {
     return {
       score: 20,
       label: "offline",
-      detail: "No devices, add a probe",
+      detail: t.noDevices,
     };
   }
 
@@ -21,7 +29,7 @@ export function scorePropertyHealth(property: PropertySnapshot, nowMs = Date.now
     return {
       score: 30,
       label: "offline",
-      detail: "Waiting for first reading",
+      detail: t.waitingFirstReading,
     };
   }
 
@@ -32,7 +40,7 @@ export function scorePropertyHealth(property: PropertySnapshot, nowMs = Date.now
     return {
       score: stale ? 10 : 20,
       label: "at_risk",
-      detail: "Flood / leak contact wet",
+      detail: t.floodWet,
     };
   }
 
@@ -42,8 +50,14 @@ export function scorePropertyHealth(property: PropertySnapshot, nowMs = Date.now
       label: "at_risk",
       detail:
         property.minTempF != null
-          ? `${property.minTempF.toFixed(1)}°F ≤ ${property.freezeThresholdF}°F`
-          : "At freeze threshold",
+          ? fmt(t.belowThreshold, {
+              temp: formatNumber(property.minTempF, locale, {
+                minimumFractionDigits: 1,
+                maximumFractionDigits: 1,
+              }),
+              threshold: formatNumber(property.freezeThresholdF, locale),
+            })
+          : t.atThreshold,
     };
   }
 
@@ -51,7 +65,7 @@ export function scorePropertyHealth(property: PropertySnapshot, nowMs = Date.now
     return {
       score: 45,
       label: "watch",
-      detail: "Probe data stale, check power/Wi‑Fi",
+      detail: t.stale,
     };
   }
 
@@ -60,7 +74,7 @@ export function scorePropertyHealth(property: PropertySnapshot, nowMs = Date.now
     return {
       score: 50,
       label: "watch",
-      detail: `${silent} of ${property.deviceCount} device${property.deviceCount === 1 ? "" : "s"} silent, check power/Wi‑Fi`,
+      detail: plural(t.silent, property.deviceCount, locale, { silent: formatNumber(silent, locale) }),
     };
   }
 
@@ -72,23 +86,24 @@ export function scorePropertyHealth(property: PropertySnapshot, nowMs = Date.now
     return {
       score: 70,
       label: "watch",
-      detail: `Within 5°F of ${property.freezeThresholdF}°F`,
+      detail: fmt(t.nearThreshold, { threshold: formatNumber(property.freezeThresholdF, locale) }),
     };
   }
 
   return {
     score: 95,
     label: "healthy",
-    detail: "Reporting, above freeze, dry flood contacts",
+    detail: t.healthy,
   };
 }
 
 export function attachPropertyHealth(
   properties: PropertySnapshot[],
   nowMs = Date.now(),
+  locale: Locale = "en",
 ): Array<PropertySnapshot & { health: PropertyHealth }> {
   return properties.map((property) => ({
     ...property,
-    health: scorePropertyHealth(property, nowMs),
+    health: scorePropertyHealth(property, nowMs, locale),
   }));
 }

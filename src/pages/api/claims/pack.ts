@@ -6,16 +6,21 @@ import { buildClaimsPackHtml } from "../../../lib/claimsPack";
 import { generateClaimsPackForUser } from "../../../lib/claimsPackGenerate";
 import { createClaimsPackExport } from "../../../lib/claimsPackExports";
 import { renderDocumentPdf } from "../../../lib/documentPdf";
+import { apiLocale, apiMoreCommonMessages } from "../../../i18n/messages/app/apiMore/common";
+import { apiMoreBillingMessages } from "../../../i18n/messages/app/apiMore/billing";
 
-export const GET: APIRoute = async ({ cookies, url, request }) => {
+export const GET: APIRoute = async (context) => {
+  const { cookies, url, request } = context;
+  const locale = apiLocale(context);
+  const t = apiMoreBillingMessages(locale).claims;
   const { session, user } = await getAuthFromCookies(cookies);
   if (!session || !user) {
-    return new Response("Unauthorized", { status: 401 });
+    return new Response(apiMoreCommonMessages(locale).unauthorized, { status: 401 });
   }
 
   const entitlements = await getUserEntitlements(user.id);
   if (!entitlements.canUseClaimsPack) {
-    return new Response("Claims pack requires Pro", { status: 403 });
+    return new Response(t.requiresPro, { status: 403 });
   }
 
   const siteUrl = getSiteUrl(request).replace(/\/$/, "");
@@ -55,7 +60,7 @@ export const GET: APIRoute = async ({ cookies, url, request }) => {
   const pdf = await renderDocumentPdf({ html });
   if (!pdf) {
     return new Response(
-      "PDF generation is temporarily unavailable. Try ?format=html or retry shortly.",
+      t.pdfUnavailable,
       { status: 503 },
     );
   }

@@ -10,6 +10,7 @@ import {
 import { recordHouseholdActivity } from "../../../lib/householdActivity";
 import { formRedirectPath, withQuery } from "../../../lib/siteUrl";
 import { FLASH_SHARE_TOKEN, setSecretFlash } from "../../../lib/secretFlash";
+import { apiLocale, apiMoreCommonMessages } from "../../../i18n/messages/app/apiMore/common";
 
 const FAMILY_MAX_LIVE_LINKS = 1;
 const FAMILY_DEFAULT_EXPIRES_DAYS = 7;
@@ -71,7 +72,8 @@ export const GET: APIRoute = async ({ request, cookies }) => {
   });
 };
 
-export const POST: APIRoute = async ({ request, cookies, redirect }) => {
+export const POST: APIRoute = async (context) => {
+  const { request, cookies, redirect } = context;
   const { user } = await getAuthFromRequest(request, cookies);
   if (!user) {
     return redirect("/signin");
@@ -124,7 +126,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
 
   if (familyOnly || formData.get("family_quick") === "1") {
     scope = "live";
-    label = label || "Family live view";
+    label = label || apiMoreCommonMessages(apiLocale(context)).defaults.familyLiveView;
     if (!(expiresDays > 0)) {
       expiresDays = FAMILY_DEFAULT_EXPIRES_DAYS;
     }

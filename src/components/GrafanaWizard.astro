@@ -1,5 +1,7 @@
 ---
 import DashboardCard from "./dashboard/DashboardCard.astro";
+import { fmt, getLocale } from "../i18n";
+import { shareMessages } from "../i18n/messages/app/share";
 
 interface Props {
   siteUrl: string;
@@ -9,6 +11,7 @@ interface Props {
 }
 
 const { siteUrl, apiKeyPrefix = null, apiKey = null } = Astro.props;
+const t = shareMessages(getLocale(Astro)).grafana;
 const metricsUrl = `${siteUrl}/api/v1/metrics`;
 const dashboardJsonUrl = `${siteUrl}/grafana/probeharbor-dashboard.json`;
 const host = siteUrl.replace(/^https?:\/\//, "");
@@ -24,36 +27,34 @@ scrape_configs:
       credentials: ${apiKey ?? "<your-api-key>"}`;
 ---
 <DashboardCard>
-  <h2 class="card-title">Grafana setup wizard</h2>
-  <p class="card-subtitle mb-4">
-    Scrape <code>probeharbor_sensor_value</code> from ProbeHarbor with a Pro API key, then import the bundled dashboard JSON.
-  </p>
+  <h2 class="card-title">{t.title}</h2>
+  <p class="card-subtitle mb-4" set:html={t.introHtml} />
   <ol class="text-sm space-y-3 mb-4 list-decimal pl-5">
     <li>
-      Create an API key above (prefix {apiKeyPrefix ? `${apiKeyPrefix}…` : "shown after create"}).
+      {fmt(t.step1, { prefix: apiKeyPrefix ? `${apiKeyPrefix}…` : t.prefixPending })}
     </li>
     <li>
-      In Grafana → Connections → Data sources → Add Prometheus, set URL to
+      {t.step2Lead}
       <code class="text-xs break-all">{metricsUrl}</code>
-      and add header <code>Authorization: Bearer &lt;your-api-key&gt;</code>.
+      <Fragment set:html={t.step2TailHtml} />
     </li>
     <li>
-      Download
+      {t.step3Lead}
       <a class="text-link" href="/grafana/probeharbor-dashboard.json" download>
         probeharbor-dashboard.json
       </a>
-      and import via Dashboards → New → Import.
+      {t.step3Tail}
     </li>
     <li>
-      Optional: duplicate panels per probe label or household device name.
+      {t.step4}
     </li>
   </ol>
   <div class="mb-4">
-    <p class="form-label mb-1">Scrape config snippet</p>
+    <p class="form-label mb-1">{t.snippetLabel}</p>
     <pre class="text-xs overflow-x-auto mb-0"><code>{scrapeSnippet}</code></pre>
   </div>
   <p class="mb-0 text-sm text-[var(--color-text-muted)]">
-    Dashboard JSON URL for automation:
+    {t.jsonUrlLabel}
     <code class="text-xs break-all">{dashboardJsonUrl}</code>
   </p>
 </DashboardCard>

@@ -2,7 +2,7 @@
 import AboutArticle from "../../components/AboutArticle.astro";
 import { affiliateHref, commerceLinkRel } from "../../lib/affiliateLinks";
 import { BOM } from "../../lib/bomLinks";
-import { getLocale } from "../../i18n";
+import { fmt, getLocale } from "../../i18n";
 import { getLocalizedAboutPage } from "../../i18n/content/aboutPages";
 import { getLocalizedAboutHeroPhoto } from "../../i18n/content/aboutPhotos";
 import { ch32vRiscvIngestMessages } from "../../i18n/messages/about-pages/ch32v-riscv-ingest";
@@ -91,7 +91,7 @@ const EVT_DHCP = "https://github.com/openwch/ch32v307/tree/main/EVT/EXAM/ETH/DHC
   --upstream https://probeharbor.dev`}</code></pre>
     </li>
     <li set:html={t.stepHostHtml} />
-    <li set:html={t.stepMounriverHtml(MOUNRIVER, EVT_DHCP)} />
+    <li set:html={fmt(t.stepMounriverHtml, { mounriver: MOUNRIVER, evtDhcp: EVT_DHCP })} />
     <li set:html={t.stepSerialHtml} />
   </ol>
   <p>

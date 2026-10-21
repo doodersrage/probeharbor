@@ -7,6 +7,8 @@ import type { LatestSensorRow } from "../../lib/sensorReadings";
 import type { StuckSensor } from "../../lib/stuckSensors";
 import { buildDeviceListRows, countDevicesWithoutSpace, spaceSuggestions } from "../../lib/deviceList";
 import { findWarmBoardSensors } from "../../lib/sensorPlacement";
+import { fmt, getLocale, plural } from "../../i18n";
+import { devicesListMessages } from "../../i18n/messages/app/devices/list";
 
 /**
  * Devices tab: every device, push and pull, one row each, worst first. A row
@@ -23,11 +25,13 @@ interface Props {
 }
 
 const { devices, latest, stuck, feedStatuses, canEdit, redirectTo, addHref } = Astro.props;
-const rows = buildDeviceListRows({ devices, latest, stuck, feedStatuses });
+const rows = buildDeviceListRows({ devices, latest, stuck, feedStatuses }, getLocale(Astro));
 const unplaced = countDevicesWithoutSpace(devices);
 const warmSensors = findWarmBoardSensors(latest);
 const pushDevices = devices.filter((d) => d.source === "push");
-const healthLabel = { healthy: "Healthy", watch: "Watch", at_risk: "At risk", offline: "Offline" } as const;
+const locale = getLocale(Astro);
+const t = devicesListMessages(locale).list;
+const healthLabel = t.health;
 const healthTone = {
   healthy: "text-[var(--color-success)]",
   watch: "text-[var(--color-warning)]",
@@ -38,30 +42,28 @@ const healthTone = {
 <section class="card" id="device-health" aria-labelledby="device-list-title">
   <div class="device-list-head">
     <div>
-      <h2 class="card-title" id="device-list-title">Devices ({rows.length})</h2>
-      <p class="card-subtitle mb-0">Worst first. Open a device to rename it, set its space, or fix its sensors.</p>
+      <h2 class="card-title" id="device-list-title">{fmt(t.title, { count: rows.length })}</h2>
+      <p class="card-subtitle mb-0">{t.subtitle}</p>
     </div>
-    {canEdit && <a class="btn-primary" href={addHref}>Add device</a>}
+    {canEdit && <a class="btn-primary" href={addHref}>{t.addDevice}</a>}
   </div>
 
   {warmSensors.map((hint) => (
     <p class="alert-warning mt-4 mb-0 text-sm" role="note">
-      <strong>{hint.label}</strong> reads {hint.gapF}°F warmer than your other probes. If that sensor sits right next to
-      its board, move it a few inches away on its wires: ESP32 boards run warm and skew the reading.
+      <strong>{hint.label}</strong> {fmt(t.warmHint, { gap: hint.gapF })}
     </p>
   ))}
 
   {canEdit && unplaced > 0 && rows.length > 0 && (
     <p class="mt-4 mb-0 text-sm" role="note">
-      {unplaced} device{unplaced === 1 ? " has" : "s have"} no space set, so coverage and alerts can't say where
-      {unplaced === 1 ? " it is" : " they are"}.
-      {pushDevices.length > 1 ? " Use Select several below to place a batch at once." : " Open it to set one."}
+      {plural(t.unplaced, unplaced, locale, { count: unplaced })}
+      {pushDevices.length > 1 ? ` ${t.unplacedBulk}` : ` ${t.unplacedSingle}`}
     </p>
   )}
 
   {rows.length === 0 ? (
     <p class="mt-4 mb-0 text-sm text-[var(--color-text-muted)]">
-      No devices yet. <a class="text-link" href={addHref}>Connect your first sensor</a>
+      {t.empty} <a class="text-link" href={addHref}>{t.emptyLink}</a>
     </p>
   ) : (
     <ul class="device-list" role="list">
@@ -71,10 +73,10 @@ const healthTone = {
             <span class="device-list-name">
               <strong>{row.name}</strong>
               <span class="device-list-meta">
-                {row.space ?? <span class="device-list-unplaced">No space</span>}
+                {row.space ?? <span class="device-list-unplaced">{t.noSpace}</span>}
                 {" · "}
-                {row.source === "push" ? "Push" : "Pull feed"}
-                {!row.enabled && " · Disabled"}
+                {row.source === "push" ? t.push : t.pullFeed}
+                {!row.enabled && ` · ${t.disabled}`}
               </span>
             </span>
             <span class="device-list-health">
@@ -82,12 +84,12 @@ const healthTone = {
               <span class="device-list-meta">{row.feedIssue ?? row.health.detail}</span>
             </span>
             <span class="device-list-reading">
-              {row.headline ?? <span class="text-[var(--color-text-muted)]">No reading</span>}
-              {row.firmwareUpdate && <span class="device-list-meta">Firmware update available</span>}
+              {row.headline ?? <span class="text-[var(--color-text-muted)]">{t.noReading}</span>}
+              {row.firmwareUpdate && <span class="device-list-meta">{t.firmwareUpdate}</span>}
             </span>
             <span class="device-list-seen">
-              <ReadingAgeBadge iso={row.lastSeenAt} emptyLabel="Never" />
-              {row.health.batteryPct != null && <span class="device-list-meta">{row.health.batteryPct}% battery</span>}
+              <ReadingAgeBadge iso={row.lastSeenAt} emptyLabel={t.never} />
+              {row.health.batteryPct != null && <span class="device-list-meta">{fmt(t.battery, { pct: row.health.batteryPct })}</span>}
             </span>
             <span class="device-list-chevron" aria-hidden="true">›</span>
           </a>

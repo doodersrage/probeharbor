@@ -70,12 +70,3 @@ export function translateList<T>(
   if (!table) return [...items];
   return items.map((item) => mergeTranslation(item, table[keyOf(item)]));
 }
-
-/**
- * Page/component UI strings. `en` defines the shape; each other locale must
- * provide the same keys (TypeScript enforces it). Values may be functions for
- * interpolation, e.g. `price: (p: string) => \`${p}/mes\``.
- */
-export function defineMessages<M>(messages: { en: M } & Record<TranslatedLocale, M>) {
-  return (locale: Locale): M => messages[locale] ?? messages.en;
-}

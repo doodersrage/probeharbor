@@ -7,6 +7,10 @@ import {
   setMfaRequiredCookie,
 } from "../../lib/mfa";
 import { sanitizeNextPath } from "../../lib/siteUrl";
+import { getLocale } from "../../i18n";
+import { authSigninMessages } from "../../i18n/messages/app/auth/signin";
+
+const t = authSigninMessages(getLocale(Astro)).mfa;
 
 const { session, user } = await getAuthFromCookies(Astro.cookies);
 
@@ -29,37 +33,27 @@ if (!needsStepUp) {
 setMfaRequiredCookie(Astro.cookies, true);
 
 const errorCode = Astro.url.searchParams.get("error");
+const mfaErrors = t.errors;
 const errorMessage =
-  errorCode === "invalid_code"
-    ? "That code was incorrect or expired. Enter a fresh code from your authenticator app."
-    : errorCode === "invalid_yubikey"
-      ? "That YubiKey OTP was not accepted. Click the YubiKey OTP field, tap your key (long touch), and wait for the full code before submitting."
-      : errorCode === "replayed_otp"
-        ? "That YubiKey OTP was already used. Tap your key again to generate a fresh code."
-      : errorCode === "yubikey_not_enrolled"
-        ? "That YubiKey is not enrolled on this account. Add it under Settings → Security, or use your authenticator code."
-    : errorCode === "no_factor"
-      ? "No MFA factor is enrolled on this account. Sign in again and add one under Settings."
-      : errorCode === "rate_limited"
-        ? "Too many incorrect attempts. Please wait a few minutes and try again."
-        : errorCode === "generic"
-          ? "Something went wrong verifying your code. Try again."
-          : null;
+  errorCode && Object.hasOwn(mfaErrors, errorCode)
+    ? mfaErrors[errorCode as keyof typeof mfaErrors]
+    : null;
 
 const safeNext =
   sanitizeNextPath(Astro.url.searchParams.get("next")) ?? "/dashboard";
 ---
 <Layout
-  title="Two-factor authentication"
-  description="Complete sign-in with an authenticator code or YubiKey OTP."
+  title={t.title}
+  description={t.description}
   noindex
 >
   <div class="auth-page">
     <MfaSignInChallenge
       client:load
       safeNext={safeNext}
-      userEmail={user.email ?? "your account"}
+      userEmail={user.email ?? t.yourAccount}
       initialError={errorMessage}
+      text={t.challenge}
     />
   </div>
 </Layout>

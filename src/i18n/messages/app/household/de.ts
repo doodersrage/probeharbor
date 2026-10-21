@@ -1,0 +1,148 @@
+import type { HouseholdMessages } from "./en";
+
+const de: HouseholdMessages = {
+  title: "Haushalt",
+  subtitle: "Teile Geräte und Verlauf. Lade per E-Mail ein – Eingeladene brauchen noch kein Konto.",
+  notices: {
+    invited: "Einladung per E-Mail gesendet.",
+    removed: "Mitglied entfernt.",
+    saved: "Haushalt aktualisiert.",
+    switched: "Aktiver Haushalt gewechselt.",
+    joined: "Du bist dem Haushalt beigetreten.",
+    inviteRevoked: "Einladung zurückgezogen.",
+    left: "Du hast den Haushalt verlassen.",
+    propertyCreated: "Neues Objekt angelegt und aktiviert.",
+    digestSaved: "Einstellung zur Zusammenfassung gespeichert.",
+    digestError: "Einstellung zur Zusammenfassung konnte nicht gespeichert werden.",
+  },
+  active: {
+    heading: "Aktiver Haushalt",
+    subtitle: "Wähle, von welchem Haushalt du Geräte und Verlauf siehst.",
+    badge: "Aktiv",
+    switch: "Wechseln",
+  },
+  members: {
+    heading: "Mitglieder",
+    remove: "Entfernen",
+    confirmRemove: "Dieses Mitglied aus dem Haushalt entfernen?",
+    confirmLeave: "Diesen Haushalt verlassen? Du verlierst den Zugriff auf seine geteilten Geräte und seinen Verlauf.",
+    leaveBody: "Du bist Mitglied dieses Haushalts. Wenn du ihn verlässt, verlierst du den Zugriff auf seine Geräte und seinen Verlauf.",
+    leave: "Haushalt verlassen",
+  },
+  invite: {
+    heading: "Per E-Mail einladen",
+    goesTo: "Einladungen gelten für deinen eigenen Haushalt.",
+    goesToNamed: "Einladungen gelten für deinen eigenen Haushalt ({name}).",
+    emailLabel: "E-Mail der eingeladenen Person",
+    roleLabel: "Rolle",
+    roleMember: "Bearbeiter (darf Geräte und Alarme bearbeiten)",
+    rolePropertyManager: "Objektverwalter (nur Geräte und Alarme)",
+    roleViewer: "Betrachter (Dashboard nur lesen)",
+    roleAlertOnly: "Nur Alarme (Benachrichtigungen, nur lesen)",
+    portfolioHintHtml:
+      '<a class="text-link" href="/pricing#portfolio">Portfolio</a> bietet Objektverwalter-Zugänge für Personal vor Ort (ohne Zugriff auf die Abrechnung).',
+    submit: "Einladungslink senden",
+    invitesHeading: "Einladungen",
+    ownerOnly: "Nur der Eigentümer des Haushalts kann Einladungen senden.",
+  },
+  pending: {
+    heading: "Offene Einladungen",
+    expires: "Läuft ab am {time}",
+    copyLink: "Link kopieren",
+    confirmCancel: "Diese Einladung zurückziehen?",
+    cancel: "Zurückziehen",
+  },
+  rename: {
+    heading: "Name des Haushalts",
+    label: "Name",
+    submit: "Namen speichern",
+  },
+  digest: {
+    heading: "Wöchentliche Zusammenfassung",
+    subtitle:
+      "Wenn der Eigentümer Zusammenfassungen aktiviert hat, kannst du dieselbe wöchentliche Fühler-Zusammenfassung abonnieren.",
+    checkbox: "Wöchentliche Haushalts-Zusammenfassung per E-Mail erhalten",
+    save: "Speichern",
+  },
+  freezeMap: {
+    heading: "Öffentliche Frostrisiko-Karte",
+    subtitle:
+      "Steuere anonymisierte Durchschnittswerte der Innentemperatur für deine Stadt bei. Auf der öffentlichen Karte erscheinen weder Haushalt noch Gerät noch Adresse.",
+    optIn: "Diesen Haushalt in die Stadtwerte einbeziehen",
+    presetLabel: "Vordefinierte Stadt",
+    presetPlaceholder: "Stadt auswählen (optional)",
+    searchLabel: "Oder nach einer beliebigen Stadt suchen",
+    searchPlaceholder: "z. B. Asheville, NC",
+    selected: "Ausgewählt: {label}",
+    searchHint: "Ist deine Stadt nicht in der Liste, suche danach und wähle ein Ergebnis.",
+    submit: "Einstellungen der Frostkarte speichern",
+    publicListHtml: 'Die öffentliche Liste findest du unter <a class="text-link" href="/freeze-map">/freeze-map</a>.',
+  },
+  property: {
+    heading: "Weiteres Objekt hinzufügen",
+    subtitle:
+      "Lege einen zweiten Haushalt an (Ferienhaus, Mietobjekt usw.) und wechsle im Dashboard zwischen ihnen.",
+    nameLabel: "Name des Objekts",
+    namePlaceholder: "Haus am See",
+    submit: "Objekt anlegen",
+    limit: {
+      one: "Dein Tarif erlaubt {count} eigenen Haushalt ({inUse} genutzt). Mit Pro verwaltest du mehrere Objekte.",
+      other: "Dein Tarif erlaubt {count} eigene Haushalte ({inUse} genutzt). Mit Pro verwaltest du mehrere Objekte.",
+    },
+  },
+  activity: {
+    heading: "Letzte Aktivitäten",
+    subtitle:
+      "Einladungen, Alarmänderungen, Geräteübertragungen und angezeigte Ingest-Schlüssel in diesem Haushalt.",
+    empty: "Noch keine Aktivität.",
+    repeat: "×{count}",
+    backTo: "(seit {time})",
+  },
+  client: {
+    sending: "Wird gesendet…",
+    sendInvite: "Einladungslink senden",
+    inviteFailed: "Einladung konnte nicht gesendet werden.",
+    inviteSent: "Einladung gesendet.",
+    saving: "Wird gespeichert…",
+    saveFailed: "Speichern fehlgeschlagen.",
+    saved: "Gespeichert.",
+    saveName: "Namen speichern",
+    saveFreezeMap: "Einstellungen der Frostkarte speichern",
+    usingPreset: "Vordefinierte Stadt wird verwendet.",
+    selected: "Ausgewählt: {label}",
+    searchFailed: "Suche fehlgeschlagen",
+  },
+  errors: {
+    missing_email: "Gib eine E-Mail-Adresse ein, um eine Einladung zu senden.",
+    "1": "Diese Aktion für den Haushalt konnte nicht ausgeführt werden. Bitte versuche es erneut.",
+    email_mismatch: "Melde dich mit der E-Mail-Adresse an, an die diese Einladung gesendet wurde.",
+    already_member: "Du bist bereits Mitglied dieses Haushalts.",
+    expired: "Diese Einladung ist abgelaufen. Bitte um eine neue.",
+    invalid: "Dieser Einladungslink ist ungültig.",
+    cannot_leave_owner:
+      "Eigentümer können den Haushalt nicht verlassen. Übertrage die Eigentümerschaft oder lösche den Haushalt.",
+    manager_required:
+      "Nur Eigentümer und Vollmitglieder können Einladungen, Freigabelinks und Abrechnungsintegrationen verwalten.",
+    viewer: "Nur lesen. Du kannst die Einstellungen dieses Kontos nicht ändern.",
+    property_limit:
+      "Du hast die Grenze für eigene Objekte in deinem Tarif erreicht. Wechsle den Tarif für weitere Haushalte.",
+    portfolio_required: "Einladungen für Objektverwalter erfordern den Tarif Portfolio.",
+  },
+  actions: {
+    ingest_key_revealed: "Ingest-Schlüssel angezeigt",
+    device_transfer: "Gerät übertragen",
+    sensor_replaced: "Sensor ersetzt",
+    alert_settings_saved: "Alarmeinstellungen gespeichert",
+    alert_settings_restored: "Alarmeinstellungen wiederhergestellt",
+    share_link_created: "Freigabelink erstellt",
+    api_key_created: "API-Schlüssel erstellt",
+    checkout_started: "Bezahlvorgang gestartet",
+    household_created: "Haushalt angelegt",
+    status_page_created: "Statusseite erstellt",
+    status_page_revoked: "Statusseite widerrufen",
+    inbound_snooze: "Alarme pausiert (eingehend)",
+    inbound_vacation: "Urlaubsmodus (eingehend)",
+  },
+};
+
+export default de;

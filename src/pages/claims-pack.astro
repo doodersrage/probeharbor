@@ -17,7 +17,7 @@ import {
   resolveSiteUrl,
 } from "../lib/schemaMarkup";
 import ProductScreenshot from "../components/ProductScreenshot.astro";
-import { getLocale, localizePath } from "../i18n";
+import { fmt, getLocale, localizePath } from "../i18n";
 import { claimsPackMessages } from "../i18n/messages/claimsPack";
 import { formatRetention } from "../i18n/content/planComparison/format";
 
@@ -31,10 +31,11 @@ const freeRetention = formatRetention(FREE_HISTORY_DAYS, locale);
 const memberRetention = formatRetention(MEMBER_HISTORY_DAYS, locale);
 const proRetention = formatRetention(PRO_HISTORY_DAYS, locale);
 
-const claimsFaqs = t.faqs(
-  { free: freeRetention, member: memberRetention, pro: proRetention },
-  t.disclaimer,
-);
+const faqVars = { free: freeRetention, member: memberRetention, pro: proRetention, disclaimer: t.disclaimer };
+const claimsFaqs = t.faqs.map((faq) => ({
+  question: fmt(faq.question, faqVars),
+  answer: fmt(faq.answer, faqVars),
+}));
 
 const schema = [
   getBreadcrumbSchema(siteUrl, [
@@ -138,7 +139,7 @@ const schema = [
       <ol class="text-sm space-y-2 mb-0">
         <li>{t.howTo.step1}</li>
         <li>
-          {t.howTo.step2(freeRetention, memberRetention)}
+          {fmt(t.howTo.step2, { free: freeRetention, member: memberRetention })}
         </li>
         <li set:html={t.howTo.step3Html} />
       </ol>

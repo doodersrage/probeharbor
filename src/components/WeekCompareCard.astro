@@ -2,6 +2,8 @@
 import { formatDeltaF, formatTemperature } from "../lib/temperatureFormat";
 import type { WeekCompareResult } from "../lib/weekCompare";
 import DashboardCard from "./dashboard/DashboardCard.astro";
+import { fmt, formatDateTime, getLocale, plural } from "../i18n";
+import { overviewCardsMessages } from "../i18n/messages/app/overviewCards";
 
 interface Props {
   compare: WeekCompareResult;
@@ -9,36 +11,47 @@ interface Props {
 }
 
 const { compare, useCelsius = false } = Astro.props;
+const locale = getLocale(Astro);
+const t = overviewCardsMessages(locale).weekCompareCard;
 
 function formatEarliest(iso: string | null): string | null {
   if (!iso) return null;
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return null;
-  return date.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+  return formatDateTime(date, locale, { month: "short", day: "numeric", year: "numeric" });
 }
 
 const earliestLabel = formatEarliest(compare.earliestLocalReadingAt);
 const priorYearIsOutdoor = compare.priorYearSource === "outdoor_estimate";
 const priorYearLabel = priorYearIsOutdoor
-  ? `Outdoor last year${compare.priorYearOutdoorLabel ? ` (${compare.priorYearOutdoorLabel})` : ""}`
-  : "Same week last year";
+  ? compare.priorYearOutdoorLabel
+    ? fmt(t.outdoorLastYearAt, { label: compare.priorYearOutdoorLabel })
+    : t.outdoorLastYear
+  : t.sameWeekLastYear;
+// English as before: the raw count, no digit grouping.
+const samplesLabel = plural(
+  t.samples,
+  compare.sampleCount,
+  locale,
+  locale === "en" ? { count: String(compare.sampleCount) } : {},
+);
 ---
 <DashboardCard>
-  <h2 class="card-title">This week vs last year</h2>
+  <h2 class="card-title">{t.title}</h2>
   <p class="card-subtitle mb-4">
     {priorYearIsOutdoor
-      ? "No probe data from last year yet, so the change compares outdoor weather (Open-Meteo) this week with the same week last year."
-      : "7-day average temperature compared to the same window one year ago."}
+      ? t.subtitleOutdoor
+      : t.subtitle}
   </p>
   {compare.thisWeekAvgF == null ? (
-    <p class="mb-0 text-sm text-muted-foreground">Not enough readings this week yet.</p>
+    <p class="mb-0 text-sm text-muted-foreground">{t.notEnough}</p>
   ) : (
     <>
       <div class="stat-grid">
         <article class="stat-item">
-          <span class="stat-label">{priorYearIsOutdoor ? "Your probes this week" : "This week"}</span>
+          <span class="stat-label">{priorYearIsOutdoor ? t.yourProbesThisWeek : t.thisWeek}</span>
           <p class="stat-value">{formatTemperature(compare.thisWeekAvgF, useCelsius, 1)}</p>
-          <p class="stat-detail">{compare.sampleCount} samples</p>
+          <p class="stat-detail">{samplesLabel}</p>
         </article>
         <article class="stat-item">
           <span class="stat-label">{priorYearLabel}</span>
@@ -48,32 +61,32 @@ const priorYearLabel = priorYearIsOutdoor
               : "—"}
           </p>
           {compare.priorYearAvgF == null && earliestLabel && (
-            <p class="stat-detail">Local history starts {earliestLabel}</p>
+            <p class="stat-detail">{fmt(t.historyStarts, { date: earliestLabel })}</p>
           )}
         </article>
         <article class="stat-item">
-          <span class="stat-label">{priorYearIsOutdoor ? "Outdoor change" : "Change"}</span>
+          <span class="stat-label">{priorYearIsOutdoor ? t.outdoorChange : t.change}</span>
           <p class="stat-value">
             {compare.deltaF != null ? formatDeltaF(compare.deltaF, useCelsius) : "—"}
           </p>
           <p class="stat-detail">
             {priorYearIsOutdoor
               ? compare.thisWeekOutdoorAvgF != null
-                ? `Outdoor this week ${formatTemperature(compare.thisWeekOutdoorAvgF, useCelsius, 1)}`
-                : "This week's outdoor average is unavailable"
+                ? fmt(t.outdoorThisWeek, { temp: formatTemperature(compare.thisWeekOutdoorAvgF, useCelsius, 1) })
+                : t.outdoorUnavailable
               : compare.deltaF == null
                 ? ""
                 : compare.deltaF < 0
-                  ? "Colder than last year"
-                  : "Warmer or similar"}
+                  ? t.colder
+                  : t.warmer}
           </p>
         </article>
       </div>
       {compare.priorYearAvgF == null && !priorYearIsOutdoor && (
         <p class="mb-0 mt-3 text-sm text-[var(--color-text-muted)]">
           {earliestLabel
-            ? `No probe data from this week last year. History here starts ${earliestLabel}.`
-            : "No probe data from this week last year yet."}
+            ? fmt(t.noPriorStarts, { date: earliestLabel })
+            : t.noPrior}
         </p>
       )}
     </>

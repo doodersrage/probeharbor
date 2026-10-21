@@ -3,7 +3,7 @@ import { COMPANION_APPS, type CompanionApp } from "../../../lib/companionApps";
 import { DESKTOP_TAGLINE } from "../../../lib/desktop";
 import type { Locale } from "../../locales";
 import { type DeepPartial, mergeTranslation } from "../../translate";
-import { collectKeyedOverlays } from "../collect";
+import { keyedOverlays } from "../collect";
 
 /**
  * Translation file shape for the companion-app data in `src/lib/companionApps.ts`,
@@ -17,22 +17,20 @@ export type AppsOverlay = {
   bayBuddy?: { tagline?: string };
 };
 
-const overlays = collectKeyedOverlays<unknown>(
-  import.meta.glob("./*/*.ts", { eager: true }),
-) as Partial<Record<Locale, AppsOverlay>>;
+const overlays = () => keyedOverlays<unknown>("apps") as Partial<Record<Locale, AppsOverlay>>;
 
 export function getLocalizedDesktopTagline(locale: Locale): string {
-  return overlays[locale]?.desktop?.tagline ?? DESKTOP_TAGLINE;
+  return overlays()[locale]?.desktop?.tagline ?? DESKTOP_TAGLINE;
 }
 
 export function getLocalizedBayBuddyTagline(locale: Locale): string {
-  return overlays[locale]?.bayBuddy?.tagline ?? BAYBUDDY_TAGLINE;
+  return overlays()[locale]?.bayBuddy?.tagline ?? BAYBUDDY_TAGLINE;
 }
 
 /** `COMPANION_APPS` with visible text in the given locale (English is returned as is). */
 export function getLocalizedCompanionApps(locale: Locale): CompanionApp[] {
   if (locale === "en") return [...COMPANION_APPS];
-  const table = overlays[locale]?.companionApps ?? {};
+  const table = overlays()[locale]?.companionApps ?? {};
   const taglines: Record<string, string> = {
     desktop: getLocalizedDesktopTagline(locale),
     "bay-buddy": getLocalizedBayBuddyTagline(locale),

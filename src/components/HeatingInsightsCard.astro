@@ -1,18 +1,21 @@
 ---
 import DashboardCard from "./dashboard/DashboardCard.astro";
 import type { HeatingInsight } from "../lib/heatingInsights";
+import { getLocale } from "../i18n";
+import { overviewCardsMessages } from "../i18n/messages/app/overviewCards";
 
 interface Props {
   insights: HeatingInsight[];
 }
 
 const { insights } = Astro.props;
+const t = overviewCardsMessages(getLocale(Astro)).heatingCard;
 ---
 {insights.length > 0 && (
   <DashboardCard>
-    <h2 class="card-title">Heating insights</h2>
+    <h2 class="card-title">{t.title}</h2>
     <p class="card-subtitle mb-3">
-      Correlates probe readings with outdoor weather, door activity, and your connected house thermostat.
+      {t.subtitle}
     </p>
     <ul class="space-y-2 m-0 p-0 list-none">
       {insights.map((item) => (

@@ -7,6 +7,10 @@ import { deliverWebhookPost } from "./webhookDeliveries";
 import { getAlertSettingsForUser, saveAlertSettingsForUser } from "./notify";
 import { resolveSiteUrl } from "./schemaMarkup";
 import { suggestFalseAlarmTip } from "./falseAlarmHints";
+import type { Locale } from "../i18n/locales";
+import { ensureLocale } from "../i18n/catalog";
+import { fmt, formatNumber } from "../i18n/format";
+import { alertJobsMessages } from "../i18n/messages/app/alertJobs";
 
 export type AckPlaybookAction =
   | "ack"
@@ -29,10 +33,15 @@ export async function executeAlertAckPlaybook(input: {
   eventId: number;
   action: AckPlaybookAction;
   siteUrl?: string;
+  /** Language of the result message and the tenant email (the signed-in owner's). */
+  locale?: Locale;
 }): Promise<AckPlaybookResult> {
+  const locale = input.locale ?? "en";
+  await ensureLocale(locale, ["app"]);
+  const t = alertJobsMessages(locale).ackPlaybook;
   const event = await getAlertEventForUser(input.userId, input.eventId);
   if (!event) {
-    return { ok: false, message: "Alert event not found." };
+    return { ok: false, message: t.notFound };
   }
 
   if (
@@ -50,7 +59,7 @@ export async function executeAlertAckPlaybook(input: {
   let suggestedTipId: string | undefined;
   let raisedTo: number | null = null;
   if (input.action === "false_alarm" || input.action === "raise_threshold") {
-    const tip = suggestFalseAlarmTip(event.kind);
+    const tip = suggestFalseAlarmTip(event.kind, locale);
     suggestedTipId = tip.id;
     await updateAlertEventMeta(input.userId, input.eventId, {
       feedback: "false_alarm",
@@ -78,7 +87,7 @@ export async function executeAlertAckPlaybook(input: {
   if (input.action === "notify_tenant") {
     const householdId = await getUserHouseholdId(input.userId);
     if (!householdId) {
-      return { ok: false, message: "No household for tenant relay." };
+      return { ok: false, message: t.noHousehold };
     }
     const supabase = createServerClient();
     const { data: household } = await supabase
@@ -89,20 +98,21 @@ export async function executeAlertAckPlaybook(input: {
     const relay = await sendTenantFreezeRelay({
       householdId,
       managerUserId: input.userId,
-      householdName: household?.name?.trim() || "Property",
+      householdName: household?.name?.trim() || t.defaultPropertyName,
       alertTitle: event.title,
       alertBody: event.body,
       siteUrl: input.siteUrl,
+      locale: input.locale,
     });
     if (!relay.ok) {
-      return { ok: false, message: relay.error ?? "Tenant relay failed." };
+      return { ok: false, message: relay.error ?? t.relayFailed };
     }
   }
 
   if (input.action === "webhook_ping") {
     const settings = await getAlertSettingsForUser(input.userId, {});
     if (!settings.outboundWebhookUrl?.trim()) {
-      return { ok: false, message: "No outbound webhook configured." };
+      return { ok: false, message: t.noWebhook };
     }
     const payload = JSON.stringify({
       title: "ProbeHarbor alert acknowledged",
@@ -137,36 +147,26 @@ export async function executeAlertAckPlaybook(input: {
 
   const ack = await acknowledgeAlertEvent(input.userId, input.eventId);
   if (!ack.ok) {
-    return { ok: false, message: ack.error ?? "Could not acknowledge alert." };
+    return { ok: false, message: ack.error ?? t.ackFailed };
   }
 
   if (input.action === "raise_threshold" && raisedTo != null) {
     return {
       ok: true,
-      message: `False alarm handled: freeze threshold raised to ${raisedTo}°F and alerts snoozed 24h.`,
+      message: fmt(t.raised, { value: locale === "en" ? String(raisedTo) : formatNumber(raisedTo, locale) }),
     };
   }
 
   if (input.action === "false_alarm" && suggestedTipId) {
-    const tip = suggestFalseAlarmTip(event.kind);
+    const tip = suggestFalseAlarmTip(event.kind, locale);
     const tipHref = tip.href ?? "/dashboard/alerts?tab=settings#alert-section-essentials";
     return {
       ok: true,
-      message: `Marked as false alarm: alerts snoozed 24h. Suggested fix: ${tip.title}. Open ${tipHref}`,
+      message: fmt(t.falseAlarmTip, { tip: tip.title, href: tipHref }),
     };
   }
 
-  const messages: Record<AckPlaybookAction, string> = {
-    ack: "Alert marked as handled.",
-    snooze_1h: "Alert handled: freeze alerts snoozed for 1 hour.",
-    snooze_4h: "Alert handled: freeze alerts snoozed for 4 hours.",
-    snooze_24h: "Alert handled: freeze alerts snoozed for 24 hours.",
-    false_alarm:
-      "Marked as false alarm: alerts snoozed 24h. Check probe placement if this keeps happening.",
-    raise_threshold: "False alarm handled and freeze threshold raised.",
-    notify_tenant: "Alert handled: tenant contact emailed.",
-    webhook_ping: "Alert handled: outbound webhook notified.",
-  };
+  const messages: Record<AckPlaybookAction, string> = t.results;
 
   return { ok: true, message: messages[input.action] };
 }

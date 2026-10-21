@@ -1,4 +1,5 @@
 // fetch local weather data from OpenWeather API
+import { LOCALE_META, type Locale } from "../i18n/locales";
 
 const WEATHER_FETCH_TIMEOUT_MS = 5000;
 
@@ -247,6 +248,7 @@ export function nightsAtRiskFromForecast(
   raw: Record<string, any> | null | undefined,
   freezeThresholdF: number,
   nights = 5,
+  locale: Locale = "en",
 ): NightRisk[] {
   const list = raw?.list;
   if (!Array.isArray(list)) return [];
@@ -284,7 +286,7 @@ export function nightsAtRiskFromForecast(
     .slice(0, nights)
     .map(([date, minTempF]) => ({
       date,
-      dateLabel: new Date(`${date}T12:00:00Z`).toLocaleDateString("en-US", {
+      dateLabel: new Date(`${date}T12:00:00Z`).toLocaleDateString(locale === "en" ? "en-US" : LOCALE_META[locale].intl, {
         weekday: "short",
         month: "short",
         day: "numeric",
@@ -302,6 +304,7 @@ export async function fetchNightsAtRisk(
     lon?: number | null;
     freezeThresholdF: number;
   },
+  locale: Locale = "en",
 ): Promise<NightRisk[]> {
   let raw: any = null;
   if (options.lat != null && options.lon != null) {
@@ -309,5 +312,5 @@ export async function fetchNightsAtRisk(
   } else {
     raw = await fetchWeatherForecastRaw(options.cityId);
   }
-  return nightsAtRiskFromForecast(raw, options.freezeThresholdF);
+  return nightsAtRiskFromForecast(raw, options.freezeThresholdF, 5, locale);
 }

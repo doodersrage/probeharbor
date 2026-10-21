@@ -4,6 +4,7 @@ import {
   FALSE_ALARM_TIPS,
   FLOOD_FALSE_ALARM_TIPS,
   formatAlertWhyMeta,
+  localizeFalseAlarmTip,
   type FalseAlarmHint,
 } from "../../lib/falseAlarmHints";
 import { formatAlertChannelList } from "../../lib/alertChannelLabels";
@@ -11,6 +12,8 @@ import { isActionableAlertKind, type AlertEventRow } from "../../lib/alertEvents
 import AlertAckActions from "./AlertAckActions.astro";
 import { groupAlertEvents } from "../../lib/alertEventGroups";
 import { formatAlertKind } from "../../lib/alertKindLabels";
+import { fmt, getLocale, plural } from "../../i18n";
+import { alertsMessages } from "../../i18n/messages/app/alerts";
 
 interface Props {
   events: AlertEventRow[];
@@ -28,6 +31,9 @@ const {
   canUseOutboundWebhook,
 } = Astro.props;
 
+const locale = getLocale(Astro);
+const t = alertsMessages(locale).list;
+
 // Runs of look-alike alerts show the newest row plus "Show N more like this".
 const items = groupAlertEvents(events).flatMap((group, groupIndex) => {
   const groupId = `alert-group-${groupIndex}`;
@@ -38,7 +44,7 @@ const items = groupAlertEvents(events).flatMap((group, groupIndex) => {
       groupId,
       folded: false,
       moreCount: group.rest.length,
-      oldestLabel: oldest ? formatRelativeAge(oldest.created_at).label : "",
+      oldestLabel: oldest ? formatRelativeAge(oldest.created_at, undefined, locale).label : "",
     },
     ...group.rest.map((event) => ({ event, groupId, folded: true, moreCount: 0, oldestLabel: "" })),
   ];
@@ -46,31 +52,29 @@ const items = groupAlertEvents(events).flatMap((group, groupIndex) => {
 
 /** Who closed it: a person ("Handled") or the system once the condition cleared. */
 function handledLabel(event: AlertEventRow): string {
-  if (event.meta?.autoResolved === "recovered") return "Recovered";
-  if (event.meta?.autoResolved === "expired") return "Expired";
-  return "Handled";
+  if (event.meta?.autoResolved === "recovered") return t.recovered;
+  if (event.meta?.autoResolved === "expired") return t.expired;
+  return t.handled;
 }
 
 function tipForEvent(event: AlertEventRow): FalseAlarmHint | null {
   const tipId = event.meta?.suggestedTipId;
   if (!tipId) return null;
-  return (
-    [...FALSE_ALARM_TIPS, ...FLOOD_FALSE_ALARM_TIPS].find((t) => t.id === tipId) ??
-    null
-  );
+  const tip = [...FALSE_ALARM_TIPS, ...FLOOD_FALSE_ALARM_TIPS].find((hint) => hint.id === tipId);
+  return tip ? localizeFalseAlarmTip(tip, locale) : null;
 }
 ---
 
 {events.length === 0 ? (
   <p class="mb-0 text-sm text-[var(--color-text-muted)]">
-    No alert events match this filter yet. After freeze, flood, or test delivery, rows appear here with Why details and false-alarm actions.
+    {t.empty}
   </p>
 ) : (
   <>
     <div class="alert-activity-mobile space-y-3">
       {items.map(({ event, groupId, folded, moreCount, oldestLabel }) => {
-        const age = formatRelativeAge(event.created_at);
-        const why = formatAlertWhyMeta(event.meta ?? {});
+        const age = formatRelativeAge(event.created_at, undefined, locale);
+        const why = formatAlertWhyMeta(event.meta ?? {}, locale);
         const tip = tipForEvent(event);
         return (
           <>
@@ -84,16 +88,16 @@ function tipForEvent(event: AlertEventRow): FalseAlarmHint | null {
               <span class="text-xs text-[var(--color-text-muted)]">{age.label}</span>
             </div>
             <p class="m-0 mt-1 text-xs text-[var(--color-text-muted)]">
-              {formatAlertKind(event.kind)}
+              {formatAlertKind(event.kind, locale)}
               {" · "}
-              Sent {formatAlertChannelList(event.channels_sent) || "—"}
+              {fmt(t.sent, { channels: formatAlertChannelList(event.channels_sent, locale) || "—" })}
               {event.channels_skipped.length > 0 && (
-                <> · Skipped {formatAlertChannelList(event.channels_skipped)}</>
+                <> · {fmt(t.skipped, { channels: formatAlertChannelList(event.channels_skipped, locale) })}</>
               )}
             </p>
             {why && (
               <details class="mt-2">
-                <summary class="cursor-pointer text-link text-xs">Why</summary>
+                <summary class="cursor-pointer text-link text-xs">{t.why}</summary>
                 <p class="mt-1 mb-0 text-xs text-[var(--color-text-muted)] whitespace-pre-wrap">
                   {why}
                 </p>
@@ -101,9 +105,9 @@ function tipForEvent(event: AlertEventRow): FalseAlarmHint | null {
             )}
             {tip && (
               <p class="mt-2 mb-0 text-xs">
-                Suggested: {tip.title}.{" "}
+                {fmt(t.suggested, { tip: tip.title })}{" "}
                 {tip.href && (
-                  <a class="text-link" href={tip.href}>{tip.hrefLabel ?? "Open"}</a>
+                  <a class="text-link" href={tip.href}>{tip.hrefLabel ?? t.open}</a>
                 )}
               </p>
             )}
@@ -114,11 +118,11 @@ function tipForEvent(event: AlertEventRow): FalseAlarmHint | null {
                   <input type="hidden" name="action" value="raise_threshold" />
                   <input type="hidden" name="redirect" value="/dashboard/alerts" />
                   <button type="submit" class="btn-secondary btn-sm">
-                    Raise freeze threshold +2°F
+                    {t.raiseThreshold}
                   </button>
                 </form>
                 <a class="btn-ghost btn-sm" href="/dashboard/devices">
-                  Check probe placement
+                  {t.checkPlacement}
                 </a>
               </div>
             )}
@@ -137,8 +141,8 @@ function tipForEvent(event: AlertEventRow): FalseAlarmHint | null {
             </div>
           </article>
           {moreCount > 0 && (
-            <button type="button" class="btn-ghost btn-sm" data-alert-group-toggle={groupId} aria-expanded="false">
-              Show {moreCount} more like this (back to {oldestLabel})
+            <button type="button" class="btn-ghost btn-sm" data-alert-group-toggle={groupId} data-hide-label={plural(t.hideSimilar, moreCount, locale)} aria-expanded="false">
+              {plural(t.showMore, moreCount, locale, { oldest: oldestLabel })}
             </button>
           )}
           </>
@@ -148,22 +152,22 @@ function tipForEvent(event: AlertEventRow): FalseAlarmHint | null {
 
     <div class="alert-activity-desktop overflow-x-auto">
       <table class="w-full text-sm">
-        <caption class="sr-only">Recent alert delivery and acknowledgement events</caption>
+        <caption class="sr-only">{t.caption}</caption>
         <thead>
           <tr class="text-left text-[var(--color-text-muted)]">
-            <th scope="col" class="py-2 pr-3">When</th>
-            <th scope="col" class="py-2 pr-3">Kind</th>
-            <th scope="col" class="py-2 pr-3">Title</th>
-            <th scope="col" class="py-2 pr-3">Why</th>
-            <th scope="col" class="py-2 pr-3">Sent</th>
-            <th scope="col" class="py-2 pr-3">Skipped</th>
-            <th scope="col" class="py-2">Ack</th>
+            <th scope="col" class="py-2 pr-3">{t.columns.when}</th>
+            <th scope="col" class="py-2 pr-3">{t.columns.kind}</th>
+            <th scope="col" class="py-2 pr-3">{t.columns.title}</th>
+            <th scope="col" class="py-2 pr-3">{t.columns.why}</th>
+            <th scope="col" class="py-2 pr-3">{t.columns.sent}</th>
+            <th scope="col" class="py-2 pr-3">{t.columns.skipped}</th>
+            <th scope="col" class="py-2">{t.columns.ack}</th>
           </tr>
         </thead>
         <tbody>
           {items.map(({ event, groupId, folded, moreCount, oldestLabel }) => {
-            const age = formatRelativeAge(event.created_at);
-            const why = formatAlertWhyMeta(event.meta ?? {});
+            const age = formatRelativeAge(event.created_at, undefined, locale);
+            const why = formatAlertWhyMeta(event.meta ?? {}, locale);
             const tip = tipForEvent(event);
             return (
               <>
@@ -173,12 +177,12 @@ function tipForEvent(event: AlertEventRow): FalseAlarmHint | null {
                 hidden={folded}
               >
                 <td class="py-2 pr-3 whitespace-nowrap">{age.label}</td>
-                <td class="py-2 pr-3">{formatAlertKind(event.kind)}</td>
+                <td class="py-2 pr-3">{formatAlertKind(event.kind, locale)}</td>
                 <td class="py-2 pr-3">{event.title}</td>
                 <td class="py-2 pr-3 max-w-xs">
                   {why ? (
                     <details>
-                      <summary class="cursor-pointer text-link text-xs">Why</summary>
+                      <summary class="cursor-pointer text-link text-xs">{t.why}</summary>
                       <p class="mt-1 mb-0 text-xs text-[var(--color-text-muted)] whitespace-pre-wrap">
                         {why}
                       </p>
@@ -188,9 +192,9 @@ function tipForEvent(event: AlertEventRow): FalseAlarmHint | null {
                   )}
                   {tip && (
                     <p class="mt-2 mb-0 text-xs">
-                      Suggested fix: {tip.title}.{" "}
+                      {fmt(t.suggestedFix, { tip: tip.title })}{" "}
                       {tip.href ? (
-                        <a class="text-link" href={tip.href}>{tip.hrefLabel ?? "Open"}</a>
+                        <a class="text-link" href={tip.href}>{tip.hrefLabel ?? t.open}</a>
                       ) : null}
                     </p>
                   )}
@@ -200,13 +204,13 @@ function tipForEvent(event: AlertEventRow): FalseAlarmHint | null {
                       <input type="hidden" name="action" value="raise_threshold" />
                       <input type="hidden" name="redirect" value="/dashboard/alerts" />
                       <button type="submit" class="btn-ghost text-xs">
-                        Raise freeze threshold +2°F
+                        {t.raiseThreshold}
                       </button>
                     </form>
                   )}
                 </td>
-                <td class="py-2 pr-3">{formatAlertChannelList(event.channels_sent) || "—"}</td>
-                <td class="py-2 pr-3">{formatAlertChannelList(event.channels_skipped) || "—"}</td>
+                <td class="py-2 pr-3">{formatAlertChannelList(event.channels_sent, locale) || "—"}</td>
+                <td class="py-2 pr-3">{formatAlertChannelList(event.channels_skipped, locale) || "—"}</td>
                 <td class="py-2">
                   {event.acknowledged_at ? (
                     <span class="text-[var(--color-text-muted)]">{handledLabel(event)}</span>
@@ -225,8 +229,8 @@ function tipForEvent(event: AlertEventRow): FalseAlarmHint | null {
               {moreCount > 0 && (
                 <tr>
                   <td colspan="7" class="pb-2">
-                    <button type="button" class="btn-ghost btn-sm" data-alert-group-toggle={groupId} aria-expanded="false">
-                      Show {moreCount} more like this (back to {oldestLabel})
+                    <button type="button" class="btn-ghost btn-sm" data-alert-group-toggle={groupId} data-hide-label={plural(t.hideSimilar, moreCount, locale)} aria-expanded="false">
+                      {plural(t.showMore, moreCount, locale, { oldest: oldestLabel })}
                     </button>
                   </td>
                 </tr>
@@ -255,7 +259,7 @@ function tipForEvent(event: AlertEventRow): FalseAlarmHint | null {
     button.setAttribute("aria-expanded", String(open));
     const count = button.textContent?.match(/\d+/)?.[0] ?? "";
     button.dataset.label ??= button.textContent ?? "";
-    button.textContent = open ? `Hide ${count} similar` : button.dataset.label;
+    button.textContent = open ? (button.dataset.hideLabel ?? `Hide ${count} similar`) : button.dataset.label;
   });
 </script>
 

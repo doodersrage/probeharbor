@@ -1,17 +1,21 @@
 ---
 import DashboardCard from "./DashboardCard.astro";
 import type { AirQualityOverview } from "../../lib/overviewExtras";
+import { getLocale, plural } from "../../i18n";
+import { overviewInsightsMessages } from "../../i18n/messages/app/overviewInsights";
 
 interface Props {
   overview: AirQualityOverview;
 }
 
 const { overview } = Astro.props;
+const locale = getLocale(Astro);
+const t = overviewInsightsMessages(locale).airQuality;
 ---
 {overview.rows.length > 0 && (
   <DashboardCard>
-    <h2 class="card-title">Air quality</h2>
-    <p class="card-subtitle mb-4">Latest CO₂, particles, VOC, and pressure readings.</p>
+    <h2 class="card-title">{t.title}</h2>
+    <p class="card-subtitle mb-4">{t.subtitle}</p>
     <ul class="space-y-2 mb-0">
       {overview.rows.map((row) => (
         <li class="text-sm flex flex-wrap justify-between gap-2">
@@ -28,7 +32,7 @@ const { overview } = Astro.props;
     </ul>
     {overview.watchCount > 0 && (
       <p class="alert-warning mt-3 mb-0 text-sm">
-        {overview.watchCount} reading{overview.watchCount === 1 ? "" : "s"} above typical workshop comfort bands.
+        {plural(t.watch, overview.watchCount, locale)}
       </p>
     )}
   </DashboardCard>

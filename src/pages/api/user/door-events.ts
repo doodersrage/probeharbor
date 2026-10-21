@@ -5,11 +5,14 @@ import { listDoorEvents } from "../../../lib/doorEvents";
 import { listHouseholdDevices } from "../../../lib/devices";
 import { getOrCreateHouseholdForUser } from "../../../lib/households";
 import { fetchRecentBoolReadings } from "../../../lib/sensorReadings";
+import { apiCommonMessages, apiLocale } from "../../../i18n/messages/app/api/common";
 
-export const GET: APIRoute = async ({ cookies, url }) => {
+export const GET: APIRoute = async ({ cookies, url, locals }) => {
+  const locale = apiLocale({ locals });
+  const tc = apiCommonMessages(locale);
   const { session, user } = await getAuthFromCookies(cookies);
   if (!session || !user) {
-    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+    return new Response(JSON.stringify({ error: tc.unauthorized }), {
       status: 401,
       headers: { "Content-Type": "application/json" },
     });

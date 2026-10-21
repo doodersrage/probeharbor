@@ -11,6 +11,10 @@ import { getUserSubscription } from "../../lib/stripeSubscriptions";
 import { normalizeComparisonTier, nextUpgradeTier } from "../../lib/planComparison";
 import { getSiteUrl } from "../../lib/stripe";
 import { resolveStripePriceId } from "../../lib/planTier";
+import { getLocale } from "../../i18n";
+import { plansMessages } from "../../i18n/messages/app/plans";
+
+const t = plansMessages(getLocale(Astro));
 
 const shell = Astro.locals.dashboardShell ?? null;
 const { session, user } = shell
@@ -41,8 +45,8 @@ const referralRewardDays = Number(
 );
 ---
 <DashboardLayout
-  title="Plans"
-  subtitle="Compare tiers and upgrade when you need longer retention, SMS, or more properties."
+  title={t.title}
+  subtitle={t.subtitle}
 >
   <div class="space-y-6">
 
@@ -70,8 +74,8 @@ const referralRewardDays = Number(
     <ReferralCard siteUrl={siteUrl} rewardDays={referralRewardDays} />
 
     <section class="card">
-      <h2 class="card-title">Feature comparison</h2>
-      <p class="card-subtitle mb-4">Your column is highlighted.</p>
+      <h2 class="card-title">{t.comparisonTitle}</h2>
+      <p class="card-subtitle mb-4">{t.comparisonHint}</p>
       <PlanComparisonTable highlightTier={currentTier} />
     </section>
   </div>

@@ -1,0 +1,148 @@
+import type { HouseholdMessages } from "./en";
+
+const es: HouseholdMessages = {
+  title: "Hogar",
+  subtitle: "Comparte dispositivos e historial. Invita por correo: no hace falta que los invitados tengan cuenta todavía.",
+  notices: {
+    invited: "Invitación enviada por correo.",
+    removed: "Miembro eliminado.",
+    saved: "Hogar actualizado.",
+    switched: "Hogar activo cambiado.",
+    joined: "Te uniste al hogar.",
+    inviteRevoked: "Invitación cancelada.",
+    left: "Saliste del hogar.",
+    propertyCreated: "Nueva propiedad creada y activada.",
+    digestSaved: "Preferencia de resumen guardada.",
+    digestError: "No se pudo guardar la preferencia de resumen.",
+  },
+  active: {
+    heading: "Hogar activo",
+    subtitle: "Elige de qué hogar ves los dispositivos y el historial.",
+    badge: "Activo",
+    switch: "Cambiar",
+  },
+  members: {
+    heading: "Miembros",
+    remove: "Quitar",
+    confirmRemove: "¿Quitar a este miembro del hogar?",
+    confirmLeave: "¿Salir de este hogar? Perderás el acceso a sus dispositivos compartidos y a su historial.",
+    leaveBody: "Eres miembro de este hogar. Si sales, perderás el acceso a sus dispositivos y a su historial.",
+    leave: "Salir del hogar",
+  },
+  invite: {
+    heading: "Invitar por correo",
+    goesTo: "Las invitaciones son para el hogar del que eres propietario.",
+    goesToNamed: "Las invitaciones son para el hogar del que eres propietario ({name}).",
+    emailLabel: "Correo del invitado",
+    roleLabel: "Rol",
+    roleMember: "Editor (puede editar dispositivos y alertas)",
+    rolePropertyManager: "Administrador de propiedad (solo dispositivos y alertas)",
+    roleViewer: "Lector (panel de solo lectura)",
+    roleAlertOnly: "Solo alertas (notificaciones, solo lectura)",
+    portfolioHintHtml:
+      '<a class="text-link" href="/pricing#portfolio">Portfolio</a> añade accesos de administrador de propiedad para el personal in situ (sin acceso a la facturación).',
+    submit: "Enviar enlace de invitación",
+    invitesHeading: "Invitaciones",
+    ownerOnly: "Solo el propietario del hogar puede enviar invitaciones.",
+  },
+  pending: {
+    heading: "Invitaciones pendientes",
+    expires: "Caduca el {time}",
+    copyLink: "Copiar enlace",
+    confirmCancel: "¿Cancelar esta invitación?",
+    cancel: "Cancelar",
+  },
+  rename: {
+    heading: "Nombre del hogar",
+    label: "Nombre",
+    submit: "Guardar nombre",
+  },
+  digest: {
+    heading: "Resumen semanal",
+    subtitle:
+      "Si el propietario tiene los resúmenes activados, suscríbete para recibir el mismo resumen semanal de las sondas.",
+    checkbox: "Enviarme por correo el resumen semanal del hogar",
+    save: "Guardar",
+  },
+  freezeMap: {
+    heading: "Mapa público de riesgo de congelación",
+    subtitle:
+      "Participa con promedios anónimos de temperatura interior de tu ciudad. En el mapa público no se muestra ningún hogar, dispositivo ni dirección.",
+    optIn: "Incluir este hogar en los datos agregados de la ciudad",
+    presetLabel: "Ciudad predefinida",
+    presetPlaceholder: "Elige una ciudad predefinida (opcional)",
+    searchLabel: "O busca cualquier ciudad",
+    searchPlaceholder: "p. ej., Asheville, NC",
+    selected: "Seleccionada: {label}",
+    searchHint: "Si tu ciudad no está en la lista, búscala y elige un resultado.",
+    submit: "Guardar ajustes del mapa de congelación",
+    publicListHtml: 'Consulta la lista pública en <a class="text-link" href="/freeze-map">/freeze-map</a>.',
+  },
+  property: {
+    heading: "Añadir otra propiedad",
+    subtitle:
+      "Crea un segundo hogar (casa de vacaciones, alquiler, etc.) y cambia entre ellos desde el panel.",
+    nameLabel: "Nombre de la propiedad",
+    namePlaceholder: "Casa del lago",
+    submit: "Crear propiedad",
+    limit: {
+      one: "Tu plan permite {count} hogar propio ({inUse} en uso). Pasa a Pro para tener varias propiedades.",
+      other: "Tu plan permite {count} hogares propios ({inUse} en uso). Pasa a Pro para tener varias propiedades.",
+    },
+  },
+  activity: {
+    heading: "Actividad reciente",
+    subtitle:
+      "Invitaciones, cambios de alertas, transferencias de dispositivos y claves de ingesta mostradas en este hogar.",
+    empty: "Todavía no hay actividad.",
+    repeat: "×{count}",
+    backTo: "(desde {time})",
+  },
+  client: {
+    sending: "Enviando…",
+    sendInvite: "Enviar enlace de invitación",
+    inviteFailed: "No se pudo enviar la invitación.",
+    inviteSent: "Invitación enviada.",
+    saving: "Guardando…",
+    saveFailed: "No se pudo guardar.",
+    saved: "Guardado.",
+    saveName: "Guardar nombre",
+    saveFreezeMap: "Guardar ajustes del mapa de congelación",
+    usingPreset: "Usando la ciudad predefinida.",
+    selected: "Seleccionada: {label}",
+    searchFailed: "La búsqueda falló",
+  },
+  errors: {
+    missing_email: "Escribe un correo electrónico para enviar la invitación.",
+    "1": "No se pudo completar esa acción del hogar. Inténtalo de nuevo.",
+    email_mismatch: "Inicia sesión con el correo al que se envió esta invitación.",
+    already_member: "Ya eres miembro de este hogar.",
+    expired: "Esta invitación caducó. Pide una nueva.",
+    invalid: "Este enlace de invitación no es válido.",
+    cannot_leave_owner:
+      "Los propietarios no pueden salir del hogar. Transfiere la propiedad o elimina el hogar.",
+    manager_required:
+      "Solo los propietarios y los miembros con acceso completo pueden gestionar invitaciones, enlaces para compartir e integraciones de facturación.",
+    viewer: "Solo lectura. No puedes cambiar los ajustes de esta cuenta.",
+    property_limit:
+      "Alcanzaste el límite de propiedades propias de tu plan. Mejora tu plan para tener más hogares.",
+    portfolio_required: "Las invitaciones de administrador de propiedad requieren el plan Portfolio.",
+  },
+  actions: {
+    ingest_key_revealed: "Clave de ingesta mostrada",
+    device_transfer: "Dispositivo transferido",
+    sensor_replaced: "Sensor reemplazado",
+    alert_settings_saved: "Ajustes de alertas guardados",
+    alert_settings_restored: "Ajustes de alertas restaurados",
+    share_link_created: "Enlace para compartir creado",
+    api_key_created: "Clave de API creada",
+    checkout_started: "Pago iniciado",
+    household_created: "Hogar creado",
+    status_page_created: "Página de estado creada",
+    status_page_revoked: "Página de estado revocada",
+    inbound_snooze: "Alertas pospuestas (entrante)",
+    inbound_vacation: "Modo vacaciones (entrante)",
+  },
+};
+
+export default es;

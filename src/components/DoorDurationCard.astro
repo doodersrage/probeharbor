@@ -3,6 +3,8 @@ import { formatDurationMs, type DoorOpenSession } from "../lib/doorDuration";
 import { loadDoorSessions24h } from "../lib/overviewExtras";
 import type { DeviceWithSensors } from "../lib/devices";
 import DashboardCard from "./dashboard/DashboardCard.astro";
+import { fmt, getLocale, LOCALE_META } from "../i18n";
+import { overviewInsightsMessages } from "../i18n/messages/app/overviewInsights";
 
 interface Props {
   devices: DeviceWithSensors[];
@@ -11,6 +13,10 @@ interface Props {
 }
 
 const { devices, sessions: sessionsProp } = Astro.props;
+const locale = getLocale(Astro);
+const t = overviewInsightsMessages(locale).door;
+const intl = locale === "en" ? undefined : LOCALE_META[locale].intl;
+const when = (iso: string) => new Date(iso).toLocaleString(intl);
 const sessions =
   sessionsProp ?? (await loadDoorSessions24h(devices));
 
@@ -22,14 +28,13 @@ const recentClosed = sessions
 ---
 {(openNow.length > 0 || recentClosed.length > 0) && (
   <DashboardCard>
-    <h2 class="card-title">Door duration</h2>
-    <p class="card-subtitle mb-4">Open sessions in the last 24 hours.</p>
+    <h2 class="card-title">{t.durationTitle}</h2>
+    <p class="card-subtitle mb-4">{t.durationSubtitle}</p>
     {openNow.length > 0 && (
       <div class="alert-warning mb-4">
         {openNow.map((session) => (
           <p class="m-0 mb-1">
-            <strong>{session.label}</strong> open since{" "}
-            {new Date(session.openedAt).toLocaleString()}
+            <strong>{session.label}</strong>{" "}{fmt(t.openSince, { time: when(session.openedAt) })}
           </p>
         ))}
       </div>
@@ -38,17 +43,16 @@ const recentClosed = sessions
       <ul class="space-y-2 mb-0">
         {recentClosed.map((session) => (
           <li class="text-sm">
-            <strong>{session.label}</strong> was open{" "}
-            {formatDurationMs(session.durationMs!)}
+            <strong>{session.label}</strong>{" "}{fmt(t.wasOpen, { duration: formatDurationMs(session.durationMs!, locale) })}
             {" · "}
-            {new Date(session.openedAt).toLocaleString()}
+            {when(session.openedAt)}
           </li>
         ))}
       </ul>
     ) : (
       openNow.length === 0 && (
         <p class="mb-0 text-sm text-[var(--color-text-muted)]">
-          No door sessions recorded in the last 24 hours.
+          {t.none}
         </p>
       )
     )}

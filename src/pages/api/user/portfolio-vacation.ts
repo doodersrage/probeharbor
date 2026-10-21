@@ -8,6 +8,8 @@ import { getUserEntitlements } from "../../../lib/entitlements";
 import { listUserHouseholds, canEditHousehold } from "../../../lib/households";
 import { formRedirectPath } from "../../../lib/siteUrl";
 import { vacationUntilFromDate } from "../../../lib/alertSnooze";
+import { apiCommonMessages, apiLocale } from "../../../i18n/messages/app/api/common";
+import { apiUserMessages } from "../../../i18n/messages/app/api/user";
 
 const VACATION_MAX_DAYS = 90;
 
@@ -35,18 +37,20 @@ function withFlashParams(
   return `${url.pathname}${url.search}`;
 }
 
-export const POST: APIRoute = async ({ request, cookies, redirect }) => {
+export const POST: APIRoute = async ({ request, cookies, redirect, locals }) => {
+  const locale = apiLocale({ locals });
+  const tc = apiCommonMessages(locale);
   const { session, user } = await getAuthFromCookies(cookies);
   const asJson = wantsJson(request);
 
   if (!session || !user) {
-    if (asJson) return jsonResponse({ error: "Unauthorized" }, 401);
+    if (asJson) return jsonResponse({ error: tc.unauthorized }, 401);
     return redirect("/signin");
   }
 
   const entitlements = await getUserEntitlements(user.id);
   if (!entitlements.canUsePortfolio) {
-    if (asJson) return jsonResponse({ error: "Portfolio requires Pro or Portfolio plan" }, 403);
+    if (asJson) return jsonResponse({ error: tc.portfolioPlanRequired }, 403);
     return redirect("/dashboard/plans");
   }
 
@@ -65,7 +69,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
       if (body.until) {
         const untilIso = vacationUntilFromDate(body.until);
         if (!untilIso) {
-          return jsonResponse({ error: "Pick a future return date." }, 400);
+          return jsonResponse({ error: tc.pickFutureReturnDate }, 400);
         }
         days = Math.max(
           1,
@@ -75,7 +79,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
         days = Math.min(Math.max(Number(body.days) || 7, 1), VACATION_MAX_DAYS);
       }
     } catch {
-      return jsonResponse({ error: "Invalid JSON" }, 400);
+      return jsonResponse({ error: tc.invalidJson }, 400);
     }
   } else {
     const formData = await request.formData();
@@ -105,7 +109,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
 
   const editable = households.filter((h) => canEditHousehold(h.role));
   if (editable.length === 0) {
-    if (asJson) return jsonResponse({ error: "No editable properties" }, 403);
+    if (asJson) return jsonResponse({ error: apiUserMessages(locale).noEditableProperties }, 403);
     return redirect(withFlashParams(redirectTo, { vacation_error: 1 }));
   }
 
@@ -156,6 +160,6 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     );
   }
 
-  if (asJson) return jsonResponse({ error: "Unknown action" }, 400);
+  if (asJson) return jsonResponse({ error: tc.unknownAction }, 400);
   return redirect(redirectTo);
 };

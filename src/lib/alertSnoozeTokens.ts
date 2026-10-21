@@ -2,6 +2,9 @@ import { createServerClient } from "./supabase";
 import { snoozeUntilFromHours, vacationUntilFromDays } from "./alertSnooze";
 import { getAlertSettingsForUser, saveAlertSettingsForUser } from "./notify";
 import type { AlertSettings } from "./alerts";
+import type { Locale } from "../i18n/locales";
+import { plural } from "../i18n/format";
+import { alertJobsMessages } from "../i18n/messages/app/alertJobs";
 
 async function sha256Hex(value: string): Promise<string> {
   const digest = await crypto.subtle.digest(
@@ -34,7 +37,11 @@ export async function createSnoozeToken(
   return token;
 }
 
-export async function applySnoozeToken(token: string): Promise<{ ok: boolean; message: string }> {
+export async function applySnoozeToken(
+  token: string,
+  locale: Locale = "en",
+): Promise<{ ok: boolean; message: string }> {
+  const t = alertJobsMessages(locale).snoozePage;
   const supabase = createServerClient();
   const { data } = await supabase
     .from("alert_snooze_tokens")
@@ -43,10 +50,10 @@ export async function applySnoozeToken(token: string): Promise<{ ok: boolean; me
     .maybeSingle();
 
   if (!data || data.used_at) {
-    return { ok: false, message: "Invalid or already used snooze link." };
+    return { ok: false, message: t.resultInvalid };
   }
   if (Date.parse(data.expires_at) < Date.now()) {
-    return { ok: false, message: "Snooze link expired." };
+    return { ok: false, message: t.resultExpired };
   }
 
   const settings = await getAlertSettingsForUser(data.user_id);
@@ -60,7 +67,7 @@ export async function applySnoozeToken(token: string): Promise<{ ok: boolean; me
     .update({ used_at: new Date().toISOString() })
     .eq("token", token);
 
-  return { ok: true, message: `Alerts snoozed for ${data.hours} hours.` };
+  return { ok: true, message: plural(t.resultSnoozed, data.hours, locale) };
 }
 
 export async function buildSnoozeUrl(baseUrl: string, userId: string, hours = 24): Promise<string> {

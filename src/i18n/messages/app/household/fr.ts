@@ -1,0 +1,148 @@
+import type { HouseholdMessages } from "./en";
+
+const fr: HouseholdMessages = {
+  title: "Foyer",
+  subtitle: "Partagez appareils et historique. Invitez par e-mail : les invités n’ont pas besoin d’avoir déjà un compte.",
+  notices: {
+    invited: "Invitation envoyée par e-mail.",
+    removed: "Membre retiré.",
+    saved: "Foyer mis à jour.",
+    switched: "Foyer actif modifié.",
+    joined: "Vous avez rejoint le foyer.",
+    inviteRevoked: "Invitation annulée.",
+    left: "Vous avez quitté le foyer.",
+    propertyCreated: "Nouveau bien créé et défini comme actif.",
+    digestSaved: "Préférence de récapitulatif enregistrée.",
+    digestError: "Impossible d’enregistrer la préférence de récapitulatif.",
+  },
+  active: {
+    heading: "Foyer actif",
+    subtitle: "Choisissez le foyer dont vous voyez les appareils et l’historique.",
+    badge: "Actif",
+    switch: "Basculer",
+  },
+  members: {
+    heading: "Membres",
+    remove: "Retirer",
+    confirmRemove: "Retirer ce membre du foyer ?",
+    confirmLeave: "Quitter ce foyer ? Vous perdrez l’accès à ses appareils partagés et à son historique.",
+    leaveBody: "Vous êtes membre de ce foyer. En le quittant, vous perdez l’accès à ses appareils et à son historique.",
+    leave: "Quitter le foyer",
+  },
+  invite: {
+    heading: "Inviter par e-mail",
+    goesTo: "Les invitations concernent le foyer dont vous êtes propriétaire.",
+    goesToNamed: "Les invitations concernent le foyer dont vous êtes propriétaire ({name}).",
+    emailLabel: "E-mail de la personne invitée",
+    roleLabel: "Rôle",
+    roleMember: "Éditeur (peut modifier appareils et alertes)",
+    rolePropertyManager: "Gestionnaire du bien (appareils et alertes uniquement)",
+    roleViewer: "Lecteur (tableau de bord en lecture seule)",
+    roleAlertOnly: "Alertes uniquement (notifications, lecture seule)",
+    portfolioHintHtml:
+      '<a class="text-link" href="/pricing#portfolio">Portfolio</a> ajoute des accès gestionnaire du bien pour le personnel sur place (sans accès à la facturation).',
+    submit: "Envoyer le lien d’invitation",
+    invitesHeading: "Invitations",
+    ownerOnly: "Seul le propriétaire du foyer peut envoyer des invitations.",
+  },
+  pending: {
+    heading: "Invitations en attente",
+    expires: "Expire le {time}",
+    copyLink: "Copier le lien",
+    confirmCancel: "Annuler cette invitation ?",
+    cancel: "Annuler",
+  },
+  rename: {
+    heading: "Nom du foyer",
+    label: "Nom",
+    submit: "Enregistrer le nom",
+  },
+  digest: {
+    heading: "Récapitulatif hebdomadaire",
+    subtitle:
+      "Si le propriétaire a activé les récapitulatifs, abonnez-vous pour recevoir le même récapitulatif hebdomadaire des sondes.",
+    checkbox: "M’envoyer par e-mail le récapitulatif hebdomadaire du foyer",
+    save: "Enregistrer",
+  },
+  freezeMap: {
+    heading: "Carte publique du risque de gel",
+    subtitle:
+      "Participez en partageant des moyennes anonymisées de température intérieure pour votre ville. Aucun foyer, appareil ni adresse n’apparaît sur la carte publique.",
+    optIn: "Inclure ce foyer dans les moyennes de la ville",
+    presetLabel: "Ville prédéfinie",
+    presetPlaceholder: "Choisir une ville prédéfinie (facultatif)",
+    searchLabel: "Ou rechercher une ville",
+    searchPlaceholder: "p. ex. Asheville, NC",
+    selected: "Sélectionnée : {label}",
+    searchHint: "Si votre ville n’est pas dans la liste, recherchez-la et choisissez un résultat.",
+    submit: "Enregistrer les paramètres de la carte du gel",
+    publicListHtml: 'Consultez la liste publique sur <a class="text-link" href="/freeze-map">/freeze-map</a>.',
+  },
+  property: {
+    heading: "Ajouter un autre bien",
+    subtitle:
+      "Créez un deuxième foyer (résidence secondaire, location, etc.) et passez de l’un à l’autre depuis le tableau de bord.",
+    nameLabel: "Nom du bien",
+    namePlaceholder: "Maison du lac",
+    submit: "Créer le bien",
+    limit: {
+      one: "Votre offre permet {count} foyer en propre ({inUse} utilisé). Passez à Pro pour gérer plusieurs biens.",
+      other: "Votre offre permet {count} foyers en propre ({inUse} utilisés). Passez à Pro pour gérer plusieurs biens.",
+    },
+  },
+  activity: {
+    heading: "Activité récente",
+    subtitle:
+      "Invitations, modifications d’alertes, transferts d’appareils et affichages de clés d’ingestion pour ce foyer.",
+    empty: "Aucune activité pour l’instant.",
+    repeat: "×{count}",
+    backTo: "(depuis le {time})",
+  },
+  client: {
+    sending: "Envoi…",
+    sendInvite: "Envoyer le lien d’invitation",
+    inviteFailed: "Impossible d’envoyer l’invitation.",
+    inviteSent: "Invitation envoyée.",
+    saving: "Enregistrement…",
+    saveFailed: "Impossible d’enregistrer.",
+    saved: "Enregistré.",
+    saveName: "Enregistrer le nom",
+    saveFreezeMap: "Enregistrer les paramètres de la carte du gel",
+    usingPreset: "Ville prédéfinie utilisée.",
+    selected: "Sélectionnée : {label}",
+    searchFailed: "La recherche a échoué",
+  },
+  errors: {
+    missing_email: "Saisissez une adresse e-mail pour envoyer une invitation.",
+    "1": "Impossible d’effectuer cette action sur le foyer. Veuillez réessayer.",
+    email_mismatch: "Connectez-vous avec l’adresse e-mail à laquelle cette invitation a été envoyée.",
+    already_member: "Vous êtes déjà membre de ce foyer.",
+    expired: "Cette invitation a expiré. Demandez-en une nouvelle.",
+    invalid: "Ce lien d’invitation n’est pas valide.",
+    cannot_leave_owner:
+      "Le propriétaire ne peut pas quitter le foyer. Transférez la propriété ou supprimez le foyer.",
+    manager_required:
+      "Seuls les propriétaires et les membres à part entière peuvent gérer les invitations, les liens de partage et les intégrations de facturation.",
+    viewer: "Lecture seule. Vous ne pouvez pas modifier les paramètres de ce compte.",
+    property_limit:
+      "Vous avez atteint la limite de biens en propre de votre offre. Passez à une offre supérieure pour ajouter des foyers.",
+    portfolio_required: "Les invitations de gestionnaire du bien nécessitent l’offre Portfolio.",
+  },
+  actions: {
+    ingest_key_revealed: "Clé d’ingestion affichée",
+    device_transfer: "Appareil transféré",
+    sensor_replaced: "Capteur remplacé",
+    alert_settings_saved: "Paramètres d’alerte enregistrés",
+    alert_settings_restored: "Paramètres d’alerte restaurés",
+    share_link_created: "Lien de partage créé",
+    api_key_created: "Clé API créée",
+    checkout_started: "Paiement commencé",
+    household_created: "Foyer créé",
+    status_page_created: "Page de statut créée",
+    status_page_revoked: "Page de statut révoquée",
+    inbound_snooze: "Alertes mises en pause (entrant)",
+    inbound_vacation: "Mode vacances (entrant)",
+  },
+};
+
+export default fr;

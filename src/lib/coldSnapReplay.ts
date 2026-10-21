@@ -1,5 +1,7 @@
 import type { AlertEventRow } from "./alertEvents";
 import type { ChartPoint } from "./garageTempsHistory";
+import { fmt, type Locale } from "../i18n";
+import { libFixed, libNumber, libTextMessages } from "../i18n/messages/app/libText";
 
 export type ColdSnapStep = { at: string; text: string; tone: "cold" | "alert" | "ok" | "info" };
 
@@ -38,7 +40,10 @@ export function buildColdSnapReplay(
   points: ChartPoint[],
   thresholdF: number,
   alertEvents: AlertEventRow[] = [],
+  locale: Locale = "en",
 ): ColdSnapReplay | null {
+  const t = libTextMessages(locale).coldSnap;
+  const threshold = libNumber(thresholdF, locale);
   const bySeries = new Map<string, ChartPoint[]>();
   for (const point of points) {
     if (!Number.isFinite(point.tempf) || !Number.isFinite(Date.parse(point.timestamp))) continue;
@@ -84,11 +89,15 @@ export function buildColdSnapReplay(
   }
 
   const steps: ColdSnapStep[] = [
-    { at: startAt, text: `${latest.label} reached ${latest.points[0]!.tempf.toFixed(1)}°F, at or below the ${thresholdF}°F line.`, tone: "cold" },
-    { at: lowest.timestamp, text: `Lowest: ${lowest.tempf.toFixed(1)}°F.`, tone: "cold" },
+    {
+      at: startAt,
+      text: fmt(t.reached, { probe: latest.label, temp: libFixed(latest.points[0]!.tempf, 1, locale), threshold }),
+      tone: "cold",
+    },
+    { at: lowest.timestamp, text: fmt(t.lowest, { temp: libFixed(lowest.tempf, 1, locale) }), tone: "cold" },
   ];
   if (latest.endAt) {
-    steps.push({ at: latest.endAt, text: `Back above ${thresholdF}°F.`, tone: "ok" });
+    steps.push({ at: latest.endAt, text: fmt(t.backAbove, { threshold }), tone: "ok" });
   }
 
   for (const event of alertEvents) {
@@ -99,15 +108,20 @@ export function buildColdSnapReplay(
     steps.push({
       at: event.created_at,
       text: sent
-        ? `${event.kind === "recovery" ? "All-clear sent" : "Alert sent"}: ${event.title} (${event.channels_sent.join(", ")}).`
-        : `Alert not delivered: ${event.title}${event.channels_skipped.length ? ` (${event.channels_skipped.join(", ")})` : ""}.`,
+        ? fmt(event.kind === "recovery" ? t.allClearSent : t.alertSent, {
+            title: event.title,
+            channels: event.channels_sent.join(", "),
+          })
+        : event.channels_skipped.length
+          ? fmt(t.notDeliveredChannels, { title: event.title, channels: event.channels_skipped.join(", ") })
+          : fmt(t.notDelivered, { title: event.title }),
       tone: event.kind === "recovery" ? "ok" : sent ? "alert" : "info",
     });
     if (event.acknowledged_at && sent && event.kind !== "recovery") {
       const auto = event.meta?.autoResolved;
       steps.push({
         at: event.acknowledged_at,
-        text: auto === "recovered" ? "Alert closed automatically when it warmed up." : auto === "expired" ? "Alert expired." : "Someone marked the alert handled.",
+        text: auto === "recovered" ? t.autoRecovered : auto === "expired" ? t.expired : t.handled,
         tone: "info",
       });
     }

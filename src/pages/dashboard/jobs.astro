@@ -6,6 +6,13 @@ import { listRecentIngestStatsAdmin } from "../../lib/ingestStats";
 import { flagIngestAbuse } from "../../lib/ingestAbuse";
 import { getAuthFromCookies } from "../../lib/auth";
 import { isUserAdmin } from "../../lib/adminAccess";
+import { fmt, formatNumber, getLocale, LOCALE_META } from "../../i18n";
+import { adminMessages } from "../../i18n/messages/app/admin";
+
+const locale = getLocale(Astro);
+const a = adminMessages(locale);
+const t = a.jobs;
+const intl = LOCALE_META[locale].intl;
 
 const { session, user } = await getAuthFromCookies(Astro.cookies);
 if (!session || !user) {
@@ -25,20 +32,25 @@ const { runs, error } = await listRecentJobRuns(40);
 const ingestStats = await listRecentIngestStatsAdmin(7);
 const ingestAbuse = flagIngestAbuse(ingestStats);
 ---
-<DashboardLayout title="Jobs" subtitle="Cron history, digests, and ingest abuse watch." requireAdmin={true}>
+<DashboardLayout title={t.title} subtitle={t.subtitle} requireAdmin={true}>
   <div class="space-y-6">
     <AdminNav />
     <section class="card">
-      <h2 class="card-title">Ingest abuse watch</h2>
-      <p class="card-subtitle mb-4">Devices with ≥50% ingest errors over the last 7 days (minimum 5 posts).</p>
+      <h2 class="card-title">{t.abuseTitle}</h2>
+      <p class="card-subtitle mb-4">{t.abuseSubtitle}</p>
       {ingestAbuse.length === 0 ? (
-        <p class="mb-0 text-sm text-[var(--color-text-muted)]">No suspicious ingest patterns right now.</p>
+        <p class="mb-0 text-sm text-[var(--color-text-muted)]">{t.abuseEmpty}</p>
       ) : (
         <ul class="space-y-2 text-sm mb-0">
           {ingestAbuse.slice(0, 10).map((row) => (
             <li>
-              <strong>{row.device_name}</strong> on {row.day}: {row.error_count} errors / {row.total} total (
-              {Math.round(row.errorRate * 100)}%)
+              <strong>{row.device_name}</strong>
+              {fmt(t.abuseRow, {
+                day: row.day,
+                errors: formatNumber(row.error_count, locale),
+                total: formatNumber(row.total, locale),
+                rate: formatNumber(Math.round(row.errorRate * 100), locale),
+              })}
             </li>
           ))}
         </ul>
@@ -46,34 +58,34 @@ const ingestAbuse = flagIngestAbuse(ingestStats);
     </section>
 
     <section class="card">
-      <h2 class="card-title">Job runs</h2>
+      <h2 class="card-title">{t.runsTitle}</h2>
       {error ? (
-        <p class="alert-warning">Unable to load job runs: {error}</p>
+        <p class="alert-warning">{fmt(t.runsError, { error })}</p>
       ) : runs.length === 0 ? (
-        <p class="mb-0">No job runs recorded yet. They appear after the first scheduled poll (every 15 minutes).</p>
+        <p class="mb-0">{t.runsEmpty}</p>
       ) : (
         <div class="table-wrap">
           <table class="data-table">
             <thead>
               <tr>
-                <th>Started</th>
-                <th>Job</th>
-                <th>Status</th>
-                <th>Finished</th>
-                <th>Detail</th>
+                <th>{t.started}</th>
+                <th>{t.job}</th>
+                <th>{a.common.status}</th>
+                <th>{t.finished}</th>
+                <th>{t.detail}</th>
               </tr>
             </thead>
             <tbody>
               {runs.map((run) => (
                 <tr>
-                  <td>{new Date(run.started_at).toLocaleString()}</td>
+                  <td>{new Date(run.started_at).toLocaleString(intl)}</td>
                   <td>{run.job_name}</td>
                   <td>
                     <span class={run.status === "success" ? "feed-health-ok" : run.status === "error" ? "feed-health-error" : ""}>
                       {run.status}
                     </span>
                   </td>
-                  <td>{run.finished_at ? new Date(run.finished_at).toLocaleString() : "—"}</td>
+                  <td>{run.finished_at ? new Date(run.finished_at).toLocaleString(intl) : a.common.dash}</td>
                   <td class="contact-message-cell">
                     <code>{JSON.stringify(run.detail)}</code>
                   </td>

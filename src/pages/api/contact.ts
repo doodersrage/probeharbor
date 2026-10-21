@@ -12,13 +12,15 @@ import {
   CONTACT_MAX_MESSAGE_CHARS,
   isContactHoneypotTriggered,
 } from "../../lib/contactLimits";
+import { apiLocale } from "../../i18n/messages/app/apiMore/common";
+import { miscMessages } from "../../i18n/messages/app/misc";
+import { apiMorePublicFormsMessages } from "../../i18n/messages/app/apiMore/publicForms";
 
-const SUCCESS_BODY = {
-  success: true,
-  message: "Thanks, we got your message. We usually reply within 1–2 business days.",
-};
-
-export const POST: APIRoute = async ({ request, clientAddress }) => {
+export const POST: APIRoute = async (context) => {
+  const { request, clientAddress } = context;
+  const locale = apiLocale(context);
+  const t = apiMorePublicFormsMessages(locale).contact;
+  const SUCCESS_BODY = { success: true, message: t.success };
   const data = await request.formData();
 
   if (isContactHoneypotTriggered(data.get(CONTACT_HONEYPOT_FIELD))) {
@@ -30,7 +32,9 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
 
   const rate = checkContactRateLimit(clientAddress || "unknown");
   if (!rate.ok) {
-    return new Response(JSON.stringify({ message: rate.error }), {
+    // contactLimits is shared with the browser form, so its text stays English; translate it here.
+    const message = locale === "en" ? rate.error : miscMessages(locale).forms.tooManyMessages;
+    return new Response(JSON.stringify({ message }), {
       status: 429,
       headers: {
         "Content-Type": "application/json",
@@ -44,11 +48,12 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
   const turnstile = await verifyTurnstileToken(
     getTurnstileToken(data),
     clientAddress,
+    locale,
   );
 
   if (!turnstile.success) {
     return new Response(
-      JSON.stringify({ message: turnstile.error ?? "Verification failed." }),
+      JSON.stringify({ message: turnstile.error ?? t.verificationFailed }),
       { status: 400, headers: { "Content-Type": "application/json" } },
     );
   }
@@ -59,14 +64,14 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
 
   if (!name || !email || !message) {
     return new Response(
-      JSON.stringify({ message: "Missing required fields." }),
+      JSON.stringify({ message: t.missingFields }),
       { status: 400, headers: { "Content-Type": "application/json" } },
     );
   }
 
   if (message.length > CONTACT_MAX_MESSAGE_CHARS) {
     return new Response(
-      JSON.stringify({ message: "Message is too long." }),
+      JSON.stringify({ message: t.tooLong }),
       { status: 400, headers: { "Content-Type": "application/json" } },
     );
   }
@@ -75,7 +80,7 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
   const to = import.meta.env.SMTP_MAIL_TO?.trim();
   if (!to) {
     return new Response(
-      JSON.stringify({ message: "Mail recipient is not configured." }),
+      JSON.stringify({ message: t.recipientMissing }),
       { status: 503, headers: { "Content-Type": "application/json" } },
     );
   }
@@ -112,7 +117,7 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
     console.error("Contact form error:", errorMessage);
 
     return new Response(
-      JSON.stringify({ message: "Failed to send message. Please try again." }),
+      JSON.stringify({ message: t.sendFailed }),
       { status: 500, headers: { "Content-Type": "application/json" } },
     );
   }

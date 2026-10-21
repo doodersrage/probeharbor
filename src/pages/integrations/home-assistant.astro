@@ -9,7 +9,7 @@ import {
   resolvePageUrl,
   resolveSiteUrl,
 } from "../../lib/schemaMarkup";
-import { getLocale } from "../../i18n";
+import { fmt, getLocale } from "../../i18n";
 import { integrationsMessages } from "../../i18n/messages/integrations";
 import { getLocalizedIntegrationTaglines } from "../../i18n/content/integrations";
 import {
@@ -85,12 +85,12 @@ const schema = [
       <h2 class="card-title">{t.installTitle}</h2>
       <ol class="text-sm space-y-2 pl-5 list-decimal mb-4">
         <li set:html={t.installStep1Html} />
-        <li set:html={t.installStep2Html(HACS_REPO_URL)} />
+        <li set:html={fmt(t.installStep2Html, { repo: HACS_REPO_URL })} />
         <li set:html={t.installStep3Html} />
         <li set:html={t.installStep4Html} />
         <li set:html={t.installStep5Html} />
       </ol>
-      <p class="mb-0 text-sm text-[var(--color-text-muted)]" set:html={t.installFootHtml(HA_DEV_DOCS_INGEST)} />
+      <p class="mb-0 text-sm text-[var(--color-text-muted)]" set:html={fmt(t.installFootHtml, { devDocsUrl: HA_DEV_DOCS_INGEST })} />
     </section>
 
     <section class="card">
@@ -163,7 +163,7 @@ const schema = [
         <li>
           <a class="text-link" href={HA_BLUEPRINT_URL} download>{t.downloadBlueprint}</a>
         </li>
-        <li set:html={t.entityYamlHtml(HA_ENTITIES_YAML)} />
+        <li set:html={fmt(t.entityYamlHtml, { href: HA_ENTITIES_YAML })} />
         <li set:html={t.productGuideHtml} />
         <li set:html={t.configureTokensHtml} />
       </ul>

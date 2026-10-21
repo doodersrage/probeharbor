@@ -1,3 +1,6 @@
+import type { Locale } from "../i18n/locales";
+import { miscMessages } from "../i18n/messages/app/misc";
+
 /**
  * Share link readings formats that expose Prometheus/Grafana scrape surfaces.
  * Only allowed when the share link scope explicitly grants metrics access.
@@ -16,6 +19,7 @@ export function shareScopeAllowsMetrics(scope: string): boolean {
 export function resolveShareReadingsFormat(
   scope: string,
   formatParam: string | null,
+  locale: Locale = "en",
 ): { ok: true; format: string } | { ok: false; status: 403; error: string } {
   const requested = formatParam?.trim().toLowerCase() || null;
 
@@ -24,7 +28,7 @@ export function resolveShareReadingsFormat(
       return {
         ok: false,
         status: 403,
-        error: "This share link does not allow metrics formats",
+        error: miscMessages(locale).share.metricsNotAllowed,
       };
     }
     return { ok: true, format: requested };

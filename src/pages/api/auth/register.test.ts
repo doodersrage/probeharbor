@@ -138,4 +138,25 @@ describe("POST /api/auth/register", () => {
     const url = new URL(location, "https://example.com");
     expect(url.searchParams.get("next")).toBe("/dashboard/devices");
   });
+
+  it("saves the request language on the new account", async () => {
+    const { POST } = await import("./register");
+    const context = makeContext({ email: "a@example.com", password: "password1" });
+    (context as unknown as { locals: App.Locals }).locals = { locale: "es" } as App.Locals;
+
+    await POST(context);
+
+    expect(mockSignUp).toHaveBeenCalledWith({
+      email: "a@example.com",
+      password: "password1",
+      options: { data: { locale: "es" } },
+    });
+  });
+
+  it("saves English when the request has no locale", async () => {
+    const { POST } = await import("./register");
+    await POST(makeContext({ email: "a@example.com", password: "password1" }));
+
+    expect(mockSignUp.mock.calls[0][0].options).toEqual({ data: { locale: "en" } });
+  });
 });

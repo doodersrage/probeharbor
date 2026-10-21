@@ -3,11 +3,15 @@ import { getAuthFromRequest } from "../../../lib/auth";
 import { createAdminClient } from "../../../lib/supabase";
 import { getUserEntitlements } from "../../../lib/entitlements";
 import { releasePushSubscriptionFromOtherUsers } from "../../../lib/webPush";
+import { apiCommonMessages, apiLocale } from "../../../i18n/messages/app/api/common";
+import { apiUserMessages } from "../../../i18n/messages/app/api/user";
 
-export const POST: APIRoute = async ({ request, cookies }) => {
+export const POST: APIRoute = async ({ request, cookies, locals }) => {
+  const locale = apiLocale({ locals });
+  const tc = apiCommonMessages(locale);
   const { user } = await getAuthFromRequest(request, cookies);
   if (!user) {
-    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+    return new Response(JSON.stringify({ error: tc.unauthorized }), {
       status: 401,
       headers: { "Content-Type": "application/json" },
     });
@@ -15,7 +19,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
   const entitlements = await getUserEntitlements(user.id);
   if (!entitlements.canUsePush) {
-    return new Response(JSON.stringify({ error: "Pro plan required" }), {
+    return new Response(JSON.stringify({ error: tc.proPlanRequired }), {
       status: 403,
       headers: { "Content-Type": "application/json" },
     });
@@ -25,14 +29,14 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   try {
     body = await request.json();
   } catch {
-    return new Response(JSON.stringify({ error: "Invalid JSON" }), {
+    return new Response(JSON.stringify({ error: tc.invalidJson }), {
       status: 400,
       headers: { "Content-Type": "application/json" },
     });
   }
 
   if (!body.endpoint || !body.keys?.p256dh || !body.keys?.auth) {
-    return new Response(JSON.stringify({ error: "Invalid subscription" }), {
+    return new Response(JSON.stringify({ error: apiUserMessages(locale).push.invalidSubscription }), {
       status: 400,
       headers: { "Content-Type": "application/json" },
     });
@@ -63,10 +67,12 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   });
 };
 
-export const DELETE: APIRoute = async ({ request, cookies }) => {
+export const DELETE: APIRoute = async ({ request, cookies, locals }) => {
+  const locale = apiLocale({ locals });
+  const tc = apiCommonMessages(locale);
   const { user } = await getAuthFromRequest(request, cookies);
   if (!user) {
-    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+    return new Response(JSON.stringify({ error: tc.unauthorized }), {
       status: 401,
       headers: { "Content-Type": "application/json" },
     });
@@ -76,14 +82,14 @@ export const DELETE: APIRoute = async ({ request, cookies }) => {
   try {
     body = await request.json();
   } catch {
-    return new Response(JSON.stringify({ error: "Invalid JSON" }), {
+    return new Response(JSON.stringify({ error: tc.invalidJson }), {
       status: 400,
       headers: { "Content-Type": "application/json" },
     });
   }
 
   if (!body.endpoint) {
-    return new Response(JSON.stringify({ error: "Missing endpoint" }), {
+    return new Response(JSON.stringify({ error: apiUserMessages(locale).push.missingEndpoint }), {
       status: 400,
       headers: { "Content-Type": "application/json" },
     });

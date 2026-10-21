@@ -1,6 +1,8 @@
 import { createServerClient } from "./supabase";
 import { freezeMapAggregateKey } from "./weatherCities";
 import { FREEZE_MAP_SAMPLE_FLOOR } from "./freezeMapSeed";
+import { fmt, type Locale } from "../i18n";
+import { libFixed, libTextMessages } from "../i18n/messages/app/libText";
 
 export type RegionalBenchmark = {
   cityLabel: string;
@@ -14,7 +16,7 @@ export type RegionalBenchmark = {
 export async function fetchRegionalBenchmark(input: {
   householdId: string;
   yourTempF: number;
-}): Promise<RegionalBenchmark | null> {
+}, locale: Locale = "en"): Promise<RegionalBenchmark | null> {
   if (!Number.isFinite(input.yourTempF)) return null;
 
   const supabase = createServerClient();
@@ -56,16 +58,19 @@ export async function fetchRegionalBenchmark(input: {
   if (cityAvg == null || !Number.isFinite(cityAvg)) return null;
 
   const deltaF = input.yourTempF - cityAvg;
+  // `cityLabel` stays "your region" in English (RegionalBenchmarkCard checks it); only the message is translated.
   const cityLabel = snapshot.city_label ?? household.freeze_map_label ?? "your region";
-  const abs = Math.abs(deltaF).toFixed(1);
+  const t = libTextMessages(locale).benchmark;
+  const city = snapshot.city_label ?? household.freeze_map_label ?? t.yourRegion;
+  const abs = libFixed(Math.abs(deltaF), 1, locale);
 
   let message: string;
   if (Math.abs(deltaF) < 1.5) {
-    message = `About typical for other ProbeHarbor households in ${cityLabel} tonight.`;
+    message = fmt(t.typical, { city });
   } else if (deltaF < 0) {
-    message = `${abs}°F colder than typical ProbeHarbor households in ${cityLabel} right now.`;
+    message = fmt(t.colder, { delta: abs, city });
   } else {
-    message = `${abs}°F warmer than typical ProbeHarbor households in ${cityLabel} right now.`;
+    message = fmt(t.warmer, { delta: abs, city });
   }
 
   return {

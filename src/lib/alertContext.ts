@@ -5,8 +5,13 @@ import { fetchForecastMinTemp } from "./FetchWeather";
 import { buildThermalRunway, formatRunwayAlertSuffix } from "./thermalRunway";
 import { fetchRegionalBenchmark, formatBenchmarkAlertSuffix } from "./regionalBenchmark";
 import { fetchThermostatAnnotationForHousehold } from "./thermostatCorrelation";
+import type { Locale } from "../i18n/locales";
+import { alertMessages } from "../i18n/messages/app/alertMessages";
 
-/** Extra lines appended to freeze threshold alert bodies (never suppresses alerts). */
+/**
+ * Extra lines appended to freeze threshold alert bodies (never suppresses alerts).
+ * Runway and regional-benchmark lines come from their own modules (English for now).
+ */
 export async function buildFreezeAlertContext(input: {
   householdId?: string | null;
   settings: AlertSettings;
@@ -14,10 +19,10 @@ export async function buildFreezeAlertContext(input: {
   coldestTempF: number;
   coldestSensorId?: string | null;
   latestSensors?: LatestSensorRow[];
-}): Promise<string | null> {
+}, locale: Locale = "en"): Promise<string | null> {
   const parts: string[] = [];
 
-  const annotation = await fetchThermostatAnnotationForHousehold(input.householdId).catch(
+  const annotation = await fetchThermostatAnnotationForHousehold(input.householdId, locale).catch(
     () => null,
   );
   if (annotation) parts.push(annotation);
@@ -26,7 +31,7 @@ export async function buildFreezeAlertContext(input: {
     const benchmark = await fetchRegionalBenchmark({
       householdId: input.householdId,
       yourTempF: input.coldestTempF,
-    }).catch(() => null);
+    }, locale).catch(() => null);
     const benchLine = formatBenchmarkAlertSuffix(benchmark);
     if (benchLine) parts.push(benchLine);
   }
@@ -57,11 +62,11 @@ export async function buildFreezeAlertContext(input: {
       forecastMinTempF: forecast?.minTempF ?? null,
       forecastHoursAhead: input.settings.forecastHoursAhead,
       doorOpenNearby,
-    });
-    const runwayLine = formatRunwayAlertSuffix(runway);
+    }, locale);
+    const runwayLine = formatRunwayAlertSuffix(runway, locale);
     if (runwayLine) parts.push(runwayLine);
   } else if (doorOpenNearby) {
-    parts.push("A door sensor is open. Expect faster heat loss until it closes.");
+    parts.push(alertMessages(locale).context.doorOpen);
   }
 
   return parts.length > 0 ? parts.join("\n\n") : null;

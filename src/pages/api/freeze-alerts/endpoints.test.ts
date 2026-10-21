@@ -57,8 +57,8 @@ describe("POST /api/freeze-alerts/subscribe", () => {
   it("subscribes with the submitted place", async () => {
     const res = await subscribe(formContext(valid));
     expect(res.status).toBe(200);
-    expect(mockSubscribe).toHaveBeenCalledWith({ email: "me@example.com", lat: 37.54, lon: -77.44, label: "Richmond, VA" });
-    expect(mockRateLimit).toHaveBeenCalledWith("freeze-alerts:1.2.3.4");
+    expect(mockSubscribe).toHaveBeenCalledWith({ email: "me@example.com", lat: 37.54, lon: -77.44, label: "Richmond, VA" }, "en");
+    expect(mockRateLimit).toHaveBeenCalledWith("freeze-alerts:1.2.3.4", expect.any(Number), "en");
   });
 
   it("answers bots that fill the honeypot without subscribing", async () => {

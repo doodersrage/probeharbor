@@ -1,7 +1,22 @@
 import { createServerClient } from "./supabase";
 import { checkFeedHealth, type FeedHealthStatus } from "./collectHistory";
+import { feedHealthMessage } from "./feedErrorText";
 import { getAlertSettingsForUser, notifyUser } from "./notify";
 import { listAllHouseholdOwnerUserIds } from "./households";
+import type { Locale } from "../i18n/locales";
+import { localeFromMetadata } from "../i18n/userLocale";
+import { alertJobsMessages } from "../i18n/messages/app/alertJobs";
+
+/** Account language of a user (English when it can't be read). */
+async function ownerLocale(userId: string): Promise<Locale> {
+  try {
+    const { createAdminClient } = await import("./supabase");
+    const { data } = await createAdminClient().auth.admin.getUserById(userId);
+    return localeFromMetadata(data.user?.user_metadata as Record<string, unknown> | undefined);
+  } catch {
+    return "en";
+  }
+}
 
 export async function storeFeedUptimeChecks(
   userId: string,
@@ -90,16 +105,16 @@ export async function runFeedUptimeForAllUsers(): Promise<{
       }
       if (newlyDown.length === 0) continue;
 
+      const locale = await ownerLocale(userId);
       const body = newlyDown
-        .map((s) => `${s.feedName}: ${s.message}`)
+        .map((s) => `${s.feedName}: ${feedHealthMessage(s, locale)}`)
         .join("\n")
         .slice(0, 1500);
 
-      await notifyUser(userId, settings.email, settings, {
-        title: "Feed unreachable",
-        body,
-        kind: "outage",
-      });
+      const payload = { title: alertJobsMessages(locale).feedUptime.title, body, kind: "outage" as const };
+      // English keeps the original call shape.
+      if (locale === "en") await notifyUser(userId, settings.email, settings, payload);
+      else await notifyUser(userId, settings.email, settings, payload, undefined, locale);
 
       const supabase = createServerClient();
       await supabase

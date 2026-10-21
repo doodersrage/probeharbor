@@ -1,17 +1,21 @@
 ---
+import { getLocale } from "../../i18n";
+import { shellMessages } from "../../i18n/messages/app/shell";
+
 interface Props {
   /** Nothing renders when empty or null. */
   message: string | null;
 }
 
 const { message } = Astro.props;
+const t = shellMessages(getLocale(Astro)).lowBattery;
 ---
 {message && (
   <div class="alert-warning mb-0" role="status">
     {message}
     {" "}
-    <a href="/dashboard/devices?view=ops#device-health" class="text-link">Device health</a>
+    <a href="/dashboard/devices?view=ops#device-health" class="text-link">{t.deviceHealth}</a>
     {" · "}
-    <a href="/dashboard/alerts" class="text-link">Alert settings</a>
+    <a href="/dashboard/alerts" class="text-link">{t.alertSettings}</a>
   </div>
 )}

@@ -8,6 +8,8 @@ import {
   requireHouseholdEditor,
 } from "../../../lib/householdAuth";
 import { formRedirectPath, sanitizeNextPath } from "../../../lib/siteUrl";
+import { apiCommonMessages, apiLocale } from "../../../i18n/messages/app/api/common";
+import { apiUserMessages } from "../../../i18n/messages/app/api/user";
 
 function parseFeeds(body: unknown): TempFeedConfig[] | null {
   if (!body || typeof body !== "object") return null;
@@ -59,14 +61,16 @@ function parseProbes(body: unknown, feedIds: Set<string>): TempProbeConfig[] {
   return parsed;
 }
 
-export const POST: APIRoute = async ({ request, cookies, redirect }) => {
+export const POST: APIRoute = async ({ request, cookies, redirect, locals }) => {
+  const locale = apiLocale({ locals });
+  const tc = apiCommonMessages(locale);
   const { session, user } = await getAuthFromCookies(cookies);
   const contentType = request.headers.get("content-type") ?? "";
   const isJson = contentType.includes("application/json");
 
   if (!session || !user) {
     if (isJson) {
-      return new Response(JSON.stringify({ ok: false, error: "Sign in required." }), {
+      return new Response(JSON.stringify({ ok: false, error: tc.signInRequired }), {
         status: 401,
         headers: { "Content-Type": "application/json" },
       });
@@ -81,7 +85,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
 
   if (isJson) {
     if (!editor.ok) {
-      return new Response(JSON.stringify({ ok: false, error: "View-only access." }), {
+      return new Response(JSON.stringify({ ok: false, error: tc.viewOnly }), {
         status: 403,
         headers: { "Content-Type": "application/json" },
       });
@@ -90,7 +94,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     try {
       body = await request.json();
     } catch {
-      return new Response(JSON.stringify({ ok: false, error: "Invalid JSON" }), {
+      return new Response(JSON.stringify({ ok: false, error: tc.invalidJson }), {
         status: 400,
         headers: { "Content-Type": "application/json" },
       });
@@ -100,7 +104,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     }
     feeds = parseFeeds(body);
     if (!feeds) {
-      return new Response(JSON.stringify({ ok: false, error: "No valid feeds provided." }), {
+      return new Response(JSON.stringify({ ok: false, error: apiUserMessages(locale).noValidFeeds }), {
         status: 400,
         headers: { "Content-Type": "application/json" },
       });
@@ -121,7 +125,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const sanitizedFeeds = sanitizeTempFeeds(feeds);
   // The form may clear every row on purpose; an API call whose feeds are all invalid is an error.
   if (isJson && sanitizedFeeds.length === 0) {
-    return new Response(JSON.stringify({ ok: false, error: "No valid feeds provided." }), {
+    return new Response(JSON.stringify({ ok: false, error: apiUserMessages(locale).noValidFeeds }), {
       status: 400,
       headers: { "Content-Type": "application/json" },
     });

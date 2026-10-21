@@ -19,6 +19,24 @@ import {
 } from "../../../lib/telegramCommands";
 import { checkTelegramWebhookRateLimit } from "../../../lib/telegramWebhookLimits";
 import { timingSafeEqual } from "../../../lib/timingSafeEqual";
+import type { Locale } from "../../../i18n/locales";
+import { ensureLocale } from "../../../i18n/catalog";
+import { fmt, formatNumber, plural } from "../../../i18n/format";
+import { localeFromMetadata } from "../../../i18n/userLocale";
+import { alertJobsMessages } from "../../../i18n/messages/app/alertJobs";
+
+/** The linked account's language for bot replies (English when it can't be read). */
+async function linkedUserLocale(userId: string): Promise<Locale> {
+  try {
+    const { createAdminClient } = await import("../../../lib/supabase");
+    const { data } = await createAdminClient().auth.admin.getUserById(userId);
+    const locale = localeFromMetadata(data.user?.user_metadata as Record<string, unknown> | undefined);
+    await ensureLocale(locale, ["app"]);
+    return locale;
+  } catch {
+    return "en";
+  }
+}
 
 async function resolveUserByTelegramSecret(
   secret: string,
@@ -90,15 +108,14 @@ export const POST: APIRoute = async ({ request, url, clientAddress }) => {
     });
   }
 
+  const locale = await linkedUserLocale(userId);
+  const t = alertJobsMessages(locale).telegram;
+
   // Require a bound chat id so a leaked secret cannot exfiltrate /status
   // to an attacker-controlled chat.
   const expectedChat = settings.telegramChatId?.trim();
   if (!expectedChat) {
-    await sendTelegramReply(
-      token,
-      chatId,
-      "Telegram commands are disabled until you save a Chat ID under Alerts.",
-    );
+    await sendTelegramReply(token, chatId, t.commandsDisabled);
     return new Response(JSON.stringify({ ok: true }), {
       headers: { "Content-Type": "application/json" },
     });
@@ -118,7 +135,7 @@ export const POST: APIRoute = async ({ request, url, clientAddress }) => {
     await sendTelegramReply(
       token,
       chatId,
-      `Alerts snoozed for ${hours} hour${hours === 1 ? "" : "s"}. Freeze and leak alerts still fire.`,
+      plural(t.snoozed, hours, locale),
     );
   } else if (cmd === "/vacation") {
     const days = parseTelegramVacationDays(text);
@@ -129,24 +146,30 @@ export const POST: APIRoute = async ({ request, url, clientAddress }) => {
     await sendTelegramReply(
       token,
       chatId,
-      `Vacation mode enabled for ${days} day${days === 1 ? "" : "s"}. Freeze and leak alerts still fire.`,
+      plural(t.vacation, days, locale),
     );
   } else if (cmd === "/status") {
     const householdId = await getUserHouseholdId(userId);
     if (!householdId) {
-      await sendTelegramReply(token, chatId, "No active household.");
+      await sendTelegramReply(token, chatId, t.noHousehold);
     } else {
       const latest = await fetchLatestSensorValues(householdId);
       const query = telegramStatusQuery(text);
       const rows = filterRowsByLabel(latest, query);
       const lines = rows.slice(0, 6).map((row) => {
+        const num =
+          row.value_num == null
+            ? ""
+            : locale === "en"
+              ? row.value_num.toFixed(1)
+              : formatNumber(row.value_num, locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
         const val =
           row.value_num != null
-            ? `${row.value_num.toFixed(1)}${row.sensor.unit ?? ""}`
+            ? `${num}${row.sensor.unit ?? ""}`
             : row.value_bool != null
               ? row.value_bool
-                ? "OPEN"
-                : "closed"
+                ? t.open
+                : t.closed
               : "—";
         return `${row.sensor.label}: ${val}`;
       });
@@ -156,16 +179,12 @@ export const POST: APIRoute = async ({ request, url, clientAddress }) => {
         lines.length
           ? lines.join("\n")
           : query
-            ? `No sensors matching "${query}".`
-            : "No readings yet.",
+            ? fmt(t.noMatch, { query })
+            : t.noReadings,
       );
     }
   } else if (cmd === "/help") {
-    await sendTelegramReply(
-      token,
-      chatId,
-      TELEGRAM_HELP,
-    );
+    await sendTelegramReply(token, chatId, locale === "en" ? TELEGRAM_HELP : t.help);
   }
 
   return new Response(JSON.stringify({ ok: true }), {

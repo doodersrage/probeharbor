@@ -2,6 +2,8 @@
 import DashboardCard from "./dashboard/DashboardCard.astro";
 import type { TimeToFreezeProjection } from "../lib/spaceThermalModel";
 import type { FreezeEstimateChange } from "../lib/freezeEstimateChange";
+import { fmt, formatNumber, getLocale } from "../i18n";
+import { overviewCardsMessages } from "../i18n/messages/app/overviewCards";
 
 interface Props {
   projection: TimeToFreezeProjection;
@@ -12,43 +14,35 @@ interface Props {
 }
 
 const { projection, change = null, freezeThresholdF, useCelsius = false } = Astro.props;
+const locale = getLocale(Astro);
+const t = overviewCardsMessages(locale).timeToFreezeCard;
+const fixed = (value: number, digits: number) =>
+  formatNumber(value, locale, { minimumFractionDigits: digits, maximumFractionDigits: digits, useGrouping: false });
 const thresholdLabel = useCelsius
-  ? `${(((freezeThresholdF - 32) * 5) / 9).toFixed(0)}°C`
-  : `${freezeThresholdF}°F`;
-const sourceLabel =
-  projection.source === "forecast_model"
-    ? "Forecast-backed from this space"
-    : projection.source === "trend"
-      ? "Cooling-rate estimate"
-      : projection.source === "already_below"
-        ? "At threshold now"
-        : "Not enough data yet";
-const confidenceLabel =
-  projection.confidence === "high"
-    ? "High confidence"
-    : projection.confidence === "medium"
-      ? "Medium confidence"
-      : "Low confidence";
+  ? `${fixed(((freezeThresholdF - 32) * 5) / 9, 0)}°C`
+  : `${locale === "en" ? String(freezeThresholdF) : formatNumber(freezeThresholdF, locale)}°F`;
+const subtitle = fmt(t.subtitle[projection.source] ?? t.subtitle.none, { threshold: thresholdLabel });
+const confidenceLabel = t.confidence[projection.confidence] ?? t.confidence.low;
 const clock =
   projection.hours === 0
-    ? `At ${thresholdLabel} now`
+    ? fmt(t.atNow, { threshold: thresholdLabel })
     : projection.hitsAtLabel
-      ? `Hits ${thresholdLabel} around ${projection.hitsAtLabel}`
+      ? fmt(t.hitsAround, { threshold: thresholdLabel, time: projection.hitsAtLabel })
       : null;
 const freezeWindow = projection.window ?? null;
 const windowLine = !freezeWindow
   ? null
   : projection.hours != null
     ? freezeWindow.latestLabel
-      ? `Window: ${freezeWindow.earliestLabel} to ${freezeWindow.latestLabel}`
-      : `Window: as early as ${freezeWindow.earliestLabel}; a milder night may not reach it`
+      ? fmt(t.window, { from: freezeWindow.earliestLabel, to: freezeWindow.latestLabel })
+      : fmt(t.windowEarliest, { from: freezeWindow.earliestLabel })
     : null;
 const reasons = projection.reasons ?? [];
 ---
 <DashboardCard id="time-to-freeze">
-  <h2 class="card-title">Time to freeze</h2>
+  <h2 class="card-title">{t.title}</h2>
   <p class="card-subtitle mb-3">
-    {sourceLabel} vs your {thresholdLabel} threshold.
+    {subtitle}
   </p>
   {clock ? (
     <p class="time-to-freeze-clock mb-2">{clock}</p>
@@ -65,22 +59,22 @@ const reasons = projection.reasons ?? [];
   ) : null}
   {reasons.length > 0 ? (
     <details class="mt-2 text-sm">
-      <summary class="cursor-pointer text-link">What this is based on</summary>
+      <summary class="cursor-pointer text-link">{t.basedOn}</summary>
       <ul class="mt-1 mb-0 list-disc pl-5 text-[var(--color-text-muted)]">
         {reasons.map((reason) => <li>{reason}</li>)}
       </ul>
       <p class="mt-1 mb-0 text-xs text-[var(--color-text-muted)]">
-        An estimate from this space's history and the outdoor forecast, not a measurement.
+        {t.estimateNote}
       </p>
     </details>
   ) : null}
   <p class="mt-2 mb-0 text-xs text-[var(--color-text-muted)]">
     {confidenceLabel}
     {projection.rateFPerHour != null && projection.rateFPerHour < -0.05
-      ? ` · Cooling ${Math.abs(projection.rateFPerHour).toFixed(1)}°F/hr`
+      ? ` · ${fmt(t.cooling, { rate: fixed(Math.abs(projection.rateFPerHour), 1) })}`
       : ""}
     {projection.params
-      ? ` · Typical offset ${projection.params.offsetF >= 0 ? "+" : ""}${projection.params.offsetF.toFixed(0)}°F vs outdoor`
+      ? ` · ${fmt(t.offset, { offset: `${projection.params.offsetF >= 0 ? "+" : ""}${fixed(projection.params.offsetF, 0)}` })}`
       : ""}
   </p>
 </DashboardCard>

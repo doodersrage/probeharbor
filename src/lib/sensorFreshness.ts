@@ -1,5 +1,7 @@
 import type { DeviceSource, DeviceWithSensors } from "./devices";
 import { formatRelativeAge, freshnessDetail, LAG_MS } from "./relativeTime";
+import { fmt, plural, type Locale } from "../i18n";
+import { libNumber, libTextMessages } from "../i18n/messages/app/libText";
 
 export type LatestSensorRow = {
   sensor: { id: string; device_id: string; label: string };
@@ -29,6 +31,7 @@ export function summarizeStaleSensors(
   latest: LatestSensorRow[],
   devices: DeviceWithSensors[],
   now = Date.now(),
+  locale: Locale = "en",
 ): StaleSensorSummary {
   const sourceByDeviceId = new Map(devices.map((d) => [d.id, d.source]));
 
@@ -51,7 +54,7 @@ export function summarizeStaleSensors(
     pushCount,
     pullCount,
     unknownCount,
-  });
+  }, locale);
 
   return { total, pushCount, pullCount, unknownCount, bannerMessage };
 }
@@ -61,44 +64,45 @@ function buildStaleBannerMessage(counts: {
   pushCount: number;
   pullCount: number;
   unknownCount: number;
-}): string {
+}, locale: Locale): string {
   const { total, pushCount, pullCount, unknownCount } = counts;
   if (total === 0) return "";
+  const t = libTextMessages(locale).staleBanner;
+  const count = libNumber(total, locale);
 
-  const noun = total === 1 ? "probe" : "probes";
-
+  // Exactly one probe uses the singular, as the English always has.
+  const pick = (forms: { one: string; other: string }) => (total === 1 ? forms.one : forms.other);
   if (pullCount === total) {
-    return `${total} pull ${noun} ${total === 1 ? "hasn't" : "haven't"} been polled in 30+ minutes`;
+    return locale === "en" ? fmt(pick(t.pullOnly), { count }) : plural(t.pullOnly, total, locale, { count });
   }
   if (pushCount === total) {
-    return `${total} ${noun} ${total === 1 ? "hasn't" : "haven't"} posted in 30+ minutes`;
+    return locale === "en" ? fmt(pick(t.pushOnly), { count }) : plural(t.pushOnly, total, locale, { count });
   }
 
   const parts: string[] = [];
-  if (pushCount > 0) parts.push(`${pushCount} push`);
-  if (pullCount > 0) parts.push(`${pullCount} pull`);
-  if (unknownCount > 0) parts.push(`${unknownCount} unknown`);
+  if (pushCount > 0) parts.push(fmt(t.partPush, { count: libNumber(pushCount, locale) }));
+  if (pullCount > 0) parts.push(fmt(t.partPull, { count: libNumber(pullCount, locale) }));
+  if (unknownCount > 0) parts.push(fmt(t.partUnknown, { count: libNumber(unknownCount, locale) }));
 
-  return `${total} ${noun} look stale (${parts.join(", ")})`;
+  const vars = { count, parts: parts.join(", ") };
+  return locale === "en" ? fmt(pick(t.mixed), vars) : plural(t.mixed, total, locale, vars);
 }
 
 export function freshnessDetailForSource(
   recordedAt: string | null | undefined,
   source: DeviceSource | null | undefined,
   neverLabel = "never",
+  locale: Locale = "en",
 ): string {
-  const age = formatRelativeAge(recordedAt, neverLabel);
+  const t = libTextMessages(locale).freshness;
+  const age = formatRelativeAge(recordedAt, neverLabel, locale);
   if (!age.lagging) {
-    return source === "pull_url"
-      ? `Polled ${age.label}`
-      : `Updated ${age.label}`;
+    return fmt(source === "pull_url" ? t.polled : t.updated, { age: age.label });
   }
 
   if (source === "pull_url") {
-    return age.stale
-      ? `Offline · last polled ${age.label}`
-      : `Awaiting poll · last polled ${age.label}`;
+    return fmt(age.stale ? t.offlinePolled : t.awaitingPoll, { age: age.label });
   }
 
-  return freshnessDetail(age);
+  return freshnessDetail(age, t);
 }

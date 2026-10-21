@@ -6,6 +6,7 @@ import {
   getUserHouseholdRole,
 } from "../../../../lib/households";
 import { finishPuckClaim } from "../../../../lib/pucks";
+import { apiCommonMessages, apiLocale } from "../../../../i18n/messages/app/api/common";
 
 function json(status: number, payload: Record<string, unknown>) {
   return new Response(JSON.stringify(payload), {
@@ -14,10 +15,12 @@ function json(status: number, payload: Record<string, unknown>) {
   });
 }
 
-export const POST: APIRoute = async ({ request, cookies }) => {
+export const POST: APIRoute = async ({ request, cookies, locals }) => {
+  const locale = apiLocale({ locals });
+  const tc = apiCommonMessages(locale);
   const { session, user } = await getAuthFromRequest(request, cookies);
   if (!session || !user) {
-    return json(401, { error: "Unauthorized" });
+    return json(401, { error: tc.unauthorized });
   }
 
   let body: {
@@ -30,10 +33,10 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   try {
     body = await request.json();
   } catch {
-    return json(400, { error: "Invalid JSON" });
+    return json(400, { error: tc.invalidJson });
   }
   if (!body || typeof body !== "object") {
-    return json(400, { error: "Invalid JSON" });
+    return json(400, { error: tc.invalidJson });
   }
 
   const household = await getOrCreateHouseholdForUser(user.id, user.email);
@@ -42,7 +45,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   }
   // Pairing hardware adds a device to the household: editors only.
   if (!canEditHousehold(await getUserHouseholdRole(user.id, household.householdId))) {
-    return json(403, { error: "View-only access." });
+    return json(403, { error: tc.viewOnly });
   }
 
   const result = await finishPuckClaim({

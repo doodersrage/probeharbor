@@ -1,6 +1,10 @@
 import { createAdminClient } from "./supabase";
 import { getAlertSettingsForUser, notifyUser } from "./notify";
-import { brandedEmailParts } from "./emailLayout";
+import { brandedEmailParts, formatEmailValue } from "./emailLayout";
+import { fmt } from "../i18n/format";
+import type { Locale } from "../i18n/locales";
+import { getUserLocale } from "../i18n/userLocale";
+import { freezeDrillEmailMessages } from "../i18n/messages/app/email/freezeDrill";
 import { resolveSiteUrl } from "./schemaMarkup";
 import { sendEmail, isMailDeliveryBounceError } from "./mailer";
 import { computeFreezeReadiness } from "./freezeReadiness";
@@ -27,37 +31,45 @@ export function shouldSendFreezeDrill(now = new Date()): boolean {
   return false;
 }
 
-export function buildFreezeDrillEmailParts(input: {
-  score: number;
-  checks: Array<{ ok: boolean; label: string }>;
-  siteUrl: string;
-  unsubscribeUrl?: string | null;
-}) {
+export function buildFreezeDrillEmailParts(
+  input: {
+    score: number;
+    checks: Array<{ ok: boolean; label: string }>;
+    siteUrl: string;
+    unsubscribeUrl?: string | null;
+  },
+  locale: Locale = "en",
+) {
+  const t = freezeDrillEmailMessages(locale);
+  const score = formatEmailValue(input.score, locale);
   const readinessTone =
     input.score >= 80 ? "success" : input.score >= 50 ? "brand" : "alert";
-  return brandedEmailParts({
-    eyebrow: "Pre-season freeze drill",
-    preheader: `Readiness score ${input.score}%`,
-    title: "Time for your freeze-season check",
-    intro: "Before the first hard freeze, confirm alerts and probes are ready.",
-    sections: [
-      {
-        type: "callout",
-        tone: readinessTone,
-        title: "Readiness",
-        body: `${input.score}%`,
+  return brandedEmailParts(
+    {
+      eyebrow: t.eyebrow,
+      preheader: fmt(t.preheader, { score }),
+      title: t.title,
+      intro: t.intro,
+      sections: [
+        {
+          type: "callout",
+          tone: readinessTone,
+          title: t.readiness,
+          body: fmt(t.score, { score }),
+        },
+      ],
+      bullets: input.checks.map((c) => `${c.ok ? "✓" : "○"} ${c.label}`),
+      cta: { label: t.ctaDashboard, url: `${input.siteUrl}/dashboard` },
+      secondaryCta: {
+        label: t.ctaTest,
+        url: `${input.siteUrl}/dashboard/alerts?tab=settings#send-test-alert`,
       },
-    ],
-    bullets: input.checks.map((c) => `${c.ok ? "✓" : "○"} ${c.label}`),
-    cta: { label: "Open dashboard", url: `${input.siteUrl}/dashboard` },
-    secondaryCta: {
-      label: "Send test alert",
-      url: `${input.siteUrl}/dashboard/alerts?tab=settings#send-test-alert`,
+      tone: "brand",
+      footerNote: t.footerNote,
+      unsubscribeUrl: input.unsubscribeUrl,
     },
-    tone: "brand",
-    footerNote: "Disable pre-season drills in Dashboard → Alerts.",
-    unsubscribeUrl: input.unsubscribeUrl,
-  });
+    locale,
+  );
 }
 
 export function monthsSince(iso: string | null | undefined, now = Date.now()): number {
@@ -92,6 +104,8 @@ export async function sendFreezeDrillsForAllUsers(): Promise<{
       }
       const user = userData.user;
       const settings = await getAlertSettingsForUser(userId, user.user_metadata as Record<string, unknown>);
+      const locale = getUserLocale(user);
+      const t = freezeDrillEmailMessages(locale);
 
       if (settings.freezeDrillEnabled === false) {
         skipped += 1;
@@ -130,15 +144,15 @@ export async function sendFreezeDrillsForAllUsers(): Promise<{
         canUseNws: entitlements.canUseNwsAlerts,
         hasSentAnyAlert:
           Boolean(settings.lastAlertSentAt) || (await hasDeliveredAnyAlert(userId)),
-      });
+      }, locale);
 
-      const unsubscribeUrl = await buildUnsubscribeUrl(siteUrl, userId, "freeze_drill");
+      const unsubscribeUrl = await buildUnsubscribeUrl(siteUrl, userId, "freeze_drill", locale);
       const parts = buildFreezeDrillEmailParts({
         score: readiness.score,
         checks: readiness.checks,
         siteUrl,
         unsubscribeUrl,
-      });
+      }, locale);
 
       if (user.email) {
         if (
@@ -149,7 +163,7 @@ export async function sendFreezeDrillsForAllUsers(): Promise<{
           continue;
         }
         try {
-          await sendEmail(user.email, `Freeze readiness ${readiness.score}%: pre-season drill`, parts.text, {
+          await sendEmail(user.email, fmt(t.subject, { score: formatEmailValue(readiness.score, locale) }), parts.text, {
             html: parts.html,
             headers: unsubscribeHeaders(unsubscribeUrl),
           });
@@ -172,10 +186,12 @@ export async function sendFreezeDrillsForAllUsers(): Promise<{
         user.email,
         settings,
         {
-          title: "Pre-season freeze drill",
-          body: `Readiness ${readiness.score}%. Open the dashboard and send a test alert if you have not this season.`,
+          title: t.notifyTitle,
+          body: fmt(t.notifyBody, { score: formatEmailValue(readiness.score, locale) }),
           kind: "generic",
         },
+        undefined,
+        locale,
       );
 
       await admin

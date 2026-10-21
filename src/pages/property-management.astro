@@ -17,7 +17,7 @@ import {
   resolvePageUrl,
   resolveSiteUrl,
 } from "../lib/schemaMarkup";
-import { getLocale, localizePath } from "../i18n";
+import { fmt, getLocale, localizePath } from "../i18n";
 import { localizeUsd, propertyManagementMessages } from "../i18n/messages/propertyManagement";
 
 const { user } = await getAuthFromCookies(Astro.cookies);
@@ -32,11 +32,19 @@ const portfolioMonthly = portfolioPrices.monthly ? localizeUsd(portfolioPrices.m
 const portfolioConfigured = portfolioAnnual != null || portfolioMonthly != null;
 const priceInline = portfolioConfigured
   ? portfolioAnnual
-    ? t.priceAnnual(portfolioAnnual, PORTFOLIO_MAX_OWNED_HOUSEHOLDS, portfolioMonthly)
-    : t.priceMonthly(portfolioMonthly!, PORTFOLIO_MAX_OWNED_HOUSEHOLDS)
-  : t.priceCustom(PORTFOLIO_MAX_OWNED_HOUSEHOLDS);
+    ? fmt(portfolioMonthly ? t.priceAnnualWithMonthly : t.priceAnnual, {
+        annual: portfolioAnnual,
+        max: PORTFOLIO_MAX_OWNED_HOUSEHOLDS,
+        monthly: portfolioMonthly ?? "",
+      })
+    : fmt(t.priceMonthly, { monthly: portfolioMonthly!, max: PORTFOLIO_MAX_OWNED_HOUSEHOLDS })
+  : fmt(t.priceCustom, { max: PORTFOLIO_MAX_OWNED_HOUSEHOLDS });
 
-const propertyFaqs = t.faqs(PRO_MAX_OWNED_HOUSEHOLDS, PORTFOLIO_MAX_OWNED_HOUSEHOLDS);
+const ownedLimits = { pro: PRO_MAX_OWNED_HOUSEHOLDS, portfolio: PORTFOLIO_MAX_OWNED_HOUSEHOLDS };
+const propertyFaqs = t.faqs.map((faq) => ({
+  question: fmt(faq.question, ownedLimits),
+  answer: fmt(faq.answer, ownedLimits),
+}));
 
 const schema = [
   getBreadcrumbSchema(siteUrl, [
@@ -62,7 +70,7 @@ const schema = [
         {user ? t.openPortfolio : t.startFree}
       </a>
       <a slot="actions" class="btn-secondary" href="/pricing#portfolio">
-        {portfolioConfigured ? t.portfolioPrice((portfolioAnnual ?? portfolioMonthly)!) : t.seePortfolioPricing}
+        {portfolioConfigured ? fmt(t.portfolioPrice, { price: (portfolioAnnual ?? portfolioMonthly)! }) : t.seePortfolioPricing}
       </a>
     </PageHeader>
 
@@ -104,7 +112,7 @@ const schema = [
     <section class="card" id="portfolio-pricing">
       <h2 class="card-title">{t.plans.title}</h2>
       <p class="mb-4 text-sm">
-        {t.plans.body(PRO_MAX_OWNED_HOUSEHOLDS, PORTFOLIO_MAX_OWNED_HOUSEHOLDS)}
+        {fmt(t.plans.body, ownedLimits)}
       </p>
       <p class="text-sm mb-4">
         <strong>{t.plans.portfolioLabel}</strong> {priceInline}.

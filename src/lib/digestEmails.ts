@@ -10,6 +10,11 @@ import { buildHistoryChartUrl, trailingHistoryWindowDays } from "./historyUrls";
 import { buildUnsubscribeUrl, unsubscribeHeaders } from "./emailUnsubscribe";
 import { isActionableAlertKind } from "./alertEvents";
 import { isAlertChannelName } from "./channelDelivery";
+import { formatEmailCount, formatEmailDate, formatEmailNumber, formatEmailValue } from "./emailLayout";
+import { fmt } from "../i18n/format";
+import type { Locale } from "../i18n/locales";
+import { localeFromMetadata } from "../i18n/userLocale";
+import { digestEmailMessages } from "../i18n/messages/app/email/digest";
 
 async function sendDigestEmail(
   to: string,
@@ -64,14 +69,20 @@ function summarizeProbes(points: ChartPoint[]): DigestProbeSummary[] {
   });
 }
 
-function summarizePoints(points: ChartPoint[]): string[] {
-  return summarizeProbes(points).map(
-    (probe) =>
-      `${probe.label}: ${probe.minF.toFixed(1)}–${probe.maxF.toFixed(1)} °F, avg humidity ${probe.avgHumidity.toFixed(0)}% (${probe.readingCount} readings)`,
+function summarizePoints(points: ChartPoint[], locale: Locale = "en"): string[] {
+  const t = digestEmailMessages(locale);
+  return summarizeProbes(points).map((probe) =>
+    fmt(t.probeLine, {
+      probe: probe.label,
+      min: formatEmailNumber(probe.minF, 1, locale),
+      max: formatEmailNumber(probe.maxF, 1, locale),
+      humidity: formatEmailNumber(probe.avgHumidity, 0, locale),
+      readings: formatEmailCount(t.readings, probe.readingCount, locale),
+    }),
   );
 }
 
-function summarizeDays(points: ChartPoint[]): DigestDaySummary[] {
+function summarizeDays(points: ChartPoint[], locale: Locale = "en"): DigestDaySummary[] {
   if (points.length === 0) return [];
 
   const byDay = new Map<string, ChartPoint[]>();
@@ -93,14 +104,15 @@ function summarizeDays(points: ChartPoint[]): DigestDaySummary[] {
       const coldest = dayPoints.reduce((a, b) =>
         a.tempf <= b.tempf ? a : b,
       );
-      const dayLabel = new Date(`${key}T12:00:00.000Z`).toLocaleDateString(
-        "en-US",
+      const dayLabel = formatEmailDate(
+        `${key}T12:00:00.000Z`,
         {
           weekday: "short",
           month: "short",
           day: "numeric",
           timeZone: "UTC",
         },
+        locale,
       );
       const mixedProbes = dayPoints.some(
         (point) => point.probeLabel !== coldest.probeLabel,
@@ -116,24 +128,37 @@ function summarizeDays(points: ChartPoint[]): DigestDaySummary[] {
 }
 
 /** One line per calendar day (UTC): min–max, avg, and coldest probe when mixed. */
-export function summarizePointsByDay(points: ChartPoint[]): string[] {
-  return summarizeDays(points).map((day) => {
-    const coldestNote = day.coldestProbe ? ` · coldest ${day.coldestProbe}` : "";
-    return `${day.dayLabel}: ${day.minF.toFixed(1)}–${day.maxF.toFixed(1)} °F (avg ${day.avgF.toFixed(1)}°${coldestNote})`;
+export function summarizePointsByDay(points: ChartPoint[], locale: Locale = "en"): string[] {
+  const t = digestEmailMessages(locale);
+  return summarizeDays(points, locale).map((day) => {
+    const vars = {
+      day: day.dayLabel,
+      min: formatEmailNumber(day.minF, 1, locale),
+      max: formatEmailNumber(day.maxF, 1, locale),
+      avg: formatEmailNumber(day.avgF, 1, locale),
+    };
+    return day.coldestProbe
+      ? fmt(t.dayLineColdest, { ...vars, probe: day.coldestProbe })
+      : fmt(t.dayLine, vars);
   });
 }
 
-function formatDigestWhen(iso: string): string {
-  return new Date(iso).toLocaleString("en-US", {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-    timeZone: "UTC",
-  });
+function formatDigestWhen(iso: string, locale: Locale = "en"): string {
+  return formatEmailDate(
+    iso,
+    {
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      timeZone: "UTC",
+    },
+    locale,
+  );
 }
 
-function digestHighlightStats(points: ChartPoint[]) {
+function digestHighlightStats(points: ChartPoint[], locale: Locale = "en") {
+  const t = digestEmailMessages(locale);
   const coldest = points.reduce((a, b) => (a.tempf <= b.tempf ? a : b));
   const hottest = points.reduce((a, b) => (a.tempf >= b.tempf ? a : b));
   const wettest = points.reduce((a, b) => (a.humidity >= b.humidity ? a : b));
@@ -141,24 +166,24 @@ function digestHighlightStats(points: ChartPoint[]) {
 
   return [
     {
-      label: "Coldest",
-      value: `${coldest.tempf.toFixed(1)}°F`,
-      detail: `${formatDigestWhen(coldest.timestamp)} · ${coldest.probeLabel}`,
+      label: t.statColdest,
+      value: `${formatEmailNumber(coldest.tempf, 1, locale)}°F`,
+      detail: `${formatDigestWhen(coldest.timestamp, locale)} · ${coldest.probeLabel}`,
     },
     {
-      label: "Warmest",
-      value: `${hottest.tempf.toFixed(1)}°F`,
-      detail: `${formatDigestWhen(hottest.timestamp)} · ${hottest.probeLabel}`,
+      label: t.statWarmest,
+      value: `${formatEmailNumber(hottest.tempf, 1, locale)}°F`,
+      detail: `${formatDigestWhen(hottest.timestamp, locale)} · ${hottest.probeLabel}`,
     },
     {
-      label: "7-day average",
-      value: `${avgTemp.toFixed(1)}°F`,
-      detail: `${points.length} readings`,
+      label: t.statAverage,
+      value: `${formatEmailNumber(avgTemp, 1, locale)}°F`,
+      detail: formatEmailCount(t.readings, points.length, locale),
     },
     {
-      label: "Highest humidity",
-      value: `${wettest.humidity.toFixed(0)}%`,
-      detail: `${formatDigestWhen(wettest.timestamp)} · ${wettest.probeLabel}`,
+      label: t.statHumidity,
+      value: `${formatEmailNumber(wettest.humidity, 0, locale)}%`,
+      detail: `${formatDigestWhen(wettest.timestamp, locale)} · ${wettest.probeLabel}`,
     },
   ];
 }
@@ -226,84 +251,93 @@ export function summarizeAlertDelivery(events: DeliveryEvent[]): AlertDeliverySu
   };
 }
 
-function deliverySection(delivery: AlertDeliverySummary): EmailSection {
+function deliverySection(delivery: AlertDeliverySummary, locale: Locale = "en"): EmailSection {
+  const t = digestEmailMessages(locale);
   const heldBackNote =
-    delivery.heldBack > 0
-      ? `${delivery.heldBack} held back by snooze, vacation, or quiet hours.`
-      : null;
+    delivery.heldBack > 0 ? formatEmailCount(t.heldBack, delivery.heldBack, locale) : null;
   if (delivery.alerts === 0) {
     return {
       type: "note",
-      text: [
-        "No alerts went out this week.",
-        heldBackNote,
-        "Send a test from Alerts any time to confirm your channels still reach you.",
-      ]
-        .filter(Boolean)
-        .join(" "),
+      text: [t.noAlerts, heldBackNote, t.sendTestAnyTime].filter(Boolean).join(" "),
     };
   }
-  const via = delivery.sentChannels.length > 0 ? ` via ${delivery.sentChannels.join(", ")}` : "";
-  const alertWord = delivery.alerts === 1 ? "alert" : "alerts";
-  const lines = [`${delivery.reached} of ${delivery.alerts} ${alertWord} reached you${via}.`];
+  const reachedVars = { reached: formatEmailValue(delivery.reached, locale) };
+  const lines = [
+    delivery.sentChannels.length > 0
+      ? formatEmailCount(t.reachedVia, delivery.alerts, locale, {
+          ...reachedVars,
+          channels: delivery.sentChannels.join(", "),
+        })
+      : formatEmailCount(t.reached, delivery.alerts, locale, reachedVars),
+  ];
   if (delivery.failedChannels.length > 0) {
     const failures = delivery.failedChannels
-      .map(({ channel, count }) => `${channel} (${count}×)`)
+      .map(({ channel, count }) =>
+        fmt(t.failedChannel, { channel, count: formatEmailValue(count, locale) }),
+      )
       .join(", ");
-    lines.push(`Not delivered on: ${failures}. Check those channels under Alerts and send a test.`);
+    lines.push(fmt(t.notDelivered, { failures }));
   }
   if (heldBackNote) lines.push(heldBackNote);
   const clean = delivery.reached === delivery.alerts && delivery.failedChannels.length === 0;
   return {
     type: "callout",
     tone: clean ? "success" : "alert",
-    title: "Alert delivery",
+    title: t.deliveryTitle,
     body: lines.join(" "),
   };
 }
 
-export function buildWeeklyDigestParts(input: {
-  points: ChartPoint[];
-  freezeThresholdF: number;
-  siteUrl: string;
-  unsubscribeUrl?: string | null;
-  /** The recipient's own alert delivery this week; omitted for household members. */
-  delivery?: AlertDeliverySummary | null;
-}): { subject: string; text: string; html: string; notifyBody: string } {
+export function buildWeeklyDigestParts(
+  input: {
+    points: ChartPoint[];
+    freezeThresholdF: number;
+    siteUrl: string;
+    unsubscribeUrl?: string | null;
+    /** The recipient's own alert delivery this week; omitted for household members. */
+    delivery?: AlertDeliverySummary | null;
+  },
+  locale: Locale = "en",
+): { subject: string; text: string; html: string; notifyBody: string } {
+  const t = digestEmailMessages(locale);
   const { points, freezeThresholdF, siteUrl } = input;
   const freeze = computeFreezeHours(points, freezeThresholdF);
-  const freezeLine = formatDigestFreezeLine(points, freezeThresholdF);
-  const freezeBody = freezeLine.replace(/^Freeze exposure:\s*/i, "");
+  const freezeBody = formatDigestFreezeBody(points, freezeThresholdF, locale);
+  const freezeLine = fmt(t.freezeLine, { body: freezeBody });
   const probes = summarizeProbes(points);
-  const days = summarizeDays(points);
+  const days = summarizeDays(points, locale);
   const mixedDays = days.some((day) => day.coldestProbe);
-  const summary = summarizePoints(points);
-  const byDay = summarizePointsByDay(points);
+  const summary = summarizePoints(points, locale);
+  const byDay = summarizePointsByDay(points, locale);
+  const num = (value: number, digits: number) => formatEmailNumber(value, digits, locale);
 
   const sections: EmailSection[] = [
     {
       type: "callout",
       tone: freeze.readingsBelow34 === 0 ? "success" : "alert",
-      title: "Freeze exposure",
+      title: t.freezeTitle,
       body: freezeBody.charAt(0).toUpperCase() + freezeBody.slice(1),
     },
   ];
-  if (input.delivery) sections.push(deliverySection(input.delivery));
+  if (input.delivery) sections.push(deliverySection(input.delivery, locale));
   sections.push(
-    { type: "heading", text: "Highlights" },
-    { type: "stats", items: digestHighlightStats(points) },
+    { type: "heading", text: t.highlights },
+    { type: "stats", items: digestHighlightStats(points, locale) },
   );
 
   if (probes.length > 0) {
     sections.push(
-      { type: "heading", text: "By probe" },
+      { type: "heading", text: t.byProbe },
       {
         type: "table",
-        headers: ["Probe", "Range", "Humidity"],
+        headers: [t.colProbe, t.colRange, t.colHumidity],
         rows: probes.map((probe) => [
           probe.label,
-          `${probe.minF.toFixed(1)}–${probe.maxF.toFixed(1)}°F`,
-          `${probe.avgHumidity.toFixed(0)}% · ${probe.readingCount} readings`,
+          `${num(probe.minF, 1)}–${num(probe.maxF, 1)}°F`,
+          fmt(t.humidityCell, {
+            humidity: num(probe.avgHumidity, 0),
+            readings: formatEmailCount(t.readings, probe.readingCount, locale),
+          }),
         ]),
       },
     );
@@ -311,15 +345,17 @@ export function buildWeeklyDigestParts(input: {
 
   if (days.length > 0) {
     sections.push(
-      { type: "heading", text: "Day by day" },
+      { type: "heading", text: t.dayByDay },
       {
         type: "table",
-        headers: mixedDays ? ["Day", "Range", "Avg", "Coldest"] : ["Day", "Range", "Avg"],
+        headers: mixedDays
+          ? [t.colDay, t.colRange, t.colAvg, t.colColdest]
+          : [t.colDay, t.colRange, t.colAvg],
         rows: days.map((day) => {
           const row = [
             day.dayLabel,
-            `${day.minF.toFixed(1)}–${day.maxF.toFixed(1)}°F`,
-            `${day.avgF.toFixed(1)}°`,
+            `${num(day.minF, 1)}–${num(day.maxF, 1)}°F`,
+            `${num(day.avgF, 1)}°`,
           ];
           if (mixedDays) row.push(day.coldestProbe ?? "—");
           return row;
@@ -330,32 +366,33 @@ export function buildWeeklyDigestParts(input: {
 
   sections.push({
     type: "note",
-    text: "Tip: outage and leak alerts fire separately when sensors go quiet or wet.",
+    text: t.tip,
   });
 
-  const parts = brandedEmailParts({
-    eyebrow: "Weekly digest",
-    preheader: freezeLine,
-    title: "This week at your probes",
-    intro:
-      "Here’s a quick look at the last 7 days — coldest night, freeze crossings, and anything else to watch.",
-    sections,
-    cta: {
-      label: "Open this week on History",
-      url: buildHistoryChartUrl(siteUrl, trailingHistoryWindowDays(7)),
+  const parts = brandedEmailParts(
+    {
+      eyebrow: t.eyebrow,
+      preheader: freezeLine,
+      title: t.title,
+      intro: t.intro,
+      sections,
+      cta: {
+        label: t.ctaHistory,
+        url: buildHistoryChartUrl(siteUrl, trailingHistoryWindowDays(7)),
+      },
+      secondaryCta: {
+        label: t.ctaSettings,
+        url: `${siteUrl}/dashboard/alerts?tab=settings#alert-section-essentials`,
+      },
+      tone: "brand",
+      footerNote: t.footerNote,
+      unsubscribeUrl: input.unsubscribeUrl,
     },
-    secondaryCta: {
-      label: "Manage digest settings",
-      url: `${siteUrl}/dashboard/alerts?tab=settings#alert-section-essentials`,
-    },
-    tone: "brand",
-    footerNote:
-      "Weekly digests can be turned off under Dashboard → Alerts → Settings → Summary emails.",
-    unsubscribeUrl: input.unsubscribeUrl,
-  });
+    locale,
+  );
 
   return {
-    subject: formatWeeklyDigestSubject(points),
+    subject: formatWeeklyDigestSubject(points, locale),
     text: parts.text,
     html: parts.html,
     notifyBody: [freezeLine, ...summary, ...byDay].join("\n"),
@@ -368,27 +405,50 @@ export function coldestPoint(points: ChartPoint[]): ChartPoint | null {
   return points.reduce((a, b) => (a.tempf <= b.tempf ? a : b));
 }
 
+/** Freeze exposure without the "Freeze exposure:" prefix (lowercase start). */
+function formatDigestFreezeBody(
+  points: ChartPoint[],
+  freezeThresholdF: number,
+  locale: Locale = "en",
+): string {
+  const t = digestEmailMessages(locale);
+  const freeze = computeFreezeHours(points, freezeThresholdF);
+  const threshold = formatEmailValue(freezeThresholdF, locale);
+  if (freeze.readingsBelow34 === 0) {
+    return fmt(t.freezeNone, { threshold });
+  }
+  return fmt(t.freezeSome, {
+    hours: formatEmailNumber(freeze.hoursBelow34, 1, locale),
+    threshold,
+    readings: formatEmailCount(t.readings, freeze.readingsBelow34, locale),
+    coldest: freeze.coldestF != null ? formatEmailNumber(freeze.coldestF, 1, locale) : "undefined",
+  });
+}
+
 export function formatDigestFreezeLine(
   points: ChartPoint[],
   freezeThresholdF: number,
+  locale: Locale = "en",
 ): string {
-  const freeze = computeFreezeHours(points, freezeThresholdF);
-  if (freeze.readingsBelow34 === 0) {
-    return `Freeze exposure: none at or below ${freezeThresholdF}°F`;
-  }
-  return `Freeze exposure: ~${freeze.hoursBelow34.toFixed(1)} h at or below ${freezeThresholdF}°F (${freeze.readingsBelow34} readings · coldest ${freeze.coldestF?.toFixed(1)}°F)`;
+  const t = digestEmailMessages(locale);
+  return fmt(t.freezeLine, { body: formatDigestFreezeBody(points, freezeThresholdF, locale) });
 }
 
-export function formatWeeklyDigestSubject(points: ChartPoint[]): string {
+export function formatWeeklyDigestSubject(points: ChartPoint[], locale: Locale = "en"): string {
+  const t = digestEmailMessages(locale);
   const coldest = coldestPoint(points);
-  if (!coldest) return "Weekly probe temperature digest";
-  const dayLabel = new Date(coldest.timestamp).toLocaleDateString("en-US", {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-    timeZone: "UTC",
-  });
-  return `Weekly digest — coldest ${dayLabel} ${coldest.tempf.toFixed(1)}°F`;
+  if (!coldest) return t.subjectNoData;
+  const dayLabel = formatEmailDate(
+    coldest.timestamp,
+    {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+      timeZone: "UTC",
+    },
+    locale,
+  );
+  return fmt(t.subject, { day: dayLabel, temp: formatEmailNumber(coldest.tempf, 1, locale) });
 }
 
 export async function sendWeeklyDigestsForAllUsers(): Promise<{
@@ -424,6 +484,7 @@ export async function sendWeeklyDigestsForAllUsers(): Promise<{
       }
 
       const digestEmail = settings.email ?? user.email;
+      const ownerLocale = localeFromMetadata(user.user_metadata as Record<string, unknown> | undefined);
       const { fetchGarageTempChartData } = await import("./garageTempsHistory");
       const chart = await fetchGarageTempChartData(userId, 7);
 
@@ -438,7 +499,7 @@ export async function sendWeeklyDigestsForAllUsers(): Promise<{
         continue;
       }
 
-      const ownerUnsubscribeUrl = await buildUnsubscribeUrl(siteUrl, userId, "digest");
+      const ownerUnsubscribeUrl = await buildUnsubscribeUrl(siteUrl, userId, "digest", ownerLocale);
       const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
       const { data: weekEvents, error: weekEventsError } = await admin
         .from("alert_events")
@@ -453,7 +514,7 @@ export async function sendWeeklyDigestsForAllUsers(): Promise<{
         unsubscribeUrl: ownerUnsubscribeUrl,
         // Leave the section out rather than claim "no alerts" when the lookup failed.
         delivery: weekEventsError ? null : summarizeAlertDelivery(weekEvents ?? []),
-      });
+      }, ownerLocale);
 
       await sendDigestEmail(
         digestEmail,
@@ -467,7 +528,7 @@ export async function sendWeeklyDigestsForAllUsers(): Promise<{
         title: digest.subject,
         body: digest.notifyBody,
         kind: "digest",
-      });
+      }, undefined, ownerLocale);
 
       // Fan-out to household members who opted into digests.
       try {
@@ -498,13 +559,19 @@ export async function sendWeeklyDigestsForAllUsers(): Promise<{
             const memberEmail = memberData.user?.email;
             if (!memberEmail) continue;
             // Each recipient gets a link that unsubscribes their own account.
-            const memberUnsubscribeUrl = await buildUnsubscribeUrl(siteUrl, memberId, "digest");
-            const memberDigest = buildWeeklyDigestParts({
-              points,
-              freezeThresholdF: settings.freezeThresholdF,
-              siteUrl,
-              unsubscribeUrl: memberUnsubscribeUrl,
-            });
+            const memberLocale = localeFromMetadata(
+              memberData.user?.user_metadata as Record<string, unknown> | undefined,
+            );
+            const memberUnsubscribeUrl = await buildUnsubscribeUrl(siteUrl, memberId, "digest", memberLocale);
+            const memberDigest = buildWeeklyDigestParts(
+              {
+                points,
+                freezeThresholdF: settings.freezeThresholdF,
+                siteUrl,
+                unsubscribeUrl: memberUnsubscribeUrl,
+              },
+              memberLocale,
+            );
             await sendDigestEmail(
               memberEmail,
               memberDigest.subject,

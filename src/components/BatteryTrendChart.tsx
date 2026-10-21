@@ -8,6 +8,15 @@ import {
   type PlotBounds,
 } from "../lib/historyChartInteraction";
 import { expandedChartDialogAttrs } from "../lib/chartLightbox";
+import en from "../i18n/messages/app/overviewInsights/en";
+
+/** Chart strings resolved on the server (`app/overviewInsights` → chart). */
+export type BatteryTrendChartText = {
+  title?: string;
+  expand?: string;
+  close?: string;
+  closeExpanded?: string;
+};
 
 export type MetaTrendSample = { value: number; at: string };
 
@@ -28,17 +37,27 @@ interface Props {
   /** Extra padding around the value domain. */
   valuePad?: number;
   canvasClassName?: string;
+  /** Translated labels; English when missing. */
+  text?: BatteryTrendChartText;
+  /** BCP 47 tag for date labels (defaults to the browser's locale). */
+  intl?: string;
 }
 
 const COLORS = ["#e2e8f0", "#34d399", "#f472b6", "#a3e635"];
 
 export default function BatteryTrendChart({
   series,
-  title = "Battery % over recent samples",
+  title: titleProp,
   unitSuffix = "%",
   valuePad = 5,
   canvasClassName = "history-chart-canvas--battery",
+  text,
+  intl,
 }: Props) {
+  const title = titleProp ?? text?.title ?? en.battery.chartTitle;
+  const expandLabel = text?.expand ?? en.chart.expand;
+  const closeLabel = text?.close ?? en.chart.close;
+  const closeExpandedLabel = text?.closeExpanded ?? en.chart.closeExpanded;
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const plotBoundsRef = useRef<PlotBounds | null>(null);
@@ -186,16 +205,16 @@ export default function BatteryTrendChart({
       g.fillStyle = "#94a3b8";
       g.font = "10px system-ui, sans-serif";
       g.textAlign = "left";
-      g.fillText(new Date(minTs).toLocaleDateString(), pad.left, height - 8);
+      g.fillText(new Date(minTs).toLocaleDateString(intl), pad.left, height - 8);
       g.textAlign = "right";
-      g.fillText(new Date(maxTs).toLocaleDateString(), width - pad.right, height - 8);
+      g.fillText(new Date(maxTs).toLocaleDateString(intl), width - pad.right, height - 8);
     }
 
     draw();
     const ro = new ResizeObserver(() => draw());
     ro.observe(canvas);
     return () => ro.disconnect();
-  }, [usable, domain, hover, expanded, unitSuffix, valuePad]);
+  }, [usable, domain, hover, expanded, unitSuffix, valuePad, intl]);
 
   if (usable.length === 0) return null;
 
@@ -212,7 +231,7 @@ export default function BatteryTrendChart({
         <button
           type="button"
           class="history-chart-lightbox-scrim"
-          aria-label="Close expanded chart"
+          aria-label={closeExpandedLabel}
           onClick={() => setExpanded(false)}
         />
       )}
@@ -230,7 +249,7 @@ export default function BatteryTrendChart({
                 class="history-chart-zoom-btn history-chart-expand-btn"
                 onClick={() => setExpanded(false)}
               >
-                Close
+                {closeLabel}
               </button>
             ) : (
               <button
@@ -241,7 +260,7 @@ export default function BatteryTrendChart({
                   setExpanded(true);
                 }}
               >
-                Expand
+                {expandLabel}
               </button>
             )}
           </div>

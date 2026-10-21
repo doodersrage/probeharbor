@@ -9,6 +9,8 @@ import {
   resolveShareReadingsFormat,
   shareScopeAllowsMetrics,
 } from "../../../../lib/shareReadingsAccess";
+import { apiLocale } from "../../../../i18n/messages/app/apiMore/common";
+import { apiMorePublicFormsMessages } from "../../../../i18n/messages/app/apiMore/publicForms";
 
 async function resolveShare(token: string) {
   const supabase = createServerClient();
@@ -23,10 +25,13 @@ async function resolveShare(token: string) {
   return data;
 }
 
-export const GET: APIRoute = async ({ params, request, url, clientAddress }) => {
+export const GET: APIRoute = async (context) => {
+  const { params, url, clientAddress } = context;
+  const locale = apiLocale(context);
+  const t = apiMorePublicFormsMessages(locale).shareReadings;
   const token = params.token;
   if (!token) {
-    return new Response(JSON.stringify({ error: "Missing token" }), {
+    return new Response(JSON.stringify({ error: t.missingToken }), {
       status: 400,
       headers: { "Content-Type": "application/json" },
     });
@@ -36,7 +41,7 @@ export const GET: APIRoute = async ({ params, request, url, clientAddress }) => 
     `${clientAddress || "unknown"}:${token.slice(0, 12)}`,
   );
   if (!rate.ok) {
-    return new Response(JSON.stringify({ error: "Too many requests" }), {
+    return new Response(JSON.stringify({ error: t.tooManyRequests }), {
       status: 429,
       headers: {
         "Content-Type": "application/json",
@@ -47,7 +52,7 @@ export const GET: APIRoute = async ({ params, request, url, clientAddress }) => 
 
   const share = await resolveShare(token);
   if (!share) {
-    return new Response(JSON.stringify({ error: "Invalid or expired link" }), {
+    return new Response(JSON.stringify({ error: t.invalidLink }), {
       status: 404,
       headers: { "Content-Type": "application/json" },
     });
@@ -56,6 +61,7 @@ export const GET: APIRoute = async ({ params, request, url, clientAddress }) => 
   const formatResult = resolveShareReadingsFormat(
     share.scope,
     url.searchParams.get("format"),
+    locale,
   );
   if (!formatResult.ok) {
     return new Response(JSON.stringify({ error: formatResult.error }), {

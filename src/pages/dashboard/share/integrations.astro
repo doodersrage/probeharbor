@@ -11,6 +11,8 @@ import LanSensorSetupCard from "../../../components/LanSensorSetupCard.astro";
 import NodeRedSetupCard from "../../../components/NodeRedSetupCard.astro";
 import ZapierSetupCard from "../../../components/ZapierSetupCard.astro";
 import { loadShareDashboardContext } from "../../../lib/shareDashboardContext";
+import { formatDateTime, getLocale } from "../../../i18n";
+import { shareMessages, shareNotice } from "../../../i18n/messages/app/share";
 
 const ctx = await loadShareDashboardContext(Astro.cookies, Astro.request, Astro.url);
 if (ctx.redirect) return Astro.redirect(ctx.redirect);
@@ -24,13 +26,24 @@ const {
   webhookDeliveries,
   newApiKey,
   inboundToken,
-  notice,
   noticeIsError,
   household,
 } = ctx;
+const locale = getLocale(Astro);
+const msgs = shareMessages(locale);
+const t = msgs.integrations;
+const notice = ctx.notice ? (shareNotice(Astro.url, msgs.notices) ?? ctx.notice) : null;
+const dateTimeOptions: Intl.DateTimeFormatOptions = {
+  year: "numeric",
+  month: "numeric",
+  day: "numeric",
+  hour: "numeric",
+  minute: "numeric",
+  second: "numeric",
+};
 const haDevices = household.householdId ? (await listHouseholdDevices(household.householdId)).devices : [];
 ---
-<DashboardLayout title="Share" subtitle="Grafana, Home Assistant, Zapier, and webhook delivery.">
+<DashboardLayout title={msgs.title} subtitle={t.subtitle}>
   <ShareNav active="integrations">
     <div class="space-y-6">
       {notice && (
@@ -72,20 +85,20 @@ const haDevices = household.householdId ? (await listHouseholdDevices(household.
       <NodeRedSetupCard />
 
       <section class="card">
-        <h2 class="card-title">Recent activity</h2>
+        <h2 class="card-title">{t.activityTitle}</h2>
         {activity.length === 0 ? (
           <p class="mb-0 text-sm text-[var(--color-text-muted)]">
-            Household actions (share links, alert saves, device transfers, ingest key reveals) will appear here.
+            {t.activityEmpty}
           </p>
         ) : (
           <ul class="space-y-2 mb-0 text-sm">
             {activity.map((row) => (
               <li>
-                <strong>{formatHouseholdActivityAction(row.action)}</strong>
+                <strong>{formatHouseholdActivityAction(row.action, locale)}</strong>
                 {row.detail ? `: ${row.detail}` : ""}
                 <span class="text-[var(--color-text-muted)]">
                   {" · "}
-                  {new Date(row.created_at).toLocaleString()}
+                  {formatDateTime(row.created_at, locale, dateTimeOptions)}
                 </span>
               </li>
             ))}
@@ -94,9 +107,9 @@ const haDevices = household.householdId ? (await listHouseholdDevices(household.
       </section>
 
       <section class="card">
-        <h2 class="card-title">Export your data</h2>
-        <p class="card-subtitle mb-3">Download preferences, alert settings, history sample, and devices as JSON.</p>
-        <a class="btn-secondary" href="/api/user/export">Download export.json</a>
+        <h2 class="card-title">{t.exportTitle}</h2>
+        <p class="card-subtitle mb-3">{t.exportBody}</p>
+        <a class="btn-secondary" href="/api/user/export">{t.exportButton}</a>
       </section>
     </div>
   </ShareNav>

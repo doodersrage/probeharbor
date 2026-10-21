@@ -2,6 +2,8 @@
 import type { AlertChannelName } from "../../lib/alerts";
 import { channelLastAttemptFailed, type ChannelDelivery } from "../../lib/channelDelivery";
 import { formatRelativeAge } from "../../lib/relativeTime";
+import { fmt, getLocale, type Locale } from "../../i18n";
+import { alertSettingsMessages } from "../../i18n/messages/app/alertSettings";
 
 interface Props {
   channel: AlertChannelName;
@@ -12,17 +14,25 @@ interface Props {
 }
 
 const { channel, delivery, enabledSaved, canEdit } = Astro.props;
+const locale = getLocale(Astro);
+const t = alertSettingsMessages(locale).delivery;
+
+/** "5m ago" in English (as before); Intl relative time elsewhere. */
+function age(iso: string | null | undefined, locale: Locale): string {
+  return formatRelativeAge(iso, undefined, locale).label;
+}
+
 const failed = channelLastAttemptFailed(delivery);
 const status = failed
-  ? `Last attempt failed ${formatRelativeAge(delivery?.lastFailedAt).label}`
+  ? fmt(t.lastFailed, { age: age(delivery?.lastFailedAt, locale) })
   : delivery?.lastSentAt
-    ? `Last delivered ${formatRelativeAge(delivery.lastSentAt).label}`
-    : "No deliveries yet";
+    ? fmt(t.lastDelivered, { age: age(delivery.lastSentAt, locale) })
+    : t.none;
 ---
 <div class="channel-delivery" data-channel-delivery={channel}>
   <span
     class:list={["channel-delivery-status", failed && "is-failed"]}
-    title={delivery?.lastFailedAt && failed ? "Check the destination below, then send a test." : undefined}
+    title={delivery?.lastFailedAt && failed ? t.failedTitle : undefined}
   >
     {status}
   </span>
@@ -32,9 +42,9 @@ const status = failed
       class="btn-ghost btn-sm"
       data-channel-test={channel}
       disabled={!enabledSaved}
-      title={enabledSaved ? "Send a test to this channel only" : "Save settings with this channel on first"}
+      title={enabledSaved ? t.sendTestTitle : t.saveFirstTitle}
     >
-      Send test
+      {t.sendTest}
     </button>
   )}
   <span class="channel-delivery-result" data-channel-test-result={channel} role="status" aria-live="polite"></span>

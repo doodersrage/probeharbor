@@ -1,7 +1,7 @@
 ---
 
 import AboutArticle from "../../components/AboutArticle.astro";
-import { getLocale } from "../../i18n";
+import { fmt, getLocale } from "../../i18n";
 import { getLocalizedAboutPage } from "../../i18n/content/aboutPages";
 import { getLocalizedAboutHeroPhoto } from "../../i18n/content/aboutPhotos";
 import { esp32FreezeKitMessages } from "../../i18n/messages/about-pages/esp32-freeze-kit";
@@ -150,7 +150,7 @@ const relatedLinks = [
   <ul>
     {t.avoid.itemsHtml.map((item) => <li set:html={item} />)}
   </ul>
-  <p set:html={t.avoid.dhtNoteHtml(highTempLinkHtml)} />
+  <p set:html={fmt(t.avoid.dhtNoteHtml, { highTempLink: highTempLinkHtml })} />
 
   <h2>{t.extras.title}</h2>
   <ul>

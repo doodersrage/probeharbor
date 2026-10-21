@@ -1,3 +1,6 @@
+import { fmt, formatNumber, type Locale } from "../i18n";
+import { overviewInsightsMessages } from "../i18n/messages/app/overviewInsights";
+
 export type DoorOpenSession = {
   label: string;
   openedAt: string;
@@ -51,10 +54,14 @@ export function computeDoorOpenSessions(readings: BoolReading[]): DoorOpenSessio
   return sessions;
 }
 
-export function formatDurationMs(ms: number): string {
+export function formatDurationMs(ms: number, locale: Locale = "en"): string {
+  const t = overviewInsightsMessages(locale).duration;
+  const n = (value: number) => formatNumber(value, locale, { useGrouping: false });
   const minutes = Math.round(ms / 60000);
-  if (minutes < 60) return `${minutes} min`;
+  if (minutes < 60) return fmt(t.minutes, { count: n(minutes) });
   const hours = Math.floor(minutes / 60);
   const rem = minutes % 60;
-  return rem > 0 ? `${hours}h ${rem}m` : `${hours}h`;
+  return rem > 0
+    ? fmt(t.hoursMinutes, { hours: n(hours), minutes: n(rem) })
+    : fmt(t.hours, { hours: n(hours) });
 }

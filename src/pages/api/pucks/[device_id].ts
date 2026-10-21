@@ -2,6 +2,7 @@ import type { APIRoute } from "astro";
 import { getAuthFromRequest } from "../../../lib/auth";
 import { getOrCreateHouseholdForUser } from "../../../lib/households";
 import { getPuck } from "../../../lib/pucks";
+import { apiCommonMessages, apiLocale } from "../../../i18n/messages/app/api/common";
 
 function json(status: number, payload: Record<string, unknown>) {
   return new Response(JSON.stringify(payload), {
@@ -10,10 +11,12 @@ function json(status: number, payload: Record<string, unknown>) {
   });
 }
 
-export const GET: APIRoute = async ({ params, request, cookies }) => {
+export const GET: APIRoute = async ({ params, request, cookies, locals }) => {
+  const locale = apiLocale({ locals });
+  const tc = apiCommonMessages(locale);
   const { session, user } = await getAuthFromRequest(request, cookies);
   if (!session || !user) {
-    return json(401, { error: "Unauthorized" });
+    return json(401, { error: tc.unauthorized });
   }
 
   const deviceId = params.device_id ?? "";

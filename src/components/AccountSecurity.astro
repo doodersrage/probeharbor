@@ -1,21 +1,25 @@
 ---
 import DashboardCard from "./dashboard/DashboardCard.astro";
 import MfaEnroll from "./MfaEnroll.tsx";
+import { getLocale } from "../i18n";
+import { settingsMessages } from "../i18n/messages/app/settings";
+
+const locale = getLocale(Astro);
+const messages = settingsMessages(locale);
+const t = messages.security;
 ---
 <DashboardCard>
-  <h2 class="card-title">Security (MFA)</h2>
+  <h2 class="card-title">{t.heading}</h2>
   <p class="card-subtitle mb-3">
-    Add an authenticator app (TOTP) or register a YubiKey OTP for two-factor sign-in.
+    {t.subtitle}
   </p>
-  <MfaEnroll client:visible />
+  <MfaEnroll client:visible text={messages.mfa} locale={locale} />
 
-  <h3 class="mt-6 mb-1 text-base font-semibold">Sign out everywhere</h3>
+  <h3 class="mt-6 mb-1 text-base font-semibold">{t.signOutHeading}</h3>
   <p class="mt-0 mb-3 text-sm text-[var(--color-text-muted)]">
-    Ends every signed-in session for this account: other browsers, phones, and the desktop app, plus this one.
-    Use it after a lost phone or a shared computer. API keys and device ingest keys are separate and keep working;
-    rotate those from their own pages.
+    {t.signOutBody}
   </p>
   <form method="post" action="/api/auth/signout-everywhere">
-    <button type="submit" class="btn-secondary">Sign out on all devices</button>
+    <button type="submit" class="btn-secondary">{t.signOutSubmit}</button>
   </form>
 </DashboardCard>

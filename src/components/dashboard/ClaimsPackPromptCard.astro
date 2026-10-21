@@ -2,6 +2,8 @@
 import DashboardCard from "./DashboardCard.astro";
 import UpgradeNudge from "../UpgradeNudge.astro";
 import type { PlanTier } from "../../lib/entitlements";
+import { getLocale } from "../../i18n";
+import { overviewInsightsMessages } from "../../i18n/messages/app/overviewInsights";
 
 interface Props {
   canUseClaimsPack: boolean;
@@ -10,6 +12,7 @@ interface Props {
 }
 
 const { canUseClaimsPack, tier, show = true } = Astro.props;
+const t = overviewInsightsMessages(getLocale(Astro)).claimsPack;
 
 if (!show) {
   return null;
@@ -17,14 +20,13 @@ if (!show) {
 ---
 {canUseClaimsPack ? (
   <DashboardCard id="claims-pack-prompt">
-    <h2 class="card-title">Winter documentation</h2>
+    <h2 class="card-title">{t.title}</h2>
     <p class="card-subtitle mb-4">
-      You have saved history: generate a verifiable claims pack with freeze hours,
-      device tables, and alert timeline before you need it for insurance or a dispute.
+      {t.body}
     </p>
     <div class="flex flex-wrap gap-2">
-      <a class="btn-primary" href="/dashboard/history?tab=exports#claims-pack">Generate claims pack</a>
-      <a class="btn-secondary" href="/claims-pack">What&apos;s included</a>
+      <a class="btn-primary" href="/dashboard/history?tab=exports#claims-pack">{t.generate}</a>
+      <a class="btn-secondary" href="/claims-pack">{t.included}</a>
     </div>
   </DashboardCard>
 ) : (

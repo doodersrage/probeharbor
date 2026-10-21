@@ -31,7 +31,8 @@ import {
   resolveSiteUrl,
 } from "../lib/schemaMarkup";
 import ProductScreenshot from "../components/ProductScreenshot.astro";
-import { getLocale, localizePath } from "../i18n";
+import { fmt, getLocale, localizePath } from "../i18n";
+import { formatRetention } from "../i18n/content/planComparison/format";
 import {
   getLocalizedMarketingFaqs,
   getLocalizedMarketingFaqSchema,
@@ -78,7 +79,7 @@ function priceForInterval(
       amount: prices.annual,
       period: tb.perYear,
       sub: prices.annualMonthlyEquivalent
-        ? tb.perMonthBilledAnnually(prices.annualMonthlyEquivalent)
+        ? fmt(tb.perMonthBilledAnnually, { monthly: prices.annualMonthlyEquivalent })
         : tb.billedAnnually,
     };
   }
@@ -94,10 +95,10 @@ function savingsForInterval(
   pct: number | null,
   interval: "monthly" | "annual",
 ): string {
-  const label = pct != null && pct > 0 ? tb.percent(pct) : tb.approxTwenty;
+  const label = pct != null && pct > 0 ? fmt(tb.percent, { pct }) : tb.approxTwenty;
   return interval === "annual"
-    ? tb.saveVsMonthly(label)
-    : tb.switchToAnnual(label);
+    ? fmt(tb.saveVsMonthly, { pct: label })
+    : fmt(tb.switchToAnnual, { pct: label });
 }
 
 const memberMonthly = priceForInterval(memberPrices, "monthly");
@@ -118,7 +119,7 @@ const maxAnnualSavings = Math.max(
   portfolioPrices.annualSavingsPct ?? 0,
 );
 const annualSavingsLabel =
-  maxAnnualSavings > 0 ? tb.saveUpTo(tb.percent(maxAnnualSavings)) : tb.saveApprox;
+  maxAnnualSavings > 0 ? fmt(tb.saveUpTo, { pct: fmt(tb.percent, { pct: maxAnnualSavings }) }) : tb.saveApprox;
 const memberSavingsMonthly = savingsForInterval(memberPrices.annualSavingsPct, "monthly");
 const memberSavingsAnnual = savingsForInterval(memberPrices.annualSavingsPct, "annual");
 const proSavingsMonthly = savingsForInterval(proPrices.annualSavingsPct, "monthly");
@@ -129,14 +130,14 @@ const portfolioSavingsMonthly = portfolioPricingConfigured
 const portfolioSavingsAnnual = portfolioPricingConfigured
   ? savingsForInterval(portfolioPrices.annualSavingsPct, "annual")
   : "";
-const monthlyHint = tb.monthlyHint(
-  maxAnnualSavings > 0 ? tb.percent(maxAnnualSavings) : tb.aboutTwenty,
-  memberAnnual.amount,
-  proAnnual.amount,
-);
-const annualHint = tb.annualHint(memberMonthly.amount, proMonthly.amount);
-const proSubMonthly = tb.withTrial(proMonthly.sub);
-const proSubAnnual = tb.withTrial(proAnnual.sub);
+const monthlyHint = fmt(tb.monthlyHint, {
+  pct: maxAnnualSavings > 0 ? fmt(tb.percent, { pct: maxAnnualSavings }) : tb.aboutTwenty,
+  memberAnnual: memberAnnual.amount,
+  proAnnual: proAnnual.amount,
+});
+const annualHint = fmt(tb.annualHint, { memberMonthly: memberMonthly.amount, proMonthly: proMonthly.amount });
+const proSubMonthly = fmt(tb.withTrial, { sub: proMonthly.sub });
+const proSubAnnual = fmt(tb.withTrial, { sub: proAnnual.sub });
 
 const siteUrl = resolveSiteUrl(Astro.site);
 const pageUrl = resolvePageUrl(siteUrl, localizePath("/pricing", locale));
@@ -193,11 +194,11 @@ const schema = [
         </li>
         <li>
           <strong>Pro</strong>
-          <span>{t.ladder.pro(PRO_MAX_OWNED_HOUSEHOLDS)}</span>
+          <span>{fmt(t.ladder.pro, { properties: PRO_MAX_OWNED_HOUSEHOLDS })}</span>
         </li>
         <li>
           <strong>Portfolio</strong>
-          <span>{t.ladder.portfolio(PORTFOLIO_MAX_OWNED_HOUSEHOLDS)}</span>
+          <span>{fmt(t.ladder.portfolio, { properties: PORTFOLIO_MAX_OWNED_HOUSEHOLDS })}</span>
         </li>
       </ul>
     </section>
@@ -241,8 +242,8 @@ const schema = [
           </div>
           <p class="plan-tier-tagline">{tc.free.tagline}</p>
           <ul class="plan-tier-list">
-            <li>{tc.devices(FREE_MAX_DEVICES)}</li>
-            <li>{tc.history(FREE_HISTORY_DAYS)}</li>
+            <li>{fmt(tc.devices, { n: FREE_MAX_DEVICES })}</li>
+            <li>{fmt(tc.history, { retention: formatRetention(FREE_HISTORY_DAYS, locale) })}</li>
             <li>{tc.free.freezeLeak}</li>
             <li>{tc.free.channels}</li>
           </ul>
@@ -293,8 +294,8 @@ const schema = [
           </div>
           <p class="plan-tier-tagline">{tc.member.tagline}</p>
           <ul class="plan-tier-list">
-            <li>{tc.devices(MEMBER_MAX_DEVICES)}</li>
-            <li>{tc.history(MEMBER_HISTORY_DAYS)}</li>
+            <li>{fmt(tc.devices, { n: MEMBER_MAX_DEVICES })}</li>
+            <li>{fmt(tc.history, { retention: formatRetention(MEMBER_HISTORY_DAYS, locale) })}</li>
             <li>{tc.member.forecast}</li>
             <li>{tc.member.csv}</li>
           </ul>
@@ -349,13 +350,13 @@ const schema = [
           </div>
           <p class="plan-tier-tagline" set:html={tc.pro.taglineHtml} />
           <ul class="plan-tier-list">
-            <li>{tc.devices(PRO_MAX_DEVICES)}</li>
-            <li>{tc.historyPlus(PRO_HISTORY_DAYS)}</li>
+            <li>{fmt(tc.devices, { n: PRO_MAX_DEVICES })}</li>
+            <li>{fmt(tc.historyPlus, { retention: formatRetention(PRO_HISTORY_DAYS, locale) })}</li>
             <li>{tc.pro.forecastNws}</li>
             <li set:html={tc.pro.thermostatHtml} />
             <li set:html={tc.pro.claimsHtml} />
             <li set:html={tc.pro.automationHtml} />
-            <li>{tc.pro.properties(PRO_MAX_OWNED_HOUSEHOLDS)}</li>
+            <li>{fmt(tc.pro.properties, { n: PRO_MAX_OWNED_HOUSEHOLDS })}</li>
           </ul>
           <div class="plan-tier-footer">
             {user ? (
@@ -411,11 +412,11 @@ const schema = [
             </p>
           </div>
           <p class="plan-tier-tagline">
-            {tc.portfolio.tagline(PRO_MAX_OWNED_HOUSEHOLDS)}
+            {fmt(tc.portfolio.tagline, { proMax: PRO_MAX_OWNED_HOUSEHOLDS })}
           </p>
           <ul class="plan-tier-list">
             <li>{tc.portfolio.everythingInPro}</li>
-            <li>{tc.portfolio.properties(PORTFOLIO_MAX_OWNED_HOUSEHOLDS, PRO_MAX_OWNED_HOUSEHOLDS)}</li>
+            <li>{fmt(tc.portfolio.properties, { max: PORTFOLIO_MAX_OWNED_HOUSEHOLDS, proMax: PRO_MAX_OWNED_HOUSEHOLDS })}</li>
             <li>{tc.portfolio.crossProperty}</li>
             <li>{tc.portfolio.managers}</li>
           </ul>
@@ -470,7 +471,7 @@ const schema = [
       <p class="card-subtitle mb-4" set:html={t.matrix.subtitleHtml} />
       <p
         class="text-sm text-[var(--color-text-muted)] mb-4"
-        set:html={t.matrix.noteHtml(PRO_MAX_OWNED_HOUSEHOLDS, PORTFOLIO_MAX_OWNED_HOUSEHOLDS)}
+        set:html={fmt(t.matrix.noteHtml, { proMax: PRO_MAX_OWNED_HOUSEHOLDS, portfolioMax: PORTFOLIO_MAX_OWNED_HOUSEHOLDS })}
       />
       <PlanComparisonTable highlightTier={currentTier} />
     </section>

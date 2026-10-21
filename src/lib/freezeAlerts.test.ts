@@ -128,6 +128,24 @@ describe("helpers", () => {
     expect(mail.text).toContain("pipe-freeze-forecast?lat=37.54&lon=-77.44");
     expect(mail.text).toContain("2026-12-02 (low 26°F)");
   });
+
+  it("writes the alert in German and Spanish with every temperature in °C and °F", async () => {
+    const { ensureLocale } = await import("../i18n/catalog");
+    await ensureLocale("de", ["app"]);
+    await ensureLocale("es", ["app"]);
+    const sub = { token: "tok", place_label: "Richmond, VA", lat: 37.54, lon: -77.44 };
+    const de = buildFreezeAlertEmail(sub, night("2026-12-01", 18, "high"), [night("2026-12-02", 26, "watch")], "de");
+    expect(de.subject).toBe("Hohes Rohrfrost-Risiko heute Nacht in Richmond, VA: Tiefstwert -8°C (18°F)");
+    expect(de.text).toContain("Tiefstwert -8°C (18°F), auf oder unter der Marke von -7°C (20°F)");
+    expect(de.text).toContain("(Tiefstwert -3°C (26°F))");
+    expect(de.text).toContain("Halte das Garagentor geschlossen.");
+    expect(de.html).toContain('lang="de"');
+
+    const es = buildFreezeAlertEmail(sub, night("2026-12-01", 28, "watch"), [], "es");
+    expect(es.subject).toBe("Helada esta noche en Richmond, VA: mínima -2°C (28°F)");
+    expect(es.text).toContain("Bajo cero durante aproximadamente 6 horas, mínima -2°C (28°F).");
+    expect(es.unsubscribeUrl).toBe("https://probeharbor.dev/api/freeze-alerts/unsubscribe?token=tok");
+  });
 });
 
 describe("subscribeToFreezeAlerts", () => {

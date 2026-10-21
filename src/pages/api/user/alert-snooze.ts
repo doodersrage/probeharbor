@@ -14,6 +14,9 @@ import {
   requireHouseholdEditor,
 } from "../../../lib/householdAuth";
 import { formRedirectPath, withQuery } from "../../../lib/siteUrl";
+import { fmt, plural } from "../../../i18n";
+import { apiCommonMessages, apiLocale } from "../../../i18n/messages/app/api/common";
+import { apiUserMessages } from "../../../i18n/messages/app/api/user";
 
 const SNOOZE_MAX_HOURS = 168;
 const VACATION_MAX_DAYS = 30;
@@ -37,12 +40,14 @@ function jsonResponse(body: Record<string, unknown>, status = 200): Response {
   });
 }
 
-export const POST: APIRoute = async ({ request, cookies, redirect }) => {
+export const POST: APIRoute = async ({ request, cookies, redirect, locals }) => {
+  const locale = apiLocale({ locals });
+  const tc = apiCommonMessages(locale);
   const { session, user } = await getAuthFromRequest(request, cookies);
   const asJson = wantsJson(request);
 
   if (!session || !user) {
-    if (asJson) return jsonResponse({ error: "Unauthorized" }, 401);
+    if (asJson) return jsonResponse({ error: tc.unauthorized }, 401);
     return redirect("/signin");
   }
 
@@ -57,7 +62,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     try {
       body = (await request.json()) as typeof body;
     } catch {
-      return jsonResponse({ error: "Invalid JSON" }, 400);
+      return jsonResponse({ error: tc.invalidJson }, 400);
     }
     formData = new FormData();
     if (body.action) formData.set("action", body.action);
@@ -73,7 +78,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const editor = await requireHouseholdEditor(user.id);
   const blocked = redirectUnlessEditor(editor, redirectTo, redirect);
   if (blocked) {
-    if (asJson) return jsonResponse({ error: "Forbidden" }, 403);
+    if (asJson) return jsonResponse({ error: tc.forbidden }, 403);
     return blocked;
   }
 
@@ -96,7 +101,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
       return jsonResponse({
         ok: true,
         kind: "snooze",
-        message: `Alerts snoozed for ${hours} hours.`,
+        message: plural(apiUserMessages(locale).snooze.snoozed, hours, locale),
         hours,
       });
     }
@@ -110,17 +115,17 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     if (action === "vacation_until" || untilRaw) {
       vacationUntil = vacationUntilFromDate(untilRaw);
       if (!vacationUntil) {
-        if (asJson) return jsonResponse({ error: "Pick a future return date." }, 400);
+        if (asJson) return jsonResponse({ error: tc.pickFutureReturnDate }, 400);
         return redirect(withQuery(redirectTo, { vacation_error: "1" }));
       }
-      message = `Vacation until ${untilRaw}.`;
+      message = fmt(apiUserMessages(locale).snooze.vacationUntil, { date: untilRaw });
     } else {
       const days =
         action === "vacation_7"
           ? 7
           : Math.min(parsePositiveInt(formData.get("days")) ?? 7, VACATION_MAX_DAYS);
       vacationUntil = vacationUntilFromDays(days);
-      message = `Vacation mode for ${days} days.`;
+      message = plural(apiUserMessages(locale).snooze.vacationDays, days, locale);
     }
     await saveAlertSettingsForUser(user.id, {
       ...settings,
@@ -134,16 +139,16 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
 
   if (action === "clear_snooze") {
     await saveAlertSettingsForUser(user.id, { ...settings, snoozeUntil: null });
-    if (asJson) return jsonResponse({ ok: true, kind: "clear_snooze", message: "Snooze cleared." });
+    if (asJson) return jsonResponse({ ok: true, kind: "clear_snooze", message: apiUserMessages(locale).snooze.snoozeCleared });
     return redirect(withQuery(redirectTo, { snooze_cleared: "1" }));
   }
 
   if (action === "clear_vacation") {
     await saveAlertSettingsForUser(user.id, { ...settings, vacationUntil: null });
-    if (asJson) return jsonResponse({ ok: true, kind: "clear_vacation", message: "Vacation cleared." });
+    if (asJson) return jsonResponse({ ok: true, kind: "clear_vacation", message: apiUserMessages(locale).snooze.vacationCleared });
     return redirect(withQuery(redirectTo, { vacation_cleared: "1" }));
   }
 
-  if (asJson) return jsonResponse({ error: "Unknown action" }, 400);
+  if (asJson) return jsonResponse({ error: tc.unknownAction }, 400);
   return redirect(redirectTo);
 };

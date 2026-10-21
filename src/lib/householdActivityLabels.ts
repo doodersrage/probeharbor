@@ -1,20 +1,8 @@
-const ACTIVITY_LABELS: Record<string, string> = {
-  ingest_key_revealed: "Ingest key revealed",
-  device_transfer: "Device transferred",
-  sensor_replaced: "Sensor replaced",
-  alert_settings_saved: "Alert settings saved",
-  alert_settings_restored: "Alert settings restored",
-  share_link_created: "Share link created",
-  api_key_created: "API key created",
-  checkout_started: "Checkout started",
-  household_created: "Household created",
-  status_page_created: "Status page created",
-  status_page_revoked: "Status page revoked",
-  inbound_snooze: "Alerts snoozed (inbound)",
-  inbound_vacation: "Vacation mode (inbound)",
-};
+import type { Locale } from "../i18n/locales";
+import { householdMessages } from "../i18n/messages/app/household";
 
 /** Human-readable label for household_activity.action values. */
-export function formatHouseholdActivityAction(action: string): string {
-  return ACTIVITY_LABELS[action] ?? action.replace(/_/g, " ");
+export function formatHouseholdActivityAction(action: string, locale: Locale = "en"): string {
+  const labels: Record<string, string> = householdMessages(locale).actions;
+  return Object.hasOwn(labels, action) ? labels[action] : action.replace(/_/g, " ");
 }

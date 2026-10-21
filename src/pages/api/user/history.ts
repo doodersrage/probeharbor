@@ -9,11 +9,14 @@ import { getUserHouseholdId } from "../../../lib/households";
 import { getIndoorReferenceSensorId } from "../../../lib/indoorReference";
 import { fetchHouseChartOverlay } from "../../../lib/houseContext";
 import { listConnectionsForHousehold } from "../../../lib/thermostatConnections";
+import { apiCommonMessages, apiLocale } from "../../../i18n/messages/app/api/common";
 
-export const GET: APIRoute = async ({ request, cookies, url }) => {
+export const GET: APIRoute = async ({ request, cookies, url, locals }) => {
+  const locale = apiLocale({ locals });
+  const tc = apiCommonMessages(locale);
   const { session, user } = await getAuthFromRequest(request, cookies);
   if (!session || !user) {
-    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+    return new Response(JSON.stringify({ error: tc.unauthorized }), {
       status: 401,
       headers: { "Content-Type": "application/json" },
     });
@@ -71,7 +74,7 @@ export const GET: APIRoute = async ({ request, cookies, url }) => {
             hasThermostatConnection: connections.length > 0,
             referenceSensorId,
             filters: { from: filters.from, to: filters.to },
-          });
+          }, locale);
         })()
       : Promise.resolve(null),
   ]);

@@ -28,6 +28,13 @@ import {
 import { listHouseholdDevices } from "../../lib/devices";
 import { getTenantNotifySettings } from "../../lib/tenantRelay";
 import { listAlertSettingsHistory } from "../../lib/alertSettingsHistory";
+import { fmt, formatDateTime, getLocale } from "../../i18n";
+import { alertsMessages } from "../../i18n/messages/app/alerts";
+
+const locale = getLocale(Astro);
+const t = alertsMessages(locale);
+/** Text for a single-quoted JS string inside an onsubmit attribute. */
+const jsQuote = (text: string) => text.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
 
 const shell = Astro.locals.dashboardShell ?? null;
 const { session, user } = shell
@@ -129,38 +136,39 @@ const thresholdSensors = (devicesResult.devices ?? []).flatMap((device) =>
 const settingsHistory =
   alertsTab === "settings" && canEdit ? await listAlertSettingsHistory(user.id, 8).catch(() => []) : [];
 
-const sentChannels = formatAlertChannelsCsv(Astro.url.searchParams.get("sent"));
-const skippedChannels = formatAlertChannelsCsv(Astro.url.searchParams.get("skipped"));
+const sentChannels = formatAlertChannelsCsv(Astro.url.searchParams.get("sent"), locale);
+const skippedChannels = formatAlertChannelsCsv(Astro.url.searchParams.get("skipped"), locale);
 const testReason = Astro.url.searchParams.get("test_reason");
 
+const notices = t.notices;
 const alertNotice = Astro.url.searchParams.get("alert_saved") === "restored"
-  ? "Earlier alert settings restored. Your previous version is in Recent changes if you want it back."
+  ? notices.restored
   : Astro.url.searchParams.get("alert_saved")
   ? Astro.url.searchParams.get("channels_incomplete")
-    ? "Alert settings saved. Some enabled channels are missing a destination and will be skipped until filled in."
-    : "Alert settings saved."
+    ? notices.savedIncomplete
+    : notices.saved
   : Astro.url.searchParams.get("alert_error")
     ? Astro.url.searchParams.get("alert_error") === "invalid_webhook_url"
-      ? "One of your webhook URLs isn't a valid https:// address, or points to a private network. Fix it and save again."
+      ? notices.invalidWebhookUrl
       : Astro.url.searchParams.get("alert_error") === "weak_telegram_secret"
-        ? "Telegram webhook secret must be at least 16 characters -- it's the only thing protecting that endpoint. Use a longer random value and save again."
+        ? notices.weakTelegramSecret
         : Astro.url.searchParams.get("alert_error") === "restore_failed"
-          ? "Couldn't restore those settings. Nothing was changed."
-          : "Unable to save alert settings."
+          ? notices.restoreFailed
+          : notices.saveFailed
     : Astro.url.searchParams.get("test_sent")
       ? skippedChannels
-        ? `Test sent via ${sentChannels}. Skipped incomplete: ${skippedChannels}.`
-        : `Test alert sent via ${sentChannels || "your enabled channels"}.`
+        ? fmt(notices.testSentSkipped, { sent: sentChannels, skipped: skippedChannels })
+        : fmt(notices.testSentVia, { channels: sentChannels || notices.yourEnabledChannels })
       : Astro.url.searchParams.get("test_error")
         ? testReason === "incomplete"
-          ? "No channels could send: enable a channel and fill in its destination, then try again."
+          ? notices.testIncomplete
           : testReason === "none"
-            ? "No alert channels are enabled. Turn on at least one channel, save, then retry."
-            : "Could not send test alert. Check channel settings and try again."
+            ? notices.testNoChannels
+            : notices.testFailed
         : Astro.url.searchParams.get("ack_ok")
-          ? Astro.url.searchParams.get("ack_msg") ?? "Alert marked as handled."
+          ? Astro.url.searchParams.get("ack_msg") ?? notices.ackOk
           : Astro.url.searchParams.get("ack_error")
-            ? Astro.url.searchParams.get("ack_msg") ?? "Could not acknowledge alert."
+            ? Astro.url.searchParams.get("ack_msg") ?? notices.ackError
             : null;
 
 const alertNoticeIsError =
@@ -181,7 +189,7 @@ const lastAlertCandidates = [
 ].filter(Boolean) as string[];
 const lastAlertAt =
   lastAlertCandidates.sort((a, b) => Date.parse(b) - Date.parse(a))[0] ?? null;
-const lastAlertAge = formatRelativeAge(lastAlertAt);
+const lastAlertAge = formatRelativeAge(lastAlertAt, undefined, locale);
 // Test sends don't set cooldown timestamps; fall back to the alert log.
 const hasSentAnyAlert =
   Boolean(
@@ -231,18 +239,18 @@ const referralRewardDays = Number(
 );
 ---
 <DashboardLayout
-  title="Alerts"
-  subtitle="What fired and who was told. Settings decides when to alert and how."
+  title={t.page.title}
+  subtitle={t.page.subtitle}
 >
   <ProductAnalyticsTracker events={analyticsEvents} />
   <div class="space-y-6">
     <DashboardTabNav
       tabs={[
-        { id: "activity", label: unackedAlertCount > 0 ? `Activity (${unackedAlertCount})` : "Activity", href: "/dashboard/alerts?tab=activity" },
-        { id: "settings", label: "Settings", href: "/dashboard/alerts?tab=settings" },
+        { id: "activity", label: unackedAlertCount > 0 ? fmt(t.page.tabActivityCount, { count: unackedAlertCount }) : t.page.tabActivity, href: "/dashboard/alerts?tab=activity" },
+        { id: "settings", label: t.page.tabSettings, href: "/dashboard/alerts?tab=settings" },
       ]}
       activeId={alertsTab}
-      ariaLabel="Alert sections"
+      ariaLabel={t.page.tabsLabel}
     />
 
     {alertNotice && (
@@ -254,39 +262,39 @@ const referralRewardDays = Number(
     {alertsTab === "activity" ? (
       <>
         <p class="mt-0 mb-0 text-sm text-[var(--color-text-muted)]">
-          Status: <strong>{alertSettings.enabled ? "On" : "Off"}</strong>
+          {t.status.label} <strong>{alertSettings.enabled ? t.status.on : t.status.off}</strong>
           {lastAlertAt ? (
             <>
-              {" · "}Last alert {lastAlertAge.label}
+              {" · "}{fmt(t.status.lastAlert, { age: lastAlertAge.label })}
               {lastAlertAge.absolute ? ` (${lastAlertAge.absolute})` : ""}
             </>
           ) : (
-            <> · No alerts sent yet</>
+            <> · {t.status.noAlertsYet}</>
           )}
         </p>
         <section class="card">
-          <h2 class="card-title">Recent alert activity</h2>
-          <p class="card-subtitle mb-4">Audit trail of delivered and skipped channels.</p>
+          <h2 class="card-title">{t.activity.heading}</h2>
+          <p class="card-subtitle mb-4">{t.activity.subtitle}</p>
           <form class="mb-4 flex flex-wrap items-end gap-3" method="get" action="/dashboard/alerts">
             <input type="hidden" name="tab" value="activity" />
             <div class="form-field mb-0">
-              <label class="form-label" for="activity_kind">Kind</label>
+              <label class="form-label" for="activity_kind">{t.activity.kindLabel}</label>
               <select class="form-input" id="activity_kind" name="activity_kind">
-                <option value="" selected={!activityKind}>All</option>
-                <option value="freeze" selected={activityKind === "freeze"}>Freeze</option>
-                <option value="flood" selected={activityKind === "flood"}>Flood</option>
-                <option value="forecast" selected={activityKind === "forecast"}>Forecast</option>
-                <option value="threshold" selected={activityKind === "threshold"}>Threshold</option>
-                <option value="test" selected={activityKind === "test"}>Test</option>
+                <option value="" selected={!activityKind}>{t.activity.kinds.all}</option>
+                <option value="freeze" selected={activityKind === "freeze"}>{t.activity.kinds.freeze}</option>
+                <option value="flood" selected={activityKind === "flood"}>{t.activity.kinds.flood}</option>
+                <option value="forecast" selected={activityKind === "forecast"}>{t.activity.kinds.forecast}</option>
+                <option value="threshold" selected={activityKind === "threshold"}>{t.activity.kinds.threshold}</option>
+                <option value="test" selected={activityKind === "test"}>{t.activity.kinds.test}</option>
               </select>
             </div>
             <label class="checkbox-row mb-0">
               <input type="checkbox" name="activity_unacked" value="1" checked={activityUnacked} />
-              <span>Unhandled only</span>
+              <span>{t.activity.unhandledOnly}</span>
             </label>
-            <button type="submit" class="btn-secondary btn-sm">Filter</button>
+            <button type="submit" class="btn-secondary btn-sm">{t.activity.filter}</button>
             {(activityKind || activityUnacked || activityPage > 1) && (
-              <a class="btn-ghost btn-sm" href="/dashboard/alerts?tab=activity#recent-alert-activity">Clear</a>
+              <a class="btn-ghost btn-sm" href="/dashboard/alerts?tab=activity#recent-alert-activity">{t.activity.clear}</a>
             )}
           </form>
           {canEdit && unackedAlertCount > 1 && (
@@ -294,12 +302,12 @@ const referralRewardDays = Number(
               class="mb-4"
               action="/api/user/alert-events/ack"
               method="post"
-              onsubmit={`return confirm('Mark all ${unackedAlertCount} unhandled alerts as handled?');`}
+              onsubmit={`return confirm('${jsQuote(fmt(t.activity.confirmAckAll, { count: unackedAlertCount }))}');`}
             >
               <input type="hidden" name="action" value="ack_all" />
               <input type="hidden" name="redirect" value="/dashboard/alerts?tab=activity" />
               <button type="submit" class="btn-secondary btn-sm">
-                Mark all {unackedAlertCount} handled
+                {fmt(t.activity.markAllHandled, { count: unackedAlertCount })}
               </button>
             </form>
           )}
@@ -315,10 +323,10 @@ const referralRewardDays = Number(
           {(activityPage > 1 || activityHasMore) && (
             <div class="mt-4 flex flex-wrap gap-2">
               {activityPage > 1 && (
-                <a class="btn-ghost btn-sm" href={activityQuery(activityPage - 1)}>Newer</a>
+                <a class="btn-ghost btn-sm" href={activityQuery(activityPage - 1)}>{t.activity.newer}</a>
               )}
               {activityHasMore && (
-                <a class="btn-secondary btn-sm" href={activityQuery(activityPage + 1)}>Older</a>
+                <a class="btn-secondary btn-sm" href={activityQuery(activityPage + 1)}>{t.activity.older}</a>
               )}
             </div>
           )}
@@ -332,12 +340,12 @@ const referralRewardDays = Number(
           ),
         ) && (
           <section class="card">
-            <h2 class="card-title">Need evidence for a claim?</h2>
+            <h2 class="card-title">{t.claims.heading}</h2>
             <p class="card-subtitle mb-4">
-              After a real freeze or leak event, export a dated summary with matching readings from History.
+              {t.claims.body}
             </p>
             <a class="btn-secondary" href="/dashboard/history?tab=exports#claims-pack">
-              {entitlements.canUseClaimsPack ? "Open claims pack" : "See claims pack (Pro)"}
+              {entitlements.canUseClaimsPack ? t.claims.open : t.claims.seePro}
             </a>
           </section>
         )}
@@ -346,21 +354,21 @@ const referralRewardDays = Number(
       <>
         {testSent && (
           <section class="card alert-success">
-            <h2 class="card-title">Alerts are working</h2>
+            <h2 class="card-title">{t.testSent.heading}</h2>
             <p class="card-subtitle mb-4">
-              Delivery path confirmed. A few useful next steps while you’re here:
+              {t.testSent.body}
             </p>
             <div class="flex flex-wrap gap-3 mb-0">
               {entitlements.canCreateShareLinks || entitlements.canCreateFamilyShareLink ? (
-                <a class="btn-primary" href="/dashboard/share/links">Share a live link with family</a>
+                <a class="btn-primary" href="/dashboard/share/links">{t.testSent.shareFamily}</a>
               ) : (
-                <a class="btn-primary" href="/dashboard/share/links">Share links</a>
+                <a class="btn-primary" href="/dashboard/share/links">{t.testSent.shareLinks}</a>
               )}
               <a class="btn-secondary" href="/dashboard/history?tab=exports#claims-pack">
-                {entitlements.canUseClaimsPack ? "Download claims pack" : "Claims evidence pack"}
+                {entitlements.canUseClaimsPack ? t.testSent.downloadClaims : t.testSent.claimsEvidence}
               </a>
               {needsPro && (
-                <a class="btn-ghost" href="/dashboard/plans">Compare plans</a>
+                <a class="btn-ghost" href="/dashboard/plans">{t.testSent.comparePlans}</a>
               )}
             </div>
           </section>
@@ -386,11 +394,11 @@ const referralRewardDays = Number(
 
         {canEdit && (
           <section class="card" id="send-test-alert">
-            <h2 class="card-title">Send a test alert</h2>
+            <h2 class="card-title">{t.testCard.heading}</h2>
             <p class="card-subtitle mb-4">
               {lastAlertAt || testSent
-                ? "Fires a sample message to every channel you currently have enabled. Save settings first if you just changed them."
-                : "Confirm delivery once before you rely on freeze warnings. Turn on at least one channel above, save, then send."}
+                ? t.testCard.bodyRepeat
+                : t.testCard.bodyFirst}
             </p>
             <form action="/api/user/alert-test" method="post">
               <input type="hidden" name="redirect" value="/dashboard/alerts?tab=settings" />
@@ -398,7 +406,7 @@ const referralRewardDays = Number(
                 class:list={lastAlertAt || testSent ? "btn-secondary" : "btn-primary"}
                 type="submit"
               >
-                Send test now
+                {t.testCard.sendNow}
               </button>
             </form>
           </section>
@@ -406,17 +414,16 @@ const referralRewardDays = Number(
 
         {settingsHistory.length > 0 && (
           <section class="card" id="alert-settings-history">
-            <h2 class="card-title">Recent changes</h2>
+            <h2 class="card-title">{t.history.heading}</h2>
             <p class="card-subtitle mb-3">
-              Each save, newest first. Restore puts settings back to how they were just before that save; your
-              current version is kept here too.
+              {t.history.body}
             </p>
             <ul class="alert-history-list">
               {settingsHistory.map((entry, index) => (
                 <li class="alert-history-row">
                   <div>
                     <p class="m-0 text-sm font-medium">
-                      {new Date(entry.savedAt).toLocaleString("en-US", {
+                      {formatDateTime(entry.savedAt, locale, {
                         month: "short",
                         day: "numeric",
                         hour: "numeric",
@@ -429,12 +436,12 @@ const referralRewardDays = Number(
                   <form
                     action="/api/user/alert-settings-restore"
                     method="post"
-                    onsubmit={index === 0 ? "return confirm('Undo your last alert settings change?');" : "return confirm('Put alert settings back to how they were before this change? Later changes are undone too.');"}
+                    onsubmit={`return confirm('${jsQuote(index === 0 ? t.history.confirmUndo : t.history.confirmRestore)}');`}
                   >
                     <input type="hidden" name="history_id" value={String(entry.id)} />
                     <input type="hidden" name="redirect" value="/dashboard/alerts?tab=settings" />
                     <button type="submit" class="btn-ghost btn-sm">
-                      {index === 0 ? "Undo" : "Restore to before this"}
+                      {index === 0 ? t.history.undo : t.history.restoreBefore}
                     </button>
                   </form>
                 </li>

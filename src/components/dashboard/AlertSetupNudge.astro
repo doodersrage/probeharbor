@@ -1,4 +1,7 @@
 ---
+import { getLocale } from "../../i18n";
+import { overviewNudgesMessages } from "../../i18n/messages/app/overview/nudges";
+
 interface Props {
   hasAlertsEnabled: boolean;
   hasEmailAlerts: boolean;
@@ -13,29 +16,31 @@ if (!show || !canEdit || (hasAlertsEnabled && hasEmailAlerts)) {
 }
 
 const step = !hasAlertsEnabled ? "threshold" : "email";
+const t = overviewNudgesMessages(getLocale(Astro));
+const ta = t.alertSetup;
 ---
 <aside class="card alert-setup-nudge" data-nudge-key="alert_setup_nudge" role="note">
   <div class="alert-setup-nudge-body">
-    <p class="alert-setup-nudge-title">Finish alert setup</p>
+    <p class="alert-setup-nudge-title">{ta.title}</p>
     {step === "threshold" ? (
       <p class="alert-setup-nudge-text">
-        Alerts are off or missing a freeze threshold. Set one before cold weather hits so you get warned in time.
+        {ta.thresholdText}
       </p>
     ) : (
       <p class="alert-setup-nudge-text">
-        Alerts are on but email is not configured. Enable the email channel and save so freeze warnings reach your inbox.
+        {ta.emailText}
       </p>
     )}
   </div>
   <div class="alert-setup-nudge-actions">
     {step === "threshold" ? (
-      <a class="btn-primary" href="/dashboard/alerts?tab=settings#alert-section-essentials">Set freeze + email</a>
+      <a class="btn-primary" href="/dashboard/alerts?tab=settings#alert-section-essentials">{ta.setFreezeEmail}</a>
     ) : (
-      <a class="btn-primary" href="/dashboard/alerts?tab=settings#alert-section-channels">Enable email alerts</a>
+      <a class="btn-primary" href="/dashboard/alerts?tab=settings#alert-section-channels">{ta.enableEmail}</a>
     )}
-    <a class="btn-secondary" href="/dashboard/alerts?tab=settings">Open alerts</a>
+    <a class="btn-secondary" href="/dashboard/alerts?tab=settings">{t.openAlerts}</a>
     <button type="button" class="btn-ghost" data-dismiss="alert_setup_nudge">
-      Dismiss
+      {t.dismiss}
     </button>
   </div>
 </aside>

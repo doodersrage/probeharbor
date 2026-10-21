@@ -27,7 +27,7 @@ import {
   OG_IMAGE_WIDTH,
   resolveOgImagePath,
 } from "../lib/ogMeta";
-import { getLocale, LOCALE_META, LOCALES, localizePath } from "../i18n";
+import { fmt, getLocale, LOCALE_META, LOCALES, localizePath } from "../i18n";
 import { getAlternatePaths, isLocalizablePath } from "../i18n/routes";
 import { layoutMessages } from "../i18n/messages/layout";
 import { brandMessages } from "../i18n/messages/brand";
@@ -91,9 +91,11 @@ const metaDescription =
 const siteUrl = resolveSiteUrl(Astro.site);
 // Middleware strips the locale prefix, so this is always the English path.
 const currentPath = Astro.url.pathname;
-const pageUrl = resolvePageUrl(siteUrl, localizePath(currentPath, locale));
+// Only marketing and sign-in pages have /es-style URLs; the dashboard keeps one URL per page.
+const hasLocaleUrls = isLocalizablePath(currentPath);
+const pageUrl = resolvePageUrl(siteUrl, hasLocaleUrls ? localizePath(currentPath, locale) : currentPath);
 const alternates = getAlternatePaths(currentPath);
-const languageLinks = isLocalizablePath(currentPath)
+const languageLinks = hasLocaleUrls
   ? LOCALES.map((l) => ({ locale: l, href: localizePath(currentPath, l), label: LOCALE_META[l].label }))
   : LOCALES.map((l) => ({ locale: l, href: localizePath("/", l), label: LOCALE_META[l].label }));
 const resolvedOgPath = ogImage ?? resolveOgImagePath(currentPath);
@@ -161,7 +163,7 @@ const registerServiceWorker =
   currentPath.startsWith("/dashboard") || currentPath.startsWith("/signin");
 ---
 <!doctype html>
-<html lang={localeMeta.htmlLang} data-theme={resolvedTheme}>
+<html lang={localeMeta.htmlLang} data-intl={localeMeta.intl} data-theme={resolvedTheme}>
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width" />
@@ -380,25 +382,47 @@ const registerServiceWorker =
 						</div>
 						<nav class="site-footer-languages" aria-label={t.footer.language}>
 							<span class="site-footer-heading">{t.footer.language}</span>
-							<ul>
-								{languageLinks.map((link) => (
-									<li>
-										<a
-											href={link.href}
-											hreflang={LOCALE_META[link.locale].hreflang}
-											lang={LOCALE_META[link.locale].htmlLang}
-											data-locale-switch
-											aria-current={link.locale === locale ? "true" : undefined}
-										>
-											{link.label}
-										</a>
-									</li>
-								))}
-							</ul>
+							{hasLocaleUrls ? (
+								<ul>
+									{languageLinks.map((link) => (
+										<li>
+											<a
+												href={link.href}
+												hreflang={LOCALE_META[link.locale].hreflang}
+												lang={LOCALE_META[link.locale].htmlLang}
+												data-locale-switch
+												aria-current={link.locale === locale ? "true" : undefined}
+											>
+												{link.label}
+											</a>
+										</li>
+									))}
+								</ul>
+							) : (
+								// Dashboard and other single-URL pages: save the choice (account + cookie).
+								<form method="post" action="/api/locale" class="site-footer-language-form">
+									<input type="hidden" name="redirect" value={`${currentPath}${Astro.url.search}`} />
+									<ul>
+										{LOCALES.map((l) => (
+											<li>
+												<button
+													type="submit"
+													name="locale"
+													value={l}
+													lang={LOCALE_META[l].htmlLang}
+													aria-current={l === locale ? "true" : undefined}
+												>
+													{LOCALE_META[l].label}
+												</button>
+											</li>
+										))}
+									</ul>
+								</form>
+							)}
 							{locale !== "en" && <p class="site-footer-copy">{t.footer.englishOnlyNote}</p>}
 						</nav>
 						<p class="site-footer-legal">
-							{t.footer.copyright(currentYear)}
+							{fmt(t.footer.copyright, { year: currentYear })}
 							{" · "}
 							<a href="/privacy">{t.footer.links.privacy}</a>
 							{" · "}

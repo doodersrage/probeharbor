@@ -1,14 +1,10 @@
-import { FREEZE_MAP_SAMPLE_FLOOR } from "../../../../lib/freezeMapSeed";
-import { brandMessages } from "../../../messages/brand";
 import type { MarketingFaqOverlay } from "../index";
-
-const brand = brandMessages("de");
 
 export default {
   home: [
     {
       question: "Was ist ProbeHarbor?",
-      answer: `${brand.description} Du baust mit ESP32, Pico W oder Arduino; ProbeHarbor übernimmt das gehostete Dashboard, den Verlauf und die Alarme für deinen Haushalt.`,
+      answer: `ProbeHarbor ist Open-Source-Frost- und Wasserüberwachung für Garagen, Werkstätten und Dachböden: ESP/Arduino-Anbindung, Live-Kurven und Alarme. Du baust mit ESP32, Pico W oder Arduino; ProbeHarbor übernimmt das gehostete Dashboard, den Verlauf und die Alarme für deinen Haushalt.`,
     },
     {
       question: "Wie verbinde ich ESP32-, Pico-W- oder Arduino-Sensoren?",
@@ -81,7 +77,7 @@ export default {
   pricing: [
     {
       question: "Was ist im Free-Tarif enthalten?",
-      answer: `Live-Messwerte für Temperatur, Luftfeuchtigkeit, Luftqualität, Türen, Wasser, Energie und Bewegung in ${brand.spaces}; 7 Tage Verlauf; Schwellenalarme für Frost und Wasser plus eine Time-to-Freeze-Uhr; E-Mail und Chat-Kanäle; eine begrenzte Anzahl an Geräten; ein Live-Freigabelink für die Familie; und Haushaltsfreigabe, damit deine Familie dieselben Sensoren im Blick hat.`,
+      answer: `Live-Messwerte für Temperatur, Luftfeuchtigkeit, Luftqualität, Türen, Wasser, Energie und Bewegung in Garagen, Werkstätten, Dachböden, Kriechkeller und Hallen; 7 Tage Verlauf; Schwellenalarme für Frost und Wasser plus eine Time-to-Freeze-Uhr; E-Mail und Chat-Kanäle; eine begrenzte Anzahl an Geräten; ein Live-Freigabelink für die Familie; und Haushaltsfreigabe, damit deine Familie dieselben Sensoren im Blick hat.`,
     },
     {
       question: "Wann lohnt sich ein Upgrade auf Member oder Pro?",
@@ -122,7 +118,7 @@ export default {
     },
     {
       question: "Wie schneidet ProbeHarbor im Vergleich zu Govee oder SmartThings ab?",
-      answer: `Govee und SmartThings sind allgemeine Verbraucher- und Smart-Home-Apps. ProbeHarbor ist gezielt für ${brand.spaces} gebaut: ESP/Arduino- oder JSON-Ingest, Frost-Abläufe, Luftqualität, Türen, Wasser, Energie und CSV-Verlauf statt eines Sammel-Dashboards für alle möglichen Geräte.`,
+      answer: `Govee und SmartThings sind allgemeine Verbraucher- und Smart-Home-Apps. ProbeHarbor ist gezielt für Garagen, Werkstätten, Dachböden, Kriechkeller und Hallen gebaut: ESP/Arduino- oder JSON-Ingest, Frost-Abläufe, Luftqualität, Türen, Wasser, Energie und CSV-Verlauf statt eines Sammel-Dashboards für alle möglichen Geräte.`,
     },
     {
       question: "Braucht mein Arduino eine öffentliche IP-Adresse?",
@@ -146,7 +142,7 @@ export default {
     },
     {
       question: "Ich habe schon Govee oder ein Tempest – brauche ich das trotzdem?",
-      answer: `Govee ist ein Raumsensor für Verbraucher, Tempest eine Außenwetterstation. ProbeHarbor überwacht Fühlerkurven in ${brand.spaces} auf Hardware, die du selbst kontrollierst. Beides lässt sich kombinieren: Auf den Vergleichsseiten zu Govee und Tempest erfährst du, wann welches Werkzeug besser passt.`,
+      answer: `Govee ist ein Raumsensor für Verbraucher, Tempest eine Außenwetterstation. ProbeHarbor überwacht Fühlerkurven in Garagen, Werkstätten, Dachböden, Kriechkeller und Hallen auf Hardware, die du selbst kontrollierst. Beides lässt sich kombinieren: Auf den Vergleichsseiten zu Govee und Tempest erfährst du, wann welches Werkzeug besser passt.`,
     },
   ],
   "freeze-map": [
@@ -167,7 +163,7 @@ export default {
     },
     {
       question: "Wie viele Haushalte braucht es, bis meine Stadt echte Daten zeigt?",
-      answer: `Eine Stadt erscheint auf der Standardkarte, sobald mindestens ${FREEZE_MAP_SAMPLE_FLOOR} teilnehmende Haushalte mit einem aktiven Temperaturfühler im selben Snapshot-Zeitfenster beitragen. Städte mit zu wenigen Daten (unter dieser Grenze) sind standardmäßig ausgeblendet, lassen sich aber über den Schalter für dünn besetzte Städte einblenden. Solange noch keine Stadt die Grenze erreicht, zeigt die Seite eine klar gekennzeichnete Beispielvorschau.`,
+      answer: `Eine Stadt erscheint auf der Standardkarte, sobald mindestens 3 teilnehmende Haushalte mit einem aktiven Temperaturfühler im selben Snapshot-Zeitfenster beitragen. Städte mit zu wenigen Daten (unter dieser Grenze) sind standardmäßig ausgeblendet, lassen sich aber über den Schalter für dünn besetzte Städte einblenden. Solange noch keine Stadt die Grenze erreicht, zeigt die Seite eine klar gekennzeichnete Beispielvorschau.`,
     },
     {
       question: "Ich habe nur einen Fühler – zählt das?",

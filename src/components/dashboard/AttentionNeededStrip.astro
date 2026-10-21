@@ -1,4 +1,7 @@
 ---
+import { fmt, getLocale, LOCALE_META } from "../../i18n";
+import { overviewInsightsMessages } from "../../i18n/messages/app/overviewInsights";
+
 interface Props {
   count: number;
   quietActive?: boolean;
@@ -11,11 +14,14 @@ interface Props {
   showGrowthDismiss?: boolean;
 }
 
+const locale = getLocale(Astro);
+const t = overviewInsightsMessages(locale).attention;
+
 const {
   count,
   quietActive = false,
   quietUntil = null,
-  title = "Attention needed",
+  title = t.title,
   storageKey = "tt-attention-collapsed",
   defaultOpen = false,
   showQuietControls = true,
@@ -24,10 +30,12 @@ const {
 
 const quietLabel =
   quietActive && quietUntil
-    ? `Quiet until ${new Date(quietUntil).toLocaleDateString(undefined, {
-        month: "short",
-        day: "numeric",
-      })}`
+    ? fmt(t.quietUntil, {
+        date: new Date(quietUntil).toLocaleDateString(locale === "en" ? undefined : LOCALE_META[locale].intl, {
+          month: "short",
+          day: "numeric",
+        }),
+      })
     : null;
 ---
 
@@ -56,7 +64,7 @@ const quietLabel =
         </div>
       ) : (
         <p class="mb-0 text-sm text-[var(--color-text-muted)]">
-          Recommendations quieted. Critical alerts still show above.
+          {t.quieted}
         </p>
       )}
       {showQuietControls && (
@@ -66,21 +74,21 @@ const quietLabel =
               <input type="hidden" name="redirect" value="/dashboard" />
               <input type="hidden" name="action" value="clear" />
               <button type="submit" class="btn-ghost btn-sm">
-                {quietLabel ?? "End quiet"}
+                {quietLabel ?? t.endQuiet}
               </button>
             </form>
           ) : (
             <form action="/api/user/dashboard-quiet" method="post">
               <input type="hidden" name="redirect" value="/dashboard" />
               <input type="hidden" name="action" value="quiet_7d" />
-              <button type="submit" class="btn-ghost btn-sm">Hide tips 7d</button>
+              <button type="submit" class="btn-ghost btn-sm">{t.hideTips}</button>
             </form>
           )}
           {showGrowthDismiss && (
             <form action="/api/user/dashboard-growth-tips" method="post">
               <input type="hidden" name="redirect" value="/dashboard" />
               <input type="hidden" name="action" value="dismiss" />
-              <button type="submit" class="btn-ghost btn-sm">Hide companion tips</button>
+              <button type="submit" class="btn-ghost btn-sm">{t.hideCompanionTips}</button>
             </form>
           )}
         </div>

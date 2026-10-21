@@ -20,6 +20,22 @@ import {
   type FloodAlertReading,
 } from "./alerts";
 import { autoResolveAlerts, listRecentAlertEvents, type AutoResolveResult } from "./alertEvents";
+import type { Locale } from "../i18n/locales";
+import { ensureLocale } from "../i18n/catalog";
+import { fmt, plural } from "../i18n/format";
+import { localeFromMetadata } from "../i18n/userLocale";
+import { alertMessages } from "../i18n/messages/app/alertMessages";
+import { alertNumber } from "./alerts";
+
+/**
+ * Alert text in the recipient's language. Alerts can be triggered by ingest
+ * requests (English request locale), so load the user's tables first; cheap
+ * after the first call per isolate, and English needs nothing.
+ */
+async function alertText(locale: Locale) {
+  await ensureLocale(locale, ["app"]);
+  return alertMessages(locale);
+}
 
 const RECOVERY_MARGIN_F = 2;
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -45,6 +61,7 @@ async function resolveAndAnnounceRecovery(
   settings: AlertSettings,
   kind: "threshold" | "flood" | "outage" | "stuck" | "power",
   notice: { title: string; body: string },
+  locale: Locale = "en",
 ): Promise<void> {
   const { resolved, channels } = await safeAutoResolve(userId, { kinds: [kind], reason: "recovered" });
   if (resolved === 0 || channels.length === 0) return;
@@ -55,6 +72,7 @@ async function resolveAndAnnounceRecovery(
       settings,
       { ...notice, kind: "recovery", meta: { recoveredKind: kind } },
       { channelFilter: channels as AlertChannelName[] },
+      locale,
     );
   } catch (error) {
     console.error("recovery notice failed:", error);
@@ -62,11 +80,17 @@ async function resolveAndAnnounceRecovery(
 }
 
 /** "Back to normal: Garage pipe 38.2°F, Attic 41.0°F (freeze line 32°F). …" */
-export function formatFreezeRecoveryBody(settings: AlertSettings, readings: AlertReading[]): string {
-  const closed = "The alert is closed; nothing to do.";
-  if (readings.length === 0) return `Back to normal. ${closed}`;
-  const temps = readings.map((reading) => `${reading.label} ${reading.tempf.toFixed(1)}°F`).join(", ");
-  return `Back to normal: ${temps} (freeze line ${settings.freezeThresholdF}°F). ${closed}`;
+export function formatFreezeRecoveryBody(
+  settings: AlertSettings,
+  readings: AlertReading[],
+  locale: Locale = "en",
+): string {
+  const t = alertMessages(locale).recovery;
+  if (readings.length === 0) return t.freezeBodyEmpty;
+  const temps = readings
+    .map((reading) => fmt(t.freezeTemp, { label: reading.label, temp: alertNumber(reading.tempf, locale, 1) }))
+    .join(", ");
+  return fmt(t.freezeBody, { temps, threshold: alertNumber(settings.freezeThresholdF, locale) });
 }
 import { freezeThresholdForReading, readingIncludedInThresholdAlerts } from "./thresholdSensorScope";
 import { evaluateAlertRules, explainAlertRules, type RuleEvalContext, type RuleExplanation } from "./alertRules";
@@ -207,8 +231,10 @@ export async function sendThresholdAlertsIfNeeded(
     weatherCityId?: string | null;
     latestSensors?: import("./sensorReadings").LatestSensorRow[];
   },
+  locale: Locale = "en",
 ): Promise<void> {
   if (!settings.enabled || readings.length === 0) return;
+  const t = await alertText(locale);
 
   let dwellSamplesBySensorId: Record<string, Array<{ at: string; tempF: number }>> =
     {};
@@ -233,8 +259,8 @@ export async function sendThresholdAlertsIfNeeded(
   }
 
   const details = evaluateAlertDetails(settings, readings, { dwellSamplesBySensorId });
-  const messages = details.map(formatThresholdAlertDetail);
-  const title = thresholdAlertTitle(details);
+  const messages = details.map((detail) => formatThresholdAlertDetail(detail, locale));
+  const title = thresholdAlertTitle(details, locale);
   const inScope = readings.filter((reading) =>
     readingIncludedInThresholdAlerts(settings.thresholdSensorScope, reading),
   );
@@ -242,10 +268,14 @@ export async function sendThresholdAlertsIfNeeded(
     details.length === 0 &&
     inScope.every((reading) => reading.tempf >= freezeThresholdForReading(settings, reading) + RECOVERY_MARGIN_F);
   if (recovered) {
-    await resolveAndAnnounceRecovery(userId, email, settings, "threshold", {
-      title: "Recovered: temperatures are back to normal",
-      body: formatFreezeRecoveryBody(settings, inScope),
-    });
+    await resolveAndAnnounceRecovery(
+      userId,
+      email,
+      settings,
+      "threshold",
+      { title: t.recovery.freezeTitle, body: formatFreezeRecoveryBody(settings, inScope, locale) },
+      locale,
+    );
   }
   if (messages.length > 0 && settings.escalationEnabled && settings.channelSms) {
     const lastAlert = settings.lastAlertSentAt
@@ -268,11 +298,12 @@ export async function sendThresholdAlertsIfNeeded(
         email,
         settings,
         {
-          title: `Escalated: ${title}`,
+          title: fmt(t.threshold.escalated, { title }),
           body: messages.join("\n"),
           kind: "threshold",
         },
         { smsOnly: true },
+        locale,
       );
       await markEscalation(userId);
     }
@@ -303,7 +334,7 @@ export async function sendThresholdAlertsIfNeeded(
     coldestTempF: coldest.tempf,
     coldestSensorId: coldest.sensorId ?? null,
     latestSensors: context?.latestSensors,
-  }).catch(() => null);
+  }, locale).catch(() => null);
 
   const baseMessages = messages.join("\n");
   const body = contextBlock ? `${baseMessages}\n\n${contextBlock}` : baseMessages;
@@ -325,7 +356,7 @@ export async function sendThresholdAlertsIfNeeded(
       doorOpen,
       reasonSummary: contextBlock ?? undefined,
     },
-  }, { space: alertSpace });
+  }, { space: alertSpace }, locale);
   const failedEverywhere =
     delivery.sent.length === 0 &&
     !delivery.skipped.some((reason) => INTENTIONAL_SKIPS.has(reason));
@@ -342,17 +373,23 @@ export async function sendFloodAlertsIfNeeded(
   email: string | null | undefined,
   settings: AlertSettings,
   wetSensors: FloodAlertReading[],
+  locale: Locale = "en",
 ): Promise<void> {
+  const t = await alertText(locale);
   if (settings.enabled && wetSensors.length === 0) {
-    await resolveAndAnnounceRecovery(userId, email, settings, "flood", {
-      title: "Recovered: leak sensors are dry",
-      body: "No leak sensor reads wet anymore. The alert is closed; check the spot once to be sure.",
-    });
+    await resolveAndAnnounceRecovery(
+      userId,
+      email,
+      settings,
+      "flood",
+      { title: t.recovery.floodTitle, body: t.recovery.floodBody },
+      locale,
+    );
   }
   if (!settings.enabled || wetSensors.length === 0) return;
   if (isAlertCooldownActive(settings.lastFloodAlertAt)) return;
 
-  const messages = evaluateFloodAlerts(settings, wetSensors);
+  const messages = evaluateFloodAlerts(settings, wetSensors, locale);
   if (messages.length === 0) return;
 
   const alertSpace = wetSensors.find((sensor) => sensor.space)?.space ?? null;
@@ -361,11 +398,12 @@ export async function sendFloodAlertsIfNeeded(
     email,
     settings,
     {
-      title: "Flood / leak alert",
+      title: t.flood.title,
       body: messages.join("\n"),
       kind: "flood",
     },
     { space: alertSpace },
+    locale,
   );
   await markCooldown(userId, "last_flood_alert_at");
 }
@@ -375,17 +413,23 @@ export async function sendPowerAlertsIfNeeded(
   email: string | null | undefined,
   settings: AlertSettings,
   offSensors: FloodAlertReading[],
+  locale: Locale = "en",
 ): Promise<void> {
+  const t = await alertText(locale);
   if (settings.enabled && offSensors.length === 0) {
-    await resolveAndAnnounceRecovery(userId, email, settings, "power", {
-      title: "Recovered: power is back",
-      body: "Every power sensor reads on again. The alert is closed; check that heaters and pumps restarted.",
-    });
+    await resolveAndAnnounceRecovery(
+      userId,
+      email,
+      settings,
+      "power",
+      { title: t.recovery.powerTitle, body: t.recovery.powerBody },
+      locale,
+    );
   }
   if (!settings.enabled || !settings.powerAlertsEnabled || offSensors.length === 0) return;
   if (isAlertCooldownActive(settings.lastPowerAlertAt)) return;
 
-  const messages = evaluatePowerAlerts(settings, offSensors);
+  const messages = evaluatePowerAlerts(settings, offSensors, locale);
   if (messages.length === 0) return;
   const alertSpace = offSensors.find((sensor) => sensor.space)?.space ?? null;
   await notifyUser(
@@ -393,11 +437,12 @@ export async function sendPowerAlertsIfNeeded(
     email,
     settings,
     {
-      title: "Power off",
-      body: `${messages.join("\n")}\nHeaters, heat tape, and sump pumps on that circuit may be off too.`,
+      title: t.power.title,
+      body: `${messages.join("\n")}\n${t.power.footer}`,
       kind: "power",
     },
     { space: alertSpace },
+    locale,
   );
   await markCooldown(userId, "last_power_alert_at");
 }
@@ -422,6 +467,7 @@ export async function maybeSendForecastFreezeAlert(
   email: string | null | undefined,
   settings: AlertSettings,
   weatherCityId?: string | null,
+  locale: Locale = "en",
 ): Promise<void> {
   if (!settings.enabled || !settings.forecastFreezeEnabled) return;
   const entitlements = await getUserEntitlements(userId);
@@ -434,14 +480,16 @@ export async function maybeSendForecastFreezeAlert(
     settings,
     window?.minTempF ?? null,
     settings.forecastHoursAhead,
+    locale,
   );
   if (!message) return;
 
+  const t = await alertText(locale);
   await notifyUser(userId, email, settings, {
-    title: "Forecast freeze risk",
+    title: t.forecast.title,
     body: message,
     kind: "forecast",
-  });
+  }, undefined, locale);
   await markCooldown(userId, "last_forecast_alert_at");
 }
 
@@ -451,6 +499,7 @@ export async function maybeSendRunwayAlert(
   settings: AlertSettings,
   householdId?: string | null,
   latestSensors?: import("./sensorReadings").LatestSensorRow[],
+  locale: Locale = "en",
 ): Promise<void> {
   if (!settings.enabled || !settings.runwayAlertEnabled) return;
   if (isAlertCooldownActive(settings.lastRunwayAlertAt)) return;
@@ -511,16 +560,17 @@ export async function maybeSendRunwayAlert(
     doorOpenNearby,
     timeZone: settings.quietHoursTimezone,
     lookAheadHours: settings.forecastHoursAhead,
-  });
+  }, locale);
 
-  const message = evaluateRunwayAlert(settings, projection);
+  const t = await alertText(locale);
+  const message = evaluateRunwayAlert(settings, projection, locale);
   if (!message) return;
 
   await notifyUser(userId, email, settings, {
-    title: "Time to freeze",
+    title: t.runway.title,
     body: message,
     kind: "runway",
-  });
+  }, undefined, locale);
   await markCooldown(userId, "last_runway_alert_at");
 }
 
@@ -529,6 +579,7 @@ export async function maybeSendNwsFreezeAlert(
   email: string | null | undefined,
   settings: AlertSettings,
   weatherCityId?: string | null,
+  locale: Locale = "en",
 ): Promise<void> {
   if (!settings.enabled || !settings.nwsFreezeAlertsEnabled) return;
   const entitlements = await getUserEntitlements(userId);
@@ -550,16 +601,15 @@ export async function maybeSendNwsFreezeAlert(
   if (!hasFreezeRelatedNwsAlert(summary)) return;
 
   const first = summary!.alerts[0]!;
-  const body =
-    first.headline?.trim() ||
-    first.event ||
-    "National Weather Service freeze / cold advisory is active near your weather city.";
+  const t = await alertText(locale);
+  // The NWS headline itself is published in English; only our fallback is translated.
+  const body = first.headline?.trim() || first.event || t.nws.fallback;
 
   await notifyUser(userId, email, settings, {
-    title: "NWS freeze / cold alert",
+    title: t.nws.title,
     body,
     kind: "nws",
-  });
+  }, undefined, locale);
   await markCooldown(userId, "last_nws_alert_at");
 }
 
@@ -572,7 +622,10 @@ export async function maybeSendThresholdAlerts(
   existingResults?: TempFeedResult[],
   householdId?: string | null,
   devices?: DeviceWithSensors[],
+  /** Recipient language; defaults to the account language in `userMetadata`. */
+  locale: Locale = localeFromMetadata(userMetadata),
 ): Promise<void> {
+  await ensureLocale(locale, ["app"]);
   const settings = await getAlertSettingsForUser(userId, userMetadata);
   const visibleProbes = probes.filter((probe) => probe.visible);
 
@@ -616,12 +669,12 @@ export async function maybeSendThresholdAlerts(
   await sendThresholdAlertsIfNeeded(userId, email, settings, readings, householdId, {
     weatherCityId,
     latestSensors: latest,
-  });
-  await sendFloodAlertsIfNeeded(userId, email, settings, floodReadings);
-  await sendPowerAlertsIfNeeded(userId, email, settings, powerOffReadings);
-  await maybeSendForecastFreezeAlert(userId, email, settings);
-  await maybeSendRunwayAlert(userId, email, settings, householdId, latest);
-  await maybeSendNwsFreezeAlert(userId, email, settings);
+  }, locale);
+  await sendFloodAlertsIfNeeded(userId, email, settings, floodReadings, locale);
+  await sendPowerAlertsIfNeeded(userId, email, settings, powerOffReadings, locale);
+  await maybeSendForecastFreezeAlert(userId, email, settings, undefined, locale);
+  await maybeSendRunwayAlert(userId, email, settings, householdId, latest, locale);
+  await maybeSendNwsFreezeAlert(userId, email, settings, undefined, locale);
   await safeAutoResolve(userId, { kinds: ["forecast", "nws", "runway", "rate"], olderThanMs: DAY_MS, reason: "expired" });
   await safeAutoResolve(userId, { olderThanMs: 7 * DAY_MS, reason: "expired" });
 }
@@ -762,6 +815,7 @@ export async function explainRulesForUser(
   settings: AlertSettings,
   householdId: string,
   devices: DeviceWithSensors[],
+  locale: Locale = "en",
 ): Promise<RuleCheckReport> {
   const latest = await fetchLatestSensorValues(householdId);
   const readings = buildAlertReadingsFromLatestSensors(latest);
@@ -776,7 +830,7 @@ export async function explainRulesForUser(
     checkedAt: new Date().toISOString(),
     alertsEnabled: settings.enabled,
     cooldownUntil,
-    rules: explainAlertRules(settings.alertRules, ctx),
+    rules: explainAlertRules(settings.alertRules, ctx, locale),
   };
 }
 
@@ -787,6 +841,7 @@ export async function maybeSendRuleAlerts(
   settings: AlertSettings,
   readings: AlertReading[],
   householdId?: string | null,
+  locale: Locale = "en",
 ): Promise<void> {
   if (!settings.enabled || settings.alertRules.length === 0) return;
   // Rules have their own cooldown so a rule match never silences freeze alerts.
@@ -794,14 +849,15 @@ export async function maybeSendRuleAlerts(
 
   const ctx = await buildRuleContext(settings, devices, readings, householdId);
   await attachOutdoorTemp(userId, settings, ctx);
-  const messages = evaluateAlertRules(settings.alertRules, ctx);
+  const t = await alertText(locale);
+  const messages = evaluateAlertRules(settings.alertRules, ctx, locale);
   if (messages.length === 0) return;
 
   await notifyUser(userId, email, settings, {
-    title: "Alert rule matched",
+    title: t.rule.title,
     body: messages.join("\n"),
     kind: "rule",
-  });
+  }, undefined, locale);
   await markCooldown(userId, "last_rule_alert_at");
 }
 
@@ -812,13 +868,15 @@ export async function maybeSendRateAndOutageAlerts(
   settings: AlertSettings,
   householdId?: string | null,
   readings: AlertReading[] = [],
+  locale: Locale = "en",
 ): Promise<void> {
   if (!settings.enabled) return;
+  const t = await alertText(locale);
 
   const outageMessages: string[] = [];
   let stillOutCount = 0;
   for (const device of devices.filter((d) => d.enabled)) {
-    const msg = evaluateOutage(settings, device.name, device.last_seen_at);
+    const msg = evaluateOutage(settings, device.name, device.last_seen_at, undefined, locale);
     if (!msg) continue;
     // Report each outage once; devices already reported stay quiet until they recover.
     if (isNewOutage(settings, device.last_seen_at)) outageMessages.push(msg);
@@ -826,10 +884,14 @@ export async function maybeSendRateAndOutageAlerts(
   }
 
   if (outageMessages.length === 0 && stillOutCount === 0) {
-    await resolveAndAnnounceRecovery(userId, email, settings, "outage", {
-      title: "Recovered: devices are reporting again",
-      body: "Every device has checked in again. The outage alert is closed.",
-    });
+    await resolveAndAnnounceRecovery(
+      userId,
+      email,
+      settings,
+      "outage",
+      { title: t.recovery.outageTitle, body: t.recovery.outageBody },
+      locale,
+    );
   }
 
   if (outageMessages.length > 0 && !isAlertCooldownActive(settings.lastOutageAlertAt)) {
@@ -837,14 +899,14 @@ export async function maybeSendRateAndOutageAlerts(
       stillOutCount > 0
         ? [
             ...outageMessages,
-            `${stillOutCount} other device${stillOutCount === 1 ? " is" : "s are"} still offline from earlier alerts.`,
+            plural(t.outage.stillOffline, stillOutCount, locale),
           ]
         : outageMessages;
     await notifyUser(userId, email, settings, {
-      title: "Device outage alert",
+      title: t.outage.title,
       body: body.join("\n"),
       kind: "outage",
-    });
+    }, undefined, locale);
     await markCooldown(userId, "last_outage_alert_at");
   }
 
@@ -855,17 +917,17 @@ export async function maybeSendRateAndOutageAlerts(
     for (const sensor of device.sensors) {
       if (sensor.kind !== "temperature" || !sensor.visible) continue;
       const values = await getRecentNumericReadings(sensor.id, since);
-      const msg = evaluateRateChange(settings, sensor.label, values);
+      const msg = evaluateRateChange(settings, sensor.label, values, locale);
       if (msg) rateMessages.push(msg);
     }
   }
 
   if (rateMessages.length > 0 && !isAlertCooldownActive(settings.lastRateAlertAt)) {
     await notifyUser(userId, email, settings, {
-      title: "Rapid temperature change",
+      title: t.rate.title,
       body: rateMessages.join("\n"),
       kind: "rate",
-    });
+    }, undefined, locale);
     await markCooldown(userId, "last_rate_alert_at");
   }
 
@@ -876,6 +938,7 @@ export async function maybeSendRateAndOutageAlerts(
     settings,
     readings,
     householdId,
+    locale,
   );
 }
 
@@ -887,13 +950,19 @@ export async function maybeSendStuckSensorAlerts(
   email: string | null | undefined,
   settings: AlertSettings,
   stuck: StuckSensor[],
+  locale: Locale = "en",
 ): Promise<void> {
   if (!settings.enabled) return;
+  const t = await alertText(locale);
   if (stuck.length === 0) {
-    await resolveAndAnnounceRecovery(userId, email, settings, "stuck", {
-      title: "Recovered: probe readings are changing again",
-      body: "The probe that looked stuck is reporting changing temperatures again. The alert is closed.",
-    });
+    await resolveAndAnnounceRecovery(
+      userId,
+      email,
+      settings,
+      "stuck",
+      { title: t.recovery.stuckTitle, body: t.recovery.stuckBody },
+      locale,
+    );
     return;
   }
   const events = await listRecentAlertEvents(userId, 50).catch(() => []);
@@ -903,13 +972,15 @@ export async function maybeSendStuckSensorAlerts(
   if (recentlySent) return;
 
   const title =
-    stuck.length === 1 ? `Check ${stuck[0]!.label}: readings look stuck` : `Check ${stuck.length} probes: readings look stuck`;
+    stuck.length === 1
+      ? fmt(t.stuck.titleOne, { label: stuck[0]!.label })
+      : fmt(t.stuck.titleMany, { count: alertNumber(stuck.length, locale) });
   await notifyUser(userId, email, settings, {
     title,
     body: stuck.map((sensor) => sensor.message).join("\n"),
     kind: "stuck",
     meta: { probeLabel: stuck[0]!.label },
-  });
+  }, undefined, locale);
 }
 
 export async function maybeSendDeviceHealthAlerts(
@@ -919,16 +990,18 @@ export async function maybeSendDeviceHealthAlerts(
   settings: AlertSettings,
   siteBaseUrl?: string,
   stuck?: StuckSensor[],
+  locale: Locale = "en",
 ): Promise<void> {
   if (!settings.enabled) return;
-  if (stuck) await maybeSendStuckSensorAlerts(userId, email, settings, stuck);
+  const t = await alertText(locale);
+  if (stuck) await maybeSendStuckSensorAlerts(userId, email, settings, stuck, locale);
 
   const health = deviceHealthFromDevices(devices);
   const base = siteBaseUrl ?? buildSiteUrl();
   const snoozeUrl = await buildSnoozeUrl(base, userId);
   const notifyOpts = { snoozeUrl };
 
-  const batteryMessages = evaluateBatteryHealth(settings, health);
+  const batteryMessages = evaluateBatteryHealth(settings, health, locale);
   if (
     batteryMessages.length > 0 &&
     !isAlertCooldownActive(settings.lastBatteryAlertAt)
@@ -938,27 +1011,29 @@ export async function maybeSendDeviceHealthAlerts(
       email,
       settings,
       {
-        title: "Device battery low",
+        title: t.battery.title,
         body: batteryMessages.join("\n"),
         kind: "battery",
       },
       notifyOpts,
+      locale,
     );
     await markCooldown(userId, "last_battery_alert_at");
   }
 
-  const rssiMessages = evaluateRssiHealth(settings, health);
+  const rssiMessages = evaluateRssiHealth(settings, health, locale);
   if (rssiMessages.length > 0 && !isAlertCooldownActive(settings.lastRssiAlertAt)) {
     await notifyUser(
       userId,
       email,
       settings,
       {
-        title: "Device signal weak",
+        title: t.rssi.title,
         body: rssiMessages.join("\n"),
         kind: "rssi",
       },
       notifyOpts,
+      locale,
     );
     await markCooldown(userId, "last_rssi_alert_at");
   }
@@ -966,14 +1041,19 @@ export async function maybeSendDeviceHealthAlerts(
   if (settings.batteryTrendAlertsEnabled) {
     for (const device of devices) {
       const history = device.meta?.battery_history as BatterySample[] | undefined;
-      const trend = detectBatteryTrendDrop(Array.isArray(history) ? history : []);
+      const trend = detectBatteryTrendDrop(Array.isArray(history) ? history : [], undefined, undefined, locale);
       if (trend && !isAlertCooldownActive(settings.lastBatteryTrendAlertAt)) {
         await notifyUser(
           userId,
           email,
           settings,
-          { title: "Battery trend alert", body: `${device.name}: ${trend}`, kind: "battery" },
+          {
+            title: t.battery.trendTitle,
+            body: fmt(t.battery.trendBody, { device: device.name, trend }),
+            kind: "battery",
+          },
           notifyOpts,
+          locale,
         );
         await markCooldown(userId, "last_battery_trend_alert_at");
         break;

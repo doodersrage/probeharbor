@@ -1,36 +1,35 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import { getLocale } from "../i18n";
+import { authPasswordMessages } from "../i18n/messages/app/auth/password";
+
+const messages = authPasswordMessages(getLocale(Astro));
 
 const sent = Astro.url.searchParams.get("sent") === "1";
 const error = Astro.url.searchParams.get("error");
 const errorMessage =
   error === "missing_email"
-    ? "Enter the email address for your account."
+    ? messages.errors.missing_email
     : error === "verification"
-      ? "Verification failed. Please try again."
+      ? messages.errors.verification
       : null;
 ---
 
 <Layout
-  title="Resend confirmation"
-  description="Request a new email confirmation link for your ProbeHarbor account."
+  title={messages.resend.title}
+  description={messages.resend.description}
   noindex
 >
   <div class="auth-page">
     <header class="auth-intro page-header">
-      <h1 class="page-header-title">Resend confirmation email</h1>
-      <p class="page-header-lede">
-        Confirmation links expire. Enter the email you signed up with and we will send a fresh one.
-      </p>
+      <h1 class="page-header-title">{messages.resend.heading}</h1>
+      <p class="page-header-lede">{messages.resend.lede}</p>
     </header>
 
     <section class="form-panel">
       {sent ? (
         <div class="alert-success mt-0">
-          <p class="m-0">
-            If that address has an unconfirmed account, a new confirmation link is on its way.
-            Check your inbox and spam folder. Already confirmed? <a class="text-link" href="/signin">Sign in</a>.
-          </p>
+          <p class="m-0" set:html={messages.resend.sentHtml} />
         </div>
       ) : (
         <form action="/api/auth/resend-confirmation" method="post">
@@ -40,19 +39,19 @@ const errorMessage =
             </div>
           )}
           <div class="form-field">
-            <label class="form-label" for="email">Email</label>
+            <label class="form-label" for="email">{messages.email}</label>
             <input class="form-input" type="email" name="email" id="email" required />
           </div>
           <div class="form-field">
             <div class="cf-turnstile" data-sitekey={import.meta.env.TURNSTILE_SITE_KEY}></div>
           </div>
-          <button class="btn-primary" type="submit">Send confirmation link</button>
+          <button class="btn-primary" type="submit">{messages.resend.submit}</button>
         </form>
       )}
     </section>
 
     <p class="auth-switch">
-      <a class="text-link" href="/signin">Back to sign in</a>
+      <a class="text-link" href="/signin">{messages.backToSignIn}</a>
     </p>
   </div>
 </Layout>

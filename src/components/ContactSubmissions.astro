@@ -1,10 +1,11 @@
 ---
 import type { PaginatedContactSubmissions } from "../lib/contactSubmissions";
 import {
-  formatContactTimestamp,
   getContactMessageText,
 } from "../lib/contactSubmissions";
 import DashboardCard from "./dashboard/DashboardCard.astro";
+import { fmt, formatDateTime, getLocale } from "../i18n";
+import { adminMessages } from "../i18n/messages/app/admin";
 
 interface Props {
   submissions: PaginatedContactSubmissions;
@@ -19,6 +20,9 @@ const {
   statusFilter = "",
   searchFilter = "",
 } = Astro.props;
+const locale = getLocale(Astro);
+const a = adminMessages(locale);
+const t = a.contacts;
 const { submissions: rows, page, pageSize, totalCount, totalPages, error } =
   submissions;
 
@@ -39,49 +43,49 @@ function buildPageUrl(nextPage: number): string {
 <DashboardCard>
   <div class="card-header-row">
     <div>
-      <h2 class="card-title">Contact form submissions</h2>
+      <h2 class="card-title">{t.heading}</h2>
       <p class="card-subtitle">
-        Messages submitted through the public contact form, stored when email delivery succeeds.
+        {t.intro}
       </p>
     </div>
     {!error && totalCount > 0 && (
       <a class="btn-secondary" href="/api/contacts/export.csv" download>
-        Download CSV
+        {t.downloadCsv}
       </a>
     )}
   </div>
 
   <form class="history-filters" method="get" action={basePath}>
     <div class="form-field mb-0">
-      <label class="form-label" for="contact-status">Status</label>
+      <label class="form-label" for="contact-status">{a.common.status}</label>
       <select class="form-input" id="contact-status" name="status">
-        <option value="">All</option>
-        <option value="new" selected={statusFilter === "new"}>New</option>
-        <option value="read" selected={statusFilter === "read"}>Read</option>
-        <option value="spam" selected={statusFilter === "spam"}>Spam</option>
+        <option value="">{t.all}</option>
+        <option value="new" selected={statusFilter === "new"}>{t.statusNew}</option>
+        <option value="read" selected={statusFilter === "read"}>{t.statusRead}</option>
+        <option value="spam" selected={statusFilter === "spam"}>{t.statusSpam}</option>
       </select>
     </div>
     <div class="form-field mb-0">
-      <label class="form-label" for="contact-search">Search</label>
+      <label class="form-label" for="contact-search">{a.common.search}</label>
       <input
         class="form-input"
         type="search"
         id="contact-search"
         name="q"
         value={searchFilter}
-        placeholder="Name, email, or message"
+        placeholder={t.searchPlaceholder}
       />
     </div>
-    <button type="submit" class="btn-secondary self-end">Filter</button>
+    <button type="submit" class="btn-secondary self-end">{t.filter}</button>
   </form>
 
   {error ? (
     <div class="empty-state">
-      <p>Unable to load contact submissions: {error}</p>
+      <p>{fmt(t.loadError, { error })}</p>
     </div>
   ) : rows.length === 0 ? (
     <div class="empty-state">
-      <p>No contact form submissions match these filters.</p>
+      <p>{t.empty}</p>
     </div>
   ) : (
     <>
@@ -89,18 +93,18 @@ function buildPageUrl(nextPage: number): string {
         <table class="data-table">
           <thead>
             <tr>
-              <th scope="col">Submitted</th>
-              <th scope="col">Status</th>
-              <th scope="col">Name</th>
-              <th scope="col">Email</th>
-              <th scope="col">Message</th>
-              <th scope="col">Actions</th>
+              <th scope="col">{t.submitted}</th>
+              <th scope="col">{a.common.status}</th>
+              <th scope="col">{t.name}</th>
+              <th scope="col">{a.common.email}</th>
+              <th scope="col">{t.message}</th>
+              <th scope="col">{t.actions}</th>
             </tr>
           </thead>
           <tbody>
             {rows.map((submission) => (
               <tr>
-                <td>{formatContactTimestamp(submission.created_at)}</td>
+                <td>{formatDateTime(submission.created_at, locale, { dateStyle: "medium", timeStyle: "short" })}</td>
                 <td>{submission.status}</td>
                 <td>{submission.name}</td>
                 <td>
@@ -115,7 +119,7 @@ function buildPageUrl(nextPage: number): string {
                       <input type="hidden" name="id" value={submission.id} />
                       <input type="hidden" name="status" value="read" />
                       <input type="hidden" name="redirect" value={buildPageUrl(page)} />
-                      <button class="btn-ghost" type="submit">Mark read</button>
+                      <button class="btn-ghost" type="submit">{t.markRead}</button>
                     </form>
                   )}
                   {submission.status !== "spam" && (
@@ -123,21 +127,21 @@ function buildPageUrl(nextPage: number): string {
                       <input type="hidden" name="id" value={submission.id} />
                       <input type="hidden" name="status" value="spam" />
                       <input type="hidden" name="redirect" value={buildPageUrl(page)} />
-                      <button class="btn-ghost" type="submit">Spam</button>
+                      <button class="btn-ghost" type="submit">{t.spam}</button>
                     </form>
                   )}
                   <form action="/api/admin/contacts/status" method="post" class="contact-notes-form">
                     <input type="hidden" name="id" value={submission.id} />
                     <input type="hidden" name="redirect" value={buildPageUrl(page)} />
-                    <label class="sr-only" for={`notes-${submission.id}`}>Admin notes</label>
+                    <label class="sr-only" for={`notes-${submission.id}`}>{t.adminNotes}</label>
                     <textarea
                       class="form-input"
                       id={`notes-${submission.id}`}
                       name="admin_notes"
                       rows="2"
-                      placeholder="Admin notes"
+                      placeholder={t.adminNotes}
                     >{submission.admin_notes ?? ""}</textarea>
-                    <button class="btn-ghost" type="submit">Save notes</button>
+                    <button class="btn-ghost" type="submit">{t.saveNotes}</button>
                   </form>
                 </td>
               </tr>
@@ -148,19 +152,19 @@ function buildPageUrl(nextPage: number): string {
 
       <div class="pagination">
         <p class="pagination-summary">
-          Showing {showingFrom}–{showingTo} of {totalCount} submissions
+          {fmt(t.showing, { from: showingFrom, to: showingTo, total: totalCount })}
         </p>
         <div class="pagination-controls">
           {prevPage ? (
-            <a class="btn-secondary" href={buildPageUrl(prevPage)}>Previous</a>
+            <a class="btn-secondary" href={buildPageUrl(prevPage)}>{a.common.previous}</a>
           ) : (
-            <span class="btn-secondary pagination-disabled">Previous</span>
+            <span class="btn-secondary pagination-disabled">{a.common.previous}</span>
           )}
-          <span class="pagination-current">Page {page} of {totalPages}</span>
+          <span class="pagination-current">{fmt(a.common.pageOf, { page, total: totalPages })}</span>
           {nextPage ? (
-            <a class="btn-secondary" href={buildPageUrl(nextPage)}>Next</a>
+            <a class="btn-secondary" href={buildPageUrl(nextPage)}>{a.common.next}</a>
           ) : (
-            <span class="btn-secondary pagination-disabled">Next</span>
+            <span class="btn-secondary pagination-disabled">{a.common.next}</span>
           )}
         </div>
       </div>

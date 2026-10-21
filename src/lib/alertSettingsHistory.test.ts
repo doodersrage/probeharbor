@@ -5,6 +5,7 @@ vi.mock("./notify", () => ({ getAlertSettingsForUser: vi.fn(), saveAlertSettings
 
 import { alertSettingsToRow, DEFAULT_ALERT_SETTINGS } from "./alerts";
 import { describeAlertSettingsChanges, mergeSnapshotOntoCurrent } from "./alertSettingsHistory";
+import { ensureLocale } from "../i18n/catalog";
 
 const base = { ...DEFAULT_ALERT_SETTINGS, enabled: true };
 
@@ -25,6 +26,15 @@ describe("describeAlertSettingsChanges", () => {
       describeAlertSettingsChanges(base, { ...base, lastAlertSentAt: "2026-10-14T00:00:00Z", snoozeUntil: "2026-10-15T00:00:00Z" }),
     ).toEqual([]);
     expect(describeAlertSettingsChanges(base, { ...base, rssiThreshold: -90, batteryThresholdPct: 10 })).toEqual(["2 other settings"]);
+  });
+});
+
+describe("describeAlertSettingsChanges in other languages", () => {
+  it("writes the change list in the saver's language", async () => {
+    await ensureLocale("fr", ["app"]);
+    expect(
+      describeAlertSettingsChanges(base, { ...base, freezeThresholdF: 31.5, channelSms: true, rssiThreshold: -90 }, "fr"),
+    ).toEqual(["Seuil de gel (°F)\u00a0: 34 → 31,5", "SMS\u00a0: activé", "1 autre paramètre"]);
   });
 });
 

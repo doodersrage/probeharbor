@@ -112,6 +112,7 @@ describe("POST /api/user/alert-events/ack", () => {
       eventId: 12,
       action: "snooze_1h",
       siteUrl: "https://example.com",
+      locale: "en",
     });
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({

@@ -31,7 +31,7 @@ describe("alert-settings-restore", () => {
   it("restores the chosen entry and says so", async () => {
     const { POST } = await import("./alert-settings-restore");
     const res = await POST(ctx({ history_id: "12", redirect: "/dashboard/alerts?tab=settings" }));
-    expect(mockRestore).toHaveBeenCalledWith("u1", 12);
+    expect(mockRestore).toHaveBeenCalledWith("u1", 12, "en");
     expect(res.headers.get("Location")).toBe("/dashboard/alerts?tab=settings&alert_saved=restored");
   });
 

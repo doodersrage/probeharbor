@@ -13,8 +13,10 @@ import {
 } from "../../../lib/statusPage";
 import { formRedirectPath, withQuery } from "../../../lib/siteUrl";
 import { FLASH_STATUS_TOKEN, setSecretFlash } from "../../../lib/secretFlash";
+import { apiLocale, apiMoreCommonMessages } from "../../../i18n/messages/app/apiMore/common";
 
-export const POST: APIRoute = async ({ request, cookies, redirect }) => {
+export const POST: APIRoute = async (context) => {
+  const { request, cookies, redirect } = context;
   const { user } = await getAuthFromCookies(cookies);
   if (!user) return redirect("/signin");
 
@@ -48,7 +50,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     return redirect(withQuery(redirectTo, { status_error: "pro" }));
   }
 
-  const label = formData.get("label")?.toString() || "Status page";
+  const label = formData.get("label")?.toString() || apiMoreCommonMessages(apiLocale(context)).defaults.statusPage;
   const { token, error } = await createStatusPageToken(householdId, label);
   if (error || !token) {
     return redirect(withQuery(redirectTo, { status_error: "1" }));
