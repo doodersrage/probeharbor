@@ -2,7 +2,9 @@ allowBuilds:
   '@sentry/cli': true
   core-js-pure: true
   esbuild: true
-  sharp: true
+  # Off: the prebuilt binary works; with a system libvips installed, the
+  # install script tries (and fails) to compile sharp from source instead.
+  sharp: false
   workerd: true
 packages:
   - "."
