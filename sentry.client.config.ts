@@ -5,10 +5,18 @@ const dsn =
   import.meta.env.SENTRY_DSN?.trim() ||
   "";
 
-if (dsn && dsn !== "off") {
+// Production builds only: `astro dev` errors (Vite reloads, HMR) aren't user-facing.
+if (dsn && dsn !== "off" && import.meta.env.PROD) {
   Sentry.init({
     dsn,
-    environment: import.meta.env.PROD ? "production" : "development",
+    environment: "production",
+    ignoreErrors: [
+      // esp-web-tools (the /flash Install button) opens and closes the serial port
+      // in un-awaited promises. These fire when the board resets or is unplugged
+      // mid-dialog and don't affect the install. Our own serial code catches its errors.
+      /Failed to execute 'open' on 'SerialPort': The port is already open/,
+      /Failed to execute 'close' on 'SerialPort': The port is already closed/,
+    ],
     tracesSampleRate: 0.1,
     replaysSessionSampleRate: 0,
     replaysOnErrorSampleRate: 0.5,

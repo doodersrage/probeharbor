@@ -16,8 +16,13 @@ function mockQuery(result: { data?: unknown; error?: unknown }) {
 }
 
 const mockFrom = vi.fn();
+// Default: latest_sensor_readings isn't deployed, so the per-sensor fallback runs.
+const mockRpc = vi.fn(() => Promise.resolve({ data: null, error: { message: "missing" } }));
 vi.mock("./supabase", () => ({
-  createServerClient: () => ({ from: (...args: unknown[]) => mockFrom(...args) }),
+  createServerClient: () => ({
+    from: (...args: unknown[]) => mockFrom(...args),
+    rpc: (...args: unknown[]) => mockRpc(...(args as [])),
+  }),
 }));
 
 function sensor(overrides: Partial<DeviceSensor> = {}): DeviceSensor {
@@ -334,6 +339,37 @@ describe("fetchLatestSensorValues", () => {
       value_num: 42,
       recorded_at: "2024-01-01T00:00:00Z",
     });
+  });
+
+  it("fetches every sensor's latest reading in one rpc call", async () => {
+    const tempSensor = {
+      id: "sensor-1",
+      device_id: "device-1",
+      key: "temp_air",
+      label: "Garage",
+      kind: "temperature",
+      unit: "F",
+      visible: true,
+      sort_order: 0,
+      offset_num: 0,
+    };
+    mockFrom
+      .mockReturnValueOnce(mockQuery({ data: [{ id: "device-1", name: "Garage", space: null }] }))
+      .mockReturnValueOnce(
+        mockQuery({ data: [tempSensor, { ...tempSensor, id: "sensor-2", key: "pressure_air", kind: "pressure" }] }),
+      );
+    mockRpc.mockResolvedValueOnce({
+      data: [{ sensor_id: "sensor-2", value_num: 1013, value_bool: null, value_text: null, recorded_at: "2024-01-01T00:00:00Z" }],
+      error: null,
+    } as never);
+    const { fetchLatestSensorValues } = await import("./sensorReadings");
+
+    const result = await fetchLatestSensorValues("house-1");
+
+    expect(mockRpc).toHaveBeenCalledWith("latest_sensor_readings", { p_sensor_ids: ["sensor-1", "sensor-2"] });
+    expect(mockFrom).toHaveBeenCalledTimes(2);
+    expect(result).toHaveLength(1);
+    expect(result[0]).toMatchObject({ value_num: 1013, sensor: { id: "sensor-2" } });
   });
 
   it("skips a sensor that has no reading yet", async () => {

@@ -1980,6 +1980,16 @@ export type Database = {
         Args: { caller_id: string; group_filter?: string | null; search_text?: string | null }
         Returns: number
       }
+      latest_sensor_readings: {
+        Args: { p_sensor_ids: string[] }
+        Returns: {
+          sensor_id: string
+          value_num: number | null
+          value_bool: boolean | null
+          value_text: string | null
+          recorded_at: string
+        }[]
+      }
       replace_device_sensor: {
         Args: { p_household_id: string; p_old_sensor_id: string; p_new_sensor_id: string }
         Returns: Json

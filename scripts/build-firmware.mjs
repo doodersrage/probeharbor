@@ -73,6 +73,8 @@ const manifest = {
   name: "ProbeHarbor probe",
   version,
   new_install_prompt_erase: true,
+  // The firmware has no Improv Serial; skip the dialog's 10 s Improv wait after install.
+  new_install_improv_wait_time: 0,
   builds: TARGETS.map((target) => ({
     chipFamily: target.chipFamily,
     parts: [{ path: `probeharbor-probe-${target.env}.bin`, offset: 0 }],

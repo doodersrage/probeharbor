@@ -217,6 +217,49 @@ export type LatestSensorRow = {
   recorded_at: string;
 };
 
+type LatestReading = {
+  value_num: number | null;
+  value_bool: boolean | null;
+  value_text: string | null;
+  recorded_at: string;
+};
+
+/**
+ * Latest reading per sensor in one call (latest_sensor_readings). Falls back
+ * to one query per sensor if the function isn't deployed yet.
+ */
+async function fetchLatestReadingsBySensor(
+  supabase: ReturnType<typeof createServerClient>,
+  sensorIds: string[],
+): Promise<Map<string, LatestReading>> {
+  const bySensor = new Map<string, LatestReading>();
+  const { data, error } = await supabase.rpc("latest_sensor_readings", {
+    p_sensor_ids: sensorIds,
+  });
+  if (!error && Array.isArray(data)) {
+    for (const row of data) bySensor.set(row.sensor_id, row);
+    return bySensor;
+  }
+
+  console.warn("latest_sensor_readings unavailable, using per-sensor queries:", error?.message);
+  const rows = await Promise.all(
+    sensorIds.map(async (sensorId) => {
+      const { data: reading } = await supabase
+        .from("sensor_readings")
+        .select("value_num, value_bool, value_text, recorded_at")
+        .eq("sensor_id", sensorId)
+        .order("recorded_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      return [sensorId, reading] as const;
+    }),
+  );
+  for (const [sensorId, reading] of rows) {
+    if (reading) bySensor.set(sensorId, reading);
+  }
+  return bySensor;
+}
+
 export async function fetchLatestSensorValues(
   householdId: string,
 ): Promise<LatestSensorRow[]> {
@@ -245,20 +288,14 @@ export async function fetchLatestSensorValues(
     devices.map((d) => [d.id, typeof d.space === "string" ? d.space : null]),
   );
 
-  // One round-trip per sensor in parallel (was sequential N+1). Index:
-  // sensor_readings_sensor_recorded_idx (sensor_id, recorded_at desc).
-  const readingRows = await Promise.all(
-    sensors.map(async (sensor) => {
-      const { data: reading } = await supabase
-        .from("sensor_readings")
-        .select("value_num, value_bool, value_text, recorded_at")
-        .eq("sensor_id", sensor.id)
-        .order("recorded_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      return { sensor, reading };
-    }),
+  const readingBySensor = await fetchLatestReadingsBySensor(
+    supabase,
+    sensors.map((s) => s.id),
   );
+  const readingRows = sensors.map((sensor) => ({
+    sensor,
+    reading: readingBySensor.get(sensor.id) ?? null,
+  }));
 
   const results: LatestSensorRow[] = [];
   for (const { sensor, reading } of readingRows) {
