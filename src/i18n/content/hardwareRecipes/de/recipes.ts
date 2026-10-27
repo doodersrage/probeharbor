@@ -20,12 +20,20 @@ export default {
       "Derselbe GPIO 4 wie beim DS18B20. Montiere ihn mit Abstand zum Board, denn der ESP32 wärmt einen Sensor direkt daneben auf. Ein DHT11 wird ebenfalls erkannt, ist aber nicht auf Hardware getestet und misst gröber.",
     links: [flash, { label: "DHT22-Verkabelung" }],
   },
-  "esp32-i2c": {
-    title: "Präziser Luftsensor",
-    hardware: "ESP32 + SHT31, BME280 oder AHT20 per I²C",
+  "esp32-bme280": {
+    title: "Temperatur, Luftfeuchtigkeit + Luftdruck",
+    hardware: "ESP32-Entwicklerboard + BME280 per I²C",
     path: "Web-Flasher (ohne Code)",
     notes:
-      "Firmware 1.2.0 findet sie automatisch (SDA 21, SCL 22 auf einem klassischen ESP32). Der BME280 liefert zusätzlich den Luftdruck.",
+      "Wird beim Start automatisch erkannt: SDA an GPIO 21, SCL an GPIO 22, dazu 3,3 V und GND. Liefert zusätzlich den Luftdruck. Ein BMP280 sieht gleich aus, misst aber keine Luftfeuchtigkeit – prüfe also das Angebot.",
+    links: [flash],
+  },
+  "esp32-i2c": {
+    title: "Weitere I²C-Luftsensoren",
+    hardware: "ESP32 + SHT31 oder AHT20 per I²C",
+    path: "Web-Flasher (ohne Code)",
+    notes:
+      "Genauso verkabelt wie der BME280 (SDA 21, SCL 22 auf einem klassischen ESP32) und automatisch erkannt.",
     links: [flash],
   },
   "esp32-leak-door": {

@@ -20,12 +20,20 @@ export default {
       "Mesmo GPIO 4 do DS18B20. Monte longe da placa: o ESP32 aquece um sensor que fica ao lado dele. Um DHT11 também é detectado, mas não foi testado em hardware e mede com menos precisão.",
     links: [flash, { label: "Ligação do DHT22" }],
   },
-  "esp32-i2c": {
-    title: "Sensor de ar preciso",
-    hardware: "ESP32 + SHT31, BME280 ou AHT20 via I²C",
+  "esp32-bme280": {
+    title: "Temperatura, umidade + pressão",
+    hardware: "Placa de desenvolvimento ESP32 + BME280 via I²C",
     path: "Gravador web (sem código)",
     notes:
-      "O firmware 1.2.0 encontra esses sensores automaticamente (SDA 21, SCL 22 em um ESP32 clássico). O BME280 acrescenta a pressão barométrica.",
+      "Detectado automaticamente na inicialização: SDA no GPIO 21, SCL no GPIO 22, mais 3,3 V e GND. Também informa a pressão do ar. Um BMP280 parece igual, mas não mede umidade, então confira o anúncio.",
+    links: [flash],
+  },
+  "esp32-i2c": {
+    title: "Outros sensores de ar I²C",
+    hardware: "ESP32 + SHT31 ou AHT20 via I²C",
+    path: "Gravador web (sem código)",
+    notes:
+      "Ligados do mesmo jeito que o BME280 (SDA 21, SCL 22 em um ESP32 clássico) e detectados automaticamente.",
     links: [flash],
   },
   "esp32-leak-door": {
