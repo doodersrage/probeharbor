@@ -36,12 +36,20 @@ export default {
       "Se conectan igual que el BME280 (SDA 21, SCL 22 en un ESP32 clásico) y se detectan automáticamente.",
     links: [flash],
   },
-  "esp32-leak-door": {
-    title: "Contactos de fuga y de puerta",
-    hardware: "ESP32 + un sensor de agua de dos cables o un interruptor magnético (reed)",
+  "esp32-door": {
+    title: "Contacto de puerta",
+    hardware: "Placa de desarrollo ESP32 + interruptor magnético (reed)",
     path: "Instalador web, opción de extras",
     notes:
-      "Activa Fuga o Puerta en los extras del instalador. En un ESP32 clásico, el contacto de fuga va de GPIO 27 a GND y el interruptor reed de GPIO 26 a GND. Un contacto mojado dispara una alerta de fuga sin más configuración.",
+      "Activa Puerta en los extras del instalador. En un ESP32 clásico, el interruptor reed va de GPIO 26 a GND; sin el imán marca Abierta. Monta el imán en la puerta y el interruptor en el marco.",
+    links: [flash],
+  },
+  "esp32-leak": {
+    title: "Contacto de fuga",
+    hardware: "ESP32 + un módulo de sensor de agua LM393 o dos cables pelados",
+    path: "Instalador web, opción de extras",
+    notes:
+      "Activa Fuga en los extras del instalador. En un ESP32 clásico, el contacto va de GPIO 27 a GND. Un contacto mojado dispara una alerta de fuga sin más configuración.",
     links: [flash],
   },
   "esp32-battery": {

@@ -2,7 +2,8 @@
 
 Verified so far, on a plain ESP32: browser flash → USB settings → Wi-Fi → first
 reading, with a DS18B20 (1.0.1), a DHT22 (1.1.1), and a BME280 on I2C (1.2.2:
-temperature, humidity, and pressure). Everything else below has only been compiled.
+temperature, humidity, and pressure). The door reed switch (1.2.2) works too.
+Everything else below has only been compiled.
 
 Keep the board on USB with the serial console open in `/flash` (or any serial
 monitor at 115200 baud). Lines starting `TT` are the ones to watch. Write the
@@ -14,7 +15,7 @@ Buy links are on [/flash](https://probeharbor.dev/flash#what-to-buy) (source: `s
 
 - Test 4: an ESP32-S3-DevKitC-1 and an ESP32-C3-DevKitM-1.
 - Test 5: an SHT31-D or AHT20 (BME280 done).
-- Test 6: an LM393 "rain / water sensor" module plus two bare wires for the leak contact, a magnetic door switch, two 100kΩ resistors, and a
+- Test 6: an LM393 "rain / water sensor" module plus two bare wires for the leak contact (door switch done), two 100kΩ resistors, and a
   single Li-ion cell.
 - Test 8: an Adafruit HUZZAH32 or ESP32 Feather V2 (plus a STEMMA QT sensor for
   the I2C step).
@@ -65,7 +66,7 @@ differ by board:
 2. Expect `TT sensor: <name> on I2C (SDA …, SCL …)` and temperature plus humidity on
    the device page. Compare against a thermometer next to it.
 
-## 6. Leak, door, and battery inputs
+## 6. Leak, door, and battery inputs (door verified)
 
 Turn them on in `/flash` ("extras") or the portal's extras box before saving.
 
@@ -78,7 +79,7 @@ Turn them on in `/flash` ("extras") or the portal's extras box before saving.
   - Then the LM393 module (VCC 3.3V only, GND, DO → leak pin). Before wiring DO,
     measure it with a multimeter: about 3.3V dry, near 0V wet. Set its dial so a
     drop of water reads Wet and dry reads Dry.
-- **Door:** reed switch between the door pin and GND. Magnet away = Open.
+- **Door (verified on a plain ESP32):** reed switch between the door pin and GND. Magnet away = Open.
 - **Battery:** a single Li-ion cell through a 1:1 divider (two equal resistors, e.g.
   100k + 100k) to the battery pin. `battery_pct` should track a multimeter reading.
 

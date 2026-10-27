@@ -36,12 +36,20 @@ export default {
       "Ligados do mesmo jeito que o BME280 (SDA 21, SCL 22 em um ESP32 clássico) e detectados automaticamente.",
     links: [flash],
   },
-  "esp32-leak-door": {
-    title: "Contatos de vazamento e de porta",
-    hardware: "ESP32 + um sensor de água de dois fios ou um interruptor magnético (reed)",
+  "esp32-door": {
+    title: "Contato de porta",
+    hardware: "Placa de desenvolvimento ESP32 + interruptor magnético (reed)",
     path: "Gravador web, opção de extras",
     notes:
-      "Ative Vazamento ou Porta nos extras do gravador. Em um ESP32 clássico, o contato de vazamento vai do GPIO 27 ao GND e o reed switch do GPIO 26 ao GND. Um contato molhado dispara um alerta de vazamento sem nenhuma outra configuração.",
+      "Ative Porta nos extras do gravador. Em um ESP32 clássico, o reed switch vai do GPIO 26 ao GND; sem o ímã, ele indica Aberta. Monte o ímã na porta e o interruptor no batente.",
+    links: [flash],
+  },
+  "esp32-leak": {
+    title: "Contato de vazamento",
+    hardware: "ESP32 + um módulo sensor de água LM393 ou dois fios desencapados",
+    path: "Gravador web, opção de extras",
+    notes:
+      "Ative Vazamento nos extras do gravador. Em um ESP32 clássico, o contato vai do GPIO 27 ao GND. Um contato molhado dispara um alerta de vazamento sem nenhuma outra configuração.",
     links: [flash],
   },
   "esp32-battery": {

@@ -36,12 +36,20 @@ export default {
       "Genauso verkabelt wie der BME280 (SDA 21, SCL 22 auf einem klassischen ESP32) und automatisch erkannt.",
     links: [flash],
   },
-  "esp32-leak-door": {
-    title: "Leck- und Türkontakte",
-    hardware: "ESP32 + ein zweiadriger Wassersensor oder ein magnetischer Reedschalter",
+  "esp32-door": {
+    title: "Türkontakt",
+    hardware: "ESP32-Entwicklerboard + magnetischer Reedschalter",
     path: "Web-Flasher, Extras-Option",
     notes:
-      "Aktiviere Leck oder Tür in den Extras des Flashers. Auf einem klassischen ESP32 geht der Leckkontakt von GPIO 27 an GND und der Reedschalter von GPIO 26 an GND. Ein nasser Kontakt löst ohne weitere Einrichtung einen Leckalarm aus.",
+      "Aktiviere Tür in den Extras des Flashers. Auf einem klassischen ESP32 geht der Reedschalter von GPIO 26 an GND; ohne Magnet zeigt er Offen. Montiere den Magneten an der Tür und den Schalter am Rahmen.",
+    links: [flash],
+  },
+  "esp32-leak": {
+    title: "Leckkontakt",
+    hardware: "ESP32 + ein LM393-Wassersensormodul oder zwei blanke Drähte",
+    path: "Web-Flasher, Extras-Option",
+    notes:
+      "Aktiviere Leck in den Extras des Flashers. Auf einem klassischen ESP32 geht der Kontakt von GPIO 27 an GND. Ein nasser Kontakt löst ohne weitere Einrichtung einen Leckalarm aus.",
     links: [flash],
   },
   "esp32-battery": {

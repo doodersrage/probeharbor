@@ -36,12 +36,20 @@ export default {
       "Câblés comme le BME280 (SDA 21, SCL 22 sur un ESP32 classique) et détectés automatiquement.",
     links: [flash],
   },
-  "esp32-leak-door": {
-    title: "Contacts de fuite et de porte",
-    hardware: "ESP32 + un capteur d’eau à deux fils ou un interrupteur magnétique (reed)",
+  "esp32-door": {
+    title: "Contact de porte",
+    hardware: "Carte de développement ESP32 + interrupteur magnétique (reed)",
     path: "Outil de flashage web, option extras",
     notes:
-      "Activez Fuite ou Porte dans les extras de l’outil de flashage. Sur un ESP32 classique, le contact de fuite va de GPIO 27 à GND et l’interrupteur reed de GPIO 26 à GND. Un contact mouillé déclenche une alerte de fuite sans autre réglage.",
+      "Activez Porte dans les extras de l’outil de flashage. Sur un ESP32 classique, l’interrupteur reed va de GPIO 26 à GND ; aimant éloigné, il indique Ouverte. Fixez l’aimant sur la porte et l’interrupteur sur le cadre.",
+    links: [flash],
+  },
+  "esp32-leak": {
+    title: "Contact de fuite",
+    hardware: "ESP32 + un module capteur d’eau LM393 ou deux fils dénudés",
+    path: "Outil de flashage web, option extras",
+    notes:
+      "Activez Fuite dans les extras de l’outil de flashage. Sur un ESP32 classique, le contact va de GPIO 27 à GND. Un contact mouillé déclenche une alerte de fuite sans autre réglage.",
     links: [flash],
   },
   "esp32-battery": {
