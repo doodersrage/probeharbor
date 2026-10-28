@@ -93,7 +93,7 @@ const de: AlertsMessages = {
   list: {
     empty:
       "Noch keine Alarmereignisse für diesen Filter. Nach Frost, Wasserschaden oder einem Test erscheinen hier Einträge mit Begründung und Aktionen gegen Fehlalarme.",
-    sent: "Gesendet über {channels}",
+    sent: "Angenommen von {channels}",
     skipped: "Übersprungen: {channels}",
     why: "Warum",
     suggested: "Vorschlag: {tip}.",

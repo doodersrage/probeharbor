@@ -93,7 +93,7 @@ const fr: AlertsMessages = {
   list: {
     empty:
       "Aucun événement d’alerte ne correspond encore à ce filtre. Après un gel, une inondation ou un test, les lignes apparaissent ici avec le détail du motif et des actions contre les fausses alertes.",
-    sent: "Envoyée via {channels}",
+    sent: "Acceptée par {channels}",
     skipped: "Ignorée sur {channels}",
     why: "Motif",
     suggested: "Suggestion : {tip}.",

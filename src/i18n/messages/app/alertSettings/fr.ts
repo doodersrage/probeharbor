@@ -198,7 +198,7 @@ const fr: AlertSettingsMessages = {
 
   delivery: {
     lastFailed: "Dernière tentative échouée {age}",
-    lastDelivered: "Dernière livraison {age}",
+    lastDelivered: "Dernière acceptation par le fournisseur {age}",
     none: "Aucune livraison pour l’instant",
     failedTitle: "Vérifiez la destination ci-dessous, puis envoyez un test.",
     sendTest: "Envoyer un test",

@@ -94,7 +94,8 @@ const en = {
   list: {
     empty:
       "No alert events match this filter yet. After freeze, flood, or test delivery, rows appear here with Why details and false-alarm actions.",
-    sent: "Sent {channels}",
+    /** The provider accepted the message; ProbeHarbor can't confirm it reached the person. */
+    sent: "Accepted by {channels}",
     skipped: "Skipped {channels}",
     why: "Why",
     suggested: "Suggested: {tip}.",

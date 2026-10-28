@@ -1582,3 +1582,21 @@ Order of work: M2-1 → M2-3 → M2-4 → M2-5 → M1-B → M1-C (sizing first).
   - `pnpm build`: pass
   - `pnpm test:e2e`: 44 passed, 12 skipped
 - Translations are mine and haven't been reviewed by a native speaker.
+
+------------------------------------------------------------------------
+
+## Increment D2 (decision M2-3): say "accepted", not "sent/delivered" (2026-10-28)
+
+**Status: Implemented. Copy only (5 locales).**
+
+- [x] Alert history: "Sent {channels}" becomes "Accepted by {channels}"
+      (`alerts/*` `list.sent`).
+- [x] Channel status: "Last delivered {age}" becomes "Last accepted by
+      the provider {age}" (`alertSettings/*` `lastDelivered`, rendered
+      by `ChannelDeliveryStatus.astro` from `lastSentAt`).
+- Not changed: test-send results ("Sent. Check {channel}.", which asks
+  the user to confirm), admin smoke tests and summaries. No provider
+  delivery callbacks, per the decision.
+- Evidence: `pnpm test`: 2995 passed. `pnpm typecheck`: 0 errors
+  (locale files are typed against English). `pnpm lint`: 64 warnings
+  (baseline). Translations aren't reviewed by a native speaker.

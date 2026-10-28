@@ -200,7 +200,7 @@ const en = {
 
   delivery: {
     lastFailed: "Last attempt failed {age}",
-    lastDelivered: "Last delivered {age}",
+    lastDelivered: "Last accepted by the provider {age}",
     none: "No deliveries yet",
     failedTitle: "Check the destination below, then send a test.",
     sendTest: "Send test",

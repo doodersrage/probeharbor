@@ -197,7 +197,7 @@ const ptBr: AlertSettingsMessages = {
 
   delivery: {
     lastFailed: "Última tentativa falhou {age}",
-    lastDelivered: "Última entrega {age}",
+    lastDelivered: "Última aceitação pelo provedor {age}",
     none: "Nenhuma entrega ainda",
     failedTitle: "Confira o destino abaixo e depois envie um teste.",
     sendTest: "Enviar teste",

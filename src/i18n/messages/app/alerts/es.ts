@@ -93,7 +93,7 @@ const es: AlertsMessages = {
   list: {
     empty:
       "Aún no hay eventos de alerta que coincidan con este filtro. Tras una congelación, una inundación o una prueba, aparecerán aquí con el motivo y acciones para falsas alarmas.",
-    sent: "Enviada por {channels}",
+    sent: "Aceptada por {channels}",
     skipped: "Omitida en {channels}",
     why: "Motivo",
     suggested: "Sugerencia: {tip}.",

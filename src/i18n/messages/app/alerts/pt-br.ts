@@ -93,7 +93,7 @@ const ptBr: AlertsMessages = {
   list: {
     empty:
       "Nenhum evento de alerta corresponde a este filtro ainda. Depois de um congelamento, alagamento ou teste, as linhas aparecem aqui com o motivo e ações para alarmes falsos.",
-    sent: "Enviado por {channels}",
+    sent: "Aceito por {channels}",
     skipped: "Ignorado em {channels}",
     why: "Motivo",
     suggested: "Sugestão: {tip}.",
