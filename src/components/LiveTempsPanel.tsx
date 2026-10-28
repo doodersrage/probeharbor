@@ -34,6 +34,8 @@ type LiveSensor = {
   value_bool: boolean | null;
   value_text: string | null;
   recorded_at: string | null;
+  /** The device's usual reporting interval, so slow devices aren't called offline early. */
+  reportIntervalMs?: number | null;
   temp?: { f: number; c: number; h: number } | null;
 };
 
@@ -168,8 +170,9 @@ export function makeFormat(text: LiveTempsPanelText, locale: string | undefined)
   const freshness = (
     recordedAt: string | null | undefined,
     source: LiveSensor["deviceSource"],
+    reportIntervalMs?: number | null,
   ): string => {
-    const flags = formatRelativeAge(recordedAt);
+    const flags = formatRelativeAge(recordedAt, undefined, undefined, reportIntervalMs);
     const age = ageLabel(recordedAt);
     if (!flags.lagging) {
       return fill(source === "pull_url" ? text.freshness.polled : text.freshness.updated, { age });
@@ -491,7 +494,7 @@ export default function LiveTempsPanel({
   const temperatureCards = useMemo(() => {
     const tempKeys = new Set(sensors.filter((s) => s.kind === "temperature").map(pairKey));
     const rank = (s: LiveSensor) => {
-      const age = formatRelativeAge(s.recorded_at ?? null);
+      const age = formatRelativeAge(s.recorded_at ?? null, undefined, undefined, s.reportIntervalMs);
       return age.stale ? 2 : age.lagging ? 1 : 0;
     };
     return sensors
@@ -510,7 +513,7 @@ export default function LiveTempsPanel({
         if (!sensor.recorded_at) {
           return { sensor, age: formatRelativeAge(null) };
         }
-        const age = formatRelativeAge(sensor.recorded_at);
+        const age = formatRelativeAge(sensor.recorded_at, undefined, undefined, sensor.reportIntervalMs);
         return age.lagging ? { sensor, age } : null;
       })
       .filter((row): row is { sensor: LiveSensor; age: ReturnType<typeof formatRelativeAge> } =>
@@ -544,7 +547,7 @@ export default function LiveTempsPanel({
             age.lagging ? " text-[var(--color-warning)]" : ""
           }`}
         >
-          {f.freshness(sensor.recorded_at, sensor.deviceSource ?? null)}
+          {f.freshness(sensor.recorded_at, sensor.deviceSource ?? null, sensor.reportIntervalMs)}
         </p>
       </article>
     );
@@ -605,6 +608,7 @@ export default function LiveTempsPanel({
               ? `${laggingSensors[0]!.sensor.label} — ${f.freshness(
                   laggingSensors[0]!.sensor.recorded_at,
                   laggingSensors[0]!.sensor.deviceSource ?? null,
+                  laggingSensors[0]!.sensor.reportIntervalMs,
                 )}`
               : f.plural(text.laggingMany, laggingSensors.length)}
           </p>
@@ -617,7 +621,7 @@ export default function LiveTempsPanel({
                     ? `${sensor.deviceName} · ${sensor.label}`
                     : sensor.label}{" "}
                   —{" "}
-                  {f.freshness(sensor.recorded_at, sensor.deviceSource ?? null)}
+                  {f.freshness(sensor.recorded_at, sensor.deviceSource ?? null, sensor.reportIntervalMs)}
                 </li>
               ))}
               {laggingSensors.length > 4 && (
@@ -736,7 +740,7 @@ export default function LiveTempsPanel({
                       age.lagging ? " text-[var(--color-warning)]" : ""
                     }`}
                   >
-                    {f.freshness(sensor.recorded_at, sensor.deviceSource ?? null)}
+                    {f.freshness(sensor.recorded_at, sensor.deviceSource ?? null, sensor.reportIntervalMs)}
                   </p>
                 </article>
               );

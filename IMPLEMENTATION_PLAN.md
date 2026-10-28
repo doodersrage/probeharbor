@@ -1657,3 +1657,36 @@ Order of work: M2-1 → M2-3 → M2-4 → M2-5 → M1-B → M1-C (sizing first).
     user has more than one property.
   - °C for forecast, runway and rate alerts, whose templates still say
     °F.
+
+------------------------------------------------------------------------
+
+## Increment D5 (decision M1-B): freshness fits each device's cadence (2026-10-28)
+
+**Status: Implemented and verified locally. No migration (device meta JSON).**
+
+- [x] Ingest learns each device's interval: `report_interval_s` is the
+      median of the last 9 gaps (`report_intervals_s`), kept in device
+      meta (`reportInterval.ts`). It ignores retries (<10 s), outage
+      gaps (>4× usual) and first posts. Once learned, a steady device
+      writes only when its cadence changes by more than 25%, so there's
+      no extra write per post.
+- [x] `formatRelativeAge` / `freshnessDetailForSource` take an optional
+      interval (`freshnessThresholds`): "may be offline" after 3 missed
+      reports (at least 30 min), "offline" after twice that (at least
+      2 h). Without an interval, the fixed 30 min / 2 h apply as before.
+- [x] Used by live cards (`/api/home/readings` sends `reportIntervalMs`;
+      `LiveTempsPanel` ranking, warnings and labels), the device list
+      (`PushDevicesPanel`) and the device page.
+- Deviation from the decision text: "offline" is 2× the lag threshold
+  rather than the user's `outageHours`. Freshness is a viewer-side label
+  shown on shared and household pages where no single user's alert
+  setting applies. Offline *alerts* still use `outageHours`.
+- Future-dated readings (audit) can't occur: every reading is
+  server-timestamped.
+- Evidence: `reportInterval.test.ts` (7) and `[deviceKey].test.ts` +1.
+  `pnpm test`: 3011 passed. `pnpm typecheck`: 0 errors. `pnpm lint`: 64
+  warnings (baseline). `pnpm build`: pass. `pnpm test:e2e`: 44 passed,
+  12 skipped.
+- Not changed: other freshness callers (overview extras, HA
+  diagnostics, share and status pages) still use fixed thresholds.
+  Follow-up if slow devices show up there.

@@ -25,6 +25,7 @@ import type { SensorKind } from "../../../lib/sensorKinds";
 import { fmt, formatNumber, getLocale, plural } from "../../../i18n";
 import { deviceDetailMessages } from "../../../i18n/messages/app/deviceDetail";
 import { deviceSetupPushMessages } from "../../../i18n/messages/app/deviceSetup/push";
+import { reportIntervalSeconds } from "../../../lib/reportInterval";
 
 /**
  * One device, everything about it: what it reads, its settings, how it
@@ -62,7 +63,8 @@ const stuckById = new Map(stuck.map((s) => [s.sensorId, s]));
 const deviceStats = ingestStats.filter((row) => row.device_id === device.id);
 const accepted = deviceStats.reduce((sum, row) => sum + row.success_count, 0);
 const rejected = deviceStats.reduce((sum, row) => sum + row.error_count, 0);
-const seen = formatRelativeAge(device.last_seen_at, "never");
+const seenInterval = reportIntervalSeconds(device.meta);
+const seen = formatRelativeAge(device.last_seen_at, "never", undefined, seenInterval == null ? null : seenInterval * 1000);
 const firmware = typeof device.meta?.firmware_version === "string" ? device.meta.firmware_version : null;
 const rssi = typeof device.meta?.rssi === "number" ? device.meta.rssi : null;
 const recoverableKey = typeof device.meta?.ingest_key_enc === "string";

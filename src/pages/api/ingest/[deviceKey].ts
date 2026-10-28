@@ -17,6 +17,7 @@ import {
 import { recordIngestStat } from "../../../lib/ingestStats";
 import { enrichDeviceMetaHistories } from "../../../lib/rssiHistory";
 import { runAfterResponse } from "../../../lib/backgroundWork";
+import { nextReportInterval } from "../../../lib/reportInterval";
 
 async function sha256Hex(value: string): Promise<string> {
   const digest = await crypto.subtle.digest(
@@ -185,6 +186,9 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
     detectIngestClient(request.headers.get("user-agent"), recordedAt),
   );
   if (client) metaPatch.ingest_client = client;
+  // Learn how often this device reports, for freshness labels (writes only while learning or on change).
+  const interval = nextReportInterval(device.meta, device.last_seen_at, recordedAt);
+  if (interval) Object.assign(metaPatch, interval);
 
   if (Object.keys(metaPatch).length > 0) {
     await updateDeviceMeta(

@@ -7,11 +7,23 @@ export const LAG_MS = 30 * 60 * 1000; // 30 minutes
 /** Hard stale: treat as offline for status / share pages. */
 export const STALE_MS = 2 * 60 * 60 * 1000; // 2 hours
 
+/**
+ * Lag/stale thresholds for a device that normally reports every
+ * `reportIntervalMs` (learned on ingest, see reportInterval.ts): "may be
+ * offline" after 3 missed reports, "offline" after twice that. Never less than
+ * the fixed 30 min / 2 h, so fast devices behave as before.
+ */
+export function freshnessThresholds(reportIntervalMs?: number | null): { lagMs: number; staleMs: number } {
+  const interval = reportIntervalMs != null && Number.isFinite(reportIntervalMs) && reportIntervalMs > 0 ? reportIntervalMs : 0;
+  const lagMs = Math.max(LAG_MS, 3 * interval);
+  return { lagMs, staleMs: Math.max(STALE_MS, 2 * lagMs) };
+}
+
 export type RelativeAge = {
   label: string;
-  /** True when older than {@link LAG_MS} (30m). */
+  /** True when older than the lag threshold (30m, or 3 missed reports for a slow device). */
   lagging: boolean;
-  /** True when older than {@link STALE_MS} (2h). */
+  /** True when older than the stale threshold (2h, or twice the lag for a slow device). */
   stale: boolean;
   absolute: string | null;
 };
@@ -25,6 +37,8 @@ export function formatRelativeAge(
   iso: string | null | undefined,
   neverLabel = "never",
   locale: Locale = "en",
+  /** The device's usual reporting interval, when known (see freshnessThresholds). */
+  reportIntervalMs?: number | null,
 ): RelativeAge {
   if (!iso) {
     return { label: neverLabel, lagging: true, stale: true, absolute: null };
@@ -75,8 +89,8 @@ export function formatRelativeAge(
 
   return {
     label,
-    lagging: ms >= LAG_MS,
-    stale: ms >= STALE_MS,
+    lagging: ms >= freshnessThresholds(reportIntervalMs).lagMs,
+    stale: ms >= freshnessThresholds(reportIntervalMs).staleMs,
     absolute,
   };
 }

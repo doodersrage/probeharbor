@@ -9,6 +9,7 @@ import { fetchLatestSensorValues } from "../../../lib/sensorReadings";
 import type { SensorKind } from "../../../lib/devices";
 import type { DeviceSource } from "../../../lib/devices";
 import { apiCommonMessages, apiLocale } from "../../../i18n/messages/app/api/common";
+import { reportIntervalSeconds } from "../../../lib/reportInterval";
 
 export type LiveSensorCard = {
   deviceId: string;
@@ -23,8 +24,15 @@ export type LiveSensorCard = {
   value_bool: boolean | null;
   value_text: string | null;
   recorded_at: string | null;
+  /** The device's usual reporting interval (ms), so freshness labels fit slow devices. */
+  reportIntervalMs: number | null;
   /** Present for temperature probes when live feed data is available */
   temp?: { f: number | null; c: number | null; h: number | null } | null;
+};
+
+const intervalMs = (meta: unknown): number | null => {
+  const seconds = reportIntervalSeconds(meta);
+  return seconds == null ? null : seconds * 1000;
 };
 
 export const GET: APIRoute = async ({ cookies, url, request, locals }) => {
@@ -98,6 +106,7 @@ export const GET: APIRoute = async ({ cookies, url, request, locals }) => {
         deviceId: device.id,
         deviceName: device.name,
         deviceSource: device.source,
+        reportIntervalMs: intervalMs(device.meta),
         space: device.space ?? null,
         key: sensor.key,
         label: sensor.label,
@@ -138,6 +147,7 @@ export const GET: APIRoute = async ({ cookies, url, request, locals }) => {
           deviceSource:
             deviceConfig.devices.find((d) => d.id === row.sensor.device_id)?.source ??
             null,
+          reportIntervalMs: intervalMs(deviceConfig.devices.find((d) => d.id === row.sensor.device_id)?.meta),
           space:
             deviceConfig.devices.find((d) => d.id === row.sensor.device_id)?.space ??
             null,

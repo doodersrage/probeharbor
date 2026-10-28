@@ -93,9 +93,10 @@ export function freshnessDetailForSource(
   source: DeviceSource | null | undefined,
   neverLabel = "never",
   locale: Locale = "en",
+  reportIntervalMs?: number | null,
 ): string {
   const t = libTextMessages(locale).freshness;
-  const age = formatRelativeAge(recordedAt, neverLabel, locale);
+  const age = formatRelativeAge(recordedAt, neverLabel, locale, reportIntervalMs);
   if (!age.lagging) {
     return fmt(source === "pull_url" ? t.polled : t.updated, { age: age.label });
   }

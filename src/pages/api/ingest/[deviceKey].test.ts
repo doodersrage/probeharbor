@@ -405,6 +405,21 @@ describe("POST /api/ingest/[deviceKey]", () => {
     expect(mockSendThresholdAlertsIfNeeded).toHaveBeenCalledTimes(1);
   });
 
+  it("learns how often the device reports", async () => {
+    mockFindDeviceByIngestKeyHash.mockResolvedValue({
+      ...device,
+      last_seen_at: new Date(Date.now() - 10 * 60_000).toISOString(),
+    });
+    const { POST } = await import("./[deviceKey]");
+
+    await POST(makeContext({ headerKey: "good-key" }));
+
+    expect(mockUpdateDeviceMeta).toHaveBeenCalledWith(
+      "device-1",
+      expect.objectContaining({ report_interval_s: 600, report_intervals_s: [600] }),
+    );
+  });
+
   it("accepts the device key from the path when the header is absent", async () => {
     const { POST } = await import("./[deviceKey]");
 

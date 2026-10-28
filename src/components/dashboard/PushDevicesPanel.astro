@@ -9,6 +9,7 @@ import { fmt, getLocale, plural } from "../../i18n";
 import { deviceSetupPushMessages } from "../../i18n/messages/app/deviceSetup/push";
 import PushInlineRename from "../PushInlineRename";
 import RevealIngestKeyButton from "../RevealIngestKeyButton";
+import { reportIntervalSeconds } from "../../lib/reportInterval";
 
 /**
  * "Push from ESP / Pico / MCU" tab panel: create/rename/rotate/delete push
@@ -173,7 +174,8 @@ const spaces = spaceSuggestions(devices);
       {setupDevices.length > 0 && (
         <ul class="mt-6 space-y-6">
           {setupDevices.map((device) => {
-            const seen = formatRelativeAge(device.last_seen_at, NEVER_SEEN, locale);
+            const seenInterval = reportIntervalSeconds(device.meta);
+            const seen = formatRelativeAge(device.last_seen_at, NEVER_SEEN, locale, seenInterval == null ? null : seenInterval * 1000);
             const tempRenameSensors = device.sensors
               .filter((sensor) => sensor.kind === "temperature")
               .map((sensor) => ({
