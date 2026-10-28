@@ -2730,3 +2730,32 @@ use `/api/v1`).
       waiting screen detecting the reading.
 - Can only run in CI (needs E2E credentials); locally the signed-in case
   is skipped.
+
+------------------------------------------------------------------------
+
+## Milestone 8, increment 8.1: e2e for invite links (2026-10-28)
+
+**Status: Written; runs only in CI once the `E2E_INVITE_EMAIL` secret is set.
+Not run yet.** The owner chose a real inbox they control (2026-10-28).
+
+- [x] `e2e/household-invites.spec.ts`, signed in as the E2E account:
+      1. cancels leftovers
+      2. sends an invite to `E2E_INVITE_EMAIL`, and the "Invite link" card
+         shows a 48-hex link once
+      3. after a reload: no card, the pending row has no link
+      4. Resend: a new, different link
+      5. the old `/invite/<token>` says "This invite link is invalid." and
+         the new one doesn't
+      6. cancels the invite in `finally`
+
+      It skips without credentials or the inbox, or if the account doesn't
+      own a household.
+- [x] `ci.yml` passes `E2E_INVITE_EMAIL` from secrets.
+- Side effects per CI run: two real invite emails to that inbox, and one
+  invite row created and then cancelled (deleted) in the E2E account's
+  household.
+- Evidence: Playwright compiles and lists it; skipped locally (no
+  credentials). `pnpm typecheck`: 0 errors. `pnpm lint`: baseline.
+- **Owner step:** GitHub → Settings → Secrets → Actions → add
+  `E2E_INVITE_EMAIL`. The first CI run after that is the real check of S5's
+  UI.
