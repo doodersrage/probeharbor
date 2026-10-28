@@ -224,6 +224,48 @@ describe("POST /api/ingest/[deviceKey]", () => {
     expect(body).toEqual({ ok: true, readings: 2, sensors_created: 0 });
   });
 
+  it("stores the good values and reports an implausible one instead of storing it", async () => {
+    mockParseIngestPayload.mockReturnValue({
+      tempProbes: {},
+      typed: [
+        { key: "temp1", kind: "temperature", value: -196.6 },
+        { key: "temp2", kind: "temperature", value: 41 },
+      ],
+    });
+    mockInferSensorKind.mockImplementation((_key: string, item: { kind: string }) => item.kind);
+    const { POST } = await import("./[deviceKey]");
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    const response = await POST(makeContext({ headerKey: "good-key" }));
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(mockInsertSensorReadings).toHaveBeenCalledWith([expect.objectContaining({ value_num: 41 })]);
+    expect((body as { rejected: unknown }).rejected).toEqual([
+      { key: "temp1", kind: "temperature", value: -196.6, reason: "sensor_fault" },
+    ]);
+  });
+
+  it("answers 400 with the reasons when every value is implausible", async () => {
+    mockParseIngestPayload.mockReturnValue({
+      tempProbes: {},
+      typed: [{ key: "temp1", kind: "temperature", value: 185 }],
+    });
+    mockInferSensorKind.mockImplementation((_key: string, item: { kind: string }) => item.kind);
+    const { POST } = await import("./[deviceKey]");
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    const response = await POST(makeContext({ headerKey: "good-key" }));
+
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({
+      error: "No valid sensor values",
+      rejected: [{ key: "temp1", kind: "temperature", value: 185, reason: "sensor_fault" }],
+    });
+    expect(mockInsertSensorReadings).not.toHaveBeenCalled();
+    expect(mockRecordIngestStat).toHaveBeenCalledWith("device-1", false);
+  });
+
   it("ignores null or blank battery/rssi instead of recording 0", async () => {
     mockReadJsonBodyWithLimit.mockResolvedValue({
       ok: true,

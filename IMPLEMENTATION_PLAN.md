@@ -901,3 +901,58 @@ which is a freeze alert. Only the payload checker warned about this
 - Calibration offsets entered in °C on such sensors would now apply to
   °F values. This is an edge case to check if the query above finds any
   sensors.
+
+------------------------------------------------------------------------
+
+## Milestone 1, increment 1.4: reject implausible values (2026-10-27)
+
+**Status: Implemented and verified locally. No migration.**
+
+### Problem (verified)
+
+Any finite number was stored (`ingestPayload.ts:83`). DS18B20 fault
+codes (-196.6°F disconnected, 185°F power-on reset) were stored as real
+temperatures and could fire freeze or heat alerts. ProbeHarbor firmware
+filters only -127°C (`main.cpp:362`), and sample sketches and other
+devices filter nothing. Only the payload checker warned.
+
+### Acceptance criteria
+
+- [x] One documented rule (`readingPlausibility.ts`):
+      - temperature: exactly 185 / -196.6°F → `sensor_fault`
+      - temperature: outside -100…250°F after unit conversion →
+        `out_of_range`
+      - humidity: outside 0–100 → `out_of_range`
+- [x] Push, MQTT (forwards to push) and the payload checker share it
+      through `interpretIngestPayload`, which returns
+      `readings` (valid) and `rejected`.
+- [x] Pull feeds: rejected values are neither stored
+      (`buildReadingRowsFromTempResults`) nor alerted on
+      (`buildReadingsFromResults`).
+- [x] The response gains an additive `rejected` list. If all values are
+      rejected: `400 { error: "No valid sensor values", rejected }`.
+      Rejections are logged with key, value and reason; no secrets.
+- [x] Docs: `docs/ingest/index.md` (rules and response) and
+      `/docs/api` (400 row).
+
+### Evidence
+
+- `readingPlausibility.test.ts` (19 tests), `[deviceKey].test.ts` (+2
+  route tests: partial 200, all-rejected 400) and `ingestCheck.test.ts`.
+  With the rule disabled, 14 tests fail.
+- `pnpm test`: 2931 passed. `pnpm typecheck`: 0 errors. `pnpm lint`: 64
+  warnings (baseline). `pnpm build`: pass. `pnpm test:e2e`: 44 passed,
+  12 signed-in specs skipped.
+
+### Compatibility and risks
+
+- A device that sends **only** fault values now gets 400 instead of 200.
+  ProbeHarbor firmware logs the failed post and retries. The device's
+  last-seen time isn't updated, so it shows as offline. That's an
+  honest result for a probe reporting nothing usable, but the device
+  page doesn't yet explain it. **Follow-up:** record the last rejection
+  on the device so the UI can say "probe reports a fault code".
+- A legitimate reading of exactly 185.0°F (±0.05) is dropped. That's
+  unlikely in the spaces ProbeHarbor monitors.
+- Already-stored fault values remain in history (production data
+  cleanup needs approval).

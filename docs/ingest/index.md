@@ -98,6 +98,25 @@ Supported `kind` values: `temperature`, `humidity`, `co2`, `pressure`, `pm25`, `
 
 Temperatures are stored and alerted on in °F. A `temperature` value with `unit` `C`, `°C`, `Cel`, `celsius`, `degC`, `K` or `kelvin` is converted to °F when it arrives; the value and unit you sent are kept in the reading's `meta` (`sent_value`, `sent_unit`). No unit, or `F`, is taken as °F.
 
+### Implausible values
+
+Values that can't be a real measurement are not stored, so they can't fire or hide an alert:
+
+| Kind | Rejected | Reason code |
+|---|---|---|
+| `temperature` | exactly 185°F or -196.6°F (DS18B20 power-on reset / disconnected) | `sensor_fault` |
+| `temperature` | below -100°F or above 250°F (after °C/K conversion) | `out_of_range` |
+| `humidity` | below 0% or above 100% | `out_of_range` |
+
+The other values in the same request are stored as usual. The response lists what was dropped:
+
+```json
+{ "ok": true, "readings": 1, "sensors_created": 0,
+  "rejected": [{ "key": "temp1", "kind": "temperature", "value": -196.6, "reason": "sensor_fault" }] }
+```
+
+If every value is rejected the endpoint answers `400` with `{ "error": "No valid sensor values", "rejected": [...] }`. The [payload checker](https://probeharbor.dev/payload-checker) shows the same result before you deploy a device.
+
 ### SenML (RFC 8428)
 
 SenML JSON arrays are auto-detected when native shapes are absent. Temperature uses unit `Cel` or `degF`; humidity uses `%RH`. Probe keys come from the SenML name (last path segment).

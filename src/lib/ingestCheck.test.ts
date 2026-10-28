@@ -45,8 +45,10 @@ describe("checkIngestPayload", () => {
     });
     const text = result.warnings.join("\n");
     expect(text).not.toContain("would read as");
-    expect(text).toContain("is 185, a DS18B20 error value");
-    expect(text).toContain("is 85, a DS18B20 error value");
+    // t2 (185°F) and t3 (85°C = 185°F) are both DS18B20 fault codes and are not stored.
+    expect(text.match(/185°F, a DS18B20 error value/g)).toHaveLength(2);
+    expect(text).toContain("won't be stored");
+    expect(result.readings.map((r) => r.key)).toEqual(["t1", "xyz"]);
     expect(text).toContain('"xyz" didn\'t match a sensor type');
   });
 });

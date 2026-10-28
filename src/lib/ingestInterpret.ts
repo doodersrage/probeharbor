@@ -3,6 +3,7 @@ import { inferSensorKind, parseIngestPayload } from "./ingestPayload";
 import { parseTempFeedPayload } from "./tempFeedConfig";
 import { discoverIngestPayload } from "./feedDiscovery";
 import { labelForPushSensorKey, type DiscoveredPushSensor } from "./pushSensorDiscovery";
+import { implausibleReason, type ImplausibleReason } from "./readingPlausibility";
 
 /** One value the ingest endpoint would store, before it has a sensor id. */
 export type InterpretedReading = {
@@ -16,9 +17,19 @@ export type InterpretedReading = {
   meta: Record<string, unknown>;
 };
 
+/** A value that can't be a real measurement; reported back, never stored. */
+export type RejectedReading = {
+  key: string;
+  kind: SensorKind;
+  value: number;
+  reason: ImplausibleReason;
+};
+
 export type InterpretedIngest = {
   discovered: DiscoveredPushSensor[];
+  /** Values to store. */
   readings: InterpretedReading[];
+  rejected: RejectedReading[];
   batteryPct: number | null;
   rssi: number | null;
   /** Browser-flasher firmware (1.2.1+) reports its version so Devices can offer updates. */
@@ -122,11 +133,23 @@ export function interpretIngestPayload(payload: unknown, deviceName?: string | n
     });
   }
 
+  const valid: InterpretedReading[] = [];
+  const rejected: RejectedReading[] = [];
+  for (const reading of readings) {
+    const reason = implausibleReason(reading.kind, reading.value_num);
+    if (reason && reading.value_num != null) {
+      rejected.push({ key: reading.key, kind: reading.kind, value: reading.value_num, reason });
+    } else {
+      valid.push(reading);
+    }
+  }
+
   const fields = payload && typeof payload === "object" ? (payload as Record<string, unknown>) : {};
   const firmware = typeof fields.fw === "string" ? fields.fw.trim().slice(0, 24) : "";
   return {
     discovered,
-    readings,
+    readings: valid,
+    rejected,
     batteryPct: numericField(fields.battery ?? fields.battery_pct),
     rssi: numericField(fields.rssi),
     firmwareVersion: /^\d+\.\d+\.\d+$/.test(firmware) ? firmware : null,

@@ -1,4 +1,4 @@
-import { interpretIngestPayload, temperatureToFahrenheit, type InterpretedReading } from "./ingestInterpret";
+import { interpretIngestPayload, type InterpretedReading } from "./ingestInterpret";
 
 export type IngestCheckResult = {
   /** What the real endpoint would answer: 200 with readings, or 400 "No sensor values found". */
@@ -14,8 +14,6 @@ export type IngestCheckResult = {
 /** Keys the endpoint reads that aren't sensor values. */
 const DEVICE_KEYS = new Set(["battery", "battery_pct", "rssi", "fw", "meta", "name", "device", "labels"]);
 
-const DS18B20_FAULTS_F = [185, -196.6];
-const DS18B20_FAULTS_C = [85, -127];
 
 /**
  * Dry-run a push payload: what the ingest endpoint would store, plus
@@ -55,23 +53,18 @@ export function checkIngestPayload(payload: unknown): IngestCheckResult {
     }
   }
 
+  for (const rejected of interpreted.rejected) {
+    const label = interpreted.discovered.find((d) => d.key === rejected.key)?.label ?? rejected.key;
+    warnings.push(
+      rejected.reason === "sensor_fault"
+        ? `${label} is ${rejected.value}°F, a DS18B20 error value (reset or disconnected), not a real temperature. It won't be stored. Check the probe wiring and power.`
+        : rejected.kind === "humidity"
+          ? `${label} is ${rejected.value}%, outside 0–100. It won't be stored. Check the sensor or the field.`
+          : `${label} is ${rejected.value}°F, outside -100 to 250°F. It won't be stored. Check the sensor or its unit.`,
+    );
+  }
+
   for (const reading of interpreted.readings) {
-    if (reading.kind === "temperature" && reading.value_num != null) {
-      // °C/K values are converted to °F at ingest; check faults against what the device sent.
-      const sentC =
-        typeof reading.meta.sent_value === "number" &&
-        temperatureToFahrenheit(0, reading.meta.sent_unit as string)?.from === "C";
-      const sent = sentC ? (reading.meta.sent_value as number) : reading.value_num;
-      const faults = sentC ? DS18B20_FAULTS_C : DS18B20_FAULTS_F;
-      if (faults.some((fault) => Math.abs(sent - fault) < 0.05)) {
-        warnings.push(
-          `${reading.label} is ${sent}, a DS18B20 error value (reset or disconnected), not a real temperature. Check the probe wiring and power.`,
-        );
-      }
-    }
-    if (reading.kind === "humidity" && reading.value_num != null && (reading.value_num < 0 || reading.value_num > 100)) {
-      warnings.push(`${reading.label} is ${reading.value_num}%, outside 0–100. Check the sensor or the field.`);
-    }
     if (reading.kind === "generic") {
       warnings.push(
         `"${reading.key}" didn't match a sensor type, so it's stored as a generic value with no alerts. Put the type in the name (temp, humidity, door, leak, …) or use {"sensors": [{"key": "${reading.key}", "kind": "temperature", "value": …}]}.`,

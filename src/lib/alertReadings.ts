@@ -3,6 +3,7 @@ import type { AlertReading } from "./alerts";
 import type { DeviceSensor, DeviceWithSensors } from "./devices";
 import { probePairingKey } from "./probePairing";
 import { applySensorOffset } from "./sensorCalibration";
+import { implausibleReason } from "./readingPlausibility";
 
 export function buildReadingsFromResults(
   results: TempFeedResult[],
@@ -18,7 +19,7 @@ export function buildReadingsFromResults(
     const feed = results.find((result) => result.id === probe.feedId);
     const data = feed?.probes[probe.key];
     // No temperature reported: nothing to evaluate (never treat it as 0°F).
-    if (!feed || feed.error || !data || data.f == null) return [];
+    if (!feed || feed.error || !data || data.f == null || implausibleReason("temperature", data.f)) return [];
     const device = devicesById.get(probe.feedId);
     const tempSensor = device?.sensors.find(
       (s) => s.key === probe.key && s.kind === "temperature",
@@ -29,7 +30,10 @@ export function buildReadingsFromResults(
     return [{
       label: probe.label,
       tempf: applySensorOffset(data.f, tempSensor?.offset_num ?? 0),
-      humidity: data.h == null ? null : applySensorOffset(data.h, humiditySensor?.offset_num ?? 0),
+      humidity:
+        data.h == null || implausibleReason("humidity", data.h)
+          ? null
+          : applySensorOffset(data.h, humiditySensor?.offset_num ?? 0),
       space: spaceByFeedId.get(probe.feedId) ?? null,
       sensorId: tempSensor?.id,
     }];

@@ -120,9 +120,21 @@ export const POST: APIRoute = async ({ params, request }) => {
     });
   }
 
+  if (interpreted.rejected.length > 0) {
+    // Values that can't be real (e.g. a DS18B20 fault code) are reported, not stored.
+    console.warn(
+      `Ingest for device ${device.id} rejected ${interpreted.rejected.length} implausible value(s):`,
+      interpreted.rejected.map((r) => `${r.key}=${r.value} (${r.reason})`).join(", "),
+    );
+  }
+
   if (rows.length === 0) {
+    const body =
+      interpreted.rejected.length > 0
+        ? { error: "No valid sensor values", rejected: interpreted.rejected }
+        : { error: "No sensor values found" };
     return finish(
-      new Response(JSON.stringify({ error: "No sensor values found" }), {
+      new Response(JSON.stringify(body), {
         status: 400,
         headers: { "Content-Type": "application/json" },
       }),
@@ -272,6 +284,7 @@ export const POST: APIRoute = async ({ params, request }) => {
         ok: true,
         readings: rows.length,
         sensors_created: sensorSync.created,
+        ...(interpreted.rejected.length > 0 ? { rejected: interpreted.rejected } : {}),
       }),
       {
         status: 200,

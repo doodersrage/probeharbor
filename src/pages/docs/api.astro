@@ -209,8 +209,8 @@ const mqttCurl = `curl -X POST "${siteUrl}/api/ingest/mqtt" \\
           <tbody>
             <tr>
               <td><code>400</code></td>
-              <td>Missing key, invalid JSON, empty body, unusable payload</td>
-              <td><code>&#123; "error": "…" &#125;</code></td>
+              <td>Missing key, invalid JSON, empty body, unusable payload, or every value implausible</td>
+              <td><code>&#123; "error": "…" &#125;</code> (plus <code>rejected</code> when values were implausible)</td>
             </tr>
             <tr>
               <td><code>401</code></td>

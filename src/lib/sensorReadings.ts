@@ -3,6 +3,7 @@ import type { Json } from "../types/supabase";
 import type { DeviceSensor, DeviceWithSensors } from "./devices";
 import type { TempFeedResult, TempProbeConfig } from "./tempFeedConfig";
 import { applySensorOffset } from "./sensorCalibration";
+import { implausibleReason } from "./readingPlausibility";
 export type { TypedSensorValue } from "./ingestPayload";
 export { parseIngestPayload, inferSensorKind } from "./ingestPayload";
 
@@ -73,7 +74,7 @@ export function buildReadingRowsFromTempResults(
       (s) => s.key === probe.key && s.kind === "humidity",
     );
 
-    if (tempSensor && reading.f != null) {
+    if (tempSensor && reading.f != null && !implausibleReason("temperature", reading.f)) {
       rows.push({
         sensor_id: tempSensor.id,
         household_id: householdId,
@@ -83,7 +84,7 @@ export function buildReadingRowsFromTempResults(
       });
     }
 
-    if (humiditySensor && reading.h != null) {
+    if (humiditySensor && reading.h != null && !implausibleReason("humidity", reading.h)) {
       rows.push({
         sensor_id: humiditySensor.id,
         household_id: householdId,
