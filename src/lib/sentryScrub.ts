@@ -99,7 +99,7 @@ export function scrubUrl(url: string): string {
   const path = url.slice(0, pathEnd);
   const query = q !== -1 ? url.slice(q, h !== -1 && h > q ? h : url.length) : "";
   const hash = h !== -1 ? url.slice(h) : "";
-  return scrubPath(path) + scrubQuery(query) + (hash ? "#" + REDACTED : "");
+  return `${scrubPath(path)}${scrubQuery(query)}${hash ? `#${REDACTED}` : ""}`;
 }
 
 /** Scrub every URL inside free text (error messages, breadcrumb messages). */

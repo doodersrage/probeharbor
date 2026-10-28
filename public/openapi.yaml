@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: ProbeHarbor API
-  version: 1.2.1
+  version: 1.3.0
   description: |
     HTTP endpoints for device ingest, share links, metrics, devices CRUD, MQTT bridge, and inbound automations.
     Authenticated dashboard routes use Supabase session cookies; programmatic access uses API keys (Pro).
@@ -110,6 +110,11 @@ paths:
   /api/ingest/mqtt:
     post:
       summary: MQTT-over-HTTP bridge
+      description: |
+        Wraps an MQTT message (from a bridge such as Node-RED or an HA automation)
+        and forwards its payload to push ingest. `payload` may be a JSON string;
+        `message` an already-parsed object. Responses after forwarding are the
+        push ingest responses (see `/api/ingest/{deviceKey}`).
       parameters:
         - name: X-Ingest-Key
           in: header
@@ -117,6 +122,8 @@ paths:
           schema:
             type: string
       requestBody:
+        required: true
+        description: JSON, at most 65536 bytes.
         content:
           application/json:
             schema:
@@ -126,11 +133,27 @@ paths:
                   type: string
                 payload:
                   type: string
+                  description: JSON string with the readings
                 message:
                   type: object
+                  description: Readings object (used when payload is absent)
       responses:
         "200":
-          description: Forwarded to ingest
+          description: Forwarded and stored (same body as push ingest 200)
+        "400":
+          description: Missing X-Ingest-Key header, invalid JSON, invalid payload JSON string, missing payload or message, or no usable sensor values
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Invalid device key
+        "413":
+          description: Body larger than 65536 bytes
+        "429":
+          description: Too many requests for this device key
+        "500":
+          description: Readings could not be stored; safe to retry
   /api/v1/devices:
     get:
       summary: List household devices (Pro API key)
@@ -240,10 +263,41 @@ paths:
   /api/inbound/{token}:
     post:
       summary: Inbound webhook actions (Zapier / Home Assistant)
+      description: |
+        Every request must be signed with the webhook's signing secret.
+        Recommended (rejects replays): `X-ProbeHarbor-Timestamp` (Unix seconds)
+        and `X-ProbeHarbor-Signature-V2: sha256=<hex HMAC-SHA256 of "<timestamp>.<raw body>">`;
+        timestamps more than 5 minutes off are rejected. If the V2 header is
+        present, only V2 is checked. The older body-only signature
+        (`X-ProbeHarbor-Signature: sha256=<hex HMAC of raw body>`, or the legacy
+        `X-ThermalTrace-Signature`, `X-GarageTemp-Signature`, `X-Signature`) is
+        still accepted for now. The action can also come from `?action=`.
       parameters:
         - name: token
           in: path
           required: true
+          schema:
+            type: string
+        - name: action
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [snooze, vacation, clear_snooze, clear_vacation, status]
+        - name: X-ProbeHarbor-Timestamp
+          in: header
+          required: false
+          schema:
+            type: string
+        - name: X-ProbeHarbor-Signature-V2
+          in: header
+          required: false
+          schema:
+            type: string
+        - name: X-ProbeHarbor-Signature
+          in: header
+          required: false
+          description: Body-only signature (older format)
           schema:
             type: string
       requestBody:
@@ -257,21 +311,85 @@ paths:
                   enum: [snooze, vacation, clear_snooze, clear_vacation, status]
                 hours:
                   type: integer
+                  description: snooze length (default 24)
+                days:
+                  type: integer
+                  description: vacation length (default 7)
       responses:
         "200":
-          description: Action applied
+          description: Action applied (snooze, vacation, clears), household status (`status`), or a help message for an unknown action
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                  action:
+                    type: string
+                  members:
+                    type: integer
+                  message:
+                    type: string
+        "400":
+          description: Missing token
+        "401":
+          description: Invalid webhook token, invalid signature, or a stale timestamp (`Stale timestamp …`)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
   /api/share/{token}/readings:
     get:
       summary: Public share link readings
+      description: |
+        No login: the token is the credential. Metrics-scoped links default to
+        Prometheus text; other links default to JSON. `history` links also
+        include 7 days of chart points.
       parameters:
         - name: token
           in: path
           required: true
           schema:
             type: string
+        - name: format
+          in: query
+          required: false
+          description: "`prometheus` or `grafana` need a metrics-scoped link; anything else returns JSON."
+          schema:
+            type: string
+            enum: [json, prometheus, grafana]
       responses:
         "200":
-          description: JSON readings payload
+          description: Readings (JSON), Prometheus text exposition, or Grafana JSON
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+            text/plain:
+              schema:
+                type: string
+        "400":
+          description: Missing token
+        "403":
+          description: "`prometheus`/`grafana` requested on a link that isn't metrics-scoped"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Unknown, revoked or expired link
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "429":
+          description: Too many requests
+          headers:
+            Retry-After:
+              schema:
+                type: integer
   /api/status/subscribe:
     post:
       summary: Subscribe to system status emails

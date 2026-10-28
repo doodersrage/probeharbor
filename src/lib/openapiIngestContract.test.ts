@@ -35,3 +35,31 @@ describe("OpenAPI push ingest contract", () => {
     expect(ingestSection).toContain(String(Number(max[1]) * Number(max[2])));
   });
 });
+
+/** Section of the spec for one path (up to the next top-level path). */
+function pathSection(path: string): string {
+  const start = spec.indexOf(`  ${path}:`);
+  expect(start, `${path} missing from openapi.yaml`).toBeGreaterThan(-1);
+  const next = spec.slice(start + 1).search(/\n {2}\/api\//);
+  return next === -1 ? spec.slice(start) : spec.slice(start, start + 1 + next);
+}
+
+describe("OpenAPI: other externally called routes", () => {
+  it.each([
+    ["/api/ingest/mqtt", ["src/pages/api/ingest/mqtt.ts", "src/lib/ingestLimits.ts"]],
+    ["/api/inbound/{token}", ["src/pages/api/inbound/[token].ts"]],
+    ["/api/share/{token}/readings", ["src/pages/api/share/[token]/readings.ts", "src/lib/shareReadingsAccess.ts"]],
+  ] as const)("%s documents every status code its code returns", (path, files) => {
+    const section = pathSection(path);
+    const codes = new Set(files.flatMap((f) => [...codesIn(readFileSync(f, "utf8"))]));
+    for (const code of codes) expect(section).toContain(`"${code}":`);
+  });
+
+  it("documents the inbound v2 signature headers the verifier reads", () => {
+    const signing = readFileSync("src/lib/webhookSigning.ts", "utf8");
+    const section = pathSection("/api/inbound/{token}");
+    for (const header of [...signing.matchAll(/_HEADER = "([^"]+)"/g)].map((m) => m[1]!)) {
+      expect(section).toContain(`name: ${header}`);
+    }
+  });
+});

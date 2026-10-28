@@ -2565,4 +2565,37 @@ Audit (M7): `public/openapi.yaml` listed only 200/401 for
   schemas). `pnpm test`: 3124 passed. `pnpm typecheck`: 0 errors.
   `pnpm lint`: 64 warnings (baseline). `pnpm build`: pass.
 - Not changed: other operations in the spec (MQTT bridge, v1 API, share)
-  weren't re-audited. That's a follow-up.
+  weren't re-audited. *(MQTT, inbound and share were done in 7.2; the v1
+  API, status subscribe and FCM remain.)*
+
+------------------------------------------------------------------------
+
+## Milestone 7, increment 7.2: OpenAPI for the MQTT bridge, inbound webhooks and share readings (2026-10-28)
+
+**Status: Implemented and verified locally. Docs/contract only. Not
+deployed.**
+
+Each of these listed only a 200 before.
+- [x] `/api/ingest/mqtt`: how `payload`/`message` are forwarded, plus 400
+      (5 causes), 401, 413, 429 and 500.
+- [x] `/api/inbound/{token}`: the signing requirement, with the V2
+      timestamped headers from S3 (`X-ProbeHarbor-Timestamp`,
+      `X-ProbeHarbor-Signature-V2`, a 5-minute window, V2-only when
+      present) and the legacy headers. Also `?action=`, `days`, the 200
+      body, 400, and 401 (bad token, bad signature, stale timestamp).
+- [x] `/api/share/{token}/readings`: the `format` query (`json`,
+      `prometheus`, `grafana`; metrics formats need a metrics-scoped
+      link), JSON or `text/plain` 200, 400, 403, 404 and 429 with
+      Retry-After.
+- [x] Spec version 1.3.0. The drift guard now covers these three routes
+      (status codes from each route and its helpers) and checks that the
+      inbound section names every header constant in `webhookSigning.ts`.
+      It fails 4/7 against the 1.2.1 spec.
+- Also fixed two lint findings I'd introduced (a regex with adjacent
+  spaces in the new test; string concatenation in `sentryScrub.ts`).
+  Lint is back to the 64-warning baseline.
+- Evidence: the spec parses (js-yaml). `pnpm test`: 3128 passed.
+  `pnpm typecheck`: 0 errors. `pnpm lint`: 64 warnings. `pnpm build`:
+  pass.
+- Remaining: `/api/v1/*` (Pro API), `/api/status/subscribe` and
+  `/api/push/fcm` still list only success codes.
