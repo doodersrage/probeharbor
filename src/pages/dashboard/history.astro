@@ -1,5 +1,6 @@
 ---
 import { getDisplayPreferencesFromMetadata } from "../../lib/userPreferences";
+import { timeZoneFromCookie, zonedDayEndIso, zonedDayStartIso } from "../../lib/zonedDay";
 import DashboardLayout from "../../layouts/DashboardLayout.astro";
 import GarageTempHistory from "../../components/GarageTempHistory.astro";
 import UpgradeNudge from "../../components/UpgradeNudge.astro";
@@ -150,28 +151,23 @@ const compareYoy =
   historyDays >= 365;
 const needPriorYear = compareYoy || overlayColdest;
 
+// Whole days in the browser's time zone (ph_tz cookie); UTC when unknown.
+const filterTimeZone = timeZoneFromCookie(Astro.cookies);
+const fromIso = fromDate ? zonedDayStartIso(fromDate, filterTimeZone) : null;
+const toIso = toDate ? zonedDayEndIso(toDate, filterTimeZone) : null;
+
 const filters = {
   feedName: feedFilter || undefined,
   probeKey: probeFilter || undefined,
-  from: fromDate
-    ? clampIsoToHistoryWindow(
-        new Date(`${fromDate}T00:00:00`).toISOString(),
-        historyDays,
-      )
-    : historyCutoffIso(historyDays),
-  to: toDate ? new Date(`${toDate}T23:59:59`).toISOString() : undefined,
+  from: fromIso ? clampIsoToHistoryWindow(fromIso, historyDays) : historyCutoffIso(historyDays),
+  to: toIso ?? undefined,
 };
 
 const chartFilters = {
   feedName: feedFilter || undefined,
   probeKey: probeFilter || undefined,
-  from: fromDate
-    ? clampIsoToHistoryWindow(
-        new Date(`${fromDate}T00:00:00`).toISOString(),
-        historyDays,
-      )
-    : undefined,
-  to: toDate ? new Date(`${toDate}T23:59:59`).toISOString() : undefined,
+  from: fromIso ? clampIsoToHistoryWindow(fromIso, historyDays) : undefined,
+  to: toIso ?? undefined,
 };
 
 const historyTabRaw = Astro.url.searchParams.get("tab")?.trim() ?? "chart";

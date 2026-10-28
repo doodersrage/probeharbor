@@ -126,6 +126,21 @@ const householdError = Astro.url.searchParams.get("household_error") === "1";
   <script src="/dashboard-shortcuts.js" defer is:inline />
   <script src="/reading-age-tick.js" defer is:inline />
   <script is:inline>
+    // Date filters (History, CSV) read the browser's time zone from this cookie
+    // so "from Oct 28" means local midnight, not UTC (src/lib/zonedDay.ts).
+    (() => {
+      try {
+        const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        const value = tz ? encodeURIComponent(tz) : "";
+        if (value && !document.cookie.split("; ").includes(`ph_tz=${value}`)) {
+          document.cookie = `ph_tz=${value}; path=/; max-age=31536000; samesite=lax`;
+        }
+      } catch {
+        // No Intl time zone: filters stay in UTC.
+      }
+    })();
+  </script>
+  <script is:inline>
     (() => {
       const refreshButtons = document.querySelectorAll("[data-dashboard-refresh]");
       refreshButtons.forEach((el) => {

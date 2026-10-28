@@ -28,9 +28,10 @@ vi.mock("../../../lib/garageTempsHistory", () => ({
   fetchAllGarageTempReadings: (...a: unknown[]) => mockFetchAllGarageTempReadings(...a),
 }));
 
-function makeContext(query: string): APIContext {
+function makeContext(query: string, timeZone?: string): APIContext {
   const url = new URL(`https://example.com/api/garage-temps/export.csv${query}`);
-  return { url, cookies: {} } as unknown as APIContext;
+  const cookies = { get: (name: string) => (name === "ph_tz" && timeZone ? { value: timeZone } : undefined) };
+  return { url, cookies } as unknown as APIContext;
 }
 
 beforeEach(() => {
@@ -69,8 +70,8 @@ describe("GET /api/garage-temps/export.csv", () => {
 
   it("passes trimmed feed/probe filters and the clamped date range through", async () => {
     const { GET } = await import("./export.csv");
-    const expectedFrom = new Date("2024-01-01");
-    expectedFrom.setHours(0, 0, 0, 0);
+    // No time zone cookie: whole UTC days, as before.
+    const expectedFrom = new Date("2024-01-01T00:00:00.000Z");
 
     await GET(makeContext("?feed=%20Garage%20&probe=avg&from=2024-01-01"));
 
@@ -81,6 +82,17 @@ describe("GET /api/garage-temps/export.csv", () => {
       to: undefined,
     });
     expect(mockClampIsoToHistoryWindow).toHaveBeenCalledWith(expectedFrom.toISOString(), 90);
+  });
+
+  it("reads from/to as whole days in the browser's time zone (ph_tz cookie)", async () => {
+    const { GET } = await import("./export.csv");
+
+    await GET(makeContext("?from=2024-01-01&to=2024-01-02", "America%2FNew_York"));
+
+    expect(mockFetchAllGarageTempReadings).toHaveBeenCalledWith(
+      "user-1",
+      expect.objectContaining({ from: "2024-01-01T05:00:00.000Z", to: "2024-01-03T04:59:59.999Z" }),
+    );
   });
 
   it("omits empty feed/probe filters", async () => {

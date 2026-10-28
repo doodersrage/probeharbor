@@ -536,7 +536,7 @@ The detailed increment log follows the Milestone 0 audit below. Summary:
 | 3 Setup / hardware | Code done; hardware tests open | 3.1–3.3 | Physical tests in `firmware/probeharbor-probe/HARDWARE-TESTS.md` |
 | 4 Operations | Partial | 4.1–4.4 | Restore rehearsal; migration check in CI (decision) |
 | 5 Security | Mostly done | S1–S8, rate limiting | Clear old raw share/status tokens (~2026-11-04); remove legacy snooze/invite branches (after 2026-11-05); require webhook V2 (after the usage query) |
-| 6 Dashboard | Done | 6.1–6.9 | CSV `from`/`to` in UTC days |
+| 6 Dashboard | Done | 6.1–6.9, local-day date filters | — |
 | 7 Integrations | Spec done | 7.1–7.4, HA v1.2.0 (V2 signing) | Require V2 on inbound (~2026-11-11) |
 | 8 Polish | Mostly done | 8.1–8.3, dashboard axe (0 violations) | Billing e2e |
 
@@ -3167,11 +3167,8 @@ deployed.** The owner approved the recommendation (2026-10-28).
   dashboard pages with the E2E account. The first CI run (report-only)
   found **0 violations** ("AXE summary: 0 violation(s) across 6 pages"), so
   serious/critical now fail, as on the public pages.
-- **CSV / History date range:** left on UTC days. The History table, chart
-  and CSV all use the same boundaries. The only stored time zone
-  (`quiet_hours_timezone`) defaults to America/New_York for everyone, so
-  it isn't a reliable signal. A real fix would pass the browser time zone
-  to all three, which changes what each filter shows, so it's held.
+- **CSV / History date range:** *(done, see "Optional: date filters in the
+  browser's time zone" below.)*
 
 ------------------------------------------------------------------------
 
@@ -3191,3 +3188,36 @@ deployed.** The owner approved the recommendation (2026-10-28).
   the DB password as GitHub secrets (owner decision). It should warn
   rather than block, since code sometimes legitimately ships before its
   additive migration.
+
+------------------------------------------------------------------------
+
+## Optional: date filters in the browser's time zone (2026-10-28)
+
+**Status: Implemented and verified locally. No migration. Not deployed.**
+
+Before, `from=2026-10-28` meant 00:00 **UTC** (the Worker's zone) on the
+History table and chart and in the readings CSV: 8 pm the previous day in
+New York.
+
+- [x] `DashboardLayout` sets `ph_tz` (the browser's IANA zone, URL-encoded,
+      1 year, `SameSite=Lax`) when it differs. It isn't sensitive and is
+      only used for date maths.
+- [x] `src/lib/zonedDay.ts` provides `zonedDayStartIso` / `zonedDayEndIso`
+      (local midnight to the last ms of the day, correct on 23 and 25 h DST
+      days) and `timeZoneFromCookie` (validated with `Intl`; anything
+      invalid or missing → "UTC", the old behaviour).
+- [x] Used for the History `filters` / `chartFilters` and
+      `/api/garage-temps/export.csv` `from`/`to`.
+- The CSV's timestamps stay UTC (the "Times are UTC" note still applies);
+  only the day boundaries moved.
+- **Not changed:** the compare-window presets and the claims pack still
+  work in whole-day arithmetic.
+- Evidence: `zonedDay.test.ts` (6: UTC unchanged; New York EDT; Berlin;
+  the 2026-11-01 fall-back day ends 04:59:59.999Z, the 2026-03-08
+  spring-forward day is 23 h; bad dates; cookie validation).
+  `export.csv.test.ts` +1 (a New York cookie gives 05:00Z → 04:59:59.999Z
+  for Jan 1–2), and the old test now asserts UTC explicitly (it had
+  depended on the test machine's zone). `pnpm test`: 3205 passed.
+  `pnpm typecheck`: 0 errors. `pnpm lint`: 64 warnings (baseline).
+  `pnpm build`: pass. `pnpm test:e2e`: 58 passed, 14 skipped.
+- Not verified: a signed-in History filter in a browser.
