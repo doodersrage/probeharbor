@@ -1867,7 +1867,8 @@ ingest bug is found later.
 `20261028120000_tighten_webhook_and_status_token_rls.sql` applied to
 production 2026-10-28 by the owner (`pnpm db:push`, no errors; the two
 "does not exist, skipping" notices are the idempotent `drop policy if
-exists`). The `pg_policies` check below hasn't been reported yet.**
+exists`). Verified: `pg_policies` lists only
+`inbound_webhooks_manager_select` and `status_page_tokens_manager_select`.**
 
 Problem (verified): `inbound_webhooks_member_select`
 (`20260826160000:66-69`) and `status_page_tokens_member_select`
