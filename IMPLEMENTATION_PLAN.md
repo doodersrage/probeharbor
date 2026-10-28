@@ -2759,3 +2759,29 @@ Not run yet.** The owner chose a real inbox they control (2026-10-28).
 - **Owner step:** GitHub → Settings → Secrets → Actions → add
   `E2E_INVITE_EMAIL`. The first CI run after that is the real check of S5's
   UI.
+
+------------------------------------------------------------------------
+
+## Milestone 8, increment 8.2: Lighthouse accessibility gates the deploy (2026-10-28)
+
+**Status: CI config only. Takes effect on the next push.**
+
+Audit (M8): "Lighthouse is warn-only and `continue-on-error`."
+
+- Evidence first: across the last 8 green CI runs, Lighthouse finished
+  every time, and the accessibility, best-practices and SEO assertions
+  (≥ 0.9) never warned on any of the 6 URLs (home, pricing, about,
+  compare, freeze-map, guides). Only performance warned.
+- [x] `lighthouserc.json`: accessibility, best-practices and SEO are now
+      `error` at 0.9. Performance stays `warn` at 0.8 (it varies run to
+      run).
+- [x] `ci.yml`: removed `continue-on-error` from the Lighthouse step, so a
+      failing assertion fails CI and the Deploy workflow (which requires a
+      green CI) doesn't ship.
+- Risk: a Lighthouse or Chrome crash in CI now blocks a deploy (0 of 8
+  recent runs crashed). If that happens, re-run the job or use the Deploy
+  workflow's manual `workflow_dispatch`.
+- Not covered: signed-in pages and the other public pages (`/flash`,
+  `/system-status`, `/docs/api`, share pages), and there are still no axe
+  tests in e2e. Adding axe needs a new devDependency
+  (`@axe-core/playwright`), which is a decision for the owner.

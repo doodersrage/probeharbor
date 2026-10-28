@@ -163,8 +163,8 @@ jobs:
           echo "Preview server did not become ready in time" >&2
           exit 1
       - name: Run Lighthouse CI
+        # Accessibility, best practices and SEO (>= 0.9) block the deploy; performance only warns.
         run: npx --yes @lhci/cli@0.15.x autorun --config=./lighthouserc.json
-        continue-on-error: true
       - name: Stop preview server
         if: always()
         run: kill "$(cat preview.pid)" 2>/dev/null || true
