@@ -56,7 +56,7 @@ const ptBr: AppHistoryMessages = {
     summarySubtitle: "Resumo de {from} → {to} (o mesmo período do pacote para sinistro abaixo). Abra a aba Gráfico para explorar ou baixe as evidências em Exportações.",
     notEnough: "Ainda não há leituras suficientes neste período para um resumo.",
     coldest: "Mínima",
-    hoursAtOrBelow: "Horas ≤ {temp} °F",
+    hoursAtOrBelow: "Horas estimadas ≤ {temp} °F",
     hoursValue: "{hours} h",
     readings: "Leituras",
     criticalTicks: "Marcas de alertas críticos",

@@ -2930,3 +2930,38 @@ session) found:
 - Remaining from the survey: the dew-point series on charts (its tips
   text is put together in code), and the export summary's freeze hours
   without "estimated".
+
+------------------------------------------------------------------------
+
+## Milestone 6, increment 6.7: dew-point line and estimated export hours (2026-10-28)
+
+**Status: Implemented and verified locally. No migration. Not deployed.**
+This closes the derived-value survey list.
+
+- [x] HistoryChart "Chart tips" now explain the dashed dew-point line when
+      it's shown: it's worked out from temperature and humidity, and
+      surfaces colder than it get damp (`tipsDew`). The copy is in the
+      History charts and demo islands copy (5 locales; the English default
+      is in the component).
+- [x] History → Exports window summary: "Hours ≤ X°F" is now "Estimated
+      hours ≤ X°F", matching the freeze-exposure section. An interval
+      counts fully if either reading is at or below the line, so it's an
+      estimate.
+- Evidence: `pnpm test`: 3186 passed. `pnpm typecheck`: 0 errors (it
+  caught the demo-islands copies missing the new key). `pnpm lint`: 64
+  warnings (baseline). `pnpm build`: pass. `pnpm test:e2e`: 47 passed,
+  13 skipped.
+
+### Milestone 6 status (2026-10-28)
+
+Done:
+- 1.7/1.8: gaps and zero-fill
+- 6.1: CSV UTC note
+- 6.2: chart text summaries
+- 6.3–6.7: explanations for every derived value in the survey
+
+Not done:
+- the History charts still use °F only (they don't follow the °C
+  preference)
+- the CSV `from`/`to` filter uses UTC days
+- there's no browser or screen-reader review of signed-in pages

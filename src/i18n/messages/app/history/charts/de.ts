@@ -58,6 +58,7 @@ const de: AppHistoryChartsMessages = {
     tipsDefault: "Ziehen wählt einen Bereich (gezoomt: Umschalt + Ziehen), Scrollen zoomt, Link kopiert diesen Ausschnitt, PNG speichert ihn.",
     tipsAlerts: " Farbige Markierungen zeigen Alarme: Fahr mit der Maus in die Nähe, um Details zu sehen.",
     tipsTrace: "Die Kurve wird {cool}, wenn sie die Frostlinie erreicht oder unterschreitet, und {warm}, wenn sie die Hoch-Linie erreicht oder überschreitet.",
+    tipsDew: " Die gestrichelte Taupunktlinie wird aus Temperatur und Luftfeuchtigkeit berechnet: Oberflächen, die kälter sind, werden feucht.",
     tipsCool: "kühl",
     tipsWarm: "warm",
     canvasAria: "Interaktives Liniendiagramm: {title}. Ziehen wählt einen Bereich, Scrollen zoomt, Vergrößern zeigt eine größere Ansicht.",

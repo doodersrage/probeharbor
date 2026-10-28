@@ -58,6 +58,7 @@ const ptBr: AppHistoryChartsMessages = {
     tipsDefault: "Arraste para selecionar um período (Shift + arrastar com zoom), role para dar zoom, use Link para copiar esta janela e PNG para salvar.",
     tipsAlerts: " As marcas coloridas indicam alertas: passe o mouse perto de uma para ver os detalhes.",
     tipsTrace: "A linha fica {cool} na linha de congelamento ou abaixo dela, e {warm} na linha alta ou acima dela.",
+    tipsDew: " A linha tracejada do ponto de orvalho é calculada a partir da temperatura e da umidade: superfícies mais frias que ela ficam úmidas.",
     tipsCool: "fria",
     tipsWarm: "quente",
     canvasAria: "Gráfico de linhas interativo: {title}. Arraste para selecionar um período, role para dar zoom ou amplie para ver maior.",

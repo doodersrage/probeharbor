@@ -60,7 +60,7 @@ const en = {
     summarySubtitle: "Snapshot for {from} → {to} (same window as claims pack below). Open the Chart tab to explore, or download evidence from Exports.",
     notEnough: "Not enough readings in this window for a summary yet.",
     coldest: "Coldest",
-    hoursAtOrBelow: "Hours ≤ {temp}°F",
+    hoursAtOrBelow: "Estimated hours ≤ {temp}°F",
     hoursValue: "{hours} h",
     readings: "Readings",
     criticalTicks: "Critical alert ticks",

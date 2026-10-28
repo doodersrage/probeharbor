@@ -106,6 +106,7 @@ const es: DemoIslandMessages = {
     tipsDefault: "Arrastra para seleccionar un rango (Mayús + arrastrar con zoom), usa la rueda para hacer zoom, Enlace para copiar esta ventana y PNG para guardarla.",
     tipsAlerts: " Las marcas de colores señalan alertas: pasa el cursor cerca de una para ver los detalles.",
     tipsTrace: "La línea se vuelve {cool} en la línea de helada o por debajo, y {warm} en la línea alta o por encima.",
+    tipsDew: " La línea discontinua del punto de rocío se calcula con la temperatura y la humedad: las superficies más frías que ella se humedecen.",
     tipsCool: "fría",
     tipsWarm: "cálida",
     canvasAria: "Gráfico de líneas interactivo: {title}. Arrastra para seleccionar un rango, usa la rueda para hacer zoom o amplíalo para verlo más grande.",

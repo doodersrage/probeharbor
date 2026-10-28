@@ -56,7 +56,7 @@ const es: AppHistoryMessages = {
     summarySubtitle: "Resumen de {from} → {to} (el mismo periodo que el paquete para reclamaciones de abajo). Abre la pestaña Gráfico para explorarlo o descarga las pruebas desde Exportaciones.",
     notEnough: "Todavía no hay suficientes lecturas en este periodo para un resumen.",
     coldest: "Mínima",
-    hoursAtOrBelow: "Horas ≤ {temp} °F",
+    hoursAtOrBelow: "Horas estimadas ≤ {temp} °F",
     hoursValue: "{hours} h",
     readings: "Lecturas",
     criticalTicks: "Marcas de alertas críticas",

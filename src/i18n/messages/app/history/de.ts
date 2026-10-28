@@ -56,7 +56,7 @@ const de: AppHistoryMessages = {
     summarySubtitle: "Überblick für {from} → {to} (derselbe Zeitraum wie die Schadensmappe unten). Im Tab Diagramm kannst du genauer hinsehen, unter Exporte die Nachweise herunterladen.",
     notEnough: "Für eine Zusammenfassung gibt es in diesem Zeitraum noch nicht genug Messwerte.",
     coldest: "Tiefstwert",
-    hoursAtOrBelow: "Stunden ≤ {temp} °F",
+    hoursAtOrBelow: "Geschätzte Stunden ≤ {temp} °F",
     hoursValue: "{hours} Std.",
     readings: "Messwerte",
     criticalTicks: "Markierungen kritischer Alarme",

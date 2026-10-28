@@ -56,7 +56,7 @@ const fr: AppHistoryMessages = {
     summarySubtitle: "Aperçu du {from} → {to} (même période que le dossier pour l’assurance ci-dessous). Ouvrez l’onglet Graphique pour explorer, ou téléchargez les justificatifs depuis Exports.",
     notEnough: "Pas encore assez de mesures sur cette période pour un résumé.",
     coldest: "Minimum",
-    hoursAtOrBelow: "Heures ≤ {temp} °F",
+    hoursAtOrBelow: "Heures estimées ≤ {temp} °F",
     hoursValue: "{hours} h",
     readings: "Mesures",
     criticalTicks: "Repères d’alertes critiques",

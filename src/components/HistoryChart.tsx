@@ -94,6 +94,7 @@ export const HISTORY_CHART_UI_EN = {
   tipsDefault: "Drag to select a range (Shift+drag when zoomed), scroll to zoom, Link to copy this window, PNG to save.",
   tipsAlerts: " Colored ticks mark alerts — hover near a tick for details.",
   tipsTrace: "Trace turns {cool} at/below freeze and {warm} at/above the high line.",
+  tipsDew: " The dashed dew-point line is worked out from temperature and humidity: surfaces colder than it get damp.",
   tipsCool: "cool",
   tipsWarm: "warm",
   canvasAria: "Interactive line chart of {title}. Drag to select a range, scroll to zoom, expand for a larger view.",
@@ -1249,6 +1250,7 @@ export default function HistoryChart({
           cool: <span style={{ color: COLOR_BELOW }}>{t.tipsCool}</span>,
           warm: <span style={{ color: COLOR_ABOVE }}>{t.tipsWarm}</span>,
         })}
+        {humidityOn && humidityPoints.length >= 2 ? t.tipsDew : ""}
       </details>
       <div
         class="history-chart-canvas-wrap"

@@ -106,6 +106,7 @@ const fr: DemoIslandMessages = {
     tipsDefault: "Faites glisser pour sélectionner une plage (Maj + glisser une fois zoomé), utilisez la molette pour zoomer, Lien pour copier cette fenêtre et PNG pour l’enregistrer.",
     tipsAlerts: " Les repères colorés signalent les alertes : survolez-en un pour voir le détail.",
     tipsTrace: "La courbe devient {cool} au seuil de gel ou en dessous, et {warm} au seuil haut ou au-dessus.",
+    tipsDew: " La ligne pointillée du point de rosée est calculée à partir de la température et de l’humidité : les surfaces plus froides qu’elle deviennent humides.",
     tipsCool: "froide",
     tipsWarm: "chaude",
     canvasAria: "Graphique linéaire interactif : {title}. Faites glisser pour sélectionner une plage, utilisez la molette pour zoomer ou agrandissez-le pour une vue plus grande.",
