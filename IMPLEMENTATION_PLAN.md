@@ -1185,3 +1185,57 @@ passed on re-run and on every other commit, and the commit only changed
 client-side charts. The spec depends on a live third-party feed. Serve a
 fixture from the test server, or retry on upstream failure, so CI
 doesn't fail on someone else's outage.
+
+------------------------------------------------------------------------
+
+## Milestone 2, increment 2.1: failed alerts retry instead of going silent (2026-10-28)
+
+**Status: Implemented and verified locally. No migration.**
+
+### Problem (verified)
+
+Only freeze ("threshold") alerts checked delivery. Leak, power-off,
+rule, forecast, runway, NWS, outage, rate, battery, battery-trend and
+signal-strength alerts all called `markCooldown` after `notifyUser`
+regardless of the result (`alertNotifications.ts`, 11 sites). If every
+channel failed (provider outage, expired webhook), that alert type went
+silent for the full 4 h cooldown. These cooldown timestamps also feed
+the dashboard's "last alert" display and onboarding's "alert delivered"
+check (`dashboard.astro:273`, `dashboard/alerts.astro:185`), so a failed
+alert was shown as sent.
+
+### Acceptance criteria
+
+- [x] A shared `sendThenArmCooldown` is used for all 11 alert types. It
+      starts the 4 h cooldown only when someone was reached, or when the
+      alert was held back on purpose (quiet hours, snooze/vacation).
+- [x] When every channel failed, the alert retries at most every 30 min
+      per alert kind (`recentFailedAttempt`, which reads `alert_events`
+      filtered by kind). A failed freeze alert doesn't hold back a leak
+      alert.
+- [x] `reachedNoOne` defines failure: nothing sent, at least one channel
+      tried, and not held back on purpose. **Freeze behavior change:**
+      with no channel set up at all (nothing tried), freeze now starts
+      its cooldown instead of retrying, and logging an event, every
+      30 min. Retrying can't help there.
+- [x] Cooldown timestamps are no longer set for alerts nobody received,
+      so the "last alert" display stays truthful.
+
+### Evidence
+
+- `alertNotifications.test.ts` +12. The 3 bug tests (leak failed, leak
+  retry throttle, power failed) fail against the previous code; the
+  non-regression tests pass on both. The existing freeze retry, quiet
+  hours, rule and outage tests are unchanged and pass.
+  `alertMessages.i18n.test.ts` mock updated.
+- `pnpm test`: 2955 passed. `pnpm typecheck`: 0 errors. `pnpm lint`: 64
+  warnings (baseline). `pnpm build`: pass. `pnpm test:e2e`: 44 passed,
+  12 skipped. No real provider outage was simulated end to end.
+
+### Risks
+
+- During a long provider outage, each failing alert kind now logs an
+  `alert_events` row every 30 min while its condition holds, instead of
+  every 4 h. That's bounded, and it's the intended behavior.
+- Partial delivery (some channels sent) starts the cooldown; failed
+  channels in that send aren't retried. That's unchanged.

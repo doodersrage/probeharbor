@@ -15,6 +15,7 @@ vi.mock("./alertEvents", () => ({
   recordAlertEvent: vi.fn().mockResolvedValue(1),
   updateAlertEventChannels: vi.fn().mockResolvedValue(undefined),
   listRecentAlertEvents: vi.fn().mockResolvedValue([]),
+  listRecentAlertEventsFiltered: vi.fn().mockResolvedValue({ events: [], hasMore: false }),
   autoResolveAlerts: vi.fn().mockResolvedValue({ resolved: 0, channels: [] }),
 }));
 vi.mock("./alertAckTokens", () => ({ buildUserAckUrl: vi.fn().mockResolvedValue("https://probeharbor.test/ack/x") }));

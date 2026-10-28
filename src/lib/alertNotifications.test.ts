@@ -16,6 +16,11 @@ const mockListRecentAlertEvents = vi.fn();
 const mockAutoResolveAlerts = vi.fn().mockResolvedValue({ resolved: 0, channels: [] });
 vi.mock("./alertEvents", () => ({
   listRecentAlertEvents: (...args: unknown[]) => mockListRecentAlertEvents(...args),
+  // Same fake log, filtered by kind like the real query.
+  listRecentAlertEventsFiltered: async (userId: string, options: { kind?: string | null } = {}) => {
+    const events = ((await mockListRecentAlertEvents(userId, 10)) ?? []) as Array<{ kind: string }>;
+    return { events: events.filter((event) => !options.kind || event.kind === options.kind), hasMore: false };
+  },
   autoResolveAlerts: (...args: unknown[]) => mockAutoResolveAlerts(...args),
 }));
 
@@ -451,5 +456,87 @@ describe("power-off alerts", () => {
     const { sendPowerAlertsIfNeeded } = await import("./alertNotifications");
     await sendPowerAlertsIfNeeded("user-1", "a@example.com", settings, []);
     expect(mockAutoResolveAlerts).toHaveBeenCalledWith("user-1", { kinds: ["power"], reason: "recovered" });
+  });
+});
+
+describe("delivery-aware cooldown for every alert type", () => {
+  const settings = { ...DEFAULT_ALERT_SETTINGS, enabled: true, powerAlertsEnabled: true };
+  const wet = [{ label: "Water heater", space: "Garage" }];
+  const minutesAgo = (m: number) => new Date(Date.now() - m * 60_000).toISOString();
+
+  it("leaves the leak cooldown off when every channel failed, so it retries", async () => {
+    mockNotifyUser.mockResolvedValue({ sent: [], skipped: ["email", "sms"] });
+    const { sendFloodAlertsIfNeeded } = await import("./alertNotifications");
+
+    await sendFloodAlertsIfNeeded("user-1", "a@example.com", settings, wet);
+
+    expect(mockNotifyUser).toHaveBeenCalledTimes(1);
+    expect(mockMarkCooldown).not.toHaveBeenCalledWith("user-1", "last_flood_alert_at");
+  });
+
+  it("arms the leak cooldown once anyone was reached", async () => {
+    mockNotifyUser.mockResolvedValue({ sent: ["push"], skipped: ["email"] });
+    const { sendFloodAlertsIfNeeded } = await import("./alertNotifications");
+
+    await sendFloodAlertsIfNeeded("user-1", "a@example.com", settings, wet);
+
+    expect(mockMarkCooldown).toHaveBeenCalledWith("user-1", "last_flood_alert_at");
+  });
+
+  it("retries a failed leak alert at most every 30 minutes", async () => {
+    const failed = { kind: "flood", channels_sent: [], channels_skipped: ["email"] };
+    const { sendFloodAlertsIfNeeded } = await import("./alertNotifications");
+
+    mockListRecentAlertEvents.mockResolvedValue([{ ...failed, created_at: minutesAgo(10) }]);
+    await sendFloodAlertsIfNeeded("user-1", "a@example.com", settings, wet);
+    expect(mockNotifyUser).not.toHaveBeenCalled();
+
+    mockListRecentAlertEvents.mockResolvedValue([{ ...failed, created_at: minutesAgo(31) }]);
+    await sendFloodAlertsIfNeeded("user-1", "a@example.com", settings, wet);
+    expect(mockNotifyUser).toHaveBeenCalledTimes(1);
+  });
+
+  it("doesn't let a failed freeze alert hold back a leak alert", async () => {
+    mockListRecentAlertEvents.mockResolvedValue([
+      { kind: "threshold", channels_sent: [], channels_skipped: ["email"], created_at: minutesAgo(5) },
+    ]);
+    const { sendFloodAlertsIfNeeded } = await import("./alertNotifications");
+
+    await sendFloodAlertsIfNeeded("user-1", "a@example.com", settings, wet);
+
+    expect(mockNotifyUser).toHaveBeenCalledTimes(1);
+  });
+
+  it("applies the same rule to power-off alerts", async () => {
+    mockNotifyUser.mockResolvedValue({ sent: [], skipped: ["email"] });
+    const { sendPowerAlertsIfNeeded } = await import("./alertNotifications");
+
+    await sendPowerAlertsIfNeeded("user-1", "a@example.com", settings, [{ label: "Freezer outlet", space: null }]);
+
+    expect(mockMarkCooldown).not.toHaveBeenCalledWith("user-1", "last_power_alert_at");
+  });
+
+  it("still arms the cooldown when the alert was held on purpose (quiet hours)", async () => {
+    mockNotifyUser.mockResolvedValue({ sent: [], skipped: ["quiet_hours"] });
+    const { sendFloodAlertsIfNeeded } = await import("./alertNotifications");
+
+    await sendFloodAlertsIfNeeded("user-1", "a@example.com", settings, wet);
+
+    expect(mockMarkCooldown).toHaveBeenCalledWith("user-1", "last_flood_alert_at");
+  });
+});
+
+describe("reachedNoOne", () => {
+  it.each([
+    [{ sent: [], skipped: ["email"] }, true],
+    [{ sent: [], skipped: ["email", "sms"] }, true],
+    [{ sent: ["push"], skipped: ["email"] }, false],
+    [{ sent: [], skipped: ["quiet_hours"] }, false],
+    [{ sent: [], skipped: ["snooze_or_vacation"] }, false],
+    // No channel set up: nothing was tried, so a retry can't help.
+    [{ sent: [], skipped: [] }, false],
+  ])("%o → %s", async (delivery, expected) => {
+    const { reachedNoOne } = await import("./alertNotifications");
+    expect(reachedNoOne(delivery)).toBe(expected);
   });
 });

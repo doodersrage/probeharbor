@@ -19,7 +19,12 @@ import {
   type AlertSettings,
   type FloodAlertReading,
 } from "./alerts";
-import { autoResolveAlerts, listRecentAlertEvents, type AutoResolveResult } from "./alertEvents";
+import {
+  autoResolveAlerts,
+  listRecentAlertEvents,
+  listRecentAlertEventsFiltered,
+  type AutoResolveResult,
+} from "./alertEvents";
 import type { Locale } from "../i18n/locales";
 import { ensureLocale } from "../i18n/catalog";
 import { fmt, plural } from "../i18n/format";
@@ -154,21 +159,53 @@ export {
   mergeAlertReadings,
 } from "./alertReadings";
 
-/** Retry a freeze alert that reached no channel at most this often. */
+/** Retry an alert that reached no channel at most this often. */
 const FAILED_DELIVERY_RETRY_MS = 30 * 60 * 1000;
 /** Skips that mean "held back on purpose", which should still start the cooldown. */
 const INTENTIONAL_SKIPS = new Set(["quiet_hours", "snooze_or_vacation"]);
 
-/** A threshold attempt in the retry window reached no channel (not intentionally held). */
-async function recentFailedThresholdAttempt(userId: string): Promise<boolean> {
-  const events = await listRecentAlertEvents(userId, 10).catch(() => []);
+/**
+ * Every channel that was tried failed, and nothing was held back on purpose.
+ * No channel tried at all (none set up) isn't a failure: retrying can't help.
+ */
+export function reachedNoOne(delivery: { sent: string[]; skipped: string[] }): boolean {
+  return (
+    delivery.sent.length === 0 &&
+    delivery.skipped.length > 0 &&
+    !delivery.skipped.some((reason) => INTENTIONAL_SKIPS.has(reason))
+  );
+}
+
+/** An attempt of this kind in the retry window reached no one. */
+async function recentFailedAttempt(userId: string, kind: string): Promise<boolean> {
+  const { events } = await listRecentAlertEventsFiltered(userId, { limit: 5, kind }).catch(() => ({
+    events: [],
+  }));
   return events.some(
     (event) =>
-      event.kind === "threshold" &&
       Date.now() - Date.parse(event.created_at) < FAILED_DELIVERY_RETRY_MS &&
-      event.channels_sent.length === 0 &&
-      !event.channels_skipped.some((reason) => INTENTIONAL_SKIPS.has(reason)),
+      reachedNoOne({ sent: event.channels_sent, skipped: event.channels_skipped }),
   );
+}
+
+type CooldownField = Parameters<typeof markCooldown>[1];
+
+/**
+ * Send, then start the 4h cooldown only if someone was reached (or the alert
+ * was held back on purpose). If every channel failed, leave the cooldown off
+ * so it retries, at most every 30 minutes. The cooldown timestamps double as
+ * "last alert sent", so they must not be set for an alert nobody got.
+ */
+async function sendThenArmCooldown(
+  userId: string,
+  kind: string,
+  field: CooldownField,
+  send: () => Promise<{ sent: string[]; skipped: string[] }>,
+): Promise<void> {
+  if (await recentFailedAttempt(userId, kind)) return;
+  const delivery = await send();
+  if (reachedNoOne(delivery)) return;
+  await markCooldown(userId, field);
 }
 
 /** True when someone has already acknowledged the most recent threshold alert. */
@@ -312,7 +349,7 @@ export async function sendThresholdAlertsIfNeeded(
   if (isAlertCooldownActive(settings.lastAlertSentAt)) return;
   if (messages.length === 0) return;
   // A failed delivery skips the cooldown so it retries, but not on every reading.
-  if (await recentFailedThresholdAttempt(userId)) return;
+  if (await recentFailedAttempt(userId, "threshold")) return;
   if (await acknowledgedFreezeStillOngoing(userId, settings, readings, messages, dwellSamplesBySensorId)) {
     return;
   }
@@ -357,12 +394,9 @@ export async function sendThresholdAlertsIfNeeded(
       reasonSummary: contextBlock ?? undefined,
     },
   }, { space: alertSpace }, locale);
-  const failedEverywhere =
-    delivery.sent.length === 0 &&
-    !delivery.skipped.some((reason) => INTENTIONAL_SKIPS.has(reason));
-  if (failedEverywhere) {
+  if (reachedNoOne(delivery)) {
     // Nothing reached the user: leave the 4h cooldown unarmed so this retries
-    // (throttled to every 30 min by recentFailedThresholdAttempt).
+    // (throttled to every 30 min by recentFailedAttempt).
     return;
   }
   await markCooldown(userId, "last_alert_sent_at");
@@ -393,19 +427,20 @@ export async function sendFloodAlertsIfNeeded(
   if (messages.length === 0) return;
 
   const alertSpace = wetSensors.find((sensor) => sensor.space)?.space ?? null;
-  await notifyUser(
-    userId,
-    email,
-    settings,
-    {
-      title: t.flood.title,
-      body: messages.join("\n"),
-      kind: "flood",
-    },
-    { space: alertSpace },
-    locale,
+  await sendThenArmCooldown(userId, "flood", "last_flood_alert_at", () =>
+    notifyUser(
+      userId,
+      email,
+      settings,
+      {
+        title: t.flood.title,
+        body: messages.join("\n"),
+        kind: "flood",
+      },
+      { space: alertSpace },
+      locale,
+    ),
   );
-  await markCooldown(userId, "last_flood_alert_at");
 }
 
 export async function sendPowerAlertsIfNeeded(
@@ -432,19 +467,20 @@ export async function sendPowerAlertsIfNeeded(
   const messages = evaluatePowerAlerts(settings, offSensors, locale);
   if (messages.length === 0) return;
   const alertSpace = offSensors.find((sensor) => sensor.space)?.space ?? null;
-  await notifyUser(
-    userId,
-    email,
-    settings,
-    {
-      title: t.power.title,
-      body: `${messages.join("\n")}\n${t.power.footer}`,
-      kind: "power",
-    },
-    { space: alertSpace },
-    locale,
+  await sendThenArmCooldown(userId, "power", "last_power_alert_at", () =>
+    notifyUser(
+      userId,
+      email,
+      settings,
+      {
+        title: t.power.title,
+        body: `${messages.join("\n")}\n${t.power.footer}`,
+        kind: "power",
+      },
+      { space: alertSpace },
+      locale,
+    ),
   );
-  await markCooldown(userId, "last_power_alert_at");
 }
 
 async function getWeatherConfigForUser(userId: string): Promise<import("./personalWeatherStations").PersonalWeatherConfig> {
@@ -485,12 +521,13 @@ export async function maybeSendForecastFreezeAlert(
   if (!message) return;
 
   const t = await alertText(locale);
-  await notifyUser(userId, email, settings, {
-    title: t.forecast.title,
-    body: message,
-    kind: "forecast",
-  }, undefined, locale);
-  await markCooldown(userId, "last_forecast_alert_at");
+  await sendThenArmCooldown(userId, "forecast", "last_forecast_alert_at", () =>
+    notifyUser(userId, email, settings, {
+      title: t.forecast.title,
+      body: message,
+      kind: "forecast",
+    }, undefined, locale),
+  );
 }
 
 export async function maybeSendRunwayAlert(
@@ -566,12 +603,13 @@ export async function maybeSendRunwayAlert(
   const message = evaluateRunwayAlert(settings, projection, locale);
   if (!message) return;
 
-  await notifyUser(userId, email, settings, {
-    title: t.runway.title,
-    body: message,
-    kind: "runway",
-  }, undefined, locale);
-  await markCooldown(userId, "last_runway_alert_at");
+  await sendThenArmCooldown(userId, "runway", "last_runway_alert_at", () =>
+    notifyUser(userId, email, settings, {
+      title: t.runway.title,
+      body: message,
+      kind: "runway",
+    }, undefined, locale),
+  );
 }
 
 export async function maybeSendNwsFreezeAlert(
@@ -605,12 +643,13 @@ export async function maybeSendNwsFreezeAlert(
   // The NWS headline itself is published in English; only our fallback is translated.
   const body = first.headline?.trim() || first.event || t.nws.fallback;
 
-  await notifyUser(userId, email, settings, {
-    title: t.nws.title,
-    body,
-    kind: "nws",
-  }, undefined, locale);
-  await markCooldown(userId, "last_nws_alert_at");
+  await sendThenArmCooldown(userId, "nws", "last_nws_alert_at", () =>
+    notifyUser(userId, email, settings, {
+      title: t.nws.title,
+      body,
+      kind: "nws",
+    }, undefined, locale),
+  );
 }
 
 export async function maybeSendThresholdAlerts(
@@ -853,12 +892,13 @@ export async function maybeSendRuleAlerts(
   const messages = evaluateAlertRules(settings.alertRules, ctx, locale);
   if (messages.length === 0) return;
 
-  await notifyUser(userId, email, settings, {
-    title: t.rule.title,
-    body: messages.join("\n"),
-    kind: "rule",
-  }, undefined, locale);
-  await markCooldown(userId, "last_rule_alert_at");
+  await sendThenArmCooldown(userId, "rule", "last_rule_alert_at", () =>
+    notifyUser(userId, email, settings, {
+      title: t.rule.title,
+      body: messages.join("\n"),
+      kind: "rule",
+    }, undefined, locale),
+  );
 }
 
 export async function maybeSendRateAndOutageAlerts(
@@ -902,12 +942,13 @@ export async function maybeSendRateAndOutageAlerts(
             plural(t.outage.stillOffline, stillOutCount, locale),
           ]
         : outageMessages;
-    await notifyUser(userId, email, settings, {
-      title: t.outage.title,
-      body: body.join("\n"),
-      kind: "outage",
-    }, undefined, locale);
-    await markCooldown(userId, "last_outage_alert_at");
+    await sendThenArmCooldown(userId, "outage", "last_outage_alert_at", () =>
+      notifyUser(userId, email, settings, {
+        title: t.outage.title,
+        body: body.join("\n"),
+        kind: "outage",
+      }, undefined, locale),
+    );
   }
 
   const since = new Date(Date.now() - 60 * 60 * 1000).toISOString();
@@ -923,12 +964,13 @@ export async function maybeSendRateAndOutageAlerts(
   }
 
   if (rateMessages.length > 0 && !isAlertCooldownActive(settings.lastRateAlertAt)) {
-    await notifyUser(userId, email, settings, {
-      title: t.rate.title,
-      body: rateMessages.join("\n"),
-      kind: "rate",
-    }, undefined, locale);
-    await markCooldown(userId, "last_rate_alert_at");
+    await sendThenArmCooldown(userId, "rate", "last_rate_alert_at", () =>
+      notifyUser(userId, email, settings, {
+        title: t.rate.title,
+        body: rateMessages.join("\n"),
+        kind: "rate",
+      }, undefined, locale),
+    );
   }
 
   await maybeSendRuleAlerts(
@@ -1006,36 +1048,38 @@ export async function maybeSendDeviceHealthAlerts(
     batteryMessages.length > 0 &&
     !isAlertCooldownActive(settings.lastBatteryAlertAt)
   ) {
-    await notifyUser(
-      userId,
-      email,
-      settings,
-      {
-        title: t.battery.title,
-        body: batteryMessages.join("\n"),
-        kind: "battery",
-      },
-      notifyOpts,
-      locale,
+    await sendThenArmCooldown(userId, "battery", "last_battery_alert_at", () =>
+      notifyUser(
+        userId,
+        email,
+        settings,
+        {
+          title: t.battery.title,
+          body: batteryMessages.join("\n"),
+          kind: "battery",
+        },
+        notifyOpts,
+        locale,
+      ),
     );
-    await markCooldown(userId, "last_battery_alert_at");
   }
 
   const rssiMessages = evaluateRssiHealth(settings, health, locale);
   if (rssiMessages.length > 0 && !isAlertCooldownActive(settings.lastRssiAlertAt)) {
-    await notifyUser(
-      userId,
-      email,
-      settings,
-      {
-        title: t.rssi.title,
-        body: rssiMessages.join("\n"),
-        kind: "rssi",
-      },
-      notifyOpts,
-      locale,
+    await sendThenArmCooldown(userId, "rssi", "last_rssi_alert_at", () =>
+      notifyUser(
+        userId,
+        email,
+        settings,
+        {
+          title: t.rssi.title,
+          body: rssiMessages.join("\n"),
+          kind: "rssi",
+        },
+        notifyOpts,
+        locale,
+      ),
     );
-    await markCooldown(userId, "last_rssi_alert_at");
   }
 
   if (settings.batteryTrendAlertsEnabled) {
@@ -1043,19 +1087,20 @@ export async function maybeSendDeviceHealthAlerts(
       const history = device.meta?.battery_history as BatterySample[] | undefined;
       const trend = detectBatteryTrendDrop(Array.isArray(history) ? history : [], undefined, undefined, locale);
       if (trend && !isAlertCooldownActive(settings.lastBatteryTrendAlertAt)) {
-        await notifyUser(
-          userId,
-          email,
-          settings,
-          {
-            title: t.battery.trendTitle,
-            body: fmt(t.battery.trendBody, { device: device.name, trend }),
-            kind: "battery",
-          },
-          notifyOpts,
-          locale,
+        await sendThenArmCooldown(userId, "battery", "last_battery_trend_alert_at", () =>
+          notifyUser(
+            userId,
+            email,
+            settings,
+            {
+              title: t.battery.trendTitle,
+              body: fmt(t.battery.trendBody, { device: device.name, trend }),
+              kind: "battery",
+            },
+            notifyOpts,
+            locale,
+          ),
         );
-        await markCooldown(userId, "last_battery_trend_alert_at");
         break;
       }
     }
