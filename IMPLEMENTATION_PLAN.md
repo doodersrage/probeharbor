@@ -1600,3 +1600,34 @@ Order of work: M2-1 → M2-3 → M2-4 → M2-5 → M1-B → M1-C (sizing first).
 - Evidence: `pnpm test`: 2995 passed. `pnpm typecheck`: 0 errors
   (locale files are typed against English). `pnpm lint`: 64 warnings
   (baseline). Translations aren't reviewed by a native speaker.
+
+------------------------------------------------------------------------
+
+## Increment D3 (decision M2-4): ingest alerts run after the response (2026-10-28)
+
+**Status: Implemented and verified locally. No migration.**
+
+- [x] `runAfterResponse` (`backgroundWork.ts`) passes the work to
+      `locals.cfContext.waitUntil` (Cloudflare adapter v13). Without a
+      Worker context (tests, plain dev) it runs inline as before. Errors
+      are logged, never thrown.
+- [x] `/api/ingest` runs member loading, reading webhooks and alerts in
+      it. The device gets its 200 as soon as readings are stored. The
+      MQTT bridge passes `locals` through, so it benefits too.
+- Evidence:
+  - `backgroundWork.test.ts` (4: waitUntil without waiting, inline
+    fallback, error logged, throwing `cfContext` getter)
+  - `[deviceKey].test.ts` +1 (response returned, then alerts run when
+    the `waitUntil` task completes)
+  - `pnpm test`: 3000 passed. `pnpm typecheck`: 0 errors. `pnpm lint`:
+    64 warnings (baseline). `pnpm build`: pass. `pnpm test:e2e`: 44
+    passed, 12 skipped.
+- **Risk:** Cloudflare allows about 30 s of `waitUntil` work after the
+  response. A worst case (many members × many channels × 10 s provider
+  timeouts) can be cut off. Previously the same case held the device's
+  POST open until it timed out (firmware: 15 s) and retried. After
+  deploy, check that alerts still arrive (send a test freeze through a
+  real device).
+- Not verified on the deployed Worker yet: that `locals.cfContext` is
+  present in API routes. If it isn't, alerts simply run inline as
+  before.

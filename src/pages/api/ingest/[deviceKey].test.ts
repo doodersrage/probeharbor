@@ -392,6 +392,19 @@ describe("POST /api/ingest/[deviceKey]", () => {
     expect(mockSendThresholdAlertsIfNeeded).toHaveBeenCalledTimes(2);
   });
 
+  it("answers the device before alerts run when the Worker context is available", async () => {
+    mockListHouseholdMembers.mockResolvedValue({ members: [{ user_id: "user-a" }] });
+    const waitUntil = vi.fn();
+    const { POST } = await import("./[deviceKey]");
+
+    const response = await POST({ ...makeContext({ headerKey: "good-key" }), locals: { cfContext: { waitUntil } } } as never);
+
+    expect(response.status).toBe(200);
+    expect(waitUntil).toHaveBeenCalledTimes(1);
+    await waitUntil.mock.calls[0]![0];
+    expect(mockSendThresholdAlertsIfNeeded).toHaveBeenCalledTimes(1);
+  });
+
   it("accepts the device key from the path when the header is absent", async () => {
     const { POST } = await import("./[deviceKey]");
 

@@ -10,7 +10,7 @@ import { POST as ingestPost } from "./[deviceKey]";
  * Include header `X-Ingest-Key: <device-key>` to route to ingest.
  * The payload is handed to the ingest handler in-process (no HTTP hop).
  */
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, locals }) => {
   const deviceKey = request.headers.get("X-Ingest-Key")?.trim();
   if (!deviceKey) {
     return new Response(JSON.stringify({ error: "Missing X-Ingest-Key header" }), {
@@ -68,5 +68,7 @@ export const POST: APIRoute = async ({ request }) => {
   return ingestPost({
     params: { deviceKey: "_" },
     request: ingestRequest,
+    // Lets the ingest handler send alerts after responding (waitUntil).
+    locals,
   } as unknown as APIContext);
 };
