@@ -1174,3 +1174,14 @@ Against the milestone's acceptance criteria:
 **Recommended next:** Milestone 2 gap "failed leak/power/rule alerts go
 silent for 4 h" (`alertNotifications.ts:408,447,861`). It's a verified
 alert-reliability bug with a small fix and needs no decision.
+
+**Deploy check (2026-10-28 02:00 UTC):** `b22a32e` (1.7, 1.8) deployed.
+All of Milestone 1 increments 1.1–1.8 are live.
+
+**Flaky test (Milestone 4 follow-up):** `e2e/demo-pull.spec.ts` failed
+once in CI on `b22a32e`: `discoveredProbes` was 0 when saving the live
+example feed, and the same log shows weather requests failing. It
+passed on re-run and on every other commit, and the commit only changed
+client-side charts. The spec depends on a live third-party feed. Serve a
+fixture from the test server, or retry on upstream failure, so CI
+doesn't fail on someone else's outage.
