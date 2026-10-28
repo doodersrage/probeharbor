@@ -90,6 +90,7 @@ const es: AppHistoryMessages = {
     subtitleHtml:
       'Lecturas de temperatura y humedad guardadas cada hora en segundo plano y cuando actualizas las lecturas en vivo con la sesión iniciada. Las puertas, inundaciones, corriente y CO₂ están en <a class="text-link" href="/dashboard/live">En vivo</a>.',
     downloadCsv: "Descargar CSV",
+    csvTimesUtc: "Las horas del CSV están en UTC (ISO 8601, terminan en Z).",
     chartTitleDates: "Tendencia de temperatura (fechas seleccionadas)",
     chartTitleDays: { one: "Tendencia de temperatura (último {count} día)", other: "Tendencia de temperatura (últimos {count} días)" },
     anomaliesTitle: "Patrones inusuales detectados en el periodo del gráfico",

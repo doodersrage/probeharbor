@@ -90,6 +90,7 @@ const fr: AppHistoryMessages = {
     subtitleHtml:
       'Relevés de température et d’humidité enregistrés toutes les heures en arrière-plan, et lorsque vous actualisez les mesures en direct en étant connecté. Portes, inondation, alimentation et CO₂ se trouvent dans <a class="text-link" href="/dashboard/live">En direct</a>.',
     downloadCsv: "Télécharger le CSV",
+    csvTimesUtc: "Les heures du CSV sont en UTC (ISO 8601, se terminant par Z).",
     chartTitleDates: "Évolution de la température (dates sélectionnées)",
     chartTitleDays: { one: "Évolution de la température ({count} dernier jour)", other: "Évolution de la température ({count} derniers jours)" },
     anomaliesTitle: "Comportements inhabituels détectés sur la période du graphique",

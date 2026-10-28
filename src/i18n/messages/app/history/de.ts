@@ -90,6 +90,7 @@ const de: AppHistoryMessages = {
     subtitleHtml:
       'Temperatur- und Luftfeuchte-Messwerte, stündlich im Hintergrund gespeichert und wenn du angemeldet die Live-Werte aktualisierst. Tür, Wasserschaden, Strom und CO₂ findest du unter <a class="text-link" href="/dashboard/live">Live</a>.',
     downloadCsv: "CSV herunterladen",
+    csvTimesUtc: "Zeiten in der CSV sind in UTC (ISO 8601, mit Z am Ende).",
     chartTitleDates: "Temperaturverlauf (gewählte Daten)",
     chartTitleDays: { one: "Temperaturverlauf (letzter {count} Tag)", other: "Temperaturverlauf (letzte {count} Tage)" },
     anomaliesTitle: "Ungewöhnliche Muster im Diagrammzeitraum erkannt",

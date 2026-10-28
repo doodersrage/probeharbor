@@ -90,6 +90,7 @@ const ptBr: AppHistoryMessages = {
     subtitleHtml:
       'Leituras de temperatura e umidade salvas a cada hora em segundo plano e quando você atualiza as leituras ao vivo com a sessão iniciada. Porta, alagamento, energia e CO₂ ficam em <a class="text-link" href="/dashboard/live">Ao vivo</a>.',
     downloadCsv: "Baixar CSV",
+    csvTimesUtc: "Os horários no CSV estão em UTC (ISO 8601, terminando em Z).",
     chartTitleDates: "Tendência de temperatura (datas selecionadas)",
     chartTitleDays: { one: "Tendência de temperatura (último {count} dia)", other: "Tendência de temperatura (últimos {count} dias)" },
     anomaliesTitle: "Padrões incomuns detectados no período do gráfico",

@@ -2440,3 +2440,25 @@ Audit gaps (M4): no backup/restore or rollback docs; migrations are manual
      project).
   3. Decide whether CI should fail when `supabase/migrations` has files
      not yet applied to production. That needs DB credentials in CI.
+
+------------------------------------------------------------------------
+
+## Milestone 6, increment 6.1: the CSV says its times are UTC (2026-10-28)
+
+**Status: Implemented and verified locally. No migration. Not deployed.**
+
+Audit (M6): "CSV is UTC with no note." `buildGarageTempsCsv` writes
+`recorded_at` as ISO 8601 UTC (`…Z`), and the export's `from`/`to` dates are
+UTC days, but nothing said so.
+
+- [x] Under "Download CSV" (History table), a one-line note: "Times in the
+      CSV are UTC (ISO 8601, ending in Z)." Copy in 5 locales
+      (`history.table.csvTimesUtc`).
+- Kept the CSV columns unchanged (renaming `recorded_at` would break
+  scripts that read it).
+- Evidence: `pnpm test`, `pnpm typecheck` (0 errors), `pnpm lint`
+  (baseline) and `pnpm build` pass. Not seen in a browser (signed-in page).
+- Not changed: the `from`/`to` filter still uses UTC day boundaries, so for
+  a user in UTC−5, "from Oct 28" starts at 7 pm Oct 27 local. Fixing that
+  needs the user's time zone on the request. That's a follow-up if users
+  notice.

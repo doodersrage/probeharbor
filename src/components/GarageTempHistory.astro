@@ -178,9 +178,12 @@ function comparePresetHref(preset: "prior_week" | "prior_month"): string {
       </div>
     )}
     {!error && totalCount > 0 && canDownloadCsv && viewMode !== "chart" && (
-      <a class="btn-secondary" href={buildExportUrl()} download>
-        {t.downloadCsv}
-      </a>
+      <div class="flex flex-col items-end gap-1">
+        <a class="btn-secondary" href={buildExportUrl()} download>
+          {t.downloadCsv}
+        </a>
+        <span class="text-xs text-[var(--color-text-muted)]">{t.csvTimesUtc}</span>
+      </div>
     )}
   </div>
 

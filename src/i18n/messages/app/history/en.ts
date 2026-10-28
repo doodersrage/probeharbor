@@ -94,6 +94,7 @@ const en = {
     subtitleHtml:
       'Temperature and humidity snapshots saved hourly in the background and when you refresh live readings while signed in. Door, flood, power, and CO₂ live on <a class="text-link" href="/dashboard/live">Live</a>.',
     downloadCsv: "Download CSV",
+    csvTimesUtc: "Times in the CSV are UTC (ISO 8601, ending in Z).",
     chartTitleDates: "Temperature trend (selected dates)",
     chartTitleDays: { one: "Temperature trend (last {count} day)", other: "Temperature trend (last {count} days)" },
     anomaliesTitle: "Unusual patterns detected in the chart window",
