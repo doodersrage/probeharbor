@@ -72,7 +72,8 @@ export async function loadShareDashboardContext(
     ? (await listInboundWebhooks(household.householdId)).webhooks
     : [];
 
-  const statusPages = household.householdId
+  // Managers only: legacy rows still carry a usable raw token.
+  const statusPages = household.householdId && canManage
     ? await listStatusPageTokens(household.householdId)
     : [];
 

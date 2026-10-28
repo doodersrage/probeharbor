@@ -2051,3 +2051,52 @@ change, so it's held for the owner.
   skipped without credentials). Check once after deploy: send an invite
   → link card appears once → reload → it's gone; Resend → new link
   works and the old one shows "invite not found".
+
+------------------------------------------------------------------------
+
+## Security fix S6: status-page links stored hashed, shown once (2026-10-28)
+
+**Status: Implemented and verified locally. Migration
+`20261028140000_status_page_token_hash.sql` NOT applied. Not deployed.**
+
+**Deploy order: apply the migration first, then push the code.** Without
+the migration, creating or regenerating a status page fails (no
+`token_hash` column). Public status pages and badges keep working either
+way.
+
+- [x] Migration (additive): adds `status_page_tokens.token_hash`,
+      backfills `sha256(token)` for every existing row, adds a unique index
+      and makes `token` nullable. Existing links and badges keep working,
+      and managers still see their URLs.
+- [x] New status pages store only `token_hash` (`token` is null). The URL
+      and badge are shown once (existing `FLASH_STATUS_TOKEN` callout, which
+      now also shows the badge URL).
+- [x] `resolveStatusPageToken` (`/status/[token]`, `/badge/status/[token].svg`)
+      looks up by `token_hash`. It falls back to a raw match only for the
+      old 36-hex shape on rows with no hash (rows the old code created
+      between the migration and the deploy). A stored hash matches nothing.
+- [x] New **Regenerate link** button (manager + Pro, confirm prompt,
+      activity `status_page_regenerated`): it writes a new hash, clears any
+      raw token, shows the new link once and the old link and badge stop
+      working. Rows without a raw token show "only shown when created".
+- [x] `loadShareDashboardContext` no longer loads status pages for
+      non-managers. They weren't rendered for them, but they were in the
+      page context.
+- [x] Copy in 5 locales: `notices.statusRegenerated`, `statusUrlHidden`,
+      `regenerateStatus`, `confirmRegenerateStatus`, and the activity label.
+- Evidence: `statusPage.test.ts` +5 (hash stored, not raw; lookup by
+  hash; legacy fallback only for 36-hex unhashed rows; no raw lookup for
+  a 64-hex value; regenerate clears the raw token and is scoped; not
+  found). `manage.test.ts` +3 (regenerate; needs Pro; not found → error).
+  `shareDashboardContext.test.ts` +2 (viewer gets no status pages; new
+  notice). `pnpm test`: 3055 passed. `pnpm typecheck`: 0 errors.
+  `pnpm lint`: 64 warnings (baseline). `pnpm build`: pass.
+  `pnpm test:e2e`: 44 passed, 12 skipped.
+- **Not verified:** the SQL (no local Postgres; `sha256()` needs PG 11+,
+  and Supabase runs 15) and the Share page rendering (signed-in e2e is
+  skipped). After applying, read-only check, which should return 0:
+  `select count(*) from status_page_tokens where token is not null and
+  token_hash is distinct from encode(sha256(convert_to(token,'UTF8')),'hex');`
+- **Later (needs approval): clear the raw tokens** on existing rows
+  (`update status_page_tokens set token = null`). Links keep working, but
+  managers can no longer see the old URLs and would use Regenerate.

@@ -35,8 +35,10 @@ vi.mock("../../../lib/householdActivity", () => ({
 
 const mockCreateStatusPageToken = vi.fn();
 const mockRevokeStatusPageToken = vi.fn();
+const mockRegenerateStatusPageToken = vi.fn();
 vi.mock("../../../lib/statusPage", () => ({
   createStatusPageToken: (...a: unknown[]) => mockCreateStatusPageToken(...a),
+  regenerateStatusPageToken: (...a: unknown[]) => mockRegenerateStatusPageToken(...a),
   revokeStatusPageToken: (...a: unknown[]) => mockRevokeStatusPageToken(...a),
 }));
 
@@ -73,6 +75,7 @@ beforeEach(() => {
   mockRecordHouseholdActivity.mockReset().mockResolvedValue(undefined);
   mockCreateStatusPageToken.mockReset().mockResolvedValue({ token: "tok-1", error: null });
   mockRevokeStatusPageToken.mockReset().mockResolvedValue(undefined);
+  mockRegenerateStatusPageToken.mockReset().mockResolvedValue({ token: "tok-new", error: null });
   mockFormRedirectPath.mockReset().mockReturnValue("/dashboard/share");
   mockSetSecretFlash.mockReset();
 });
@@ -172,5 +175,38 @@ describe("POST /api/status/manage", () => {
 
     expect(mockRevokeStatusPageToken).not.toHaveBeenCalled();
     expect(response.headers.get("Location")).toBe("/dashboard/share?status_revoked=1");
+  });
+
+  it("regenerates a status page link, logs it, flashes the new token once", async () => {
+    const { POST } = await import("./manage");
+
+    const response = await POST(makeContext({ action: "regenerate", id: "t1" }));
+
+    expect(mockRegenerateStatusPageToken).toHaveBeenCalledWith("house-1", "t1");
+    expect(mockRecordHouseholdActivity).toHaveBeenCalledWith(
+      expect.objectContaining({ action: "status_page_regenerated", detail: "t1" }),
+    );
+    expect(mockSetSecretFlash).toHaveBeenCalledWith({}, "tt_flash_status_token", "tok-new");
+    expect(response.headers.get("Location")).toBe("/dashboard/share?status_regenerated=1");
+  });
+
+  it("does not regenerate without Pro", async () => {
+    mockGetUserEntitlements.mockResolvedValue({ canCreateShareLinks: false });
+    const { POST } = await import("./manage");
+
+    const response = await POST(makeContext({ action: "regenerate", id: "t1" }));
+
+    expect(mockRegenerateStatusPageToken).not.toHaveBeenCalled();
+    expect(response.headers.get("Location")).toBe("/dashboard/share?status_error=pro");
+  });
+
+  it("redirects with an error when the status page isn't found", async () => {
+    mockRegenerateStatusPageToken.mockResolvedValue({ token: null, error: "Status page not found" });
+    const { POST } = await import("./manage");
+
+    const response = await POST(makeContext({ action: "regenerate", id: "nope" }));
+
+    expect(mockSetSecretFlash).not.toHaveBeenCalled();
+    expect(response.headers.get("Location")).toBe("/dashboard/share?status_error=1");
   });
 });

@@ -18,6 +18,7 @@ export function shareNotice(url: URL, t: (typeof en)["notices"]): string | null 
   if (p.get("api_key_revoked")) return t.apiKeyRevoked;
   if (p.get("status_created")) return t.statusCreated;
   if (p.get("status_revoked")) return t.statusRevoked;
+  if (p.get("status_regenerated")) return t.statusRegenerated;
   if (error === "family_limit") return t.familyLimit;
   if (error === "pro_required") return t.proRequired;
   if (error) return t.error;

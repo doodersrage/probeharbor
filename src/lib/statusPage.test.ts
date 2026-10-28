@@ -13,6 +13,11 @@ function mockQuery(result: { data?: unknown; error?: unknown }) {
   return builder;
 }
 
+async function sha256(value: string): Promise<string> {
+  const d = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
+  return [...new Uint8Array(d)].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
 const mockFrom = vi.fn();
 vi.mock("./supabase", () => ({
   createServerClient: () => ({ from: (...args: unknown[]) => mockFrom(...args) }),
@@ -78,9 +83,10 @@ describe("createStatusPageToken", () => {
 
     expect(result.error).toBeNull();
     expect(result.token).toMatch(/^[0-9a-f]{36}$/);
+    // Only the hash is stored; the raw token goes to the manager once.
     expect(insertedRow).toEqual({
       household_id: "house-1",
-      token: result.token,
+      token_hash: await sha256(result.token!),
       label: "Family status",
     });
   });
@@ -151,11 +157,61 @@ describe("resolveStatusPageToken", () => {
     expect(await resolveStatusPageToken("nope")).toBeNull();
   });
 
-  it("returns the owning household for a valid token", async () => {
-    mockFrom.mockReturnValue(mockQuery({ data: { household_id: "house-1" } }));
+  it("returns the owning household for a valid token, looked up by hash", async () => {
+    const builder = mockQuery({ data: { household_id: "house-1" } });
+    mockFrom.mockReturnValue(builder);
     const { resolveStatusPageToken } = await import("./statusPage");
 
     expect(await resolveStatusPageToken("tok")).toEqual({ householdId: "house-1" });
+    expect(builder.eq).toHaveBeenCalledWith("token_hash", await sha256("tok"));
+    expect(builder.eq).not.toHaveBeenCalledWith("token", expect.anything());
+  });
+
+  it("falls back to an unhashed row only for the old 36-hex shape", async () => {
+    const legacy = "ab".repeat(18);
+    const miss = mockQuery({ data: null });
+    const hit = mockQuery({ data: { household_id: "house-2" } });
+    mockFrom.mockReturnValueOnce(miss).mockReturnValueOnce(hit);
+    const { resolveStatusPageToken } = await import("./statusPage");
+
+    expect(await resolveStatusPageToken(legacy)).toEqual({ householdId: "house-2" });
+    expect(hit.eq).toHaveBeenCalledWith("token", legacy);
+    expect(hit.is).toHaveBeenCalledWith("token_hash", null);
+    expect(hit.is).toHaveBeenCalledWith("revoked_at", null);
+  });
+
+  it("does not try a raw lookup for a 64-hex value (e.g. a stored hash)", async () => {
+    mockFrom.mockReturnValue(mockQuery({ data: null }));
+    const { resolveStatusPageToken } = await import("./statusPage");
+
+    expect(await resolveStatusPageToken("cd".repeat(32))).toBeNull();
+    expect(mockFrom).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("regenerateStatusPageToken", () => {
+  it("stores a new hash, clears any raw token, and returns the new token", async () => {
+    const builder = mockQuery({ data: { id: "t1" }, error: null });
+    mockFrom.mockReturnValue(builder);
+    const { regenerateStatusPageToken } = await import("./statusPage");
+
+    const result = await regenerateStatusPageToken("house-1", "t1");
+
+    expect(result.token).toMatch(/^[0-9a-f]{36}$/);
+    expect(builder.update).toHaveBeenCalledWith({ token_hash: await sha256(result.token!), token: null });
+    expect(builder.eq).toHaveBeenCalledWith("id", "t1");
+    expect(builder.eq).toHaveBeenCalledWith("household_id", "house-1");
+    expect(builder.is).toHaveBeenCalledWith("revoked_at", null);
+  });
+
+  it("returns an error for a revoked or foreign status page", async () => {
+    mockFrom.mockReturnValue(mockQuery({ data: null, error: null }));
+    const { regenerateStatusPageToken } = await import("./statusPage");
+
+    expect(await regenerateStatusPageToken("house-1", "other")).toEqual({
+      token: null,
+      error: "Status page not found",
+    });
   });
 });
 

@@ -8,10 +8,24 @@ function randomToken(): string {
   return [...bytes].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
+async function sha256Hex(value: string): Promise<string> {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
+  return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+/**
+ * Status-page links carry a random token; only its SHA-256 hash is stored
+ * (`token_hash`, migration 20261028140000), so a new link is shown once and
+ * "Regenerate" replaces it. Pages created earlier still have their raw
+ * `token` and keep showing it until a later cleanup clears it.
+ */
+const LEGACY_RAW_TOKEN = /^[0-9a-f]{36}$/;
+
 export type StatusPageToken = {
   id: string;
   household_id: string;
-  token: string;
+  /** Raw token for pages created before hashing; null for newer pages. */
+  token: string | null;
   label: string;
   created_at: string;
   revoked_at: string | null;
@@ -25,10 +39,32 @@ export async function createStatusPageToken(
   const token = randomToken();
   const { error } = await supabase.from("status_page_tokens").insert({
     household_id: householdId,
-    token,
+    token_hash: await sha256Hex(token),
     label: label.trim() || "Status page",
   });
   return { token: error ? null : token, error: error?.message ?? null };
+}
+
+/**
+ * Give an active status page a new link; the old link and badge stop
+ * working. Clears any legacy raw token. Returns the new raw token to show once.
+ */
+export async function regenerateStatusPageToken(
+  householdId: string,
+  id: string,
+): Promise<{ token: string | null; error: string | null }> {
+  const supabase = createServerClient();
+  const token = randomToken();
+  const { data, error } = await supabase
+    .from("status_page_tokens")
+    .update({ token_hash: await sha256Hex(token), token: null })
+    .eq("id", id)
+    .eq("household_id", householdId)
+    .is("revoked_at", null)
+    .select("id")
+    .maybeSingle();
+  if (error || !data) return { token: null, error: error?.message ?? "Status page not found" };
+  return { token, error: null };
 }
 
 export async function listStatusPageTokens(
@@ -63,10 +99,22 @@ export async function resolveStatusPageToken(
   const { data } = await supabase
     .from("status_page_tokens")
     .select("household_id")
-    .eq("token", token)
+    .eq("token_hash", await sha256Hex(token))
     .is("revoked_at", null)
     .maybeSingle();
-  return data ? { householdId: data.household_id } : null;
+  if (data) return { householdId: data.household_id };
+
+  // Rows created by the previous code after the migration ran but before this
+  // deploy have no token_hash yet. Only the old 36-hex shape is tried raw.
+  if (!LEGACY_RAW_TOKEN.test(token)) return null;
+  const { data: legacy } = await supabase
+    .from("status_page_tokens")
+    .select("household_id")
+    .eq("token", token)
+    .is("token_hash", null)
+    .is("revoked_at", null)
+    .maybeSingle();
+  return legacy ? { householdId: legacy.household_id } : null;
 }
 
 export async function buildStatusPageSnapshot(householdId: string) {

@@ -148,6 +148,7 @@ const es: HouseholdMessages = {
     household_created: "Hogar creado",
     status_page_created: "Página de estado creada",
     status_page_revoked: "Página de estado revocada",
+    status_page_regenerated: "Enlace de página de estado regenerado",
     inbound_snooze: "Alertas pospuestas (entrante)",
     inbound_vacation: "Modo vacaciones (entrante)",
   },

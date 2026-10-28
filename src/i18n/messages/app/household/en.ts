@@ -146,6 +146,7 @@ const en = {
     household_created: "Household created",
     status_page_created: "Status page created",
     status_page_revoked: "Status page revoked",
+    status_page_regenerated: "Status page link regenerated",
     inbound_snooze: "Alerts snoozed (inbound)",
     inbound_vacation: "Vacation mode (inbound)",
   },

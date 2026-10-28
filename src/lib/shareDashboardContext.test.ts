@@ -141,6 +141,18 @@ describe("loadShareDashboardContext", () => {
     expect(mockListHouseholdApiKeys).not.toHaveBeenCalled();
   });
 
+  it("does not load status pages (which may hold raw tokens) for a viewer", async () => {
+    mockGetUserHouseholdRole.mockResolvedValue("viewer");
+    mockCanManageHousehold.mockReturnValue(false);
+    mockListStatusPageTokens.mockResolvedValue([{ id: "s1", token: "raw" }]);
+    const { loadShareDashboardContext } = await import("./shareDashboardContext");
+
+    const result = await loadShareDashboardContext(cookies, request, urlWith());
+
+    expect(result.statusPages).toEqual([]);
+    expect(mockListStatusPageTokens).not.toHaveBeenCalled();
+  });
+
   it("returns full share links (including token) for a manager", async () => {
     mockCanManageHousehold.mockReturnValue(true);
     mockFrom.mockReturnValue(
@@ -249,6 +261,7 @@ describe("loadShareDashboardContext", () => {
     ["api_key_revoked", "API key revoked."],
     ["status_created", "Status page created, copy the link below."],
     ["status_revoked", "Status page revoked."],
+    ["status_regenerated", "New status link created, copy it below. The old link and badge no longer work."],
   ])("derives the notice for ?%s", async (param, expected) => {
     const { loadShareDashboardContext } = await import("./shareDashboardContext");
 
