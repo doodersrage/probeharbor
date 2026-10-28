@@ -2108,7 +2108,9 @@ way.
 ## Security fix S7: share links stored hashed, shown once (2026-10-28)
 
 **Status: Implemented and verified locally. Migration
-`20261028150000_share_link_token_hash.sql` NOT applied. Not deployed.**
+`20261028150000_share_link_token_hash.sql` applied to production
+2026-10-28 by the owner. Backfill check verified: mismatches = 0. Code not
+yet deployed (deploys on push).**
 
 **Deploy order: apply the migration first, then push the code.** Without
 it, creating or regenerating a share link fails. Existing links, embeds and
