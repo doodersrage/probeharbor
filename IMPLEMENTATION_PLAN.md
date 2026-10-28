@@ -2404,3 +2404,39 @@ breadcrumbs.
   error on a token URL (e.g. a bad `/api/share/<token>/readings` that
   throws) and check the event in Sentry shows `[redacted]`. Events already
   in Sentry aren't changed; consider deleting old ones that show tokens.
+
+------------------------------------------------------------------------
+
+## Milestone 4, increment 4.3: rollback, recovery and migration-order docs (2026-10-28)
+
+**Status: Docs only. Not deployed (the developer docs deploy with the site).**
+
+Audit gaps (M4): no backup/restore or rollback docs; migrations are manual
+(`pnpm db:push`) while `main` auto-deploys.
+
+- [x] `docs/guide/deploy.md` gains **Migrations and deploy order**
+      (additive first; migration before code that writes new columns; code
+      before migrations that tighten; read the header comment; run the
+      post-apply check) and **Rollback and recovery**:
+      - Worker rollback with `wrangler deployments list` / `wrangler
+        rollback` (both checked against the installed wrangler 4.105
+        `--help`)
+      - what a rollback doesn't undo
+      - Supabase backups (check the dashboard for the plan's schedule and
+        PITR; restoring loses later data)
+      - manual `supabase db dump --linked` (`--data-only`, `-f` checked
+        against CLI 2.108 `--help`), which needs Docker, or `pg_dump`
+      - R2 versioning, `.env` custody and Stripe after a restore
+- States plainly that **restores have not been rehearsed**.
+- Evidence: VitePress docs build passes. No code changed.
+- Facts I couldn't check from here, flagged in the doc: the project's
+  Supabase backup and PITR settings, and R2 versioning on
+  `thermaltrace-history`. On this machine Docker isn't reachable and
+  `pg_dump` isn't installed, so a manual dump needs one of them set up.
+- **Follow-ups (need the owner):**
+  1. Look up the Supabase backup and PITR settings and R2 versioning, and
+     write them into the doc.
+  2. Rehearse one restore (e.g. a dump restored into a scratch Supabase
+     project).
+  3. Decide whether CI should fail when `supabase/migrations` has files
+     not yet applied to production. That needs DB credentials in CI.

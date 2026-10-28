@@ -53,6 +53,81 @@ CLOUDFLARE_API_TOKEN=... pnpm setup:github-secrets
 
 That syncs `CLOUDFLARE_*` plus build secrets from `.env` into GitHub Actions secrets. Pushes to `main` then run [`.github/workflows/deploy.yml`](https://github.com/doodersrage/probeharbor/blob/main/.github/workflows/deploy.yml). Without those secrets the workflow succeeds with a skip notice (use `pnpm deploy` locally).
 
+## Migrations and deploy order
+
+Pushes to `main` deploy the Workers automatically. **Database migrations do
+not run in CI**: apply them yourself with `pnpm db:push` (Supabase CLI,
+linked project).
+
+- **Additive migrations** (new nullable column, new table, new index) can
+  go first, then push the code. That's the default order.
+- If new code **writes** to a new column or table, apply the migration
+  **before** pushing. Otherwise those writes fail until it lands.
+- If a migration **removes or tightens** something the old code still uses,
+  deploy the code first, then apply the migration.
+- Each recent migration file starts with a comment giving its deploy order
+  and the SQL to undo it. Read it before `pnpm db:push`.
+- After applying, run the read-only check from the migration's entry in
+  `IMPLEMENTATION_PLAN.md` when there is one (e.g. backfill counts).
+
+## Rollback and recovery
+
+Restores have **not been rehearsed** for this project. Treat this section as
+the procedure to follow and test, not as proof that it works.
+
+### Roll back the code (Workers)
+
+Two Workers are deployed: `garage-temp` (the app, `dist/server/wrangler.json`)
+and `probeharbor-i18n` (translations, `workers/i18n/wrangler.jsonc`).
+
+```bash
+pnpm build                                              # creates dist/server/wrangler.json
+npx wrangler deployments list --config dist/server/wrangler.json
+npx wrangler rollback <version-id> --config dist/server/wrangler.json -m "reason"
+```
+
+- A rollback swaps the running code within seconds. It does **not** undo
+  database migrations, Worker secrets or cron changes.
+- The next push to `main` deploys again. To keep the old code, also
+  `git revert` the bad commit and push (CI then deploy takes about 15
+  minutes).
+- If the bad version came with a migration the old code can't handle, undo
+  the migration first, using the SQL in its header comment, after checking
+  what data the undo would drop.
+
+### Database backups (Supabase)
+
+What Supabase keeps depends on the project's plan. Check **Dashboard →
+Database → Backups** for the backup schedule and whether point-in-time
+recovery is on, and restore from there. Restoring replaces the whole
+database, so readings and alert history written after the backup are lost.
+
+Before risky changes (bulk data fixes, destructive migrations), take your
+own copy:
+
+```bash
+npx supabase db dump --linked -f backup-schema.sql
+npx supabase db dump --linked --data-only -f backup-data.sql
+```
+
+The Supabase CLI runs `pg_dump` in Docker, so Docker must be running and
+your user must be able to reach it. Without Docker, use the Postgres
+client's `pg_dump` with the connection string from **Dashboard → Connect**.
+Dumps contain user data and hashed credentials: store them encrypted and
+delete them when done.
+
+### Other state
+
+- **R2 `thermaltrace-history`** (history archives and chart images): check
+  in the Cloudflare dashboard whether object versioning or a lifecycle rule
+  is set. Deleted objects can't be recovered otherwise.
+- **Worker secrets** come from your local `.env` via `pnpm secrets:push`.
+  Keep `.env` in a password manager. A lost `.env` means rotating every key.
+- **Stripe** is the source of truth for subscriptions. After a database
+  restore, subscription rows can be older than Stripe; compare affected
+  accounts against the Stripe dashboard. (`pnpm audit:stripe` checks
+  display prices only.)
+
 ## Custom domain
 
 The Worker binds **probeharbor.dev** (and **www** → apex via middleware). Legacy hostnames listed in `wrangler.jsonc` redirect with 301. Set `SITE_URL` and `ORIGIN` to `https://probeharbor.dev`, then `pnpm secrets:push`.
