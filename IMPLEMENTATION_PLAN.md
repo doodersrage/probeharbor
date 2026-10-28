@@ -1693,7 +1693,7 @@ Order of work: M2-1 → M2-3 → M2-4 → M2-5 → M1-B → M1-C (sizing first).
 
 ------------------------------------------------------------------------
 
-## Step D6 (decisions M1-A, M1-C): read-only sizing queries — M1-A and fixes 1–2 closed; rest of M1-C waiting on the owner
+## Step D6 (decisions M1-A, M1-C): read-only sizing queries — closed (all counts 0, no data changes)
 
 Run these in the Supabase SQL editor. They only `select`. Paste the
 results back; no data changes until the counts are agreed.
@@ -1769,15 +1769,20 @@ migration:
    codes were stored as temperatures, so no delete migration is needed.
 3. Delete (3a) sensors' rows (and hide the sensors), and the (3b) rows.
    **3a closed (2026-10-28):** the owner ran query 3a: `sensors = 0`,
-   `rows = 0`. No all-zero humidity sensors exist. Only (3b) remains.
+   `rows = 0`. No all-zero humidity sensors exist. **3b closed
+   (2026-10-28):** `rows = 0`. No fabricated 0°F rows sit beside real
+   humidity. No migration is needed.
 4. ~~Add an optional reading id only if (4) is significant.~~ **Closed
    (2026-10-28):** the owner ran query 4 and `likely_duplicates = 0` for
    the last 7 days. Retries aren't creating duplicate rows, so M1-A needs
    no reading id or migration. Re-run query 4 if a client adds retries,
    for example firmware offline buffering.
 
-**Still waiting on:** results of query 3b. Cleanup
-migration 3 won't be written until those counts are known and signed off.
+**M1-C closed (2026-10-28).** All sizing queries returned 0, so the
+historical data has none of the problems the earlier bugs could have
+caused and no cleanup migration is needed. The code fixes (1.1, 1.3,
+1.4) prevent new bad rows. Re-run these queries only if a similar
+ingest bug is found later.
 
 ------------------------------------------------------------------------
 
