@@ -1995,7 +1995,14 @@ a user's routine alerts.
 - Not changed: an existing pre-hash race (two simultaneous taps can both
   apply the same snooze; the effect is identical, so it's harmless).
 
-### Needs a decision: invite, share-link and status-page tokens
+### Decision (2026-10-28, approved by the owner): hash them, show once
+
+Order: invites (S5) → status pages → share links. Share links and status
+pages are used by live embeds, scrapers and the HACS integration, so they
+need a hash column backfilled from the existing tokens. Clearing the old
+raw tokens is a separate step that needs its own approval.
+
+### Original question: invite, share-link and status-page tokens
 
 These are also stored raw, but unlike snooze links the app shows them
 again: pending invite links on the household page, and share, embed,
@@ -2003,3 +2010,44 @@ Prometheus and status URLs on Dashboard → Share. Hashing them means
 showing each URL only once at creation (as API keys and inbound webhooks
 already do) and offering "regenerate" instead of "copy". That's a UX
 change, so it's held for the owner.
+
+------------------------------------------------------------------------
+
+## Security fix S5: invite links stored hashed, shown once (2026-10-28)
+
+**Status: Implemented and verified locally. No migration. Not deployed.**
+
+- [x] `createHouseholdInvite` stores `sha256(token)` in
+      `household_invites.token` and returns the raw token separately.
+      Both creation paths (the `inviteHouseholdMember` Astro Action, which
+      the page uses, and the `POST /api/household` form) email the link
+      and put it in a 5-minute HttpOnly flash cookie
+      (`tt_flash_invite_link`). The household page shows it once in an
+      "Invite link" card with Copy.
+- [x] Pending invites no longer show or copy the link. A new **Resend**
+      button (`resend_invite`, managers only, with a confirm prompt) issues
+      a new token, adds 7 more days, emails it and shows it once. The old
+      link stops working. It only touches unaccepted invites in the
+      manager's household.
+- [x] `getInviteByToken` matches the hash, and the raw value only for
+      the old 48-hex shape. Invites already sent keep working until they
+      expire (7 days); a stored hash can't be used as a token. Remove the
+      legacy branch after 2026-11-05.
+- [x] `listPendingInvites` selects explicit columns (never `token`).
+      `GET /api/household` keeps the `invites[].token` field but it's
+      always `null`, and `token_preview` was dropped. **API change:**
+      managers used to get raw tokens there. No caller in this repo uses
+      them; the separate mobile apps are unverified.
+- [x] Copy in 5 locales: `notices.inviteResent`, `newInviteLink.*`,
+      `pending.linkHidden`/`resend`/`confirmResend`.
+- Evidence: `householdInvites.test.ts` +5 (hash stored, not raw; lookup
+  by hash; legacy only for 48-hex; reissue updates hash and expiry and is
+  scoped; reissue not found). `api/household/index.test.ts`: the GET
+  tests now assert no token leaves the API, the create test checks the
+  flash cookie, and there are +2 resend tests. `pnpm test`: 3046 passed.
+  `pnpm typecheck`: 0 errors. `pnpm lint`: 64 warnings (baseline).
+  `pnpm build`: pass. `pnpm test:e2e`: 44 passed, 12 skipped.
+- **Not verified:** the household page rendering (signed-in e2e is
+  skipped without credentials). Check once after deploy: send an invite
+  → link card appears once → reload → it's gone; Resend → new link
+  works and the old one shows "invite not found".

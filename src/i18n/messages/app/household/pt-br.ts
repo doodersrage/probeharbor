@@ -10,6 +10,7 @@ const ptBr: HouseholdMessages = {
     switched: "Casa ativa alterada.",
     joined: "Você entrou na casa.",
     inviteRevoked: "Convite cancelado.",
+    inviteResent: "Novo link de convite enviado por e-mail. O link anterior não funciona mais.",
     left: "Você saiu da casa.",
     propertyCreated: "Novo imóvel criado e definido como ativo.",
     digestSaved: "Preferência de resumo salva.",
@@ -45,11 +46,18 @@ const ptBr: HouseholdMessages = {
     invitesHeading: "Convites",
     ownerOnly: "Somente o proprietário da casa pode enviar convites.",
   },
+  newInviteLink: {
+    heading: "Link do convite",
+    body: "Copie agora se quiser compartilhar de outra forma. Ele não será mostrado de novo.",
+  },
   pending: {
     heading: "Convites pendentes",
     expires: "Expira em {time}",
     copyLink: "Copiar link",
     confirmCancel: "Cancelar este convite?",
+    linkHidden: "Por segurança, o link só é mostrado ao enviar. Use Reenviar para enviar um novo.",
+    resend: "Reenviar",
+    confirmResend: "Enviar um novo link? O link atual vai parar de funcionar.",
     cancel: "Cancelar",
   },
   rename: {

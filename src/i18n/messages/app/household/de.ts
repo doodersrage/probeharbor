@@ -10,6 +10,7 @@ const de: HouseholdMessages = {
     switched: "Aktiver Haushalt gewechselt.",
     joined: "Du bist dem Haushalt beigetreten.",
     inviteRevoked: "Einladung zurückgezogen.",
+    inviteResent: "Neuer Einladungslink per E-Mail gesendet. Der vorherige Link funktioniert nicht mehr.",
     left: "Du hast den Haushalt verlassen.",
     propertyCreated: "Neues Objekt angelegt und aktiviert.",
     digestSaved: "Einstellung zur Zusammenfassung gespeichert.",
@@ -45,11 +46,18 @@ const de: HouseholdMessages = {
     invitesHeading: "Einladungen",
     ownerOnly: "Nur der Eigentümer des Haushalts kann Einladungen senden.",
   },
+  newInviteLink: {
+    heading: "Einladungslink",
+    body: "Kopiere ihn jetzt, wenn du ihn anders teilen möchtest. Er wird nicht erneut angezeigt.",
+  },
   pending: {
     heading: "Offene Einladungen",
     expires: "Läuft ab am {time}",
     copyLink: "Link kopieren",
     confirmCancel: "Diese Einladung zurückziehen?",
+    linkHidden: "Aus Sicherheitsgründen wird der Link nur beim Senden angezeigt. Mit „Erneut senden“ verschickst du einen neuen.",
+    resend: "Erneut senden",
+    confirmResend: "Neuen Link senden? Der aktuelle Link funktioniert dann nicht mehr.",
     cancel: "Zurückziehen",
   },
   rename: {

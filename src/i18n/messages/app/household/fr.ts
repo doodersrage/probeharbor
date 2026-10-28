@@ -10,6 +10,7 @@ const fr: HouseholdMessages = {
     switched: "Foyer actif modifié.",
     joined: "Vous avez rejoint le foyer.",
     inviteRevoked: "Invitation annulée.",
+    inviteResent: "Nouveau lien d’invitation envoyé par e-mail. L’ancien lien ne fonctionne plus.",
     left: "Vous avez quitté le foyer.",
     propertyCreated: "Nouveau bien créé et défini comme actif.",
     digestSaved: "Préférence de récapitulatif enregistrée.",
@@ -45,11 +46,18 @@ const fr: HouseholdMessages = {
     invitesHeading: "Invitations",
     ownerOnly: "Seul le propriétaire du foyer peut envoyer des invitations.",
   },
+  newInviteLink: {
+    heading: "Lien d’invitation",
+    body: "Copiez-le maintenant si vous voulez le partager autrement. Il ne sera plus affiché.",
+  },
   pending: {
     heading: "Invitations en attente",
     expires: "Expire le {time}",
     copyLink: "Copier le lien",
     confirmCancel: "Annuler cette invitation ?",
+    linkHidden: "Par sécurité, le lien n’est affiché qu’à l’envoi. Utilisez Renvoyer pour en envoyer un nouveau.",
+    resend: "Renvoyer",
+    confirmResend: "Envoyer un nouveau lien ? Le lien actuel ne fonctionnera plus.",
     cancel: "Annuler",
   },
   rename: {

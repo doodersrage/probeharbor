@@ -10,6 +10,7 @@ const es: HouseholdMessages = {
     switched: "Hogar activo cambiado.",
     joined: "Te uniste al hogar.",
     inviteRevoked: "Invitación cancelada.",
+    inviteResent: "Se envió un nuevo enlace de invitación. El enlace anterior ya no funciona.",
     left: "Saliste del hogar.",
     propertyCreated: "Nueva propiedad creada y activada.",
     digestSaved: "Preferencia de resumen guardada.",
@@ -45,11 +46,18 @@ const es: HouseholdMessages = {
     invitesHeading: "Invitaciones",
     ownerOnly: "Solo el propietario del hogar puede enviar invitaciones.",
   },
+  newInviteLink: {
+    heading: "Enlace de invitación",
+    body: "Cópialo ahora si quieres compartirlo de otra forma. No se volverá a mostrar.",
+  },
   pending: {
     heading: "Invitaciones pendientes",
     expires: "Caduca el {time}",
     copyLink: "Copiar enlace",
     confirmCancel: "¿Cancelar esta invitación?",
+    linkHidden: "Por seguridad, el enlace solo se muestra al enviarlo. Usa Reenviar para enviar uno nuevo.",
+    resend: "Reenviar",
+    confirmResend: "¿Enviar un enlace nuevo? El enlace actual dejará de funcionar.",
     cancel: "Cancelar",
   },
   rename: {

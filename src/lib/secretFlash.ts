@@ -26,6 +26,7 @@ export const FLASH_SHARE_TOKEN = "tt_flash_share_token";
 export const FLASH_STATUS_TOKEN = "tt_flash_status_token";
 export const FLASH_INBOUND_TOKEN = "tt_flash_inbound_token";
 export const FLASH_INBOUND_SIGNING = "tt_flash_inbound_signing";
+export const FLASH_INVITE_LINK = "tt_flash_invite_link";
 
 export function setSecretFlash(
   cookies: AstroCookies,

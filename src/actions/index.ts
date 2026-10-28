@@ -41,6 +41,7 @@ import {
   parseHouseholdInviteRole,
   sendInviteEmail,
 } from "../lib/householdInvites";
+import { FLASH_INVITE_LINK, setSecretFlash } from "../lib/secretFlash";
 import { buildSiteUrl } from "../lib/stripe";
 import { updateHouseholdFreezeMapSettings } from "../lib/freezeMap";
 import {
@@ -366,14 +367,14 @@ export const server = {
           });
         }
       }
-      const { invite, error } = await createHouseholdInvite(
+      const { invite, token, error } = await createHouseholdInvite(
         manageId,
         email,
         user.id,
         7,
         role,
       );
-      if (error || !invite) {
+      if (error || !invite || !token) {
         throw new ActionError({
           code: "BAD_REQUEST",
           message: error || t.inviteFailed,
@@ -387,7 +388,9 @@ export const server = {
         .eq("id", manageId)
         .maybeSingle();
 
-      const acceptUrl = buildSiteUrl(context.request, `/invite/${invite.token}`);
+      const acceptUrl = buildSiteUrl(context.request, `/invite/${token}`);
+      // Only the hash is stored: show the link once after the page reloads.
+      setSecretFlash(context.cookies, FLASH_INVITE_LINK, acceptUrl);
       await sendInviteEmail(
         email,
         acceptUrl,

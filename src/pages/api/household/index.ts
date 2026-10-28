@@ -20,14 +20,15 @@ import {
   createHouseholdInvite,
   listPendingInvites,
   parseHouseholdInviteRole,
+  reissueHouseholdInvite,
   revokeHouseholdInvite,
   sendInviteEmail,
 } from "../../../lib/householdInvites";
+import { FLASH_INVITE_LINK, setSecretFlash } from "../../../lib/secretFlash";
 import { buildSiteUrl } from "../../../lib/stripe";
 import { updateHouseholdFreezeMapSettings } from "../../../lib/freezeMap";
 import { getHouseholdFreezeMapSettings } from "../../../lib/freezeMap";
 import { getIndoorReferenceSensorId } from "../../../lib/indoorReference";
-import { requireHouseholdManager } from "../../../lib/householdAuth";
 import { recordHouseholdActivity } from "../../../lib/householdActivity";
 import { formRedirectPath, withQuery } from "../../../lib/siteUrl";
 import { apiLocale, apiMoreCommonMessages } from "../../../i18n/messages/app/apiMore/common";
@@ -58,14 +59,12 @@ export const GET: APIRoute = async ({ request, cookies }) => {
     getIndoorReferenceSensorId(household.householdId),
   ]);
 
-  const manager = await requireHouseholdManager(user.id);
-  const safeInvites = manager.ok
-    ? invites.invites
-    : invites.invites.map(({ token, ...rest }) => ({
-        ...rest,
-        token: null as string | null,
-        token_preview: token.slice(-4),
-      }));
+  // Invite tokens are stored hashed, so links can't be listed again. Keep the
+  // field for older clients.
+  const safeInvites = invites.invites.map((invite) => ({
+    ...invite,
+    token: null as string | null,
+  }));
 
   return new Response(
     JSON.stringify({
@@ -212,6 +211,19 @@ export const POST: APIRoute = async (context) => {
     return redirect(withQuery(redirectTo, { invite_revoked: "1" }));
   }
 
+  if (action === "resend_invite") {
+    const inviteId = formData.get("invite_id")?.toString();
+    if (!inviteId) {
+      return redirect(withQuery(redirectTo, { error: "1" }));
+    }
+    const reissued = await reissueHouseholdInvite(manageId, inviteId);
+    if (reissued.error || !reissued.invite || !reissued.token) {
+      return redirect(withQuery(redirectTo, { error: "1" }));
+    }
+    await emailInviteLink(context, manageId, reissued.invite.email, reissued.token, user.email ?? null);
+    return redirect(withQuery(redirectTo, { invite_resent: "1" }));
+  }
+
   // Email invite link (does not require existing account)
   const email = formData.get("email")?.toString().trim().toLowerCase();
   if (!email) {
@@ -225,29 +237,42 @@ export const POST: APIRoute = async (context) => {
       return redirect(withQuery(redirectTo, { error: "portfolio_required" }));
     }
   }
-  const { invite, error } = await createHouseholdInvite(manageId, email, user.id, 7, role);
-  if (error || !invite) {
+  const { invite, token, error } = await createHouseholdInvite(manageId, email, user.id, 7, role);
+  if (error || !invite || !token) {
     return redirect(withQuery(redirectTo, { error: "1" }));
   }
 
-  const supabase = createServerClient();
-  const { data: householdRow } = await supabase
+  await emailInviteLink(context, manageId, email, token, user.email ?? null);
+  return redirect(withQuery(redirectTo, { invited: "1" }));
+};
+
+/**
+ * Email the invite link and show it once to the inviter (flash cookie), since
+ * only its hash is stored.
+ */
+async function emailInviteLink(
+  context: Parameters<APIRoute>[0],
+  householdId: string,
+  email: string,
+  token: string,
+  inviterEmail: string | null,
+): Promise<void> {
+  const { data: householdRow } = await createServerClient()
     .from("households")
     .select("name")
-    .eq("id", manageId)
+    .eq("id", householdId)
     .maybeSingle();
 
-  const acceptUrl = buildSiteUrl(request, `/invite/${invite.token}`);
+  const acceptUrl = buildSiteUrl(context.request, `/invite/${token}`);
+  setSecretFlash(context.cookies, FLASH_INVITE_LINK, acceptUrl);
   // Written in the inviter's language: the invitee may not have an account yet.
   const locale = apiLocale(context);
   await sendInviteEmail(
     email,
     acceptUrl,
     householdRow?.name ?? apiMoreCommonMessages(locale).defaults.aHousehold,
-    user.email ?? null,
+    inviterEmail,
     // English is the default; only pass a locale when it changes the email.
     ...(locale === "en" ? [] : [locale]),
   );
-
-  return redirect(withQuery(redirectTo, { invited: "1" }));
-};
+}

@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 function mockQuery(result: { data?: unknown; error?: unknown }) {
   const builder: Record<string, unknown> = {};
-  for (const method of ["select", "eq", "is", "gt", "order", "insert", "update", "delete", "upsert"]) {
+  for (const method of ["select", "eq", "in", "limit", "is", "gt", "order", "insert", "update", "delete", "upsert"]) {
     builder[method] = vi.fn(() => builder);
   }
   builder.single = vi.fn(() => Promise.resolve(result));
@@ -88,6 +88,11 @@ describe("createHouseholdInvite", () => {
 
     expect(result.error).toBeNull();
     expect(result.invite?.id).toBe("invite-1");
+    expect(result.token).toMatch(/^[0-9a-f]{48}$/);
+    const stored = (builder.insert as ReturnType<typeof vi.fn>).mock.calls[0][0] as { token: string };
+    expect(stored.token).toMatch(/^[0-9a-f]{64}$/);
+    expect(stored.token).not.toBe(result.token);
+    expect(builder.select).toHaveBeenCalledWith(expect.not.stringContaining("token"));
     expect(builder.insert).toHaveBeenCalledWith(
       expect.objectContaining({
         household_id: "house-1",
@@ -114,7 +119,7 @@ describe("createHouseholdInvite", () => {
 
     const result = await createHouseholdInvite("house-1", "a@b.com", "user-1");
 
-    expect(result).toEqual({ invite: null, error: "duplicate invite" });
+    expect(result).toEqual({ invite: null, token: null, error: "duplicate invite" });
   });
 
   it("falls back to a generic error when there is no message", async () => {
@@ -123,7 +128,7 @@ describe("createHouseholdInvite", () => {
 
     const result = await createHouseholdInvite("house-1", "a@b.com", "user-1");
 
-    expect(result).toEqual({ invite: null, error: "Failed to create invite" });
+    expect(result).toEqual({ invite: null, token: null, error: "Failed to create invite" });
   });
 });
 
@@ -158,6 +163,27 @@ describe("getInviteByToken", () => {
     const { getInviteByToken } = await import("./householdInvites");
 
     expect(await getInviteByToken("tok")).toEqual({ id: "i1", token: "tok" });
+  });
+
+  it("looks the link token up by its hash", async () => {
+    const builder = mockQuery({ data: null });
+    mockFrom.mockReturnValue(builder);
+    const { getInviteByToken, inviteTokenLookupKeys } = await import("./householdInvites");
+
+    await getInviteByToken("some-new-token");
+
+    expect(builder.in).toHaveBeenCalledWith("token", await inviteTokenLookupKeys("some-new-token"));
+    expect((await inviteTokenLookupKeys("some-new-token"))[0]).toMatch(/^[0-9a-f]{64}$/);
+  });
+
+  it("still matches pre-hash 48-hex links raw, but never a stored hash", async () => {
+    const { inviteTokenLookupKeys } = await import("./householdInvites");
+    const legacy = "ab".repeat(24);
+    const keys = await inviteTokenLookupKeys(legacy);
+    expect(keys).toHaveLength(2);
+    expect(keys[1]).toBe(legacy);
+    const storedHash = keys[0];
+    expect(await inviteTokenLookupKeys(storedHash)).not.toContain(storedHash);
   });
 
   it("returns null when not found", async () => {
@@ -335,5 +361,36 @@ describe("sendInviteEmail", () => {
     await expect(
       sendInviteEmail("a@b.com", "https://accept", "The Smiths", null),
     ).resolves.toBeUndefined();
+  });
+});
+
+describe("reissueHouseholdInvite", () => {
+  it("stores a new hash, extends expiry, and returns the new raw token", async () => {
+    const builder = mockQuery({ data: { id: "invite-1", email: "a@b.com" }, error: null });
+    mockFrom.mockReturnValue(builder);
+    const { reissueHouseholdInvite } = await import("./householdInvites");
+
+    const result = await reissueHouseholdInvite("house-1", "invite-1");
+
+    expect(result.token).toMatch(/^[0-9a-f]{48}$/);
+    const update = (builder.update as ReturnType<typeof vi.fn>).mock.calls[0][0] as {
+      token: string;
+      expires_at: string;
+    };
+    expect(update.token).toMatch(/^[0-9a-f]{64}$/);
+    expect(Date.parse(update.expires_at)).toBeGreaterThan(Date.now() + 6 * 24 * 3600 * 1000);
+    expect(builder.eq).toHaveBeenCalledWith("household_id", "house-1");
+    expect(builder.is).toHaveBeenCalledWith("accepted_at", null);
+  });
+
+  it("returns an error when the invite isn't pending in this household", async () => {
+    mockFrom.mockReturnValue(mockQuery({ data: null, error: null }));
+    const { reissueHouseholdInvite } = await import("./householdInvites");
+
+    expect(await reissueHouseholdInvite("house-1", "other")).toEqual({
+      invite: null,
+      token: null,
+      error: "Invite not found",
+    });
   });
 });

@@ -44,15 +44,44 @@ function randomToken(): string {
   return [...bytes].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
+async function sha256Hex(value: string): Promise<string> {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
+  return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+/**
+ * Invite links carry a random token; the database stores only its SHA-256
+ * hash, so the link is shown once (email + the inviter's page) and "Resend"
+ * issues a new one.
+ *
+ * Invites created before 2026-10-28 stored the raw 48-hex token. Those still
+ * match until they expire (7 days). Only that exact legacy shape is looked up
+ * raw, so a stored 64-hex hash used as a token matches nothing.
+ * After 2026-11-05 the legacy branch can be removed.
+ */
+const LEGACY_RAW_TOKEN = /^[0-9a-f]{48}$/;
+
+export async function inviteTokenLookupKeys(token: string): Promise<string[]> {
+  const keys = [await sha256Hex(token)];
+  if (LEGACY_RAW_TOKEN.test(token)) keys.push(token);
+  return keys;
+}
+
+/** Pending-invite fields safe to render; never includes the token. */
+export type PendingInvite = Omit<HouseholdInvite, "token">;
+const PENDING_INVITE_COLUMNS =
+  "id, household_id, email, invited_by, expires_at, accepted_at, created_at, role";
+
 export async function createHouseholdInvite(
   householdId: string,
   email: string,
   invitedBy: string,
   expiresInDays = 7,
   role: HouseholdInviteRole = "member",
-): Promise<{ invite: HouseholdInvite | null; error: string | null }> {
+): Promise<{ invite: PendingInvite | null; token: string | null; error: string | null }> {
   const supabase = createServerClient();
   const normalized = email.trim().toLowerCase();
+  const token = randomToken();
   const expires_at = new Date(
     Date.now() + expiresInDays * 24 * 60 * 60 * 1000,
   ).toISOString();
@@ -62,28 +91,55 @@ export async function createHouseholdInvite(
     .insert({
       household_id: householdId,
       email: normalized,
-      token: randomToken(),
+      token: await sha256Hex(token),
       invited_by: invitedBy,
       expires_at,
       role,
     })
-    .select("*")
+    .select(PENDING_INVITE_COLUMNS)
     .single();
 
   if (error || !data) {
-    return { invite: null, error: error?.message ?? "Failed to create invite" };
+    return { invite: null, token: null, error: error?.message ?? "Failed to create invite" };
   }
 
-  return { invite: data as HouseholdInvite, error: null };
+  return { invite: data as PendingInvite, token, error: null };
+}
+
+/**
+ * Give a pending invite a new link (the old one stops working) and another
+ * 7 days. Returns the new raw token to email and show once.
+ */
+export async function reissueHouseholdInvite(
+  householdId: string,
+  inviteId: string,
+  expiresInDays = 7,
+): Promise<{ invite: PendingInvite | null; token: string | null; error: string | null }> {
+  const supabase = createServerClient();
+  const token = randomToken();
+  const expires_at = new Date(Date.now() + expiresInDays * 24 * 60 * 60 * 1000).toISOString();
+  const { data, error } = await supabase
+    .from("household_invites")
+    .update({ token: await sha256Hex(token), expires_at })
+    .eq("id", inviteId)
+    .eq("household_id", householdId)
+    .is("accepted_at", null)
+    .select(PENDING_INVITE_COLUMNS)
+    .maybeSingle();
+
+  if (error || !data) {
+    return { invite: null, token: null, error: error?.message ?? "Invite not found" };
+  }
+  return { invite: data as PendingInvite, token, error: null };
 }
 
 export async function listPendingInvites(
   householdId: string,
-): Promise<{ invites: HouseholdInvite[]; error: string | null }> {
+): Promise<{ invites: PendingInvite[]; error: string | null }> {
   const supabase = createServerClient();
   const { data, error } = await supabase
     .from("household_invites")
-    .select("*")
+    .select(PENDING_INVITE_COLUMNS)
     .eq("household_id", householdId)
     .is("accepted_at", null)
     .gt("expires_at", new Date().toISOString())
@@ -93,7 +149,7 @@ export async function listPendingInvites(
     return { invites: [], error: error.message };
   }
 
-  return { invites: (data ?? []) as HouseholdInvite[], error: null };
+  return { invites: (data ?? []) as PendingInvite[], error: null };
 }
 
 export async function getInviteByToken(
@@ -103,7 +159,8 @@ export async function getInviteByToken(
   const { data } = await supabase
     .from("household_invites")
     .select("*")
-    .eq("token", token)
+    .in("token", await inviteTokenLookupKeys(token.trim()))
+    .limit(1)
     .maybeSingle();
 
   return (data as HouseholdInvite | null) ?? null;

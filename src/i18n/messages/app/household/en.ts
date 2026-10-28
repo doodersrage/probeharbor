@@ -9,6 +9,7 @@ const en = {
     switched: "Active household switched.",
     joined: "You joined the household.",
     inviteRevoked: "Invite cancelled.",
+    inviteResent: "New invite link emailed. The previous link no longer works.",
     left: "You left the household.",
     propertyCreated: "New property created and set active.",
     digestSaved: "Digest preference saved.",
@@ -44,11 +45,18 @@ const en = {
     invitesHeading: "Invites",
     ownerOnly: "Only the household owner can send invites.",
   },
+  newInviteLink: {
+    heading: "Invite link",
+    body: "Copy it now if you want to share it another way. It won’t be shown again.",
+  },
   pending: {
     heading: "Pending invites",
     expires: "Expires {time}",
     copyLink: "Copy link",
     confirmCancel: "Cancel this invite?",
+    linkHidden: "For security, the link is only shown when it’s sent. Use Resend to email a new one.",
+    resend: "Resend",
+    confirmResend: "Send a new link? The current link will stop working.",
     cancel: "Cancel",
   },
   rename: {

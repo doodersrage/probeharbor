@@ -43,12 +43,14 @@ const mockCreateHouseholdInvite = vi.fn();
 const mockListPendingInvites = vi.fn();
 const mockParseHouseholdInviteRole = vi.fn();
 const mockRevokeHouseholdInvite = vi.fn();
+const mockReissueHouseholdInvite = vi.fn();
 const mockSendInviteEmail = vi.fn();
 vi.mock("../../../lib/householdInvites", () => ({
   createHouseholdInvite: (...a: unknown[]) => mockCreateHouseholdInvite(...a),
   listPendingInvites: (...a: unknown[]) => mockListPendingInvites(...a),
   parseHouseholdInviteRole: (...a: unknown[]) => mockParseHouseholdInviteRole(...a),
   revokeHouseholdInvite: (...a: unknown[]) => mockRevokeHouseholdInvite(...a),
+  reissueHouseholdInvite: (...a: unknown[]) => mockReissueHouseholdInvite(...a),
   sendInviteEmail: (...a: unknown[]) => mockSendInviteEmail(...a),
 }));
 
@@ -121,7 +123,8 @@ function makePostContext(fields: Record<string, string> = {}): APIContext {
   const redirect = vi.fn(
     (path: string) => new Response(null, { status: 302, headers: { Location: path } }),
   );
-  return { request, cookies: {}, redirect } as unknown as APIContext;
+  const cookies = { set: vi.fn(), get: vi.fn(), delete: vi.fn() };
+  return { request, cookies, redirect } as unknown as APIContext;
 }
 
 beforeEach(() => {
@@ -173,7 +176,13 @@ beforeEach(() => {
   mockRevokeHouseholdInvite.mockReset().mockResolvedValue({ error: null });
   mockParseHouseholdInviteRole.mockReset().mockReturnValue("member");
   mockCreateHouseholdInvite.mockReset().mockResolvedValue({
-    invite: { token: "new-invite-tok" },
+    invite: { id: "inv-new", email: "new@example.com" },
+    token: "new-invite-tok",
+    error: null,
+  });
+  mockReissueHouseholdInvite.mockReset().mockResolvedValue({
+    invite: { id: "inv-1", email: "a@b.com" },
+    token: "reissued-tok",
     error: null,
   });
   mockSendInviteEmail.mockReset().mockResolvedValue(undefined);
@@ -209,7 +218,7 @@ describe("GET /api/household", () => {
     expect(await response.json()).toEqual({ error: "db down" });
   });
 
-  it("returns household payload and full invite tokens for managers", async () => {
+  it("returns household payload with no invite tokens (they're stored hashed)", async () => {
     const { GET } = await import("./index");
 
     const response = await GET(makeGetContext());
@@ -218,7 +227,7 @@ describe("GET /api/household", () => {
     expect(response.status).toBe(200);
     expect(json.householdId).toBe("house-1");
     expect(json.members).toEqual([{ user_id: "user-1", role: "owner" }]);
-    expect(json.invites).toEqual([{ id: "inv-1", email: "a@b.com", token: "secrettoken" }]);
+    expect(json.invites).toEqual([{ id: "inv-1", email: "a@b.com", token: null }]);
     expect(json.indoor_reference_sensor_id).toBeNull();
     expect(json.freeze_map).toEqual({
       opt_in: false,
@@ -229,17 +238,13 @@ describe("GET /api/household", () => {
     });
   });
 
-  it("redacts invite tokens for non-managers", async () => {
+  it("never returns invite tokens, even for non-managers", async () => {
     mockRequireHouseholdManager.mockResolvedValue({ ok: false, error: "manager_required" });
     const { GET } = await import("./index");
 
-    const json = (await (await GET(makeGetContext())).json()) as {
-      invites: Array<{ token: string | null; token_preview: string }>;
-    };
+    const body = await (await GET(makeGetContext())).text();
 
-    expect(json.invites).toEqual([
-      { id: "inv-1", email: "a@b.com", token: null, token_preview: "oken" },
-    ]);
+    expect(body).not.toContain("secrettoken");
   });
 });
 
@@ -465,6 +470,46 @@ describe("POST /api/household", () => {
       "user@example.com",
     );
     expect(context.redirect).toHaveBeenCalledWith("/dashboard/household?invited=1");
+    expect(mockBuildSiteUrl).toHaveBeenCalledWith(expect.anything(), "/invite/new-invite-tok");
+    expect(context.cookies.set).toHaveBeenCalledWith(
+      "tt_flash_invite_link",
+      "https://example.com/invite/new-invite-tok",
+      expect.objectContaining({ httpOnly: true }),
+    );
+  });
+
+  it("resends an invite with a new link and shows it once", async () => {
+    mockBuildSiteUrl.mockReturnValue("https://example.com/invite/reissued-tok");
+    const { POST } = await import("./index");
+    const context = makePostContext({ action: "resend_invite", invite_id: "inv-1" });
+
+    await POST(context);
+
+    expect(mockReissueHouseholdInvite).toHaveBeenCalledWith("house-1", "inv-1");
+    expect(mockBuildSiteUrl).toHaveBeenCalledWith(expect.anything(), "/invite/reissued-tok");
+    expect(mockSendInviteEmail).toHaveBeenCalledWith(
+      "a@b.com",
+      "https://example.com/invite/reissued-tok",
+      "Home",
+      "user@example.com",
+    );
+    expect(context.cookies.set).toHaveBeenCalledWith(
+      "tt_flash_invite_link",
+      "https://example.com/invite/reissued-tok",
+      expect.anything(),
+    );
+    expect(context.redirect).toHaveBeenCalledWith("/dashboard/household?invite_resent=1");
+  });
+
+  it("redirects with an error and sends nothing when resend finds no pending invite", async () => {
+    mockReissueHouseholdInvite.mockResolvedValue({ invite: null, token: null, error: "Invite not found" });
+    const { POST } = await import("./index");
+    const context = makePostContext({ action: "resend_invite", invite_id: "nope" });
+
+    await POST(context);
+
+    expect(mockSendInviteEmail).not.toHaveBeenCalled();
+    expect(context.redirect).toHaveBeenCalledWith("/dashboard/household?error=1");
   });
 
   it("redirects with error when invite creation fails", async () => {

@@ -11,10 +11,10 @@ import {
   canManageHousehold,
 } from "../../lib/households";
 import { listPendingInvites } from "../../lib/householdInvites";
+import { consumeSecretFlash, FLASH_INVITE_LINK } from "../../lib/secretFlash";
 import { getHouseholdErrorMessage } from "../../lib/householdErrors";
 import { getUserEntitlements } from "../../lib/entitlements";
 import { createAdminClient, createServerClient } from "../../lib/supabase";
-import { buildSiteUrl } from "../../lib/stripe";
 import { listHouseholdActivity } from "../../lib/householdActivity";
 import { formatHouseholdActivityAction } from "../../lib/householdActivityLabels";
 import { householdRoleLabel } from "../../lib/householdRoleLabel";
@@ -92,6 +92,7 @@ const NOTICE_PARAMS = [
   ["switched", t.notices.switched],
   ["joined", t.notices.joined],
   ["invite_revoked", t.notices.inviteRevoked],
+  ["invite_resent", t.notices.inviteResent],
   ["left", t.notices.left],
   ["property_created", t.notices.propertyCreated],
 ] as const;
@@ -103,12 +104,13 @@ const manageRole = manageId
   ? await getUserHouseholdRole(user.id, manageId)
   : null;
 const canManage = canManageHousehold(manageRole);
+// Shown once: only the invite token's hash is stored.
+const newInviteLink = canManage ? consumeSecretFlash(Astro.cookies, FLASH_INVITE_LINK) : null;
 const activeMembership = householdsResult.households.find(
   (h) => h.household_id === active.householdId,
 );
 const canLeaveActive =
   Boolean(active.householdId) && activeMembership?.role === "member";
-const siteOrigin = buildSiteUrl(Astro.request, "/").replace(/\/$/, "");
 const householdActivity =
   manageId && canManage
     ? await listHouseholdActivity(manageId, 15)
@@ -281,28 +283,47 @@ const digestError = Astro.url.searchParams.get("digest_error");
       </DashboardCard>
     )}
 
+    {newInviteLink && (
+      <DashboardCard>
+        <h2 class="card-title">{t.newInviteLink.heading}</h2>
+        <p class="text-sm mb-2">{t.newInviteLink.body}</p>
+        <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <code class="text-sm break-all">{newInviteLink}</code>
+          <button
+            type="button"
+            class="btn-secondary shrink-0"
+            data-copy={newInviteLink}
+            data-copy-label={t.pending.copyLink}
+          >
+            {t.pending.copyLink}
+          </button>
+        </div>
+      </DashboardCard>
+    )}
+
     {canManage && (invitesResult.invites ?? []).length > 0 && (
       <DashboardCard>
         <h2 class="card-title">{t.pending.heading}</h2>
+        <p class="text-sm text-[var(--color-text-muted)]">{t.pending.linkHidden}</p>
         <ul class="space-y-3">
           {invitesResult.invites.map((invite) => {
-            const href = `${siteOrigin}/invite/${invite.token}`;
             return (
               <li class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <strong>{invite.email}</strong>
-                  <p class="m-0 text-sm break-all text-[var(--color-text-muted)]">{href}</p>
                   <p class="m-0 text-sm">{fmt(t.pending.expires, { time: formatWhen(invite.expires_at) })}</p>
                 </div>
                 <div class="flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    class="btn-secondary shrink-0"
-                    data-copy={href}
-                    data-copy-label={t.pending.copyLink}
+                  <form
+                    action="/api/household"
+                    method="post"
+                    onsubmit={`return confirm(${JSON.stringify(t.pending.confirmResend)});`}
                   >
-                    {t.pending.copyLink}
-                  </button>
+                    <input type="hidden" name="action" value="resend_invite" />
+                    <input type="hidden" name="invite_id" value={invite.id} />
+                    <input type="hidden" name="redirect" value="/dashboard/household" />
+                    <button class="btn-secondary" type="submit">{t.pending.resend}</button>
+                  </form>
                   <form
                     action="/api/household"
                     method="post"
