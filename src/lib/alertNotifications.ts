@@ -183,9 +183,33 @@ async function recentFailedAttempt(userId: string, kind: string): Promise<boolea
   }));
   return events.some(
     (event) =>
+      event.kind === kind &&
       Date.now() - Date.parse(event.created_at) < FAILED_DELIVERY_RETRY_MS &&
       reachedNoOne({ sent: event.channels_sent, skipped: event.channels_skipped }),
   );
+}
+
+/** A recovered condition can alert again after this long (limits flapping sensors). */
+const RECOVERY_REARM_MS = 10 * 60 * 1000;
+
+/**
+ * Whether the cooldown still holds back a new alert of this kind. The 4h
+ * cooldown is for one ongoing incident: once that incident recovered (auto-
+ * resolved as "recovered" after the cooldown started, at least 10 min ago), a
+ * new one alerts right away instead of waiting out the rest of the 4 hours.
+ */
+async function cooldownBlocks(userId: string, kind: string, lastSentAt: string | null | undefined): Promise<boolean> {
+  if (!isAlertCooldownActive(lastSentAt)) return false;
+  const sentMs = Date.parse(lastSentAt as string);
+  const { events } = await listRecentAlertEventsFiltered(userId, { limit: 5, kind }).catch(() => ({
+    events: [],
+  }));
+  const recovered = events.some((event) => {
+    if (event.kind !== kind || event.meta?.autoResolved !== "recovered" || !event.acknowledged_at) return false;
+    const recoveredMs = Date.parse(event.acknowledged_at);
+    return recoveredMs >= sentMs && Date.now() - recoveredMs >= RECOVERY_REARM_MS;
+  });
+  return !recovered;
 }
 
 type CooldownField = Parameters<typeof markCooldown>[1];
@@ -346,8 +370,8 @@ export async function sendThresholdAlertsIfNeeded(
     }
   }
 
-  if (isAlertCooldownActive(settings.lastAlertSentAt)) return;
   if (messages.length === 0) return;
+  if (await cooldownBlocks(userId, "threshold", settings.lastAlertSentAt)) return;
   // A failed delivery skips the cooldown so it retries, but not on every reading.
   if (await recentFailedAttempt(userId, "threshold")) return;
   if (await acknowledgedFreezeStillOngoing(userId, settings, readings, messages, dwellSamplesBySensorId)) {
@@ -421,7 +445,7 @@ export async function sendFloodAlertsIfNeeded(
     );
   }
   if (!settings.enabled || wetSensors.length === 0) return;
-  if (isAlertCooldownActive(settings.lastFloodAlertAt)) return;
+  if (await cooldownBlocks(userId, "flood", settings.lastFloodAlertAt)) return;
 
   const messages = evaluateFloodAlerts(settings, wetSensors, locale);
   if (messages.length === 0) return;
@@ -462,7 +486,7 @@ export async function sendPowerAlertsIfNeeded(
     );
   }
   if (!settings.enabled || !settings.powerAlertsEnabled || offSensors.length === 0) return;
-  if (isAlertCooldownActive(settings.lastPowerAlertAt)) return;
+  if (await cooldownBlocks(userId, "power", settings.lastPowerAlertAt)) return;
 
   const messages = evaluatePowerAlerts(settings, offSensors, locale);
   if (messages.length === 0) return;

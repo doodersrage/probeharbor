@@ -1239,3 +1239,49 @@ alert was shown as sent.
   every 4 h. That's bounded, and it's the intended behavior.
 - Partial delivery (some channels sent) starts the cooldown; failed
   channels in that send aren't retried. That's unchanged.
+
+------------------------------------------------------------------------
+
+## Milestone 2, increment 2.2: a new incident after recovery alerts again (2026-10-28)
+
+**Status: Implemented and verified locally. No migration.**
+
+### Problem (verified)
+
+Recovery (`resolveAndAnnounceRecovery`) closed the open alert and sent
+a "back to normal" notice, but the 4 h cooldown kept running. A second
+leak, freeze or power cut within 4 h of the first one recovering was
+never sent.
+
+### Acceptance criteria
+
+- [x] For freeze, leak and power-off, the cooldown blocks a new alert
+      only while the incident it started is unresolved
+      (`cooldownBlocks`). A new incident alerts once the earlier one was
+      auto-resolved as `recovered` after the cooldown started.
+- [x] Flap guard: re-alerting waits until the recovery is at least
+      10 min old.
+- [x] A person's acknowledgement ("I'm on it") isn't a recovery: no
+      `autoResolved` marker, so the cooldown still holds.
+- [x] The cooldown timestamps (also "last alert sent") are untouched.
+- [x] 2.1's retry check now matches the alert kind exactly; the log
+      query matches `kind` with `ilike`.
+
+### Evidence
+
+- `alertNotifications.test.ts` +5. The 2 bug tests (leak after
+  recovery, power after recovery) fail against the previous code; the 3
+  guards pass on both.
+- `pnpm test`: 2960 passed. `pnpm typecheck`: 0 errors. `pnpm lint`: 64
+  warnings (baseline). `pnpm build`: pass. `pnpm test:e2e`: 44 passed,
+  12 skipped.
+
+### Not covered
+
+- Outage recovery is announced per household rather than per device,
+  so it doesn't map onto a single incident. Left on the plain 4 h
+  cooldown.
+- Rule alerts have no recovery concept (audit gap), so they're left on
+  the plain cooldown.
+- One extra alert-log query per evaluation, and only while a cooldown is
+  active and a matching condition is present.

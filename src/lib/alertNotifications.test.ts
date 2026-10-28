@@ -540,3 +540,78 @@ describe("reachedNoOne", () => {
     expect(reachedNoOne(delivery)).toBe(expected);
   });
 });
+
+describe("a new incident after recovery isn't held back by the old cooldown", () => {
+  const settings = { ...DEFAULT_ALERT_SETTINGS, enabled: true, powerAlertsEnabled: true };
+  const wet = [{ label: "Water heater", space: "Garage" }];
+  const minutesAgo = (m: number) => new Date(Date.now() - m * 60_000).toISOString();
+  const recoveredFlood = (sentMinAgo: number, recoveredMinAgo: number) => ({
+    kind: "flood",
+    channels_sent: ["email"],
+    channels_skipped: [],
+    created_at: minutesAgo(sentMinAgo),
+    acknowledged_at: minutesAgo(recoveredMinAgo),
+    meta: { autoResolved: "recovered" },
+  });
+
+  it("alerts a second leak 2 hours after the first one dried up", async () => {
+    mockListRecentAlertEvents.mockResolvedValue([recoveredFlood(150, 120)]);
+    const { sendFloodAlertsIfNeeded } = await import("./alertNotifications");
+
+    await sendFloodAlertsIfNeeded("user-1", "a@example.com", { ...settings, lastFloodAlertAt: minutesAgo(150) }, wet);
+
+    expect(mockNotifyUser).toHaveBeenCalledWith(
+      "user-1",
+      "a@example.com",
+      expect.anything(),
+      expect.objectContaining({ kind: "flood" }),
+      expect.anything(),
+      "en",
+    );
+  });
+
+  it("stays quiet while the first leak is still open", async () => {
+    mockListRecentAlertEvents.mockResolvedValue([
+      { kind: "flood", channels_sent: ["email"], channels_skipped: [], created_at: minutesAgo(60), acknowledged_at: null },
+    ]);
+    const { sendFloodAlertsIfNeeded } = await import("./alertNotifications");
+
+    await sendFloodAlertsIfNeeded("user-1", "a@example.com", { ...settings, lastFloodAlertAt: minutesAgo(60) }, wet);
+
+    expect(mockNotifyUser).not.toHaveBeenCalled();
+  });
+
+  it("waits 10 minutes after recovery so a flapping sensor can't spam", async () => {
+    mockListRecentAlertEvents.mockResolvedValue([recoveredFlood(30, 3)]);
+    const { sendFloodAlertsIfNeeded } = await import("./alertNotifications");
+
+    await sendFloodAlertsIfNeeded("user-1", "a@example.com", { ...settings, lastFloodAlertAt: minutesAgo(30) }, wet);
+
+    expect(mockNotifyUser).not.toHaveBeenCalled();
+  });
+
+  it("doesn't treat a person's acknowledgement as a recovery", async () => {
+    mockListRecentAlertEvents.mockResolvedValue([
+      { kind: "flood", channels_sent: ["email"], channels_skipped: [], created_at: minutesAgo(90), acknowledged_at: minutesAgo(60), meta: {} },
+    ]);
+    const { sendFloodAlertsIfNeeded } = await import("./alertNotifications");
+
+    await sendFloodAlertsIfNeeded("user-1", "a@example.com", { ...settings, lastFloodAlertAt: minutesAgo(90) }, wet);
+
+    expect(mockNotifyUser).not.toHaveBeenCalled();
+  });
+
+  it("applies to power-off too", async () => {
+    mockListRecentAlertEvents.mockResolvedValue([{ ...recoveredFlood(150, 120), kind: "power" }]);
+    const { sendPowerAlertsIfNeeded } = await import("./alertNotifications");
+
+    await sendPowerAlertsIfNeeded(
+      "user-1",
+      "a@example.com",
+      { ...settings, lastPowerAlertAt: minutesAgo(150) },
+      [{ label: "Freezer outlet", space: null }],
+    );
+
+    expect(mockNotifyUser.mock.calls.some((call) => call[3]?.kind === "power")).toBe(true);
+  });
+});
