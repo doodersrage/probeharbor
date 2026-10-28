@@ -799,6 +799,11 @@ const redirectTo =
       refreshBtn?.addEventListener("click", () => {
         void checkOnce();
       });
+      // The browser flasher on this page fires this on the board's first
+      // successful upload: check right away instead of on the next 5 s tick.
+      document.addEventListener("probeharbor:probe-live", () => {
+        void checkOnce();
+      });
 
       void checkOnce();
       timer = window.setInterval(() => {

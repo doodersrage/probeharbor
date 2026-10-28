@@ -2293,8 +2293,8 @@ Wi-Fi. Sending the first reading…" for 90 s, then showed the generic
   network that blocks outbound HTTPS (or point DNS away) and confirm the
   message appears.
 - Still open from the audit (M3): ~~other firmware failure lines are
-  shown as untranslated English~~ (3.3 below); nothing listens for
-  `probeharbor:probe-live`.
+  shown as untranslated English~~ (3.3 below); ~~nothing listens for
+  `probeharbor:probe-live`~~ (3.3 below).
 
 ------------------------------------------------------------------------
 
@@ -2318,3 +2318,8 @@ Wi-Fi. Sending the first reading…" for 90 s, then showed the generic
   from the separate i18n service and the dev server falls back to English
   (seen on `/de/flash`), so the e2e can't cover it. Check `/de/flash` in
   production with the fake board, or a real one, after deploy.
+- [x] Also: the Devices page's "waiting for the first reading" poll now
+      listens for `probeharbor:probe-live`, which the flasher fires on the
+      board's first successful upload. It checks right away instead of on
+      the next 5 s tick, then moves to the "rename sensors" step as before.
+      Inline script; not covered by tests (signed-in e2e is skipped).
