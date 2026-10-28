@@ -1347,6 +1347,17 @@ const onboardingProps = {
           </>
         )}
       </DashboardMetricGrid>
+      {hasDevices && (
+        <details class="mt-3 text-sm">
+          <summary class="cursor-pointer text-[var(--color-text-muted)]">{t.metricsHow.summary}</summary>
+          <ul class="mt-2 mb-0 pl-5 list-disc space-y-1 text-[var(--color-text-muted)]">
+            {(["freezeHours", "coldestMargin", "indoorOutdoor", "probeSpread", "condensation", "feedHealth"] as const).map((key) => (
+              <li>{fmt(t.metricsHow[key], { threshold: plainNum(alertSettings.freezeThresholdF) })}</li>
+            ))}
+          </ul>
+          <p class="mt-2 mb-0 text-xs text-[var(--color-text-muted)]">{t.metricsHow.measured}</p>
+        </details>
+      )}
     </section>
 
     {showTipsStrip && (

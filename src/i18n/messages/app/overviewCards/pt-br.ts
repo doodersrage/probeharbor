@@ -287,6 +287,8 @@ const ptBr: OverviewCardsMessages = {
     windowEarliest: "Intervalo: a partir das {from}; uma noite mais amena pode não chegar lá",
     basedOn: "Em que isso se baseia",
     estimateNote: "Uma estimativa a partir do histórico deste espaço e da previsão externa, não uma medição.",
+    confidenceHelp: "Confiança alta: o modelo de previsão é ajustado com 24 ou mais leituras pareadas com o clima externo. Média: 8 ou mais leituras pareadas, ou uma tendência de resfriamento de 2 horas ou mais. Baixa: menos dados. A janela fica mais larga quanto menor a confiança.",
+    learnMore: "Como o tempo até o congelamento é estimado",
     cooling: "Esfriando {rate} °F/h",
     offset: "Diferença típica de {offset} °F em relação ao lado de fora",
   },

@@ -287,6 +287,8 @@ const fr: OverviewCardsMessages = {
     windowEarliest: "Plage : dès {from} ; une nuit plus douce pourrait ne pas l’atteindre",
     basedOn: "Sur quoi repose cette estimation",
     estimateNote: "Une estimation fondée sur l’historique de cet espace et la prévision extérieure, pas une mesure.",
+    confidenceHelp: "Confiance élevée : le modèle de prévision est ajusté sur au moins 24 mesures associées à la météo extérieure. Moyenne : au moins 8 mesures associées, ou une tendance au refroidissement sur 2 heures ou plus. Faible : moins de données. La fenêtre s’élargit quand la confiance baisse.",
+    learnMore: "Comment le temps avant le gel est estimé",
     cooling: "Refroidissement {rate} °F/h",
     offset: "Décalage habituel {offset} °F par rapport à l’extérieur",
   },

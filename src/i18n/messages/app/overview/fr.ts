@@ -46,6 +46,16 @@ const fr: OverviewMessages = {
     condensation: "Condensation (7 j)",
     feed_health: "État des flux",
   },
+  metricsHow: {
+    summary: "Comment ces chiffres sont calculés",
+    freezeHours: "Heures de gel : temps des 7 derniers jours pendant lequel une sonde était à votre seuil de gel de {threshold} °F ou en dessous. Les °F·h (degrés-heures) cumulent l’écart et la durée : 2 °F en dessous pendant 3 heures font 6 °F·h.",
+    coldestMargin: "Marge la plus froide : votre sonde active la plus froide moins le seuil de gel de {threshold} °F. Orange à moins de 5 °F, rouge au seuil ou en dessous.",
+    indoorOutdoor: "Intérieur − extérieur : la sonde la plus froide (ou le thermostat de la maison) moins la température extérieure actuelle. Sous 5 °F (orange), l’espace suit de près l’air extérieur et se refroidira vite par une nuit froide.",
+    probeSpread: "Écart entre sondes : la sonde active la plus chaude moins la plus froide. À partir de 8 °F (orange), cela peut signaler un point froid, de l’air stratifié ou un capteur défaillant.",
+    condensation: "Condensation : heures des 7 derniers jours où l’air était à moins de 5 °F de son point de rosée (calculé à partir de la température et de l’humidité), quand les surfaces peuvent devenir humides. Orange à partir de 6 heures, ou à moins de 2 °F en ce moment.",
+    feedHealth: "État des flux : combien de vos flux pull ont répondu à l’instant, pas une disponibilité dans le temps.",
+    measured: "Tout cela provient de vos mesures et des données météo ; rien n’est une prévision.",
+  },
   metric: {
     feedIssues: { one: "{count} problème", other: "{count} problèmes" },
     feedsOnline: "{count} en ligne",

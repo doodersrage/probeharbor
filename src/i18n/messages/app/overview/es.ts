@@ -46,6 +46,16 @@ const es: OverviewMessages = {
     condensation: "Condensación (7 d)",
     feed_health: "Estado de los feeds",
   },
+  metricsHow: {
+    summary: "Cómo se calculan estas cifras",
+    freezeHours: "Horas de helada: tiempo en los últimos 7 días en que una sonda marcó tu límite de helada de {threshold} °F o menos. °F·h (grados-hora) suma cuánto por debajo y durante cuánto tiempo: 2 °F por debajo durante 3 horas son 6 °F·h.",
+    coldestMargin: "Margen más frío: tu sonda activa más fría menos el límite de helada de {threshold} °F. Ámbar a menos de 5 °F, rojo en el límite o por debajo.",
+    indoorOutdoor: "Interior − exterior: la sonda más fría (o el termostato de la casa) menos la temperatura exterior actual. Por debajo de 5 °F (ámbar), el espacio sigue de cerca al aire exterior y se enfriará rápido en una noche fría.",
+    probeSpread: "Dispersión de sondas: la sonda activa más cálida menos la más fría. 8 °F o más (ámbar) puede indicar un punto frío, aire en capas o un sensor que falla.",
+    condensation: "Condensación: horas de los últimos 7 días en que el aire estuvo a menos de 5 °F de su punto de rocío (calculado con temperatura y humedad), cuando las superficies pueden humedecerse. Ámbar con 6 horas o más, o a menos de 2 °F ahora mismo.",
+    feedHealth: "Estado de los feeds: cuántos de tus feeds pull respondieron ahora mismo, no la disponibilidad a lo largo del tiempo.",
+    measured: "Todo esto sale de tus lecturas y de datos meteorológicos; nada es un pronóstico.",
+  },
   metric: {
     feedIssues: { one: "{count} problema", other: "{count} problemas" },
     feedsOnline: "{count} en línea",

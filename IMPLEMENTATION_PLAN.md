@@ -2794,3 +2794,46 @@ Audit (M8): "Lighthouse is warn-only and `continue-on-error`."
   `/system-status`, `/docs/api`, share pages), and there are still no axe
   tests in e2e. Adding axe needs a new devDependency
   (`@axe-core/playwright`), which is a decision for the owner.
+
+------------------------------------------------------------------------
+
+## Milestone 6, increment 6.3: "how these are worked out" for the Overview (2026-10-28)
+
+**Status: Implemented and verified locally. No migration. Not deployed.**
+
+Audit (M6): "No 'how calculated' copy." A survey of derived values (this
+session) found:
+- the six Overview status tiles had no explanation; `°F·h` and the warning
+  cut-offs (indoor−outdoor < 5°F, spread ≥ 8°F, condensation ≥ 6 h or
+  ≤ 2°F) were never stated
+- the Time-to-freeze card never defined "High/Medium/Low confidence" and
+  didn't link the existing `/about/time-to-freeze` page
+
+- [x] Under the status strip, a collapsed **"How these numbers are worked
+      out"** list covers each tile:
+      - freeze hours, with degree-hours defined by example
+      - coldest margin, indoor−outdoor, probe spread and condensation, with
+        their colour cut-offs
+      - feed health, which is reachable now, not uptime
+
+      It ends with "none is a forecast". It shows only when the household
+      has devices.
+- [x] The Time-to-freeze card's "What this is based on" section is now
+      always available. It defines confidence from `confidenceFor`
+      (high = model fitted from 24+ paired readings; medium = 8+, or a
+      trend over 2+ h; low = less; the window widens as confidence drops)
+      and links **"How time to freeze is estimated"** to the localized
+      `/about/time-to-freeze` (200 in en and de on production).
+- [x] Copy in 5 locales, using each locale's real tile labels.
+- [x] Drift guard `metricExplanations.test.ts`: reads the cut-offs from
+      `dashboard.astro`, `overviewExtras.ts` and `spaceThermalModel.ts` and
+      requires every locale's copy to state them. A mutation (spread 8 → 9)
+      fails 5 tests.
+- Evidence: `pnpm test`: 3159 passed. `pnpm typecheck`: 0 errors.
+  `pnpm lint`: 64 warnings (baseline). `pnpm build`: pass.
+  `pnpm test:e2e`: 47 passed, 13 skipped. Not seen in a browser
+  (signed-in page).
+- Still without explanations (survey, lower traffic): the garage-risk
+  status cascade, readiness % formula, cold-air index, device health score,
+  portfolio health %, battery-days formula, anomaly rule and the dew-point
+  series.

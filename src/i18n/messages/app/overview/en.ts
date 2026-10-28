@@ -48,6 +48,16 @@ const en = {
     condensation: "Condensation (7d)",
     feed_health: "Feed health",
   },
+  metricsHow: {
+    summary: "How these numbers are worked out",
+    freezeHours: "Freeze hours: time in the last 7 days when a probe read at or below your {threshold}°F freeze line. °F·h (degree-hours) adds up how far below the line and for how long: 2°F under for 3 hours is 6 °F·h.",
+    coldestMargin: "Coldest margin: your coldest live probe minus the {threshold}°F freeze line. Amber within 5°F, red at or below the line.",
+    indoorOutdoor: "Indoor − outdoor: coldest probe (or the house thermostat) minus the current outdoor temperature. Under 5°F (amber) means the space follows outdoor air closely and will cool fast on a cold night.",
+    probeSpread: "Probe spread: warmest minus coldest live probe. 8°F or more (amber) can mean a cold spot, layered air, or a failing sensor.",
+    condensation: "Condensation: hours in the last 7 days when the air was within 5°F of its dew point (worked out from temperature and humidity), when surfaces can get damp. Amber at 6+ hours, or within 2°F right now.",
+    feedHealth: "Feed health: how many of your pull feeds answered just now, not uptime over time.",
+    measured: "All of these come from your readings and weather data; none is a forecast.",
+  },
   metric: {
     feedIssues: { one: "{count} issue", other: "{count} issues" },
     feedsOnline: "{count} online",

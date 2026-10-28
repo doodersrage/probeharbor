@@ -46,6 +46,16 @@ const de: OverviewMessages = {
     condensation: "Kondensation (7 T.)",
     feed_health: "Feed-Zustand",
   },
+  metricsHow: {
+    summary: "So werden diese Werte berechnet",
+    freezeHours: "Froststunden: Zeit in den letzten 7 Tagen, in der ein Fühler auf oder unter deiner Frostgrenze von {threshold} °F lag. °F·h (Gradstunden) addiert, wie weit und wie lange darunter: 3 Stunden lang 2 °F darunter sind 6 °F·h.",
+    coldestMargin: "Kältester Abstand: dein kältester aktueller Fühler minus die Frostgrenze von {threshold} °F. Gelb innerhalb von 5 °F, rot auf oder unter der Grenze.",
+    indoorOutdoor: "Innen − außen: kältester Fühler (oder Hausthermostat) minus aktuelle Außentemperatur. Unter 5 °F (gelb) folgt der Raum der Außenluft eng und kühlt in einer kalten Nacht schnell aus.",
+    probeSpread: "Fühler-Spanne: wärmster minus kältester aktueller Fühler. Ab 8 °F (gelb) kann das eine kalte Stelle, geschichtete Luft oder einen defekten Sensor bedeuten.",
+    condensation: "Kondensation: Stunden in den letzten 7 Tagen, in denen die Luft bis auf 5 °F an ihren Taupunkt herankam (aus Temperatur und Luftfeuchtigkeit berechnet), sodass Oberflächen feucht werden können. Gelb ab 6 Stunden oder wenn es gerade weniger als 2 °F sind.",
+    feedHealth: "Feed-Zustand: wie viele deiner Pull-Feeds gerade geantwortet haben, keine Verfügbarkeit über die Zeit.",
+    measured: "Alle Werte stammen aus deinen Messwerten und Wetterdaten; keiner ist eine Vorhersage.",
+  },
   metric: {
     feedIssues: { one: "{count} Problem", other: "{count} Probleme" },
     feedsOnline: "{count} online",

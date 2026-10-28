@@ -287,6 +287,8 @@ const de: OverviewCardsMessages = {
     windowEarliest: "Zeitfenster: frühestens {from}; in einer milderen Nacht wird er vielleicht nicht erreicht",
     basedOn: "Worauf das basiert",
     estimateNote: "Eine Schätzung aus dem Verlauf dieses Bereichs und der Außenprognose, keine Messung.",
+    confidenceHelp: "Hohe Sicherheit: Das Vorhersagemodell ist aus mindestens 24 Messwerten mit passendem Außenwetter berechnet. Mittel: mindestens 8 solche Messwerte oder ein Abkühltrend über 2+ Stunden. Niedrig: weniger Daten. Das Zeitfenster wird breiter, je geringer die Sicherheit ist.",
+    learnMore: "So wird die Zeit bis zum Frost geschätzt",
     cooling: "Kühlt um {rate} °F/h ab",
     offset: "Typischer Abstand {offset} °F zu außen",
   },

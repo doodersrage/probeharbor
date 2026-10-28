@@ -300,6 +300,8 @@ const en = {
     windowEarliest: "Window: as early as {from}; a milder night may not reach it",
     basedOn: "What this is based on",
     estimateNote: "An estimate from this space's history and the outdoor forecast, not a measurement.",
+    confidenceHelp: "High confidence: the forecast model is fitted from 24+ readings paired with outdoor weather. Medium: 8+ paired readings, or a cooling trend over 2+ hours. Low: less data than that. The window widens as confidence drops.",
+    learnMore: "How time to freeze is estimated",
     cooling: "Cooling {rate}°F/hr",
     offset: "Typical offset {offset}°F vs outdoor",
   },

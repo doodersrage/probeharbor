@@ -46,6 +46,16 @@ const ptBr: OverviewMessages = {
     condensation: "Condensação (7 d)",
     feed_health: "Saúde dos feeds",
   },
+  metricsHow: {
+    summary: "Como estes números são calculados",
+    freezeHours: "Horas de congelamento: tempo nos últimos 7 dias em que uma sonda marcou seu limite de congelamento de {threshold} °F ou menos. °F·h (graus-hora) soma quanto abaixo e por quanto tempo: 2 °F abaixo por 3 horas são 6 °F·h.",
+    coldestMargin: "Margem mais fria: sua sonda ativa mais fria menos o limite de congelamento de {threshold} °F. Âmbar a menos de 5 °F, vermelho no limite ou abaixo.",
+    indoorOutdoor: "Interno − externo: a sonda mais fria (ou o termostato da casa) menos a temperatura externa atual. Abaixo de 5 °F (âmbar), o espaço acompanha de perto o ar externo e vai esfriar rápido numa noite fria.",
+    probeSpread: "Variação entre sondas: a sonda ativa mais quente menos a mais fria. 8 °F ou mais (âmbar) pode indicar um ponto frio, ar em camadas ou um sensor com defeito.",
+    condensation: "Condensação: horas nos últimos 7 dias em que o ar ficou a menos de 5 °F do ponto de orvalho (calculado a partir de temperatura e umidade), quando as superfícies podem ficar úmidas. Âmbar com 6 horas ou mais, ou a menos de 2 °F agora.",
+    feedHealth: "Saúde dos feeds: quantos dos seus feeds pull responderam agora, não a disponibilidade ao longo do tempo.",
+    measured: "Tudo isto vem das suas leituras e de dados meteorológicos; nada é uma previsão.",
+  },
   metric: {
     feedIssues: { one: "{count} problema", other: "{count} problemas" },
     feedsOnline: "{count} online",

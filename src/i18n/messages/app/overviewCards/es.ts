@@ -287,6 +287,8 @@ const es: OverviewCardsMessages = {
     windowEarliest: "Intervalo: desde las {from}; una noche más templada podría no llegar",
     basedOn: "En qué se basa",
     estimateNote: "Una estimación a partir del historial de este espacio y del pronóstico exterior, no una medición.",
+    confidenceHelp: "Confianza alta: el modelo de pronóstico se ajusta con 24 o más lecturas emparejadas con el tiempo exterior. Media: 8 o más lecturas emparejadas, o una tendencia de enfriamiento de 2 horas o más. Baja: menos datos. La ventana se amplía cuanto menor es la confianza.",
+    learnMore: "Cómo se estima el tiempo hasta la helada",
     cooling: "Enfriándose {rate} °F/h",
     offset: "Desfase típico {offset} °F frente al exterior",
   },
