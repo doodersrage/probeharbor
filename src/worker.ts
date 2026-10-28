@@ -41,6 +41,7 @@ import { checkStripeWebhookHealth } from "./lib/stripeWebhookHealth";
 import { createStripeClient } from "./lib/stripe";
 import { ensureAllLocales } from "./i18n/catalog";
 import { scrubBreadcrumb, scrubEvent } from "./lib/sentryScrub";
+import { appVersion } from "./lib/appVersion";
 
 type WorkerEnv = Env & {
   SENTRY_DSN?: string;
@@ -58,7 +59,8 @@ function sentryOptions(env: WorkerEnv) {
   return {
     dsn,
     environment: env.SENTRY_ENVIRONMENT?.trim() || "production",
-    release: env.CF_VERSION_METADATA?.id,
+    // Date version on workflow deploys; the Cloudflare version id for manual `pnpm deploy`.
+    release: appVersion() ?? env.CF_VERSION_METADATA?.id,
     tracesSampleRate: 0.1,
     // URLs here carry device keys and share/invite/snooze tokens; never send them.
     sendDefaultPii: false,

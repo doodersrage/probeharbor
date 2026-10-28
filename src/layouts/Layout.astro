@@ -14,6 +14,7 @@ import {
   resolveSiteUrl,
 } from "../lib/schemaMarkup";
 import { BRAND_NAME } from "../lib/brand";
+import { appVersion } from "../lib/appVersion";
 import BrandMark from "../components/BrandMark.astro";
 import RenameNotice from "../components/RenameNotice.astro";
 import GoogleAnalytics from "../components/GoogleAnalytics.astro";
@@ -159,6 +160,7 @@ const loadTurnstile =
   currentPath.startsWith("/register") ||
   currentPath.startsWith("/forgot-password") ||
   currentPath.startsWith("/pipe-freeze-forecast");
+const version = appVersion();
 const registerServiceWorker =
   currentPath.startsWith("/dashboard") || currentPath.startsWith("/signin");
 ---
@@ -314,6 +316,16 @@ const registerServiceWorker =
 									{t.footer.hosting}
 									{" "}
 									<a href="/system-status">{t.footer.systemStatus}</a>
+									{version && (
+										<>
+											{" · "}
+											<a
+												href={`https://github.com/doodersrage/probeharbor/tree/app-v${version}`}
+												target="_blank"
+												rel="noreferrer"
+											>v{version}</a>
+										</>
+									)}
 								</p>
 							</div>
 							<div>

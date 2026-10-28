@@ -63,6 +63,9 @@ env:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    # contents: write pushes the app-v<date> tag after a successful deploy.
+    permissions:
+      contents: write
     # Only pushes to this repo's main: pull_request CI runs (including forks with
     # a branch named main) must never reach the production secrets.
     if: >-
@@ -125,6 +128,16 @@ jobs:
 
       - if: env.skip != 'true'
         run: pnpm install --frozen-lockfile
+
+      # Date-based app version (YYYY.MM.DD[.N], UTC) from existing app-v* tags.
+      # Baked into the build (footer, Sentry release) and the Worker version tag.
+      - name: Compute app version
+        if: env.skip != 'true'
+        run: |
+          version="$(node scripts/app-version.mjs)"
+          echo "APP_VERSION=$version" >> "$GITHUB_ENV"
+          echo "::notice::App version $version"
+
       - if: env.skip != 'true'
         run: pnpm typecheck
       - if: env.skip != 'true'
@@ -152,7 +165,20 @@ jobs:
           # Translations first: the main Worker binds to it (I18N) and falls back to English without it.
           node scripts/gen-i18n-catalog.mjs --check
           npx wrangler deploy --config workers/i18n/wrangler.jsonc
-          npx wrangler deploy --config dist/server/wrangler.json
+          npx wrangler deploy --config dist/server/wrangler.json --tag "$APP_VERSION"
+          echo "deployed=true" >> "$GITHUB_ENV"
+
+      # Tag only what actually shipped. Concurrency group above keeps deploys serial,
+      # so two runs can't pick the same version.
+      - name: Tag release
+        if: env.skip != 'true' && env.deployed == 'true'
+        env:
+          RELEASE_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+        run: |
+          git tag "app-v$APP_VERSION" "$RELEASE_SHA"
+          if ! git push origin "app-v$APP_VERSION"; then
+            echo "::warning::Deployed $APP_VERSION but could not push tag app-v$APP_VERSION. The next deploy today may reuse this version."
+          fi
 
       # Static files (OG images, assetlinks.json, /developers docs) otherwise stay
       # stale at the edge after a deploy. Needs a token with Zone → Cache Purge.

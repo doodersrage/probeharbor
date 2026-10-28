@@ -74,6 +74,8 @@ export default defineConfig({
         process.env.PUBLIC_SENTRY_DSN?.trim() || sentryDsn,
       ),
       'import.meta.env.SENTRY_DSN': JSON.stringify(sentryDsn),
+      // Date-based version from scripts/app-version.mjs, set by the deploy workflow.
+      'import.meta.env.APP_VERSION': defineProcessEnv('APP_VERSION'),
       // Stripe display/price IDs are not PUBLIC_-prefixed, so Vite skips them unless defined.
       'import.meta.env.STRIPE_DISPLAY_MEMBER_MONTHLY': defineProcessEnv('STRIPE_DISPLAY_MEMBER_MONTHLY'),
       'import.meta.env.STRIPE_DISPLAY_MEMBER_ANNUAL': defineProcessEnv('STRIPE_DISPLAY_MEMBER_ANNUAL'),

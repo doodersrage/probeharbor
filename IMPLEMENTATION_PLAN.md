@@ -3221,3 +3221,40 @@ New York.
   `pnpm typecheck`: 0 errors. `pnpm lint`: 64 warnings (baseline).
   `pnpm build`: pass. `pnpm test:e2e`: 58 passed, 14 skipped.
 - Not verified: a signed-in History filter in a browser.
+
+------------------------------------------------------------------------
+
+## Optional: date-based app version (2026-10-28)
+
+**Status: Implemented and verified locally. No migration. Not deployed; the
+workflow changes run for the first time on the next push to `main`.**
+
+Before, the web app had no version (`package.json` `0.0.1` was never
+bumped) and Sentry releases were opaque Cloudflare version ids.
+
+- [x] `scripts/app-version.mjs` prints the next version: `YYYY.MM.DD`
+      (UTC), then `.1`, `.2`, … for later deploys the same day, from
+      `app-v*` tags on `origin` (local tags if the remote can't be reached).
+- [x] `deploy.yml` sets `APP_VERSION` before the build, runs
+      `wrangler deploy --tag "$APP_VERSION"` for the app Worker, and pushes
+      `app-v<version>` on the deployed commit once the deploy succeeds. The job
+      now has `permissions: contents: write`. Deploys stay serial
+      (existing concurrency group), so two runs can't pick the same version.
+- [x] Site footer shows `v<version>` linking to the tagged source; hidden
+      when unset (local builds and manual `pnpm deploy`).
+- [x] Worker Sentry `release` uses the version and falls back to
+      `CF_VERSION_METADATA.id` (the old behaviour).
+- **Not changed:** firmware (`1.2.2`) and the OpenAPI spec (`1.3.1`) keep
+  semver, since `firmwareUpdateAvailable` and integrators compare them.
+  The browser Sentry SDK still takes its release from the Sentry build
+  plugin, not the date version. `package.json` `version` is left as is.
+- Evidence: `appVersion.test.ts` (8: zero-padding, UTC day, same-day
+  suffixes, gaps/unsorted tags, other tag families, malformed values).
+  `node scripts/app-version.mjs` against GitHub: `2026.10.28`.
+  `APP_VERSION=2026.10.28.1 pnpm build` + `pnpm preview`: `/pricing`
+  footer renders `v2026.10.28.1` → `…/tree/app-v2026.10.28.1`.
+  `pnpm test`: 3213 passed. `pnpm typecheck`: 0 errors. `pnpm lint`:
+  64 warnings (baseline). `pnpm build`: pass.
+- Not verified: the workflow itself (tag push with `GITHUB_TOKEN`, a tag
+  ruleset could refuse it; the step warns instead of failing), the
+  `wrangler deployments list` tag, and the Sentry release name in production.

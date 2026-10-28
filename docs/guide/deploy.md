@@ -53,6 +53,24 @@ CLOUDFLARE_API_TOKEN=... pnpm setup:github-secrets
 
 That syncs `CLOUDFLARE_*` plus build secrets from `.env` into GitHub Actions secrets. Pushes to `main` then run [`.github/workflows/deploy.yml`](https://github.com/doodersrage/probeharbor/blob/main/.github/workflows/deploy.yml). Without those secrets the workflow succeeds with a skip notice (use `pnpm deploy` locally).
 
+### App version
+
+Each workflow deploy gets a date-based version: `YYYY.MM.DD` (UTC), then
+`YYYY.MM.DD.1`, `.2`, … for later deploys the same day
+([`scripts/app-version.mjs`](https://github.com/doodersrage/probeharbor/blob/main/scripts/app-version.mjs)).
+The workflow:
+
+- builds with `APP_VERSION` set, so the site footer shows `v2026.10.28` and
+  Sentry groups Worker errors under that release;
+- passes it to `wrangler deploy --tag`, so it appears as the tag in
+  `wrangler deployments list`;
+- pushes the git tag `app-v<version>` on the deployed commit, after the deploy succeeds.
+
+`node scripts/app-version.mjs` prints the next version. A local `pnpm deploy`
+has no version: the footer hides it and Sentry falls back to the Cloudflare
+version id. Firmware (`FIRMWARE_VERSION` / `public/firmware/manifest.json`)
+and the OpenAPI spec keep semver, because devices and integrators compare them.
+
 ## Migrations and deploy order
 
 Pushes to `main` deploy the Workers automatically. **Database migrations do
@@ -84,7 +102,7 @@ and `probeharbor-i18n` (translations, `workers/i18n/wrangler.jsonc`).
 
 ```bash
 pnpm build                                              # creates dist/server/wrangler.json
-npx wrangler deployments list --config dist/server/wrangler.json
+npx wrangler deployments list --config dist/server/wrangler.json   # tag column = app version
 npx wrangler rollback <version-id> --config dist/server/wrangler.json -m "reason"
 ```
 
