@@ -537,7 +537,7 @@ The detailed increment log follows the Milestone 0 audit below. Summary:
 | 4 Operations | Partial | 4.1–4.4 | Restore rehearsal; migration check in CI (decision) |
 | 5 Security | Mostly done | S1–S8, rate limiting | Clear old raw share/status tokens (~2026-11-04); remove legacy snooze/invite branches (after 2026-11-05); require webhook V2 (after the usage query) |
 | 6 Dashboard | Done | 6.1–6.9 | CSV `from`/`to` in UTC days |
-| 7 Integrations | Spec done | 7.1–7.4 | HA/HACS repo still signs inbound webhooks body-only (separate repo) |
+| 7 Integrations | Spec done | 7.1–7.4, HA v1.2.0 (V2 signing) | Require V2 on inbound (~2026-11-11) |
 | 8 Polish | Partial | 8.1–8.3 | Signed-in axe checks; billing e2e |
 
 **Operational must-do:** production is on the Supabase Free plan (no
@@ -3148,10 +3148,17 @@ deployed.** The owner approved the recommendation (2026-10-28).
   `custom_components/thermaltrace/signing.py`) still signs body-only
   (`sign_body`, sent as `X-GarageTemp-Signature`). Requiring V2 now would
   break anyone who sets up its inbound actions. Order:
-  1. update the HACS integration to send `X-ProbeHarbor-Timestamp` and
-     `-Signature-V2` (a PR in that repo, which needs the owner's OK)
-  2. release it
-  3. reject body-only signatures here
+  1. ~~update the HACS integration to send `X-ProbeHarbor-Timestamp` and
+     `-Signature-V2`~~ Done: PR #1 merged (`f12ad76`). It sends both V2
+     headers plus the legacy one; its pytest suite uses a vector from
+     ProbeHarbor's own signer, and a request it signed passed
+     `verifyInboundRequest` as `format: "v2"`. HACS, hassfest, test and
+     GitGuardian checks passed.
+  2. ~~release it~~ Done: **v1.2.0** released 2026-10-28 (Latest).
+  3. Reject body-only signatures here. With 0 inbound webhooks in use this
+     breaks no one today. The only risk is a user still on HA v1.1.0 who
+     creates a webhook later. Suggested: do it after ~2 weeks (around
+     2026-11-11), so HACS users have had the update offered.
 - **Signed-in accessibility:** `e2e/a11y-dashboard.spec.ts` scans 6
   dashboard pages with the E2E account. It's **report-only** (prints `AXE …`
   lines to the CI log and attaches JSON) because these pages were never
