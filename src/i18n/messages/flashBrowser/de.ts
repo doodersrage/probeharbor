@@ -45,6 +45,8 @@ const de: BrowserFlasherMessages = {
     liveWithSensor:
       "Erster Messwert von deinem {sensor} angekommen, mit Luftfeuchtigkeit. Er ist live: Du kannst ihn abstecken und montieren.",
     live: "Erster Messwert angekommen. Der Fühler ist live: Du kannst ihn abstecken und montieren.",
+    postUnreachable: "Das Board ist im WLAN, erreicht ProbeHarbor aber nicht. Es versucht es weiter; prüfe, ob dieses Netzwerk ausgehendes HTTPS erlaubt (manche Gastnetze sperren es).",
+    postRejected: "ProbeHarbor hat auf die Messung des Boards mit {code} geantwortet. Es versucht es weiter; bleibt es dabei, sieh im Systemstatus nach oder versuch es in ein paar Minuten noch einmal.",
     noReading:
       "Das Board hat die Einstellungen, aber es ist noch kein Messwert angekommen. Prüfe die Sensorverkabelung (Daten an GPIO 4, 4,7 kΩ an 3,3 V) und versuch es dann noch einmal.",
     noAnswer: "Keine Antwort vom Board. Stell sicher, dass die Firmware-Installation fertig ist, und versuch es dann noch einmal.",

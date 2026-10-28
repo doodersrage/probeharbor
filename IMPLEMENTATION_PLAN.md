@@ -2260,3 +2260,38 @@ ESP32-S3/C3, SHT31/AHT20, DHT11, leak and battery are compile-only.
   SHT31/AHT20/leak/battery.
 - When a board or sensor passes its test in `HARDWARE-TESTS.md`, update
   the copy, `hardwareRecipes.ts` and this guard together.
+
+------------------------------------------------------------------------
+
+## Milestone 3, increment 3.2: the flasher explains a failed first upload (2026-10-28)
+
+**Status: Implemented and verified locally (fake serial board; no
+hardware). No migration. Not deployed.**
+
+Problem (verified, audit M3): `BrowserFlasher.astro` only matched
+`TT post 2xx`. A board on Wi-Fi whose upload failed (`TT post failed:
+could not open connection`, or `TT post 5xx`/`4xx`) left the page on "On
+Wi-Fi. Sending the first reading…" for 90 s, then showed the generic
+"check the sensor wiring" message, which points at the wrong cause.
+
+- [x] `TT post failed` now shows "couldn't reach ProbeHarbor… check that
+      this network allows outgoing HTTPS".
+- [x] `TT post <code>` (other than 401/403, which the existing "key
+      rejected" line covers) now shows "ProbeHarbor answered {code}…".
+- [x] The firmware retries, so the page keeps waiting. A later
+      `TT post 2xx` still reports the first reading. If none arrives
+      before the 90 s give-up, the specific problem stays on screen
+      instead of the wiring hint.
+- [x] Copy in 5 locales (`flashBrowser.status.postUnreachable`,
+      `postRejected`).
+- Evidence: `e2e/flasher.spec.ts` +3 with the fake board (unreachable;
+  500; failed → 503 → 200 still reports success). `pnpm test`: 3088
+  passed. `pnpm typecheck`: 0 errors. `pnpm lint`: 64 warnings
+  (baseline). `pnpm build`: pass. `pnpm test:e2e`: 47 passed, 12 skipped.
+- Not tested: the 90 s timeout path keeping the message (too slow for
+  e2e), and any real board. **Hardware check:** on a real ESP32, join a
+  network that blocks outbound HTTPS (or point DNS away) and confirm the
+  message appears.
+- Still open from the audit (M3): other firmware failure lines (wifi
+  failed, key rejected, no probe) are shown as untranslated English, and
+  nothing listens for `probeharbor:probe-live`.

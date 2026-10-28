@@ -6,7 +6,16 @@ import { test, expect, type Page } from "@playwright/test";
  * (firmware/probeharbor-probe). No hardware: this covers the page's side of
  * the conversation only.
  */
-type BoardMode = "ok" | "dht" | "reset-first" | "wifi-fail" | "bad-key" | "no-probe";
+type BoardMode =
+  | "ok"
+  | "dht"
+  | "reset-first"
+  | "wifi-fail"
+  | "bad-key"
+  | "no-probe"
+  | "post-unreachable"
+  | "post-500"
+  | "post-recovers";
 
 const DEVICE_KEY = "0123456789abcdef0123456789abcdef0123456789abcdef";
 
@@ -54,6 +63,15 @@ function installFakeBoard(mode: BoardMode) {
             say("TT key rejected: copy the device key again from Dashboard → Devices", 750);
           } else if (mode === "no-probe") {
             say("TT no probe: check the wiring (DS18B20 or DHT22 data on GPIO 4, 4.7k pull-up to 3.3V)", 700);
+          } else if (mode === "post-unreachable") {
+            say("TT post failed: could not open connection", 700);
+          } else if (mode === "post-500") {
+            say("TT post 500 probes=1", 700);
+          } else if (mode === "post-recovers") {
+            // The firmware retries; a later upload can still succeed.
+            say("TT post failed: could not open connection", 700);
+            say("TT post 503 probes=1", 1200);
+            say("TT post 200 probes=1", 1700);
           } else if (mode === "dht") {
             say("TT sensor: DHT22 on GPIO 4", 650);
             say("TT post 200 probes=1", 700);
@@ -146,4 +164,29 @@ test.describe("browser flasher", () => {
       expect(board.closed).toBe(true);
     });
   }
+
+  // The board keeps retrying after a failed upload, so the page shows the
+  // problem while it waits (the Send button stays busy until it gives up).
+  for (const [mode, message] of [
+    ["post-unreachable", /couldn't reach ProbeHarbor.*outgoing HTTPS/],
+    ["post-500", /ProbeHarbor answered 500 to the board's reading/],
+  ] as const) {
+    test(`explains a failed first upload (${mode})`, async ({ page }) => {
+      await page.addInitScript(installFakeBoard, mode);
+      await page.goto("/flash");
+      await page.fill('input[name="ssid"]', "Home WiFi 2.4");
+      await page.fill('input[name="password"]', "pw");
+      await page.fill('input[name="key"]', DEVICE_KEY);
+      await page.locator("[data-flasher-send]").click();
+
+      await expect(page.locator("[data-flasher-status]")).toHaveText(message, { timeout: 10_000 });
+    });
+  }
+
+  test("still reports the reading when a retry succeeds after a failed upload", async ({ page }) => {
+    const board = await sendSettings(page, "post-recovers");
+
+    await expect(page.locator("[data-flasher-status]")).toHaveText(/First reading delivered/);
+    expect(board.closed).toBe(true);
+  });
 });

@@ -40,6 +40,8 @@ const en = {
     wifiOk: "On Wi‑Fi. Sending the first reading…",
     liveWithSensor: "First reading delivered from your {sensor}, with humidity. It's live: you can unplug it and mount it.",
     live: "First reading delivered. The probe is live: you can unplug it and mount it.",
+    postUnreachable: "The board is on Wi‑Fi but couldn't reach ProbeHarbor. It keeps retrying; check that this network allows outgoing HTTPS (some guest networks block it).",
+    postRejected: "ProbeHarbor answered {code} to the board's reading. It keeps retrying; if this stays, check System status or try again in a few minutes.",
     noReading:
       "The board has the settings but no reading arrived yet. Check the sensor wiring (data to GPIO 4, 4.7kΩ to 3.3V), then try again.",
     noAnswer: "No answer from the board. Make sure the firmware install finished, then try again.",

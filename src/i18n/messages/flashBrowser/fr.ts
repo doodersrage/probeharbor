@@ -45,6 +45,8 @@ const fr: BrowserFlasherMessages = {
     liveWithSensor:
       "Premier relevé reçu de votre {sensor}, avec l’humidité. C’est en service : vous pouvez le débrancher et l’installer.",
     live: "Premier relevé reçu. La sonde est en service : vous pouvez la débrancher et l’installer.",
+    postUnreachable: "La carte est sur le Wi‑Fi mais n’a pas pu joindre ProbeHarbor. Elle continue d’essayer ; vérifiez que ce réseau autorise le HTTPS sortant (certains réseaux invités le bloquent).",
+    postRejected: "ProbeHarbor a répondu {code} à la mesure de la carte. Elle continue d’essayer ; si cela persiste, consultez l’état du système ou réessayez dans quelques minutes.",
     noReading:
       "La carte a reçu les réglages, mais aucun relevé n’est encore arrivé. Vérifiez le câblage du capteur (données sur GPIO 4, 4,7 kΩ vers le 3,3 V), puis réessayez.",
     noAnswer: "Pas de réponse de la carte. Vérifiez que l’installation du firmware est terminée, puis réessayez.",

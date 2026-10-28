@@ -144,6 +144,9 @@ const t = browserFlasherMessages(getLocale(Astro));
         let lastSent = 0;
         let acknowledged = false;
         let sensorName: string | null = null;
+        // Last failed upload the board reported; it keeps retrying, so this is
+        // shown while we wait and kept if no reading arrives in time.
+        let postProblem: string | null = null;
         let buffer = "";
         let outcome: "ok" | "failed" | "timeout" = "timeout";
         // One read stays pending across loop passes: starting a new read each
@@ -180,6 +183,16 @@ const t = browserFlasherMessages(getLocale(Astro));
               sensorName = line.slice("TT sensor: ".length).split(" on ")[0] ?? null;
             } else if (/^TT post 2\d\d /.test(line)) {
               outcome = "ok";
+            } else if (line.startsWith("TT post failed")) {
+              postProblem = text.postUnreachable ?? "";
+              status.textContent = postProblem;
+            } else if (/^TT post \d{3} /.test(line)) {
+              // 401/403 are followed by "TT key rejected", handled below.
+              const code = line.slice("TT post ".length, "TT post ".length + 3);
+              if (code !== "401" && code !== "403") {
+                postProblem = (text.postRejected ?? "").replace("{code}", code);
+                status.textContent = postProblem;
+              }
             } else if (
               line.startsWith("TT wifi failed") ||
               line.startsWith("TT key rejected") ||
@@ -201,9 +214,8 @@ const t = browserFlasherMessages(getLocale(Astro));
             : (text.live ?? "");
           root.dispatchEvent(new CustomEvent("probeharbor:probe-live", { bubbles: true }));
         } else if (outcome === "timeout") {
-          status.textContent = acknowledged
-            ? (text.noReading ?? "")
-            : (text.noAnswer ?? "");
+          status.textContent =
+            postProblem ?? (acknowledged ? (text.noReading ?? "") : (text.noAnswer ?? ""));
         }
       } catch (error) {
         status.textContent =

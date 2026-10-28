@@ -45,6 +45,8 @@ const ptBr: BrowserFlasherMessages = {
     liveWithSensor:
       "Primeira leitura recebida do seu {sensor}, com umidade. Está funcionando: você já pode desconectar e instalar.",
     live: "Primeira leitura recebida. A sonda está funcionando: você já pode desconectar e instalar.",
+    postUnreachable: "A placa está no Wi‑Fi, mas não conseguiu alcançar o ProbeHarbor. Ela continua tentando; confira se esta rede permite HTTPS de saída (algumas redes de convidados bloqueiam).",
+    postRejected: "O ProbeHarbor respondeu {code} à leitura da placa. Ela continua tentando; se continuar assim, veja o status do sistema ou tente de novo em alguns minutos.",
     noReading:
       "A placa recebeu as configurações, mas nenhuma leitura chegou ainda. Confira a ligação do sensor (dados no GPIO 4, 4,7 kΩ para 3,3 V) e tente de novo.",
     noAnswer: "A placa não respondeu. Verifique se a instalação do firmware terminou e tente de novo.",
