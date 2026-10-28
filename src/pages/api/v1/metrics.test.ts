@@ -2,6 +2,11 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { APIContext } from "astro";
 
 const mockResolveApiKey = vi.fn();
+const mockCheckApiPlan = vi.fn();
+vi.mock("../../../lib/apiPlan", () => ({
+  checkApiPlan: (...a: unknown[]) => mockCheckApiPlan(...a),
+}));
+
 vi.mock("../../../lib/apiKeys", () => ({
   resolveApiKey: (...a: unknown[]) => mockResolveApiKey(...a),
 }));
@@ -18,6 +23,7 @@ function makeContext(authHeader: string | null): APIContext {
 }
 
 beforeEach(() => {
+  mockCheckApiPlan.mockReset().mockResolvedValue({ ok: true, entitlements: { canCreateShareLinks: true, maxDevices: 24 } });
   mockResolveApiKey.mockReset();
   mockBuildPrometheusText.mockReset();
 });
@@ -74,5 +80,18 @@ describe("GET /api/v1/metrics", () => {
     const response = await GET(makeContext("bearer gtm_good-key"));
 
     expect(response.status).toBe(200);
+  });
+});
+
+describe("GET /api/v1/metrics plan check", () => {
+  it("returns 403 and no metrics after a downgrade", async () => {
+    mockResolveApiKey.mockResolvedValue({ householdId: "house-1" });
+    mockCheckApiPlan.mockResolvedValue({ ok: false, status: 403, error: "API access needs a Pro plan" });
+    const { GET } = await import("./metrics");
+
+    const response = await GET(makeContext("Bearer gtm_x"));
+
+    expect(response.status).toBe(403);
+    expect(mockBuildPrometheusText).not.toHaveBeenCalled();
   });
 });

@@ -2,6 +2,11 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { APIContext } from "astro";
 
 const mockResolveApiKey = vi.fn();
+const mockCheckApiPlan = vi.fn();
+vi.mock("../../../lib/apiPlan", () => ({
+  checkApiPlan: (...a: unknown[]) => mockCheckApiPlan(...a),
+}));
+
 vi.mock("../../../lib/apiKeys", () => ({
   resolveApiKey: (...a: unknown[]) => mockResolveApiKey(...a),
 }));
@@ -70,6 +75,7 @@ const sampleFeed = {
 };
 
 beforeEach(() => {
+  mockCheckApiPlan.mockReset().mockResolvedValue({ ok: true, entitlements: { canCreateShareLinks: true, maxDevices: 24 } });
   mockResolveApiKey.mockReset().mockResolvedValue({ householdId: "house-1" });
   mockMaybeSingle.mockReset().mockResolvedValue({ data: { user_id: "owner-1" } });
   mockEq2.mockReset().mockReturnValue({ maybeSingle: mockMaybeSingle });
@@ -138,5 +144,18 @@ describe("POST /api/v1/pull-setup", () => {
     );
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({ ok: true, discoveredProbes: 2 });
+  });
+});
+
+describe("POST /api/v1/pull-setup plan check", () => {
+  it("returns 403 and saves nothing after a downgrade", async () => {
+    mockCheckApiPlan.mockResolvedValue({ ok: false, status: 403, error: "API access needs a Pro plan" });
+    const { POST } = await import("./pull-setup");
+
+    const response = await POST(makeContext());
+
+    expect(response.status).toBe(403);
+    expect(await response.json()).toEqual({ ok: false, error: "API access needs a Pro plan" });
+    expect(mockSaveUserPullSetup).not.toHaveBeenCalled();
   });
 });

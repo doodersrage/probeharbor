@@ -2629,7 +2629,9 @@ deployed.**
 - Evidence: `pnpm test`: 3133 passed. `pnpm typecheck`: 0 errors.
   `pnpm lint`: 64 warnings (baseline). `pnpm build`: pass.
 
-### Needs a decision: the Pro API doesn't check the plan
+### Decided (2026-10-28, owner approved the recommendation): see S8 below
+
+### Original finding: the Pro API doesn't check the plan
 
 Verified in code. `resolveApiKey` (`apiKeys.ts:81-100`) checks only that the
 key exists and isn't revoked. Creating a key needs Pro
@@ -2646,3 +2648,43 @@ it isn't allowed, and enforce `maxDevices` in `POST /api/v1/devices` (403
 403 instead of keeping paid features; existing devices keep ingesting
 (device keys are separate). Cost: one entitlements lookup per API call.
 Needs: tests for upgrade, downgrade and limit, and a spec update.
+
+------------------------------------------------------------------------
+
+## Security/billing fix S8: the Pro API checks the current plan (2026-10-28)
+
+**Status: Implemented and verified locally. No migration. Not deployed.**
+The owner approved the recommendation in 7.3.
+
+- [x] `checkApiPlan(householdId)` (`src/lib/apiPlan.ts`) checks the
+      household owner's **current** entitlements. Pro or above
+      (`canCreateShareLinks`, the same gate as creating a key) is allowed.
+      Otherwise it returns 403 `API access needs a Pro plan`. If the owner
+      or plan can't be read, it returns 503 and doesn't guess.
+- [x] Called after the key check in all 5 handlers: `/api/v1/devices`
+      GET/POST, `/devices/sensors-batch`, `/pull-setup` and `/metrics`.
+      Each route's existing body shape is kept (`{ok:false,error}` where it
+      already used it).
+- [x] `POST /api/v1/devices` enforces `maxDevices` on push devices, like
+      the dashboard (`api/devices/index.ts:448`): 403 with
+      `code: "device_limit"`. If devices can't be listed, it returns 503
+      instead of skipping the check.
+- [x] Docs: the OpenAPI 403/503 on every v1 operation, plus device_limit
+      (spec 1.4.0); `/docs/api`; `docs/api/index.md`, where I also fixed
+      the inbound row's "optional HMAC" (signing is required).
+- Behaviour change: a downgraded household's API integrations (Grafana or
+  Prometheus scrapes, Telegraf, scripts) now get 403. Their devices keep
+  ingesting; device keys are separate. Upgrading restores access with the
+  same keys, which aren't revoked.
+- Cost: one owner lookup plus the entitlements groups on each v1 call.
+- Edge case: entitlements come from the **owner**. A key created by a Pro
+  co-manager in a household whose owner is on Free now gets 403.
+- Evidence: `apiPlan.test.ts` (4: Pro allowed using the owner's plan;
+  downgrade 403; no owner 403; read failures 503). The route tests cover
+  a 403 on each route doing nothing, a 503 passing through, the device
+  limit counting push devices only, creation below the limit, and a list
+  failure giving 503. Existing tests pass with a default Pro mock.
+  `pnpm test`: 3146 passed. `pnpm typecheck`: 0 errors. `pnpm lint`: 64
+  warnings (baseline). `pnpm build`: pass. `pnpm test:e2e`: 47 passed,
+  12 skipped. Developer docs build.
+- Not verified: a real downgraded account in production.

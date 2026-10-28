@@ -2,6 +2,11 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { APIContext } from "astro";
 
 const mockResolveApiKey = vi.fn();
+const mockCheckApiPlan = vi.fn();
+vi.mock("../../../../lib/apiPlan", () => ({
+  checkApiPlan: (...a: unknown[]) => mockCheckApiPlan(...a),
+}));
+
 vi.mock("../../../../lib/apiKeys", () => ({
   resolveApiKey: (...a: unknown[]) => mockResolveApiKey(...a),
 }));
@@ -36,6 +41,7 @@ const sensor = {
 };
 
 beforeEach(() => {
+  mockCheckApiPlan.mockReset().mockResolvedValue({ ok: true, entitlements: { canCreateShareLinks: true, maxDevices: 24 } });
   mockResolveApiKey.mockReset().mockResolvedValue({ householdId: "house-1" });
   mockListHouseholdDevices.mockReset().mockResolvedValue({
     devices: [{ id: "d1", sensors: [sensor] }],
@@ -125,5 +131,18 @@ describe("POST /api/v1/devices/sensors-batch", () => {
 
     expect(response.status).toBe(500);
     expect(await response.json()).toEqual({ ok: false, error: "db error" });
+  });
+});
+
+describe("POST /api/v1/devices/sensors-batch plan check", () => {
+  it("returns 403 and updates nothing after a downgrade", async () => {
+    mockCheckApiPlan.mockResolvedValue({ ok: false, status: 403, error: "API access needs a Pro plan" });
+    const { POST } = await import("./sensors-batch");
+
+    const response = await POST(makeContext({ sensors: [{ id: "s1", label: "New" }] }));
+
+    expect(response.status).toBe(403);
+    expect(await response.json()).toEqual({ ok: false, error: "API access needs a Pro plan" });
+    expect(mockUpdateDeviceSensor).not.toHaveBeenCalled();
   });
 });

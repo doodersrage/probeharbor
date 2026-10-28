@@ -1,4 +1,5 @@
 import type { APIRoute } from "astro";
+import { checkApiPlan } from "../../../../lib/apiPlan";
 import { resolveApiKey } from "../../../../lib/apiKeys";
 import {
   createPushDevice,
@@ -34,6 +35,14 @@ export const GET: APIRoute = async ({ request }) => {
   if (!resolved) {
     return new Response(JSON.stringify({ error: "Invalid API key" }), {
       status: 401,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  const plan = await checkApiPlan(resolved.householdId);
+  if (!plan.ok) {
+    return new Response(JSON.stringify({ error: plan.error }), {
+      status: plan.status,
       headers: { "Content-Type": "application/json" },
     });
   }
@@ -77,6 +86,14 @@ export const POST: APIRoute = async ({ request }) => {
     });
   }
 
+  const plan = await checkApiPlan(resolved.householdId);
+  if (!plan.ok) {
+    return new Response(JSON.stringify({ error: plan.error }), {
+      status: plan.status,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
   let body: { name?: string; space?: string };
   try {
     body = await request.json();
@@ -85,6 +102,25 @@ export const POST: APIRoute = async ({ request }) => {
       status: 400,
       headers: { "Content-Type": "application/json" },
     });
+  }
+
+  // Same limit as the dashboard (api/devices/index.ts): push devices only.
+  const existing = await listHouseholdDevices(resolved.householdId);
+  if (existing.error) {
+    return new Response(JSON.stringify({ error: "Could not check the device limit. Try again." }), {
+      status: 503,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+  const pushCount = existing.devices.filter((d) => d.source === "push").length;
+  if (pushCount >= plan.entitlements.maxDevices) {
+    return new Response(
+      JSON.stringify({
+        error: `Device limit reached for this plan (${plan.entitlements.maxDevices})`,
+        code: "device_limit",
+      }),
+      { status: 403, headers: { "Content-Type": "application/json" } },
+    );
   }
 
   const name = body.name?.trim() || "API device";

@@ -250,6 +250,9 @@ const mqttCurl = `curl -X POST "${siteUrl}/api/ingest/mqtt" \\
       <pre class="text-xs overflow-x-auto mb-3 p-4 rounded-lg bg-[var(--color-surface-muted)]"><code>{metricsCurl}</code></pre>
       <p class="mb-0 text-sm text-[var(--color-text-muted)]">
         Related: <code>GET/POST /api/v1/devices</code> with the same Bearer key (list / create push devices).
+        Every <code>/api/v1</code> call checks the household owner's current plan: without Pro it returns
+        <code>403</code> <code>&#123; "error": "API access needs a Pro plan" &#125;</code>, and creating a device past
+        the plan's limit returns <code>403</code> with <code>"code": "device_limit"</code>.
         Grafana notes:
         <a class="text-link" href={`${DEV_DOCS_BASE}/integrations/grafana`} target="_blank" rel="noreferrer">developer docs ↗</a>
       </p>

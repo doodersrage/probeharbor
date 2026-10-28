@@ -1,10 +1,10 @@
 openapi: 3.1.0
 info:
   title: ProbeHarbor API
-  version: 1.3.1
+  version: 1.4.0
   description: |
     HTTP endpoints for device ingest, share links, metrics, devices CRUD, MQTT bridge, and inbound automations.
-    Authenticated dashboard routes use Supabase session cookies; programmatic access uses API keys (Pro).
+    Authenticated dashboard routes use Supabase session cookies; programmatic access uses API keys, which need the household owner's plan to include the API (Pro) at the time of each call.
 servers:
   - url: https://probeharbor.dev
 paths:
@@ -190,6 +190,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+        "403":
+          description: The household owner's current plan doesn't include the API (`API access needs a Pro plan`), e.g. after a downgrade
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "503":
+          description: The plan couldn't be checked; try again
         "500":
           description: Devices could not be read
     post:
@@ -237,6 +245,16 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+        "403":
+          description: |
+            The household owner's current plan doesn't include the API (`API access needs a Pro plan`),
+            or the plan's push-device limit is reached (`code: device_limit`, same limit as the dashboard).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "503":
+          description: The plan couldn't be checked; try again
   /api/v1/devices/sensors-batch:
     post:
       summary: Batch-update sensor labels and visibility (Pro API key)
@@ -273,6 +291,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+        "403":
+          description: The household owner's current plan doesn't include the API (`API access needs a Pro plan`), e.g. after a downgrade
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "503":
+          description: The plan couldn't be checked; try again
         "500":
           description: A sensor update failed; earlier rows in the batch may already be saved
   /api/v1/pull-setup:
@@ -330,6 +356,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+        "403":
+          description: The household owner's current plan doesn't include the API (`API access needs a Pro plan`), e.g. after a downgrade
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "503":
+          description: The plan couldn't be checked; try again
         "404":
           description: The household has no owner
         "500":
@@ -352,6 +386,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+        "403":
+          description: The household owner's current plan doesn't include the API (`API access needs a Pro plan`), e.g. after a downgrade
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "503":
+          description: The plan couldn't be checked; try again
   /api/inbound/{token}:
     post:
       summary: Inbound webhook actions (Zapier / Home Assistant)

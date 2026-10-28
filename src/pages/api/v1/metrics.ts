@@ -1,4 +1,5 @@
 import type { APIRoute } from "astro";
+import { checkApiPlan } from "../../../lib/apiPlan";
 import { resolveApiKey } from "../../../lib/apiKeys";
 import { buildPrometheusText } from "../../../lib/prometheusMetrics";
 
@@ -16,6 +17,14 @@ export const GET: APIRoute = async ({ request }) => {
   if (!resolved) {
     return new Response(JSON.stringify({ error: "Invalid API key" }), {
       status: 401,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  const plan = await checkApiPlan(resolved.householdId);
+  if (!plan.ok) {
+    return new Response(JSON.stringify({ error: plan.error }), {
+      status: plan.status,
       headers: { "Content-Type": "application/json" },
     });
   }

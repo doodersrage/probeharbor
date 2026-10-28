@@ -2,6 +2,11 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { APIContext } from "astro";
 
 const mockResolveApiKey = vi.fn();
+const mockCheckApiPlan = vi.fn();
+vi.mock("../../../../lib/apiPlan", () => ({
+  checkApiPlan: (...a: unknown[]) => mockCheckApiPlan(...a),
+}));
+
 vi.mock("../../../../lib/apiKeys", () => ({
   resolveApiKey: (...a: unknown[]) => mockResolveApiKey(...a),
 }));
@@ -36,6 +41,7 @@ function makeContext(
 }
 
 beforeEach(() => {
+  mockCheckApiPlan.mockReset().mockResolvedValue({ ok: true, entitlements: { canCreateShareLinks: true, maxDevices: 24 } });
   mockResolveApiKey.mockReset().mockResolvedValue({ householdId: "house-1" });
   mockListHouseholdDevices.mockReset().mockResolvedValue({
     devices: [
@@ -152,5 +158,76 @@ describe("POST /api/v1/devices", () => {
 
     expect(response.status).toBe(400);
     expect(await response.json()).toEqual({ error: "limit" });
+  });
+});
+
+describe("/api/v1/devices plan checks", () => {
+  const blocked = { ok: false, status: 403, error: "API access needs a Pro plan" };
+
+  it("GET returns 403 when the household's plan no longer includes the API", async () => {
+    mockCheckApiPlan.mockResolvedValue(blocked);
+    const { GET } = await import("./index");
+
+    const response = await GET(makeContext());
+
+    expect(response.status).toBe(403);
+    expect(await response.json()).toEqual({ error: "API access needs a Pro plan" });
+    expect(mockCheckApiPlan).toHaveBeenCalledWith("house-1");
+    expect(mockListHouseholdDevices).not.toHaveBeenCalled();
+  });
+
+  it("POST returns 403 and creates nothing after a downgrade", async () => {
+    mockCheckApiPlan.mockResolvedValue(blocked);
+    const { POST } = await import("./index");
+
+    const response = await POST(makeContext({ method: "POST", body: { name: "x" } }));
+
+    expect(response.status).toBe(403);
+    expect(mockCreatePushDevice).not.toHaveBeenCalled();
+  });
+
+  it("passes a 503 through when the plan can't be checked", async () => {
+    mockCheckApiPlan.mockResolvedValue({ ok: false, status: 503, error: "Could not check the plan. Try again." });
+    const { GET } = await import("./index");
+
+    expect((await GET(makeContext())).status).toBe(503);
+  });
+
+  it("POST enforces the plan's device limit like the dashboard (push devices only)", async () => {
+    mockCheckApiPlan.mockResolvedValue({ ok: true, entitlements: { canCreateShareLinks: true, maxDevices: 2 } });
+    mockListHouseholdDevices.mockResolvedValue({
+      devices: [
+        { id: "a", name: "A", source: "push" },
+        { id: "b", name: "B", source: "push" },
+        { id: "c", name: "Pull feed", source: "pull" },
+      ],
+      error: null,
+    });
+    const { POST } = await import("./index");
+
+    const response = await POST(makeContext({ method: "POST", body: { name: "Third" } }));
+
+    expect(response.status).toBe(403);
+    expect(await response.json()).toMatchObject({ code: "device_limit" });
+    expect(mockCreatePushDevice).not.toHaveBeenCalled();
+  });
+
+  it("POST still creates a device below the limit", async () => {
+    mockCheckApiPlan.mockResolvedValue({ ok: true, entitlements: { canCreateShareLinks: true, maxDevices: 2 } });
+    const { POST } = await import("./index");
+
+    const response = await POST(makeContext({ method: "POST", body: { name: "Second" } }));
+
+    expect(response.status).toBe(201);
+  });
+
+  it("POST returns 503 rather than skipping the limit when devices can't be listed", async () => {
+    mockListHouseholdDevices.mockResolvedValue({ devices: [], error: "db down" });
+    const { POST } = await import("./index");
+
+    const response = await POST(makeContext({ method: "POST", body: { name: "x" } }));
+
+    expect(response.status).toBe(503);
+    expect(mockCreatePushDevice).not.toHaveBeenCalled();
   });
 });

@@ -1,4 +1,5 @@
 import type { APIRoute } from "astro";
+import { checkApiPlan } from "../../../../lib/apiPlan";
 import { resolveApiKey } from "../../../../lib/apiKeys";
 import { listHouseholdDevices, updateDeviceSensor } from "../../../../lib/devices";
 
@@ -15,6 +16,14 @@ export const POST: APIRoute = async ({ request }) => {
   if (!resolved) {
     return new Response(JSON.stringify({ ok: false, error: "Invalid API key" }), {
       status: 401,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  const plan = await checkApiPlan(resolved.householdId);
+  if (!plan.ok) {
+    return new Response(JSON.stringify({ ok: false, error: plan.error }), {
+      status: plan.status,
       headers: { "Content-Type": "application/json" },
     });
   }

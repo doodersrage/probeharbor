@@ -30,13 +30,15 @@ Machine-readable contract:
 | `GET` | `/api/v1/metrics` | Bearer API key | Prometheus text exposition |
 | `GET` | `/api/v1/devices` | Bearer API key | List household devices |
 | `POST` | `/api/v1/devices` | Bearer API key | Create push device |
-| `POST` | `/api/inbound/{token}` | Token (+ optional HMAC) | Snooze / vacation / status actions |
+| `POST` | `/api/inbound/{token}` | Token + HMAC signature (timestamped V2 recommended) | Snooze / vacation / status actions |
 | `GET` | `/api/share/{token}/readings` | Share token | Public JSON readings (Free family live; Pro expands scopes) |
 | `POST` | `/api/pucks/register` | Companion session | Register claim-puck secret |
 | `POST` | `/api/pucks/claim/start` | Companion session | Issue claim nonce |
 | `POST` | `/api/pucks/claim/finish` | Companion session | Verify HMAC and bind bay |
 | `GET` | `/api/bays/{bay_id}/mood` | Companion session | Derived bay mood (Bay Buddy / claim puck) |
 | `PUT` | `/api/bays/{bay_id}/mood` | Companion session | Override mood (demo / test) |
+
+Bearer API keys need the household owner's plan to include the API (Pro) **at the time of each call**. After a downgrade, `/api/v1/*` returns `403` `{"error": "API access needs a Pro plan"}`; creating a device past the plan's limit returns `403` with `"code": "device_limit"`. Device ingest keys keep working.
 
 ## Claim puck
 
