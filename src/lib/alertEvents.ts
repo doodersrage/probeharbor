@@ -21,6 +21,8 @@ export type AlertEventMeta = {
   recoveredKind?: string;
   /** On a digest: it's the recap sent when quiet hours ended. */
   quietHoursSummary?: boolean;
+  /** On a rule alert: a matched rule involves a door, so clearing gets a short notice. */
+  doorRule?: boolean;
 };
 
 export type AlertEventRow = {

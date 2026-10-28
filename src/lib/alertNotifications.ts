@@ -68,12 +68,13 @@ async function resolveAndAnnounceRecovery(
   userId: string,
   email: string | null | undefined,
   settings: AlertSettings,
-  kind: "threshold" | "flood" | "outage" | "stuck" | "power",
+  kind: "threshold" | "flood" | "outage" | "stuck" | "power" | "rule",
   notice: { title: string; body: string },
   locale: Locale = "en",
+  announce = true,
 ): Promise<void> {
   const { resolved, channels } = await safeAutoResolve(userId, { kinds: [kind], reason: "recovered" });
-  if (resolved === 0 || channels.length === 0) return;
+  if (!announce || resolved === 0 || channels.length === 0) return;
   try {
     await notifyUser(
       userId,
@@ -104,7 +105,7 @@ export function formatFreezeRecoveryBody(
   return fmt(t.freezeBody, { temps, threshold: threshold.temp, unit: threshold.unit });
 }
 import { freezeThresholdForReading, readingIncludedInThresholdAlerts } from "./thresholdSensorScope";
-import { evaluateAlertRules, explainAlertRules, type RuleEvalContext, type RuleExplanation } from "./alertRules";
+import { evaluateAlertRuleMatches, explainAlertRules, type RuleEvalContext, type RuleExplanation } from "./alertRules";
 import {
   claimCooldown,
   getAlertSettingsForUser,
@@ -198,13 +199,20 @@ async function recentFailedAttempt(userId: string, kind: string): Promise<boolea
 }
 
 /** The most recent rule alert reached someone and nobody has closed it yet. */
-async function latestRuleAlertOpen(userId: string): Promise<boolean> {
+async function latestRuleAlert(userId: string) {
   const { events } = await listRecentAlertEventsFiltered(userId, { limit: 1, kind: "rule" }).catch(() => ({
     events: [],
   }));
-  const latest = events.find((event) => event.kind === "rule");
+  return events.find((event) => event.kind === "rule") ?? null;
+}
+
+async function latestRuleAlertOpen(userId: string): Promise<boolean> {
+  const latest = await latestRuleAlert(userId);
   return Boolean(latest && latest.channels_sent.length > 0 && !latest.acknowledged_at);
 }
+
+/** An open rule alert is closed when its rules stop matching within this long (e.g. a door left open overnight). */
+const RULE_RECOVERY_WINDOW_MS = DAY_MS;
 
 /** A recovered condition can alert again after this long (limits flapping sensors). */
 const RECOVERY_REARM_MS = 10 * 60 * 1000;
@@ -962,20 +970,36 @@ export async function maybeSendRuleAlerts(
   const ctx = await buildRuleContext(settings, devices, readings, householdId);
   await attachOutdoorTemp(userId, settings, ctx);
   const t = await alertText(locale);
-  const messages = evaluateAlertRules(settings.alertRules, ctx, locale);
-  if (messages.length === 0) {
-    // Nothing matches any more: close the open rule alert silently, so the
-    // next match alerts (after 10 min) instead of waiting out the 4h cooldown.
-    if (inCooldown) await safeAutoResolve(userId, { kinds: ["rule"], reason: "recovered" });
+  const matches = evaluateAlertRuleMatches(settings.alertRules, ctx, locale);
+  if (matches.length === 0) {
+    // Nothing matches any more: close the open rule alert, so the next match
+    // alerts (after 10 min) instead of waiting out the 4h cooldown. A door
+    // alert also gets a short "cleared" notice on the channels it reached;
+    // other rules re-arm silently.
+    const lastMs = settings.lastRuleAlertAt ? Date.parse(settings.lastRuleAlertAt) : Number.NaN;
+    if (Number.isFinite(lastMs) && Date.now() - lastMs < RULE_RECOVERY_WINDOW_MS) {
+      const latest = await latestRuleAlert(userId);
+      await resolveAndAnnounceRecovery(
+        userId,
+        email,
+        settings,
+        "rule",
+        { title: t.recovery.doorTitle, body: t.recovery.doorBody },
+        locale,
+        Boolean(latest?.meta?.doorRule),
+      );
+    }
     return;
   }
   if (await cooldownBlocks(userId, "rule", settings.lastRuleAlertAt)) return;
 
+  const doorRule = matches.some((match) => match.involvesDoor);
   await sendThenArmCooldown(userId, "rule", "last_rule_alert_at", settings.lastRuleAlertAt, () =>
     notifyUser(userId, email, settings, {
       title: t.rule.title,
-      body: messages.join("\n"),
+      body: matches.map((match) => match.message).join("\n"),
       kind: "rule",
+      ...(doorRule ? { meta: { doorRule: true } } : {}),
     }, undefined, locale),
   );
 }

@@ -269,13 +269,16 @@ export function explainAlertRules(rules: AlertRule[], ctx: RuleEvalContext, loca
   });
 }
 
-export function evaluateAlertRules(
+const DOOR_CONDITIONS = new Set<AlertConditionType>(["door_open", "door_open_duration"]);
+
+/** Matched rules, with whether each one involves a door condition. */
+export function evaluateAlertRuleMatches(
   rules: AlertRule[],
   ctx: RuleEvalContext,
   locale: Locale = "en",
-): string[] {
+): Array<{ message: string; involvesDoor: boolean }> {
   const t = alertRulesMessages(locale);
-  const messages: string[] = [];
+  const matches: Array<{ message: string; involvesDoor: boolean }> = [];
 
   for (const rule of rules) {
     if (!rule.enabled || !rule.all?.length) continue;
@@ -287,11 +290,22 @@ export function evaluateAlertRules(
       const parts = rule.all
         .map((c) => t.shortNames[c.type] ?? c.type.replace(/_/g, " "))
         .join(any ? t.or : t.and);
-      messages.push(fill(t.matched, { name: rule.name, parts }));
+      matches.push({
+        message: fill(t.matched, { name: rule.name, parts }),
+        involvesDoor: rule.all.some((c) => DOOR_CONDITIONS.has(c.type)),
+      });
     }
   }
 
-  return messages;
+  return matches;
+}
+
+export function evaluateAlertRules(
+  rules: AlertRule[],
+  ctx: RuleEvalContext,
+  locale: Locale = "en",
+): string[] {
+  return evaluateAlertRuleMatches(rules, ctx, locale).map((match) => match.message);
 }
 
 export function parseAlertRulesFromForm(raw: string | null | undefined): AlertRule[] {

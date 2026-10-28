@@ -89,6 +89,8 @@ const en = {
     outageBody: "Every device has checked in again. The outage alert is closed.",
     stuckTitle: "Recovered: probe readings are changing again",
     stuckBody: "The probe that looked stuck is reporting changing temperatures again. The alert is closed.",
+    doorTitle: "Recovered: door alert cleared",
+    doorBody: "The door rule that alerted no longer matches (for example, the door was closed). The alert is closed.",
   },
   context: {
     doorOpen: "A door sensor is open. Expect faster heat loss until it closes.",

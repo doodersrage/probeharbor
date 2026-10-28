@@ -1802,8 +1802,7 @@ ingest bug is found later.
       has recovered; that's one alert-log lookup.
 - **Deviation:** doors only alert through `door_open` rules, so "doors
   recover on close" uses the same silent rule recovery. No separate
-  "door closed" notice was added. Say if you want one; it's a small
-  addition (copy in 5 locales).
+  "door closed" notice was added. *(Resolved in D7b below.)*
 - Evidence: `alertNotifications.test.ts` +4. The 2 recovery tests fail
   against the previous code. `pnpm test`: 3015 passed. `pnpm typecheck`:
   0 errors. `pnpm lint`: 64 warnings (baseline). `pnpm build`: pass.
@@ -2154,3 +2153,42 @@ scrapes keep working either way.
   and status pages. Links keep working, but managers can't see the old
   URLs any more (they would Regenerate, which breaks embeds using the
   old URL).
+
+------------------------------------------------------------------------
+
+## Increment D7b (decision M2-6): a short notice when a door alert clears (2026-10-28)
+
+**Status: Implemented and verified locally. No migration. Not deployed.**
+
+- [x] `evaluateAlertRuleMatches` (`alertRules.ts`) returns each matched
+      rule's message plus whether it has a `door_open` or
+      `door_open_duration` condition. `evaluateAlertRules` is now a wrapper
+      over it with unchanged output.
+- [x] A rule alert where a door rule matched is stored with
+      `meta.doorRule: true`.
+- [x] When no rule matches any more, the open rule alert is closed as
+      `recovered` (as in D7). If it was a door alert, a short "Recovered:
+      door alert cleared" notice goes out on the channels the alert reached
+      (`resolveAndAnnounceRecovery`, like freeze, leak and outage). Other
+      rules still re-arm silently. Nothing is sent when nothing was open,
+      so it's sent once.
+- [x] The window for closing an open rule alert is now 24 h after the
+      last rule alert (was: only during the 4 h cooldown), so a door left
+      open overnight still gets closed and announced. Cost: one alert-log
+      lookup per evaluation with no rule match, only while the last rule
+      alert is under a day old.
+- The wording says the rule "no longer matches (for example, the door was
+  closed)". A rule that combines a door with, say, temperature can also
+  clear because the temperature changed, so the copy doesn't claim the
+  door closed.
+- Copy in 5 locales: `alertMessages.recovery.doorTitle`/`doorBody`.
+- Evidence: `alertNotifications.test.ts` +5 (door flag on send; cleared
+  notice on the alert's channels; nothing on later runs; closed past the
+  4 h cooldown within a day; no lookup after a day). The "non-door rules
+  stay silent" test now resolves an alert. Mutation check: announcing
+  every rule recovery fails that test (before the change it didn't
+  catch it). `pnpm test`: 3067 passed. `pnpm typecheck`: 0 errors.
+  `pnpm lint`: 64 warnings (baseline). `pnpm build`: pass. No e2e run;
+  no pages changed.
+- Not covered: rule alerts sent before this deploy have no `doorRule`
+  flag, so if one is open at deploy time it clears silently.

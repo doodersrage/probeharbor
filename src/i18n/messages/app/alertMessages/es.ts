@@ -88,6 +88,8 @@ const es: AlertMessages = {
     outageBody: "Todos los dispositivos se han vuelto a conectar. La alerta de caída está cerrada.",
     stuckTitle: "Recuperado: las lecturas de la sonda vuelven a cambiar",
     stuckBody: "La sonda que parecía atascada vuelve a enviar temperaturas que cambian. La alerta está cerrada.",
+    doorTitle: "Recuperado: alerta de puerta resuelta",
+    doorBody: "La regla de puerta que generó la alerta ya no se cumple (por ejemplo, se cerró la puerta). La alerta está cerrada.",
   },
   context: {
     doorOpen: "Un sensor de puerta está abierto. Espera una pérdida de calor más rápida hasta que se cierre.",

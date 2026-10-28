@@ -88,6 +88,8 @@ const ptBr: AlertMessages = {
     outageBody: "Todos os dispositivos voltaram a se comunicar. O alerta de queda foi encerrado.",
     stuckTitle: "Normalizado: as leituras da sonda voltaram a mudar",
     stuckBody: "A sonda que parecia travada voltou a enviar temperaturas que variam. O alerta foi encerrado.",
+    doorTitle: "Recuperado: alerta de porta encerrado",
+    doorBody: "A regra de porta que alertou não corresponde mais (por exemplo, a porta foi fechada). O alerta está encerrado.",
   },
   context: {
     doorOpen: "Um sensor de porta está aberto. Espere uma perda de calor mais rápida até que ela seja fechada.",

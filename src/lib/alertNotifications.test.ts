@@ -31,6 +31,11 @@ vi.mock("./alertEvents", () => ({
 const mockEvaluateAlertRules = vi.fn();
 vi.mock("./alertRules", () => ({
   evaluateAlertRules: (...args: unknown[]) => mockEvaluateAlertRules(...args),
+  // Tests return message strings (non-door rules) or { message, involvesDoor }.
+  evaluateAlertRuleMatches: (...args: unknown[]) =>
+    ((mockEvaluateAlertRules(...args) as unknown[] | undefined) ?? []).map((m) =>
+      typeof m === "string" ? { message: m, involvesDoor: false } : m,
+    ),
 }));
 
 const mockHasNumericReadingAboveSince = vi.fn();
@@ -733,13 +738,13 @@ describe("rule alerts re-arm when the rule stops matching", () => {
   it("closes the open rule alert silently once nothing matches", async () => {
     mockListRecentAlertEvents.mockResolvedValue([openRuleEvent]);
     mockEvaluateAlertRules.mockReturnValue([]);
-    mockAutoResolveAlerts.mockClear();
+    mockAutoResolveAlerts.mockClear().mockResolvedValueOnce({ resolved: 1, channels: ["push"] });
     const { maybeSendRuleAlerts } = await import("./alertNotifications");
 
     await maybeSendRuleAlerts("user-1", "a@example.com", [], settings, freezingReading);
 
     expect(mockAutoResolveAlerts).toHaveBeenCalledWith("user-1", { kinds: ["rule"], reason: "recovered" });
-    expect(mockNotifyUser).not.toHaveBeenCalled(); // no "back to normal" for rules
+    expect(mockNotifyUser).not.toHaveBeenCalled(); // non-door rules re-arm silently
   });
 
   it("alerts a new match after the earlier one recovered", async () => {
@@ -761,6 +766,71 @@ describe("rule alerts re-arm when the rule stops matching", () => {
 
     await maybeSendRuleAlerts("user-1", "a@example.com", [], settings, freezingReading);
 
+    expect(mockNotifyUser).not.toHaveBeenCalled();
+  });
+
+  it("marks a rule alert that involves a door", async () => {
+    mockListRecentAlertEvents.mockResolvedValue([]);
+    mockEvaluateAlertRules.mockReturnValue([{ message: "Garage door open 20 min", involvesDoor: true }]);
+    const { maybeSendRuleAlerts } = await import("./alertNotifications");
+
+    await maybeSendRuleAlerts("user-1", "a@example.com", [], { ...settings, lastRuleAlertAt: null }, freezingReading);
+
+    const payload = mockNotifyUser.mock.calls.find((call) => call[3]?.kind === "rule")?.[3];
+    expect(payload).toMatchObject({ kind: "rule", body: "Garage door open 20 min", meta: { doorRule: true } });
+  });
+
+  it("sends a short 'door alert cleared' notice on the alert's channels once a door rule stops matching", async () => {
+    mockListRecentAlertEvents.mockResolvedValue([{ ...openRuleEvent, meta: { doorRule: true } }]);
+    mockEvaluateAlertRules.mockReturnValue([]);
+    mockAutoResolveAlerts.mockResolvedValueOnce({ resolved: 1, channels: ["push"] });
+    const { maybeSendRuleAlerts } = await import("./alertNotifications");
+
+    await maybeSendRuleAlerts("user-1", "a@example.com", [], settings, freezingReading);
+
+    expect(mockNotifyUser).toHaveBeenCalledTimes(1);
+    const [, , , payload, options] = mockNotifyUser.mock.calls[0]!;
+    expect(payload).toMatchObject({ kind: "recovery", title: "Recovered: door alert cleared", meta: { recoveredKind: "rule" } });
+    expect(options).toEqual({ channelFilter: ["push"] });
+  });
+
+  it("sends nothing on later evaluations once the door alert is closed", async () => {
+    mockListRecentAlertEvents.mockResolvedValue([
+      { ...openRuleEvent, acknowledged_at: minutesAgo(15), meta: { doorRule: true, autoResolved: "recovered" } },
+    ]);
+    mockEvaluateAlertRules.mockClear().mockReturnValue([]);
+    mockAutoResolveAlerts.mockClear(); // default: nothing left to resolve
+    const { maybeSendRuleAlerts } = await import("./alertNotifications");
+
+    await maybeSendRuleAlerts("user-1", "a@example.com", [], settings, freezingReading);
+
+    expect(mockEvaluateAlertRules).toHaveBeenCalled();
+    expect(mockAutoResolveAlerts).toHaveBeenCalled();
+    expect(mockNotifyUser).not.toHaveBeenCalled();
+  });
+
+  it("still closes a door alert left open past the 4h cooldown (within a day)", async () => {
+    const overnight = { ...settings, lastRuleAlertAt: minutesAgo(9 * 60) };
+    mockListRecentAlertEvents.mockResolvedValue([{ ...openRuleEvent, created_at: minutesAgo(9 * 60), meta: { doorRule: true } }]);
+    mockEvaluateAlertRules.mockReturnValue([]);
+    mockAutoResolveAlerts.mockClear().mockResolvedValueOnce({ resolved: 1, channels: ["email"] });
+    const { maybeSendRuleAlerts } = await import("./alertNotifications");
+
+    await maybeSendRuleAlerts("user-1", "a@example.com", [], overnight, freezingReading);
+
+    expect(mockAutoResolveAlerts).toHaveBeenCalledWith("user-1", { kinds: ["rule"], reason: "recovered" });
+    expect(mockNotifyUser.mock.calls[0]?.[3]).toMatchObject({ kind: "recovery" });
+  });
+
+  it("does no alert-log lookup when the last rule alert is over a day old", async () => {
+    mockListRecentAlertEvents.mockClear();
+    mockEvaluateAlertRules.mockReturnValue([]);
+    mockAutoResolveAlerts.mockClear();
+    const { maybeSendRuleAlerts } = await import("./alertNotifications");
+
+    await maybeSendRuleAlerts("user-1", "a@example.com", [], { ...settings, lastRuleAlertAt: minutesAgo(25 * 60) }, freezingReading);
+
+    expect(mockAutoResolveAlerts).not.toHaveBeenCalled();
     expect(mockNotifyUser).not.toHaveBeenCalled();
   });
 

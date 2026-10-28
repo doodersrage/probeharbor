@@ -87,6 +87,8 @@ const de: AlertMessages = {
     outageBody: "Alle Geräte haben sich wieder gemeldet. Der Ausfall-Alarm ist geschlossen.",
     stuckTitle: "Entwarnung: Fühler-Messwerte ändern sich wieder",
     stuckBody: "Der Fühler, der eingefroren wirkte, meldet wieder wechselnde Temperaturen. Der Alarm ist geschlossen.",
+    doorTitle: "Erledigt: Tür-Alarm aufgehoben",
+    doorBody: "Die Tür-Regel, die alarmiert hat, trifft nicht mehr zu (zum Beispiel wurde die Tür geschlossen). Der Alarm ist geschlossen.",
   },
   context: {
     doorOpen: "Ein Tür-Sensor ist offen. Rechne mit schnellerem Wärmeverlust, bis die Tür zu ist.",

@@ -87,6 +87,8 @@ const fr: AlertMessages = {
     outageBody: "Tous les appareils se sont de nouveau manifestés. L’alerte de panne est close.",
     stuckTitle: "Rétabli : les mesures de la sonde varient de nouveau",
     stuckBody: "La sonde qui semblait bloquée envoie de nouveau des températures qui varient. L’alerte est close.",
+    doorTitle: "Rétabli : alerte de porte levée",
+    doorBody: "La règle de porte qui a déclenché l’alerte ne correspond plus (par exemple, la porte a été fermée). L’alerte est close.",
   },
   context: {
     doorOpen: "Un capteur de porte est ouvert. Attendez-vous à une perte de chaleur plus rapide jusqu’à sa fermeture.",
