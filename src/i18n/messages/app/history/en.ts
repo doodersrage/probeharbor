@@ -98,6 +98,7 @@ const en = {
     chartTitleDates: "Temperature trend (selected dates)",
     chartTitleDays: { one: "Temperature trend (last {count} day)", other: "Temperature trend (last {count} days)" },
     anomaliesTitle: "Unusual patterns detected in the chart window",
+    anomaliesHow: "Flagged when a probe falls 10°F or more between two readings up to 60 minutes apart; a door open within 30 minutes is mentioned.",
     feed: "Feed",
     allFeeds: "All feeds",
     probe: "Probe",

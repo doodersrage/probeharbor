@@ -67,7 +67,7 @@ const de: OverviewInsightsMessages = {
   },
   doorTemp: {
     title: "Tür und Temperatur",
-    subtitle: "Öffnungsdauer im Vergleich zur jüngsten Abkühlrate.",
+    subtitle: "Öffnungsdauer im Vergleich zur jüngsten Abkühlrate. Kaltluft-Index = Minuten offen × Grad unter 32 °F draußen.",
   },
   airQuality: {
     title: "Luftqualität",

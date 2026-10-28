@@ -67,7 +67,7 @@ const fr: OverviewInsightsMessages = {
   },
   doorTemp: {
     title: "Porte et température",
-    subtitle: "Durée d’ouverture comparée à la vitesse de refroidissement récente.",
+    subtitle: "Durée d’ouverture comparée à la vitesse de refroidissement récente. Indice d’air froid = minutes d’ouverture × degrés sous 32 °F dehors.",
   },
   airQuality: {
     title: "Qualité de l’air",

@@ -18,6 +18,8 @@ const en = {
   viewList: "List",
   viewHeatmap: "Heatmap",
   healthTitle: "Portfolio health",
+  healthHowSummary: "How the score works",
+  healthHow: "Each property's score shows its most serious issue: no devices (20) or no readings yet (30); a wet leak sensor (10–20); at or below the freeze line (15–25); readings older than 2 hours (45); some devices silent (50); within 5°F of the freeze line (70); otherwise healthy (95). The lower number in a range applies when readings are also stale. The average is the mean across properties.",
   healthSummary: "Average score {score}% · {atRisk} at freeze/flood risk{wet} · coldest listed below",
   healthSummaryWet: " · {count} wet",
   bulkVacationDays: "Bulk vacation (days)",

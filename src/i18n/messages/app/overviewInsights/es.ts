@@ -67,7 +67,7 @@ const es: OverviewInsightsMessages = {
   },
   doorTemp: {
     title: "Puerta frente a temperatura",
-    subtitle: "Tiempo abierta comparado con la velocidad de enfriamiento reciente.",
+    subtitle: "Tiempo abierta comparado con la velocidad de enfriamiento reciente. Índice de aire frío = minutos abierta × grados por debajo de 32 °F afuera.",
   },
   airQuality: {
     title: "Calidad del aire",

@@ -2871,8 +2871,8 @@ session) found:
   `pnpm lint`: 64 warnings (baseline). `pnpm build`: pass. Not seen in a
   browser (signed-in pages).
 - Still unexplained (survey): ~~the garage-risk status cascade~~ (6.5),
-  cold-air index, portfolio health %, the anomaly rule and the dew-point
-  series.
+  ~~cold-air index, portfolio health %, the anomaly rule~~ (6.6) and the
+  dew-point series.
 
 ------------------------------------------------------------------------
 
@@ -2899,3 +2899,34 @@ session) found:
 - Evidence: `pnpm test`: 3170 passed. `pnpm typecheck`: 0 errors.
   `pnpm lint`: 64 warnings (baseline). `pnpm build`: pass.
   `pnpm test:e2e`: passes locally (signed-in specs skipped; CI runs them).
+
+------------------------------------------------------------------------
+
+## Milestone 6, increment 6.6: explain anomalies, cold-air index and portfolio health (2026-10-28)
+
+**Status: Implemented and verified locally. No migration. Not deployed.**
+
+- [x] **History anomaly notices:** a line under the title gives the rule.
+      A probe falls ≥ 10°F between two readings ≤ 60 min apart; a door
+      open within 30 min is mentioned (`detectTemperatureAnomalies`).
+- [x] **Door vs temperature card:** the subtitle defines "Cold-air index =
+      minutes open × degrees below 32°F outside" (`buildDoorTempSummary`).
+- [x] **Portfolio health:** a collapsed "How the score works" lists the
+      `scorePropertyHealth` order:
+      - no devices 20, no readings 30
+      - wet 10–20, at or below the line 15–25 (the lower value when also
+        stale)
+      - stale > 2 h 45, devices silent 50
+      - within 5°F 70
+      - healthy 95
+
+      It notes that the average is the mean.
+- [x] 5 locales. The drift guard checks every portfolio `score:`, the
+      anomaly 10°F / 60 min / 30 min rule, and the cold-air 32°F base. A
+      mutation (drop 10 → 12) fails 5 tests.
+- Evidence: `pnpm test`: 3186 passed. `pnpm typecheck`: 0 errors.
+  `pnpm lint`: 64 warnings (baseline). `pnpm build`: pass.
+  `pnpm test:e2e`: 47 passed, 13 skipped.
+- Remaining from the survey: the dew-point series on charts (its tips
+  text is put together in code), and the export summary's freeze hours
+  without "estimated".

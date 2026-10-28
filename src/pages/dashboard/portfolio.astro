@@ -168,6 +168,10 @@ const lastReadingFormat: Intl.DateTimeFormatOptions = {
                     : "",
               })}
             </p>
+            <details class="mt-2 text-sm">
+              <summary class="cursor-pointer text-[var(--color-text-muted)]">{t.healthHowSummary}</summary>
+              <p class="mt-1 mb-0 text-[var(--color-text-muted)]">{t.healthHow}</p>
+            </details>
           </div>
         </div>
         {coldest.length > 0 && (

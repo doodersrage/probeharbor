@@ -19,6 +19,8 @@ const de: PortfolioMessages = {
   viewList: "Liste",
   viewHeatmap: "Heatmap",
   healthTitle: "Zustand des Portfolios",
+  healthHowSummary: "So wird der Wert berechnet",
+  healthHow: "Der Wert jeder Immobilie zeigt ihr schwerwiegendstes Problem: keine Geräte (20) oder noch keine Messwerte (30); ein nasser Wassersensor (10–20); auf oder unter der Frostgrenze (15–25); Messwerte älter als 2 Stunden (45); einige Geräte stumm (50); weniger als 5 °F über der Frostgrenze (70); sonst gesund (95). Der niedrigere Wert eines Bereichs gilt, wenn die Messwerte zusätzlich veraltet sind. Der Durchschnitt ist der Mittelwert über alle Immobilien.",
   healthSummary:
     "Durchschnittlicher Wert {score} % · {atRisk} mit Frost-/Wasserschadenrisiko{wet} · die kältesten stehen unten",
   healthSummaryWet: " · {count} nass",

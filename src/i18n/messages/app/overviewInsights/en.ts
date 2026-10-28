@@ -71,7 +71,7 @@ const en = {
   },
   doorTemp: {
     title: "Door vs temperature",
-    subtitle: "Open time correlated with recent cooling rate.",
+    subtitle: "Open time correlated with recent cooling rate. Cold-air index = minutes open × degrees below 32°F outside.",
   },
   airQuality: {
     title: "Air quality",

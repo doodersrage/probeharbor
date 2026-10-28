@@ -94,6 +94,7 @@ const de: AppHistoryMessages = {
     chartTitleDates: "Temperaturverlauf (gewählte Daten)",
     chartTitleDays: { one: "Temperaturverlauf (letzter {count} Tag)", other: "Temperaturverlauf (letzte {count} Tage)" },
     anomaliesTitle: "Ungewöhnliche Muster im Diagrammzeitraum erkannt",
+    anomaliesHow: "Markiert, wenn ein Fühler zwischen zwei höchstens 60 Minuten auseinanderliegenden Messwerten um 10 °F oder mehr fällt; eine innerhalb von 30 Minuten geöffnete Tür wird erwähnt.",
     feed: "Feed",
     allFeeds: "Alle Feeds",
     probe: "Fühler",

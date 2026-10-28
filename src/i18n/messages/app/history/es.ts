@@ -94,6 +94,7 @@ const es: AppHistoryMessages = {
     chartTitleDates: "Tendencia de temperatura (fechas seleccionadas)",
     chartTitleDays: { one: "Tendencia de temperatura (último {count} día)", other: "Tendencia de temperatura (últimos {count} días)" },
     anomaliesTitle: "Patrones inusuales detectados en el periodo del gráfico",
+    anomaliesHow: "Se marca cuando una sonda baja 10 °F o más entre dos lecturas separadas hasta 60 minutos; se menciona si hubo una puerta abierta en los 30 minutos cercanos.",
     feed: "Feed",
     allFeeds: "Todos los feeds",
     probe: "Sonda",

@@ -19,6 +19,8 @@ const ptBr: PortfolioMessages = {
   viewList: "Lista",
   viewHeatmap: "Mapa de calor",
   healthTitle: "Saúde do portfolio",
+  healthHowSummary: "Como a pontuação é calculada",
+  healthHow: "A pontuação de cada imóvel mostra seu problema mais grave: sem dispositivos (20) ou ainda sem leituras (30); um sensor de vazamento molhado (10–20); no limite de congelamento ou abaixo (15–25); leituras com mais de 2 horas (45); alguns dispositivos sem enviar (50); a menos de 5 °F do limite (70); caso contrário, saudável (95). O número menor de uma faixa vale quando as leituras também estão desatualizadas. A média é calculada entre todos os imóveis.",
   healthSummary:
     "Pontuação média {score}% · {atRisk} com risco de congelamento/alagamento{wet} · os mais frios estão abaixo",
   healthSummaryWet: " · molhados: {count}",

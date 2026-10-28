@@ -19,6 +19,8 @@ const es: PortfolioMessages = {
   viewList: "Lista",
   viewHeatmap: "Mapa de calor",
   healthTitle: "Estado del portfolio",
+  healthHowSummary: "Cómo se calcula la puntuación",
+  healthHow: "La puntuación de cada propiedad refleja su problema más grave: sin dispositivos (20) o aún sin lecturas (30); un sensor de fuga mojado (10–20); en el límite de helada o por debajo (15–25); lecturas de más de 2 horas (45); algunos dispositivos sin informar (50); a menos de 5 °F del límite (70); si no, saludable (95). El número más bajo de un rango se aplica cuando además las lecturas están desactualizadas. El promedio es la media de todas las propiedades.",
   healthSummary:
     "Puntuación media {score} % · {atRisk} en riesgo de congelación/inundación{wet} · las más frías, abajo",
   healthSummaryWet: " · {count} con agua",

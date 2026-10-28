@@ -67,7 +67,7 @@ const ptBr: OverviewInsightsMessages = {
   },
   doorTemp: {
     title: "Porta x temperatura",
-    subtitle: "Tempo aberta comparado à taxa de resfriamento recente.",
+    subtitle: "Tempo aberta comparado à taxa de resfriamento recente. Índice de ar frio = minutos aberta × graus abaixo de 32 °F lá fora.",
   },
   airQuality: {
     title: "Qualidade do ar",

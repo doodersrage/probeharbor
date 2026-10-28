@@ -190,6 +190,7 @@ function comparePresetHref(preset: "prior_week" | "prior_month"): string {
   {anomalies.length > 0 && (
     <div class="alert-warning mb-4">
       <p class="m-0 font-medium">{t.anomaliesTitle}</p>
+      <p class="m-0 mt-1 text-sm">{t.anomaliesHow}</p>
       <ul class="mb-0 mt-2 pl-5">
         {anomalies.map((notice) => (
           <li>{notice.message}</li>

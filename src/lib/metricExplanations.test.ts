@@ -123,3 +123,38 @@ describe("space status explanation matches computeGarageRiskStatus", () => {
     expect(text).toMatch(new RegExp(`\\b${near}\\s?°F`));
   });
 });
+
+describe("portfolio, anomaly and cold-air explanations match the code", async () => {
+  const portfolio = readFileSync("src/lib/portfolioHealth.ts", "utf8");
+  const anomaly = readFileSync("src/lib/anomalyDetection.ts", "utf8");
+  const scores = [...portfolio.matchAll(/score: (?:stale \? (\d+) : )?(\d+),/g)].flatMap((m) => [m[1], m[2]]).filter(Boolean) as string[];
+  const dropF = num(/dropThresholdF = (\d+)/, anomaly);
+  const windowMin = num(/windowMs = (\d+) \* 60 \* 1000/, anomaly);
+  const doorMin = num(/doorWasOpenNear\([\s\S]*?(\d+) \* 60 \* 1000/, anomaly);
+  const coldBase = num(/Math\.max\(0, (\d+) - outdoorTempF\)/, overviewExtras);
+
+  const load = (ns: string) =>
+    Promise.all(
+      ["en", "de", "es", "fr", "pt-br"].map(async (l) => [l, (await import(`../i18n/messages/app/${ns}/${l}.ts`)).default] as const),
+    );
+  const [portfolioMsgs, historyMsgs, insightMsgs] = await Promise.all([load("portfolio"), load("history"), load("overviewInsights")]);
+
+  it("found the portfolio scores", () => {
+    expect(new Set(scores)).toEqual(new Set(["20", "30", "10", "15", "25", "45", "50", "70", "95"]));
+  });
+
+  it.each(portfolioMsgs)("%s portfolio copy lists every score", (_l, m) => {
+    for (const s of scores) expect(m.healthHow as string).toContain(s);
+  });
+
+  it.each(historyMsgs)("%s anomaly copy states the drop rule", (_l, m) => {
+    const text = m.table.anomaliesHow as string;
+    expect(text).toMatch(new RegExp(`\\b${dropF}\\s?°F`));
+    expect(text).toContain(windowMin);
+    expect(text).toContain(doorMin);
+  });
+
+  it.each(insightMsgs)("%s door card defines the cold-air index base", (_l, m) => {
+    expect(m.doorTemp.subtitle as string).toMatch(new RegExp(`\\b${coldBase}\\s?°F`));
+  });
+});

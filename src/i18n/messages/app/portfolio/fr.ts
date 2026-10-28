@@ -19,6 +19,8 @@ const fr: PortfolioMessages = {
   viewList: "Liste",
   viewHeatmap: "Carte thermique",
   healthTitle: "État du portfolio",
+  healthHowSummary: "Comment le score est calculé",
+  healthHow: "Le score de chaque bien reflète son problème le plus grave : aucun appareil (20) ou pas encore de mesure (30) ; un capteur de fuite mouillé (10–20) ; au seuil de gel ou en dessous (15–25) ; mesures de plus de 2 heures (45) ; certains appareils muets (50) ; à moins de 5 °F du seuil (70) ; sinon en bonne santé (95). Le chiffre le plus bas d’une plage s’applique quand les mesures sont aussi anciennes. La moyenne porte sur tous les biens.",
   healthSummary:
     "Score moyen {score} % · {atRisk} à risque de gel/inondation{wet} · les plus froids ci-dessous",
   healthSummaryWet: " · mouillés : {count}",

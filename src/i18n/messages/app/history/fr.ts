@@ -94,6 +94,7 @@ const fr: AppHistoryMessages = {
     chartTitleDates: "Évolution de la température (dates sélectionnées)",
     chartTitleDays: { one: "Évolution de la température ({count} dernier jour)", other: "Évolution de la température ({count} derniers jours)" },
     anomaliesTitle: "Comportements inhabituels détectés sur la période du graphique",
+    anomaliesHow: "Signalé quand une sonde baisse de 10 °F ou plus entre deux mesures espacées de 60 minutes au plus ; une porte ouverte dans les 30 minutes est mentionnée.",
     feed: "Flux",
     allFeeds: "Tous les flux",
     probe: "Sonde",

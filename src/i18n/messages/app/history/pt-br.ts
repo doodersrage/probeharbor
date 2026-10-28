@@ -94,6 +94,7 @@ const ptBr: AppHistoryMessages = {
     chartTitleDates: "Tendência de temperatura (datas selecionadas)",
     chartTitleDays: { one: "Tendência de temperatura (último {count} dia)", other: "Tendência de temperatura (últimos {count} dias)" },
     anomaliesTitle: "Padrões incomuns detectados no período do gráfico",
+    anomaliesHow: "Marcado quando uma sonda cai 10 °F ou mais entre duas leituras com até 60 minutos de intervalo; uma porta aberta nos 30 minutos próximos é mencionada.",
     feed: "Feed",
     allFeeds: "Todos os feeds",
     probe: "Sonda",
