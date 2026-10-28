@@ -492,6 +492,69 @@ export async function markCooldown(
   }
 }
 
+type CooldownField = Parameters<typeof markCooldown>[1];
+type CooldownPatch = Partial<Record<CooldownField, string | null>> & { updated_at?: string };
+
+/**
+ * Claim the right to send one alert by moving its cooldown timestamp from the
+ * value this evaluation read to now (compare-and-set). Two evaluations that
+ * read the same value (concurrent ingests, ingest + cron) can't both win, so
+ * the alert goes out once.
+ *
+ * Fails open: it only says "skip" when it can see another evaluation stamped a
+ * newer time. A database error, a missing settings row or an unreadable value
+ * lets the alert send (a duplicate beats a missed alert).
+ */
+export async function claimCooldown(
+  userId: string,
+  field: CooldownField,
+  previous: string | null,
+): Promise<{ claimed: boolean; claimedAt: string | null }> {
+  const supabase = createServerClient();
+  const now = new Date().toISOString();
+  try {
+    let query = supabase
+      .from("alert_settings")
+      .update({ [field]: now, updated_at: now } as CooldownPatch)
+      .eq("user_id", userId);
+    query = previous == null ? query.is(field, null) : query.eq(field, previous);
+    const { data, error } = await query.select("user_id");
+    if (error) throw new Error(error.message);
+    if (data && data.length > 0) return { claimed: true, claimedAt: now };
+
+    const { data: row, error: readError } = await supabase
+      .from("alert_settings")
+      .select(field)
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (readError) throw new Error(readError.message);
+    const current = (row as Record<string, string | null> | null)?.[field] ?? null;
+    const currentMs = current ? Date.parse(current) : NaN;
+    const previousMs = previous ? Date.parse(previous) : -Infinity;
+    // Someone else stamped a newer time since we read it: they're sending this alert.
+    if (row && Number.isFinite(currentMs) && currentMs > previousMs) return { claimed: false, claimedAt: null };
+  } catch (error) {
+    console.error(`claimCooldown(${field}) failed; sending anyway:`, error);
+  }
+  return { claimed: true, claimedAt: null };
+}
+
+/** Undo a claim when the alert reached no one, so it can retry (and isn't shown as sent). */
+export async function releaseCooldown(
+  userId: string,
+  field: CooldownField,
+  claimedAt: string,
+  previous: string | null,
+): Promise<void> {
+  const supabase = createServerClient();
+  const { error } = await supabase
+    .from("alert_settings")
+    .update({ [field]: previous } as CooldownPatch)
+    .eq("user_id", userId)
+    .eq(field, claimedAt);
+  if (error) console.error(`releaseCooldown(${field}) failed:`, error.message);
+}
+
 /** Cooldown timestamps that prove at least one alert left the system. */
 export function alertSettingsHaveDeliveryTimestamp(settings: AlertSettings): boolean {
   return Boolean(

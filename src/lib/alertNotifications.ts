@@ -100,10 +100,12 @@ export function formatFreezeRecoveryBody(
 import { freezeThresholdForReading, readingIncludedInThresholdAlerts } from "./thresholdSensorScope";
 import { evaluateAlertRules, explainAlertRules, type RuleEvalContext, type RuleExplanation } from "./alertRules";
 import {
+  claimCooldown,
   getAlertSettingsForUser,
   markCooldown,
   markEscalation,
   notifyUser,
+  releaseCooldown,
   saveAlertSettingsForUser,
 } from "./notify";
 import type { DeviceWithSensors } from "./devices";
@@ -215,21 +217,32 @@ async function cooldownBlocks(userId: string, kind: string, lastSentAt: string |
 type CooldownField = Parameters<typeof markCooldown>[1];
 
 /**
- * Send, then start the 4h cooldown only if someone was reached (or the alert
- * was held back on purpose). If every channel failed, leave the cooldown off
- * so it retries, at most every 30 minutes. The cooldown timestamps double as
- * "last alert sent", so they must not be set for an alert nobody got.
+ * Claim, send, and keep the 4h cooldown only if someone was reached (or the
+ * alert was held back on purpose).
+ *
+ * - The claim (compare-and-set from `previous`, the value this evaluation
+ *   read) means concurrent evaluations send the alert once.
+ * - If every channel failed, the claim is released so it retries, at most
+ *   every 30 minutes. The cooldown timestamps double as "last alert sent",
+ *   so they must not stay set for an alert nobody got.
  */
 async function sendThenArmCooldown(
   userId: string,
   kind: string,
   field: CooldownField,
+  previous: string | null,
   send: () => Promise<{ sent: string[]; skipped: string[] }>,
 ): Promise<void> {
   if (await recentFailedAttempt(userId, kind)) return;
+  const claim = await claimCooldown(userId, field, previous);
+  if (!claim.claimed) return; // another evaluation is sending this alert
   const delivery = await send();
-  if (reachedNoOne(delivery)) return;
-  await markCooldown(userId, field);
+  if (reachedNoOne(delivery)) {
+    if (claim.claimedAt) await releaseCooldown(userId, field, claim.claimedAt, previous);
+    return;
+  }
+  // The claim couldn't stamp the row (missing row or failed write): stamp it now.
+  if (!claim.claimedAt) await markCooldown(userId, field);
 }
 
 /** True when someone has already acknowledged the most recent threshold alert. */
@@ -406,6 +419,9 @@ export async function sendThresholdAlertsIfNeeded(
         (row.value_bool === true || row.value_text === "open"),
     ),
   );
+  // Claim first so concurrent evaluations send this freeze alert once.
+  const claim = await claimCooldown(userId, "last_alert_sent_at", settings.lastAlertSentAt);
+  if (!claim.claimed) return;
   const delivery = await notifyUser(userId, email, settings, {
     title,
     body,
@@ -419,11 +435,12 @@ export async function sendThresholdAlertsIfNeeded(
     },
   }, { space: alertSpace }, locale);
   if (reachedNoOne(delivery)) {
-    // Nothing reached the user: leave the 4h cooldown unarmed so this retries
+    // Nothing reached the user: release the claim so this retries
     // (throttled to every 30 min by recentFailedAttempt).
+    if (claim.claimedAt) await releaseCooldown(userId, "last_alert_sent_at", claim.claimedAt, settings.lastAlertSentAt);
     return;
   }
-  await markCooldown(userId, "last_alert_sent_at");
+  if (!claim.claimedAt) await markCooldown(userId, "last_alert_sent_at");
 }
 
 export async function sendFloodAlertsIfNeeded(
@@ -451,7 +468,7 @@ export async function sendFloodAlertsIfNeeded(
   if (messages.length === 0) return;
 
   const alertSpace = wetSensors.find((sensor) => sensor.space)?.space ?? null;
-  await sendThenArmCooldown(userId, "flood", "last_flood_alert_at", () =>
+  await sendThenArmCooldown(userId, "flood", "last_flood_alert_at", settings.lastFloodAlertAt, () =>
     notifyUser(
       userId,
       email,
@@ -491,7 +508,7 @@ export async function sendPowerAlertsIfNeeded(
   const messages = evaluatePowerAlerts(settings, offSensors, locale);
   if (messages.length === 0) return;
   const alertSpace = offSensors.find((sensor) => sensor.space)?.space ?? null;
-  await sendThenArmCooldown(userId, "power", "last_power_alert_at", () =>
+  await sendThenArmCooldown(userId, "power", "last_power_alert_at", settings.lastPowerAlertAt, () =>
     notifyUser(
       userId,
       email,
@@ -545,7 +562,7 @@ export async function maybeSendForecastFreezeAlert(
   if (!message) return;
 
   const t = await alertText(locale);
-  await sendThenArmCooldown(userId, "forecast", "last_forecast_alert_at", () =>
+  await sendThenArmCooldown(userId, "forecast", "last_forecast_alert_at", settings.lastForecastAlertAt, () =>
     notifyUser(userId, email, settings, {
       title: t.forecast.title,
       body: message,
@@ -627,7 +644,7 @@ export async function maybeSendRunwayAlert(
   const message = evaluateRunwayAlert(settings, projection, locale);
   if (!message) return;
 
-  await sendThenArmCooldown(userId, "runway", "last_runway_alert_at", () =>
+  await sendThenArmCooldown(userId, "runway", "last_runway_alert_at", settings.lastRunwayAlertAt, () =>
     notifyUser(userId, email, settings, {
       title: t.runway.title,
       body: message,
@@ -667,7 +684,7 @@ export async function maybeSendNwsFreezeAlert(
   // The NWS headline itself is published in English; only our fallback is translated.
   const body = first.headline?.trim() || first.event || t.nws.fallback;
 
-  await sendThenArmCooldown(userId, "nws", "last_nws_alert_at", () =>
+  await sendThenArmCooldown(userId, "nws", "last_nws_alert_at", settings.lastNwsAlertAt, () =>
     notifyUser(userId, email, settings, {
       title: t.nws.title,
       body,
@@ -916,7 +933,7 @@ export async function maybeSendRuleAlerts(
   const messages = evaluateAlertRules(settings.alertRules, ctx, locale);
   if (messages.length === 0) return;
 
-  await sendThenArmCooldown(userId, "rule", "last_rule_alert_at", () =>
+  await sendThenArmCooldown(userId, "rule", "last_rule_alert_at", settings.lastRuleAlertAt, () =>
     notifyUser(userId, email, settings, {
       title: t.rule.title,
       body: messages.join("\n"),
@@ -966,7 +983,7 @@ export async function maybeSendRateAndOutageAlerts(
             plural(t.outage.stillOffline, stillOutCount, locale),
           ]
         : outageMessages;
-    await sendThenArmCooldown(userId, "outage", "last_outage_alert_at", () =>
+    await sendThenArmCooldown(userId, "outage", "last_outage_alert_at", settings.lastOutageAlertAt, () =>
       notifyUser(userId, email, settings, {
         title: t.outage.title,
         body: body.join("\n"),
@@ -988,7 +1005,7 @@ export async function maybeSendRateAndOutageAlerts(
   }
 
   if (rateMessages.length > 0 && !isAlertCooldownActive(settings.lastRateAlertAt)) {
-    await sendThenArmCooldown(userId, "rate", "last_rate_alert_at", () =>
+    await sendThenArmCooldown(userId, "rate", "last_rate_alert_at", settings.lastRateAlertAt, () =>
       notifyUser(userId, email, settings, {
         title: t.rate.title,
         body: rateMessages.join("\n"),
@@ -1072,7 +1089,7 @@ export async function maybeSendDeviceHealthAlerts(
     batteryMessages.length > 0 &&
     !isAlertCooldownActive(settings.lastBatteryAlertAt)
   ) {
-    await sendThenArmCooldown(userId, "battery", "last_battery_alert_at", () =>
+    await sendThenArmCooldown(userId, "battery", "last_battery_alert_at", settings.lastBatteryAlertAt, () =>
       notifyUser(
         userId,
         email,
@@ -1090,7 +1107,7 @@ export async function maybeSendDeviceHealthAlerts(
 
   const rssiMessages = evaluateRssiHealth(settings, health, locale);
   if (rssiMessages.length > 0 && !isAlertCooldownActive(settings.lastRssiAlertAt)) {
-    await sendThenArmCooldown(userId, "rssi", "last_rssi_alert_at", () =>
+    await sendThenArmCooldown(userId, "rssi", "last_rssi_alert_at", settings.lastRssiAlertAt, () =>
       notifyUser(
         userId,
         email,
@@ -1111,7 +1128,7 @@ export async function maybeSendDeviceHealthAlerts(
       const history = device.meta?.battery_history as BatterySample[] | undefined;
       const trend = detectBatteryTrendDrop(Array.isArray(history) ? history : [], undefined, undefined, locale);
       if (trend && !isAlertCooldownActive(settings.lastBatteryTrendAlertAt)) {
-        await sendThenArmCooldown(userId, "battery", "last_battery_trend_alert_at", () =>
+        await sendThenArmCooldown(userId, "battery", "last_battery_trend_alert_at", settings.lastBatteryTrendAlertAt, () =>
           notifyUser(
             userId,
             email,

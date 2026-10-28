@@ -4,9 +4,13 @@ import { DEFAULT_ALERT_SETTINGS, type AlertReading } from "./alerts";
 const mockNotifyUser = vi.fn();
 const mockMarkCooldown = vi.fn();
 const mockMarkEscalation = vi.fn();
+const mockClaimCooldown = vi.fn();
+const mockReleaseCooldown = vi.fn();
 vi.mock("./notify", () => ({
   notifyUser: (...args: unknown[]) => mockNotifyUser(...args),
   markCooldown: (...args: unknown[]) => mockMarkCooldown(...args),
+  claimCooldown: (...args: unknown[]) => mockClaimCooldown(...args),
+  releaseCooldown: (...args: unknown[]) => mockReleaseCooldown(...args),
   markEscalation: (...args: unknown[]) => mockMarkEscalation(...args),
   getAlertSettingsForUser: vi.fn(),
   saveAlertSettingsForUser: vi.fn(),
@@ -42,6 +46,9 @@ vi.mock("./alertContext", () => ({
 
 beforeEach(() => {
   mockNotifyUser.mockReset().mockResolvedValue({ sent: ["email"], skipped: [] });
+  // Default: the claim succeeded without stamping, so a delivered alert calls markCooldown.
+  mockClaimCooldown.mockReset().mockResolvedValue({ claimed: true, claimedAt: null });
+  mockReleaseCooldown.mockReset().mockResolvedValue(undefined);
   mockMarkCooldown.mockReset().mockResolvedValue(undefined);
   mockMarkEscalation.mockReset().mockResolvedValue(undefined);
   mockBuildFreezeAlertContext.mockReset().mockResolvedValue(null);
@@ -613,5 +620,59 @@ describe("a new incident after recovery isn't held back by the old cooldown", ()
     );
 
     expect(mockNotifyUser.mock.calls.some((call) => call[3]?.kind === "power")).toBe(true);
+  });
+});
+
+describe("concurrent evaluations send an alert once", () => {
+  const settings = { ...DEFAULT_ALERT_SETTINGS, enabled: true };
+  const wet = [{ label: "Water heater", space: "Garage" }];
+
+  it("doesn't send when another evaluation already claimed the alert", async () => {
+    mockClaimCooldown.mockResolvedValue({ claimed: false, claimedAt: null });
+    const { sendFloodAlertsIfNeeded } = await import("./alertNotifications");
+
+    await sendFloodAlertsIfNeeded("user-1", "a@example.com", settings, wet);
+
+    expect(mockNotifyUser).not.toHaveBeenCalled();
+  });
+
+  it("claims from the value it read, then keeps the stamp after delivering", async () => {
+    const previous = "2026-01-01T00:00:00.000Z";
+    mockClaimCooldown.mockResolvedValue({ claimed: true, claimedAt: "2026-01-02T00:00:00.000Z" });
+    const { sendFloodAlertsIfNeeded } = await import("./alertNotifications");
+
+    await sendFloodAlertsIfNeeded("user-1", "a@example.com", { ...settings, lastFloodAlertAt: previous }, wet);
+
+    expect(mockClaimCooldown).toHaveBeenCalledWith("user-1", "last_flood_alert_at", previous);
+    expect(mockNotifyUser).toHaveBeenCalledTimes(1);
+    expect(mockReleaseCooldown).not.toHaveBeenCalled();
+    expect(mockMarkCooldown).not.toHaveBeenCalled(); // already stamped by the claim
+  });
+
+  it("releases the claim when nobody was reached, so it retries", async () => {
+    mockClaimCooldown.mockResolvedValue({ claimed: true, claimedAt: "2026-01-02T00:00:00.000Z" });
+    mockNotifyUser.mockResolvedValue({ sent: [], skipped: ["email"] });
+    const { sendFloodAlertsIfNeeded } = await import("./alertNotifications");
+
+    await sendFloodAlertsIfNeeded("user-1", "a@example.com", settings, wet);
+
+    expect(mockReleaseCooldown).toHaveBeenCalledWith("user-1", "last_flood_alert_at", "2026-01-02T00:00:00.000Z", null);
+  });
+});
+
+describe("freeze alerts are claimed too", () => {
+  it("doesn't send a freeze alert another evaluation already claimed", async () => {
+    mockClaimCooldown.mockResolvedValue({ claimed: false, claimedAt: null });
+    const { sendThresholdAlertsIfNeeded } = await import("./alertNotifications");
+
+    await sendThresholdAlertsIfNeeded(
+      "user-1",
+      "a@example.com",
+      { ...DEFAULT_ALERT_SETTINGS, enabled: true, freezeThresholdF: 34, freezeDwellMinutes: 0 },
+      [{ label: "Garage pipe", tempf: 20, humidity: null }],
+    );
+
+    expect(mockNotifyUser.mock.calls.some((call) => call[3]?.kind === "threshold")).toBe(false);
+    expect(mockClaimCooldown).toHaveBeenCalledWith("user-1", "last_alert_sent_at", null);
   });
 });

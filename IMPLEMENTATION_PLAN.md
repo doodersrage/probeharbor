@@ -1360,3 +1360,48 @@ escalation SMS and repeats (`alertNotifications.ts` escalation and
 Old-format links in inboxes stay user-wide until they expire. Other ack
 paths (Telegram, push "Acknowledge" action) weren't changed; check
 whether they also use "latest unacked" (follow-up).
+
+------------------------------------------------------------------------
+
+## Milestone 2, increment 2.5: concurrent evaluations send an alert once (2026-10-28)
+
+**Status: Implemented and verified locally. No migration.**
+
+### Problem (verified)
+
+Each alert read its cooldown, sent, then wrote the cooldown with a plain
+UPDATE (`markCooldown`). Two evaluations at once, such as concurrent
+ingest POSTs or an ingest overlapping the 15-min cron
+(`wrangler.jsonc` crons, `collectHistory.ts`), both passed the check
+and both sent the alert.
+
+### Acceptance criteria
+
+- [x] `claimCooldown` (`notify.ts`) does a compare-and-set: it moves the
+      cooldown from the value this evaluation read to now. Only one of
+      two evaluations that read the same value wins. Used by all 11
+      helper-sent kinds and freeze.
+- [x] If nobody was reached, `releaseCooldown` restores the previous
+      value, only if the claim is still in place. So 2.1 (retry, honest
+      "last alert") still holds.
+- [x] **Fails open.** It skips only when it sees a newer stamp from
+      another evaluation. A DB error, missing settings row, or the same
+      instant in another format means "send". A duplicate is better than
+      a missed alert.
+
+### Evidence
+
+- `notify.claimCooldown.test.ts` (6, fake table: win, lose, one-of-two,
+  format, missing row and DB error, release) and
+  `alertNotifications.test.ts` +4. Against the previous code, the 4 flow
+  tests fail.
+- `pnpm test`: 2979 passed. `pnpm typecheck`: 0 errors. `pnpm lint`: 64
+  warnings (baseline). `pnpm build`: pass. `pnpm test:e2e`: 44 passed,
+  12 skipped. Not exercised against real Postgres concurrently. PostgREST
+  `eq` on a `timestamptz` with the string read from the same column was
+  reviewed, not executed.
+
+### Not covered
+
+- Escalation SMS (`markEscalation`) keeps its read-then-write.
+- Per-member evaluation happens inside the ingest POST (no `waitUntil`).
