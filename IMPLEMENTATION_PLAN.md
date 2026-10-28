@@ -3005,8 +3005,8 @@ Not done:
   `pnpm test`: 3188 passed. `pnpm typecheck`: 0 errors. `pnpm lint`: 64
   warnings (baseline). `pnpm build`: pass. `pnpm test:e2e`: 47 passed,
   13 skipped.
-- **Not verified:** canvas output (axis ticks, guides, tooltips) in a
-  browser; that only runs client-side, on signed-in pages.
+- **Checked by the owner (2026-10-28, production):** temperatures show in
+  °C on the dashboard charts with the °C preference on.
 - **Not changed (follow-ups):** ~~the History comparison charts~~ (done in
   6.9); the readings table and CSV show both units already.
 
