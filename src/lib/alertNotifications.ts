@@ -14,6 +14,8 @@ import {
   evaluateRssiHealth,
   isAlertCooldownActive,
   isStaleAlertReading,
+  alertTemp,
+  type AlertDisplay,
   ALERT_COOLDOWN_MS,
   type AlertReading,
   type AlertChannelName,
@@ -90,13 +92,15 @@ export function formatFreezeRecoveryBody(
   settings: AlertSettings,
   readings: AlertReading[],
   locale: Locale = "en",
+  display?: AlertDisplay,
 ): string {
   const t = alertMessages(locale).recovery;
   if (readings.length === 0) return t.freezeBodyEmpty;
   const temps = readings
-    .map((reading) => fmt(t.freezeTemp, { label: reading.label, temp: alertNumber(reading.tempf, locale, 1) }))
+    .map((reading) => fmt(t.freezeTemp, { label: reading.label, ...alertTemp(reading.tempf, locale, display, 1) }))
     .join(", ");
-  return fmt(t.freezeBody, { temps, threshold: alertNumber(settings.freezeThresholdF, locale) });
+  const threshold = alertTemp(settings.freezeThresholdF, locale, display, display?.useCelsius ? 1 : 0);
+  return fmt(t.freezeBody, { temps, threshold: threshold.temp, unit: threshold.unit });
 }
 import { freezeThresholdForReading, readingIncludedInThresholdAlerts } from "./thresholdSensorScope";
 import { evaluateAlertRules, explainAlertRules, type RuleEvalContext, type RuleExplanation } from "./alertRules";
@@ -305,10 +309,13 @@ export async function sendThresholdAlertsIfNeeded(
   context?: {
     weatherCityId?: string | null;
     latestSensors?: import("./sensorReadings").LatestSensorRow[];
+    /** The recipient's °C/°F preference (user_metadata.use_celsius). */
+    useCelsius?: boolean;
   },
   locale: Locale = "en",
 ): Promise<void> {
   if (!settings.enabled || readings.length === 0) return;
+  const display: AlertDisplay = { useCelsius: context?.useCelsius === true };
   const t = await alertText(locale);
 
   let dwellSamplesBySensorId: Record<string, Array<{ at: string; tempF: number }>> =
@@ -334,8 +341,8 @@ export async function sendThresholdAlertsIfNeeded(
   }
 
   const details = evaluateAlertDetails(settings, readings, { dwellSamplesBySensorId });
-  const messages = details.map((detail) => formatThresholdAlertDetail(detail, locale));
-  const title = thresholdAlertTitle(details, locale);
+  const messages = details.map((detail) => formatThresholdAlertDetail(detail, locale, display));
+  const title = thresholdAlertTitle(details, locale, display);
   const inScope = readings.filter((reading) =>
     readingIncludedInThresholdAlerts(settings.thresholdSensorScope, reading),
   );
@@ -351,7 +358,7 @@ export async function sendThresholdAlertsIfNeeded(
       email,
       settings,
       "threshold",
-      { title: t.recovery.freezeTitle, body: formatFreezeRecoveryBody(settings, inScope, locale) },
+      { title: t.recovery.freezeTitle, body: formatFreezeRecoveryBody(settings, inScope, locale, display) },
       locale,
     );
   }
@@ -753,6 +760,7 @@ export async function maybeSendThresholdAlerts(
   await sendThresholdAlertsIfNeeded(userId, email, settings, readings, householdId, {
     weatherCityId,
     latestSensors: latest,
+    useCelsius: userMetadata?.use_celsius === true,
   }, locale);
   await sendFloodAlertsIfNeeded(userId, email, settings, floodReadings, locale);
   await sendPowerAlertsIfNeeded(userId, email, settings, powerOffReadings, locale);

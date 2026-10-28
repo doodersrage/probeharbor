@@ -2,11 +2,13 @@ import type { AlertMessages } from "./en";
 
 const de: AlertMessages = {
   threshold: {
-    freezeDetail: "{label} hat {temp} °F (auf oder unter dem Frost-Schwellenwert {threshold} °F).",
+    freezeDetail: "{label} hat {temp} {unit} (auf oder unter dem Frost-Schwellenwert {threshold} {unit}).",
     freezeDetailDwell:
-      "{label} hat {temp} °F (seit {minutes}+ Min. auf oder unter dem Frost-Schwellenwert {threshold} °F).",
+      "{label} hat {temp} {unit} (seit {minutes}+ Min. auf oder unter dem Frost-Schwellenwert {threshold} {unit}).",
+    /** Appended to a freeze line when the reading is a few minutes old or more. */
+    readingAge: " Letzte Messung {age}.",
     humidityDetail: "Luftfeuchte bei {label} liegt bei {humidity} % (über dem Schwellenwert {threshold} %).",
-    titleFreeze: "Frost: {label} {temp} °F",
+    titleFreeze: "Frost: {label} {temp} {unit}",
     titleMore: " (+{count} weitere)",
     titleHumidityNote: ", hohe Luftfeuchte",
     titleHumidity: "Hohe Luftfeuchte: {label} {humidity} %",
@@ -67,8 +69,8 @@ const de: AlertMessages = {
   recovery: {
     freezeTitle: "Entwarnung: Temperaturen sind wieder normal",
     freezeBodyEmpty: "Wieder normal. Der Alarm ist geschlossen; nichts zu tun.",
-    freezeBody: "Wieder normal: {temps} (Frostgrenze {threshold} °F). Der Alarm ist geschlossen; nichts zu tun.",
-    freezeTemp: "{label} {temp} °F",
+    freezeBody: "Wieder normal: {temps} (Frostgrenze {threshold} {unit}). Der Alarm ist geschlossen; nichts zu tun.",
+    freezeTemp: "{label} {temp} {unit}",
     floodTitle: "Entwarnung: Leck-Sensoren sind trocken",
     floodBody:
       "Kein Leck-Sensor meldet mehr Nässe. Der Alarm ist geschlossen; sieh zur Sicherheit einmal an der Stelle nach.",

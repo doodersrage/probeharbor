@@ -6,10 +6,12 @@
  */
 const en = {
   threshold: {
-    freezeDetail: "{label} is {temp}°F (at or below freeze threshold {threshold}°F).",
-    freezeDetailDwell: "{label} is {temp}°F (at or below freeze threshold {threshold}°F for {minutes}+ min).",
+    freezeDetail: "{label} is {temp}{unit} (at or below freeze threshold {threshold}{unit}).",
+    freezeDetailDwell: "{label} is {temp}{unit} (at or below freeze threshold {threshold}{unit} for {minutes}+ min).",
+    /** Appended to a freeze line when the reading is a few minutes old or more. */
+    readingAge: " Last reading {age}.",
     humidityDetail: "{label} humidity is {humidity}% (above threshold {threshold}%).",
-    titleFreeze: "Freeze: {label} {temp}°F",
+    titleFreeze: "Freeze: {label} {temp}{unit}",
     /** Appended to a title when more probes are affected. */
     titleMore: " (+{count} more)",
     /** Appended to a freeze title when humidity is also high. */
@@ -71,8 +73,8 @@ const en = {
   recovery: {
     freezeTitle: "Recovered: temperatures are back to normal",
     freezeBodyEmpty: "Back to normal. The alert is closed; nothing to do.",
-    freezeBody: "Back to normal: {temps} (freeze line {threshold}°F). The alert is closed; nothing to do.",
-    freezeTemp: "{label} {temp}°F",
+    freezeBody: "Back to normal: {temps} (freeze line {threshold}{unit}). The alert is closed; nothing to do.",
+    freezeTemp: "{label} {temp}{unit}",
     floodTitle: "Recovered: leak sensors are dry",
     floodBody: "No leak sensor reads wet anymore. The alert is closed; check the spot once to be sure.",
     powerTitle: "Recovered: power is back",

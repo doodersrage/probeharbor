@@ -2,11 +2,13 @@ import type { AlertMessages } from "./en";
 
 const ptBr: AlertMessages = {
   threshold: {
-    freezeDetail: "{label} está a {temp} °F (no limite de congelamento de {threshold} °F ou abaixo).",
+    freezeDetail: "{label} está a {temp} {unit} (no limite de congelamento de {threshold} {unit} ou abaixo).",
     freezeDetailDwell:
-      "{label} está a {temp} °F (no limite de congelamento de {threshold} °F ou abaixo há {minutes}+ min).",
+      "{label} está a {temp} {unit} (no limite de congelamento de {threshold} {unit} ou abaixo há {minutes}+ min).",
+    /** Appended to a freeze line when the reading is a few minutes old or more. */
+    readingAge: " Última leitura {age}.",
     humidityDetail: "A umidade de {label} está em {humidity}% (acima do limite de {threshold}%).",
-    titleFreeze: "Congelamento: {label} {temp} °F",
+    titleFreeze: "Congelamento: {label} {temp} {unit}",
     titleMore: " (+{count} outros)",
     titleHumidityNote: ", umidade alta",
     titleHumidity: "Umidade alta: {label} {humidity}%",
@@ -68,8 +70,8 @@ const ptBr: AlertMessages = {
     freezeTitle: "Normalizado: as temperaturas voltaram ao normal",
     freezeBodyEmpty: "Tudo normal de novo. O alerta foi encerrado; nada a fazer.",
     freezeBody:
-      "Tudo normal de novo: {temps} (limite de congelamento {threshold} °F). O alerta foi encerrado; nada a fazer.",
-    freezeTemp: "{label} {temp} °F",
+      "Tudo normal de novo: {temps} (limite de congelamento {threshold} {unit}). O alerta foi encerrado; nada a fazer.",
+    freezeTemp: "{label} {temp} {unit}",
     floodTitle: "Normalizado: os sensores de vazamento estão secos",
     floodBody:
       "Nenhum sensor de vazamento indica molhado. O alerta foi encerrado; confira o local uma vez para ter certeza.",

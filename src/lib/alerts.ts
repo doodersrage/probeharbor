@@ -11,6 +11,7 @@ import {
 import type { Locale } from "../i18n/locales";
 import { fmt, formatNumber } from "../i18n/format";
 import { alertMessages } from "../i18n/messages/app/alertMessages";
+import { formatRelativeAge } from "./relativeTime";
 
 /**
  * Alert numbers: English keeps the exact `toFixed` output it always had;
@@ -613,18 +614,58 @@ export function meetsFreezeDwell(
 
 /** One threshold breach, before it's worded for a message or a title. */
 export type ThresholdAlertDetail =
-  | { kind: "freeze"; label: string; tempF: number; thresholdF: number; dwellMinutes: number }
+  | {
+      kind: "freeze";
+      label: string;
+      tempF: number;
+      thresholdF: number;
+      dwellMinutes: number;
+      /** When the reading was taken, so the alert can say how old it is. */
+      recordedAt?: string | null;
+    }
   | { kind: "humidity"; label: string; humidity: number; threshold: number };
 
-export function formatThresholdAlertDetail(detail: ThresholdAlertDetail, locale: Locale = "en"): string {
+/** How the recipient wants temperatures shown (their °C/°F preference). */
+export type AlertDisplay = { useCelsius?: boolean };
+
+/** A temperature stored in °F, as the recipient wants to read it. */
+export function alertTemp(
+  tempF: number,
+  locale: Locale,
+  display: AlertDisplay | undefined,
+  digits = 0,
+): { temp: string; unit: string } {
+  return display?.useCelsius
+    ? { temp: alertNumber(((tempF - 32) * 5) / 9, locale, digits), unit: "°C" }
+    : { temp: alertNumber(tempF, locale, digits), unit: "°F" };
+}
+
+/** Readings this fresh don't get an age note (it would just be noise). */
+const READING_AGE_NOTE_MS = 5 * 60 * 1000;
+
+export function formatThresholdAlertDetail(
+  detail: ThresholdAlertDetail,
+  locale: Locale = "en",
+  display?: AlertDisplay,
+  now = Date.now(),
+): string {
   const t = alertMessages(locale).threshold;
   if (detail.kind === "freeze") {
-    return fmt(detail.dwellMinutes > 0 ? t.freezeDetailDwell : t.freezeDetail, {
+    const reading = alertTemp(detail.tempF, locale, display, 1);
+    // Thresholds are whole °F; in °C show one decimal so 34°F reads 1.1°C, not 1°C.
+    const threshold = alertTemp(detail.thresholdF, locale, display, display?.useCelsius ? 1 : 0);
+    const line = fmt(detail.dwellMinutes > 0 ? t.freezeDetailDwell : t.freezeDetail, {
       label: detail.label,
-      temp: alertNumber(detail.tempF, locale, 1),
-      threshold: alertNumber(detail.thresholdF, locale),
+      temp: reading.temp,
+      threshold: threshold.temp,
+      unit: reading.unit,
       minutes: alertNumber(detail.dwellMinutes, locale),
     });
+    const at = detail.recordedAt ? Date.parse(detail.recordedAt) : NaN;
+    if (Number.isFinite(at) && now - at >= READING_AGE_NOTE_MS) {
+      return line + fmt(t.readingAge, { age: formatRelativeAge(detail.recordedAt, "", locale).label });
+    }
+    return line;
   }
   return fmt(t.humidityDetail, {
     label: detail.label,
@@ -638,7 +679,11 @@ export function formatThresholdAlertDetail(detail: ThresholdAlertDetail, locale:
  * "Freeze: Garage pipe 31.2°F (+2 more)", so alert lists and notifications
  * can be read without opening each one.
  */
-export function thresholdAlertTitle(details: ThresholdAlertDetail[], locale: Locale = "en"): string {
+export function thresholdAlertTitle(
+  details: ThresholdAlertDetail[],
+  locale: Locale = "en",
+  display?: AlertDisplay,
+): string {
   const t = alertMessages(locale).threshold;
   const freezes = details.filter((d) => d.kind === "freeze");
   const humid = details.filter((d) => d.kind === "humidity");
@@ -646,7 +691,8 @@ export function thresholdAlertTitle(details: ThresholdAlertDetail[], locale: Loc
     const coldest = freezes.reduce((min, d) => (d.tempF < min.tempF ? d : min));
     const more = freezes.length > 1 ? fmt(t.titleMore, { count: alertNumber(freezes.length - 1, locale) }) : "";
     const humidNote = humid.length > 0 ? t.titleHumidityNote : "";
-    return `${fmt(t.titleFreeze, { label: coldest.label, temp: alertNumber(coldest.tempF, locale, 1) })}${more}${humidNote}`;
+    const temp = alertTemp(coldest.tempF, locale, display, 1);
+    return `${fmt(t.titleFreeze, { label: coldest.label, temp: temp.temp, unit: temp.unit })}${more}${humidNote}`;
   }
   if (humid.length > 0) {
     const wettest = humid.reduce((max, d) => (d.humidity > max.humidity ? d : max));
@@ -724,6 +770,7 @@ export function evaluateAlertDetails(
         tempF: reading.tempf,
         thresholdF: freezeThreshold,
         dwellMinutes: settings.freezeDwellMinutes,
+        recordedAt: reading.recordedAt ?? null,
       });
     }
 

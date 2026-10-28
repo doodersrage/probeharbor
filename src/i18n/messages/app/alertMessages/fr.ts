@@ -2,11 +2,13 @@ import type { AlertMessages } from "./en";
 
 const fr: AlertMessages = {
   threshold: {
-    freezeDetail: "{label} est à {temp} °F (au seuil de gel de {threshold} °F ou en dessous).",
+    freezeDetail: "{label} est à {temp} {unit} (au seuil de gel de {threshold} {unit} ou en dessous).",
     freezeDetailDwell:
-      "{label} est à {temp} °F (au seuil de gel de {threshold} °F ou en dessous depuis {minutes}+ min).",
+      "{label} est à {temp} {unit} (au seuil de gel de {threshold} {unit} ou en dessous depuis {minutes}+ min).",
+    /** Appended to a freeze line when the reading is a few minutes old or more. */
+    readingAge: " Dernière mesure {age}.",
     humidityDetail: "L’humidité de {label} est de {humidity} % (au-dessus du seuil de {threshold} %).",
-    titleFreeze: "Gel : {label} {temp} °F",
+    titleFreeze: "Gel : {label} {temp} {unit}",
     titleMore: " (+{count} autres)",
     titleHumidityNote: ", humidité élevée",
     titleHumidity: "Humidité élevée : {label} {humidity} %",
@@ -67,8 +69,8 @@ const fr: AlertMessages = {
   recovery: {
     freezeTitle: "Rétabli : les températures sont revenues à la normale",
     freezeBodyEmpty: "Retour à la normale. L’alerte est close ; rien à faire.",
-    freezeBody: "Retour à la normale : {temps} (seuil de gel {threshold} °F). L’alerte est close ; rien à faire.",
-    freezeTemp: "{label} {temp} °F",
+    freezeBody: "Retour à la normale : {temps} (seuil de gel {threshold} {unit}). L’alerte est close ; rien à faire.",
+    freezeTemp: "{label} {temp} {unit}",
     floodTitle: "Rétabli : les capteurs de fuite sont secs",
     floodBody:
       "Plus aucun capteur de fuite n’est mouillé. L’alerte est close ; vérifiez l’endroit une fois pour en être sûr.",

@@ -2,11 +2,13 @@ import type { AlertMessages } from "./en";
 
 const es: AlertMessages = {
   threshold: {
-    freezeDetail: "{label} está a {temp} °F (en el umbral de congelación de {threshold} °F o por debajo).",
+    freezeDetail: "{label} está a {temp} {unit} (en el umbral de congelación de {threshold} {unit} o por debajo).",
     freezeDetailDwell:
-      "{label} está a {temp} °F (en el umbral de congelación de {threshold} °F o por debajo durante {minutes}+ min).",
+      "{label} está a {temp} {unit} (en el umbral de congelación de {threshold} {unit} o por debajo durante {minutes}+ min).",
+    /** Appended to a freeze line when the reading is a few minutes old or more. */
+    readingAge: " Última lectura {age}.",
     humidityDetail: "La humedad de {label} es del {humidity} % (por encima del umbral del {threshold} %).",
-    titleFreeze: "Congelación: {label} {temp} °F",
+    titleFreeze: "Congelación: {label} {temp} {unit}",
     titleMore: " (+{count} más)",
     titleHumidityNote: ", humedad alta",
     titleHumidity: "Humedad alta: {label} {humidity} %",
@@ -68,8 +70,8 @@ const es: AlertMessages = {
     freezeTitle: "Recuperado: las temperaturas volvieron a la normalidad",
     freezeBodyEmpty: "Todo normal de nuevo. La alerta está cerrada; no hay nada que hacer.",
     freezeBody:
-      "Todo normal de nuevo: {temps} (límite de congelación {threshold} °F). La alerta está cerrada; no hay nada que hacer.",
-    freezeTemp: "{label} {temp} °F",
+      "Todo normal de nuevo: {temps} (límite de congelación {threshold} {unit}). La alerta está cerrada; no hay nada que hacer.",
+    freezeTemp: "{label} {temp} {unit}",
     floodTitle: "Recuperado: los sensores de fuga están secos",
     floodBody:
       "Ningún sensor de fuga marca mojado. La alerta está cerrada; revisa el lugar una vez para asegurarte.",

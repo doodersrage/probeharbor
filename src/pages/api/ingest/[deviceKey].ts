@@ -288,7 +288,7 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
               member.settings,
               readings,
               device.household_id,
-              { weatherCityId, latestSensors: latest },
+              { weatherCityId, latestSensors: latest, useCelsius: member.userMetadata?.use_celsius === true },
               locale,
             );
             await sendFloodAlertsIfNeeded(member.userId, member.email, member.settings, floodReadings, locale);

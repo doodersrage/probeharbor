@@ -1631,3 +1631,29 @@ Order of work: M2-1 → M2-3 → M2-4 → M2-5 → M1-B → M1-C (sizing first).
 - Not verified on the deployed Worker yet: that `locals.cfContext` is
   present in API routes. If it isn't, alerts simply run inline as
   before.
+
+------------------------------------------------------------------------
+
+## Increment D4 (decision M2-5, freeze alerts): units and reading age (2026-10-28)
+
+**Status: Implemented and verified locally. No migration.**
+
+- [x] Freeze alert title, detail lines and "back to normal" body follow
+      the recipient's °C/°F preference (`user_metadata.use_celsius`),
+      passed from ingest and the cron (`AlertDisplay`, `alertTemp`).
+      The threshold shows one decimal in °C (34°F = 1.1°C).
+- [x] A freeze line says how old its reading is ("Last reading 12m
+      ago", translated with the existing relative-time formatter) when
+      the reading is 5 min old or more.
+- [x] Templates use a `{unit}` placeholder in 5 locales, keeping each
+      language's spacing ("30.2°F" in English, "30,2 °F" elsewhere).
+      Other callers default to °F.
+- Evidence: `alertDisplay.test.ts` (4, including no placeholder left in
+  any locale). `pnpm test`: 3004 passed. `pnpm typecheck`: 0 errors.
+  `pnpm lint`: 64 warnings (baseline). `pnpm build`: pass.
+  `pnpm test:e2e`: 44 passed, 12 skipped.
+- **Not done (D4b):**
+  - Property/household name in titles; it needs a lookup of whether the
+    user has more than one property.
+  - °C for forecast, runway and rate alerts, whose templates still say
+    °F.
