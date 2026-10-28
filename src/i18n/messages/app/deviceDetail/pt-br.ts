@@ -25,6 +25,9 @@ const ptBr: DeviceDetailMessages = {
   status: {
     title: "Status",
     health: "Saúde",
+    healthHowSummary: "Como a pontuação é calculada",
+    healthHow: "A pontuação mostra o problema mais grave encontrado, verificado nesta ordem: desativado (25) ou nunca visto (30); um sensor de vazamento molhado (10–20); sem envio há um dia (20) ou há 2 horas (45); leituras travadas (40); bateria em 15% ou menos (55) ou com previsão de 14 dias ou menos (60); Wi‑Fi no seu limite de sinal ou abaixo (65). Sem nada disso, está saudável (95).",
+    batteryHow: "Os dias restantes supõem que a bateria continua caindo no ritmo dos últimos 7 dias. Só aparecem se ela caiu mais de 0,5% por dia em pelo menos meio dia.",
     lastSeen: "Visto por último",
     never: "Nunca",
     battery: "Bateria",

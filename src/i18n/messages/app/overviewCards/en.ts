@@ -335,7 +335,7 @@ const en = {
   readinessCard: {
     title: "Property readiness",
     subtitle:
-      "Score from freeze alerts, flood contacts, batteries, and weather: run this before cold season or a wet season.",
+      "Score from freeze alerts, flood contacts, batteries, and weather: run this before cold season or a wet season. The percentage is the share of the checks below that pass.",
     fix: "Fix",
     sendTest: "Send test alert",
     seasonalChecklist: "Seasonal checklist",

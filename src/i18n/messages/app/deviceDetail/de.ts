@@ -25,6 +25,9 @@ const de: DeviceDetailMessages = {
   status: {
     title: "Status",
     health: "Zustand",
+    healthHowSummary: "So wird der Wert berechnet",
+    healthHow: "Der Wert zeigt das schwerwiegendste gefundene Problem, in dieser Reihenfolge geprüft: deaktiviert (25) oder nie gesehen (30); ein nasser Wassersensor (10–20); seit einem Tag (20) oder seit 2 Stunden (45) kein Upload; festhängende Messwerte (40); Akku bei 15 % oder weniger (55) oder voraussichtlich höchstens 14 Tage Laufzeit (60); WLAN auf oder unter deiner Signalschwelle (65). Ohne all das ist es gesund (95).",
+    batteryHow: "Die verbleibenden Tage setzen voraus, dass der Akku weiter mit der Rate der letzten 7 Tage sinkt. Sie erscheinen nur, wenn er über mindestens einen halben Tag mehr als 0,5 % pro Tag gefallen ist.",
     lastSeen: "Zuletzt gesehen",
     never: "Nie",
     battery: "Akku",

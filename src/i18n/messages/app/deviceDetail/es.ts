@@ -25,6 +25,9 @@ const es: DeviceDetailMessages = {
   status: {
     title: "Estado",
     health: "Salud",
+    healthHowSummary: "Cómo se calcula la puntuación",
+    healthHow: "La puntuación muestra el problema más grave encontrado, revisado en este orden: desactivado (25) o nunca visto (30); un sensor de fuga mojado (10–20); sin envíos durante un día (20) o 2 horas (45); lecturas atascadas (40); batería al 15 % o menos (55) o con 14 días o menos previstos (60); Wi‑Fi en tu umbral de señal o por debajo (65). Sin nada de eso, está bien (95).",
+    batteryHow: "Los días restantes suponen que la batería sigue bajando al ritmo de los últimos 7 días. Solo aparecen si bajó más de un 0,5 % al día durante al menos medio día.",
     lastSeen: "Última conexión",
     never: "Nunca",
     battery: "Batería",

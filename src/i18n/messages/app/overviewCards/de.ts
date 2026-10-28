@@ -322,7 +322,7 @@ const de: OverviewCardsMessages = {
   readinessCard: {
     title: "Bereitschaft des Objekts",
     subtitle:
-      "Wert aus Frostalarmen, Wasserkontakten, Akkus und Wetter: Prüfe ihn vor der kalten oder nassen Jahreszeit.",
+      "Wert aus Frostalarmen, Wasserkontakten, Akkus und Wetter: Prüfe ihn vor der kalten oder nassen Jahreszeit. Der Prozentwert ist der Anteil der unten aufgeführten Prüfungen, die bestanden sind.",
     fix: "Beheben",
     sendTest: "Testalarm senden",
     seasonalChecklist: "Saison-Checkliste",

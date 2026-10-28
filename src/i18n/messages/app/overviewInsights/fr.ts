@@ -85,7 +85,7 @@ const fr: OverviewInsightsMessages = {
   },
   battery: {
     title: "Tendance de la batterie",
-    subtitle: "Baisse d’après les derniers relevés de batterie des appareils.",
+    subtitle: "Baisse d’après les derniers relevés de batterie des appareils. Les jours restants supposent que le rythme de décharge des 7 derniers jours continue.",
     daysRemaining: {
       one: "~{count} jour restant à ce rythme",
       other: "~{count} jours restants à ce rythme",

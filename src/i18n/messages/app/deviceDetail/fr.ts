@@ -25,6 +25,9 @@ const fr: DeviceDetailMessages = {
   status: {
     title: "État",
     health: "Santé",
+    healthHowSummary: "Comment le score est calculé",
+    healthHow: "Le score reflète le problème le plus grave trouvé, vérifié dans cet ordre : désactivé (25) ou jamais vu (30) ; un capteur de fuite mouillé (10–20) ; aucun envoi depuis un jour (20) ou 2 heures (45) ; mesures bloquées (40) ; batterie à 15 % ou moins (55) ou prévue pour 14 jours ou moins (60) ; Wi‑Fi à votre seuil de signal ou en dessous (65). Sans rien de tout cela, tout va bien (95).",
+    batteryHow: "Les jours restants supposent que la batterie continue de baisser au rythme des 7 derniers jours. Ils n’apparaissent que si elle a perdu plus de 0,5 % par jour sur au moins une demi-journée.",
     lastSeen: "Dernier contact",
     never: "Jamais",
     battery: "Batterie",

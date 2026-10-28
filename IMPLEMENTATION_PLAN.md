@@ -2837,3 +2837,38 @@ session) found:
   status cascade, readiness % formula, cold-air index, device health score,
   portfolio health %, battery-days formula, anomaly rule and the dew-point
   series.
+
+------------------------------------------------------------------------
+
+## Milestone 6, increment 6.4: explain readiness %, device health and battery days (2026-10-28)
+
+**Status: Implemented and verified locally. No migration. Not deployed.**
+
+- [x] **Readiness %** (`FreezeReadinessCard`): the subtitle now says the
+      percentage is the share of the checks listed below that pass
+      (`freezeReadiness.ts:211`).
+- [x] **Device health /100** (device page): a collapsed "How the score
+      works". The score isn't a sum; it reflects the most serious issue, in
+      `scoreDeviceHealth` order:
+      - disabled 25, never seen 30
+      - a wet leak sensor 10–20
+      - no upload for a day 20, or for 2 h 45
+      - stuck readings 40
+      - battery ≤ 15 % 55, or ≤ 14 days left 60
+      - Wi-Fi at or below the threshold 65
+      - healthy 95
+- [x] **Battery days left** (device page and the Battery trend card): it
+      assumes the drain rate of the last 7 days continues, and is shown only
+      when the battery fell more than 0.5 %/day over at least half a day
+      (`estimateBatteryDaysRemaining`).
+- [x] Copy in 5 locales.
+- [x] The drift guard checks every `score:` value in `deviceHealthScore.ts`
+      appears in each locale, as do the battery cut-offs (with units) and
+      the 7-day / 0.5 rules. Mutations (battery 15 → 20, days 14 → 10)
+      fail 5 tests each. The first version didn't catch 15 → 20 because
+      "20" is also a score; it now matches the unit too.
+- Evidence: `pnpm test`: 3165 passed. `pnpm typecheck`: 0 errors.
+  `pnpm lint`: 64 warnings (baseline). `pnpm build`: pass. Not seen in a
+  browser (signed-in pages).
+- Still unexplained (survey): the garage-risk status cascade, cold-air
+  index, portfolio health %, the anomaly rule and the dew-point series.

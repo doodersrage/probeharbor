@@ -322,7 +322,7 @@ const fr: OverviewCardsMessages = {
   readinessCard: {
     title: "Préparation du bien",
     subtitle:
-      "Score basé sur les alertes de gel, les contacts d’inondation, les batteries et la météo : à vérifier avant la saison froide ou la saison des pluies.",
+      "Score basé sur les alertes de gel, les contacts d’inondation, les batteries et la météo : à vérifier avant la saison froide ou la saison des pluies. Le pourcentage correspond à la part des vérifications ci-dessous qui sont réussies.",
     fix: "Corriger",
     sendTest: "Envoyer une alerte de test",
     seasonalChecklist: "Liste de saison",

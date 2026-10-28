@@ -85,7 +85,7 @@ const de: OverviewInsightsMessages = {
   },
   battery: {
     title: "Akkuverlauf",
-    subtitle: "Rückgang laut den letzten Akku-Messwerten der Geräte.",
+    subtitle: "Rückgang laut den letzten Akku-Messwerten der Geräte. Die verbleibenden Tage setzen voraus, dass die Entladerate der letzten 7 Tage anhält.",
     daysRemaining: {
       one: "~{count} Tag Restlaufzeit bei diesem Verbrauch",
       other: "~{count} Tage Restlaufzeit bei diesem Verbrauch",

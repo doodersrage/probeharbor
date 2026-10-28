@@ -322,7 +322,7 @@ const ptBr: OverviewCardsMessages = {
   readinessCard: {
     title: "Preparo do imóvel",
     subtitle:
-      "Pontuação com base em alertas de congelamento, contatos de alagamento, baterias e clima: confira antes da temporada de frio ou de chuvas.",
+      "Pontuação com base em alertas de congelamento, contatos de alagamento, baterias e clima: confira antes da temporada de frio ou de chuvas. A porcentagem é a parte das verificações abaixo que passaram.",
     fix: "Corrigir",
     sendTest: "Enviar alerta de teste",
     seasonalChecklist: "Checklist da temporada",

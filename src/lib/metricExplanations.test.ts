@@ -74,3 +74,32 @@ describe("time-to-freeze confidence explanation matches confidenceFor", () => {
     for (const n of [high, medium, trend]) expect(text).toContain(n);
   });
 });
+
+describe("device health and battery explanations match the code", async () => {
+  const health = readFileSync("src/lib/deviceHealthScore.ts", "utf8");
+  const battery = readFileSync("src/lib/batteryTrend.ts", "utf8");
+  const scores = [...health.matchAll(/score: (?:stale \? (\d+) : )?(\d+),/g)].flatMap((m) => [m[1], m[2]]).filter(Boolean) as string[];
+  const lowPct = num(/batteryPct <= (\d+)\)/, health);
+  const lowDays = num(/daysRemaining <= (\d+)\)/, health);
+  const windowDays = num(/windowDays = (\d+)/, battery);
+  const minDrop = num(/dropPerDay <= ([\d.]+)\)/, battery);
+
+  const locales = await Promise.all(
+    ["en", "de", "es", "fr", "pt-br"].map(async (l) => [l, (await import(`../i18n/messages/app/deviceDetail/${l}.ts`)).default] as const),
+  );
+
+  it("found the scores to check", () => {
+    expect(new Set(scores)).toEqual(new Set(["25", "30", "10", "20", "45", "40", "55", "60", "65", "95"]));
+  });
+
+  it.each(locales)("%s lists every score and the battery cut-offs", (_l, m) => {
+    const text = m.status.healthHow as string;
+    for (const s of scores) expect(text).toContain(s);
+    // With the unit, so a cut-off that matches one of the scores (e.g. 20) can't pass by accident.
+    expect(text).toMatch(new RegExp(`\\b${lowPct}\\s?%`));
+    expect(text).toMatch(new RegExp(`\\b${lowDays}\\s(days|Tage|días|jours|dias)\\b`));
+    const batteryText = (m.status.batteryHow as string).replace(/(\d),(\d)/g, "$1.$2");
+    expect(batteryText).toContain(windowDays);
+    expect(batteryText).toContain(minDrop);
+  });
+});

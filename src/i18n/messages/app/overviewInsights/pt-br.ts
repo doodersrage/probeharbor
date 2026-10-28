@@ -85,7 +85,7 @@ const ptBr: OverviewInsightsMessages = {
   },
   battery: {
     title: "Tendência da bateria",
-    subtitle: "Queda com base nas amostras recentes de bateria dos dispositivos.",
+    subtitle: "Queda com base nas amostras recentes de bateria dos dispositivos. Os dias restantes supõem que o ritmo de descarga dos últimos 7 dias continua.",
     daysRemaining: {
       one: "~{count} dia restante neste ritmo",
       other: "~{count} dias restantes neste ritmo",

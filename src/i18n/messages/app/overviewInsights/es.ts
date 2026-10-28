@@ -85,7 +85,7 @@ const es: OverviewInsightsMessages = {
   },
   battery: {
     title: "Tendencia de batería",
-    subtitle: "Descenso según las muestras recientes de batería de los dispositivos.",
+    subtitle: "Descenso según las muestras recientes de batería de los dispositivos. Los días restantes suponen que sigue el ritmo de descarga de los últimos 7 días.",
     daysRemaining: {
       one: "~{count} día restante a este ritmo",
       other: "~{count} días restantes a este ritmo",

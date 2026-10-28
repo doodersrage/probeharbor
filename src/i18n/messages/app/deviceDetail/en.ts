@@ -24,6 +24,9 @@ const en = {
   status: {
     title: "Status",
     health: "Health",
+    healthHowSummary: "How the score works",
+    healthHow: "The score shows the most serious issue found, checked in this order: disabled (25) or never seen (30); a wet leak sensor (10–20); no upload for a day (20) or for 2 hours (45); readings stuck (40); battery at 15% or less (55) or expected to last 14 days or less (60); Wi‑Fi at or below your signal threshold (65). With none of these it's healthy (95).",
+    batteryHow: "Days left assume the battery keeps dropping at its rate over the last 7 days. They appear only when it fell more than 0.5% a day over at least half a day.",
     lastSeen: "Last seen",
     never: "Never",
     battery: "Battery",

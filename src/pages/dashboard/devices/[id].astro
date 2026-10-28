@@ -129,6 +129,10 @@ const noticeIsError = Boolean(replaceError || params.get("error"));
             <span class:list={["font-semibold", healthTone]}>{healthLabel}</span>
             <span class="text-[var(--color-text-muted)]"> {health.score}/100</span>
             <span class="block text-xs text-[var(--color-text-muted)]">{healthDetail}</span>
+            <details class="mt-1 text-xs">
+              <summary class="cursor-pointer text-[var(--color-text-muted)]">{t.status.healthHowSummary}</summary>
+              <p class="mt-1 mb-0 text-[var(--color-text-muted)]">{t.status.healthHow}</p>
+            </details>
           </dd>
         </div>
         <div>
@@ -142,6 +146,9 @@ const noticeIsError = Boolean(replaceError || params.get("error"));
               {locale === "en" ? `${health.batteryPct}%` : formatNumber(health.batteryPct / 100, locale, { style: "percent", maximumFractionDigits: 1 })}
               {health.daysRemaining != null && (
                 <span class="block text-xs text-[var(--color-text-muted)]">{formatBatteryEta(health.daysRemaining, locale)}</span>
+              )}
+              {health.daysRemaining != null && (
+                <span class="block text-xs text-[var(--color-text-muted)]">{t.status.batteryHow}</span>
               )}
             </dd>
           </div>

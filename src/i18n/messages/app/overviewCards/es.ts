@@ -322,7 +322,7 @@ const es: OverviewCardsMessages = {
   readinessCard: {
     title: "Preparación de la propiedad",
     subtitle:
-      "Puntuación según alertas de congelación, contactos de inundación, baterías y tiempo: revísala antes de la temporada de frío o de lluvias.",
+      "Puntuación según alertas de congelación, contactos de inundación, baterías y tiempo: revísala antes de la temporada de frío o de lluvias. El porcentaje es la parte de las comprobaciones de abajo que se cumplen.",
     fix: "Corregir",
     sendTest: "Enviar alerta de prueba",
     seasonalChecklist: "Lista de temporada",

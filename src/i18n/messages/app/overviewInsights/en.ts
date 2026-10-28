@@ -89,7 +89,7 @@ const en = {
   },
   battery: {
     title: "Battery trend",
-    subtitle: "Decline from recent device battery samples.",
+    subtitle: "Decline from recent device battery samples. Days left assume the drain rate of the last 7 days continues.",
     daysRemaining: {
       one: "~{count} days remaining at this rate",
       other: "~{count} days remaining at this rate",
