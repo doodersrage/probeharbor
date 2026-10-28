@@ -1768,13 +1768,15 @@ migration:
    query 2: `raw_fault_rows = 0`, `rollups_touched = 0`. No DS18B20 fault
    codes were stored as temperatures, so no delete migration is needed.
 3. Delete (3a) sensors' rows (and hide the sensors), and the (3b) rows.
+   **3a closed (2026-10-28):** the owner ran query 3a: `sensors = 0`,
+   `rows = 0`. No all-zero humidity sensors exist. Only (3b) remains.
 4. ~~Add an optional reading id only if (4) is significant.~~ **Closed
    (2026-10-28):** the owner ran query 4 and `likely_duplicates = 0` for
    the last 7 days. Retries aren't creating duplicate rows, so M1-A needs
    no reading id or migration. Re-run query 4 if a client adds retries,
    for example firmware offline buffering.
 
-**Still waiting on:** results of queries 3a and 3b. Cleanup
+**Still waiting on:** results of query 3b. Cleanup
 migration 3 won't be written until those counts are known and signed off.
 
 ------------------------------------------------------------------------
