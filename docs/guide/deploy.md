@@ -109,9 +109,11 @@ that changes or removes data:
 pnpm db:backup
 ```
 
-- It needs `SUPABASE_DB_URL` in `.env`: Supabase → **Connect** → a Postgres
-  connection string with the database password filled in. It's local only
-  and isn't pushed to the Worker.
+- It needs `SUPABASE_DB_URL` in `.env`: Supabase → **Connect** → the
+  **Session pooler** string (`postgres.<ref>@…pooler.supabase.com:5432`) with
+  the database password filled in. The "Direct connection" host is IPv6-only
+  on the Free plan, and the transaction pooler (6543) doesn't work with
+  `pg_dump`. It's local only and isn't pushed to the Worker.
 - It needs `pg_dump` 17 or newer (the server runs Postgres 17).
 - It writes `backups/probeharbor-<UTC time>.dump` (compressed, custom
   format; `backups/` is gitignored). It only reads from the database.

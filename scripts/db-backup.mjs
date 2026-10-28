@@ -83,6 +83,11 @@ if (dump.status !== 0) {
   // pg_dump can leave a partial file; remove it so it's never mistaken for a backup.
   rmSync(file, { force: true });
   console.error(`pg_dump failed (exit ${dump.status}). No backup was written.`);
+  if (/^db\.[a-z0-9]+\.supabase\.co$/i.test(url.hostname)) {
+    console.error(
+      'Hint: that is the "Direct connection" host, which is IPv6-only on the Free plan. In Supabase → Connect, choose "Session pooler" (host …pooler.supabase.com, user postgres.<project-ref>, port 5432) and use that string instead.',
+    );
+  }
   process.exit(dump.status ?? 1);
 }
 
