@@ -845,3 +845,59 @@ If the code ships first, the daily retention job reports
 - Rollups lost before this fix can't be recovered.
 - Archive job: still a no-op, because retention deletes first (Milestone
   4 decision).
+
+------------------------------------------------------------------------
+
+## Milestone 1, increment 1.3: °C temperatures in `sensors[]` (2026-10-27)
+
+**Status: Implemented and verified locally. Deploys on push. No
+migration.**
+
+### Problem (verified)
+
+A `sensors[]` temperature sent with `unit: "C"` was stored as-is
+(`ingestPayload.ts:70-84`, `ingestInterpret.ts`). Alerts, rules and
+history treat every temperature as °F, so 20°C was evaluated as 20°F,
+which is a freeze alert. Only the payload checker warned about this
+(`ingestCheck.ts`).
+
+### Acceptance criteria
+
+- [x] `temperature` values with unit C / °C / Cel / celsius / degC / K /
+      kelvin are stored as °F with `unit: "F"`. The sent value and unit
+      are kept in `meta.sent_value` / `meta.sent_unit`
+      (`temperatureToFahrenheit`).
+- [x] °F, unit-less and non-temperature values are unchanged; that
+      includes firmware flat keys.
+- [x] An existing temperature sensor whose saved unit isn't "F" is
+      corrected to "F" on its next converted reading
+      (`upsertDeviceSensor`). The card would otherwise label °F values
+      "C". No write happens when nothing changes.
+- [x] The payload checker drops the obsolete "would read as °F" warning
+      and still flags DS18B20 fault values against the °C the device
+      sent.
+- [x] Docs: `docs/ingest/index.md` describes the conversion.
+
+### Evidence
+
+- `temperatureUnits.ingest.test.ts` (18 tests), `devices.test.ts` (+2)
+  and `ingestCheck.test.ts` (updated). With the conversion and unit
+  update reverted, both behavior tests fail.
+- `pnpm test`: 2910 passed. `pnpm typecheck`: 0 errors. `pnpm lint`: 64
+  warnings (baseline). `pnpm build`: pass. `pnpm test:e2e`: 44 passed,
+  12 signed-in specs skipped.
+
+### Risks and follow-ups
+
+- **Readings already stored in °C are unchanged.** They were already
+  wrong for alerts and charts, so there's no new regression; after this
+  deploy their sensor will show a step from the °C numbers to the °F
+  numbers. Size it first (read-only):
+  `select s.id, s.unit, count(r.*) from device_sensors s join sensor_readings r on r.sensor_id = s.id where s.kind = 'temperature' and lower(replace(coalesce(s.unit,''),'°','')) in ('c','cel','celsius','degc','k','kelvin') group by s.id, s.unit;`.
+  Once a sensor has had a converted reading, its unit reads "F", so
+  after deploy a fix should select sensors that have any reading with
+  `meta->>'sent_unit'` set and convert their rows that lack it (raw and
+  rollups). That needs approval; it's a production data change.
+- Calibration offsets entered in °C on such sensors would now apply to
+  °F values. This is an edge case to check if the query above finds any
+  sensors.

@@ -479,7 +479,14 @@ export async function upsertDeviceSensor(
     .maybeSingle();
 
   if (existing) {
-    return { sensor: existing as DeviceSensor, error: null };
+    // Temperatures are stored in °F. A sensor first created from °C readings
+    // still says "C"; correct it so the card doesn't label °F values as °C.
+    const current = existing as DeviceSensor;
+    if (kind === "temperature" && unit === "F" && current.unit != null && current.unit !== "F") {
+      await supabase.from("device_sensors").update({ unit: "F" }).eq("id", current.id);
+      return { sensor: { ...current, unit: "F" }, error: null };
+    }
+    return { sensor: current, error: null };
   }
 
   const { data, error } = await supabase

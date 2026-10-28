@@ -1,4 +1,4 @@
-import { interpretIngestPayload, type InterpretedReading } from "./ingestInterpret";
+import { interpretIngestPayload, temperatureToFahrenheit, type InterpretedReading } from "./ingestInterpret";
 
 export type IngestCheckResult = {
   /** What the real endpoint would answer: 200 with readings, or 400 "No sensor values found". */
@@ -57,16 +57,15 @@ export function checkIngestPayload(payload: unknown): IngestCheckResult {
 
   for (const reading of interpreted.readings) {
     if (reading.kind === "temperature" && reading.value_num != null) {
-      const unit = reading.unit?.replace("°", "").toUpperCase();
-      if (unit === "C") {
+      // °C/K values are converted to °F at ingest; check faults against what the device sent.
+      const sentC =
+        typeof reading.meta.sent_value === "number" &&
+        temperatureToFahrenheit(0, reading.meta.sent_unit as string)?.from === "C";
+      const sent = sentC ? (reading.meta.sent_value as number) : reading.value_num;
+      const faults = sentC ? DS18B20_FAULTS_C : DS18B20_FAULTS_F;
+      if (faults.some((fault) => Math.abs(sent - fault) < 0.05)) {
         warnings.push(
-          `${reading.label} says its unit is °C. Temperatures are stored and alerted on as °F, so ${reading.value_num}°C would read as ${reading.value_num}°F. Convert on the device or send the classic {"temp": {...}} shape with c and f.`,
-        );
-      }
-      const faults = unit === "C" ? DS18B20_FAULTS_C : DS18B20_FAULTS_F;
-      if (faults.some((fault) => Math.abs(reading.value_num! - fault) < 0.05)) {
-        warnings.push(
-          `${reading.label} is ${reading.value_num}, a DS18B20 error value (reset or disconnected), not a real temperature. Check the probe wiring and power.`,
+          `${reading.label} is ${sent}, a DS18B20 error value (reset or disconnected), not a real temperature. Check the probe wiring and power.`,
         );
       }
     }

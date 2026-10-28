@@ -34,17 +34,19 @@ describe("checkIngestPayload", () => {
     expect(checkIngestPayload("hi").accepted).toBe(false);
   });
 
-  it("warns about Celsius, fault values, and untyped keys", () => {
+  it("warns about fault values (in °F or the °C the device sent) and untyped keys", () => {
     const result = checkIngestPayload({
       sensors: [
         { key: "t1", kind: "temperature", value: 4, unit: "°C" },
         { key: "t2", kind: "temperature", value: 185 },
+        { key: "t3", kind: "temperature", value: 85, unit: "C" },
         { key: "xyz", value: 3 },
       ],
     });
     const text = result.warnings.join("\n");
-    expect(text).toContain("°C");
-    expect(text).toContain("DS18B20");
+    expect(text).not.toContain("would read as");
+    expect(text).toContain("is 185, a DS18B20 error value");
+    expect(text).toContain("is 85, a DS18B20 error value");
     expect(text).toContain('"xyz" didn\'t match a sensor type');
   });
 });

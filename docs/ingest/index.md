@@ -96,6 +96,8 @@ Matches the Ethernet garage firmware JSON shape. Sample sketch:
 
 Supported `kind` values: `temperature`, `humidity`, `co2`, `pressure`, `pm25`, `voc`, `level`, `energy`, `door`, `power`, `flood`, `motion`, `generic`.
 
+Temperatures are stored and alerted on in °F. A `temperature` value with `unit` `C`, `°C`, `Cel`, `celsius`, `degC`, `K` or `kelvin` is converted to °F when it arrives; the value and unit you sent are kept in the reading's `meta` (`sent_value`, `sent_unit`). No unit, or `F`, is taken as °F.
+
 ### SenML (RFC 8428)
 
 SenML JSON arrays are auto-detected when native shapes are absent. Temperature uses unit `Cel` or `degF`; humidity uses `%RH`. Probe keys come from the SenML name (last path segment).

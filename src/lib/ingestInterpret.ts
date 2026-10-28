@@ -25,6 +25,27 @@ export type InterpretedIngest = {
   firmwareVersion: string | null;
 };
 
+const round2 = (value: number) => Math.round(value * 100) / 100;
+
+/**
+ * Temperatures are stored and alerted on in °F. Convert a °C or K value sent
+ * in `sensors[]`, keeping what the device sent in meta. Returns null when the
+ * unit is already °F or isn't a recognised temperature unit.
+ */
+export function temperatureToFahrenheit(
+  value: number,
+  unit: string | null | undefined,
+): { f: number; from: "C" | "K" } | null {
+  const u = (unit ?? "").trim().toLowerCase().replace("°", "").replace("º", "");
+  if (u === "c" || u === "cel" || u === "celsius" || u === "degc") {
+    return { f: round2((value * 9) / 5 + 32), from: "C" };
+  }
+  if (u === "k" || u === "kelvin") {
+    return { f: round2(((value - 273.15) * 9) / 5 + 32), from: "K" };
+  }
+  return null;
+}
+
 /**
  * A number, or a numeric string. `Number()` alone would turn `null`, `""`,
  * and `false` into 0, which reads as a dead battery.
@@ -87,15 +108,17 @@ export function interpretIngestPayload(payload: unknown, deviceName?: string | n
 
   for (const item of typed) {
     const kind = inferSensorKind(item.key, item);
+    const converted =
+      kind === "temperature" && item.value != null ? temperatureToFahrenheit(item.value, item.unit) : null;
     readings.push({
       key: item.key,
       label: item.label ?? labelForPushSensorKey(discovered, item.key, kind) ?? item.key,
       kind,
-      unit: item.unit ?? null,
-      value_num: item.value ?? null,
+      unit: converted ? "F" : (item.unit ?? null),
+      value_num: converted ? converted.f : (item.value ?? null),
       value_bool: item.bool ?? null,
       value_text: item.text ?? null,
-      meta: {},
+      meta: converted ? { sent_value: item.value, sent_unit: item.unit } : {},
     });
   }
 

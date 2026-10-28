@@ -345,6 +345,29 @@ describe("upsertDeviceSensor", () => {
     expect(builder.insert).not.toHaveBeenCalled();
   });
 
+  it("corrects a temperature sensor created from °C readings to °F", async () => {
+    const lookupBuilder = mockQuery({ data: { id: "s1", key: "garage", kind: "temperature", unit: "°C" } });
+    const updateBuilder = mockQuery({ error: null });
+    mockFrom.mockReturnValueOnce(lookupBuilder).mockReturnValueOnce(updateBuilder);
+    const { upsertDeviceSensor } = await import("./devices");
+
+    const result = await upsertDeviceSensor("d1", "garage", "Garage", "temperature", "F");
+
+    expect(updateBuilder.update).toHaveBeenCalledWith({ unit: "F" });
+    expect(updateBuilder.eq).toHaveBeenCalledWith("id", "s1");
+    expect(result.sensor).toMatchObject({ id: "s1", unit: "F" });
+  });
+
+  it("leaves other units alone (no write when nothing changes)", async () => {
+    const builder = mockQuery({ data: { id: "s1", key: "rh", kind: "humidity", unit: "%" } });
+    mockFrom.mockReturnValue(builder);
+    const { upsertDeviceSensor } = await import("./devices");
+
+    await upsertDeviceSensor("d1", "rh", "RH", "humidity", "% RH");
+
+    expect(builder.update).not.toHaveBeenCalled();
+  });
+
   it("inserts a new sensor as visible when none exists yet", async () => {
     const lookupBuilder = mockQuery({ data: null });
     const insertBuilder = mockQuery({ data: { id: "s2" } });
