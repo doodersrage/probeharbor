@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { dateVersion, nextAppVersion } from "../../scripts/app-version.mjs";
-import { appVersion } from "./appVersion";
+import { parseAppVersion } from "./appVersion";
 
 const day = new Date("2026-10-28T12:00:00Z");
 
@@ -36,16 +36,16 @@ describe("nextAppVersion", () => {
   });
 });
 
-describe("appVersion", () => {
+describe("parseAppVersion", () => {
   it("returns a well-formed version", () => {
-    expect(appVersion("2026.10.28")).toBe("2026.10.28");
-    expect(appVersion(" 2026.10.28.2 ")).toBe("2026.10.28.2");
+    expect(parseAppVersion("2026.10.28")).toBe("2026.10.28");
+    expect(parseAppVersion(" 2026.10.28.2 ")).toBe("2026.10.28.2");
   });
 
   it("is null for local builds or malformed values", () => {
-    expect(appVersion("")).toBeNull();
-    expect(appVersion(undefined)).toBeNull();
-    expect(appVersion("0.0.1")).toBeNull();
-    expect(appVersion("<script>")).toBeNull();
+    expect(parseAppVersion("")).toBeNull();
+    expect(parseAppVersion(undefined)).toBeNull();
+    expect(parseAppVersion("0.0.1")).toBeNull();
+    expect(parseAppVersion("<script>")).toBeNull();
   });
 });
