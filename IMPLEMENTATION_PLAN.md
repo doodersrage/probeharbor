@@ -2597,5 +2597,52 @@ Each of these listed only a 200 before.
 - Evidence: the spec parses (js-yaml). `pnpm test`: 3128 passed.
   `pnpm typecheck`: 0 errors. `pnpm lint`: 64 warnings. `pnpm build`:
   pass.
-- Remaining: `/api/v1/*` (Pro API), `/api/status/subscribe` and
+- Remaining: ~~`/api/v1/*` (Pro API)~~ (7.3), `/api/status/subscribe` and
   `/api/push/fcm` still list only success codes.
+
+------------------------------------------------------------------------
+
+## Milestone 7, increment 7.3: OpenAPI for the Pro API, and the spec must parse (2026-10-28)
+
+**Status: Implemented and verified locally. Docs/contract only. Not
+deployed.**
+
+- [x] `/api/v1/devices` GET/POST, `/devices/sensors-batch`, `/pull-setup`
+      and `/metrics` now document their responses:
+      - 401 on every route (missing header, or an unknown or revoked key)
+      - 400, 404 and 500 where the code returns them
+      - the device list and create bodies
+      - that `ingest_key` is shown only once
+      - that sensors-batch skips foreign ids and may partially apply before
+        a 500
+      - that pull-setup replaces the owner's setup
+- [x] **Documented as-is:** `POST /api/v1/devices` accepts `space` but
+      ignores it.
+- [x] Spec version 1.3.1. The drift guard covers the four v1 files and now
+      **parses the YAML**, using the `yaml` copy Astro depends on (no new
+      dependency). While writing this I produced an unquoted
+      ``{"ok": true}`` that broke the file. The old text-only guard passed
+      it; the parse test fails on it (checked). The deployed 1.3.0 parses
+      cleanly.
+- Tried adding `yaml` as a direct devDependency and reverted it: pnpm
+  re-resolved unrelated peer suffixes in the lockfile.
+- Evidence: `pnpm test`: 3133 passed. `pnpm typecheck`: 0 errors.
+  `pnpm lint`: 64 warnings (baseline). `pnpm build`: pass.
+
+### Needs a decision: the Pro API doesn't check the plan
+
+Verified in code. `resolveApiKey` (`apiKeys.ts:81-100`) checks only that the
+key exists and isn't revoked. Creating a key needs Pro
+(`api/api-keys/index.ts:47`), but using one doesn't. So:
+1. **Keys keep working after a downgrade** (all `/api/v1/*` routes).
+2. **`POST /api/v1/devices` has no device limit.** The dashboard enforces
+   `entitlements.maxDevices` (`api/devices/index.ts:448`); the API creates
+   any number of push devices.
+
+Recommended: check the household owner's current entitlements on each
+`/api/v1/*` call. Return 403 `{"error":"API access needs a Pro plan"}` when
+it isn't allowed, and enforce `maxDevices` in `POST /api/v1/devices` (403
+`device_limit`). Effect: a downgraded household's integrations stop with
+403 instead of keeping paid features; existing devices keep ingesting
+(device keys are separate). Cost: one entitlements lookup per API call.
+Needs: tests for upgrade, downgrade and limit, and a spec update.

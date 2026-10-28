@@ -1,4 +1,5 @@
 import { readFileSync } from "node:fs";
+import { createRequire } from "node:module";
 import { describe, expect, it } from "vitest";
 
 /**
@@ -38,7 +39,7 @@ describe("OpenAPI push ingest contract", () => {
 
 /** Section of the spec for one path (up to the next top-level path). */
 function pathSection(path: string): string {
-  const start = spec.indexOf(`  ${path}:`);
+  const start = spec.indexOf(path.endsWith(":") ? `  ${path}` : `  ${path}:`);
   expect(start, `${path} missing from openapi.yaml`).toBeGreaterThan(-1);
   const next = spec.slice(start + 1).search(/\n {2}\/api\//);
   return next === -1 ? spec.slice(start) : spec.slice(start, start + 1 + next);
@@ -49,6 +50,10 @@ describe("OpenAPI: other externally called routes", () => {
     ["/api/ingest/mqtt", ["src/pages/api/ingest/mqtt.ts", "src/lib/ingestLimits.ts"]],
     ["/api/inbound/{token}", ["src/pages/api/inbound/[token].ts"]],
     ["/api/share/{token}/readings", ["src/pages/api/share/[token]/readings.ts", "src/lib/shareReadingsAccess.ts"]],
+    ["/api/v1/devices:", ["src/pages/api/v1/devices/index.ts"]],
+    ["/api/v1/devices/sensors-batch", ["src/pages/api/v1/devices/sensors-batch.ts"]],
+    ["/api/v1/pull-setup", ["src/pages/api/v1/pull-setup.ts"]],
+    ["/api/v1/metrics", ["src/pages/api/v1/metrics.ts"]],
   ] as const)("%s documents every status code its code returns", (path, files) => {
     const section = pathSection(path);
     const codes = new Set(files.flatMap((f) => [...codesIn(readFileSync(f, "utf8"))]));
@@ -61,5 +66,18 @@ describe("OpenAPI: other externally called routes", () => {
     for (const header of [...signing.matchAll(/_HEADER = "([^"]+)"/g)].map((m) => m[1]!)) {
       expect(section).toContain(`name: ${header}`);
     }
+  });
+});
+
+describe("openapi.yaml", () => {
+  it("parses as YAML with the documented paths", () => {
+    // No direct YAML dependency: use the copy Astro already depends on. If
+    // Astro ever drops it, this fails loudly (add `yaml` as a devDependency).
+    const astroRequire = createRequire(createRequire(import.meta.url).resolve("astro/package.json"));
+    const { parse } = astroRequire("yaml") as { parse: (text: string) => { paths?: Record<string, unknown> } };
+    const doc = parse(spec);
+    expect(Object.keys(doc.paths ?? {})).toEqual(
+      expect.arrayContaining(["/api/ingest/{deviceKey}", "/api/inbound/{token}", "/api/v1/devices"]),
+    );
   });
 });
