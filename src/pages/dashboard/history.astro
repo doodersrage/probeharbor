@@ -587,6 +587,7 @@ const freezeTemp = plain(alertSettings.freezeThresholdF);
                   {indoorOutdoorSeries.length >= 2 && (
                     <div class="mt-4">
                       <IndoorOutdoorChart
+                        useCelsius={useCelsius}
                         client:visible
                         points={indoorOutdoorSeries}
                         text={chartText.indoorOutdoor}
@@ -604,6 +605,7 @@ const freezeTemp = plain(alertSettings.freezeThresholdF);
                     {t.compare.spreadSubtitle}
                   </p>
                   <ProbeSpreadChart
+                        useCelsius={useCelsius}
                     client:visible
                     points={probeSpreadSeries}
                     text={chartText.probeSpread}
@@ -637,6 +639,7 @@ const freezeTemp = plain(alertSettings.freezeThresholdF);
                   {dailyFreezeHours.length >= 2 && (
                     <div class="mt-4">
                       <FreezeHoursChart
+                        useCelsius={useCelsius}
                         client:visible
                         days={dailyFreezeHours}
                         thresholdF={alertSettings.freezeThresholdF}

@@ -12,7 +12,7 @@ export const FREEZE_HOURS_CHART_TEXT_EN = {
   closeExpandedAria: "Close expanded chart",
   close: "Close",
   expand: "Expand",
-  hint: "Hours at or below {temp}°F each day in this window. Hover a bar for detail.",
+  hint: "Hours at or below {temp}{unit} each day in this window. Hover a bar for detail.",
   axisHours: "{hours}h",
   belowFreeze: "Below freeze",
   coldest: "Coldest",
@@ -28,6 +28,8 @@ interface Props {
   text?: Partial<FreezeHoursChartText>;
   /** BCP 47 tag for number/date formatting. Omitted or English keeps the original formatting. */
   locale?: string;
+  /** Show the threshold and coldest readings in °C (hours don't change). */
+  useCelsius?: boolean;
 }
 
 function fill(template: string, values: Record<string, string | number>): string {
@@ -62,7 +64,10 @@ export default function FreezeHoursChart({
   title: titleProp,
   text: textProp,
   locale,
+  useCelsius = false,
 }: Props) {
+  const unit = useCelsius ? "°C" : "°F";
+  const shown = (f: number) => (useCelsius ? ((f - 32) * 5) / 9 : f);
   const text = useMemo<FreezeHoursChartText>(
     () => ({ ...FREEZE_HOURS_CHART_TEXT_EN, ...textProp }),
     [textProp],
@@ -231,7 +236,7 @@ export default function FreezeHoursChart({
           </div>
         </div>
         <p class="m-0 mb-2 text-xs text-[var(--color-text-muted)]">
-          {fill(text.hint, { temp: isEnglishLocale(locale) ? thresholdF : new Intl.NumberFormat(locale, { maximumFractionDigits: 2, useGrouping: false }).format(thresholdF) })}
+          {fill(text.hint, { unit, temp: useCelsius ? fixed(shown(thresholdF), 1, locale) : isEnglishLocale(locale) ? thresholdF : new Intl.NumberFormat(locale, { maximumFractionDigits: 2, useGrouping: false }).format(thresholdF) })}
         </p>
         <div
           class="history-chart-canvas-wrap"
@@ -285,7 +290,7 @@ export default function FreezeHoursChart({
                     />
                     <span class="history-chart-tooltip-label">{text.coldest}</span>
                     <span class="history-chart-tooltip-value">
-                      {fixed(hover.coldestF, 1, locale)}°F
+                      {fixed(shown(hover.coldestF), 1, locale)}{unit}
                     </span>
                   </li>
                 )}

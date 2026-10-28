@@ -3007,7 +3007,31 @@ Not done:
   13 skipped.
 - **Not verified:** canvas output (axis ticks, guides, tooltips) in a
   browser; that only runs client-side, on signed-in pages.
-- **Not changed (follow-ups):** the History comparison charts
-  (`IndoorOutdoorChart`, `ProbeSpreadChart`, `FreezeHoursChart`) and their
-  summaries are still °F, though labelled °F; the readings table and CSV
-  show both units already.
+- **Not changed (follow-ups):** ~~the History comparison charts~~ (done in
+  6.9); the readings table and CSV show both units already.
+
+------------------------------------------------------------------------
+
+## Milestone 6, increment 6.9: History comparison charts in °C (2026-10-28)
+
+**Status: Implemented and verified locally. No migration. Not deployed.**
+
+- [x] `IndoorOutdoorChart`, `ProbeSpreadChart` and `FreezeHoursChart` take
+      `useCelsius`. Each converts its °F points once in a `useMemo`.
+      **Differences scale by 5/9 with no 32° offset** (indoor−outdoor ΔT,
+      probe spread); absolute temperatures (indoor, outdoor, min, max,
+      coldest, threshold) use the full conversion. Freeze *hours* don't
+      change.
+- [x] All °F labels use the unit: axis, tooltips, the spread title
+      `({unit})`, the freeze-hours hint and both summaries
+      (`chartSummaries.ts` takes a `unit`, default °F). English plus 4
+      locales of `history/charts`.
+- [x] The History page passes the preference to all three.
+- Evidence: `comparisonCharts.units.test.ts` server-renders each chart.
+  For °C: indoor 5.0°C, outdoor 0.0°C, difference 5.0°C (from 9°F, not
+  −12.8°C); spread title "(°C)" and gap 10.0°C; hint "1.1°C". The °F
+  defaults are unchanged. Mutation: converting ΔT with the offset fails the
+  test. `pnpm test`: 3191 passed. `pnpm typecheck`: 0 errors. `pnpm lint`:
+  64 warnings (baseline). `pnpm build`: pass. `pnpm test:e2e`: 47 passed,
+  13 skipped.
+- Not verified: the canvas output in a browser (signed-in page).

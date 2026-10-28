@@ -15,6 +15,7 @@ export function indoorOutdoorSummary(
   points: IndoorOutdoorPoint[],
   template: string,
   fmt: Fmt,
+  unit = "°F",
 ): string {
   if (points.length === 0) return "";
   const latest = points[points.length - 1]!;
@@ -30,6 +31,7 @@ export function indoorOutdoorSummary(
     delta: fmt(latest.deltaF),
     min: fmt(min),
     max: fmt(max),
+    unit,
   });
 }
 
@@ -38,6 +40,7 @@ export function probeSpreadSummary(
   template: string,
   fmt: Fmt,
   time: (iso: string) => string,
+  unit = "°F",
 ): string {
   if (points.length === 0) return "";
   const latest = points[points.length - 1]!;
@@ -49,5 +52,6 @@ export function probeSpreadSummary(
     max: fmt(latest.maxF),
     widest: fmt(widest.spreadF),
     time: time(widest.timestamp),
+    unit,
   });
 }

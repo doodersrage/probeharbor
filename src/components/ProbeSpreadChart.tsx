@@ -18,7 +18,7 @@ import { segmentStarts } from "../lib/chartGaps";
  * `src/i18n/messages/app/history/charts`.
  */
 export const PROBE_SPREAD_CHART_TEXT_EN = {
-  title: "Probe spread (°F)",
+  title: "Probe spread ({unit})",
   closeExpandedAria: "Close expanded chart",
   close: "Close",
   expand: "Expand",
@@ -28,7 +28,7 @@ export const PROBE_SPREAD_CHART_TEXT_EN = {
   warmest: "Warmest",
   /** Screen-reader text alternative for the canvas. */
   summary:
-    "Latest gap between the warmest and coldest probe: {spread}°F ({min}°F to {max}°F). Widest gap in this period: {widest}°F, at {time}.",
+    "Latest gap between the warmest and coldest probe: {spread}{unit} ({min}{unit} to {max}{unit}). Widest gap in this period: {widest}{unit}, at {time}.",
 };
 
 export type ProbeSpreadChartText = typeof PROBE_SPREAD_CHART_TEXT_EN;
@@ -39,7 +39,13 @@ interface Props {
   text?: Partial<ProbeSpreadChartText>;
   /** BCP 47 tag for number/date formatting. Omitted or English keeps the original formatting. */
   locale?: string;
+  /** Show °C (the user's display preference). Points stay in °F. */
+  useCelsius?: boolean;
 }
+
+/** °F → °C for a temperature; a difference converts without the 32° offset. */
+const toC = (f: number) => ((f - 32) * 5) / 9;
+const diffToC = (f: number) => (f * 5) / 9;
 
 const LINE = "#f472b6";
 
@@ -61,20 +67,30 @@ function fixed(value: number, digits: number, locale?: string): string {
 const hoverTime = (iso: string, locale?: string): string => formatHoverTime(iso, locale);
 
 export default function ProbeSpreadChart({
-  points,
+  points: pointsF,
   title: titleProp,
   text: textProp,
   locale,
+  useCelsius = false,
 }: Props) {
+  // Inputs are °F; the spread is a difference, so it scales by 5/9 without the offset.
+  const unit = useCelsius ? "°C" : "°F";
+  const points = useMemo(
+    () =>
+      useCelsius
+        ? pointsF.map((p) => ({ ...p, spreadF: diffToC(p.spreadF), minF: toC(p.minF), maxF: toC(p.maxF) }))
+        : pointsF,
+    [pointsF, useCelsius],
+  );
   const text = useMemo<ProbeSpreadChartText>(
     () => ({ ...PROBE_SPREAD_CHART_TEXT_EN, ...textProp }),
     [textProp],
   );
   const summaryText = useMemo(
-    () => probeSpreadSummary(points, text.summary, (v) => fixed(v, 1, locale), (iso) => hoverTime(iso, locale)),
-    [points, text.summary, locale],
+    () => probeSpreadSummary(points, text.summary, (v) => fixed(v, 1, locale), (iso) => hoverTime(iso, locale), unit),
+    [points, text.summary, locale, unit],
   );
-  const title = titleProp ?? text.title;
+  const title = (titleProp ?? text.title).replace("{unit}", unit);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const plotBoundsRef = useRef<PlotBounds | null>(null);
@@ -168,7 +184,7 @@ export default function ProbeSpreadChart({
         g.fillStyle = "#94a3b8";
         g.font = "10px system-ui, sans-serif";
         g.textAlign = "right";
-        g.fillText(`${fixed(val, 0, locale)}°F`, pad.left - 6, y + 3);
+        g.fillText(`${fixed(val, 0, locale)}${unit}`, pad.left - 6, y + 3);
       }
 
       g.strokeStyle = LINE;
@@ -307,18 +323,18 @@ export default function ProbeSpreadChart({
                   <span class="history-chart-tooltip-swatch" style={{ background: LINE }} />
                   <span class="history-chart-tooltip-label">{text.spread}</span>
                   <span class="history-chart-tooltip-value">
-                    {fixed(hover.spreadF, 1, locale)}°F
+                    {fixed(hover.spreadF, 1, locale)}{unit}
                   </span>
                 </li>
                 <li>
                   <span class="history-chart-tooltip-swatch" style={{ background: "#38bdf8" }} />
                   <span class="history-chart-tooltip-label">{text.coldest}</span>
-                  <span class="history-chart-tooltip-value">{fixed(hover.minF, 1, locale)}°F</span>
+                  <span class="history-chart-tooltip-value">{fixed(hover.minF, 1, locale)}{unit}</span>
                 </li>
                 <li>
                   <span class="history-chart-tooltip-swatch" style={{ background: "#fb923c" }} />
                   <span class="history-chart-tooltip-label">{text.warmest}</span>
-                  <span class="history-chart-tooltip-value">{fixed(hover.maxF, 1, locale)}°F</span>
+                  <span class="history-chart-tooltip-value">{fixed(hover.maxF, 1, locale)}{unit}</span>
                 </li>
               </ul>
             </div>

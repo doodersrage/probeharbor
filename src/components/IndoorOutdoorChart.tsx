@@ -41,9 +41,9 @@ export const INDOOR_OUTDOOR_CHART_TEXT_EN = {
   delta: "ΔT",
   indoor: "Indoor",
   outdoor: "Outdoor",
-  /** Screen-reader text alternative for the canvas (°F, like the chart). */
+  /** Screen-reader text alternative for the canvas. */
   summary:
-    "Latest: indoor {indoor}°F, outdoor {outdoor}°F, a difference of {delta}°F. Over this period the difference ranged from {min}°F to {max}°F.",
+    "Latest: indoor {indoor}{unit}, outdoor {outdoor}{unit}, a difference of {delta}{unit}. Over this period the difference ranged from {min}{unit} to {max}{unit}.",
 };
 
 export type IndoorOutdoorChartText = typeof INDOOR_OUTDOOR_CHART_TEXT_EN;
@@ -54,7 +54,13 @@ interface Props {
   text?: Partial<IndoorOutdoorChartText>;
   /** BCP 47 tag for number/date formatting. Omitted or English keeps the original formatting. */
   locale?: string;
+  /** Show °C (the user's display preference). Points stay in °F. */
+  useCelsius?: boolean;
 }
+
+/** °F → °C for a temperature; a difference converts without the 32° offset. */
+const toC = (f: number) => ((f - 32) * 5) / 9;
+const diffToC = (f: number) => (f * 5) / 9;
 
 const LINE_COLOR = "#e2e8f0";
 
@@ -79,18 +85,28 @@ const hoverTime = (iso: string, locale?: string): string => formatHoverTime(iso,
 const axisTime = (ts: number, spanMs: number, locale?: string): string => formatAxisTime(ts, spanMs, locale);
 
 export default function IndoorOutdoorChart({
-  points,
+  points: pointsF,
   title: titleProp,
   text: textProp,
   locale,
+  useCelsius = false,
 }: Props) {
+  // Inputs are °F; a °C user sees temperatures converted and the difference scaled by 5/9.
+  const unit = useCelsius ? "°C" : "°F";
+  const points = useMemo(
+    () =>
+      useCelsius
+        ? pointsF.map((p) => ({ ...p, indoorF: toC(p.indoorF), outdoorF: toC(p.outdoorF), deltaF: diffToC(p.deltaF) }))
+        : pointsF,
+    [pointsF, useCelsius],
+  );
   const text = useMemo<IndoorOutdoorChartText>(
     () => ({ ...INDOOR_OUTDOOR_CHART_TEXT_EN, ...textProp }),
     [textProp],
   );
   const summaryText = useMemo(
-    () => indoorOutdoorSummary(points, text.summary, (v) => fixed(v, 1, locale)),
-    [points, text.summary, locale],
+    () => indoorOutdoorSummary(points, text.summary, (v) => fixed(v, 1, locale), unit),
+    [points, text.summary, locale, unit],
   );
   const title = titleProp ?? text.title;
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -282,7 +298,7 @@ export default function IndoorOutdoorChart({
         g.fillStyle = "#94a3b8";
         g.font = "10px system-ui, sans-serif";
         g.textAlign = "right";
-        g.fillText(`${val >= 0 ? "+" : ""}${fixed(val, 0, locale)}°F`, pad.left - 6, y + 3);
+        g.fillText(`${val >= 0 ? "+" : ""}${fixed(val, 0, locale)}${unit}`, pad.left - 6, y + 3);
       }
 
       const zeroY = yFor(0);
@@ -507,21 +523,21 @@ export default function IndoorOutdoorChart({
                   <span class="history-chart-tooltip-label">{text.delta}</span>
                   <span class="history-chart-tooltip-value">
                     {hover.point.deltaF > 0 ? "+" : ""}
-                    {fixed(hover.point.deltaF, 1, locale)}°F
+                    {fixed(hover.point.deltaF, 1, locale)}{unit}
                   </span>
                 </li>
                 <li>
                   <span class="history-chart-tooltip-swatch" style={{ background: "#94a3b8" }} />
                   <span class="history-chart-tooltip-label">{text.indoor}</span>
                   <span class="history-chart-tooltip-value">
-                    {fixed(hover.point.indoorF, 1, locale)}°F
+                    {fixed(hover.point.indoorF, 1, locale)}{unit}
                   </span>
                 </li>
                 <li>
                   <span class="history-chart-tooltip-swatch" style={{ background: "#fbbf24" }} />
                   <span class="history-chart-tooltip-label">{text.outdoor}</span>
                   <span class="history-chart-tooltip-value">
-                    {fixed(hover.point.outdoorF, 1, locale)}°F
+                    {fixed(hover.point.outdoorF, 1, locale)}{unit}
                   </span>
                 </li>
               </ul>
