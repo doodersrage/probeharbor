@@ -1,6 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { APIContext } from "astro";
 
+const mockCheckEdgeRateLimit = vi.fn();
+vi.mock("../../../../lib/edgeRateLimit", () => ({
+  checkEdgeRateLimit: (...a: unknown[]) => mockCheckEdgeRateLimit(...a),
+}));
+
 const mockMaybeSingle = vi.fn();
 const mockEq = vi.fn();
 const mockSelect = vi.fn();
@@ -63,6 +68,7 @@ function makeContext(options: {
 }
 
 beforeEach(() => {
+  mockCheckEdgeRateLimit.mockReset().mockResolvedValue(null);
   mockCheckShareReadingsRateLimit.mockReset().mockReturnValue({ ok: true });
   mockMaybeSingle.mockReset().mockResolvedValue({
     data: {
@@ -242,6 +248,29 @@ describe("GET /api/share/[token]/readings", () => {
 
       expect(response.status).toBe(404);
       expect(mockEq).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe("Cloudflare rate limiter", () => {
+    it("returns 429 with Retry-After when the edge limiter says no", async () => {
+      mockCheckEdgeRateLimit.mockResolvedValue(false);
+      const { GET } = await import("./readings");
+
+      const response = await GET(makeContext());
+
+      expect(response.status).toBe(429);
+      expect(response.headers.get("Retry-After")).toBe("60");
+      expect(mockCheckEdgeRateLimit).toHaveBeenCalledWith("SHARE_READINGS_RATE_LIMITER", expect.any(String));
+      expect(mockCheckShareReadingsRateLimit).not.toHaveBeenCalled();
+    });
+
+    it("falls back to the in-memory limit when the binding isn't available", async () => {
+      mockCheckEdgeRateLimit.mockResolvedValue(null);
+      const { GET } = await import("./readings");
+
+      await GET(makeContext());
+
+      expect(mockCheckShareReadingsRateLimit).toHaveBeenCalled();
     });
   });
 });

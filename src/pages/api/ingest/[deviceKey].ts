@@ -1,4 +1,5 @@
 import type { APIRoute } from "astro";
+import { checkEdgeRateLimit } from "../../../lib/edgeRateLimit";
 import { localeFromMetadata } from "../../../i18n/userLocale";
 import {
   findDeviceByIngestKeyHash,
@@ -44,7 +45,13 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
   }
 
   const keyHash = await sha256Hex(deviceKey);
-  const rate = checkIngestRateLimit(keyHash);
+  // Cloudflare's limiter counts across isolates (per location); the in-memory
+  // check below still applies when the binding isn't available.
+  const edgeAllowed = await checkEdgeRateLimit("INGEST_RATE_LIMITER", keyHash);
+  const rate =
+    edgeAllowed === false
+      ? { ok: false, retryAfterSec: 60, error: "Rate limit exceeded. Try again shortly." }
+      : checkIngestRateLimit(keyHash);
   if (!rate.ok) {
     return new Response(JSON.stringify({ error: rate.error }), {
       status: 429,

@@ -3035,3 +3035,51 @@ Not done:
   64 warnings (baseline). `pnpm build`: pass. `pnpm test:e2e`: 47 passed,
   13 skipped.
 - Not verified: the canvas output in a browser (signed-in page).
+
+------------------------------------------------------------------------
+
+## Milestone 5, increment 5.x: Cloudflare rate limiting for ingest and share readings (2026-10-28)
+
+**Status: Implemented and verified locally. No migration. Not deployed.**
+The owner approved the recommendation (2026-10-28).
+
+Audit (M5): "Rate limits are per isolate." The in-memory limiters count
+per Worker isolate, so spread-out traffic is barely limited.
+
+- [x] Two Workers Rate Limiting bindings in `wrangler.jsonc`, both
+      60/60 s, the same as the in-memory limits:
+      - `INGEST_RATE_LIMITER` (namespace 1001)
+      - `SHARE_READINGS_RATE_LIMITER` (namespace 1002)
+
+      `namespace_id` is ours to choose; the docs require Wrangler ≥ 4.36
+      (we have 4.105).
+- [x] `checkEdgeRateLimit` (`src/lib/edgeRateLimit.ts`) returns true,
+      false, or null when there's no binding (tests, prerender) or the
+      binding throws. It **fails open**: a limiter must never block freeze
+      readings.
+- [x] `POST /api/ingest/<key>` is keyed by the device-key hash (a stable
+      identifier, as the docs recommend). Share readings are keyed by
+      visitor plus a hash of the token, as before, so a popular embed
+      isn't throttled for everyone and the raw token is never a limiter
+      key. Over the limit → 429 with `Retry-After: 60`; otherwise the
+      in-memory check still runs.
+- Semantics (Cloudflare docs): counts are **per Cloudflare location,
+  approximate and eventually consistent**; a burst can briefly exceed the
+  limit. That's fine for abuse control. A strict global limit would need
+  Durable Objects.
+- Not moved: sign-in and MFA limiters count *failures* over 15 minutes,
+  which doesn't fit the binding's 10- or 60-second windows. They stay in
+  memory (per isolate).
+- `worker-configuration.d.ts` was regenerated with `wrangler types`. It
+  adds the two limiters and `I18N`, which was in the config but missing
+  from the types.
+- Evidence: `edgeRateLimit.test.ts` (3: no binding → null; verdicts and
+  key passed; throw → null). The ingest and share route tests cover edge
+  "no" → 429 with Retry-After 60 and the in-memory check skipped, and no
+  binding → in-memory fallback. `wrangler deploy --dry-run` on the built
+  config lists both bindings (60 requests/60s). `pnpm test`: 3198 passed.
+  `pnpm typecheck`: 0 errors. `pnpm lint`: 64 warnings (baseline).
+  `pnpm build`: pass. `pnpm test:e2e`: 47 passed, 13 skipped.
+- Not verified: the limiter in production. After deploy, 61+ quick POSTs
+  with one bogus key should start returning 429; that's safe, because an
+  unknown key does nothing else.

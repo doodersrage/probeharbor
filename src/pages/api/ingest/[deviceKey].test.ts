@@ -1,6 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { APIContext } from "astro";
 
+const mockCheckEdgeRateLimit = vi.fn();
+vi.mock("../../../lib/edgeRateLimit", () => ({
+  checkEdgeRateLimit: (...a: unknown[]) => mockCheckEdgeRateLimit(...a),
+}));
+
 const mockCheckIngestRateLimit = vi.fn();
 const mockReadJsonBodyWithLimit = vi.fn();
 vi.mock("../../../lib/ingestLimits", () => ({
@@ -121,6 +126,7 @@ const device = {
 };
 
 beforeEach(() => {
+  mockCheckEdgeRateLimit.mockReset().mockResolvedValue(null);
   mockCheckIngestRateLimit.mockReset().mockReturnValue({ ok: true });
   mockReadJsonBodyWithLimit.mockReset().mockResolvedValue({
     ok: true,
@@ -429,5 +435,28 @@ describe("POST /api/ingest/[deviceKey]", () => {
 
     expect(response.status).toBe(200);
     expect(mockFindDeviceByIngestKeyHash).toHaveBeenCalled();
+  });
+
+  describe("Cloudflare rate limiter", () => {
+    it("returns 429 with Retry-After when the edge limiter says no", async () => {
+      mockCheckEdgeRateLimit.mockResolvedValue(false);
+      const { POST } = await import("./[deviceKey]");
+
+      const response = await POST(makeContext());
+
+      expect(response.status).toBe(429);
+      expect(response.headers.get("Retry-After")).toBe("60");
+      expect(mockCheckEdgeRateLimit).toHaveBeenCalledWith("INGEST_RATE_LIMITER", expect.any(String));
+      expect(mockCheckIngestRateLimit).not.toHaveBeenCalled();
+    });
+
+    it("falls back to the in-memory limit when the binding isn't available", async () => {
+      mockCheckEdgeRateLimit.mockResolvedValue(null);
+      const { POST } = await import("./[deviceKey]");
+
+      await POST(makeContext());
+
+      expect(mockCheckIngestRateLimit).toHaveBeenCalled();
+    });
   });
 });

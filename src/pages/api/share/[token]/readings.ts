@@ -1,6 +1,7 @@
 import type { APIRoute } from "astro";
 import { createServerClient } from "../../../../lib/supabase";
 import { LEGACY_RAW_SHARE_TOKEN, sha256Hex } from "../../../../lib/shareLinkTokens";
+import { checkEdgeRateLimit } from "../../../../lib/edgeRateLimit";
 import { fetchLatestSensorValues } from "../../../../lib/sensorReadings";
 import { listHouseholdDevices } from "../../../../lib/devices";
 import { buildPrometheusText } from "../../../../lib/prometheusMetrics";
@@ -50,9 +51,13 @@ export const GET: APIRoute = async (context) => {
     });
   }
 
-  const rate = checkShareReadingsRateLimit(
-    `${clientAddress || "unknown"}:${token.slice(0, 12)}`,
-  );
+  // Per visitor and link, as before; the token is hashed so it isn't a limiter key.
+  const rateKey = `${clientAddress || "unknown"}:${(await sha256Hex(token)).slice(0, 16)}`;
+  const edgeAllowed = await checkEdgeRateLimit("SHARE_READINGS_RATE_LIMITER", rateKey);
+  const rate =
+    edgeAllowed === false
+      ? { ok: false, retryAfterSec: 60 }
+      : checkShareReadingsRateLimit(`${clientAddress || "unknown"}:${token.slice(0, 12)}`);
   if (!rate.ok) {
     return new Response(JSON.stringify({ error: t.tooManyRequests }), {
       status: 429,
