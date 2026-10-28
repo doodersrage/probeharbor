@@ -2526,7 +2526,16 @@ risk.
   output. That test caught a leftover partial file, now fixed. pg_dump
   18.6 is installed. VitePress build passes. `pnpm lint`: 64 warnings
   (baseline).
-- **Not verified:** a real dump of production, and any restore.
+- **First production backup (2026-10-28, run by the owner):**
+  `backups/probeharbor-20261028T180024Z.dump`, 2.6 MB, custom format, gzip,
+  834 TOC entries, from Postgres 17.6 through the Session pooler. Data for
+  88 tables, including `auth.users`, households and members, devices,
+  sensors, `sensor_readings`, rollups, alerts, API keys, share links and
+  subscriptions (checked with `pg_restore --list`). File mode 600.
+  The first try used the Direct connection host, which is IPv6-only on the
+  Free plan and failed to resolve. The script now hints at the Session
+  pooler (`d4aa5df`).
+- **Not verified:** any restore.
 - **Owner next steps:**
   1. Add `SUPABASE_DB_URL` to `.env` and run `pnpm db:backup` once.
   2. Check the file with `pg_restore --list`.
