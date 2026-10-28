@@ -66,6 +66,12 @@ const es: AlertMessages = {
     titleOne: "Revisa {label}: las lecturas parecen atascadas",
     titleMany: "Revisa {count} sondas: las lecturas parecen atascadas",
   },
+  /** One recap after quiet hours end, listing the alerts they held. */
+  quietSummary: {
+    title: "Durante las horas de silencio",
+    intro: "Estas alertas se retuvieron durante las horas de silencio:",
+    more: "…y {count} más.",
+  },
   recovery: {
     freezeTitle: "Recuperado: las temperaturas volvieron a la normalidad",
     freezeBodyEmpty: "Todo normal de nuevo. La alerta está cerrada; no hay nada que hacer.",

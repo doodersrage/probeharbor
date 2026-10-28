@@ -70,6 +70,12 @@ const en = {
     titleOne: "Check {label}: readings look stuck",
     titleMany: "Check {count} probes: readings look stuck",
   },
+  /** One recap after quiet hours end, listing the alerts they held. */
+  quietSummary: {
+    title: "While quiet hours were on",
+    intro: "These alerts were held during quiet hours:",
+    more: "…and {count} more.",
+  },
   recovery: {
     freezeTitle: "Recovered: temperatures are back to normal",
     freezeBodyEmpty: "Back to normal. The alert is closed; nothing to do.",

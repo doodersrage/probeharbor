@@ -66,6 +66,12 @@ const ptBr: AlertMessages = {
     titleOne: "Verifique {label}: as leituras parecem travadas",
     titleMany: "Verifique {count} sondas: as leituras parecem travadas",
   },
+  /** One recap after quiet hours end, listing the alerts they held. */
+  quietSummary: {
+    title: "Durante o horário silencioso",
+    intro: "Estes alertas foram retidos durante o horário silencioso:",
+    more: "…e mais {count}.",
+  },
   recovery: {
     freezeTitle: "Normalizado: as temperaturas voltaram ao normal",
     freezeBodyEmpty: "Tudo normal de novo. O alerta foi encerrado; nada a fazer.",

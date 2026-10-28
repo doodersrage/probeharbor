@@ -9,6 +9,7 @@ import {
 } from "./households";
 import {
   maybeSendRateAndOutageAlerts,
+  maybeSendQuietHoursSummary,
   maybeSendDeviceHealthAlerts,
   maybeSendThresholdAlerts,
 } from "./alertNotifications";
@@ -203,6 +204,8 @@ export async function collectHistoryForAllUsers(): Promise<{
             memberLocale,
             { useCelsius: memberUser?.user_metadata?.use_celsius === true },
           );
+          // One recap of what quiet hours held, right after they end.
+          await maybeSendQuietHoursSummary(member.user_id, memberUser?.email, settings, memberLocale);
           await maybeSendDeviceHealthAlerts(
             member.user_id,
             memberUser?.email,

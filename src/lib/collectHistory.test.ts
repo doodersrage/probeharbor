@@ -25,10 +25,12 @@ vi.mock("./households", () => ({
 }));
 
 const mockMaybeSendRateAndOutageAlerts = vi.fn();
+const mockMaybeSendQuietHoursSummary = vi.fn();
 const mockMaybeSendDeviceHealthAlerts = vi.fn();
 const mockMaybeSendThresholdAlerts = vi.fn();
 vi.mock("./alertNotifications", () => ({
   maybeSendRateAndOutageAlerts: (...a: unknown[]) => mockMaybeSendRateAndOutageAlerts(...a),
+  maybeSendQuietHoursSummary: (...a: unknown[]) => mockMaybeSendQuietHoursSummary(...a),
   maybeSendDeviceHealthAlerts: (...a: unknown[]) => mockMaybeSendDeviceHealthAlerts(...a),
   maybeSendThresholdAlerts: (...a: unknown[]) => mockMaybeSendThresholdAlerts(...a),
 }));
@@ -52,6 +54,7 @@ beforeEach(() => {
   mockListHouseholdIdsForCron.mockReset();
   mockListHouseholdMembers.mockReset().mockResolvedValue({ members: [] });
   mockMaybeSendRateAndOutageAlerts.mockReset();
+  mockMaybeSendQuietHoursSummary.mockReset();
   mockMaybeSendDeviceHealthAlerts.mockReset();
   mockMaybeSendThresholdAlerts.mockReset();
   mockGetAlertSettingsForUser.mockReset().mockResolvedValue({});
@@ -227,6 +230,8 @@ describe("collectHistoryForAllUsers", () => {
     expect(result.householdsProcessed).toBe(1);
     expect(mockMaybeSendThresholdAlerts).toHaveBeenCalledTimes(2);
     expect(mockMaybeSendRateAndOutageAlerts).toHaveBeenCalledTimes(2);
+    // Each member also gets the quiet-hours recap check.
+    expect(mockMaybeSendQuietHoursSummary).toHaveBeenCalledTimes(2);
     expect(mockMaybeSendDeviceHealthAlerts).toHaveBeenCalledTimes(2);
   });
 

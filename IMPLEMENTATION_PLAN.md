@@ -1541,7 +1541,7 @@ Order of work: M2-1 → M2-3 → M2-4 → M2-5 → M1-B → M1-C (sizing first).
 | Item | Decision |
 |---|---|
 | M2-1 Snooze scope | Snooze never mutes freeze (`threshold`), like vacation mode. Leak and power were already exempt. "I'm on it" copy no longer says freeze alerts are snoozed; acknowledging already stops repeats while that freeze continues. |
-| M2-2 Quiet hours | Later: one summary when quiet hours end, instead of dropping non-critical alerts. |
+| M2-2 Quiet hours | One summary when quiet hours end, instead of dropping non-critical alerts (done: D8). |
 | M2-3 Delivery wording | "Sent" becomes "Accepted by provider" in 5 locales. No provider delivery callbacks for now. |
 | M2-4 `waitUntil` | Run webhooks and alerts after the response. Failures stay in the alert log. |
 | M2-5 Alert content | Add reading time ("as of 14:05"), property name, and the °C preference (5 locales). |
@@ -1810,3 +1810,33 @@ migration:
   titles. It needs a per-member lookup of whether they belong to more
   than one household. Small, but it adds a query per alert send; do it
   when multi-property users ask.
+
+------------------------------------------------------------------------
+
+## Increment D8 (decision M2-2): one recap after quiet hours end (2026-10-28)
+
+**Status: Implemented and verified locally. No migration.**
+
+- [x] `maybeSendQuietHoursSummary` runs per member in the 15-min cron
+      (`collectHistory.ts`). In the first run after quiet hours end (on
+      20 min ago, off now) it sends one digest listing the titles of
+      alerts held by quiet hours (`channels_skipped` contains
+      `quiet_hours`): up to 5, then "…and N more".
+- [x] It's sent once. Only alerts held since the last recap (and within
+      24 h) are included, and there's no second recap within 30 min. The
+      recap is a `digest` event with `meta.quietHoursSummary`. Nothing
+      is sent if nothing was held.
+- [x] Copy in 5 locales (`alertMessages/*` `quietSummary`). Snooze and
+      vacation still mute it, since it's a routine digest.
+- Process note: the cron call was briefly missing; my insertion was lost
+  around a `git stash` used for a lint comparison. Lint caught the
+  unused import. Added a cron-level assertion (`collectHistory.test.ts`)
+  that fails without the call (verified).
+- Evidence: `alertNotifications.test.ts` +3 (sends after end with
+  titles; not during, not hours later, not twice; nothing held → silent)
+  and `collectHistory.test.ts` (called per member). `pnpm test`: 3021
+  passed. `pnpm typecheck`: 0 errors. `pnpm lint`: 64 warnings
+  (baseline). `pnpm build`: pass. `pnpm test:e2e`: 44 passed, 12
+  skipped.
+- Limit: the alert-log lookup reads the latest 50 events, so a very busy
+  night could leave older held alerts out of the count.

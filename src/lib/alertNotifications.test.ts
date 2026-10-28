@@ -774,3 +774,62 @@ describe("rule alerts re-arm when the rule stops matching", () => {
     expect(mockEvaluateAlertRules).not.toHaveBeenCalled();
   });
 });
+
+describe("quiet hours recap", () => {
+  // Quiet 22:00–07:00 UTC; "now" is 07:10, just after they ended.
+  const now = Date.parse("2026-01-15T07:10:00Z");
+  const settings = {
+    ...DEFAULT_ALERT_SETTINGS,
+    enabled: true,
+    quietHoursEnabled: true,
+    quietHoursStart: "22:00",
+    quietHoursEnd: "07:00",
+    quietHoursTimezone: "UTC",
+  };
+  const held = (title: string, at: string) => ({
+    kind: "battery",
+    title,
+    channels_sent: [],
+    channels_skipped: ["quiet_hours"],
+    created_at: at,
+  });
+
+  it("sends one recap of the held alerts right after quiet hours end", async () => {
+    mockListRecentAlertEvents.mockResolvedValue([
+      held("Battery low: Garage probe 12%", "2026-01-15T03:00:00Z"),
+      held("Weak Wi-Fi: Attic", "2026-01-15T01:00:00Z"),
+    ]);
+    const { maybeSendQuietHoursSummary } = await import("./alertNotifications");
+
+    await maybeSendQuietHoursSummary("user-1", "a@example.com", settings, "en", now);
+
+    expect(mockNotifyUser).toHaveBeenCalledTimes(1);
+    const payload = mockNotifyUser.mock.calls[0]![3];
+    expect(payload).toMatchObject({ kind: "digest", title: "While quiet hours were on", meta: { quietHoursSummary: true } });
+    expect(payload.body).toContain("• Battery low: Garage probe 12%");
+    expect(payload.body).toContain("• Weak Wi-Fi: Attic");
+  });
+
+  it("doesn't send during quiet hours, long after, or twice", async () => {
+    mockListRecentAlertEvents.mockResolvedValue([held("Battery low", "2026-01-15T03:00:00Z")]);
+    const { maybeSendQuietHoursSummary } = await import("./alertNotifications");
+
+    await maybeSendQuietHoursSummary("user-1", "a@example.com", settings, "en", Date.parse("2026-01-15T06:00:00Z"));
+    await maybeSendQuietHoursSummary("user-1", "a@example.com", settings, "en", Date.parse("2026-01-15T09:00:00Z"));
+    expect(mockNotifyUser).not.toHaveBeenCalled();
+
+    mockListRecentAlertEvents.mockResolvedValue([
+      { kind: "digest", title: "While quiet hours were on", channels_sent: ["email"], channels_skipped: [], created_at: "2026-01-15T07:05:00Z", meta: { quietHoursSummary: true } },
+      held("Battery low", "2026-01-15T03:00:00Z"),
+    ]);
+    await maybeSendQuietHoursSummary("user-1", "a@example.com", settings, "en", now);
+    expect(mockNotifyUser).not.toHaveBeenCalled();
+  });
+
+  it("stays silent when nothing was held", async () => {
+    mockListRecentAlertEvents.mockResolvedValue([]);
+    const { maybeSendQuietHoursSummary } = await import("./alertNotifications");
+    await maybeSendQuietHoursSummary("user-1", "a@example.com", settings, "en", now);
+    expect(mockNotifyUser).not.toHaveBeenCalled();
+  });
+});

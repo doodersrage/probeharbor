@@ -66,6 +66,12 @@ const de: AlertMessages = {
     titleOne: "{label} prüfen: Messwerte wirken eingefroren",
     titleMany: "{count} Fühler prüfen: Messwerte wirken eingefroren",
   },
+  /** One recap after quiet hours end, listing the alerts they held. */
+  quietSummary: {
+    title: "Während der Ruhezeit",
+    intro: "Diese Alarme wurden während der Ruhezeit zurückgehalten:",
+    more: "…und {count} weitere.",
+  },
   recovery: {
     freezeTitle: "Entwarnung: Temperaturen sind wieder normal",
     freezeBodyEmpty: "Wieder normal. Der Alarm ist geschlossen; nichts zu tun.",

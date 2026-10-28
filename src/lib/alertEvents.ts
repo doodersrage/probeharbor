@@ -19,6 +19,8 @@ export type AlertEventMeta = {
   autoResolved?: "recovered" | "expired";
   /** On a recovery notice: the kind of alert that cleared. */
   recoveredKind?: string;
+  /** On a digest: it's the recap sent when quiet hours ended. */
+  quietHoursSummary?: boolean;
 };
 
 export type AlertEventRow = {

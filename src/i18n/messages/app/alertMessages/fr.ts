@@ -66,6 +66,12 @@ const fr: AlertMessages = {
     titleOne: "Vérifiez {label} : les mesures semblent bloquées",
     titleMany: "Vérifiez {count} sondes : les mesures semblent bloquées",
   },
+  /** One recap after quiet hours end, listing the alerts they held. */
+  quietSummary: {
+    title: "Pendant les heures calmes",
+    intro: "Ces alertes ont été retenues pendant les heures calmes :",
+    more: "…et {count} de plus.",
+  },
   recovery: {
     freezeTitle: "Rétabli : les températures sont revenues à la normale",
     freezeBodyEmpty: "Retour à la normale. L’alerte est close ; rien à faire.",

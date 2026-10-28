@@ -33,6 +33,7 @@ import { ensureLocale } from "../i18n/catalog";
 import { fmt, plural } from "../i18n/format";
 import { localeFromMetadata } from "../i18n/userLocale";
 import { alertMessages } from "../i18n/messages/app/alertMessages";
+import { isInQuietHours } from "./quietHours";
 import { alertNumber } from "./alerts";
 
 /**
@@ -1194,4 +1195,52 @@ export async function updateUserAlertSettings(
 ): Promise<{ error: Error | null }> {
   const result = await saveAlertSettingsForUser(userId, settings);
   return { error: result.error ? new Error(result.error) : null };
+}
+
+/** Look back this far for the end of quiet hours (the cron runs every 15 min). */
+const QUIET_END_WINDOW_MS = 20 * 60 * 1000;
+/** At most this many held alert titles in the recap. */
+const QUIET_SUMMARY_MAX_ITEMS = 5;
+
+/**
+ * Quiet hours hold routine alerts instead of sending them. When they end, send
+ * one recap of what was held, so nothing is silently lost. Runs from the
+ * 15-minute cron; a digest event marked quietHoursSummary keeps it to once.
+ */
+export async function maybeSendQuietHoursSummary(
+  userId: string,
+  email: string | null | undefined,
+  settings: AlertSettings,
+  locale: Locale = "en",
+  now = Date.now(),
+): Promise<void> {
+  if (!settings.enabled || !settings.quietHoursEnabled) return;
+  if (isInQuietHours(settings, new Date(now))) return;
+  if (!isInQuietHours(settings, new Date(now - QUIET_END_WINDOW_MS))) return;
+
+  const { events } = await listRecentAlertEventsFiltered(userId, { limit: 50 }).catch(() => ({ events: [] }));
+  const lastSummary = events.find((event) => event.kind === "digest" && event.meta?.quietHoursSummary);
+  const lastSummaryMs = lastSummary ? Date.parse(lastSummary.created_at) : -Infinity;
+  if (now - lastSummaryMs < 30 * 60 * 1000) return;
+
+  const dayAgo = now - 24 * 60 * 60 * 1000;
+  const held = events.filter((event) => {
+    const at = Date.parse(event.created_at);
+    return event.channels_skipped.includes("quiet_hours") && at > lastSummaryMs && at > dayAgo;
+  });
+  if (held.length === 0) return;
+
+  const t = alertMessages(locale).quietSummary;
+  const lines = held.slice(0, QUIET_SUMMARY_MAX_ITEMS).map((event) => `• ${event.title}`);
+  if (held.length > QUIET_SUMMARY_MAX_ITEMS) {
+    lines.push(fmt(t.more, { count: alertNumber(held.length - QUIET_SUMMARY_MAX_ITEMS, locale) }));
+  }
+  await notifyUser(
+    userId,
+    email,
+    settings,
+    { title: t.title, body: `${t.intro}\n${lines.join("\n")}`, kind: "digest", meta: { quietHoursSummary: true } },
+    undefined,
+    locale,
+  );
 }
