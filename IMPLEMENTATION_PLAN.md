@@ -2358,3 +2358,49 @@ stays `running` forever, so Ops never shows that run as failed.
   min(started_at) from job_runs where status = 'running' group by 1;`
   shows the stuck rows the first run will close. Those under 24 h old will
   briefly mark the status page degraded.
+
+------------------------------------------------------------------------
+
+## Milestone 4, increment 4.2: no secrets in Sentry; environment label (2026-10-28)
+
+**Status: Implemented and verified locally. No migration. Not deployed.**
+
+Problem (verified, audit M4): server Sentry (`worker.ts`) had no
+`beforeSend` and hard-coded `environment: "production"`; the browser config
+had no scrubbing either. Many URLs carry credentials: `/api/ingest/<device
+key>`, `/share`, `/embed`, `/api/share`, `/status`, `/badge/status`,
+`/invite`, `/api/inbound` tokens, snooze/ack `?token=`. Outbound requests
+can too (the Telegram bot token is in the URL; Slack, Discord and Zapier
+webhook paths are secrets). Sentry records request URLs, headers and fetch
+breadcrumbs.
+
+- [x] `src/lib/sentryScrub.ts`, wired into both configs as `beforeSend`,
+      `beforeSendTransaction` and `beforeBreadcrumb`, plus the replay
+      integration's `beforeAddRecordingEvent` (deep scrub). It:
+      - masks the credential segment after the known prefixes, keeping
+        plain words like `/share/manage`
+      - masks long hex and `gt?_` tokens anywhere, and secret query
+        params (`token`, `key`, `secret`, `signature`, `code`, …)
+      - keeps **only the origin** of third-party URLs
+      - drops cookies, `authorization`, `x-ingest-key`, `x-api-key`,
+        signature headers and request bodies
+      - scrubs URLs inside error messages
+- [x] `sendDefaultPii: false` set explicitly on both.
+- [x] Server `environment` = `SENTRY_ENVIRONMENT` or `"production"`
+      (`.env.example` documents it). The browser stays `"production"`
+      (it only initialises in production builds).
+- Evidence: `sentryScrub.test.ts` (18: every credential path, plain
+  paths kept, query params, hash, third-party origin-only, own-host
+  absolute URLs, Telegram/Slack/Discord paths, a full event with headers,
+  cookies, body, exception and breadcrumbs, replay deep scrub). While
+  writing it I caught that the Discord webhook *token* segment wasn't
+  masked; fixed. Built bundles contain the scrubber (client and server).
+  `pnpm test`: 3114 passed. `pnpm typecheck`: 0 errors. `pnpm lint`: 64
+  warnings (baseline). `pnpm build`: pass. `pnpm test:e2e`: 47 passed,
+  12 skipped.
+- Trade-off: third-party errors (e.g. a Supabase or Stripe URL) keep only
+  the host, which is less detail for debugging.
+- Not verified: an actual event in Sentry. After deploy, trigger a test
+  error on a token URL (e.g. a bad `/api/share/<token>/readings` that
+  throws) and check the event in Sentry shows `[redacted]`. Events already
+  in Sentry aren't changed; consider deleting old ones that show tokens.

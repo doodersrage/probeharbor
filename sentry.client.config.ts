@@ -1,4 +1,5 @@
 import * as Sentry from "@sentry/astro";
+import { scrubBreadcrumb, scrubDeep, scrubEvent } from "./src/lib/sentryScrub";
 
 const dsn =
   import.meta.env.PUBLIC_SENTRY_DSN?.trim() ||
@@ -18,11 +19,21 @@ if (dsn && dsn !== "off" && import.meta.env.PROD) {
       /Failed to execute 'close' on 'SerialPort': The port is already closed/,
     ],
     tracesSampleRate: 0.1,
+    // Page URLs carry share/status/invite/snooze tokens; scrub before sending.
+    sendDefaultPii: false,
+    beforeSend: scrubEvent,
+    beforeSendTransaction: scrubEvent,
+    beforeBreadcrumb: scrubBreadcrumb,
     replaysSessionSampleRate: 0,
     replaysOnErrorSampleRate: 0.5,
     integrations: [
       Sentry.browserTracingIntegration(),
-      Sentry.replayIntegration({ maskAllText: true, blockAllMedia: true }),
+      Sentry.replayIntegration({
+        maskAllText: true,
+        blockAllMedia: true,
+        // Recordings include page and request URLs, which can carry tokens.
+        beforeAddRecordingEvent: (event) => scrubDeep(event),
+      }),
     ],
   });
 }

@@ -40,9 +40,12 @@ import { formatWatchdogFindings, runAlertDeliveryWatchdog } from "./lib/alertDel
 import { checkStripeWebhookHealth } from "./lib/stripeWebhookHealth";
 import { createStripeClient } from "./lib/stripe";
 import { ensureAllLocales } from "./i18n/catalog";
+import { scrubBreadcrumb, scrubEvent } from "./lib/sentryScrub";
 
 type WorkerEnv = Env & {
   SENTRY_DSN?: string;
+  /** Defaults to "production"; set e.g. "development" in .dev.vars for local runs. */
+  SENTRY_ENVIRONMENT?: string;
   CF_VERSION_METADATA?: { id?: string; tag?: string; timestamp?: string };
 };
 
@@ -54,9 +57,14 @@ function sentryOptions(env: WorkerEnv) {
 
   return {
     dsn,
-    environment: "production",
+    environment: env.SENTRY_ENVIRONMENT?.trim() || "production",
     release: env.CF_VERSION_METADATA?.id,
     tracesSampleRate: 0.1,
+    // URLs here carry device keys and share/invite/snooze tokens; never send them.
+    sendDefaultPii: false,
+    beforeSend: scrubEvent,
+    beforeSendTransaction: scrubEvent,
+    beforeBreadcrumb: scrubBreadcrumb,
     // Cron + waitUntil work continues after the response; stream spans as they finish.
     traceLifecycle: "stream" as const,
   };
