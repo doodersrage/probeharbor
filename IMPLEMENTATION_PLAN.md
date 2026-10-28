@@ -1009,3 +1009,44 @@ devices filter nothing. Only the payload checker warned.
    charts connect points across gaps.
 5. **Data cleanup (needs approval):** historical fabricated zeros, °C
    values stored as °F, and stored DS18B20 fault codes.
+
+------------------------------------------------------------------------
+
+## Milestone 1, increment 1.6: fewer ingest round trips (2026-10-27)
+
+**Status: Implemented and verified locally. No migration.**
+
+### Problem (verified)
+
+Every POST made one `upsertDeviceSensor` lookup per reading, although
+the device lookup had already loaded the sensors. It also loaded each
+household member's account (`getUserById`) and alert settings twice,
+once for reading webhooks and once for alerts, plus two
+`listHouseholdMembers` calls.
+
+### Acceptance criteria
+
+- [x] Known sensors are resolved from `device.sensors`. A query runs
+      only for a new sensor or a temperature sensor whose saved unit
+      needs correcting to °F (see 1.3). Steady state: 0 queries instead
+      of 1 per reading.
+- [x] Members, accounts and alert settings are loaded once per POST and
+      shared by webhooks and alerts. Per-member failures stay isolated.
+- [x] Behavior is unchanged: same rows, webhooks, alerts and responses.
+
+### Evidence
+
+- `[deviceKey].test.ts` +3 (no per-reading upsert, unit-fix upsert
+  still happens, one member load). All 3 fail against the previous
+  route.
+- `pnpm test`: 2936 passed. `pnpm typecheck`: 0 errors. `pnpm lint`: 64
+  warnings (baseline). `pnpm build`: pass. `pnpm test:e2e`: 44 passed,
+  12 skipped.
+
+### Not done (needs a decision)
+
+Alerts and webhooks still run inline before the response, so slow
+providers delay the device's POST. Moving them to `waitUntil` changes
+failure visibility and the Worker time budget; that belongs in
+Milestone 2 (alert delivery). Per-sensor queries inside alert
+evaluation (`alertNotifications.ts:724,749,919`) are also Milestone 2.

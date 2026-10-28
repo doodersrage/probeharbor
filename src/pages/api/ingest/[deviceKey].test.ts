@@ -340,6 +340,58 @@ describe("POST /api/ingest/[deviceKey]", () => {
     );
   });
 
+  it("uses the device's loaded sensors instead of querying per reading", async () => {
+    mockFindDeviceByIngestKeyHash.mockResolvedValue({
+      ...device,
+      sensors: [
+        { id: "t0", key: "0", kind: "temperature", unit: "F" },
+        { id: "h0", key: "0", kind: "humidity", unit: "%" },
+      ],
+    });
+    const { POST } = await import("./[deviceKey]");
+
+    const response = await POST(makeContext({ headerKey: "good-key" }));
+
+    expect(response.status).toBe(200);
+    expect(mockUpsertDeviceSensor).not.toHaveBeenCalled();
+    expect(mockInsertSensorReadings).toHaveBeenCalledWith([
+      expect.objectContaining({ sensor_id: "t0", value_num: 41 }),
+      expect.objectContaining({ sensor_id: "h0", value_num: 40 }),
+    ]);
+  });
+
+  it("still upserts a known temperature sensor whose unit needs correcting to °F", async () => {
+    mockFindDeviceByIngestKeyHash.mockResolvedValue({
+      ...device,
+      sensors: [
+        { id: "t0", key: "0", kind: "temperature", unit: "C" },
+        { id: "h0", key: "0", kind: "humidity", unit: "%" },
+      ],
+    });
+    const { POST } = await import("./[deviceKey]");
+
+    await POST(makeContext({ headerKey: "good-key" }));
+
+    expect(mockUpsertDeviceSensor).toHaveBeenCalledTimes(1);
+    expect(mockUpsertDeviceSensor).toHaveBeenCalledWith("device-1", "0", expect.any(String), "temperature", "F");
+  });
+
+  it("looks up each household member once for webhooks and alerts together", async () => {
+    const getUserById = vi.fn().mockResolvedValue({ data: { user: { email: "a@example.com" } } });
+    mockCreateAdminClient.mockReturnValue({ auth: { admin: { getUserById } } });
+    mockListHouseholdMembers.mockResolvedValue({ members: [{ user_id: "user-a" }, { user_id: "user-b" }] });
+    mockGetAlertSettingsForUser.mockResolvedValue({ readingWebhookUrl: "https://hooks.example.com/x" });
+    const { POST } = await import("./[deviceKey]");
+
+    await POST(makeContext({ headerKey: "good-key" }));
+
+    expect(mockListHouseholdMembers).toHaveBeenCalledTimes(1);
+    expect(getUserById).toHaveBeenCalledTimes(2);
+    expect(mockGetAlertSettingsForUser).toHaveBeenCalledTimes(2);
+    expect(mockSendReadingWebhook).toHaveBeenCalledTimes(2);
+    expect(mockSendThresholdAlertsIfNeeded).toHaveBeenCalledTimes(2);
+  });
+
   it("accepts the device key from the path when the header is absent", async () => {
     const { POST } = await import("./[deviceKey]");
 
