@@ -3098,9 +3098,15 @@ per Worker isolate, so spread-out traffic is barely limited.
   config lists both bindings (60 requests/60s). `pnpm test`: 3198 passed.
   `pnpm typecheck`: 0 errors. `pnpm lint`: 64 warnings (baseline).
   `pnpm build`: pass. `pnpm test:e2e`: 47 passed, 13 skipped.
-- Not verified: the limiter in production. After deploy, 61+ quick POSTs
-  with one bogus key should start returning 429; that's safe, because an
-  unknown key does nothing else.
+- **Production check (2026-10-28), not enforcing yet:** after deploy (live
+  version 06299ed6, with both bindings listed), 70 sequential POSTs and
+  then 200 parallel POSTs in 16 s with one bogus key all returned 401,
+  none 429. `wrangler tail` showed no "unavailable" warning, but the code
+  then returned null silently when the binding was missing. Added a
+  once-per-isolate warning for a missing binding and an info line when
+  limited. The next deploy plus tail tells whether it's missing (warning)
+  or present but allowing (no log). Nothing is worse than before: the
+  per-isolate in-memory limit still applies.
 
 ------------------------------------------------------------------------
 
@@ -3131,3 +3137,28 @@ deployed.** The owner approved the recommendation (2026-10-28).
 - Not covered: signed-in pages (dashboard), which the E2E credentials
   could add later, and moderate or minor issues that may appear on pages
   not listed.
+
+------------------------------------------------------------------------
+
+## Findings and small changes (2026-10-28, evening)
+
+- **Webhook V2 (S3 step 2):** the owner ran the usage query: 0 inbound
+  webhooks exist. **Not required yet, though:** the official HACS
+  integration (`doodersrage/probeharbor-home-assistant`,
+  `custom_components/thermaltrace/signing.py`) still signs body-only
+  (`sign_body`, sent as `X-GarageTemp-Signature`). Requiring V2 now would
+  break anyone who sets up its inbound actions. Order:
+  1. update the HACS integration to send `X-ProbeHarbor-Timestamp` and
+     `-Signature-V2` (a PR in that repo, which needs the owner's OK)
+  2. release it
+  3. reject body-only signatures here
+- **Signed-in accessibility:** `e2e/a11y-dashboard.spec.ts` scans 6
+  dashboard pages with the E2E account. It's **report-only** (prints `AXE …`
+  lines to the CI log and attaches JSON) because these pages were never
+  scanned and e2e gates deploys. Review the first CI log, fix, then make
+  serious/critical fail.
+- **CSV / History date range:** left on UTC days. The History table, chart
+  and CSV all use the same boundaries. The only stored time zone
+  (`quiet_hours_timezone`) defaults to America/New_York for everyone, so
+  it isn't a reliable signal. A real fix would pass the browser time zone
+  to all three, which changes what each filter shows, so it's held.
