@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { applySnoozeToken } from "../../../lib/alertSnoozeTokens";
+import { applySnoozeToken, findSnoozeToken } from "../../../lib/alertSnoozeTokens";
 import { LOCALE_META, type Locale } from "../../../i18n/locales";
 import { ensureLocale } from "../../../i18n/catalog";
 import { localeFromMetadata } from "../../../i18n/userLocale";
@@ -9,12 +9,8 @@ import { alertJobsMessages } from "../../../i18n/messages/app/alertJobs";
 async function tokenOwnerLocale(token: string, fallback: Locale | undefined): Promise<Locale> {
   let locale: Locale = fallback ?? "en";
   try {
-    const { createServerClient, createAdminClient } = await import("../../../lib/supabase");
-    const { data: row } = await createServerClient()
-      .from("alert_snooze_tokens")
-      .select("user_id")
-      .eq("token", token)
-      .maybeSingle();
+    const { createAdminClient } = await import("../../../lib/supabase");
+    const row = await findSnoozeToken(token);
     if (row?.user_id) {
       const { data } = await createAdminClient().auth.admin.getUserById(row.user_id);
       if (data.user) locale = localeFromMetadata(data.user.user_metadata as Record<string, unknown> | undefined);

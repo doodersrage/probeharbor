@@ -708,7 +708,7 @@ per-isolate rate limits, and the other Milestone 5 hardening items.
 - Still open from the Milestone 5 audit: per-isolate rate limits;
   ~~viewers can read inbound `signing_secret` and status tokens~~ (fixed
   in S2 below); webhook HMACs have no timestamp (S3 step 1 below adds
-  one; enforcement pending); snooze, share and
+  one; enforcement pending); snooze (hashed in S4 below), share and
   invite tokens are stored in plaintext.
 
 ------------------------------------------------------------------------
@@ -1965,3 +1965,41 @@ After deploying, check who still uses the old format (read-only):
 `select last_signature_format, count(*) from inbound_webhooks where
 last_used_at > now() - interval '30 days' group by 1;`. Once `legacy` is
 0, or those owners have been told, reject body-only signatures.
+
+------------------------------------------------------------------------
+
+## Security fix S4: snooze link tokens stored hashed (2026-10-28)
+
+**Status: Implemented and verified locally. No migration. Not deployed.**
+
+Problem (verified): `alert_snooze_tokens.token` held the raw token from
+each alert's snooze link, so anyone who could read that table could snooze
+a user's routine alerts.
+
+- [x] New links store `sha256(token)` in the existing `token` column; the
+      link keeps the raw token (`createSnoozeToken`).
+- [x] One lookup (`findSnoozeToken`) for both the confirm page's locale
+      check and applying the snooze. It matches the hash. It also matches
+      the raw value **only** for the old 32-hex shape, so links sent
+      before this deploy keep working until they expire (7 days), and a
+      64-hex stored hash pasted in as a token matches nothing.
+- [x] Marking a link used updates the row it actually matched.
+- Remove the legacy raw branch after 2026-11-05, 7 days after deploy (a
+  one-line change plus its test).
+- Evidence: `alertSnoozeTokens.test.ts` +3 (raw token never stored;
+  lookup keys; a hash isn't usable as a token) and updated assertions
+  (lookup by hash, mark used by stored key); `snooze.test.ts` mocks
+  updated. Mutation check: storing the raw token again fails 2 tests.
+  `pnpm test`: 3040 passed. `pnpm typecheck`: 0 errors. `pnpm lint`: 64
+  warnings (baseline). `pnpm build`: pass.
+- Not changed: an existing pre-hash race (two simultaneous taps can both
+  apply the same snooze; the effect is identical, so it's harmless).
+
+### Needs a decision: invite, share-link and status-page tokens
+
+These are also stored raw, but unlike snooze links the app shows them
+again: pending invite links on the household page, and share, embed,
+Prometheus and status URLs on Dashboard → Share. Hashing them means
+showing each URL only once at creation (as API keys and inbound webhooks
+already do) and offering "regenerate" instead of "copy". That's a UX
+change, so it's held for the owner.

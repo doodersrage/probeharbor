@@ -2,23 +2,16 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { APIContext } from "astro";
 
 const mockApplySnoozeToken = vi.fn();
+const mockTokenRow = vi.fn();
 vi.mock("../../../lib/alertSnoozeTokens", () => ({
   applySnoozeToken: (...a: unknown[]) => mockApplySnoozeToken(...a),
+  findSnoozeToken: (...a: unknown[]) => mockTokenRow(...a),
 }));
 
 const mockGetUserById = vi.fn();
-const mockTokenRow = vi.fn();
-vi.mock("../../../lib/supabase", () => {
-  const chain = {
-    select: () => chain,
-    eq: () => chain,
-    maybeSingle: () => mockTokenRow(),
-  };
-  return {
-    createServerClient: () => ({ from: () => chain }),
-    createAdminClient: () => ({ auth: { admin: { getUserById: (...a: unknown[]) => mockGetUserById(...a) } } }),
-  };
-});
+vi.mock("../../../lib/supabase", () => ({
+  createAdminClient: () => ({ auth: { admin: { getUserById: (...a: unknown[]) => mockGetUserById(...a) } } }),
+}));
 
 function makeContext(query: string): APIContext {
   const url = new URL(`https://example.com/api/alerts/snooze${query}`);
@@ -27,7 +20,7 @@ function makeContext(query: string): APIContext {
 
 beforeEach(() => {
   mockApplySnoozeToken.mockReset();
-  mockTokenRow.mockReset().mockResolvedValue({ data: { user_id: "user-1" } });
+  mockTokenRow.mockReset().mockResolvedValue({ user_id: "user-1" });
   mockGetUserById.mockReset().mockResolvedValue({ data: { user: { user_metadata: {} } } });
 });
 

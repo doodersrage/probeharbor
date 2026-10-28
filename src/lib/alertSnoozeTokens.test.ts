@@ -3,7 +3,7 @@ import type { AlertSettings } from "./alerts";
 
 function mockQuery(result: { data?: unknown; error?: unknown }) {
   const builder: Record<string, unknown> = {};
-  for (const method of ["select", "eq", "is", "order", "insert", "update", "upsert"]) {
+  for (const method of ["select", "eq", "in", "limit", "is", "order", "insert", "update", "upsert"]) {
     builder[method] = vi.fn(() => builder);
   }
   builder.single = vi.fn(() => Promise.resolve(result));
@@ -68,9 +68,20 @@ describe("createSnoozeToken", () => {
 
     expect(token).toMatch(/^[0-9a-f]{32}$/);
     expect(mockFrom).toHaveBeenCalledWith("alert_snooze_tokens");
+    const { sha256Hex } = await import("./alertSnoozeTokens");
     expect(builder.insert).toHaveBeenCalledWith(
-      expect.objectContaining({ token, user_id: "user-1", hours: 12 }),
+      expect.objectContaining({ token: await sha256Hex(token), user_id: "user-1", hours: 12 }),
     );
+  });
+
+  it("never stores the raw token", async () => {
+    const builder = mockQuery({ data: null, error: null });
+    mockFrom.mockReturnValue(builder);
+    const { createSnoozeToken } = await import("./alertSnoozeTokens");
+
+    const token = await createSnoozeToken("user-1", 12);
+
+    expect(JSON.stringify((builder.insert as ReturnType<typeof vi.fn>).mock.calls)).not.toContain(token);
   });
 
   it("defaults hours to 24", async () => {
@@ -81,6 +92,20 @@ describe("createSnoozeToken", () => {
     await createSnoozeToken("user-1");
 
     expect(builder.insert).toHaveBeenCalledWith(expect.objectContaining({ hours: 24 }));
+  });
+});
+
+describe("snoozeTokenLookupKeys", () => {
+  it("looks up a link token by its hash, plus raw for pre-hash 32-hex links", async () => {
+    const { snoozeTokenLookupKeys, sha256Hex } = await import("./alertSnoozeTokens");
+    const legacy = "0123456789abcdef0123456789abcdef";
+    expect(await snoozeTokenLookupKeys(legacy)).toEqual([await sha256Hex(legacy), legacy]);
+  });
+
+  it("does not let a stored hash be used as a token", async () => {
+    const { snoozeTokenLookupKeys, sha256Hex } = await import("./alertSnoozeTokens");
+    const storedHash = await sha256Hex("0123456789abcdef0123456789abcdef");
+    expect(await snoozeTokenLookupKeys(storedHash)).toEqual([await sha256Hex(storedHash)]);
   });
 });
 
@@ -136,6 +161,7 @@ describe("applySnoozeToken", () => {
   it("applies the snooze, marks the token used, and reports the hours", async () => {
     const builder = mockQuery({
       data: {
+        token: "stored-hash",
         user_id: "user-1",
         hours: 12,
         expires_at: "2099-01-01T00:00:00.000Z",
@@ -148,6 +174,8 @@ describe("applySnoozeToken", () => {
 
     const result = await applySnoozeToken("good-token");
 
+    const { sha256Hex } = await import("./alertSnoozeTokens");
+    expect(builder.in).toHaveBeenCalledWith("token", [await sha256Hex("good-token")]);
     expect(mockGetAlertSettingsForUser).toHaveBeenCalledWith("user-1");
     expect(mockSnoozeUntilFromHours).toHaveBeenCalledWith(12);
     expect(mockSaveAlertSettingsForUser).toHaveBeenCalledWith("user-1", {
@@ -157,6 +185,7 @@ describe("applySnoozeToken", () => {
     expect(builder.update).toHaveBeenCalledWith(
       expect.objectContaining({ used_at: expect.any(String) }),
     );
+    expect(builder.eq).toHaveBeenCalledWith("token", "stored-hash");
     expect(result).toEqual({ ok: true, message: "Alerts snoozed for 12 hours." });
   });
 
