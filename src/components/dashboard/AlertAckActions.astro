@@ -62,9 +62,6 @@ const moreActions: Array<{ value: string; label: string }> = [
     align-items: flex-start;
     gap: 0.35rem;
   }
-  .alert-ack-more {
-    position: relative;
-  }
   .alert-ack-more > summary {
     list-style: none;
     cursor: pointer;
@@ -72,13 +69,15 @@ const moreActions: Array<{ value: string; label: string }> = [
   .alert-ack-more > summary::-webkit-details-marker {
     display: none;
   }
-  /* Float over the table so opening it doesn't stretch the row. */
+  /*
+   * Opens in the flow (the row grows) rather than floating: the desktop table
+   * sits in an overflow-x scroll wrapper, which also clips vertically, so a
+   * floating menu was cut off and its snooze options were hidden.
+   */
   .alert-ack-more-menu {
-    position: absolute;
-    top: calc(100% + 0.25rem);
-    right: 0;
-    z-index: 20;
-    min-width: max-content;
+    margin-top: 0.25rem;
+    width: max-content;
+    max-width: 100%;
     box-shadow: var(--shadow-card);
     display: flex;
     flex-direction: column;

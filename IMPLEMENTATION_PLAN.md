@@ -2203,10 +2203,19 @@ Deploy run 40688153838 passed. `pnpm ops:smoke`: all public checks passed
 `/status/<bogus>` → 302 to `/`, `/api/share/<bogus>/readings` → 404, the
 snooze GET → confirm page (no side effect).
 
-**Still to check by hand (signed in; no e2e credentials):** creating and
-regenerating a share link and a status page (shown once; the old link
-stops working); sending and resending an invite; a snooze link from a new
-alert; one inbound webhook call with the v2 signature.
+**Checked by hand by the owner (2026-10-28, production):** share link
+create and regenerate work; the household invite email arrived and its
+link works; the snooze link works. No inbound webhook is configured, so
+the v2 signature hasn't been exercised live. Still unchecked: status page
+create and regenerate, and invite Resend.
+
+**Bug found:** on the Alerts page (desktop table), the "More" menu with the
+snooze options was clipped by the table's `overflow-x-auto` wrapper. Fixed
+in `AlertAckActions.astro`: the menu now opens in the flow, so the row grows,
+instead of floating. Checked in headless Chromium with the same structure:
+the "Snooze 24h" button was outside the wrapper's visible box with the old
+CSS, and is visible and the hit target with the new CSS. The real page
+hasn't been checked (needs sign-in).
 
 **Dated follow-ups:**
 - After 2026-11-05: remove the legacy raw-token branches for snooze (S4)
