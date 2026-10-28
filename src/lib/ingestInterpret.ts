@@ -60,8 +60,10 @@ export function interpretIngestPayload(payload: unknown, deviceName?: string | n
           }
         })();
 
+  // Only store values the payload actually reported: a probe without
+  // humidity gets no humidity row (never a fake 0%), and vice versa.
   for (const [key, reading] of Object.entries(classic)) {
-    readings.push({
+    if (reading.f != null) readings.push({
       key,
       label: labelForPushSensorKey(discovered, key, "temperature") ?? `Probe ${key}`,
       kind: "temperature",
@@ -71,7 +73,7 @@ export function interpretIngestPayload(payload: unknown, deviceName?: string | n
       value_text: null,
       meta: { tempc: reading.c, tempf: reading.f },
     });
-    readings.push({
+    if (reading.h != null) readings.push({
       key,
       label: labelForPushSensorKey(discovered, key, "humidity") ?? `Probe ${key} humidity`,
       kind: "humidity",

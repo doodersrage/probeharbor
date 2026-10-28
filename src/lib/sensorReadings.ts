@@ -73,7 +73,7 @@ export function buildReadingRowsFromTempResults(
       (s) => s.key === probe.key && s.kind === "humidity",
     );
 
-    if (tempSensor) {
+    if (tempSensor && reading.f != null) {
       rows.push({
         sensor_id: tempSensor.id,
         household_id: householdId,
@@ -83,7 +83,7 @@ export function buildReadingRowsFromTempResults(
       });
     }
 
-    if (humiditySensor) {
+    if (humiditySensor && reading.h != null) {
       rows.push({
         sensor_id: humiditySensor.id,
         household_id: householdId,

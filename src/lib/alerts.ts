@@ -559,7 +559,8 @@ export function isAlertCooldownActive(
 export type AlertReading = {
   label: string;
   tempf: number;
-  humidity: number;
+  /** null when the probe doesn't report humidity. */
+  humidity: number | null;
   sensorId?: string;
   space?: string | null;
 };
@@ -712,7 +713,7 @@ export function evaluateAlertDetails(
     }
 
     const humidityThreshold = humidityThresholdForReading(settings, reading);
-    if (reading.humidity >= humidityThreshold) {
+    if (reading.humidity != null && reading.humidity >= humidityThreshold) {
       messages.push({
         kind: "humidity",
         label: reading.label,

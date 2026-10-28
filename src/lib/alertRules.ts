@@ -43,7 +43,7 @@ export type AlertRule = {
 export const OUTDOOR_COLD_F = 20;
 
 export type RuleEvalContext = {
-  readings: Array<{ label: string; tempf: number; humidity: number }>;
+  readings: Array<{ label: string; tempf: number; humidity: number | null }>;
   boolSensors: Array<{ label: string; kind: string; value: boolean }>;
   numericSensors: Array<{ label: string; kind: string; value: number }>;
   doorOpenSessions: Array<{
@@ -162,7 +162,8 @@ export function explainCondition(condition: AlertCondition, ctx: RuleEvalContext
       return compareCheck(temps, ">=", condition.value ?? HEAT_THRESHOLD_F, "°F", n.temperatureProbe, t, locale, inc);
     case "humidity_above":
       return compareCheck(
-        ctx.readings.map((r) => ({ label: r.label, value: r.humidity })),
+        // Probes without humidity aren't candidates (never a 0% reading).
+        ctx.readings.flatMap((r) => (r.humidity == null ? [] : [{ label: r.label, value: r.humidity }])),
         ">=",
         condition.value ?? ctx.humidityThreshold,
         "%",

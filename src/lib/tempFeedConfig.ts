@@ -2,10 +2,11 @@ import { isSafeHttpsUrl } from "./ssrfGuard";
 import { getDefaultPublicFeedUrl } from "./exampleFeed";
 import { parseStandardFeedPayload } from "./feedFormats";
 
+/** A probe sample. `null` means the feed didn't report that value (never a real 0). */
 export type TempReading = {
-  c: number;
-  f: number;
-  h: number;
+  c: number | null;
+  f: number | null;
+  h: number | null;
 };
 
 export type TempFeedConfig = {
@@ -76,12 +77,26 @@ export function slugifyFeedId(value: string, index: number): string {
   return slug || `feed-${index}`;
 }
 
+const round1 = (value: number) => Math.round(value * 10) / 10;
+
+/** Fill a missing °C/°F from the other one; leave anything unreported as null. */
 function normalizeReading(raw: Partial<TempReading> | null | undefined): TempReading {
+  const c = raw?.c ?? null;
+  const f = raw?.f ?? null;
   return {
-    c: raw?.c ?? 0,
-    f: raw?.f ?? 0,
-    h: raw?.h ?? 0,
+    c: c ?? (f != null ? round1(((f - 32) * 5) / 9) : null),
+    f: f ?? (c != null ? round1((c * 9) / 5 + 32) : null),
+    h: raw?.h ?? null,
   };
+}
+
+function hasAnyValue(reading: TempReading): boolean {
+  return reading.c != null || reading.f != null || reading.h != null;
+}
+
+function averageOf(values: Array<number | null>): number | null {
+  const present = values.filter((value): value is number => value != null);
+  return present.length > 0 ? present.reduce((sum, value) => sum + value, 0) / present.length : null;
 }
 
 function coerceNumber(value: unknown): number | null {
@@ -119,11 +134,12 @@ export function parseTempFeedPayload(
       }
 
       const reading = value as Record<string, unknown>;
-      probes[key] = normalizeReading({
-        c: coerceNumber(reading.c) ?? undefined,
-        f: coerceNumber(reading.f) ?? undefined,
-        h: coerceNumber(reading.h) ?? undefined,
+      const normalized = normalizeReading({
+        c: coerceNumber(reading.c),
+        f: coerceNumber(reading.f),
+        h: coerceNumber(reading.h),
       });
+      if (hasAnyValue(normalized)) probes[key] = normalized;
     }
 
     if (Object.keys(probes).length > 0) {
@@ -167,20 +183,13 @@ export function ensureAverageProbe(
     return probes;
   }
 
-  const totals = numericProbes.reduce(
-    (acc, [, reading]) => ({
-      c: acc.c + reading.c,
-      f: acc.f + reading.f,
-      h: acc.h + reading.h,
-    }),
-    { c: 0, f: 0, h: 0 },
-  );
-
-  const count = numericProbes.length;
+  // Average each value over the probes that reported it, so a humidity-only
+  // probe doesn't drag the temperature average toward zero.
+  const readings = numericProbes.map(([, reading]) => reading);
   probes.avg = {
-    c: totals.c / count,
-    f: totals.f / count,
-    h: totals.h / count,
+    c: averageOf(readings.map((r) => r.c)),
+    f: averageOf(readings.map((r) => r.f)),
+    h: averageOf(readings.map((r) => r.h)),
   };
 
   return probes;

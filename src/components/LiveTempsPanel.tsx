@@ -10,7 +10,7 @@ import {
 type ProbeReading = {
   key: string;
   label: string;
-  data: { f: number; c: number; h: number } | null;
+  data: { f: number | null; c: number | null; h: number | null } | null;
 };
 
 type FeedGroup = {
@@ -181,12 +181,12 @@ export function makeFormat(text: LiveTempsPanelText, locale: string | undefined)
   };
 
   /** °F tile value, tenths (finer than typical probe accuracy). */
-  const tempF = (f: number) => (Number.isFinite(f) ? `${fixed(f, 1)}°F` : "—");
-  const tempDetail = (c: number, h: number) =>
+  const tempF = (f: number | null) => (f != null && Number.isFinite(f) ? `${fixed(f, 1)}°F` : "—");
+  const tempDetail = (c: number | null, h: number | null) =>
     fill(text.tempHumidity, {
-      celsius: Number.isFinite(c) ? fixed(c, 1) : "—",
+      celsius: c != null && Number.isFinite(c) ? fixed(c, 1) : "—",
       // Humidity sensors are ±2–3%, so whole percents.
-      humidity: Number.isFinite(h) ? fixed(h, 0) : "—",
+      humidity: h != null && Number.isFinite(h) ? fixed(h, 0) : "—",
     });
   const boolValue = (kind: string, value: boolean): string => {
     const v = text.values;

@@ -24,7 +24,7 @@ export type LiveSensorCard = {
   value_text: string | null;
   recorded_at: string | null;
   /** Present for temperature probes when live feed data is available */
-  temp?: { f: number; c: number; h: number } | null;
+  temp?: { f: number | null; c: number | null; h: number | null } | null;
 };
 
 export const GET: APIRoute = async ({ cookies, url, request, locals }) => {
@@ -74,7 +74,7 @@ export const GET: APIRoute = async ({ cookies, url, request, locals }) => {
   }));
 
   // Build kind-aware sensor cards from devices + latest DB values, overlay live temp
-  const liveByKey = new Map<string, { f: number; c: number; h: number }>();
+  const liveByKey = new Map<string, { f: number | null; c: number | null; h: number | null }>();
   for (const group of groups) {
     for (const probe of group.probes) {
       if (probe.data) {

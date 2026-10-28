@@ -114,15 +114,15 @@ function defaultVisibleForKey(key: string): boolean {
 }
 
 function probesFromReadings(
-  probes: Record<string, { f: number; c: number; h: number }>,
+  probes: Record<string, { f: number | null; c: number | null; h: number | null }>,
   labelHints: Map<string, string>,
   format: FeedDiscoveryResult["format"],
 ): DiscoveredProbe[] {
   return Object.entries(probes).map(([key, reading]) => ({
     key,
     suggestedLabel: labelHints.get(key) ?? humanizeProbeKey(key),
-    tempF: Number.isFinite(reading.f) ? reading.f : null,
-    humidity: Number.isFinite(reading.h) ? reading.h : null,
+    tempF: reading.f != null && Number.isFinite(reading.f) ? reading.f : null,
+    humidity: reading.h != null && Number.isFinite(reading.h) ? reading.h : null,
     visible: defaultVisibleForKey(key),
     source: key === "avg" ? "computed" : format,
   }));

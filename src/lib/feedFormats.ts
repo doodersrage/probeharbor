@@ -33,7 +33,7 @@ function fahrenheitToCelsius(f: number): number {
 }
 
 function emptyProbe(): TempReading {
-  return { c: 0, f: 0, h: 0 };
+  return { c: null, f: null, h: null };
 }
 
 function ensureProbe(
@@ -191,7 +191,7 @@ function parseHaStateValue(
     const f = round1(num);
     return {
       key: "state",
-      temp: { f, c: round1(fahrenheitToCelsius(f)), h: 0 },
+      temp: { f, c: round1(fahrenheitToCelsius(f)), h: null },
     };
   }
 
@@ -199,14 +199,14 @@ function parseHaStateValue(
     const c = round1(num);
     return {
       key: "state",
-      temp: { f: round1(celsiusToFahrenheit(c)), c, h: 0 },
+      temp: { f: round1(celsiusToFahrenheit(c)), c, h: null },
     };
   }
 
   if (unitLower.includes("%")) {
     return {
       key: "state",
-      temp: { f: 0, c: 0, h: round1(num) },
+      temp: { f: null, c: null, h: round1(num) },
     };
   }
 
@@ -214,7 +214,7 @@ function parseHaStateValue(
   const f = round1(num);
   return {
     key: "state",
-    temp: { f, c: round1(fahrenheitToCelsius(f)), h: 0 },
+    temp: { f, c: round1(fahrenheitToCelsius(f)), h: null },
   };
 }
 
@@ -246,9 +246,10 @@ function parseHomeAssistantEntity(
 
   if (parsed.temp) {
     const probe = ensureProbe(tempProbes, key);
-    if (parsed.temp.f) probe.f = parsed.temp.f;
-    if (parsed.temp.c) probe.c = parsed.temp.c;
-    if (parsed.temp.h) probe.h = parsed.temp.h;
+    // != null: a real 0°F or 0% reading must be kept.
+    if (parsed.temp.f != null) probe.f = parsed.temp.f;
+    if (parsed.temp.c != null) probe.c = parsed.temp.c;
+    if (parsed.temp.h != null) probe.h = parsed.temp.h;
   }
   if (parsed.typed) {
     typed.push({ ...parsed.typed, key, label });
@@ -339,7 +340,7 @@ export function buildSenMLPack(
   let baseSet = false;
 
   for (const [key, reading] of Object.entries(probes)) {
-    if (key === "avg") continue;
+    if (key === "avg" || reading.c == null) continue;
     const row: SenMLRecord = {
       n: key,
       u: "Cel",
@@ -350,7 +351,7 @@ export function buildSenMLPack(
       baseSet = true;
     }
     records.push(row);
-    if (includeHumidity && reading.h > 0) {
+    if (includeHumidity && reading.h != null && reading.h > 0) {
       records.push({ n: `${key}/rh`, u: "%RH", v: reading.h });
     }
   }

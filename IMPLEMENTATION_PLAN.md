@@ -704,3 +704,76 @@ per-isolate rate limits, and the other Milestone 5 hardening items.
   viewers can read inbound `signing_secret` and status tokens; webhook
   HMACs have no timestamp; snooze, share and invite tokens are stored in
   plaintext.
+
+------------------------------------------------------------------------
+
+## Milestone 1, increment 1.1: no fabricated zeros (2026-10-27)
+
+**Status: Implemented and verified locally. Not deployed. No migration.**
+Scope: Milestone 0 gap 2. Unreported temperature or humidity values were
+stored as real 0°F / 0% readings.
+
+Non-goals, left for later increments:
+- History chart and CSV zero-fill (`garageTempsHistory.ts:166-197`)
+- Range checks, `sensors[]` unit conversion and cadence-aware staleness
+- Retention data loss
+- Cleaning up zero rows already stored
+
+### Acceptance criteria
+
+- [x] Humidity-only SenML (`%RH`) and Home Assistant (`%`) payloads store
+      humidity only, with no 0°F temperature row.
+- [x] A temperature-only probe stores no 0% humidity row.
+- [x] A Celsius-only pull probe derives °F instead of storing 0°F.
+- [x] A real 0°F / 0% Home Assistant state is kept. The old
+      truthiness check dropped it.
+- [x] The `avg` probe averages only the values that were reported.
+- [x] Pull-feed storage, threshold alerts and humidity rules skip
+      missing values. A null can't satisfy a comparison.
+- [x] ProbeHarbor firmware payloads are stored exactly as before.
+
+### Change
+
+`TempReading` fields are now `number | null`, where null means not
+reported (`tempFeedConfig.ts`). Parsers stop zero-filling
+(`tempFeedConfig.ts` `normalizeReading`/`ensureAverageProbe`,
+`feedFormats.ts`). Readings are emitted only for reported values
+(`ingestInterpret.ts`, `sensorReadings.ts`
+`buildReadingRowsFromTempResults`). Alert inputs carry
+`humidity: number | null` and skip missing values (`alerts.ts`,
+`alertRules.ts`, `alertReadings.ts`). Display types and formatters
+accept null and show "—" (`LiveTempsPanel.tsx`, `DemoTempsPanel.tsx`,
+`temperatureFormat.ts`, `api/home/readings.ts`).
+
+### Evidence
+
+- `src/lib/noFabricatedZeros.test.ts`: 12 tests. Against the previous
+  code, 11 fail; the firmware regression test passes on both, as
+  expected.
+- `pnpm test`: 2892 passed. `pnpm typecheck`: 0 errors, 0 warnings.
+  `pnpm lint`: 64 warnings (baseline). `pnpm build`: pass.
+- `pnpm test:e2e`: 44 passed, 12 signed-in specs skipped (no
+  credentials). Not verified with a real SenML or Home Assistant device.
+
+### Compatibility and risks
+
+- Internal dashboard APIs (`/api/home/readings`, `/stream`) can now
+  return `null` for f/c/h where they used to return `0`. The UI already
+  renders "—". The public `v1` API doesn't expose these values.
+- Existing households with a humidity-only or temperature-only feed
+  will stop receiving new rows for the fabricated sensor. That sensor
+  will then show as stale or offline instead of a fake 0. This is
+  correct, but users may want to hide or delete it. **Follow-up:** hint
+  or auto-hide auto-created sensors that never got a real value.
+- **Historic fabricated rows remain.** Cleaning them up is a production
+  data operation that needs approval. Pick candidates with care (for
+  example, temperature rows of exactly 0 from SenML/HA feeds whose
+  humidity sibling is non-zero at the same `recorded_at`). Don't
+  bulk-delete real 0°F readings.
+
+### Recommended next increment (Milestone 1)
+
+Retention data loss: `runSensorReadingRetention` rolls up at most
+20,000 rows (`jobRuns.ts:96-101`) but deletes every row older than the
+cutoff (`jobRuns.ts:164-167`). This permanently loses history on busy
+days and is a data-integrity bug with no user-visible symptom.

@@ -15,19 +15,19 @@ export function formatTemperature(
 }
 
 /** Live tile °F: tenths, which is already finer than typical probe accuracy. */
-export function formatLiveTempF(tempF: number, decimals = 1): string {
-  if (!Number.isFinite(tempF)) return "—";
+export function formatLiveTempF(tempF: number | null, decimals = 1): string {
+  if (tempF == null || !Number.isFinite(tempF)) return "—";
   return `${tempF.toFixed(decimals)}°F`;
 }
 
 export function formatLiveTempDetail(
-  tempC: number,
-  humidity: number,
+  tempC: number | null,
+  humidity: number | null,
   decimals = 1,
 ): string {
-  const c = Number.isFinite(tempC) ? tempC.toFixed(decimals) : "—";
+  const c = tempC != null && Number.isFinite(tempC) ? tempC.toFixed(decimals) : "—";
   // Humidity sensors are ±2–3%, so whole percents.
-  const h = Number.isFinite(humidity) ? humidity.toFixed(0) : "—";
+  const h = humidity != null && Number.isFinite(humidity) ? humidity.toFixed(0) : "—";
   return `${c}°C · ${h}% humidity`;
 }
 

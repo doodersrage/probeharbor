@@ -17,7 +17,8 @@ export function buildReadingsFromResults(
   return probes.flatMap((probe) => {
     const feed = results.find((result) => result.id === probe.feedId);
     const data = feed?.probes[probe.key];
-    if (!feed || feed.error || !data) return [];
+    // No temperature reported: nothing to evaluate (never treat it as 0°F).
+    if (!feed || feed.error || !data || data.f == null) return [];
     const device = devicesById.get(probe.feedId);
     const tempSensor = device?.sensors.find(
       (s) => s.key === probe.key && s.kind === "temperature",
@@ -28,7 +29,7 @@ export function buildReadingsFromResults(
     return [{
       label: probe.label,
       tempf: applySensorOffset(data.f, tempSensor?.offset_num ?? 0),
-      humidity: applySensorOffset(data.h, humiditySensor?.offset_num ?? 0),
+      humidity: data.h == null ? null : applySensorOffset(data.h, humiditySensor?.offset_num ?? 0),
       space: spaceByFeedId.get(probe.feedId) ?? null,
       sensorId: tempSensor?.id,
     }];

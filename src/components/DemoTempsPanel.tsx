@@ -4,7 +4,7 @@ import { formatLiveTempDetail, formatLiveTempF } from "../lib/temperatureFormat"
 type ProbeReading = {
   key: string;
   label: string;
-  data: { f: number; c: number; h: number } | null;
+  data: { f: number | null; c: number | null; h: number | null } | null;
 };
 
 type FeedGroup = {
@@ -59,12 +59,12 @@ function fill(template: string, values: Record<string, string | number>): string
 export default function DemoTempsPanel({ intervalMs = 90000, text = DEMO_TEMPS_TEXT_EN, locale }: Props) {
   // Non-English pages read °C first with °F after, with locale decimals.
   const localized = locale != null && !locale.toLowerCase().startsWith("en");
-  const decimal = (n: number, digits: number) =>
-    Number.isFinite(n)
+  const decimal = (n: number | null, digits: number) =>
+    n != null && Number.isFinite(n)
       ? new Intl.NumberFormat(locale, { minimumFractionDigits: digits, maximumFractionDigits: digits }).format(n)
       : "—";
-  const percent = (n: number) =>
-    Number.isFinite(n)
+  const percent = (n: number | null) =>
+    n != null && Number.isFinite(n)
       ? new Intl.NumberFormat(locale, { style: "percent", maximumFractionDigits: 0 }).format(n / 100)
       : "—";
   const [groups, setGroups] = useState<FeedGroup[]>([]);
