@@ -2192,3 +2192,25 @@ scrapes keep working either way.
   no pages changed.
 - Not covered: rule alerts sent before this deploy have no `doorRule`
   flag, so if one is open at deploy time it clears silently.
+
+------------------------------------------------------------------------
+
+## Deploy (2026-10-28): S3–S7 and D7b
+
+Pushed `9e40ac1..0593504` (17 commits) to `main`. CI run 40687079259 passed;
+Deploy run 40688153838 passed. `pnpm ops:smoke`: all public checks passed
+(sitemap 783 URLs). Unknown-token probes on production behave as expected:
+`/status/<bogus>` → 302 to `/`, `/api/share/<bogus>/readings` → 404, the
+snooze GET → confirm page (no side effect).
+
+**Still to check by hand (signed in; no e2e credentials):** creating and
+regenerating a share link and a status page (shown once; the old link
+stops working); sending and resending an invite; a snooze link from a new
+alert; one inbound webhook call with the v2 signature.
+
+**Dated follow-ups:**
+- After 2026-11-05: remove the legacy raw-token branches for snooze (S4)
+  and invite (S5) links.
+- Around 2026-11-28: run the S3 format query; decide on step 2.
+- Needs approval: clear raw tokens on existing share links and status
+  pages (S6/S7).
