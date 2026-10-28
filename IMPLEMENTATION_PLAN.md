@@ -1426,3 +1426,56 @@ code, so no bug was found here.
 - Recovery hysteresis (`alertNotifications.test.ts` +2): not recovered
   at threshold + 1.9°F; recovered at +2°F.
 - `pnpm test`, `pnpm typecheck` and `pnpm lint` pass (see commit).
+
+------------------------------------------------------------------------
+
+## Milestone 2, increment 2.7: stale readings don't drive freeze alerts (2026-10-28)
+
+**Status: Implemented and verified locally. No migration.**
+
+### Problem (verified)
+
+`buildAlertReadingsFromLatestSensors` (`alertReadings.ts`) used each
+sensor's latest value regardless of age. Two consequences:
+- **A dead probe kept alerting.** Its last cold reading kept sending
+  "Garage pipe 20°F" freeze alerts every 4 h as if current, which breaks
+  CLAUDE.md's "never present stale readings as current".
+- **Dropping stale values naively would fake recovery.** It would
+  announce "back to normal" for a probe that had gone offline.
+
+It also built missing humidity as `0` (the same fabricated zero that 1.1
+fixed elsewhere).
+
+### Acceptance criteria
+
+- [x] Alert readings carry `recordedAt`. A temperature older than the
+      user's `outageHours` (the point where the device-offline alert
+      takes over) doesn't drive freeze or humidity alerts
+      (`isStaleAlertReading`, `evaluateAlertDetails`).
+- [x] Freeze "back to normal" isn't announced while any in-scope probe
+      is stale.
+- [x] With outage alerts off (`outageHours <= 0`), nothing is treated as
+      stale (previous behavior), because nothing else would cover a dead
+      probe.
+- [x] Live pull results (no `recordedAt`) count as current.
+- [x] Missing humidity in alert readings is `null`, not `0`.
+
+### Evidence
+
+- `alertReadings.test.ts` +4 and `alertNotifications.test.ts` +2.
+  3 existing expectations were updated (`recordedAt`, humidity `null`;
+  one test literally asserted "humidity 0"). Against the previous code,
+  4 tests fail.
+- `pnpm test`: 2994 passed. `pnpm typecheck`: 0 errors. `pnpm lint`: 64
+  warnings (baseline). `pnpm build`: pass. `pnpm test:e2e`: 44 passed,
+  12 skipped.
+
+### Decisions recorded / risks
+
+- **Leak and power-off still use the last known state.** A sensor that
+  went silent while wet keeps the leak alert (repeated every 4 h)
+  alongside the offline alert. Over-alerting is the safer side for
+  water. Revisit if users find it noisy.
+- A device that reports less often than `outageHours` will have its
+  freeze evaluation skipped between reports. Its device-offline alert
+  fires in that case, so the user is told.

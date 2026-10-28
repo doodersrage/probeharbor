@@ -76,6 +76,7 @@ export function buildAlertReadingsFromLatestSensors(
     deviceName: string;
     deviceSpace?: string | null;
     value_num: number | null;
+    recorded_at?: string | null;
   }>,
 ): AlertReading[] {
   type Acc = {
@@ -84,6 +85,7 @@ export function buildAlertReadingsFromLatestSensors(
     humidity?: number;
     space?: string | null;
     sensorId?: string;
+    recordedAt?: string | null;
   };
   const byKey = new Map<string, Acc>();
   // Humidity is matched to its temperature probe on the shared part of the key
@@ -109,6 +111,7 @@ export function buildAlertReadingsFromLatestSensors(
     entry.tempf = row.value_num;
     entry.label = row.sensor.label.replace(/\s+humidity$/i, "") || row.sensor.label;
     entry.sensorId = row.sensor.id;
+    entry.recordedAt = row.recorded_at ?? null;
     entry.humidity = humidityByPair.get(`${row.sensor.device_id}:${probePairingKey(row.sensor.key)}`);
 
     byKey.set(mapKey, entry);
@@ -119,9 +122,11 @@ export function buildAlertReadingsFromLatestSensors(
     .map((entry) => ({
       label: entry.label,
       tempf: entry.tempf!,
-      humidity: entry.humidity ?? 0,
+      // No humidity sensor paired with this probe: null, never 0%.
+      humidity: entry.humidity ?? null,
       space: entry.space ?? null,
       sensorId: entry.sensorId,
+      recordedAt: entry.recordedAt ?? null,
     }));
 }
 

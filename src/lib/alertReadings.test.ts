@@ -5,6 +5,7 @@ import {
   mergeAlertReadings,
 } from "./alertReadings";
 import type { DeviceSensor } from "./devices";
+import { DEFAULT_ALERT_SETTINGS, evaluateAlertDetails, isStaleAlertReading } from "./alerts";
 
 function sensor(
   partial: Partial<DeviceSensor> & Pick<DeviceSensor, "id" | "device_id" | "key" | "kind">,
@@ -58,11 +59,11 @@ describe("buildAlertReadingsFromLatestSensors", () => {
     ]);
 
     expect(readings).toEqual([
-      { label: "Probe 0", tempf: 31, humidity: 80, space: null, sensorId: "t1" },
+      { label: "Probe 0", tempf: 31, humidity: 80, space: null, sensorId: "t1", recordedAt: null },
     ]);
   });
 
-  it("includes temperature-only probes with humidity 0", () => {
+  it("includes temperature-only probes with no humidity (null, not 0%)", () => {
     const readings = buildAlertReadingsFromLatestSensors([
       {
         sensor: sensor({
@@ -78,7 +79,7 @@ describe("buildAlertReadingsFromLatestSensors", () => {
     ]);
 
     expect(readings).toEqual([
-      { label: "Bay", tempf: 40, humidity: 0, space: null, sensorId: "t2" },
+      { label: "Bay", tempf: 40, humidity: null, space: null, sensorId: "t2", recordedAt: null },
     ]);
   });
 });
@@ -149,7 +150,7 @@ describe("DHT22 and same-named probes", () => {
       { sensor: sensor({ id: "t", device_id: "dht", key: "temp1", kind: "temperature", label: "Temp1" }), deviceName: "Workshop probe 2", value_num: 39.9 },
       { sensor: sensor({ id: "h", device_id: "dht", key: "humidity1", kind: "humidity", label: "Humidity1" }), deviceName: "Workshop probe 2", value_num: 82 },
     ]);
-    expect(readings).toEqual([{ label: "Temp1", tempf: 39.9, humidity: 82, space: null, sensorId: "t" }]);
+    expect(readings).toEqual([{ label: "Temp1", tempf: 39.9, humidity: 82, space: null, sensorId: "t", recordedAt: null }]);
   });
 
   it("keeps both devices' 'Temp1' probes when merging feed and stored readings", () => {
@@ -183,5 +184,34 @@ describe("buildPowerOffReadingsFromLatestSensors", () => {
         { sensor: sensor("sump", "flood"), deviceSpace: null, value_bool: false },
       ]),
     ).toEqual([{ label: "mains", space: "Garage" }]);
+  });
+});
+
+describe("stale readings don't drive freeze alerts or recovery", () => {
+  const hoursAgo = (h: number) => new Date(Date.now() - h * 3600_000).toISOString();
+  const settings = { ...DEFAULT_ALERT_SETTINGS, enabled: true, freezeThresholdF: 34, freezeDwellMinutes: 0, outageHours: 2 };
+
+  it("carries each reading's time", () => {
+    const at = hoursAgo(3);
+    const [reading] = buildAlertReadingsFromLatestSensors([
+      { sensor: sensor({ id: "t", device_id: "d", key: "temp1", kind: "temperature", label: "Pipe" }), deviceName: "Pi", value_num: 20, recorded_at: at },
+    ]);
+    expect(reading?.recordedAt).toBe(at);
+  });
+
+  it("ignores a cold reading older than the outage window", () => {
+    const stale = { label: "Pipe", tempf: 20, humidity: null, recordedAt: hoursAgo(3) };
+    const fresh = { label: "Pipe", tempf: 20, humidity: null, recordedAt: hoursAgo(1) };
+    expect(evaluateAlertDetails(settings, [stale])).toEqual([]);
+    expect(evaluateAlertDetails(settings, [fresh]).map((d) => d.kind)).toEqual(["freeze"]);
+  });
+
+  it("keeps the old behavior when outage alerts are off (nothing else would cover a dead probe)", () => {
+    const stale = { label: "Pipe", tempf: 20, humidity: null, recordedAt: hoursAgo(30) };
+    expect(evaluateAlertDetails({ ...settings, outageHours: 0 }, [stale]).map((d) => d.kind)).toEqual(["freeze"]);
+  });
+
+  it("treats live pull readings (no time) as current", () => {
+    expect(isStaleAlertReading(settings, { label: "Pipe", tempf: 20, humidity: null })).toBe(false);
   });
 });

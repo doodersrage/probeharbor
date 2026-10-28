@@ -13,6 +13,7 @@ import {
   evaluateRateChange,
   evaluateRssiHealth,
   isAlertCooldownActive,
+  isStaleAlertReading,
   ALERT_COOLDOWN_MS,
   type AlertReading,
   type AlertChannelName,
@@ -338,8 +339,11 @@ export async function sendThresholdAlertsIfNeeded(
   const inScope = readings.filter((reading) =>
     readingIncludedInThresholdAlerts(settings.thresholdSensorScope, reading),
   );
+  // "Back to normal" needs current readings: a probe that stopped reporting
+  // while cold hasn't recovered, it's offline (the outage alert covers it).
   const recovered =
     details.length === 0 &&
+    !inScope.some((reading) => isStaleAlertReading(settings, reading)) &&
     inScope.every((reading) => reading.tempf >= freezeThresholdForReading(settings, reading) + RECOVERY_MARGIN_F);
   if (recovered) {
     await resolveAndAnnounceRecovery(

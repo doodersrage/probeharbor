@@ -696,3 +696,30 @@ describe("freeze recovery needs a 2°F margin (no flapping at the line)", () => 
     expect(recoveryCalls()).toHaveLength(1);
   });
 });
+
+describe("no 'back to normal' from a probe that stopped reporting", () => {
+  const settings = { ...DEFAULT_ALERT_SETTINGS, enabled: true, freezeThresholdF: 34, freezeDwellMinutes: 0, outageHours: 2 };
+  const hoursAgo = (h: number) => new Date(Date.now() - h * 3600_000).toISOString();
+  const thresholdResolves = () =>
+    mockAutoResolveAlerts.mock.calls.filter((call) => (call[1] as { kinds?: string[] })?.kinds?.includes("threshold"));
+
+  it("doesn't announce recovery while an in-scope probe is stale", async () => {
+    mockAutoResolveAlerts.mockClear();
+    const { sendThresholdAlertsIfNeeded } = await import("./alertNotifications");
+    await sendThresholdAlertsIfNeeded("user-1", "a@example.com", settings, [
+      { label: "Attic", tempf: 50, humidity: null, recordedAt: hoursAgo(0.5) },
+      { label: "Pipe", tempf: 20, humidity: null, recordedAt: hoursAgo(5) },
+    ]);
+    expect(thresholdResolves()).toHaveLength(0);
+    expect(mockNotifyUser.mock.calls.some((call) => call[3]?.kind === "threshold")).toBe(false);
+  });
+
+  it("announces recovery once every probe is current and warm", async () => {
+    mockAutoResolveAlerts.mockClear();
+    const { sendThresholdAlertsIfNeeded } = await import("./alertNotifications");
+    await sendThresholdAlertsIfNeeded("user-1", "a@example.com", settings, [
+      { label: "Pipe", tempf: 40, humidity: null, recordedAt: hoursAgo(0.5) },
+    ]);
+    expect(thresholdResolves()).toHaveLength(1);
+  });
+});

@@ -562,6 +562,8 @@ export type AlertReading = {
   /** null when the probe doesn't report humidity. */
   humidity: number | null;
   sensorId?: string;
+  /** When this value was measured; absent for live pull results. */
+  recordedAt?: string | null;
   space?: string | null;
 };
 
@@ -668,6 +670,18 @@ export function evaluateAlerts(
   );
 }
 
+/**
+ * A reading too old to act on: older than the "not reporting" (outage) window,
+ * where the device-offline alert takes over. It must not drive freeze/humidity
+ * alerts as if it were current, nor count toward "back to normal". With outage
+ * alerts turned off nothing would cover a dead probe, so nothing is stale then.
+ */
+export function isStaleAlertReading(settings: AlertSettings, reading: AlertReading, now = Date.now()): boolean {
+  if (!reading.recordedAt || !(settings.outageHours > 0)) return false;
+  const at = Date.parse(reading.recordedAt);
+  return Number.isFinite(at) && now - at > settings.outageHours * 60 * 60 * 1000;
+}
+
 export function evaluateAlertDetails(
   settings: AlertSettings,
   readings: AlertReading[],
@@ -688,6 +702,7 @@ export function evaluateAlertDetails(
     if (!readingIncludedInThresholdAlerts(settings.thresholdSensorScope, reading)) {
       continue;
     }
+    if (isStaleAlertReading(settings, reading, nowMs)) continue;
 
     const freezeThreshold = freezeThresholdForReading(settings, reading);
     const samples =
