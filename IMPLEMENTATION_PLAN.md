@@ -2057,7 +2057,9 @@ change, so it's held for the owner.
 ## Security fix S6: status-page links stored hashed, shown once (2026-10-28)
 
 **Status: Implemented and verified locally. Migration
-`20261028140000_status_page_token_hash.sql` NOT applied. Not deployed.**
+`20261028140000_status_page_token_hash.sql` applied to production
+2026-10-28 by the owner. Backfill check verified: mismatching hashes = 0.
+Code not yet deployed (deploys on push).**
 
 **Deploy order: apply the migration first, then push the code.** Without
 the migration, creating or regenerating a status page fails (no
