@@ -1,13 +1,12 @@
 import AxeBuilder from "@axe-core/playwright";
-import { test } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 import { getE2ECredentials, signIn } from "./helpers/auth";
 
 /**
  * axe (WCAG 2.1 A/AA) on signed-in dashboard pages, using the E2E account.
- * REPORT-ONLY for now: violations are printed to the CI log and attached,
- * but don't fail, because these pages had never been scanned and e2e gates
- * deploys. Once the first results are reviewed and fixed, switch to failing
- * on serious/critical like e2e/a11y.spec.ts.
+ * Serious and critical violations fail (like e2e/a11y.spec.ts); every
+ * violation is printed to the CI log and attached. The first CI run
+ * (2026-10-28, report-only) found 0 violations on all 6 pages.
  */
 const PAGES = [
   "/dashboard",
@@ -18,7 +17,7 @@ const PAGES = [
   "/dashboard/share/links",
 ];
 
-test.describe("dashboard accessibility (report-only)", () => {
+test.describe("dashboard accessibility", () => {
   test("scan signed-in pages", async ({ page }, testInfo) => {
     test.skip(!getE2ECredentials(), "Set E2E_TEST_EMAIL and E2E_TEST_PASSWORD");
     test.setTimeout(120_000);
@@ -36,5 +35,7 @@ test.describe("dashboard accessibility (report-only)", () => {
     for (const r of report) console.log(`AXE ${r.impact} ${r.path} ${r.id}: ${r.help} :: ${r.nodes.join(" | ")}`);
     console.log(`AXE summary: ${report.length} violation(s) across ${PAGES.length} pages`);
     await testInfo.attach("axe-dashboard.json", { body: JSON.stringify(report, null, 2), contentType: "application/json" });
+    const blocking = report.filter((r) => r.impact === "serious" || r.impact === "critical");
+    expect(blocking, JSON.stringify(blocking, null, 2)).toEqual([]);
   });
 });
