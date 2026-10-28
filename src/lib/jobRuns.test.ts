@@ -60,6 +60,56 @@ describe("startJobRun", () => {
   });
 });
 
+describe("closeAbandonedJobRuns", () => {
+  it("marks this job's runs stuck in running for over 30 min as errors", async () => {
+    const builder = mockQuery({ data: [{ id: 7 }, { id: 8 }], error: null });
+    mockFrom.mockReturnValue(builder);
+    const { closeAbandonedJobRuns } = await import("./jobRuns");
+    const now = Date.parse("2026-10-28T12:00:00Z");
+
+    expect(await closeAbandonedJobRuns("collect-history", now)).toBe(2);
+    expect(builder.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: "error",
+        finished_at: "2026-10-28T12:00:00.000Z",
+        detail: expect.objectContaining({ abandoned: true }),
+      }),
+    );
+    expect(builder.eq).toHaveBeenCalledWith("job_name", "collect-history");
+    expect(builder.eq).toHaveBeenCalledWith("status", "running");
+    expect(builder.lt).toHaveBeenCalledWith("started_at", "2026-10-28T11:30:00.000Z");
+  });
+
+  it("returns 0 instead of throwing when the update fails", async () => {
+    mockFrom.mockReturnValue(mockQuery({ data: null, error: { message: "db down" } }));
+    const { closeAbandonedJobRuns } = await import("./jobRuns");
+
+    expect(await closeAbandonedJobRuns("collect-history")).toBe(0);
+  });
+});
+
+describe("startJobRun closes abandoned runs first", () => {
+  it("cleans up, then inserts the new run", async () => {
+    const cleanup = mockQuery({ data: [], error: null });
+    const insert = mockQuery({ data: { id: 43 }, error: null });
+    mockFrom.mockReturnValueOnce(cleanup).mockReturnValueOnce(insert);
+    const { startJobRun } = await import("./jobRuns");
+
+    expect(await startJobRun("collect-history")).toBe(43);
+    expect(cleanup.update).toHaveBeenCalled();
+    expect(insert.insert).toHaveBeenCalledWith(expect.objectContaining({ job_name: "collect-history", status: "running" }));
+  });
+
+  it("still starts the run when the cleanup fails", async () => {
+    const cleanup = mockQuery({ data: null, error: { message: "timeout" } });
+    const insert = mockQuery({ data: { id: 44 }, error: null });
+    mockFrom.mockReturnValueOnce(cleanup).mockReturnValueOnce(insert);
+    const { startJobRun } = await import("./jobRuns");
+
+    expect(await startJobRun("collect-history")).toBe(44);
+  });
+});
+
 describe("finishJobRun", () => {
   it("updates the row with a finished timestamp and status", async () => {
     const builder = mockQuery({ error: null });

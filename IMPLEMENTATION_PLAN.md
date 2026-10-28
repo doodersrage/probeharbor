@@ -2323,3 +2323,38 @@ Wi-Fi. Sending the first reading…" for 90 s, then showed the generic
       board's first successful upload. It checks right away instead of on
       the next 5 s tick, then moves to the "rename sensors" step as before.
       Inline script; not covered by tests (signed-in e2e is skipped).
+
+------------------------------------------------------------------------
+
+## Milestone 4, increment 4.1: crashed cron runs show as failed (2026-10-28)
+
+**Status: Implemented and verified locally. No migration. Not deployed.**
+
+Problem (verified, audit M4): every cron job inserts a `job_runs` row as
+`running` and updates it at the end (`jobRuns.ts`). If the Worker is
+stopped partway (the 15-minute cron limit, a crash, a deploy), the row
+stays `running` forever, so Ops never shows that run as failed.
+
+- [x] `startJobRun` first calls `closeAbandonedJobRuns(jobName)`. That job's
+      rows still `running` after 30 min (twice the cron limit) become
+      `error` with `detail.abandoned: true` and a plain-language message,
+      logged with `console.error`. Best effort: a failed cleanup never
+      blocks the new run.
+- **Decided against an overlap guard.** Polls start exactly 15 minutes
+  apart and Cloudflare stops a cron run after 15 minutes, so a real
+  overlap lasts seconds at most. Any check wide enough to catch the
+  previous run would also skip the next poll after every crash, delaying
+  freeze alerts by 15 minutes. Duplicate alerts are already prevented by
+  the cooldown claim (2.5).
+- Visible effect: an abandoned run counts as a job error, so `/system-status`
+  and Ops show "degraded" for 24 h after a killed run, which is accurate.
+  Status-subscriber emails use only history-poll staleness, so they're
+  unchanged.
+- Evidence: `jobRuns.test.ts` +4 (filters and 30 min cutoff; error
+  returns 0; cleanup runs before insert; insert still happens if cleanup
+  fails). `pnpm test`: 3096 passed. `pnpm typecheck`: 0 errors.
+  `pnpm lint`: 64 warnings (baseline). `pnpm build`: pass.
+- **Before deploying, read-only:** `select job_name, count(*),
+  min(started_at) from job_runs where status = 'running' group by 1;`
+  shows the stuck rows the first run will close. Those under 24 h old will
+  briefly mark the status page degraded.

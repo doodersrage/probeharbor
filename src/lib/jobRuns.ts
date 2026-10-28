@@ -17,10 +17,50 @@ export type JobRun = {
   detail: Record<string, unknown>;
 };
 
+/**
+ * A cron Worker stops after at most 15 minutes, so a run still "running"
+ * after this long was killed (time limit, crash, deploy) before it could
+ * record its result.
+ */
+export const ABANDONED_RUN_MS = 30 * 60 * 1000;
+
+/**
+ * Mark this job's runs stuck in "running" for over ABANDONED_RUN_MS as
+ * errors, so Ops shows the failed run instead of one that never ends.
+ * Best effort: returns how many were closed (0 on failure).
+ */
+export async function closeAbandonedJobRuns(jobName: string, now = Date.now()): Promise<number> {
+  try {
+    const supabase = createServerClient();
+    const { data, error } = await supabase
+      .from("job_runs")
+      .update({
+        status: "error",
+        finished_at: new Date(now).toISOString(),
+        detail: { abandoned: true, message: "Stopped before it finished (time limit, crash or deploy)." } as Json,
+      })
+      .eq("job_name", jobName)
+      .eq("status", "running")
+      .lt("started_at", new Date(now - ABANDONED_RUN_MS).toISOString())
+      .select("id");
+    if (error) {
+      console.error("Failed to close abandoned job runs:", error.message);
+      return 0;
+    }
+    const closed = data?.length ?? 0;
+    if (closed > 0) console.error(`job ${jobName}: ${closed} run(s) never finished; marked as errors`);
+    return closed;
+  } catch (error) {
+    console.error("Failed to close abandoned job runs:", error);
+    return 0;
+  }
+}
+
 export async function startJobRun(
   jobName: string,
   detail: Record<string, unknown> = {},
 ): Promise<number | null> {
+  await closeAbandonedJobRuns(jobName);
   const supabase = createServerClient();
   const { data, error } = await supabase
     .from("job_runs")
