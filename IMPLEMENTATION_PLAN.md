@@ -956,3 +956,56 @@ devices filter nothing. Only the payload checker warned.
   unlikely in the spaces ProbeHarbor monitors.
 - Already-stored fault values remain in history (production data
   cleanup needs approval).
+
+------------------------------------------------------------------------
+
+## Milestone 1, increment 1.5: safe ingest errors (2026-10-27)
+
+**Status: Implemented and verified locally. No migration.**
+
+### Problems (verified)
+
+- A failed insert returned the raw Supabase message to the device
+  (`[deviceKey].ts`, `{ error }` from `insertSensorReadings`), which
+  leaks schema and constraint names.
+- A failed sensor upsert silently dropped that reading.
+- If every sensor upsert failed (for example, a database outage), the
+  device got `400 "No sensor values found"`, which blames the payload
+  for a server fault.
+
+### Acceptance criteria
+
+- [x] Storage failures answer
+      `500 { "error": "Could not store readings. Try again." }`. Details
+      go only to the server log (device id, sensor key and kind; no
+      secrets).
+- [x] If no rows remain because sensor saves failed, the response is
+      500, not 400.
+- [x] Each failed sensor upsert is logged.
+- [x] `/docs/api` 500 row documents the body and that it's safe to
+      retry (nothing was stored).
+
+### Evidence
+
+- `[deviceKey].test.ts` +2. Both fail against the previous route.
+- `pnpm test`: 2933 passed. `pnpm typecheck`: 0 errors. `pnpm lint`: 64
+  warnings (baseline). `pnpm build`: pass. `pnpm test:e2e`: 44 passed,
+  12 skipped.
+
+### Remaining Milestone 1 work (in priority order)
+
+1. **Ingest round trips:** a per-reading `upsertDeviceSensor` loop, and
+   `getUserById` twice per household member on every POST
+   (`[deviceKey].ts`). Alerts run inline without `waitUntil`, so slow
+   providers stall the device's POST.
+2. **Idempotency / duplicates:** no unique key or idempotency key on
+   `sensor_readings`. A device retry after a timeout writes a duplicate.
+   Needs a migration and a design decision.
+3. **Cadence-aware freshness:** fixed 30 min / 2 h thresholds
+   (`relativeTime.ts`) label slow-but-healthy devices offline.
+   Future-dated rows never go stale.
+4. **History display:** `garageTempsHistory.ts:166-197` zero-fills
+   humidity and temperature. IndoorOutdoor, ProbeSpread and BatteryTrend
+   charts connect points across gaps.
+5. **Data cleanup (needs approval):** historical fabricated zeros, °C
+   values stored as °F, and stored DS18B20 fault codes.

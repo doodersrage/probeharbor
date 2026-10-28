@@ -229,8 +229,8 @@ const mqttCurl = `curl -X POST "${siteUrl}/api/ingest/mqtt" \\
             </tr>
             <tr>
               <td><code>500</code></td>
-              <td>Server-side persistence failure</td>
-              <td><code>&#123; "error": "…" &#125;</code></td>
+              <td>Server-side persistence failure; safe to retry</td>
+              <td><code>&#123; "error": "Could not store readings. Try again." &#125;</code></td>
             </tr>
           </tbody>
         </table>

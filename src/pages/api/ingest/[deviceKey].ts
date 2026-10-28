@@ -98,8 +98,19 @@ export const POST: APIRoute = async ({ params, request }) => {
     console.error("Push sensor discovery failed:", sensorSync.error);
   }
 
+  // Server-side failures get a generic message; details stay in the log.
+  const storageFailed = () =>
+    finish(
+      new Response(JSON.stringify({ error: "Could not store readings. Try again." }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      }),
+      false,
+    );
+
   const recordedAt = new Date().toISOString();
   const rows = [];
+  let sensorFailures = 0;
   for (const reading of interpreted.readings) {
     const sensor = await upsertDeviceSensor(
       device.id,
@@ -108,7 +119,11 @@ export const POST: APIRoute = async ({ params, request }) => {
       reading.kind,
       reading.unit,
     );
-    if (!sensor.sensor) continue;
+    if (!sensor.sensor) {
+      sensorFailures += 1;
+      console.error(`Ingest for device ${device.id}: sensor ${reading.key} (${reading.kind}) not saved:`, sensor.error);
+      continue;
+    }
     rows.push({
       sensor_id: sensor.sensor.id,
       household_id: device.household_id,
@@ -128,6 +143,11 @@ export const POST: APIRoute = async ({ params, request }) => {
     );
   }
 
+  if (rows.length === 0 && sensorFailures > 0) {
+    // The payload was fine; we couldn't save its sensors.
+    return storageFailed();
+  }
+
   if (rows.length === 0) {
     const body =
       interpreted.rejected.length > 0
@@ -144,13 +164,8 @@ export const POST: APIRoute = async ({ params, request }) => {
 
   const { error } = await insertSensorReadings(rows);
   if (error) {
-    return finish(
-      new Response(JSON.stringify({ error }), {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
-      }),
-      false,
-    );
+    console.error(`Ingest for device ${device.id}: insert failed:`, error);
+    return storageFailed();
   }
 
   const metaPatch: Record<string, unknown> = {};

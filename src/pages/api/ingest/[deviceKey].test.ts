@@ -266,6 +266,32 @@ describe("POST /api/ingest/[deviceKey]", () => {
     expect(mockRecordIngestStat).toHaveBeenCalledWith("device-1", false);
   });
 
+  it("hides the database error from the device when storing fails", async () => {
+    mockInsertSensorReadings.mockResolvedValue({ error: 'relation "sensor_readings" violates constraint xyz' });
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const { POST } = await import("./[deviceKey]");
+
+    const response = await POST(makeContext({ headerKey: "good-key" }));
+    const text = await response.text();
+
+    expect(response.status).toBe(500);
+    expect(text).toBe(JSON.stringify({ error: "Could not store readings. Try again." }));
+    expect(text).not.toContain("sensor_readings");
+    expect(mockRecordIngestStat).toHaveBeenCalledWith("device-1", false);
+  });
+
+  it("answers 500, not 'no sensor values', when no sensor could be saved", async () => {
+    mockUpsertDeviceSensor.mockResolvedValue({ sensor: null, error: "connection reset" });
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const { POST } = await import("./[deviceKey]");
+
+    const response = await POST(makeContext({ headerKey: "good-key" }));
+
+    expect(response.status).toBe(500);
+    expect(await response.json()).toEqual({ error: "Could not store readings. Try again." });
+    expect(mockInsertSensorReadings).not.toHaveBeenCalled();
+  });
+
   it("ignores null or blank battery/rssi instead of recording 0", async () => {
     mockReadJsonBodyWithLimit.mockResolvedValue({
       ok: true,
