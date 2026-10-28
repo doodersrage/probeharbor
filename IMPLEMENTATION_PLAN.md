@@ -2462,3 +2462,30 @@ UTC days, but nothing said so.
   a user in UTC−5, "from Oct 28" starts at 7 pm Oct 27 local. Fixing that
   needs the user's time zone on the request. That's a follow-up if users
   notice.
+
+------------------------------------------------------------------------
+
+## Milestone 6, increment 6.2: text alternatives for the comparison charts (2026-10-28)
+
+**Status: Implemented and verified locally. No migration. Not deployed.**
+
+Audit (M6): "Other charts have title-only aria labels." On Dashboard →
+History, `IndoorOutdoorChart` and `ProbeSpreadChart` drew canvases labelled
+only with their title. (`BatteryTrendChart`'s cards already list each
+device's values in text beside the chart.)
+
+- [x] `chartSummaries.ts` builds a one-sentence summary:
+      - indoor/outdoor: the latest indoor, outdoor and difference, plus the
+        period's range
+      - probe spread: the latest gap and its min/max, plus the widest gap
+        and when it happened
+- [x] Each canvas's `aria-label` is now "title. summary". Templates in
+      5 locales (`history/charts` `indoorOutdoor.summary`,
+      `probeSpread.summary`), with the chart's own number and time
+      formatting.
+- Evidence: `chartSummaries.test.ts` (7: both summaries, empty input,
+  placeholders match English in every locale). `pnpm test`: 3121 passed.
+  `pnpm typecheck`: 0 errors. `pnpm lint`: 64 warnings (baseline).
+  `pnpm build`: pass. Not checked with a screen reader (signed-in page).
+- Units stay °F, matching these charts' axes; they don't follow the °C
+  preference yet.

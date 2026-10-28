@@ -16,6 +16,7 @@ import { useHistoryChartInteraction } from "../lib/useHistoryChartInteraction";
 import type { IndoorOutdoorPoint } from "../lib/indoorOutdoorDelta";
 import { expandedChartDialogAttrs } from "../lib/chartLightbox";
 import { segmentStarts } from "../lib/chartGaps";
+import { indoorOutdoorSummary } from "../lib/chartSummaries";
 
 /**
  * Every visible string, aria-label and title. Plain strings only (island
@@ -40,6 +41,9 @@ export const INDOOR_OUTDOOR_CHART_TEXT_EN = {
   delta: "ΔT",
   indoor: "Indoor",
   outdoor: "Outdoor",
+  /** Screen-reader text alternative for the canvas (°F, like the chart). */
+  summary:
+    "Latest: indoor {indoor}°F, outdoor {outdoor}°F, a difference of {delta}°F. Over this period the difference ranged from {min}°F to {max}°F.",
 };
 
 export type IndoorOutdoorChartText = typeof INDOOR_OUTDOOR_CHART_TEXT_EN;
@@ -83,6 +87,10 @@ export default function IndoorOutdoorChart({
   const text = useMemo<IndoorOutdoorChartText>(
     () => ({ ...INDOOR_OUTDOOR_CHART_TEXT_EN, ...textProp }),
     [textProp],
+  );
+  const summaryText = useMemo(
+    () => indoorOutdoorSummary(points, text.summary, (v) => fixed(v, 1, locale)),
+    [points, text.summary, locale],
   );
   const title = titleProp ?? text.title;
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -475,7 +483,7 @@ export default function IndoorOutdoorChart({
             ref={canvasRef}
             class={`w-full history-chart-canvas history-chart-canvas--delta${zoomed ? " is-zoomed" : ""}${isPanning ? " is-panning" : ""}${isBrushing ? " is-brushing" : ""}`}
             role="img"
-            aria-label={title}
+            aria-label={summaryText ? `${title}. ${summaryText}` : title}
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}

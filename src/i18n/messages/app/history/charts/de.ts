@@ -83,6 +83,7 @@ const de: AppHistoryChartsMessages = {
     hoursValue: "{hours} Std.",
   },
   probeSpread: {
+    summary: "Zuletzt lag der Abstand zwischen wärmstem und kältestem Fühler bei {spread} °F ({min} °F bis {max} °F). Größter Abstand in diesem Zeitraum: {widest} °F, um {time}.",
     title: "Streuung der Fühler (°F)",
     closeExpandedAria: "Vergrößertes Diagramm schließen",
     close: "Schließen",
@@ -93,6 +94,7 @@ const de: AppHistoryChartsMessages = {
     warmest: "Wärmster",
   },
   indoorOutdoor: {
+    summary: "Zuletzt: innen {indoor} °F, außen {outdoor} °F, eine Differenz von {delta} °F. In diesem Zeitraum lag die Differenz zwischen {min} °F und {max} °F.",
     title: "Differenz innen – außen",
     closeExpandedAria: "Vergrößertes Diagramm schließen",
     controlsAria: "Diagrammsteuerung",

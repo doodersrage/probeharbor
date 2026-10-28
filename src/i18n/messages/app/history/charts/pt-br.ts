@@ -83,6 +83,7 @@ const ptBr: AppHistoryChartsMessages = {
     hoursValue: "{hours} h",
   },
   probeSpread: {
+    summary: "Diferença mais recente entre a sonda mais quente e a mais fria: {spread} °F ({min} °F a {max} °F). Maior diferença neste período: {widest} °F, em {time}.",
     title: "Dispersão entre sondas (°F)",
     closeExpandedAria: "Fechar o gráfico ampliado",
     close: "Fechar",
@@ -93,6 +94,7 @@ const ptBr: AppHistoryChartsMessages = {
     warmest: "Mais quente",
   },
   indoorOutdoor: {
+    summary: "Mais recente: interno {indoor} °F, externo {outdoor} °F, uma diferença de {delta} °F. Neste período a diferença variou de {min} °F a {max} °F.",
     title: "Diferença interno-externo",
     closeExpandedAria: "Fechar o gráfico ampliado",
     controlsAria: "Controles do gráfico",

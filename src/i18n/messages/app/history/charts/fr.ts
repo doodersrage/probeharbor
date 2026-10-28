@@ -83,6 +83,7 @@ const fr: AppHistoryChartsMessages = {
     hoursValue: "{hours} h",
   },
   probeSpread: {
+    summary: "Dernier écart entre la sonde la plus chaude et la plus froide : {spread} °F ({min} °F à {max} °F). Plus grand écart sur cette période : {widest} °F, à {time}.",
     title: "Écart entre sondes (°F)",
     closeExpandedAria: "Fermer le graphique agrandi",
     close: "Fermer",
@@ -93,6 +94,7 @@ const fr: AppHistoryChartsMessages = {
     warmest: "Plus chaude",
   },
   indoorOutdoor: {
+    summary: "Dernière mesure : intérieur {indoor} °F, extérieur {outdoor} °F, soit un écart de {delta} °F. Sur cette période, l’écart est allé de {min} °F à {max} °F.",
     title: "Écart intérieur-extérieur",
     closeExpandedAria: "Fermer le graphique agrandi",
     controlsAria: "Commandes du graphique",

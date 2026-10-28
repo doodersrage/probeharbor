@@ -9,6 +9,7 @@ import {
 } from "../lib/historyChartInteraction";
 import type { ProbeSpreadPoint } from "../lib/probeSpread";
 import { expandedChartDialogAttrs } from "../lib/chartLightbox";
+import { probeSpreadSummary } from "../lib/chartSummaries";
 import { segmentStarts } from "../lib/chartGaps";
 
 /**
@@ -25,6 +26,9 @@ export const PROBE_SPREAD_CHART_TEXT_EN = {
   spread: "Spread",
   coldest: "Coldest",
   warmest: "Warmest",
+  /** Screen-reader text alternative for the canvas. */
+  summary:
+    "Latest gap between the warmest and coldest probe: {spread}°F ({min}°F to {max}°F). Widest gap in this period: {widest}°F, at {time}.",
 };
 
 export type ProbeSpreadChartText = typeof PROBE_SPREAD_CHART_TEXT_EN;
@@ -65,6 +69,10 @@ export default function ProbeSpreadChart({
   const text = useMemo<ProbeSpreadChartText>(
     () => ({ ...PROBE_SPREAD_CHART_TEXT_EN, ...textProp }),
     [textProp],
+  );
+  const summaryText = useMemo(
+    () => probeSpreadSummary(points, text.summary, (v) => fixed(v, 1, locale), (iso) => hoverTime(iso, locale)),
+    [points, text.summary, locale],
   );
   const title = titleProp ?? text.title;
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -268,7 +276,7 @@ export default function ProbeSpreadChart({
             ref={canvasRef}
             class="w-full history-chart-canvas history-chart-canvas--bars"
             role="img"
-            aria-label={title}
+            aria-label={summaryText ? `${title}. ${summaryText}` : title}
             onPointerMove={(e) => {
               const bounds = plotBoundsRef.current;
               const canvas = canvasRef.current;

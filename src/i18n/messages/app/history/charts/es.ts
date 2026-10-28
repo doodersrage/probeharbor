@@ -83,6 +83,7 @@ const es: AppHistoryChartsMessages = {
     hoursValue: "{hours} h",
   },
   probeSpread: {
+    summary: "Última diferencia entre la sonda más cálida y la más fría: {spread} °F ({min} °F a {max} °F). Mayor diferencia en este periodo: {widest} °F, a las {time}.",
     title: "Dispersión entre sondas (°F)",
     closeExpandedAria: "Cerrar el gráfico ampliado",
     close: "Cerrar",
@@ -93,6 +94,7 @@ const es: AppHistoryChartsMessages = {
     warmest: "Más cálida",
   },
   indoorOutdoor: {
+    summary: "Última lectura: interior {indoor} °F, exterior {outdoor} °F, una diferencia de {delta} °F. En este periodo la diferencia fue de {min} °F a {max} °F.",
     title: "Diferencia interior-exterior",
     closeExpandedAria: "Cerrar el gráfico ampliado",
     controlsAria: "Controles del gráfico",
