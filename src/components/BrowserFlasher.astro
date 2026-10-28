@@ -74,6 +74,7 @@ const t = browserFlasherMessages(getLocale(Astro));
   // The pre-bundled build: the package source imports @material/web internals that newer releases no longer export.
   import "esp-web-tools/dist/web/install-button.js";
   import { trackProductEvent } from "../lib/productAnalytics";
+  import { flasherFailureMessage } from "../lib/flasherFailureMessage";
 
   type SerialPortLike = {
     open(options: { baudRate: number }): Promise<void>;
@@ -99,7 +100,6 @@ const t = browserFlasherMessages(getLocale(Astro));
     const button = root.querySelector<HTMLButtonElement>("[data-flasher-send]");
     if (!form || !status || !log || !button) continue;
     const text = JSON.parse(root.dataset.flasherText ?? "{}") as Record<string, string>;
-
     const serial = (navigator as Navigator & { serial?: SerialLike }).serial;
     if (!serial) {
       button.disabled = true;
@@ -200,7 +200,7 @@ const t = browserFlasherMessages(getLocale(Astro));
               line.startsWith("TT no probe")
             ) {
               outcome = "failed";
-              status.textContent = line.charAt(3).toUpperCase() + line.slice(4);
+              status.textContent = flasherFailureMessage(line, text);
             }
           }
           if (outcome !== "timeout") break;

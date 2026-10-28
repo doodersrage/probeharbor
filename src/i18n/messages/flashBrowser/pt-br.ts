@@ -45,6 +45,10 @@ const ptBr: BrowserFlasherMessages = {
     liveWithSensor:
       "Primeira leitura recebida do seu {sensor}, com umidade. Está funcionando: você já pode desconectar e instalar.",
     live: "Primeira leitura recebida. A sonda está funcionando: você já pode desconectar e instalar.",
+    wifiFailed: "Falha no Wi‑Fi: confira o nome da rede e a senha. Placas ESP32 só se conectam a redes de 2,4 GHz.",
+    keyRejected: "Chave rejeitada: copie de novo a chave do dispositivo em Dashboard → Devices.",
+    configError: "A placa não aceitou as configurações. Preencha o nome da rede e a chave do dispositivo e envie de novo.",
+    noProbe: "Nenhuma sonda encontrada: confira a ligação (dados do DS18B20 ou DHT22 no GPIO {pin}, pull-up de 4,7 kΩ para 3,3 V).",
     postUnreachable: "A placa está no Wi‑Fi, mas não conseguiu alcançar o ProbeHarbor. Ela continua tentando; confira se esta rede permite HTTPS de saída (algumas redes de convidados bloqueiam).",
     postRejected: "O ProbeHarbor respondeu {code} à leitura da placa. Ela continua tentando; se continuar assim, veja o status do sistema ou tente de novo em alguns minutos.",
     noReading:

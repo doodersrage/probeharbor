@@ -45,6 +45,10 @@ const fr: BrowserFlasherMessages = {
     liveWithSensor:
       "Premier relevé reçu de votre {sensor}, avec l’humidité. C’est en service : vous pouvez le débrancher et l’installer.",
     live: "Premier relevé reçu. La sonde est en service : vous pouvez la débrancher et l’installer.",
+    wifiFailed: "Échec du Wi‑Fi : vérifiez le nom du réseau et le mot de passe. Les cartes ESP32 ne rejoignent que les réseaux 2,4 GHz.",
+    keyRejected: "Clé refusée : recopiez la clé d’appareil depuis Dashboard → Devices.",
+    configError: "La carte n’a pas accepté les réglages. Renseignez le nom du réseau et la clé d’appareil, puis renvoyez-les.",
+    noProbe: "Aucune sonde trouvée : vérifiez le câblage (données du DS18B20 ou DHT22 sur GPIO {pin}, résistance de tirage de 4,7 kΩ vers 3,3 V).",
     postUnreachable: "La carte est sur le Wi‑Fi mais n’a pas pu joindre ProbeHarbor. Elle continue d’essayer ; vérifiez que ce réseau autorise le HTTPS sortant (certains réseaux invités le bloquent).",
     postRejected: "ProbeHarbor a répondu {code} à la mesure de la carte. Elle continue d’essayer ; si cela persiste, consultez l’état du système ou réessayez dans quelques minutes.",
     noReading:

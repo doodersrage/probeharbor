@@ -86,9 +86,15 @@ function installFakeBoard(mode: BoardMode) {
   Object.defineProperty(navigator, "serial", { value: { requestPort }, configurable: true });
 }
 
-async function sendSettings(page: Page, mode: BoardMode, key = DEVICE_KEY, extras: string[] = []) {
+async function sendSettings(
+  page: Page,
+  mode: BoardMode,
+  key = DEVICE_KEY,
+  extras: string[] = [],
+  path = "/flash",
+) {
   await page.addInitScript(installFakeBoard, mode);
-  await page.goto("/flash");
+  await page.goto(path);
   await page.fill('input[name="ssid"]', "Home WiFi 2.4");
   await page.fill('input[name="password"]', " pass word ");
   await page.fill('input[name="key"]', key);
@@ -153,9 +159,9 @@ test.describe("browser flasher", () => {
   });
 
   for (const [mode, message] of [
-    ["wifi-fail", /Wifi failed: check the network name and password/],
+    ["wifi-fail", /Wi.Fi failed: check the network name and password/],
     ["bad-key", /Key rejected: copy the device key again/],
-    ["no-probe", /No probe: check the wiring \(DS18B20 or DHT22/],
+    ["no-probe", /No probe found: check the wiring \(DS18B20 or DHT22 data on GPIO 4/],
   ] as const) {
     test(`reports a ${mode} board`, async ({ page }) => {
       const board = await sendSettings(page, mode);

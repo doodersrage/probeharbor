@@ -2292,6 +2292,29 @@ Wi-Fi. Sending the first reading…" for 90 s, then showed the generic
   e2e), and any real board. **Hardware check:** on a real ESP32, join a
   network that blocks outbound HTTPS (or point DNS away) and confirm the
   message appears.
-- Still open from the audit (M3): other firmware failure lines (wifi
-  failed, key rejected, no probe) are shown as untranslated English, and
-  nothing listens for `probeharbor:probe-live`.
+- Still open from the audit (M3): ~~other firmware failure lines are
+  shown as untranslated English~~ (3.3 below); nothing listens for
+  `probeharbor:probe-live`.
+
+------------------------------------------------------------------------
+
+## Milestone 3, increment 3.3: flasher failures in the page language (2026-10-28)
+
+**Status: Implemented and verified locally. No migration. Not deployed.**
+
+- [x] `flasherFailureMessage` (`src/lib/flasherFailureMessage.ts`) maps the
+      firmware's English failure lines (`TT wifi failed`, `TT key rejected`,
+      `TT config error`, `TT no probe`, with the reported GPIO pin) to
+      `flashBrowser.status.*` copy in 5 locales. Unknown lines fall back to
+      the board's words, as before. The raw serial log stays as the board
+      printed it.
+- Evidence: `flasherFailureMessage.test.ts` (4: German/Spanish/French/
+  Portuguese mapping against the real message files, pin fill-in, all
+  locales complete, fallback). `e2e/flasher.spec.ts` English expectations
+  updated. `pnpm test`: 3092 passed. `pnpm typecheck`: 0 errors.
+  `pnpm lint`: 64 warnings (baseline). `pnpm build`: pass.
+  `pnpm test:e2e`: 47 passed, 12 skipped.
+- Not verified: a non-English page end to end. Locally, translations come
+  from the separate i18n service and the dev server falls back to English
+  (seen on `/de/flash`), so the e2e can't cover it. Check `/de/flash` in
+  production with the fake board, or a real one, after deploy.

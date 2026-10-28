@@ -45,6 +45,10 @@ const es: BrowserFlasherMessages = {
     liveWithSensor:
       "Primera lectura recibida de tu {sensor}, con humedad. Ya está funcionando: puedes desconectarlo y montarlo.",
     live: "Primera lectura recibida. La sonda ya está funcionando: puedes desconectarla y montarla.",
+    wifiFailed: "Falló el Wi‑Fi: revisa el nombre de la red y la contraseña. Las placas ESP32 solo se conectan a redes de 2,4 GHz.",
+    keyRejected: "Clave rechazada: vuelve a copiar la clave del dispositivo desde Dashboard → Devices.",
+    configError: "La placa no aceptó los ajustes. Completa el nombre de la red y la clave del dispositivo y vuelve a enviarlos.",
+    noProbe: "No se encontró ninguna sonda: revisa el cableado (datos del DS18B20 o DHT22 en GPIO {pin}, pull-up de 4,7 kΩ a 3,3 V).",
     postUnreachable: "La placa está en el Wi‑Fi, pero no pudo conectar con ProbeHarbor. Sigue reintentando; comprueba que esta red permita HTTPS saliente (algunas redes de invitados lo bloquean).",
     postRejected: "ProbeHarbor respondió {code} a la lectura de la placa. Sigue reintentando; si continúa, revisa el estado del sistema o vuelve a intentarlo en unos minutos.",
     noReading:
