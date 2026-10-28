@@ -26,11 +26,11 @@ const es: AlertMessages = {
   },
   forecast: {
     title: "Riesgo de congelación previsto",
-    detail: "La previsión exterior llega a {temp} °F en {hours} h (umbral de congelación {threshold} °F).",
+    detail: "La previsión exterior llega a {temp} {unit} en {hours} h (umbral de congelación {threshold} {unit}).",
   },
   rate: {
     title: "Cambio rápido de temperatura",
-    detail: "{label} cambió {delta} °F en la última hora (umbral ±{threshold} °F).",
+    detail: "{label} cambió {delta} {unit} en la última hora (umbral ±{threshold} {unit}).",
   },
   battery: {
     title: "Batería del dispositivo baja",

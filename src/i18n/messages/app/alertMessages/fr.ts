@@ -26,11 +26,11 @@ const fr: AlertMessages = {
   },
   forecast: {
     title: "Risque de gel prévu",
-    detail: "La prévision extérieure atteint {temp} °F d’ici {hours} h (seuil de gel {threshold} °F).",
+    detail: "La prévision extérieure atteint {temp} {unit} d’ici {hours} h (seuil de gel {threshold} {unit}).",
   },
   rate: {
     title: "Variation rapide de température",
-    detail: "{label} a varié de {delta} °F au cours de la dernière heure (seuil ±{threshold} °F).",
+    detail: "{label} a varié de {delta} {unit} au cours de la dernière heure (seuil ±{threshold} {unit}).",
   },
   battery: {
     title: "Batterie d’appareil faible",

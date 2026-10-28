@@ -27,11 +27,11 @@ const de: AlertMessages = {
   forecast: {
     title: "Frostgefahr laut Vorhersage",
     detail:
-      "Die Außenvorhersage erreicht {temp} °F innerhalb von {hours} Std. (Frost-Schwellenwert {threshold} °F).",
+      "Die Außenvorhersage erreicht {temp} {unit} innerhalb von {hours} Std. (Frost-Schwellenwert {threshold} {unit}).",
   },
   rate: {
     title: "Schnelle Temperaturänderung",
-    detail: "{label} hat sich in der letzten Stunde um {delta} °F verändert (Schwellenwert ±{threshold} °F).",
+    detail: "{label} hat sich in der letzten Stunde um {delta} {unit} verändert (Schwellenwert ±{threshold} {unit}).",
   },
   battery: {
     title: "Akku eines Geräts schwach",

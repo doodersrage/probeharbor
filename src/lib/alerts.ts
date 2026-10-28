@@ -820,14 +820,18 @@ export function evaluateForecastFreeze(
   forecastMinF: number | null,
   hoursAhead: number,
   locale: Locale = "en",
+  display?: AlertDisplay,
 ): string | null {
   if (!settings.enabled || !settings.forecastFreezeEnabled) return null;
   if (forecastMinF == null || !Number.isFinite(forecastMinF)) return null;
   if (forecastMinF > settings.freezeThresholdF) return null;
+  const forecast = alertTemp(forecastMinF, locale, display, 1);
+  const threshold = alertTemp(settings.freezeThresholdF, locale, display, display?.useCelsius ? 1 : 0);
   return fmt(alertMessages(locale).forecast.detail, {
-    temp: alertNumber(forecastMinF, locale, 1),
+    temp: forecast.temp,
+    unit: forecast.unit,
     hours: alertNumber(hoursAhead, locale),
-    threshold: alertNumber(settings.freezeThresholdF, locale),
+    threshold: threshold.temp,
   });
 }
 
@@ -836,16 +840,20 @@ export function evaluateRateChange(
   label: string,
   valuesOldestToNewest: number[],
   locale: Locale = "en",
+  display?: AlertDisplay,
 ): string | null {
   if (!settings.enabled || valuesOldestToNewest.length < 2) return null;
   const first = valuesOldestToNewest[0];
   const last = valuesOldestToNewest[valuesOldestToNewest.length - 1];
   const delta = last - first;
   if (Math.abs(delta) >= settings.rateChangeF) {
+    // A change, not a temperature: °C is ×5/9 with no 32° offset.
+    const scale = display?.useCelsius ? 5 / 9 : 1;
     return fmt(alertMessages(locale).rate.detail, {
       label,
-      delta: `${delta > 0 ? "+" : ""}${alertNumber(delta, locale, 1)}`,
-      threshold: alertNumber(settings.rateChangeF, locale),
+      delta: `${delta > 0 ? "+" : ""}${alertNumber(delta * scale, locale, 1)}`,
+      threshold: alertNumber(settings.rateChangeF * scale, locale, display?.useCelsius ? 1 : 0),
+      unit: display?.useCelsius ? "°C" : "°F",
     });
   }
   return null;

@@ -201,6 +201,7 @@ export async function collectHistoryForAllUsers(): Promise<{
             config.householdId || householdId,
             undefined,
             memberLocale,
+            { useCelsius: memberUser?.user_metadata?.use_celsius === true },
           );
           await maybeSendDeviceHealthAlerts(
             member.user_id,

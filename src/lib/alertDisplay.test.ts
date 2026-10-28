@@ -42,3 +42,34 @@ describe("freeze alert text follows the recipient", () => {
     }
   });
 });
+
+describe("forecast and rate alerts follow the recipient's unit", async () => {
+  const { evaluateForecastFreeze, evaluateRateChange, DEFAULT_ALERT_SETTINGS } = await import("./alerts");
+  const settings = { ...DEFAULT_ALERT_SETTINGS, enabled: true, forecastFreezeEnabled: true, freezeThresholdF: 34, rateChangeF: 9 };
+
+  it("forecast: °F by default, °C on request", () => {
+    expect(evaluateForecastFreeze(settings, 23, 12, "en")).toBe(
+      "Outdoor forecast reaches 23.0°F within 12h (freeze threshold 34°F).",
+    );
+    expect(evaluateForecastFreeze(settings, 23, 12, "en", { useCelsius: true })).toBe(
+      "Outdoor forecast reaches -5.0°C within 12h (freeze threshold 1.1°C).",
+    );
+  });
+
+  it("rate: converts a change without the 32° offset", () => {
+    expect(evaluateRateChange(settings, "Garage", [50, 41], "en", { useCelsius: true })).toBe(
+      "Garage changed -5.0°C in the last hour (threshold ±5.0°C).",
+    );
+    expect(evaluateRateChange(settings, "Garage", [50, 41], "en")).toBe(
+      "Garage changed -9.0°F in the last hour (threshold ±9°F).",
+    );
+  });
+
+  it("leaves no placeholder in any language", async () => {
+    for (const locale of ["en", "es", "fr", "de", "pt-br"] as const) {
+      await ensureLocale(locale, ["app"]);
+      const text = `${evaluateForecastFreeze(settings, 23, 12, locale, { useCelsius: true })} ${evaluateRateChange(settings, "G", [50, 41], locale, { useCelsius: true })}`;
+      expect(text).not.toMatch(/\{\w+\}/);
+    }
+  });
+});

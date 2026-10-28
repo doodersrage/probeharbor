@@ -1789,3 +1789,24 @@ migration:
   against the previous code. `pnpm test`: 3015 passed. `pnpm typecheck`:
   0 errors. `pnpm lint`: 64 warnings (baseline). `pnpm build`: pass.
   `pnpm test:e2e`: 44 passed, 12 skipped.
+
+------------------------------------------------------------------------
+
+## Increment D4b (decision M2-5, rest): forecast and rate alerts in °C (2026-10-28)
+
+**Status: Implemented and verified locally. No migration.**
+
+- [x] Forecast-freeze and rapid-change alerts follow the recipient's
+      °C/°F preference. The cron (`runAlertsForUser`, `collectHistory`)
+      passes `use_celsius`. A rate *change* converts by ×5/9 with no 32°
+      offset. Templates use `{unit}` in 5 locales.
+- Evidence: `alertDisplay.test.ts` +3 (forecast °F/°C, rate change
+  conversion, no placeholder in any locale). `pnpm test`: 3018 passed.
+  `pnpm typecheck`: 0 errors. `pnpm lint`: 64 warnings (baseline).
+  `pnpm build`: pass. `pnpm test:e2e`: 44 passed, 12 skipped.
+- All alert templates are now unit-aware. Runway and NWS texts carry no
+  temperatures.
+- **Still open from M2-5:** the property/household name in alert
+  titles. It needs a per-member lookup of whether they belong to more
+  than one household. Small, but it adds a query per alert send; do it
+  when multi-property users ask.

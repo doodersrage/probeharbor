@@ -565,6 +565,7 @@ export async function maybeSendForecastFreezeAlert(
   settings: AlertSettings,
   weatherCityId?: string | null,
   locale: Locale = "en",
+  display?: AlertDisplay,
 ): Promise<void> {
   if (!settings.enabled || !settings.forecastFreezeEnabled) return;
   const entitlements = await getUserEntitlements(userId);
@@ -578,6 +579,7 @@ export async function maybeSendForecastFreezeAlert(
     window?.minTempF ?? null,
     settings.forecastHoursAhead,
     locale,
+    display,
   );
   if (!message) return;
 
@@ -773,7 +775,9 @@ export async function maybeSendThresholdAlerts(
   }, locale);
   await sendFloodAlertsIfNeeded(userId, email, settings, floodReadings, locale);
   await sendPowerAlertsIfNeeded(userId, email, settings, powerOffReadings, locale);
-  await maybeSendForecastFreezeAlert(userId, email, settings, undefined, locale);
+  await maybeSendForecastFreezeAlert(userId, email, settings, undefined, locale, {
+    useCelsius: userMetadata?.use_celsius === true,
+  });
   await maybeSendRunwayAlert(userId, email, settings, householdId, latest, locale);
   await maybeSendNwsFreezeAlert(userId, email, settings, undefined, locale);
   await safeAutoResolve(userId, { kinds: ["forecast", "nws", "runway", "rate"], olderThanMs: DAY_MS, reason: "expired" });
@@ -983,6 +987,7 @@ export async function maybeSendRateAndOutageAlerts(
   householdId?: string | null,
   readings: AlertReading[] = [],
   locale: Locale = "en",
+  display?: AlertDisplay,
 ): Promise<void> {
   if (!settings.enabled) return;
   const t = await alertText(locale);
@@ -1032,7 +1037,7 @@ export async function maybeSendRateAndOutageAlerts(
     for (const sensor of device.sensors) {
       if (sensor.kind !== "temperature" || !sensor.visible) continue;
       const values = await getRecentNumericReadings(sensor.id, since);
-      const msg = evaluateRateChange(settings, sensor.label, values, locale);
+      const msg = evaluateRateChange(settings, sensor.label, values, locale, display);
       if (msg) rateMessages.push(msg);
     }
   }

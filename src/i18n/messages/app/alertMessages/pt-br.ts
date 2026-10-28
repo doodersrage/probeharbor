@@ -26,11 +26,11 @@ const ptBr: AlertMessages = {
   },
   forecast: {
     title: "Risco de congelamento previsto",
-    detail: "A previsão externa chega a {temp} °F em até {hours} h (limite de congelamento {threshold} °F).",
+    detail: "A previsão externa chega a {temp} {unit} em até {hours} h (limite de congelamento {threshold} {unit}).",
   },
   rate: {
     title: "Mudança rápida de temperatura",
-    detail: "{label} variou {delta} °F na última hora (limite ±{threshold} °F).",
+    detail: "{label} variou {delta} {unit} na última hora (limite ±{threshold} {unit}).",
   },
   battery: {
     title: "Bateria do dispositivo fraca",

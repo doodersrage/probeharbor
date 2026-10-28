@@ -31,11 +31,11 @@ const en = {
   },
   forecast: {
     title: "Forecast freeze risk",
-    detail: "Outdoor forecast reaches {temp}°F within {hours}h (freeze threshold {threshold}°F).",
+    detail: "Outdoor forecast reaches {temp}{unit} within {hours}h (freeze threshold {threshold}{unit}).",
   },
   rate: {
     title: "Rapid temperature change",
-    detail: "{label} changed {delta}°F in the last hour (threshold ±{threshold}°F).",
+    detail: "{label} changed {delta}{unit} in the last hour (threshold ±{threshold}{unit}).",
   },
   battery: {
     title: "Device battery low",
