@@ -1108,3 +1108,69 @@ condensation estimates. Some consumers had worked around it locally
 - `/api/share/{token}/readings` `history` points can carry
   `humidity: null`. The public share page doesn't read humidity from
   them.
+
+------------------------------------------------------------------------
+
+## Milestone 1, increment 1.8: no lines across missing data (2026-10-27)
+
+**Status: Implemented and verified locally. No migration.**
+
+- [x] `IndoorOutdoorChart`, `ProbeSpreadChart` and `BatteryTrendChart`
+      start a new line segment after a gap instead of drawing straight
+      across it. They use the same threshold as `HistoryChart`: 4× the
+      median spacing, at least 90 min, so hourly series aren't broken
+      (`chartGaps.ts` `segmentStarts`).
+- Evidence: `chartGaps.test.ts` +2. `pnpm test`: 2943 passed.
+  `pnpm typecheck`: 0 errors. `pnpm lint`: 64 warnings (baseline).
+  `pnpm build`: pass. `pnpm test:e2e`: 44 passed, 12 skipped. Canvas
+  output wasn't reviewed visually (signed-in pages).
+
+------------------------------------------------------------------------
+
+## Milestone 1 status (2026-10-27)
+
+**Partial.** Done: 1.1 to 1.8 (above).
+
+Against the milestone's acceptance criteria:
+- **Users can tell a current reading from an old or missing one.**
+  Partial. Missing values are no longer zeros (1.1, 1.7) and charts
+  break at gaps (1.8). Freshness labels are still fixed-threshold (see
+  B below).
+- **Invalid data can't quietly produce a false "healthy" status.**
+  Mostly met: implausible values are rejected (1.4), °C is converted
+  (1.3) and nothing is fabricated (1.1).
+- **Ingestion is deterministic, documented and regression-tested.**
+  Met for the paths changed here (`docs/ingest/index.md`, `/docs/api`).
+- **No unnecessary per-sensor round trips.** Met for ingest
+  (ASTRO-7 RPC, 1.6). Alert evaluation still has per-sensor queries
+  (Milestone 2).
+
+### Blocked on decisions (not started)
+
+- **A. Ingest idempotency.** Timestamps are server-assigned, so a retry
+  after a timeout stores a duplicate. Options:
+  1. Accept an optional device timestamp (`ts`) plus a unique
+     `(sensor_id, recorded_at)` index. This needs a clock-skew policy
+     and changes firmware.
+  2. Accept an `Idempotency-Key` header, deduped for a short window.
+  3. Do nothing: duplicates are rare and mostly harmless.
+
+  Needs a product/API decision and a migration.
+- **B. Cadence-aware freshness.** Fixed 30 min / 2 h thresholds
+  (`relativeTime.ts`). Options:
+  1. Infer each device's interval from its recent spacing (like
+     `chartGaps`).
+  2. A per-device "expected interval" setting.
+
+  Needs a UX decision plus copy in 5 locales. Future-dated rows (device
+  clock ahead) never go stale; this goes with option 1 above.
+- **C. Historical data cleanup (production data; needs approval).**
+  Fabricated 0°F/0% rows, °C values stored as °F, and stored DS18B20
+  fault codes. Each needs a read-only sizing query first (see 1.1, 1.3
+  and 1.4).
+- **D. Alerts off the request path (`waitUntil`).** Belongs to
+  Milestone 2.
+
+**Recommended next:** Milestone 2 gap "failed leak/power/rule alerts go
+silent for 4 h" (`alertNotifications.ts:408,447,861`). It's a verified
+alert-reliability bug with a small fix and needs no decision.

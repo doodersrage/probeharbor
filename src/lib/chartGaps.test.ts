@@ -27,3 +27,19 @@ describe("chart gaps", () => {
     expect(findSharedGaps([a, every(0, 360, 5)])).toEqual([]);
   });
 });
+
+describe("segmentStarts", () => {
+  const min = 60 * 1000;
+  it("starts a new segment after a gap and joins steady readings", async () => {
+    const { segmentStarts } = await import("./chartGaps");
+    // Every 10 minutes, then a 6-hour outage, then every 10 minutes again.
+    const ms = [0, 10, 20, 30, 390, 400, 410].map((m) => m * min);
+    expect(segmentStarts(ms)).toEqual([true, false, false, false, true, false, false]);
+  });
+
+  it("never breaks an hourly series (slow but steady is not a gap)", async () => {
+    const { segmentStarts } = await import("./chartGaps");
+    const hourly = [0, 60, 120, 180, 240].map((m) => m * min);
+    expect(segmentStarts(hourly)).toEqual([true, false, false, false, false]);
+  });
+});

@@ -9,6 +9,7 @@ import {
 } from "../lib/historyChartInteraction";
 import { expandedChartDialogAttrs } from "../lib/chartLightbox";
 import en from "../i18n/messages/app/overviewInsights/en";
+import { segmentStarts } from "../lib/chartGaps";
 
 /** Chart strings resolved on the server (`app/overviewInsights` → chart). */
 export type BatteryTrendChartText = {
@@ -178,10 +179,12 @@ export default function BatteryTrendChart({
         g.strokeStyle = color;
         g.lineWidth = 2;
         g.beginPath();
+        // Don't draw across a stretch with no readings.
+        const starts = segmentStarts(ordered.map((sample) => Date.parse(sample.at)));
         ordered.forEach((sample, i) => {
           const x = xFor(Date.parse(sample.at));
           const y = yFor(sample.value);
-          if (i === 0) g.moveTo(x, y);
+          if (starts[i]) g.moveTo(x, y);
           else g.lineTo(x, y);
         });
         g.stroke();

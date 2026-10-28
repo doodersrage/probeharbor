@@ -15,6 +15,7 @@ import {
 import { useHistoryChartInteraction } from "../lib/useHistoryChartInteraction";
 import type { IndoorOutdoorPoint } from "../lib/indoorOutdoorDelta";
 import { expandedChartDialogAttrs } from "../lib/chartLightbox";
+import { segmentStarts } from "../lib/chartGaps";
 
 /**
  * Every visible string, aria-label and title. Plain strings only (island
@@ -291,10 +292,12 @@ export default function IndoorOutdoorChart({
       g.strokeStyle = LINE_COLOR;
       g.lineWidth = 2;
       g.beginPath();
+      // Don't draw across a stretch with no readings.
+      const starts = segmentStarts(points.map((point) => Date.parse(point.timestamp)));
       points.forEach((point, i) => {
         const x = xFor(Date.parse(point.timestamp));
         const y = yFor(point.deltaF);
-        if (i === 0) g.moveTo(x, y);
+        if (starts[i]) g.moveTo(x, y);
         else g.lineTo(x, y);
       });
       g.stroke();

@@ -57,3 +57,12 @@ export function findSharedGaps(seriesMs: number[][]): DataGap[] {
   }
   return shared;
 }
+
+/**
+ * For each point of a time-sorted series, whether its line segment starts
+ * fresh (first point, or after a gap) instead of joining the previous point.
+ * Use with moveTo/lineTo so a line isn't drawn across missing data.
+ */
+export function segmentStarts(sortedMs: number[], thresholdMs = gapThresholdMs(sortedMs)): boolean[] {
+  return sortedMs.map((ms, i) => i === 0 || ms - sortedMs[i - 1]! > thresholdMs);
+}
