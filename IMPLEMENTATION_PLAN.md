@@ -3104,9 +3104,13 @@ per Worker isolate, so spread-out traffic is barely limited.
   none 429. `wrangler tail` showed no "unavailable" warning, but the code
   then returned null silently when the binding was missing. Added a
   once-per-isolate warning for a missing binding and an info line when
-  limited. The next deploy plus tail tells whether it's missing (warning)
-  or present but allowing (no log). Nothing is worse than before: the
-  per-isolate in-memory limit still applies.
+  limited. **Retest after that deploy:** 120 parallel bogus-key POSTs → all
+  401. The tail captured 124 ingest events with no warning and no
+  "limited" line, so the binding is present and returned `success: true`
+  every time. At this volume, Cloudflare's approximate limiter doesn't
+  enforce. Kept: it's harmless, and the in-memory limit still applies.
+  If abuse shows up, the strict option is a Durable Object limiter (new
+  DO class plus a wrangler migration).
 
 ------------------------------------------------------------------------
 
@@ -3168,3 +3172,22 @@ deployed.** The owner approved the recommendation (2026-10-28).
   (`quiet_hours_timezone`) defaults to America/New_York for everyone, so
   it isn't a reliable signal. A real fix would pass the browser time zone
   to all three, which changes what each filter shows, so it's held.
+
+------------------------------------------------------------------------
+
+## Optional: `pnpm db:pending` (2026-10-28)
+
+**Status: Implemented and checked against production (read-only).**
+
+- [x] `scripts/db-pending.mjs` wraps `supabase migration list --linked`.
+      It lists local migrations not applied remotely (pending) and remote
+      ones missing locally (drift). Exit 1 if there are any, 0 if they
+      match, 2 if the CLI fails. Documented in `docs/guide/deploy.md`
+      (run before pushing).
+- Evidence: against production, "All local migrations are applied" (exit
+  0). With a temporary placeholder file, it listed `20991231000000` and
+  exited 1. The file was removed and nothing was applied.
+- Not done: running it in CI. That would need `SUPABASE_ACCESS_TOKEN` and
+  the DB password as GitHub secrets (owner decision). It should warn
+  rather than block, since code sometimes legitimately ships before its
+  additive migration.

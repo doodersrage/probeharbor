@@ -11,6 +11,7 @@
     "i18n:catalog": "node scripts/gen-i18n-catalog.mjs",
     "db:push": "supabase db push --linked",
     "db:backup": "node scripts/db-backup.mjs",
+    "db:pending": "node scripts/db-pending.mjs",
     "secrets:push": "node scripts/push-worker-secrets.mjs",
     "secrets:push:dry": "node scripts/push-worker-secrets.mjs --dry-run",
     "operator:check": "node scripts/check-operator-secrets.mjs",

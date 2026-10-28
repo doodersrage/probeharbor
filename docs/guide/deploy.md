@@ -67,6 +67,8 @@ linked project).
   deploy the code first, then apply the migration.
 - Each recent migration file starts with a comment giving its deploy order
   and the SQL to undo it. Read it before `pnpm db:push`.
+- Before pushing, `pnpm db:pending` lists migrations not yet applied to
+  production (exit 1 if any). It's read-only.
 - After applying, run the read-only check from the migration's entry in
   `IMPLEMENTATION_PLAN.md` when there is one (e.g. backfill counts).
 
