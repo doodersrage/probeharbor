@@ -1479,3 +1479,55 @@ fixed elsewhere).
 - A device that reports less often than `outageHours` will have its
   freeze evaluation skipped between reports. Its device-offline alert
   fires in that case, so the user is told.
+
+------------------------------------------------------------------------
+
+## Milestone 2 status (2026-10-28)
+
+**Partial.** Done: 2.1, 2.2, 2.4, 2.5, 2.6 and 2.7.
+
+Against the milestone's acceptance criteria:
+- **Alert creation and recovery are deterministic and tested.**
+  Mostly met:
+  - failed delivery retries (2.1)
+  - re-alert after recovery (2.2)
+  - stale readings handled (2.7)
+  - boundaries, DST and hysteresis tested (2.6)
+
+  Rules and doors still have no recovery concept.
+- **Retries don't create duplicates or storms.** Met for cooldown-based
+  alerts:
+  - the compare-and-set claim (2.5)
+  - 30-min retry throttle per kind (2.1)
+  - 10-min flap guard (2.2)
+- **Users can understand why an alert fired and whether it was
+  delivered.** Partial. The "last alert" time stays truthful (2.1). The
+  UI still says "Sent" for "accepted by provider", and alert text has no
+  reading time or property name.
+- **Ack links can't cross incident boundaries.** Met for new links
+  (2.4). Old links expire within 7 days.
+
+### Needs a decision
+
+1. **Snooze scope** (2.3, options above). Device-health snooze links
+   currently mute freeze alerts, and the Telegram copy says the
+   opposite.
+2. **Quiet hours: drop or defer.** Non-critical alerts during quiet
+   hours are dropped, not delivered afterwards. Should they be sent
+   when quiet hours end?
+3. **Delivery wording.** "Sent" should read as "accepted by provider"
+   (copy in 5 locales). Add Twilio/email delivery callbacks for true
+   delivery status?
+4. **Alerts off the request path (`waitUntil`).** This speeds up device
+   POSTs and isolates slow providers, but alert failures happen after
+   the response, and Worker time limits apply.
+5. **Alert content.** Add the reading time ("as of 14:05") and the
+   property name, and respect the °C display preference. This is copy
+   in 5 locales.
+6. **Recovery for rules and door alerts:** define what "back to normal"
+   means for a rule.
+
+**Recommended next:** Milestone 5's remaining verified security items.
+Viewers can read inbound `signing_secret` and status-page tokens through
+RLS (`20260826160000:67`, `20260826180000:42`), and webhook HMACs have
+no timestamp, so they can be replayed. The first is a small migration.
