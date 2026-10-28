@@ -149,6 +149,7 @@ const ptBr: HouseholdMessages = {
     status_page_created: "Página de status criada",
     status_page_revoked: "Página de status revogada",
     status_page_regenerated: "Link da página de status gerado de novo",
+    share_link_regenerated: "Link de compartilhamento gerado de novo",
     inbound_snooze: "Alertas adiados (entrada)",
     inbound_vacation: "Modo férias (entrada)",
   },

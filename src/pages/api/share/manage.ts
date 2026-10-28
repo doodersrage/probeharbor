@@ -11,20 +11,11 @@ import { recordHouseholdActivity } from "../../../lib/householdActivity";
 import { formRedirectPath, withQuery } from "../../../lib/siteUrl";
 import { FLASH_SHARE_TOKEN, setSecretFlash } from "../../../lib/secretFlash";
 import { apiLocale, apiMoreCommonMessages } from "../../../i18n/messages/app/apiMore/common";
+import { randomShareToken, storedShareTokenFields } from "../../../lib/shareLinkTokens";
 
 const FAMILY_MAX_LIVE_LINKS = 1;
 const FAMILY_DEFAULT_EXPIRES_DAYS = 7;
 
-function randomToken(): string {
-  const bytes = crypto.getRandomValues(new Uint8Array(24));
-  return [...bytes].map((b) => b.toString(16).padStart(2, "0")).join("");
-}
-
-function maskShareLinkToken(token: string) {
-  return {
-    token_preview: token.slice(-4),
-  };
-}
 
 export const GET: APIRoute = async ({ request, cookies }) => {
   const { user } = await getAuthFromRequest(request, cookies);
@@ -49,7 +40,7 @@ export const GET: APIRoute = async ({ request, cookies }) => {
   const supabase = createServerClient();
   const { data, error } = await supabase
     .from("share_links")
-    .select("id, token, scope, label, expires_at, created_at")
+    .select("id, token, token_preview, scope, label, expires_at, created_at")
     .eq("household_id", household.householdId)
     .order("created_at", { ascending: false });
 
@@ -60,11 +51,13 @@ export const GET: APIRoute = async ({ request, cookies }) => {
     });
   }
 
-  const links = (data ?? []).map((link) => {
-    if (canManage) return link;
-    const { token, ...rest } = link;
-    return { ...rest, ...maskShareLinkToken(token) };
-  });
+  // `token` is only present for links created before hashing (and only for
+  // managers); newer links are shown once at creation.
+  const links = (data ?? []).map(({ token, token_preview, ...rest }) => ({
+    ...rest,
+    ...(canManage ? { token } : {}),
+    token_preview: token_preview ?? token?.slice(-4) ?? null,
+  }));
 
   return new Response(JSON.stringify({ links }), {
     status: 200,
@@ -106,6 +99,40 @@ export const POST: APIRoute = async (context) => {
         .eq("household_id", household.householdId);
     }
     return redirect(withQuery(redirectTo, { revoked: "1" }));
+  }
+
+  if (action === "regenerate") {
+    const id = formData.get("id")?.toString();
+    const { data: link } = id
+      ? await supabase
+          .from("share_links")
+          .select("id, scope")
+          .eq("id", id)
+          .eq("household_id", household.householdId)
+          .maybeSingle()
+      : { data: null };
+    if (!link) return redirect(withQuery(redirectTo, { error: "1" }));
+    const allowed =
+      entitlements.canCreateShareLinks ||
+      (entitlements.canCreateFamilyShareLink && link.scope === "live");
+    if (!allowed) return redirect(withQuery(redirectTo, { error: "pro_required" }));
+
+    const token = randomShareToken();
+    const { error } = await supabase
+      .from("share_links")
+      .update(await storedShareTokenFields(token))
+      .eq("id", link.id)
+      .eq("household_id", household.householdId);
+    if (error) return redirect(withQuery(redirectTo, { error: "1" }));
+
+    await recordHouseholdActivity({
+      householdId: household.householdId,
+      userId: user.id,
+      action: "share_link_regenerated",
+      detail: link.scope,
+    });
+    setSecretFlash(cookies, FLASH_SHARE_TOKEN, token);
+    return redirect(withQuery(redirectTo, { regenerated: "1" }));
   }
 
   const familyOnly =
@@ -152,9 +179,9 @@ export const POST: APIRoute = async (context) => {
       ? new Date(Date.now() + expiresDays * 24 * 60 * 60 * 1000).toISOString()
       : null;
 
-  const token = randomToken();
+  const token = randomShareToken();
   const { error } = await supabase.from("share_links").insert({
-    token,
+    ...(await storedShareTokenFields(token)),
     household_id: household.householdId,
     scope,
     label,

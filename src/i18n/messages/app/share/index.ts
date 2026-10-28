@@ -14,6 +14,7 @@ export function shareNotice(url: URL, t: (typeof en)["notices"]): string | null 
   const error = p.get("error");
   if (p.get("created")) return t.created;
   if (p.get("revoked")) return t.revoked;
+  if (p.get("regenerated")) return t.regenerated;
   if (p.get("api_key_created")) return t.apiKeyCreated;
   if (p.get("api_key_revoked")) return t.apiKeyRevoked;
   if (p.get("status_created")) return t.statusCreated;

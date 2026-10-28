@@ -10,6 +10,7 @@ const es: ShareMessages = {
   notices: {
     created: "Enlace creado. Cópialo abajo para enviárselo a tu familia.",
     revoked: "Enlace revocado.",
+    regenerated: "Nuevo enlace creado, cópialo abajo. El enlace anterior, y cualquier inserción o consulta que lo use, ya no funciona.",
     apiKeyCreated: "Clave de API creada. Cópiala ahora: no se volverá a mostrar.",
     apiKeyRevoked: "Clave de API revocada.",
     statusCreated: "Página de estado creada. Copia el enlace de abajo.",
@@ -60,6 +61,9 @@ const es: ShareMessages = {
     embed: "Insertar: {url}",
     scrape: "Scrape: {url}",
     confirmRevoke: "¿Revocar este enlace para compartir?",
+    linkHidden: "Por seguridad, el enlace completo solo se muestra al crearlo. Regenéralo si lo necesitas de nuevo.",
+    regenerate: "Regenerar enlace",
+    confirmRegenerate: "¿Crear un enlace nuevo? El enlace actual, y cualquier inserción o consulta que lo use, dejará de funcionar.",
     revoke: "Revocar",
     remove: "Quitar",
     statusTitle: "Páginas de estado públicas",

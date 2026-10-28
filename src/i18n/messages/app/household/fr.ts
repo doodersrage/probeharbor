@@ -149,6 +149,7 @@ const fr: HouseholdMessages = {
     status_page_created: "Page de statut créée",
     status_page_revoked: "Page de statut révoquée",
     status_page_regenerated: "Lien de page de statut régénéré",
+    share_link_regenerated: "Lien de partage régénéré",
     inbound_snooze: "Alertes mises en pause (entrant)",
     inbound_vacation: "Mode vacances (entrant)",
   },

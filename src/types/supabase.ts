@@ -1691,7 +1691,9 @@ export type Database = {
           id: string
           label: string | null
           scope: string
-          token: string
+          token: string | null
+          token_hash: string | null
+          token_preview: string | null
         }
         Insert: {
           created_at?: string
@@ -1701,7 +1703,9 @@ export type Database = {
           id?: string
           label?: string | null
           scope: string
-          token: string
+          token?: string | null
+          token_hash?: string | null
+          token_preview?: string | null
         }
         Update: {
           created_at?: string
@@ -1711,7 +1715,9 @@ export type Database = {
           id?: string
           label?: string | null
           scope?: string
-          token?: string
+          token?: string | null
+          token_hash?: string | null
+          token_preview?: string | null
         }
         Relationships: [
           {

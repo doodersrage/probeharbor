@@ -2102,3 +2102,53 @@ way.
 - **Later (needs approval): clear the raw tokens** on existing rows
   (`update status_page_tokens set token = null`). Links keep working, but
   managers can no longer see the old URLs and would use Regenerate.
+
+------------------------------------------------------------------------
+
+## Security fix S7: share links stored hashed, shown once (2026-10-28)
+
+**Status: Implemented and verified locally. Migration
+`20261028150000_share_link_token_hash.sql` NOT applied. Not deployed.**
+
+**Deploy order: apply the migration first, then push the code.** Without
+it, creating or regenerating a share link fails. Existing links, embeds and
+scrapes keep working either way.
+
+- [x] Migration (additive): adds `share_links.token_hash` and
+      `token_preview` (last 4 characters), backfills both for every existing
+      row, adds a unique index and makes `token` nullable.
+- [x] New links store only the hash and preview (`storedShareTokenFields`,
+      `src/lib/shareLinkTokens.ts`). The full URL is shown once in the
+      existing "new link" callout and in its highlighted row (matched by
+      hash, `is_new`).
+- [x] `/api/share/[token]/readings` (used by `/share`, `/embed`, Prometheus
+      and Home Assistant) looks up by `token_hash`. It falls back to a raw
+      match only for the old 48-hex shape on rows with no hash. A stored
+      hash matches nothing.
+- [x] **Regenerate link** on every unexpired link (manager, confirm
+      prompt, activity `share_link_regenerated`). Pro links need Pro; a free
+      family plan can regenerate its live link. Hashed rows show "only
+      shown when created" instead of a URL.
+- [x] `GET /api/share/manage`: managers get `token` (null for hashed
+      links) plus `token_preview` for every link (additive). Non-managers
+      are unchanged (preview only).
+- [x] Copy in 5 locales: `notices.regenerated`, `links.linkHidden`/
+      `regenerate`/`confirmRegenerate`, and the activity label.
+- Evidence: `manage.test.ts` +4 (create stores hash and preview, never the
+  token; regenerate; family vs Pro scope; foreign link), `readings.test.ts`
+  +3 (lookup by hash; 48-hex legacy fallback; no raw lookup otherwise),
+  `shareDashboardContext.test.ts` +1 (new link shown once by hash;
+  `token_hash` never reaches the page), and updated shape assertions.
+  `pnpm test`: 3062 passed. `pnpm typecheck`: 0 errors. `pnpm lint`: 64
+  warnings (baseline). `pnpm build`: pass. `pnpm test:e2e`: 44 passed,
+  12 skipped.
+- **Not verified:** the SQL (no local Postgres) and the Share page
+  rendering (signed-in e2e is skipped). After applying, read-only check,
+  which should return 0: `select count(*) from share_links where token is
+  not null and (token_hash is distinct from
+  encode(sha256(convert_to(token,'UTF8')),'hex') or token_preview is
+  distinct from right(token,4));`
+- **Later (needs approval):** clear the raw tokens on existing share links
+  and status pages. Links keep working, but managers can't see the old
+  URLs any more (they would Regenerate, which breaks embeds using the
+  old URL).

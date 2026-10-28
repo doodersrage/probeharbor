@@ -149,6 +149,7 @@ const de: HouseholdMessages = {
     status_page_created: "Statusseite erstellt",
     status_page_revoked: "Statusseite widerrufen",
     status_page_regenerated: "Statusseiten-Link neu erstellt",
+    share_link_regenerated: "Freigabelink neu erstellt",
     inbound_snooze: "Alarme pausiert (eingehend)",
     inbound_vacation: "Urlaubsmodus (eingehend)",
   },

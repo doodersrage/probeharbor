@@ -162,6 +162,7 @@ describe("GET /api/share/manage", () => {
           label: "Live",
           expires_at: null,
           created_at: "2024-01-01",
+          token_preview: "cret",
         },
       ],
     });
@@ -253,6 +254,82 @@ describe("POST /api/share/manage", () => {
       expect.any(String),
     );
     expect(response.headers.get("Location")).toBe("/dashboard/share?created=1");
+
+    // Only the hash and last 4 characters are stored, never the token.
+    const token = mockSetSecretFlash.mock.calls[0][2] as string;
+    const { sha256Hex } = await import("../../../lib/shareLinkTokens");
+    expect(token).toMatch(/^[0-9a-f]{48}$/);
+    expect(mockInsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        token: null,
+        token_hash: await sha256Hex(token),
+        token_preview: token.slice(-4),
+      }),
+    );
+  });
+
+  describe("regenerate", () => {
+    function withLink(link: { id: string; scope: string } | null) {
+      const update = vi.fn();
+      const updateEq2 = vi.fn().mockResolvedValue({ error: null });
+      const updateEq1 = vi.fn().mockReturnValue({ eq: updateEq2 });
+      update.mockReturnValue({ eq: updateEq1 });
+      const maybeSingle = vi.fn().mockResolvedValue({ data: link });
+      mockFrom.mockImplementation(() => ({
+        select: () => ({ eq: () => ({ eq: () => ({ maybeSingle }) }) }),
+        update,
+      }));
+      return { update, updateEq1, updateEq2 };
+    }
+
+    it("stores a new hash, clears the raw token, flashes the new link once", async () => {
+      const { update, updateEq1, updateEq2 } = withLink({ id: "link-1", scope: "metrics" });
+      const { POST } = await import("./manage");
+
+      const response = await POST(makePostContext({ action: "regenerate", id: "link-1" }));
+
+      const token = mockSetSecretFlash.mock.calls[0][2] as string;
+      const { sha256Hex } = await import("../../../lib/shareLinkTokens");
+      expect(update).toHaveBeenCalledWith({
+        token: null,
+        token_hash: await sha256Hex(token),
+        token_preview: token.slice(-4),
+      });
+      expect(updateEq1).toHaveBeenCalledWith("id", "link-1");
+      expect(updateEq2).toHaveBeenCalledWith("household_id", "house-1");
+      expect(mockRecordHouseholdActivity).toHaveBeenCalledWith(
+        expect.objectContaining({ action: "share_link_regenerated", detail: "metrics" }),
+      );
+      expect(response.headers.get("Location")).toBe("/dashboard/share?regenerated=1");
+    });
+
+    it("lets a free family plan regenerate its live link, but not a Pro-only link", async () => {
+      mockGetUserEntitlements.mockResolvedValue({
+        canCreateShareLinks: false,
+        canCreateFamilyShareLink: true,
+      });
+      const { POST } = await import("./manage");
+
+      withLink({ id: "link-1", scope: "live" });
+      const live = await POST(makePostContext({ action: "regenerate", id: "link-1" }));
+      expect(live.headers.get("Location")).toBe("/dashboard/share?regenerated=1");
+
+      const { update } = withLink({ id: "link-2", scope: "metrics" });
+      const metrics = await POST(makePostContext({ action: "regenerate", id: "link-2" }));
+      expect(metrics.headers.get("Location")).toBe("/dashboard/share?error=pro_required");
+      expect(update).not.toHaveBeenCalled();
+    });
+
+    it("errors without touching anything for a link outside the household", async () => {
+      const { update } = withLink(null);
+      const { POST } = await import("./manage");
+
+      const response = await POST(makePostContext({ action: "regenerate", id: "other" }));
+
+      expect(update).not.toHaveBeenCalled();
+      expect(mockSetSecretFlash).not.toHaveBeenCalled();
+      expect(response.headers.get("Location")).toBe("/dashboard/share?error=1");
+    });
   });
 
   it("revokes a share link and redirects", async () => {

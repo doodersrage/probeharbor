@@ -10,6 +10,7 @@ const de: ShareMessages = {
   notices: {
     created: "Freigabelink erstellt. Kopiere ihn unten und schick ihn deiner Familie.",
     revoked: "Freigabelink widerrufen.",
+    regenerated: "Neuer Link erstellt, kopiere ihn unten. Der alte Link und alle Einbettungen oder Abrufe damit funktionieren nicht mehr.",
     apiKeyCreated: "API-Schlüssel erstellt. Kopiere ihn jetzt, er wird nicht noch einmal angezeigt.",
     apiKeyRevoked: "API-Schlüssel widerrufen.",
     statusCreated: "Statusseite erstellt. Kopiere den Link unten.",
@@ -60,6 +61,9 @@ const de: ShareMessages = {
     embed: "Einbetten: {url}",
     scrape: "Scrape: {url}",
     confirmRevoke: "Diesen Freigabelink widerrufen?",
+    linkHidden: "Aus Sicherheitsgründen wird der vollständige Link nur beim Erstellen angezeigt. Erstelle ihn neu, wenn du ihn wieder brauchst.",
+    regenerate: "Link neu erstellen",
+    confirmRegenerate: "Neuen Link erstellen? Der aktuelle Link und alle Einbettungen oder Abrufe damit funktionieren dann nicht mehr.",
     revoke: "Widerrufen",
     remove: "Entfernen",
     statusTitle: "Öffentliche Statusseiten",

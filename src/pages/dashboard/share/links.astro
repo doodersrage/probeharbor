@@ -151,16 +151,11 @@ const analyticsEvents = Astro.url.searchParams.get("created")
         ) : (
           <ul class="space-y-4">
             {(links ?? []).map((link) => {
-              const preview =
-                "token_preview" in link && link.token_preview
-                  ? String(link.token_preview)
-                  : link.token
-                    ? link.token.slice(-4)
-                    : "????";
+              const preview = link.token_preview ?? "????";
               const href =
                 canManage && link.token ? `${siteUrl}/share/${link.token}` : null;
               const maskedHref = `${siteUrl}/share/••••${preview}`;
-              const isNew = Boolean(canManage && newToken && link.token === newToken);
+              const isNew = Boolean(canManage && link.is_new);
               const expired =
                 Boolean(link.expires_at) &&
                 Date.parse(link.expires_at as string) <= Date.now();
@@ -206,6 +201,9 @@ const analyticsEvents = Astro.url.searchParams.get("created")
                         {fmt(t.scrape, { url: `${siteUrl}/api/share/${link.token}/readings?format=prometheus` })}
                       </p>
                     )}
+                    {canManage && !link.token && !expired && (
+                      <p class="m-0 text-sm text-[var(--color-text-muted)]">{t.linkHidden}</p>
+                    )}
                   </div>
                   <div class="flex flex-wrap gap-2">
                     {canManage && href && !expired && (
@@ -217,6 +215,18 @@ const analyticsEvents = Astro.url.searchParams.get("created")
                       >
                         {t.copyLink}
                       </button>
+                    )}
+                    {canManage && !expired && (
+                      <form
+                        action="/api/share/manage"
+                        method="post"
+                        onsubmit={`return confirm(${JSON.stringify(t.confirmRegenerate)});`}
+                      >
+                        <input type="hidden" name="action" value="regenerate" />
+                        <input type="hidden" name="id" value={link.id} />
+                        <input type="hidden" name="redirect" value={redirectTo} />
+                        <button class="btn-secondary" type="submit">{t.regenerate}</button>
+                      </form>
                     )}
                     {canManage && (
                       <form action="/api/share/manage" method="post">

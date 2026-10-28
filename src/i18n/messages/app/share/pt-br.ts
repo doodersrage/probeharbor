@@ -10,6 +10,7 @@ const ptBr: ShareMessages = {
   notices: {
     created: "Link criado. Copie abaixo para enviar à sua família.",
     revoked: "Link revogado.",
+    regenerated: "Novo link criado, copie abaixo. O link antigo, e qualquer incorporação ou coleta que o use, não funciona mais.",
     apiKeyCreated: "Chave de API criada. Copie agora: ela não será exibida de novo.",
     apiKeyRevoked: "Chave de API revogada.",
     statusCreated: "Página de status criada. Copie o link abaixo.",
@@ -60,6 +61,9 @@ const ptBr: ShareMessages = {
     embed: "Incorporar: {url}",
     scrape: "Scrape: {url}",
     confirmRevoke: "Revogar este link de compartilhamento?",
+    linkHidden: "Por segurança, o link completo só é mostrado ao ser criado. Gere de novo se precisar dele outra vez.",
+    regenerate: "Gerar link de novo",
+    confirmRegenerate: "Criar um novo link? O link atual, e qualquer incorporação ou coleta que o use, vai parar de funcionar.",
     revoke: "Revogar",
     remove: "Remover",
     statusTitle: "Páginas de status públicas",

@@ -198,4 +198,50 @@ describe("GET /api/share/[token]/readings", () => {
       history_points: [],
     });
   });
+
+  describe("token lookup", () => {
+    async function hash(v: string) {
+      const { sha256Hex } = await import("../../../../lib/shareLinkTokens");
+      return sha256Hex(v);
+    }
+
+    it("looks the token up by its hash, not the raw value", async () => {
+      const { GET } = await import("./readings");
+
+      const response = await GET(makeContext({ token: "some-token" }));
+
+      expect(response.status).toBe(200);
+      expect(mockEq).toHaveBeenCalledTimes(1);
+      expect(mockEq).toHaveBeenCalledWith("token_hash", await hash("some-token"));
+    });
+
+    it("falls back to a raw match on unhashed rows only for the old 48-hex shape", async () => {
+      const legacy = "ab".repeat(24);
+      const mockIs = vi.fn().mockReturnValue({ maybeSingle: mockMaybeSingle });
+      mockEq.mockReturnValue({ maybeSingle: mockMaybeSingle, is: mockIs });
+      mockMaybeSingle
+        .mockResolvedValueOnce({ data: null, error: null })
+        .mockResolvedValueOnce({
+          data: { id: "l", household_id: "house-1", scope: "live", label: null, expires_at: null },
+          error: null,
+        });
+      const { GET } = await import("./readings");
+
+      const response = await GET(makeContext({ token: legacy }));
+
+      expect(response.status).toBe(200);
+      expect(mockEq).toHaveBeenNthCalledWith(2, "token", legacy);
+      expect(mockIs).toHaveBeenCalledWith("token_hash", null);
+    });
+
+    it("returns 404 without a raw lookup for other shapes (e.g. a stored hash)", async () => {
+      mockMaybeSingle.mockResolvedValue({ data: null, error: null });
+      const { GET } = await import("./readings");
+
+      const response = await GET(makeContext({ token: "cd".repeat(32) }));
+
+      expect(response.status).toBe(404);
+      expect(mockEq).toHaveBeenCalledTimes(1);
+    });
+  });
 });

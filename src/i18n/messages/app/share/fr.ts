@@ -10,6 +10,7 @@ const fr: ShareMessages = {
   notices: {
     created: "Lien de partage créé. Copiez-le ci-dessous pour l’envoyer à vos proches.",
     revoked: "Lien de partage révoqué.",
+    regenerated: "Nouveau lien créé, copiez-le ci-dessous. L’ancien lien, et toute intégration ou collecte qui l’utilise, ne fonctionne plus.",
     apiKeyCreated: "Clé d’API créée. Copiez-la maintenant : elle ne sera plus affichée.",
     apiKeyRevoked: "Clé d’API révoquée.",
     statusCreated: "Page de statut créée. Copiez le lien ci-dessous.",
@@ -60,6 +61,9 @@ const fr: ShareMessages = {
     embed: "Intégration : {url}",
     scrape: "Scrape : {url}",
     confirmRevoke: "Révoquer ce lien de partage ?",
+    linkHidden: "Par sécurité, le lien complet n’est affiché qu’à sa création. Régénérez-le si vous en avez de nouveau besoin.",
+    regenerate: "Régénérer le lien",
+    confirmRegenerate: "Créer un nouveau lien ? Le lien actuel, et toute intégration ou collecte qui l’utilise, ne fonctionnera plus.",
     revoke: "Révoquer",
     remove: "Supprimer",
     statusTitle: "Pages de statut publiques",

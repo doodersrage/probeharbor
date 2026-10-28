@@ -181,8 +181,36 @@ describe("loadShareDashboardContext", () => {
         label: "Family",
         expires_at: null,
         created_at: "2024-01-01T00:00:00.000Z",
+        token_preview: "oken",
+        is_new: false,
       },
     ]);
+  });
+
+  it("shows a hashed link's full token only when it was just created", async () => {
+    mockCanManageHousehold.mockReturnValue(true);
+    const fresh = "f".repeat(48);
+    const { sha256Hex } = await import("./shareLinkTokens");
+    mockConsumeSecretFlash.mockImplementation((_c: unknown, name: string) =>
+      name === "flash_share_token" ? fresh : null,
+    );
+    mockFrom.mockReturnValue(
+      mockQuery({
+        data: [
+          { id: "new", token: null, token_hash: await sha256Hex(fresh), token_preview: "ffff", scope: "live", label: null, expires_at: null, created_at: "2024-01-02T00:00:00.000Z" },
+          { id: "old-hashed", token: null, token_hash: "aa".repeat(32), token_preview: "1234", scope: "live", label: null, expires_at: null, created_at: "2024-01-01T00:00:00.000Z" },
+        ],
+      }),
+    );
+    const { loadShareDashboardContext } = await import("./shareDashboardContext");
+
+    const result = await loadShareDashboardContext(cookies, request, urlWith());
+
+    expect(result.links?.map((l) => [l.id, l.token, l.is_new])).toEqual([
+      ["new", fresh, true],
+      ["old-hashed", null, false],
+    ]);
+    expect(JSON.stringify(result.links)).not.toContain("token_hash");
   });
 
   it("redacts the token to a preview for a non-manager", async () => {
@@ -214,6 +242,7 @@ describe("loadShareDashboardContext", () => {
         created_at: "2024-01-01T00:00:00.000Z",
         token_preview: "oken",
         token: null,
+        is_new: false,
       },
     ]);
   });

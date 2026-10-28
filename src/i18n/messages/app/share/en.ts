@@ -14,6 +14,7 @@ const en = {
   notices: {
     created: "Share link created, copy it below to send to family.",
     revoked: "Share link revoked.",
+    regenerated: "New link created, copy it below. The old link, and any embed or scrape using it, no longer works.",
     apiKeyCreated: "API key created, copy it now; it will not be shown again.",
     apiKeyRevoked: "API key revoked.",
     statusCreated: "Status page created, copy the link below.",
@@ -64,6 +65,9 @@ const en = {
     embed: "Embed: {url}",
     scrape: "Scrape: {url}",
     confirmRevoke: "Revoke this share link?",
+    linkHidden: "For security, the full link is only shown when it’s created. Regenerate it if you need it again.",
+    regenerate: "Regenerate link",
+    confirmRegenerate: "Make a new link? The current link, and any embed or scrape using it, will stop working.",
     revoke: "Revoke",
     remove: "Remove",
     statusTitle: "Public status pages",
