@@ -2688,3 +2688,26 @@ The owner approved the recommendation in 7.3.
   warnings (baseline). `pnpm build`: pass. `pnpm test:e2e`: 47 passed,
   12 skipped. Developer docs build.
 - Not verified: a real downgraded account in production.
+
+------------------------------------------------------------------------
+
+## Milestone 7, increment 7.4: OpenAPI for status subscribe and FCM (2026-10-28)
+
+**Status: Implemented and verified locally. Docs/contract only. Not
+deployed.** This completes the spec audit: every operation in
+`openapi.yaml` now lists what its code returns.
+
+- [x] `/api/status/subscribe` was **wrong**, not just incomplete. The spec
+      said it took JSON and returned 200. It's a form endpoint
+      (`request.formData()`) that always redirects back to the localized
+      `/system-status` with `subscribed=1` or `status_error=rate_limited |
+      verification | invalid_email`. Now documented: the form fields
+      (`email`, `locale`, `cf-turnstile-response`, the `company`
+      honeypot), Turnstile, double opt-in and the 302.
+- [x] `/api/push/fcm` POST: 400 (JSON, token < 20 chars, platform), 401,
+      403 and 500; the `android` default; the token moves from other
+      accounts. DELETE: 400 and 401.
+- [x] Spec 1.4.1. The guard covers FCM status codes and the subscribe
+      route's `status_error` values plus its form content type.
+- Evidence: `pnpm test` (full suite) and `pnpm build` pass. `pnpm lint`:
+  baseline.

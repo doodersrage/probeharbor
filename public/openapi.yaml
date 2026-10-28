@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: ProbeHarbor API
-  version: 1.4.0
+  version: 1.4.1
   description: |
     HTTP endpoints for device ingest, share links, metrics, devices CRUD, MQTT bridge, and inbound automations.
     Authenticated dashboard routes use Supabase session cookies; programmatic access uses API keys, which need the household owner's plan to include the API (Pro) at the time of each call.
@@ -527,17 +527,39 @@ paths:
   /api/status/subscribe:
     post:
       summary: Subscribe to system status emails
+      description: |
+        HTML form endpoint used by /system-status (not a JSON API). Always answers
+        with a redirect back to `/system-status` (or `/<locale>/system-status`)
+        carrying the result in the query string: `subscribed=1`, or
+        `status_error=rate_limited | verification | invalid_email`. Subscriptions
+        are confirmed by email (double opt-in). Needs a Cloudflare Turnstile token.
       requestBody:
+        required: true
         content:
-          application/json:
+          application/x-www-form-urlencoded:
             schema:
               type: object
+              required: [email, cf-turnstile-response]
               properties:
                 email:
                   type: string
+                  format: email
+                locale:
+                  type: string
+                  enum: [en, de, es, fr, pt-br]
+                  description: Language of the confirmation email and the page redirected to
+                cf-turnstile-response:
+                  type: string
+                company:
+                  type: string
+                  description: Honeypot; leave empty
       responses:
-        "200":
-          description: Subscribed
+        "302":
+          description: Redirect to the status page with `subscribed=1` or `status_error=…`
+          headers:
+            Location:
+              schema:
+                type: string
   /api/push/fcm:
     post:
       summary: Register an FCM device token (Pro, session cookies)
@@ -550,16 +572,28 @@ paths:
               properties:
                 token:
                   type: string
+                  minLength: 20
                 platform:
                   type: string
                   enum: [android, ios, web]
+                  default: android
                 appId:
                   type: string
       responses:
         "200":
-          description: Token registered
+          description: Token registered (moved from any other account that had it)
+        "400":
+          description: Invalid JSON, token missing or too short, or unknown platform
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Not signed in
         "403":
           description: Pro plan required
+        "500":
+          description: The token couldn't be saved
     delete:
       summary: Unregister an FCM device token
       requestBody:
@@ -574,6 +608,10 @@ paths:
       responses:
         "200":
           description: Token removed
+        "400":
+          description: Invalid JSON or missing token
+        "401":
+          description: Not signed in
 components:
   schemas:
     Error:

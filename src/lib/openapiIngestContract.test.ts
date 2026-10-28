@@ -54,6 +54,7 @@ describe("OpenAPI: other externally called routes", () => {
     ["/api/v1/devices/sensors-batch", ["src/pages/api/v1/devices/sensors-batch.ts"]],
     ["/api/v1/pull-setup", ["src/pages/api/v1/pull-setup.ts"]],
     ["/api/v1/metrics", ["src/pages/api/v1/metrics.ts"]],
+    ["/api/push/fcm", ["src/pages/api/push/fcm.ts"]],
   ] as const)("%s documents every status code its code returns", (path, files) => {
     const section = pathSection(path);
     const codes = new Set(files.flatMap((f) => [...codesIn(readFileSync(f, "utf8"))]));
@@ -79,5 +80,17 @@ describe("openapi.yaml", () => {
     expect(Object.keys(doc.paths ?? {})).toEqual(
       expect.arrayContaining(["/api/ingest/{deviceKey}", "/api/inbound/{token}", "/api/v1/devices"]),
     );
+  });
+});
+
+describe("OpenAPI: status subscribe is a form endpoint", () => {
+  it("documents the redirect results the route sends", () => {
+    const route = readFileSync("src/pages/api/status/subscribe.ts", "utf8");
+    const section = spec.slice(spec.indexOf("  /api/status/subscribe:"), spec.indexOf("  /api/push/fcm:"));
+    expect(route).toContain("request.formData()");
+    expect(section).toContain("application/x-www-form-urlencoded");
+    for (const code of [...route.matchAll(/status_error: "(\w+)"/g)].map((m) => m[1]!)) {
+      expect(section).toContain(code);
+    }
   });
 });
