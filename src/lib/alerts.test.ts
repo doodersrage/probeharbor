@@ -17,6 +17,7 @@ import {
   type AlertReading,
   type AlertSettings,
   type DeviceHealth,
+  evaluateAlertDetails,
 } from "./alerts";
 import { detectTemperatureAnomalies } from "./anomalyDetection";
 import { computeIndoorOutdoorDelta } from "./indoorOutdoorDelta";
@@ -474,5 +475,20 @@ describe("detectTemperatureAnomalies (cross-module smoke test)", () => {
 
     expect(notices).toHaveLength(1);
     expect(notices[0]?.severity).toBe("warning");
+  });
+});
+
+describe("freeze threshold boundary", () => {
+  const settings = { ...DEFAULT_ALERT_SETTINGS, enabled: true, freezeThresholdF: 34, freezeDwellMinutes: 0 };
+  const at = (tempf: number) =>
+    evaluateAlertDetails(settings, [{ label: "Garage pipe", tempf, humidity: null }]).filter((d) => d.kind === "freeze");
+
+  it("alerts at exactly the threshold (at or below)", () => {
+    expect(at(34)).toHaveLength(1);
+    expect(at(33.9)).toHaveLength(1);
+  });
+
+  it("doesn't alert just above it", () => {
+    expect(at(34.1)).toHaveLength(0);
   });
 });

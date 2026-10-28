@@ -1405,3 +1405,24 @@ and both sent the alert.
 
 - Escalation SMS (`markEscalation`) keeps its read-then-write.
 - Per-member evaluation happens inside the ingest POST (no `waitUntil`).
+
+------------------------------------------------------------------------
+
+## Milestone 2, increment 2.6: edge-case tests for alert timing (2026-10-28)
+
+**Status: Tests only; no behavior change.** These pin down behavior the
+audit listed as untested. Every new test passed against the current
+code, so no bug was found here.
+
+- Quiet hours (`quietHours.test.ts` +5):
+  - wrap at midnight (22:00–07:00 Chicago), with an inclusive start and
+    an exclusive end
+  - the US spring-forward and fall-back nights in New York, which
+    follow local wall time, including the repeated hour
+  - an unknown time zone falls back to UTC
+  - an unparseable time means no window
+- Freeze threshold (`alerts.test.ts` +2): alerts at exactly the
+  threshold (at or below), not 0.1° above.
+- Recovery hysteresis (`alertNotifications.test.ts` +2): not recovered
+  at threshold + 1.9°F; recovered at +2°F.
+- `pnpm test`, `pnpm typecheck` and `pnpm lint` pass (see commit).

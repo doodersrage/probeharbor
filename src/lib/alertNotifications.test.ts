@@ -676,3 +676,23 @@ describe("freeze alerts are claimed too", () => {
     expect(mockClaimCooldown).toHaveBeenCalledWith("user-1", "last_alert_sent_at", null);
   });
 });
+
+describe("freeze recovery needs a 2°F margin (no flapping at the line)", () => {
+  const settings = { ...DEFAULT_ALERT_SETTINGS, enabled: true, freezeThresholdF: 34, freezeDwellMinutes: 0 };
+  const recoveryCalls = () =>
+    mockAutoResolveAlerts.mock.calls.filter((call) => (call[1] as { kinds?: string[] })?.kinds?.includes("threshold"));
+
+  it("isn't recovered just above the threshold", async () => {
+    mockAutoResolveAlerts.mockClear();
+    const { sendThresholdAlertsIfNeeded } = await import("./alertNotifications");
+    await sendThresholdAlertsIfNeeded("user-1", "a@example.com", settings, [{ label: "Pipe", tempf: 35.9, humidity: null }]);
+    expect(recoveryCalls()).toHaveLength(0);
+  });
+
+  it("is recovered at threshold + 2°F", async () => {
+    mockAutoResolveAlerts.mockClear();
+    const { sendThresholdAlertsIfNeeded } = await import("./alertNotifications");
+    await sendThresholdAlertsIfNeeded("user-1", "a@example.com", settings, [{ label: "Pipe", tempf: 36, humidity: null }]);
+    expect(recoveryCalls()).toHaveLength(1);
+  });
+});
