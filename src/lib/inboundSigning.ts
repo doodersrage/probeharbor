@@ -1,16 +1,11 @@
 import { timingSafeEqualHex } from "./timingSafeEqual";
-
-async function hmacSha256Hex(secret: string, body: string): Promise<string> {
-  const key = await crypto.subtle.importKey(
-    "raw",
-    new TextEncoder().encode(secret),
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign"],
-  );
-  const sig = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(body));
-  return [...new Uint8Array(sig)].map((b) => b.toString(16).padStart(2, "0")).join("");
-}
+import {
+  hmacSha256Hex,
+  SIGNATURE_V2_HEADER,
+  signedPayloadV2,
+  TIMESTAMP_HEADER,
+  WEBHOOK_TIMESTAMP_TOLERANCE_SECONDS,
+} from "./webhookSigning";
 
 /** Prefer ProbeHarbor header; accept legacy ThermalTrace/GarageTemp and generic X-Signature. */
 export function pickInboundSignatureHeader(headers: Headers): string | null {
@@ -20,6 +15,10 @@ export function pickInboundSignatureHeader(headers: Headers): string | null {
     headers.get("X-GarageTemp-Signature") ||
     headers.get("X-Signature")
   );
+}
+
+function normalizeHex(header: string): string {
+  return header.replace(/^sha256=/i, "").trim().toLowerCase();
 }
 
 export async function verifyInboundSignature(
@@ -32,8 +31,47 @@ export async function verifyInboundSignature(
   if (!header?.trim()) return false;
 
   const expected = await hmacSha256Hex(secret.trim(), rawBody);
-  const provided = header.replace(/^sha256=/i, "").trim().toLowerCase();
-  return timingSafeEqualHex(expected, provided);
+  return timingSafeEqualHex(expected, normalizeHex(header));
+}
+
+export type InboundSignatureFormat = "v2" | "legacy";
+
+export type InboundVerification =
+  | { ok: true; format: InboundSignatureFormat }
+  | { ok: false; reason: "invalid_signature" | "stale_timestamp" };
+
+/**
+ * Verify an inbound request. If the v2 (timestamped) header is present, only
+ * v2 is checked: a v2 request that fails is rejected, never retried as legacy.
+ * Without it, the body-only legacy signature is still accepted (for now).
+ */
+export async function verifyInboundRequest(
+  secret: string | null | undefined,
+  rawBody: string,
+  headers: Headers,
+  nowMs: number = Date.now(),
+): Promise<InboundVerification> {
+  const v2 = headers.get(SIGNATURE_V2_HEADER);
+  if (v2 !== null) {
+    if (!secret?.trim() || !v2.trim()) return { ok: false, reason: "invalid_signature" };
+    const timestamp = headers.get(TIMESTAMP_HEADER)?.trim() ?? "";
+    if (!/^\d{1,12}$/.test(timestamp)) return { ok: false, reason: "invalid_signature" };
+    const skew = Math.abs(nowMs / 1000 - Number(timestamp));
+    if (skew > WEBHOOK_TIMESTAMP_TOLERANCE_SECONDS) {
+      return { ok: false, reason: "stale_timestamp" };
+    }
+    const expected = await hmacSha256Hex(secret.trim(), signedPayloadV2(timestamp, rawBody));
+    return timingSafeEqualHex(expected, normalizeHex(v2))
+      ? { ok: true, format: "v2" }
+      : { ok: false, reason: "invalid_signature" };
+  }
+
+  const legacyOk = await verifyInboundSignature(
+    secret,
+    rawBody,
+    pickInboundSignatureHeader(headers),
+  );
+  return legacyOk ? { ok: true, format: "legacy" } : { ok: false, reason: "invalid_signature" };
 }
 
 export function randomSigningSecret(): string {

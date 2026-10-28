@@ -41,9 +41,14 @@ const ingestOk = `{
 const metricsCurl = `curl -sS "${siteUrl}/api/v1/metrics" \\
   -H "Authorization: Bearer YOUR_API_KEY" | head`;
 
-const inboundCurl = `curl -X POST "${siteUrl}/api/inbound/YOUR_INBOUND_TOKEN" \\
+const inboundCurl = `BODY='{"action":"snooze","hours":4}'
+TS=$(date +%s)
+SIG=$(printf '%s.%s' "$TS" "$BODY" | openssl dgst -sha256 -hmac "YOUR_SIGNING_SECRET" -hex | sed 's/^.* //')
+curl -X POST "${siteUrl}/api/inbound/YOUR_INBOUND_TOKEN" \\
   -H "Content-Type: application/json" \\
-  -d '{"action":"snooze","hours":4}'`;
+  -H "X-ProbeHarbor-Timestamp: $TS" \\
+  -H "X-ProbeHarbor-Signature-V2: sha256=$SIG" \\
+  -d "$BODY"`;
 
 const shareCurl = `curl -sS "${siteUrl}/api/share/YOUR_SHARE_TOKEN/readings"`;
 
@@ -254,12 +259,16 @@ const mqttCurl = `curl -X POST "${siteUrl}/api/ingest/mqtt" \\
       <h2 class="card-title">POST /api/inbound/&lt;token&gt;</h2>
       <p class="card-subtitle mb-4">
         Pro inbound webhooks for Home Assistant / Zapier / Make: actions such as <code>snooze</code>, <code>vacation</code>, <code>status</code>.
-        Create the token under Dashboard → Share. Optional HMAC via signing secret
-        (<code>X-ProbeHarbor-Signature</code>; legacy <code>X-ThermalTrace-Signature</code> and <code>X-GarageTemp-Signature</code> still accepted).
+        Create the token under Dashboard → Share. Sign with the signing secret: recommended is
+        <code>X-ProbeHarbor-Timestamp</code> (Unix seconds) plus <code>X-ProbeHarbor-Signature-V2</code> =
+        <code>sha256=HMAC-SHA256(secret, timestamp + "." + body)</code>, which rejects replays older than 5 minutes.
+        The body-only <code>X-ProbeHarbor-Signature</code> (legacy <code>X-ThermalTrace-Signature</code>,
+        <code>X-GarageTemp-Signature</code>) is still accepted for now.
       </p>
       <pre class="text-xs overflow-x-auto mb-3 p-4 rounded-lg bg-[var(--color-surface-muted)]"><code>{inboundCurl}</code></pre>
       <p class="mb-0 text-sm">
-        Invalid token → <code>401</code>; bad signature → <code>401</code> <code>&#123; "error": "Invalid signature" &#125;</code>.
+        Invalid token → <code>401</code>; bad signature → <code>401</code> <code>&#123; "error": "Invalid signature" &#125;</code>;
+        timestamp more than 5 minutes off → <code>401</code> with an error starting <code>Stale timestamp</code>.
         Guide:
         <a class="text-link" href="/about/ingest-and-webhooks">Ingest &amp; webhooks</a>
         ·

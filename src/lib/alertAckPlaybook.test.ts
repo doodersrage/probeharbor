@@ -297,6 +297,13 @@ describe("executeAlertAckPlaybook", () => {
         .map((b) => b.toString(16).padStart(2, "0"))
         .join("");
       expect(headers["X-Signature"]).toBe(expectedHex);
+
+      const ts = headers["X-ProbeHarbor-Timestamp"];
+      expect(ts).toMatch(/^\d+$/);
+      const v2 = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(`${ts}.${body}`));
+      expect(headers["X-ProbeHarbor-Signature-V2"]).toBe(
+        `sha256=${[...new Uint8Array(v2)].map((b) => b.toString(16).padStart(2, "0")).join("")}`,
+      );
     });
   });
 

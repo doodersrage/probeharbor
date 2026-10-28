@@ -1,5 +1,6 @@
 import type { AlertSettings } from "./alerts";
 import { deliverWebhookPost } from "./webhookDeliveries";
+import { timestampedSignatureHeaders } from "./webhookSigning";
 
 async function hmacSha256Hex(secret: string, body: string): Promise<string> {
   const key = await crypto.subtle.importKey(
@@ -35,6 +36,7 @@ export async function sendReadingWebhook(
     // Legacy aliases for existing HA / Zapier verifiers (pre-rename names).
     headers["X-ThermalTrace-Signature"] = headerValue;
     headers["X-GarageTemp-Signature"] = headerValue;
+    Object.assign(headers, await timestampedSignatureHeaders(secret, body));
   }
 
   await deliverWebhookPost(userId, "reading", url, headers, body);

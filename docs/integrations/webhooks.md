@@ -23,14 +23,57 @@ When a webhook secret is configured, requests include:
 
 ```http
 X-Signature: <hex HMAC-SHA256 of raw body>
+X-ProbeHarbor-Timestamp: 1761650000
+X-ProbeHarbor-Signature-V2: sha256=<hex HMAC-SHA256 of "<timestamp>.<raw body>">
 ```
 
 Verify before acting on the payload (Home Assistant, Zapier code step, custom worker).
 
+**Prefer the timestamped (v2) signature.** `X-Signature` covers only the body, so
+a copied request still verifies later. The v2 signature also covers the time it
+was sent, so you can reject replays:
+
+1. Read `X-ProbeHarbor-Timestamp` (Unix seconds). Reject it if it is more than
+   5 minutes from your clock.
+2. Compute `HMAC-SHA256(secret, timestamp + "." + rawBody)` as lowercase hex.
+3. Compare it with `X-ProbeHarbor-Signature-V2` after the `sha256=` prefix,
+   using a constant-time comparison.
+
+```js
+// Node.js
+import { createHmac, timingSafeEqual } from "node:crypto";
+
+function verify(secret, rawBody, headers) {
+  const ts = headers["x-probeharbor-timestamp"];
+  const sig = (headers["x-probeharbor-signature-v2"] ?? "").replace(/^sha256=/, "");
+  if (!/^\d+$/.test(ts ?? "") || Math.abs(Date.now() / 1000 - Number(ts)) > 300) return false;
+  const expected = createHmac("sha256", secret).update(`${ts}.${rawBody}`).digest("hex");
+  return sig.length === expected.length && timingSafeEqual(Buffer.from(sig), Buffer.from(expected));
+}
+```
+
+`X-Signature` (and, on reading webhooks, `X-ProbeHarbor-Signature`) is still
+sent unchanged, so existing verifiers keep working.
+
 ## Reading webhooks
 
 Separately, Pro can POST **reading** payloads to a URL for every stored snapshot (high volume — use carefully).
-When a signing secret is set, requests include `X-ProbeHarbor-Signature` (and the legacy `X-ThermalTrace-Signature` and `X-GarageTemp-Signature` aliases) as `sha256=<hex>`.
+When a signing secret is set, requests include `X-ProbeHarbor-Signature` (and the legacy `X-ThermalTrace-Signature` and `X-GarageTemp-Signature` aliases) as `sha256=<hex>`, plus the same timestamped `X-ProbeHarbor-Timestamp` and `X-ProbeHarbor-Signature-V2` headers as alert webhooks (see above).
+
+## Signing inbound calls
+
+`POST /api/inbound/{token}` accepts the same v2 scheme, and it's the recommended format:
+
+```http
+X-ProbeHarbor-Timestamp: <current Unix seconds>
+X-ProbeHarbor-Signature-V2: sha256=<hex HMAC-SHA256 of "<timestamp>.<raw body>">
+```
+
+Requests more than 5 minutes old (or ahead) are rejected with `401`. If the v2
+header is present, it alone is checked. The older body-only
+`X-ProbeHarbor-Signature` is still accepted for now, but a copy of such a
+request can be replayed, so switch to v2. Body-only signatures may stop being
+accepted in a future release, with notice.
 
 ## Home Assistant
 

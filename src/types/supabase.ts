@@ -1260,6 +1260,7 @@ export type Database = {
           created_by: string | null
           household_id: string
           id: string
+          last_signature_format: string | null
           last_used_at: string | null
           name: string
           signing_secret: string | null
@@ -1271,6 +1272,7 @@ export type Database = {
           created_by?: string | null
           household_id: string
           id?: string
+          last_signature_format?: string | null
           last_used_at?: string | null
           name?: string
           signing_secret?: string | null
@@ -1282,6 +1284,7 @@ export type Database = {
           created_by?: string | null
           household_id?: string
           id?: string
+          last_signature_format?: string | null
           last_used_at?: string | null
           name?: string
           signing_secret?: string | null

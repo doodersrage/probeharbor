@@ -21,8 +21,8 @@ Pro outbound alert webhooks work with IFTTT Maker, self-hosted n8n, Zapier, and 
 }
 ```
 
-Verify `X-Signature` (HMAC-SHA256 hex) when a webhook secret is set. See [Alert webhooks](/integrations/webhooks).
+Verify the signature when a webhook secret is set. Prefer the timestamped `X-ProbeHarbor-Signature-V2` (rejects replays); `X-Signature` (HMAC-SHA256 hex of the body) is still sent. See [Alert webhooks](/integrations/webhooks#hmac-verification).
 
 ## Inbound snooze
 
-`POST /api/inbound/{token}` with `{"action":"snooze","hours":24}` and `X-ProbeHarbor-Signature`.
+`POST /api/inbound/{token}` with `{"action":"snooze","hours":24}`, signed with `X-ProbeHarbor-Timestamp` and `X-ProbeHarbor-Signature-V2` ([how](/integrations/webhooks#signing-inbound-calls)). The body-only `X-ProbeHarbor-Signature` still works for now.

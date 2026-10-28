@@ -1,5 +1,5 @@
 import { createServerClient } from "./supabase";
-import { randomSigningSecret } from "./inboundSigning";
+import { type InboundSignatureFormat, randomSigningSecret } from "./inboundSigning";
 
 async function sha256Hex(value: string): Promise<string> {
   const digest = await crypto.subtle.digest(
@@ -107,4 +107,25 @@ export async function resolveInboundWebhook(
     webhookId: data.id,
     signingSecret: data.signing_secret ?? null,
   };
+}
+
+/**
+ * Record which signature format a webhook last used. Best effort: a failure
+ * (for example, before migration 20261028130000 is applied) is logged and
+ * never blocks the request.
+ */
+export async function recordInboundSignatureFormat(
+  webhookId: string,
+  format: InboundSignatureFormat,
+): Promise<void> {
+  try {
+    const supabase = createServerClient();
+    const { error } = await supabase
+      .from("inbound_webhooks")
+      .update({ last_signature_format: format })
+      .eq("id", webhookId);
+    if (error) console.warn("inbound webhook: could not record signature format", error.message);
+  } catch (error) {
+    console.warn("inbound webhook: could not record signature format", error);
+  }
 }

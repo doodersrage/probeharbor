@@ -7,7 +7,9 @@
 #
 # Point ProbeHarbor Pro outbound webhook at:
 #   https://<your-ha-host>/api/webhook/<webhook_id>
-# Optional: set the same secret in ProbeHarbor and verify X-Signature (HMAC-SHA256 hex of body).
+# Optional: set the same secret in ProbeHarbor and verify the signature. Prefer
+# X-ProbeHarbor-Signature-V2 (HMAC-SHA256 of "<X-ProbeHarbor-Timestamp>.<body>"),
+# which lets you reject replays; X-Signature (HMAC of body only) is still sent.
 
 blueprint:
   name: ProbeHarbor alert webhook

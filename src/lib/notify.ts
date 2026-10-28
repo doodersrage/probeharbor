@@ -27,6 +27,7 @@ import type { Locale } from "../i18n/locales";
 import { ensureLocale } from "../i18n/catalog";
 import { fmt } from "../i18n/format";
 import { alertMessages } from "../i18n/messages/app/alertMessages";
+import { timestampedSignatureHeaders } from "./webhookSigning";
 
 export type NotifyPayload = {
   title: string;
@@ -367,6 +368,7 @@ async function sendOutboundWebhook(
 
   if (secret) {
     headers["X-Signature"] = await hmacSha256Hex(secret, body);
+    Object.assign(headers, await timestampedSignatureHeaders(secret, body));
   }
 
   const response = await deliverWebhookPost(

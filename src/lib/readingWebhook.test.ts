@@ -81,6 +81,33 @@ describe("sendReadingWebhook", () => {
     expect(headers["X-GarageTemp-Signature"]).toBe(expectedSig);
   });
 
+  it("adds a timestamped v2 signature over timestamp.body alongside the old headers", async () => {
+    const { sendReadingWebhook } = await import("./readingWebhook");
+    const body = JSON.stringify({ tempF: 30 });
+
+    await sendReadingWebhook("user-1", settings({ readingWebhookSecret: "my-secret" }), {
+      tempF: 30,
+    });
+
+    const [, , , headers] = mockDeliverWebhookPost.mock.calls[0]!;
+    const ts = headers["X-ProbeHarbor-Timestamp"];
+    expect(ts).toMatch(/^\d+$/);
+    expect(Math.abs(Number(ts) - Date.now() / 1000)).toBeLessThan(5);
+    expect(headers["X-ProbeHarbor-Signature-V2"]).toBe(
+      `sha256=${await expectedSignature("my-secret", `${ts}.${body}`)}`,
+    );
+  });
+
+  it("sends no timestamp headers without a secret", async () => {
+    const { sendReadingWebhook } = await import("./readingWebhook");
+
+    await sendReadingWebhook("user-1", settings(), { tempF: 30 });
+
+    const [, , , headers] = mockDeliverWebhookPost.mock.calls[0]!;
+    expect(headers["X-ProbeHarbor-Timestamp"]).toBeUndefined();
+    expect(headers["X-ProbeHarbor-Signature-V2"]).toBeUndefined();
+  });
+
   it("trims url and secret whitespace before use", async () => {
     const { sendReadingWebhook } = await import("./readingWebhook");
 

@@ -707,7 +707,8 @@ per-isolate rate limits, and the other Milestone 5 hardening items.
   Readings beyond the cap are deleted with no rollup.
 - Still open from the Milestone 5 audit: per-isolate rate limits;
   ~~viewers can read inbound `signing_secret` and status tokens~~ (fixed
-  in S2 below); webhook HMACs have no timestamp; snooze, share and
+  in S2 below); webhook HMACs have no timestamp (S3 step 1 below adds
+  one; enforcement pending); snooze, share and
   invite tokens are stored in plaintext.
 
 ------------------------------------------------------------------------
@@ -1903,3 +1904,63 @@ changed either policy.
 - **Next in Milestone 5:** add a timestamp to webhook HMAC signatures
   (replay protection). That changes the signature contract for anyone
   verifying webhooks, so it needs a compatible rollout.
+
+------------------------------------------------------------------------
+
+## Security fix S3, step 1: timestamped webhook signatures (2026-10-28)
+
+**Status: Implemented and verified locally. Not deployed. Migration
+`20261028130000_inbound_webhook_signature_format.sql` (additive, nullable
+column) not yet applied.**
+
+Problem (verified): every webhook HMAC covered only the body
+(`inboundSigning.ts`, `notify.ts`, `alertAckPlaybook.ts`,
+`readingWebhook.ts`), so a captured request verified forever. Inbound is
+the main risk: a replayed `vacation` or `snooze` mutes routine alerts for
+the household. Freeze, leak and power alerts are exempt (D1).
+
+Scheme (`src/lib/webhookSigning.ts`): `X-ProbeHarbor-Timestamp` (Unix
+seconds) and `X-ProbeHarbor-Signature-V2: sha256=HMAC(secret,
+"<ts>.<body>")`, with a ±300 s tolerance.
+
+- [x] Outbound alert, ack-playbook and reading webhooks send the two v2
+      headers *in addition to* the unchanged existing headers. Without a
+      secret, no headers are added (existing exact-header tests still
+      pass).
+- [x] Inbound uses `verifyInboundRequest`. If the v2 header is present,
+      only v2 is checked: bad or stale → 401, with no fallback to a
+      legacy header. Without it, the body-only signature is still
+      accepted (no breakage).
+- [x] Each successful inbound call records `last_signature_format`
+      (`v2`/`legacy`) best effort; a failed write is logged and never
+      blocks the request (so code can ship before the migration).
+- [x] Docs: `docs/integrations/webhooks.md` (verification steps and a
+      Node example), `automation.md`, `/docs/api` (the curl example was
+      unsigned, so it would always 401; now a working signed example),
+      the `/integrations/automation` sample and the HA blueprint comment.
+      Translated FAQs still mention `X-Signature`, which stays accurate,
+      so they're unchanged.
+- Evidence: `inboundSigning.test.ts` +11, `[token].test.ts` +2 (stale
+  → 401 and no action; format recorded), `readingWebhook.test.ts` +2,
+  `alertAckPlaybook.test.ts` (v2 checked), `notify.channels.test.ts` +1
+  (the first signature test for alert webhooks). Mutation check: with
+  the tolerance disabled, 3 replay tests fail. The docs' shell recipe
+  matches Node's HMAC, and the docs' Node verifier accepts our headers
+  (scratch test, not kept). `pnpm test`: 3037 passed. `pnpm typecheck`:
+  0 errors. `pnpm lint`: 64 warnings (baseline). `pnpm build`: pass.
+  `pnpm test:e2e`: 44 passed, 12 skipped.
+- Outbound retries reuse one timestamp, which is fine: at most 2
+  attempts within about 21 s. Later alert retries (2.1) build a new
+  request.
+- **Not covered:** an exact replay within the 5-minute window (it would
+  need a nonce store; replaying the same snooze changes almost nothing).
+- **Compatibility:** additive only. The separate HACS integration
+  (`thermaltrace.snooze`) isn't in this repo and presumably still signs
+  body-only. Update it to v2 before step 2.
+
+### Step 2 (needs the owner's decision): require v2 on inbound
+
+After deploying, check who still uses the old format (read-only):
+`select last_signature_format, count(*) from inbound_webhooks where
+last_used_at > now() - interval '30 days' group by 1;`. Once `legacy` is
+0, or those owners have been told, reject body-only signatures.

@@ -11,6 +11,7 @@ import type { Locale } from "../i18n/locales";
 import { ensureLocale } from "../i18n/catalog";
 import { fmt, formatNumber } from "../i18n/format";
 import { alertJobsMessages } from "../i18n/messages/app/alertJobs";
+import { timestampedSignatureHeaders } from "./webhookSigning";
 
 export type AckPlaybookAction =
   | "ack"
@@ -135,6 +136,10 @@ export async function executeAlertAckPlaybook(input: {
       headers["X-Signature"] = [...new Uint8Array(sig)]
         .map((b) => b.toString(16).padStart(2, "0"))
         .join("");
+      Object.assign(
+        headers,
+        await timestampedSignatureHeaders(settings.outboundWebhookSecret.trim(), payload),
+      );
     }
     await deliverWebhookPost(
       input.userId,

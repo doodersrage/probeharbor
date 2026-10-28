@@ -94,7 +94,8 @@ const schema = [
       <p class="text-sm mb-2">{t.inboundLede}</p>
       <pre class="text-xs overflow-x-auto mb-2"><code>{`POST /api/inbound/gtw_…
 Content-Type: application/json
-X-ProbeHarbor-Signature: <hmac-sha256-hex>
+X-ProbeHarbor-Timestamp: <unix-seconds>
+X-ProbeHarbor-Signature-V2: sha256=<hmac-sha256-hex of "timestamp.body">
 
 {"action":"snooze","hours":24}`}</code></pre>
       <p class="mb-0 text-sm text-[var(--color-text-muted)]" set:html={t.inboundFootHtml} />

@@ -1,9 +1,9 @@
 import type { APIRoute } from "astro";
-import { resolveInboundWebhook } from "../../../lib/inboundWebhooks";
 import {
-  pickInboundSignatureHeader,
-  verifyInboundSignature,
-} from "../../../lib/inboundSigning";
+  recordInboundSignatureFormat,
+  resolveInboundWebhook,
+} from "../../../lib/inboundWebhooks";
+import { verifyInboundRequest } from "../../../lib/inboundSigning";
 import {
   applySnoozeForHouseholdMembers,
   applyVacationForHouseholdMembers,
@@ -34,17 +34,24 @@ export const POST: APIRoute = async ({ params, request }) => {
   }
 
   const rawBody = await request.text();
-  const signatureOk = await verifyInboundSignature(
+  const verification = await verifyInboundRequest(
     resolved.signingSecret,
     rawBody,
-    pickInboundSignatureHeader(request.headers),
+    request.headers,
   );
-  if (!signatureOk) {
-    return new Response(JSON.stringify({ error: "Invalid signature" }), {
+  if (!verification.ok) {
+    const error =
+      verification.reason === "stale_timestamp"
+        ? "Stale timestamp (X-ProbeHarbor-Timestamp must be within 5 minutes)"
+        : "Invalid signature";
+    return new Response(JSON.stringify({ error }), {
       status: 401,
       headers: { "Content-Type": "application/json" },
     });
   }
+  // Tells the owner which webhooks still send body-only signatures before
+  // timestamps become required.
+  await recordInboundSignatureFormat(resolved.webhookId, verification.format);
 
   let body: Record<string, unknown> = {};
   try {

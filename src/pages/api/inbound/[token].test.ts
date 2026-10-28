@@ -2,15 +2,15 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { APIContext } from "astro";
 
 const mockResolveInboundWebhook = vi.fn();
+const mockRecordInboundSignatureFormat = vi.fn();
 vi.mock("../../../lib/inboundWebhooks", () => ({
   resolveInboundWebhook: (...a: unknown[]) => mockResolveInboundWebhook(...a),
+  recordInboundSignatureFormat: (...a: unknown[]) => mockRecordInboundSignatureFormat(...a),
 }));
 
-const mockPickInboundSignatureHeader = vi.fn();
-const mockVerifyInboundSignature = vi.fn();
+const mockVerifyInboundRequest = vi.fn();
 vi.mock("../../../lib/inboundSigning", () => ({
-  pickInboundSignatureHeader: (...a: unknown[]) => mockPickInboundSignatureHeader(...a),
-  verifyInboundSignature: (...a: unknown[]) => mockVerifyInboundSignature(...a),
+  verifyInboundRequest: (...a: unknown[]) => mockVerifyInboundRequest(...a),
 }));
 
 const mockApplySnoozeForHouseholdMembers = vi.fn();
@@ -56,10 +56,11 @@ function makeContext(options: {
 beforeEach(() => {
   mockResolveInboundWebhook.mockReset().mockResolvedValue({
     householdId: "house-1",
+    webhookId: "wh-1",
     signingSecret: "secret",
   });
-  mockPickInboundSignatureHeader.mockReset().mockReturnValue("sig-header");
-  mockVerifyInboundSignature.mockReset().mockResolvedValue(true);
+  mockVerifyInboundRequest.mockReset().mockResolvedValue({ ok: true, format: "v2" });
+  mockRecordInboundSignatureFormat.mockReset().mockResolvedValue(undefined);
   mockApplySnoozeForHouseholdMembers.mockReset().mockResolvedValue(2);
   mockApplyVacationForHouseholdMembers.mockReset().mockResolvedValue(2);
   mockClearSnoozeForHouseholdMembers.mockReset().mockResolvedValue(2);
@@ -89,13 +90,37 @@ describe("POST /api/inbound/[token]", () => {
   });
 
   it("returns 401 when the signature is invalid", async () => {
-    mockVerifyInboundSignature.mockResolvedValue(false);
+    mockVerifyInboundRequest.mockResolvedValue({ ok: false, reason: "invalid_signature" });
     const { POST } = await import("./[token]");
 
-    const response = await POST(makeContext());
+    const response = await POST(makeContext({ body: '{"action":"vacation"}' }));
 
     expect(response.status).toBe(401);
     expect(await response.json()).toEqual({ error: "Invalid signature" });
+    expect(mockApplyVacationForHouseholdMembers).not.toHaveBeenCalled();
+    expect(mockRecordInboundSignatureFormat).not.toHaveBeenCalled();
+  });
+
+  it("returns 401 for a replayed (stale) request and does not act on it", async () => {
+    mockVerifyInboundRequest.mockResolvedValue({ ok: false, reason: "stale_timestamp" });
+    const { POST } = await import("./[token]");
+
+    const response = await POST(makeContext({ body: '{"action":"vacation","days":7}' }));
+
+    expect(response.status).toBe(401);
+    expect(((await response.json()) as { error: string }).error).toMatch(/^Stale timestamp/);
+    expect(mockApplyVacationForHouseholdMembers).not.toHaveBeenCalled();
+  });
+
+  it("verifies the raw body and request headers, then records the format used", async () => {
+    mockVerifyInboundRequest.mockResolvedValue({ ok: true, format: "legacy" });
+    const { POST } = await import("./[token]");
+    const body = '{"action":"snooze","hours":2}';
+
+    await POST(makeContext({ body }));
+
+    expect(mockVerifyInboundRequest).toHaveBeenCalledWith("secret", body, expect.any(Headers));
+    expect(mockRecordInboundSignatureFormat).toHaveBeenCalledWith("wh-1", "legacy");
   });
 
   it("applies a snooze and records activity", async () => {
