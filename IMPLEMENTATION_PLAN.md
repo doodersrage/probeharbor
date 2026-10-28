@@ -3083,3 +3083,33 @@ per Worker isolate, so spread-out traffic is barely limited.
 - Not verified: the limiter in production. After deploy, 61+ quick POSTs
   with one bogus key should start returning 429; that's safe, because an
   unknown key does nothing else.
+
+------------------------------------------------------------------------
+
+## Milestone 8, increment 8.3: axe accessibility checks in e2e (2026-10-28)
+
+**Status: Implemented and verified locally. Dev dependency only. Not
+deployed.** The owner approved the recommendation (2026-10-28).
+
+- [x] `@axe-core/playwright` ^4.14.0 (Deque) added as a devDependency. It
+      isn't in the site bundle. Lockfile check: the only changes besides
+      axe and `axe-core` are peer annotations that pnpm 12 adds on
+      re-resolution (`supports-color`, `typescript`); no package changed
+      version. A frozen install works. It needs Node ≥ 22.12, which matches
+      CI (Node 22) and `engines`.
+- [x] `e2e/a11y.spec.ts` runs WCAG 2.1 A/AA rules on 11 public pages:
+      home, pricing, flash, system-status, docs/api, freeze calculator,
+      pipe-freeze forecast, signin, signup, about, and `/de/pricing`.
+      Serious and critical violations fail; every violation is attached to
+      the report as JSON.
+- Finding: the first run "failed" home-page contrast (ratios 1.01–1.5 on
+  hero text and buttons). That was the hero's entrance fade captured mid-
+  animation. With reduced motion, or after it settles, there are 0
+  violations. The spec emulates `prefers-reduced-motion: reduce`, which is
+  deterministic and also checks the reduced-motion path.
+- Result: 0 violations of any impact on all pages checked.
+- Evidence: `pnpm test:e2e`: 58 passed (+11), 13 skipped. `pnpm lint`: 64
+  warnings (baseline). `pnpm typecheck`: 0 errors.
+- Not covered: signed-in pages (dashboard), which the E2E credentials
+  could add later, and moderate or minor issues that may appear on pages
+  not listed.
