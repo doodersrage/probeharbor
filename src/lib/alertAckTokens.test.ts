@@ -13,6 +13,28 @@ describe("alertAckTokens", () => {
     expect(await verifyAckPayload("user-123", exp, sig)).toBe(true);
   });
 
+  it("binds a link to one alert: the signature only verifies for that event id", async () => {
+    const exp = Date.now() + 60_000;
+    const sig = await signAckPayload("user-123", exp, 42);
+    expect(await verifyAckPayload("user-123", exp, sig, 42)).toBe(true);
+    expect(await verifyAckPayload("user-123", exp, sig, 43)).toBe(false);
+    expect(await verifyAckPayload("user-123", exp, sig)).toBe(false);
+  });
+
+  it("still verifies older links that carry no event id", async () => {
+    const exp = Date.now() + 60_000;
+    const sig = await signAckPayload("user-123", exp);
+    expect(await verifyAckPayload("user-123", exp, sig)).toBe(true);
+    expect(await verifyAckPayload("user-123", exp, sig, 42)).toBe(false);
+  });
+
+  it("puts the event id in new ack links", async () => {
+    const url = new URL((await buildUserAckUrl("https://example.com", "user-123", 42))!);
+    expect(url.searchParams.get("eid")).toBe("42");
+    const exp = Number(url.searchParams.get("exp"));
+    expect(await verifyAckPayload("user-123", exp, url.searchParams.get("sig")!, 42)).toBe(true);
+  });
+
   it("rejects expired tokens", async () => {
     const exp = Date.now() - 1;
     const sig = await signAckPayload("user-123", exp);

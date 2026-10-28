@@ -634,7 +634,7 @@ export async function notifyUser(
     : null;
   const routedSet = routedChannels ? new Set(routedChannels) : null;
   const baseUrl = buildSiteUrl();
-  const ackUrl = kind === "recovery" ? null : await buildUserAckUrl(baseUrl, userId);
+  const ackUrl = kind === "recovery" ? null : await buildUserAckUrl(baseUrl, userId, eventId);
   await ensureLocale(locale, ["app"]);
   const delivery = alertMessages(locale).delivery;
   const footerLines: string[] = [];

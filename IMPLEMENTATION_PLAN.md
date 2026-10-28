@@ -1285,3 +1285,78 @@ never sent.
   the plain cooldown.
 - One extra alert-log query per evaluation, and only while a cooldown is
   active and a matching condition is present.
+
+------------------------------------------------------------------------
+
+## Milestone 2, increment 2.3: snooze scope — BLOCKED (needs a product decision)
+
+Verified behavior:
+- **One shared setting.** `alert_settings.snooze_until` is set the same
+  way by device-health snooze links (battery/signal alerts,
+  `alertNotifications.ts` `buildSnoozeUrl`), Telegram `/snooze`, inbound
+  playbooks and the dashboard.
+- **What it mutes.** `SNOOZE_BLOCKED` (`alertSnooze.ts`) mutes freeze
+  (`threshold`) but not leak or power-off.
+- **Escalation.** SMS (`notifyUser` with `smsOnly`) ignores snooze and
+  quiet hours.
+
+The copy contradicts itself:
+- Telegram's reply says "Freeze and leak alerts still fire"
+  (`alertJobs/en.ts:121`).
+- The ack playbook says "freeze alerts snoozed for 1 hour"
+  (`alertJobs/en.ts:108`).
+- So snoozing a battery warning silences freeze alerts for 24 h.
+
+Options:
+1. **Snooze never mutes freeze**, matching the Telegram copy and
+   vacation mode. Remove `threshold` from `SNOOZE_BLOCKED`, and reword
+   the playbook copy in 5 locales.
+2. **Scoped snoozes.** Device-health links only snooze device-health
+   kinds; the dashboard and playbook snooze can mute freeze. Needs a
+   column or token scope (migration) and copy in 5 locales.
+3. Keep as is and fix only the Telegram copy.
+
+Escalation SMS should then respect whatever "snooze freeze" means.
+
+------------------------------------------------------------------------
+
+## Milestone 2, increment 2.4: ack links acknowledge their own alert (2026-10-28)
+
+**Status: Implemented and verified locally. No migration.**
+
+### Problem (verified)
+
+Ack links signed only `uid:exp` and acknowledged the user's *latest*
+unacknowledged alert (`alertAckTokens.ts`,
+`acknowledgeLatestUnackedAlert`). Tapping "I'm on it" in an old leak
+email could acknowledge a newer freeze alert, which stops its
+escalation SMS and repeats (`alertNotifications.ts` escalation and
+"I'm on it" suppression).
+
+### Acceptance criteria
+
+- [x] New links carry the alert's event id (`eid`) and sign
+      `uid:eventId:exp`. Redeeming one acknowledges only that event
+      (`acknowledgeAlertEvent`, scoped to the user and to unacknowledged
+      events).
+- [x] A changed `eid` fails verification. A malformed `eid` is rejected
+      by the route.
+- [x] Older links (no `eid`) keep the previous behavior until they
+      expire, at most 7 days. The confirm page's POST form keeps `eid`.
+- [x] `notifyUser` passes the event id it already records before
+      building the link.
+
+### Evidence
+
+- `alertAckTokens.test.ts` +3, new `alertAckTokens.apply.test.ts` (3)
+  and `ack.test.ts` +3 (3 existing argument assertions updated for the
+  new optional argument). Against the previous code, 11 tests fail.
+- `pnpm test`: 2969 passed. `pnpm typecheck`: 0 errors. `pnpm lint`: 64
+  warnings (baseline). `pnpm build`: pass. `pnpm test:e2e`: 44 passed,
+  12 skipped.
+
+### Residual
+
+Old-format links in inboxes stay user-wide until they expire. Other ack
+paths (Telegram, push "Acknowledge" action) weren't changed; check
+whether they also use "latest unacked" (follow-up).

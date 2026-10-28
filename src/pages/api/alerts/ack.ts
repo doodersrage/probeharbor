@@ -19,6 +19,12 @@ async function ownerLocale(userId: string, fallback: Locale | undefined): Promis
   return locale;
 }
 
+/** `eid` from a link: absent → null (older link); malformed → undefined (reject). */
+function parseEventId(raw: string | null): number | null | undefined {
+  if (raw == null || raw.trim() === "") return null;
+  return /^\d{1,15}$/.test(raw.trim()) ? Number(raw.trim()) : undefined;
+}
+
 function escapeHtml(value: string): string {
   return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
@@ -28,13 +34,17 @@ async function handleAck(url: URL, requestLocale: Locale | undefined): Promise<R
   const expRaw = url.searchParams.get("exp");
   const sig = url.searchParams.get("sig")?.trim() ?? "";
   const expMs = expRaw ? Number(expRaw) : NaN;
+  const eventId = parseEventId(url.searchParams.get("eid"));
+  if (eventId === undefined) {
+    return Response.redirect(new URL("/dashboard/alerts?ack_error=1", url.origin), 302);
+  }
 
   if (!userId || !Number.isFinite(expMs)) {
     return Response.redirect(new URL("/dashboard/alerts?ack_error=1", url.origin), 302);
   }
 
   const locale = await ownerLocale(userId, requestLocale);
-  const result = await applyAckToken(userId, expMs, sig, locale);
+  const result = await applyAckToken(userId, expMs, sig, locale, eventId);
   const params = new URLSearchParams({
     ack_ok: result.ok ? "1" : "0",
     ack_msg: result.message,
@@ -62,7 +72,8 @@ export const GET: APIRoute = async ({ url, locals }) => {
 
   const locale = await ownerLocale(userId, locals?.locale);
   const t = alertJobsMessages(locale).ackPage;
-  const action = `/api/alerts/ack?uid=${encodeURIComponent(userId)}&exp=${encodeURIComponent(exp)}&sig=${encodeURIComponent(sig)}`;
+  const eid = url.searchParams.get("eid")?.trim() ?? "";
+  const action = `/api/alerts/ack?uid=${encodeURIComponent(userId)}${eid ? `&eid=${encodeURIComponent(eid)}` : ""}&exp=${encodeURIComponent(exp)}&sig=${encodeURIComponent(sig)}`;
   const html = `<!DOCTYPE html>
 <html lang="${LOCALE_META[locale].htmlLang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${escapeHtml(t.title)}</title></head>

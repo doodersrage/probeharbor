@@ -1,4 +1,4 @@
-import { acknowledgeLatestUnackedAlert } from "./alertEvents";
+import { acknowledgeAlertEvent, acknowledgeLatestUnackedAlert } from "./alertEvents";
 import type { Locale } from "../i18n/locales";
 import { alertJobsMessages } from "../i18n/messages/app/alertJobs";
 import { timingSafeEqualHex } from "./timingSafeEqual";
@@ -54,22 +54,32 @@ export async function verifyWithAlertLinkSecret(payload: string, sig: string): P
   return timingSafeEqualHex(expected, sig.toLowerCase());
 }
 
-export async function signAckPayload(userId: string, expMs: number): Promise<string> {
+/**
+ * What an ack link signs. Links made since alerts carried their event id sign
+ * `uid:eventId:exp` and acknowledge exactly that alert; older links sign
+ * `uid:exp` and still acknowledge the latest open alert until they expire.
+ */
+function ackPayload(userId: string, expMs: number, eventId?: number | null): string {
+  return eventId != null ? `${userId}:${eventId}:${expMs}` : `${userId}:${expMs}`;
+}
+
+export async function signAckPayload(userId: string, expMs: number, eventId?: number | null): Promise<string> {
   const secret = await getAckSecret();
   if (!secret) throw new Error("Ack signing secret not configured");
-  return hmacSha256Hex(secret, `${userId}:${expMs}`);
+  return hmacSha256Hex(secret, ackPayload(userId, expMs, eventId));
 }
 
 export async function verifyAckPayload(
   userId: string,
   expMs: number,
   sig: string,
+  eventId?: number | null,
 ): Promise<boolean> {
   if (!userId || !Number.isFinite(expMs) || !sig) return false;
   if (expMs < Date.now()) return false;
   const secret = await getAckSecret();
   if (!secret) return false;
-  const expected = await hmacSha256Hex(secret, `${userId}:${expMs}`);
+  const expected = await hmacSha256Hex(secret, ackPayload(userId, expMs, eventId));
   return timingSafeEqualHex(expected, sig.toLowerCase());
 }
 
@@ -77,6 +87,8 @@ export async function verifyAckPayload(
 export async function buildUserAckUrl(
   baseUrl: string,
   userId: string,
+  /** The alert this link acknowledges. Without it the link acks the latest open alert. */
+  eventId?: number | null,
 ): Promise<string | null> {
   const secret = await getAckSecret();
   if (!secret) {
@@ -86,9 +98,10 @@ export async function buildUserAckUrl(
     return null;
   }
   const exp = Date.now() + 7 * 24 * 60 * 60 * 1000;
-  const sig = await hmacSha256Hex(secret, `${userId}:${exp}`);
+  const sig = await hmacSha256Hex(secret, ackPayload(userId, exp, eventId));
   const params = new URLSearchParams({
     uid: userId,
+    ...(eventId != null ? { eid: String(eventId) } : {}),
     exp: String(exp),
     sig,
   });
@@ -100,14 +113,19 @@ export async function applyAckToken(
   expMs: number,
   sig: string,
   locale: Locale = "en",
+  eventId?: number | null,
 ): Promise<{ ok: boolean; message: string }> {
   const t = alertJobsMessages(locale).ackPage;
-  const valid = await verifyAckPayload(userId, expMs, sig);
+  const valid = await verifyAckPayload(userId, expMs, sig, eventId);
   if (!valid) {
     return { ok: false, message: t.resultInvalid };
   }
 
-  const result = await acknowledgeLatestUnackedAlert(userId, locale);
+  // A link tied to one alert acknowledges only that alert (never a newer one).
+  const result =
+    eventId != null
+      ? await acknowledgeAlertEvent(userId, eventId)
+      : await acknowledgeLatestUnackedAlert(userId, locale);
   if (!result.ok) {
     return { ok: false, message: result.error ?? t.resultNone };
   }

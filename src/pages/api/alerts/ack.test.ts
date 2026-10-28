@@ -22,6 +22,32 @@ beforeEach(() => {
 });
 
 describe("POST /api/alerts/ack", () => {
+  it("passes the link's event id through, so only that alert is acknowledged", async () => {
+    mockApplyAckToken.mockResolvedValue({ ok: true, message: "Handled" });
+    const { POST } = await import("./ack");
+
+    await POST(makeContext("?uid=user-1&eid=42&exp=9999999999999&sig=abc"));
+
+    expect(mockApplyAckToken).toHaveBeenCalledWith("user-1", 9999999999999, "abc", expect.any(String), 42);
+  });
+
+  it("rejects a malformed event id", async () => {
+    const { POST } = await import("./ack");
+
+    const response = await POST(makeContext("?uid=user-1&eid=42abc&exp=9999999999999&sig=abc"));
+
+    expect(response.headers.get("Location")).toBe("https://example.com/dashboard/alerts?ack_error=1");
+    expect(mockApplyAckToken).not.toHaveBeenCalled();
+  });
+
+  it("keeps the event id in the confirm page's form", async () => {
+    const { GET } = await import("./ack");
+
+    const response = await GET(makeContext("?uid=user-1&eid=42&exp=9999999999999&sig=abc"));
+
+    expect(await response.text()).toContain("eid=42");
+  });
+
   it("redirects with ack_error when uid is missing", async () => {
     const { POST } = await import("./ack");
 
@@ -50,7 +76,7 @@ describe("POST /api/alerts/ack", () => {
 
     const response = await POST(makeContext("?uid=user-1&exp=123&sig=abc"));
 
-    expect(mockApplyAckToken).toHaveBeenCalledWith("user-1", 123, "abc", "en");
+    expect(mockApplyAckToken).toHaveBeenCalledWith("user-1", 123, "abc", "en", null);
     const location = new URL(response.headers.get("Location")!);
     expect(location.searchParams.get("ack_ok")).toBe("1");
     expect(location.searchParams.get("ack_msg")).toBe("Marked handled.");
@@ -74,7 +100,7 @@ describe("POST /api/alerts/ack", () => {
 
     await POST(makeContext("?uid=user-1&exp=123"));
 
-    expect(mockApplyAckToken).toHaveBeenCalledWith("user-1", 123, "", "en");
+    expect(mockApplyAckToken).toHaveBeenCalledWith("user-1", 123, "", "en", null);
   });
 });
 
@@ -125,6 +151,6 @@ describe("ack links in the alert owner's language", () => {
 
     mockApplyAckToken.mockResolvedValue({ ok: true, message: "Alarm als erledigt markiert." });
     await POST(makeContext("?uid=user-1&exp=123&sig=abc"));
-    expect(mockApplyAckToken).toHaveBeenCalledWith("user-1", 123, "abc", "de");
+    expect(mockApplyAckToken).toHaveBeenCalledWith("user-1", 123, "abc", "de", null);
   });
 });
