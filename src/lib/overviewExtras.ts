@@ -391,7 +391,7 @@ export function computeCondensationHours(
 ): { hours: number; latestMarginF: number | null } {
   if (points.length < 2) {
     const last = points.at(-1);
-    const dew = last ? dewPointF(last.tempf, last.humidity) : null;
+    const dew = last && last.humidity != null ? dewPointF(last.tempf, last.humidity) : null;
     return {
       hours: 0,
       latestMarginF:
@@ -400,7 +400,7 @@ export function computeCondensationHours(
   }
 
   const sorted = [...points]
-    .filter((p) => Number.isFinite(p.humidity) && p.humidity > 0)
+    .flatMap((p) => (p.humidity != null && Number.isFinite(p.humidity) && p.humidity > 0 ? [{ ...p, humidity: p.humidity }] : []))
     .sort((a, b) => Date.parse(a.timestamp) - Date.parse(b.timestamp));
   if (sorted.length < 2) {
     return { hours: 0, latestMarginF: null };

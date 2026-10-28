@@ -116,7 +116,7 @@ export async function fetchReferenceSensorChartPoints(
   }
 
   return (data ?? [])
-    .map((row) => {
+    .map((row): ChartPoint | null => {
       const label =
         (row.device_sensors as { label?: string } | null)?.label ?? libTextMessages(locale).house.house;
       const tempf = row.value_num;
@@ -124,9 +124,10 @@ export async function fetchReferenceSensorChartPoints(
       return {
         timestamp: row.recorded_at,
         tempf,
-        humidity: 0,
+        // Reference sensors here are temperature-only.
+        humidity: null,
         probeLabel: label,
-      } satisfies ChartPoint;
+      };
     })
     .filter((point): point is ChartPoint => point != null);
 }

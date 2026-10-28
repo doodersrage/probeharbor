@@ -1050,3 +1050,61 @@ providers delay the device's POST. Moving them to `waitUntil` changes
 failure visibility and the Worker time budget; that belongs in
 Milestone 2 (alert delivery). Per-sensor queries inside alert
 evaluation (`alertNotifications.ts:724,749,919`) are also Milestone 2.
+
+------------------------------------------------------------------------
+
+## Milestone 1, increment 1.7: history shows missing values as missing (2026-10-27)
+
+**Status: Implemented and verified locally. No migration.**
+
+Deploy check: `198dbeb` (increments 1.1–1.6 and retention 1.2) deployed
+to production 2026-10-28 01:38 UTC. Migration `20261027220000` was
+applied before the code.
+
+### Problem (verified)
+
+`pairTempHumidityRows` (`garageTempsHistory.ts`) gave a temperature
+reading with no humidity `humidity: 0` and a humidity-only reading
+`tempf/tempc: 0`. Several other places produced zeros too:
+- the chart builders' `Number(...)` conversions
+- the rollup chart path (`humidity: 0`)
+- reference-sensor points (`houseContext.ts`)
+
+The zeros reached history charts, the history table, CSV export, digest
+and monthly/quarterly emails, claims packs, seasonal insights and
+condensation estimates. Some consumers had worked around it locally
+(`humidity > 0` filters).
+
+### Acceptance criteria
+
+- [x] `GarageTempReading.tempc/tempf/humidity` and `ChartPoint.humidity`
+      are nullable; null means not measured. Readings with no
+      temperature aren't turned into temperature chart points.
+- [x] The history table shows "—", and CSV leaves the cell empty.
+- [x] Average humidity covers only real values (`humidityStats.ts`);
+      "—" when there are none (digest, monthly/quarterly, claims pack).
+      The "most humid" stat or insight is skipped when nothing measured
+      humidity.
+- [x] Dew point and condensation (`heatingInsights`, `overviewExtras`,
+      chart hover) skip readings without humidity.
+- [x] `HistoryChart` and the hover helpers accept null humidity. The
+      chart already broke lines at gaps.
+
+### Evidence
+
+- `historyNoFabricatedZeros.test.ts` (7 tests) and
+  `garageTempsHistory.test.ts`. 2 existing tests asserted the zero-fill
+  and were updated to expect null. Against the previous modules, 5
+  behavior tests fail.
+- `pnpm test`: 2941 passed. `pnpm typecheck`: 0 errors. `pnpm lint`: 64
+  warnings (baseline). `pnpm build`: pass. `pnpm test:e2e`: 44 passed,
+  12 skipped. History pages weren't reviewed visually (they need a
+  signed-in account).
+
+### Compatibility
+
+- History CSV: unmeasured cells are now empty instead of `0.0`.
+  Spreadsheet users may notice; it's correct.
+- `/api/share/{token}/readings` `history` points can carry
+  `humidity: null`. The public share page doesn't read humidity from
+  them.

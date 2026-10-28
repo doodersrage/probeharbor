@@ -1,7 +1,8 @@
 export type ChartSeriesPoint = {
   timestamp: string;
   tempf: number;
-  humidity: number;
+  /** null when no humidity was measured at this time. */
+  humidity: number | null;
   probeLabel: string;
 };
 
@@ -9,7 +10,7 @@ export type HoverSeriesHit = {
   probeLabel: string;
   color: string;
   tempf: number;
-  humidity: number;
+  humidity: number | null;
   timestamp: string;
   dewPointF: number | null;
 };
@@ -112,7 +113,7 @@ export function collectHoverHits(options: {
       humidity: nearest.humidity,
       timestamp: nearest.timestamp,
       dewPointF:
-        dewPointF && Number.isFinite(nearest.humidity) && nearest.humidity > 0
+        dewPointF && nearest.humidity != null && Number.isFinite(nearest.humidity) && nearest.humidity > 0
           ? dewPointF(nearest.tempf, nearest.humidity)
           : null,
     });

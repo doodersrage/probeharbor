@@ -7,9 +7,11 @@ import { formatDateTime } from "../i18n/format";
 import type { Locale } from "../i18n/locales";
 
 export type GarageTempReading = {
-  tempc: number;
-  tempf: number;
-  humidity: number;
+  /** null when this probe has no temperature at this time (humidity-only). */
+  tempc: number | null;
+  tempf: number | null;
+  /** null when this probe has no humidity at this time. */
+  humidity: number | null;
   timestamp: string;
   feed_name?: string | null;
   probe_label?: string | null;
@@ -38,7 +40,8 @@ export type HistoryFilters = {
 export type ChartPoint = {
   timestamp: string;
   tempf: number;
-  humidity: number;
+  /** null = no humidity measured at this time; never draw it as 0. */
+  humidity: number | null;
   probeLabel: string;
   /** Device name, so equal sensor labels on different devices stay separate lines. */
   device?: string;
@@ -163,17 +166,18 @@ export function pairTempHumidityRows(
       typeof meta.tempc === "number" && tempOffset === 0
         ? meta.tempc
         : Number((((tempf - 32) * 5) / 9).toFixed(1));
+    // No humidity reported for this probe at this time: null, never 0%.
     const humidityRaw =
       humidityRow?.value_num != null
         ? Number(humidityRow.value_num)
         : typeof meta.humidity === "number"
           ? Number(meta.humidity)
-          : 0;
+          : null;
     const humidityOffset =
       typeof humidityRow?.device_sensors?.offset_num === "number"
         ? humidityRow.device_sensors.offset_num
         : 0;
-    const humidity = applySensorOffset(humidityRaw, humidityOffset);
+    const humidity = humidityRaw == null ? null : applySensorOffset(humidityRaw, humidityOffset);
 
     readings.push({
       tempc,
@@ -192,9 +196,10 @@ export function pairTempHumidityRows(
     if (seen.has(key)) continue;
     const sensor = humidityRow.device_sensors!;
     const deviceName = sensor.devices?.name ?? "Device";
+    // Humidity-only probe: no temperature at this time (was shown as 0°F).
     readings.push({
-      tempc: 0,
-      tempf: 0,
+      tempc: null,
+      tempf: null,
       humidity: applySensorOffset(
         Number(humidityRow.value_num ?? 0),
         typeof sensor.offset_num === "number" ? sensor.offset_num : 0,
@@ -586,13 +591,18 @@ export async function fetchGarageTempChartData(
     (a, b) => Date.parse(a.timestamp) - Date.parse(b.timestamp),
   );
 
-  const points: ChartPoint[] = readings.map((row) => ({
-    timestamp: row.timestamp,
-    tempf: Number(row.tempf),
-    humidity: Number(row.humidity),
-    probeLabel: row.probe_label?.trim() || row.probe_key || "Probe",
-    device: row.feed_name ?? undefined,
-  }));
+  const points: ChartPoint[] = readings.flatMap((row) =>
+    // Temperature charts only plot readings that have a temperature.
+    row.tempf == null
+      ? []
+      : [{
+          timestamp: row.timestamp,
+          tempf: row.tempf,
+          humidity: row.humidity,
+          probeLabel: row.probe_label?.trim() || row.probe_key || "Probe",
+          device: row.feed_name ?? undefined,
+        }],
+  );
 
   // For windows beyond raw retention, fill gaps from hourly rollups.
   if (days > 90 || points.length < 10) {
@@ -664,7 +674,8 @@ async function fetchRollupChartPointsForHousehold(
           ? row.device_sensors.offset_num
           : 0,
       ),
-      humidity: 0,
+      // Hourly rollups here are temperature-only; humidity isn't known.
+      humidity: null,
       probeLabel,
       device: feedName,
     });
@@ -696,13 +707,18 @@ export async function fetchHouseholdChartData(
     householdId,
   );
 
-  let points: ChartPoint[] = readings.map((row) => ({
-    timestamp: row.timestamp,
-    tempf: Number(row.tempf),
-    humidity: Number(row.humidity),
-    probeLabel: row.probe_label?.trim() || row.probe_key || "Probe",
-    device: row.feed_name ?? undefined,
-  }));
+  let points: ChartPoint[] = readings.flatMap((row) =>
+    // Temperature charts only plot readings that have a temperature.
+    row.tempf == null
+      ? []
+      : [{
+          timestamp: row.timestamp,
+          tempf: row.tempf,
+          humidity: row.humidity,
+          probeLabel: row.probe_label?.trim() || row.probe_key || "Probe",
+          device: row.feed_name ?? undefined,
+        }],
+  );
 
   if (points.length < 10) {
     const rollups = await fetchRollupChartPointsForHousehold(householdId, sinceIso);
@@ -739,13 +755,18 @@ export async function fetchGarageTempChartDataPriorYear(
     return { points: [], error: fromSensor.error };
   }
 
-  let points: ChartPoint[] = fromSensor.readings.map((row) => ({
-    timestamp: row.timestamp,
-    tempf: Number(row.tempf),
-    humidity: Number(row.humidity),
-    probeLabel: row.probe_label?.trim() || row.probe_key || "Probe",
-    device: row.feed_name ?? undefined,
-  }));
+  let points: ChartPoint[] = fromSensor.readings.flatMap((row) =>
+    // Temperature charts only plot readings that have a temperature.
+    row.tempf == null
+      ? []
+      : [{
+          timestamp: row.timestamp,
+          tempf: row.tempf,
+          humidity: row.humidity,
+          probeLabel: row.probe_label?.trim() || row.probe_key || "Probe",
+          device: row.feed_name ?? undefined,
+        }],
+  );
 
   const householdId = await getUserHouseholdId(userId);
   const rollups = householdId
@@ -844,9 +865,10 @@ export function buildGarageTempsCsv(readings: GarageTempReading[]): string {
       getReadingFeedName(reading),
       getReadingProbeLabel(reading),
       reading.probe_key?.trim() || "",
-      Number(reading.tempf).toFixed(1),
-      Number(reading.tempc).toFixed(1),
-      Number(reading.humidity).toFixed(1),
+      // Empty cell when not measured (never 0.0).
+      reading.tempf == null ? "" : reading.tempf.toFixed(1),
+      reading.tempc == null ? "" : reading.tempc.toFixed(1),
+      reading.humidity == null ? "" : reading.humidity.toFixed(1),
     ]
       .map(escapeCsvField)
       .join(","),

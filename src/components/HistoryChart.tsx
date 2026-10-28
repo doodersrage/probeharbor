@@ -146,9 +146,14 @@ function fillNodes(template: string, nodes: Record<string, ComponentChildren>): 
 type Point = {
   timestamp: string;
   tempf: number;
-  humidity: number;
+  /** null when no humidity was measured at this time. */
+  humidity: number | null;
   probeLabel: string;
 };
+
+type HumidityPoint = Point & { humidity: number };
+const hasHumidity = (p: Point): p is HumidityPoint =>
+  p.humidity != null && Number.isFinite(p.humidity) && p.humidity > 0;
 
 interface Props {
   points: Point[];
@@ -317,19 +322,14 @@ export default function HistoryChart({
   }, [points, t.probe]);
 
   const humidityPoints = useMemo(() => {
-    if (!showHumidity) return [] as Point[];
+    if (!showHumidity) return [] as HumidityPoint[];
     const labeled = probeLabels.find((label) =>
-      points.some(
-        (p) =>
-          (p.probeLabel || t.probe) === label &&
-          Number.isFinite(p.humidity) &&
-          p.humidity > 0,
-      ),
+      points.some((p) => (p.probeLabel || t.probe) === label && hasHumidity(p)),
     );
     const source = labeled
       ? points.filter((p) => (p.probeLabel || t.probe) === labeled)
       : points;
-    return source.filter((p) => Number.isFinite(p.humidity) && p.humidity > 0);
+    return source.filter(hasHumidity);
   }, [points, probeLabels, showHumidity, t.probe]);
 
   useEffect(() => {
@@ -741,7 +741,7 @@ export default function HistoryChart({
       }
 
       /** Path through the points, lifting the pen across stretches with no data. */
-      function traceBrokenAtGaps(ordered: Point[], yOf: (point: Point) => number) {
+      function traceBrokenAtGaps<P extends Point>(ordered: P[], yOf: (point: P) => number) {
         const gapMs = gapThresholdMs(ordered.map((p) => Date.parse(p.timestamp)));
         let prevTs: number | null = null;
         for (const point of ordered) {
@@ -1306,6 +1306,7 @@ export default function HistoryChart({
                   <span class="history-chart-tooltip-value">
                     {fixed(hit.tempf, 1, locale)}°F
                     {humidityOn &&
+                      hit.humidity != null &&
                       Number.isFinite(hit.humidity) &&
                       hit.humidity > 0 &&
                       ` · ${fixed(hit.humidity, 0, locale)}%`}

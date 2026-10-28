@@ -120,7 +120,7 @@ export function buildHeatingInsights(
     });
   }
 
-  const dewPoint = dewPointF(latest.tempf, latest.humidity);
+  const dewPoint = latest.humidity == null ? null : dewPointF(latest.tempf, latest.humidity);
   if (dewPoint != null) {
     const margin = latest.tempf - dewPoint;
     if (margin <= 5) {

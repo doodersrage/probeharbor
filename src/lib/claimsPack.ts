@@ -194,7 +194,7 @@ export function buildClaimsPackHtml(data: ClaimsPackData): string {
             (probe) => `<tr>
               <td>${escapeHtml(probe.label)}</td>
               <td>${probe.minF.toFixed(1)}–${probe.maxF.toFixed(1)}°F</td>
-              <td>${probe.avgHumidity.toFixed(0)}%</td>
+              <td>${probe.avgHumidity == null ? "—" : `${probe.avgHumidity.toFixed(0)}%`}</td>
               <td>${probe.readingCount}</td>
             </tr>`,
           )

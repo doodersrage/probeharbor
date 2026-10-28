@@ -418,9 +418,10 @@ function comparePresetHref(preset: "prior_week" | "prior_month"): string {
               <p class="m-0 font-medium">{getReadingProbeLabel(reading)}</p>
               <p class="m-0 text-sm text-[var(--color-text-muted)]">{getReadingFeedName(reading)}</p>
               <p class="m-0 mt-2">
-                {num(Number(reading.tempf), 1)}°F
+                {reading.tempf == null ? "—" : `${num(reading.tempf, 1)}°F`}
                 <span class="text-[var(--color-text-muted)]">
-                  {" "}({num(Number(reading.tempc), 1)}°C) · {fmt(t.humidityRh, { value: num(Number(reading.humidity), 1) })}
+                  {reading.tempc == null ? "" : ` (${num(reading.tempc, 1)}°C)`}
+                  {reading.humidity == null ? "" : ` · ${fmt(t.humidityRh, { value: num(reading.humidity, 1) })}`}
                 </span>
               </p>
             </article>
@@ -445,9 +446,9 @@ function comparePresetHref(preset: "prior_week" | "prior_month"): string {
                   <td>{readingTime(reading.timestamp)}</td>
                   <td>{getReadingFeedName(reading)}</td>
                   <td>{getReadingProbeLabel(reading)}</td>
-                  <td>{num(Number(reading.tempf), 1)}</td>
-                  <td>{num(Number(reading.tempc), 1)}</td>
-                  <td>{num(Number(reading.humidity), 1)}%</td>
+                  <td>{reading.tempf == null ? "—" : num(reading.tempf, 1)}</td>
+                  <td>{reading.tempc == null ? "—" : num(reading.tempc, 1)}</td>
+                  <td>{reading.humidity == null ? "—" : `${num(reading.humidity, 1)}%`}</td>
                 </tr>
               ))}
             </tbody>

@@ -103,7 +103,7 @@ export const GET: APIRoute = async (context) => {
   let historyPoints: Array<{
     timestamp: string;
     tempf: number;
-    humidity: number;
+    humidity: number | null;
     probeLabel: string;
   }> = [];
   if (share.scope === "history") {

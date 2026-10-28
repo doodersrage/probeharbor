@@ -65,8 +65,9 @@ describe("pairTempHumidityRows", () => {
       ],
       "user-1",
     );
-    expect(paired.filter((r) => r.tempf !== 0)).toHaveLength(2);
-    expect(paired.find((r) => r.feed_name === "A" && r.probe_key === "temp1")?.humidity).toBe(0);
+    expect(paired.filter((r) => r.tempf != null)).toHaveLength(2);
+    // No humidity measured for this probe: null, never 0%.
+    expect(paired.find((r) => r.feed_name === "A" && r.probe_key === "temp1")?.humidity).toBeNull();
   });
 
   it("pairs temp and humidity at the same timestamp without mixing probes", () => {
@@ -104,8 +105,9 @@ describe("pairTempHumidityRows", () => {
     const splitB = pairTempHumidityRows(batchB, "user-1");
 
     expect(merged.find((row) => row.probe_key === "0")?.humidity).toBe(55);
-    expect(splitA.every((row) => row.humidity === 0)).toBe(true);
-    expect(splitB.every((row) => row.tempf === 0)).toBe(true);
+    // A batch with only one kind leaves the other value missing, not zero.
+    expect(splitA.every((row) => row.humidity === null)).toBe(true);
+    expect(splitB.every((row) => row.tempf === null && row.tempc === null)).toBe(true);
   });
 });
 

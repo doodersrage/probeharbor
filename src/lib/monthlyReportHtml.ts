@@ -12,12 +12,14 @@ import {
 import { fmt } from "../i18n/format";
 import { LOCALE_META, type Locale } from "../i18n/locales";
 import { reportEmailMessages } from "../i18n/messages/app/email/reports";
+import { averageHumidity } from "./humidityStats";
 
 export type MonthlyProbeSummary = {
   label: string;
   minF: number;
   maxF: number;
-  avgHumidity: number;
+  /** null when no reading in the window had humidity. */
+  avgHumidity: number | null;
   readingCount: number;
 };
 
@@ -78,13 +80,11 @@ export function summarizeProbesForReport(points: ChartPoint[]): MonthlyProbeSumm
 
   return [...byProbe.entries()].map(([label, probePoints]) => {
     const temps = probePoints.map((p) => p.tempf);
-    const humidities = probePoints.map((p) => p.humidity);
     return {
       label,
       minF: Math.min(...temps),
       maxF: Math.max(...temps),
-      avgHumidity:
-        humidities.reduce((sum, value) => sum + value, 0) / humidities.length,
+      avgHumidity: averageHumidity(probePoints),
       readingCount: probePoints.length,
     };
   });
@@ -93,7 +93,8 @@ export function summarizeProbesForReport(points: ChartPoint[]): MonthlyProbeSumm
 export function buildMonthlyReportPlainText(data: MonthlyReportData, locale: Locale = "en"): string {
   const t = reportEmailMessages(locale);
   const p = t.plain;
-  const num = (value: number, digits: number) => formatEmailNumber(value, digits, locale);
+  const num = (value: number | null, digits: number) =>
+    value == null ? "—" : formatEmailNumber(value, digits, locale);
   const lines = [
     fmt(data.reportKind === "quarterly" ? p.headerQuarterly : p.headerMonthly, { label: data.monthLabel }),
     "",
@@ -157,7 +158,8 @@ function statBlock(label: string, value: string, detail?: string): string {
 
 export function buildMonthlyReportHtmlDocument(data: MonthlyReportData, locale: Locale = "en"): string {
   const t = reportEmailMessages(locale);
-  const num = (value: number, digits: number) => formatEmailNumber(value, digits, locale);
+  const num = (value: number | null, digits: number) =>
+    value == null ? "—" : formatEmailNumber(value, digits, locale);
   const probeRows =
     data.probes.length === 0
       ? `<tr><td colspan="4" style="padding:12px;color:#94a3b8">${escapeHtml(fmt(t.noProbeReadings, { days: data.periodDays }))}</td></tr>`
@@ -272,7 +274,8 @@ function freezeCalloutBody(data: MonthlyReportData, locale: Locale = "en"): stri
 /** Shorter HTML for the email body (stats, freeze callout, compact tables). */
 export function buildMonthlyReportHtmlEmail(data: MonthlyReportData, locale: Locale = "en"): string {
   const t = reportEmailMessages(locale);
-  const num = (value: number, digits: number) => formatEmailNumber(value, digits, locale);
+  const num = (value: number | null, digits: number) =>
+    value == null ? "—" : formatEmailNumber(value, digits, locale);
   const kindLabel = reportTitle(data, locale);
   const sections: EmailSection[] = [
     {

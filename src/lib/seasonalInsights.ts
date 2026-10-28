@@ -2,6 +2,7 @@ import type { User } from "@supabase/supabase-js";
 import type { ChartPoint } from "./garageTempsHistory";
 import { fmt, plural, type Locale } from "../i18n";
 import { libDateTime, libFixed, libNumber, libTextMessages } from "../i18n/messages/app/libText";
+import { wettestPoint } from "./humidityStats";
 
 export type SeasonalInsight = {
   title: string;
@@ -15,7 +16,7 @@ export function summarizeSeasonal(points: ChartPoint[], days: number, locale: Lo
   const insights: SeasonalInsight[] = [];
   const coldest = points.reduce((a, b) => (a.tempf <= b.tempf ? a : b));
   const hottest = points.reduce((a, b) => (a.tempf >= b.tempf ? a : b));
-  const wettest = points.reduce((a, b) => (a.humidity >= b.humidity ? a : b));
+  const wettest = wettestPoint(points);
   const avgTemp =
     points.reduce((sum, p) => sum + p.tempf, 0) / points.length;
 
@@ -35,14 +36,16 @@ export function summarizeSeasonal(points: ChartPoint[], days: number, locale: Lo
       probe: hottest.probeLabel,
     }),
   });
-  insights.push({
-    title: t.humidityTitle,
-    detail: fmt(t.humidityOn, {
-      humidity: libFixed(wettest.humidity, 0, locale),
-      time: libDateTime(wettest.timestamp, locale),
-      probe: wettest.probeLabel,
-    }),
-  });
+  if (wettest) {
+    insights.push({
+      title: t.humidityTitle,
+      detail: fmt(t.humidityOn, {
+        humidity: libFixed(wettest.humidity, 0, locale),
+        time: libDateTime(wettest.timestamp, locale),
+        probe: wettest.probeLabel,
+      }),
+    });
+  }
   insights.push({
     title: fmt(t.averageTitle, { days: libNumber(days, locale) }),
     detail: plural(t.averageDetail, points.length, locale, {

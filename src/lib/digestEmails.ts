@@ -15,6 +15,7 @@ import { fmt } from "../i18n/format";
 import type { Locale } from "../i18n/locales";
 import { localeFromMetadata } from "../i18n/userLocale";
 import { digestEmailMessages } from "../i18n/messages/app/email/digest";
+import { averageHumidity, wettestPoint } from "./humidityStats";
 
 async function sendDigestEmail(
   to: string,
@@ -34,7 +35,8 @@ type DigestProbeSummary = {
   label: string;
   minF: number;
   maxF: number;
-  avgHumidity: number;
+  /** null when no reading in the window had humidity. */
+  avgHumidity: number | null;
   readingCount: number;
 };
 
@@ -57,13 +59,11 @@ function summarizeProbes(points: ChartPoint[]): DigestProbeSummary[] {
 
   return [...byProbe.entries()].map(([label, probePoints]) => {
     const temps = probePoints.map((point) => point.tempf);
-    const humidities = probePoints.map((point) => point.humidity);
     return {
       label,
       minF: Math.min(...temps),
       maxF: Math.max(...temps),
-      avgHumidity:
-        humidities.reduce((sum, value) => sum + value, 0) / humidities.length,
+      avgHumidity: averageHumidity(probePoints),
       readingCount: probePoints.length,
     };
   });
@@ -76,7 +76,7 @@ function summarizePoints(points: ChartPoint[], locale: Locale = "en"): string[] 
       probe: probe.label,
       min: formatEmailNumber(probe.minF, 1, locale),
       max: formatEmailNumber(probe.maxF, 1, locale),
-      humidity: formatEmailNumber(probe.avgHumidity, 0, locale),
+      humidity: probe.avgHumidity == null ? "—" : formatEmailNumber(probe.avgHumidity, 0, locale),
       readings: formatEmailCount(t.readings, probe.readingCount, locale),
     }),
   );
@@ -161,7 +161,7 @@ function digestHighlightStats(points: ChartPoint[], locale: Locale = "en") {
   const t = digestEmailMessages(locale);
   const coldest = points.reduce((a, b) => (a.tempf <= b.tempf ? a : b));
   const hottest = points.reduce((a, b) => (a.tempf >= b.tempf ? a : b));
-  const wettest = points.reduce((a, b) => (a.humidity >= b.humidity ? a : b));
+  const wettest = wettestPoint(points);
   const avgTemp = points.reduce((sum, p) => sum + p.tempf, 0) / points.length;
 
   return [
@@ -180,11 +180,15 @@ function digestHighlightStats(points: ChartPoint[], locale: Locale = "en") {
       value: `${formatEmailNumber(avgTemp, 1, locale)}°F`,
       detail: formatEmailCount(t.readings, points.length, locale),
     },
-    {
-      label: t.statHumidity,
-      value: `${formatEmailNumber(wettest.humidity, 0, locale)}%`,
-      detail: `${formatDigestWhen(wettest.timestamp, locale)} · ${wettest.probeLabel}`,
-    },
+    ...(wettest
+      ? [
+          {
+            label: t.statHumidity,
+            value: `${formatEmailNumber(wettest.humidity, 0, locale)}%`,
+            detail: `${formatDigestWhen(wettest.timestamp, locale)} · ${wettest.probeLabel}`,
+          },
+        ]
+      : []),
   ];
 }
 
@@ -309,7 +313,8 @@ export function buildWeeklyDigestParts(
   const mixedDays = days.some((day) => day.coldestProbe);
   const summary = summarizePoints(points, locale);
   const byDay = summarizePointsByDay(points, locale);
-  const num = (value: number, digits: number) => formatEmailNumber(value, digits, locale);
+  const num = (value: number | null, digits: number) =>
+    value == null ? "—" : formatEmailNumber(value, digits, locale);
 
   const sections: EmailSection[] = [
     {
