@@ -91,6 +91,29 @@ jobs:
             echo "skip=true" >> "$GITHUB_ENV"
           fi
 
+      # Files that never reach the site. A push touching only these doesn't
+      # redeploy or publish an empty release. Compared with the last app
+      # release, so a skipped or failed code deploy is still picked up later.
+      # workflow_dispatch always deploys.
+      - name: Skip if only non-site files changed
+        if: github.event_name == 'workflow_run' && env.skip != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          prev="$(gh release list --limit 50 --json tagName --jq '[.[] | select(.tagName | startswith("app-v"))][0].tagName // ""')"
+          [ -z "$prev" ] && exit 0
+          if ! files="$(gh api "repos/$GITHUB_REPOSITORY/compare/$prev...$HEAD_SHA" --jq '.files[].filename')"; then
+            echo "::warning::Could not compare with $prev; deploying anyway."
+            exit 0
+          fi
+          [ -z "$files" ] && { echo "::notice::Deploy skipped — no changes since $prev."; echo "skip=true" >> "$GITHUB_ENV"; exit 0; }
+          site_files="$(echo "$files" | grep -vxE 'IMPLEMENTATION_PLAN\.md|CLAUDE\.md|AGENTS\.md' || true)"
+          if [ -z "$site_files" ]; then
+            echo "::notice::Deploy skipped — only planning files changed since $prev."
+            echo "skip=true" >> "$GITHUB_ENV"
+          fi
+
       - name: Require production build secrets
         if: env.skip != 'true'
         env:
@@ -115,7 +138,7 @@ jobs:
           fi
           echo "skip=false" >> "$GITHUB_ENV"
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
         if: env.skip != 'true'
         with:
           version: 9

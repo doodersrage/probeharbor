@@ -1,4 +1,5 @@
 import * as Sentry from "@sentry/astro";
+import { appVersion } from "./src/lib/appVersion";
 import { scrubBreadcrumb, scrubDeep, scrubEvent } from "./src/lib/sentryScrub";
 
 const dsn =
@@ -7,10 +8,15 @@ const dsn =
   "";
 
 // Production builds only: `astro dev` errors (Vite reloads, HMR) aren't user-facing.
+const release = appVersion();
+
 if (dsn && dsn !== "off" && import.meta.env.PROD) {
   Sentry.init({
     dsn,
     environment: "production",
+    // Same date release as the Worker. Only set when known: an explicit
+    // `release: undefined` would override the build plugin's default.
+    ...(release ? { release } : {}),
     ignoreErrors: [
       // esp-web-tools (the /flash Install button) opens and closes the serial port
       // in un-awaited promises. These fire when the board resets or is unplugged

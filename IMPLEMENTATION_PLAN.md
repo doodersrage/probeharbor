@@ -3226,8 +3226,8 @@ New York.
 
 ## Optional: date-based app version (2026-10-28)
 
-**Status: Implemented and verified locally. No migration. Not deployed; the
-workflow changes run for the first time on the next push to `main`.**
+**Status: Implemented and verified in production (deploys `2026.10.28` and
+`2026.10.28.1`). No migration.** Sentry release naming is not yet verified.
 
 Before, the web app had no version (`package.json` `0.0.1` was never
 bumped) and Sentry releases were opaque Cloudflare version ids.
@@ -3235,33 +3235,62 @@ bumped) and Sentry releases were opaque Cloudflare version ids.
 - [x] `scripts/app-version.mjs` prints the next version: `YYYY.MM.DD`
       (UTC), then `.1`, `.2`, … for later deploys the same day, from
       `app-v*` tags on `origin` (local tags if the remote can't be reached).
-- [x] `deploy.yml` sets `APP_VERSION` before the build, runs
-      `wrangler deploy --tag "$APP_VERSION"` for the app Worker, and pushes
-      `app-v<version>` on the deployed commit once the deploy succeeds. The job
-      now has `permissions: contents: write`. Deploys stay serial
-      (existing concurrency group), so two runs can't pick the same version.
+- [x] `deploy.yml` sets `APP_VERSION` before the build and runs
+      `wrangler deploy --tag "$APP_VERSION"` for the app Worker. The job has
+      `permissions: contents: write`. Deploys stay serial (existing
+      concurrency group), so two runs can't pick the same version.
+- [x] "Publish release" step: once the deploy succeeds,
+      `gh release create app-v<version> --target <sha> --latest` creates
+      the GitHub Release and its tag, with the commits since the previous
+      `app-v*` release as notes (compare API). It warns instead of failing.
 - [x] Site footer shows `v<version>` linking to the tagged source; hidden
       when unset (local builds and manual `pnpm deploy`).
 - [x] Worker Sentry `release` uses the version and falls back to
       `CF_VERSION_METADATA.id` (the old behaviour).
 - **Not changed:** firmware (`1.2.2`) and the OpenAPI spec (`1.3.1`) keep
   semver, since `firmwareUpdateAvailable` and integrators compare them.
-  The browser Sentry SDK still takes its release from the Sentry build
-  plugin, not the date version. `package.json` `version` is left as is.
-- Evidence: `appVersion.test.ts` (8: zero-padding, UTC day, same-day
+  `package.json` `version` is left as is.
+- Local evidence: `appVersion.test.ts` (8: zero-padding, UTC day, same-day
   suffixes, gaps/unsorted tags, other tag families, malformed values).
-  `node scripts/app-version.mjs` against GitHub: `2026.10.28`.
   `APP_VERSION=2026.10.28.1 pnpm build` + `pnpm preview`: `/pricing`
   footer renders `v2026.10.28.1` → `…/tree/app-v2026.10.28.1`.
-  `pnpm test`: 3213 passed. `pnpm typecheck`: 0 errors. `pnpm lint`:
-  64 warnings (baseline). `pnpm build`: pass.
-- Not verified: the workflow itself (tag push with `GITHUB_TOKEN`, a tag
-  ruleset could refuse it; the step warns instead of failing), the
-  `wrangler deployments list` tag, and the Sentry release name in production.
-- Follow-up (same day): deploy 8ef6bc4 shipped `2026.10.28`, pushed tag
-  `app-v2026.10.28`, and the live footer shows it. Tags don't appear under
-  GitHub Releases, so the workflow's "Tag release" step became "Publish
-  release": `gh release create app-v<version> --target <sha> --latest`
-  with the commits since the previous `app-v*` release as notes (compare
-  API). The notes commands were dry-run against the repo; the step itself
-  runs on the next deploy. The `2026.10.28` tag has no release yet.
+  `pnpm test`: 3213 passed (also with `APP_VERSION` set, as in deploy).
+  `pnpm typecheck`: 0 errors. `pnpm lint`: 64 warnings (baseline).
+  `pnpm build`: pass.
+- Production evidence:
+  - Deploy run 40780789225 (5b70939) failed at `pnpm test`: the
+    "null when missing" test read the job's `APP_VERSION` through a default
+    argument. Nothing shipped. Fixed in 8ef6bc4 (`parseAppVersion`).
+  - Deploy run 40782549127 (8ef6bc4): version `2026.10.28`, tag
+    `app-v2026.10.28` pushed with `GITHUB_TOKEN` (no ruleset refusal).
+    That run still only tagged; the owner created the `2026.10.28`
+    release by hand.
+  - Deploy run 40784960145 (ae522ed): version `2026.10.28.1` (same-day
+    suffix worked), release `2026.10.28.1` published as Latest with notes
+    "Changes since 2026.10.28" listing ae522ed.
+  - `wrangler versions list`: Worker versions 9380b70d (tag `2026.10.28`)
+    and d9f30551 (tag `2026.10.28.1`).
+  - Live `probeharbor.dev/pricing` footer shows `v2026.10.28.1`.
+- Not verified: the Sentry release name in production (needs an error to
+  be reported, or a check in Sentry).
+- Note: the deploy log shows the version as `2026.***.28`. A repo secret
+  equals `10`, so GitHub masks it in logs; the real value is correct.
+
+### Follow-ups (2026-10-28, late)
+
+- [x] Browser Sentry `release` = the date version (`sentry.client.config.ts`),
+      only when set: an explicit `release: undefined` would override the
+      build plugin's default. `@sentry/astro` 10.72 has no top-level
+      `release` option yet (TODO in its integration source).
+- [x] `pnpm/action-setup@v4` → `@v6` in CI, Docs and Deploy (v6.1.0 runs on
+      Node 24; v5 changed only the Node runtime, v6 added pnpm 11 support;
+      inputs unchanged). Clears the Node 20 deprecation warning.
+- [x] Deploy step "Skip if only non-site files changed": on `workflow_run`,
+      compares the last `app-v*` release with the commit; skips when nothing
+      changed or only `IMPLEMENTATION_PLAN.md` / `CLAUDE.md` / `AGENTS.md`
+      did. `workflow_dispatch` always deploys; a failed compare deploys.
+      Dry-run against real commits: plan-only d351a82 → skip; e2e-only
+      80de3b7 → deploy; `app-v2026.10.28...ae522ed` → deploy;
+      `app-v2026.10.28.1...ae522ed` → skip.
+- Caveat: re-running a Deploy run for an already-released commit now
+  skips; use `workflow_dispatch` instead.

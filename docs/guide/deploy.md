@@ -61,16 +61,20 @@ Each workflow deploy gets a date-based version: `YYYY.MM.DD` (UTC), then
 The workflow:
 
 - builds with `APP_VERSION` set, so the site footer shows `v2026.10.28` and
-  Sentry groups Worker errors under that release;
+  Sentry groups Worker and browser errors under that release;
 - passes it to `wrangler deploy --tag`, so it appears as the tag in
   `wrangler deployments list`;
 - after the deploy succeeds, publishes a GitHub Release `app-v<version>`
   (which creates the tag on the deployed commit), with the commits since the
   previous app release as its notes.
 
+A push that changes only `IMPLEMENTATION_PLAN.md`, `CLAUDE.md` or `AGENTS.md`
+since the last app release doesn't deploy (a notice says so). Run the Deploy
+workflow by hand (`workflow_dispatch`) to force one.
+
 `node scripts/app-version.mjs` prints the next version. A local `pnpm deploy`
-has no version: the footer hides it and Sentry falls back to the Cloudflare
-version id. Firmware (`FIRMWARE_VERSION` / `public/firmware/manifest.json`)
+has no version: the footer hides it, the Worker's Sentry release falls back
+to the Cloudflare version id and the browser's to the Sentry build plugin's. Firmware (`FIRMWARE_VERSION` / `public/firmware/manifest.json`)
 and the OpenAPI spec keep semver, because devices and integrators compare them.
 
 ## Migrations and deploy order
