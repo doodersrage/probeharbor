@@ -1693,7 +1693,7 @@ Order of work: M2-1 → M2-3 → M2-4 → M2-5 → M1-B → M1-C (sizing first).
 
 ------------------------------------------------------------------------
 
-## Step D6 (decisions M1-A, M1-C): read-only sizing queries — waiting on the owner
+## Step D6 (decisions M1-A, M1-C): read-only sizing queries — M1-A closed; M1-C waiting on the owner
 
 Run these in the Supabase SQL editor. They only `select`. Paste the
 results back; no data changes until the counts are agreed.
@@ -1764,7 +1764,14 @@ migration:
    recompute affected rollups.
 2. Delete the rows in (2).
 3. Delete (3a) sensors' rows (and hide the sensors), and the (3b) rows.
-4. Add an optional reading id only if (4) is significant.
+4. ~~Add an optional reading id only if (4) is significant.~~ **Closed
+   (2026-10-28):** the owner ran query 4 and `likely_duplicates = 0` for
+   the last 7 days. Retries aren't creating duplicate rows, so M1-A needs
+   no reading id or migration. Re-run query 4 if a client adds retries,
+   for example firmware offline buffering.
+
+**Still waiting on:** results of queries 1, 2, 3a and 3b. Cleanup
+migrations 1–3 won't be written until those counts are known and signed off.
 
 ------------------------------------------------------------------------
 
