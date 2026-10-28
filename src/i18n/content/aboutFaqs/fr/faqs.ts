@@ -238,7 +238,7 @@ export default {
     {
       question: "ProbeHarbor intègre-t-il un flasheur dans le navigateur ?",
       answer:
-        "Oui, en bêta : probeharbor.dev/flash installe un firmware précompilé sur un ESP32, ESP32-S3 ou ESP32-C3 depuis Chrome ou Edge, puis envoie à la carte votre Wi‑Fi et votre clé d’appareil par USB. Pour modifier le code, téléchargez plutôt un .ino/.py préconfiguré depuis Devices et flashez-le avec Arduino IDE, PlatformIO ou Thonny. Guide : probeharbor.dev/about/esp32-web-flash.",
+        "Oui, en bêta : probeharbor.dev/flash installe un firmware précompilé sur un ESP32 depuis Chrome ou Edge (testé sur l’ESP32 d’origine ; les images ESP32-S3 et ESP32-C3 sont compilées, mais pas encore testées sur du matériel), puis envoie à la carte votre Wi‑Fi et votre clé d’appareil par USB. Pour modifier le code, téléchargez plutôt un .ino/.py préconfiguré depuis Devices et flashez-le avec Arduino IDE, PlatformIO ou Thonny. Guide : probeharbor.dev/about/esp32-web-flash.",
     },
   ],
   "pico-w-ingest": [

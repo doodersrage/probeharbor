@@ -2223,3 +2223,40 @@ hasn't been checked (needs sign-in).
 - Around 2026-11-28: run the S3 format query; decide on step 2.
 - Needs approval: clear raw tokens on existing share links and status
   pages (S6/S7).
+
+------------------------------------------------------------------------
+
+## Milestone 3, increment 3.1: hardware claims match the evidence (2026-10-28)
+
+**Status: Implemented and verified locally. Copy only; no migration. Not
+deployed.** Closes Milestone 0 gap 5 (CLAUDE.md rule 6).
+
+Evidence baseline (`firmware/probeharbor-probe/HARDWARE-TESTS.md`): a plain
+ESP32 with DS18B20, DHT22, BME280 and the door reed switch is verified.
+ESP32-S3/C3, SHT31/AHT20, DHT11, leak and battery are compile-only.
+`/hardware` (`hardwareRecipes.ts`) was already accurate.
+
+- [x] `/flash` install text: "Works with ESP32, ESP32-S3, and ESP32-C3"
+      became "Tested on the original ESP32; the ESP32-S3 and ESP32-C3
+      images are built but not yet tested on hardware".
+- [x] `/flash` FAQs: "What do I need?" labels S3/C3 and DHT11 as not yet
+      hardware-tested. "What else can I connect?" now says what's tested
+      (BME280, door) and what isn't (SHT31, AHT20, leak, battery).
+- [x] `/flash` parts list: dropped "does everything here"; S3/C3 clones
+      "should work" (was "work too") and are labelled untested, as is the
+      "Or an S3 / C3 board" entry.
+- [x] About FAQ (web flasher), marketing FAQ (adding a device) and
+      `llms.txt` use the same tested/untested split.
+- [x] All five locales updated (`flash`, `flashBrowser`, `aboutFaqs`,
+      `marketingFaqs`).
+- [x] Guard test `src/lib/hardwareClaims.test.ts`: in every locale, any
+      flash or FAQ line naming S3/C3 boards must carry that locale's "not
+      yet tested" wording. Against the old copy, 15 of 21 files fail.
+- Evidence: `pnpm test`: 3088 passed (+21). `pnpm typecheck`: 0 errors.
+  `pnpm lint`: 64 warnings (baseline). `pnpm build`: pass.
+  `pnpm test:e2e`: 44 passed, 12 skipped.
+- Not changed: pin tables and auto-detect hints (they describe firmware
+  behaviour, not tested status). The guard covers S3/C3 mentions only, not
+  SHT31/AHT20/leak/battery.
+- When a board or sensor passes its test in `HARDWARE-TESTS.md`, update
+  the copy, `hardwareRecipes.ts` and this guard together.

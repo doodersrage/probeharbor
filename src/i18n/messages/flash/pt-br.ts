@@ -14,7 +14,7 @@ const ptBr: FlashMessages = {
     {
       question: "Do que eu preciso?",
       answer:
-        "Uma placa ESP32, ESP32-S3 ou ESP32-C3, uma sonda DS18B20 à prova d’água ou um sensor de temperatura e umidade DHT22 (ou DHT11) com um resistor pull-up de 4,7 kΩ no GPIO 4, um cabo USB de dados e o Chrome ou o Edge em um computador ou notebook.",
+        "Uma placa ESP32 (o ESP32 original está testado; ESP32-S3 e ESP32-C3 estão compilados, mas ainda não testados em hardware), uma sonda DS18B20 à prova d’água ou um sensor de temperatura e umidade DHT22 (o DHT11 é suportado, mas ainda não foi testado em hardware) com um resistor pull-up de 4,7 kΩ no GPIO 4, um cabo USB de dados e o Chrome ou o Edge em um computador ou notebook.",
     },
     {
       question: "Preciso do Arduino IDE?",
@@ -29,7 +29,7 @@ const ptBr: FlashMessages = {
     {
       question: "O que mais posso conectar?",
       answer:
-        "Um sensor I²C de temperatura e umidade (BME280, SHT31 ou AHT20, detectado automaticamente; o BME280 também informa a pressão do ar), um contato de vazamento ou de água para alertas de alagamento, um interruptor magnético de porta e uma bateria por um divisor resistivo 1:1 para estimar a autonomia. Marque as opções de vazamento, porta e bateria ao enviar as configurações para que a placa saiba que estão ligados.",
+        "Um sensor I²C de temperatura e umidade (BME280, SHT31 ou AHT20, detectado automaticamente; o BME280 também informa a pressão do ar), um contato de vazamento ou de água para alertas de alagamento, um interruptor magnético de porta e uma bateria por um divisor resistivo 1:1 para estimar a autonomia. Marque as opções de vazamento, porta e bateria ao enviar as configurações para que a placa saiba que estão ligados. Testados em hardware até agora: o BME280 e o interruptor de porta. SHT31, AHT20, vazamento e bateria estão incluídos, mas ainda não foram testados em hardware.",
     },
     {
       question: "Funciona com um DHT22?",
@@ -49,7 +49,7 @@ const ptBr: FlashMessages = {
   ],
   buy: {
     board: "Placa (escolha uma)",
-    s3c3: "Ou uma placa S3 / C3 (o estoque varia)",
+    s3c3: "Ou uma placa S3 / C3 (ainda não testada em hardware; o estoque varia)",
     sensor: "Sensor no GPIO 4",
     i2c: "Ou um sensor de ar I²C (sem resistor)",
     extras: "Extras opcionais",
@@ -85,7 +85,7 @@ const ptBr: FlashMessages = {
     'Adicione um dispositivo push em <a class="text-link" href="/dashboard/devices">Dashboard → Devices</a> e copie a chave do dispositivo. O plano gratuito inclui dois dispositivos.',
   buyTitle: "O que comprar",
   buyIntro:
-    "Peças que combinam com os pinos acima. Um ESP32 comum é a opção testada e faz tudo o que está aqui. Os links S3 e C3 são das placas de desenvolvimento da própria Espressif, para as quais o firmware foi compilado; se estiverem esgotadas, outra placa ESP32-S3-DevKitC-1 ou ESP32-C3-DevKitM-1 (ou um clone com a mesma pinagem) também funciona.",
+    "Peças que combinam com os pinos acima. Um ESP32 comum é a opção testada. Os links S3 e C3 são das placas de desenvolvimento da própria Espressif, para as quais o firmware foi compilado; se estiverem esgotadas, outra placa ESP32-S3-DevKitC-1 ou ESP32-C3-DevKitM-1 (ou um clone com a mesma pinagem) também deve funcionar, mas as placas S3 e C3 ainda não foram testadas em hardware.",
   leakHtml:
     '<strong>Sensor de vazamento:</strong> a opção barata mais fácil é um módulo LM393 de “sensor de chuva / água” (vendido em muitas lojas): VCC no pino de 3,3 V da placa (nunca 5 V, para a saída continuar segura para o ESP32), GND no GND e DO no pino de vazamento. Gire o trimpot até uma gota de água indicar molhado e confira que ele volta a indicar seco. As trilhas expostas oxidam se ficarem molhadas, então considere-o uma peça para começar. Para uma instalação mais durável, use dois parafusos ou pontas de aço inox a cerca de 5&nbsp;mm um do outro, um no pino de vazamento e outro no GND. De qualquer forma, teste com a sua própria água: água muito limpa ou uma película fina podem não acioná-lo. Sensores cuja saída vai para nível alto quando molhados, como o sensor de água da Adafruit, precisam de outra entrada e não funcionam com este firmware.',
   afterTitle: "Depois que estiver funcionando",

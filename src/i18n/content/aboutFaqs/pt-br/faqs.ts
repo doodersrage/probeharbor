@@ -237,7 +237,7 @@ export default {
     {
       question: "O ProbeHarbor tem um gravador no navegador?",
       answer:
-        "Sim, em beta: probeharbor.dev/flash instala firmware pronto em um ESP32, ESP32-S3 ou ESP32-C3 pelo Chrome ou Edge e depois envia à placa o seu Wi-Fi e a chave do dispositivo via USB. Para editar o código, baixe um .ino/.py já preenchido em Devices e grave com Arduino IDE, PlatformIO ou Thonny. Guia: probeharbor.dev/about/esp32-web-flash.",
+        "Sim, em beta: probeharbor.dev/flash instala firmware pronto em um ESP32 pelo Chrome ou Edge (testado no ESP32 original; as imagens para ESP32-S3 e ESP32-C3 estão compiladas, mas ainda não testadas em hardware) e depois envia à placa o seu Wi-Fi e a chave do dispositivo via USB. Para editar o código, baixe um .ino/.py já preenchido em Devices e grave com Arduino IDE, PlatformIO ou Thonny. Guia: probeharbor.dev/about/esp32-web-flash.",
     },
   ],
   "pico-w-ingest": [

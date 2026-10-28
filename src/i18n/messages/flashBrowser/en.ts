@@ -7,7 +7,7 @@
 const en = {
   installTitle: "1. Install the firmware",
   installCopy:
-    "Plug the ESP32 into this computer with a USB data cable, click Install, and pick the board's serial port. It takes about a minute. Works with ESP32, ESP32-S3, and ESP32-C3 boards.",
+    "Plug the ESP32 into this computer with a USB data cable, click Install, and pick the board's serial port. It takes about a minute. Tested on the original ESP32; the ESP32-S3 and ESP32-C3 images are built but not yet tested on hardware.",
   installButton: "Install firmware",
   unsupportedHtml:
     'This browser cannot talk to USB serial devices. Open this page in Chrome or Edge on a desktop or laptop, or use the <a class="text-link" href="/about/esp32-web-flash">other flashing options</a>.',

@@ -9,7 +9,7 @@ export default {
     {
       question: "Wie verbinde ich ESP32-, Pico-W- oder Arduino-Sensoren?",
       answer:
-        "Beim ESP32 geht es am schnellsten mit dem Web-Flasher unter probeharbor.dev/flash: Board per USB anschließen, die Firmware aus Chrome oder Edge installieren und WLAN-Zugangsdaten sowie Geräteschlüssel übertragen. Die Firmware liest DS18B20-Fühler, einen DHT22 oder einen I²C-Sensor (BME280, SHT31, AHT20) sowie optionale Wasser-, Tür- und Akku-Eingänge. Für andere Boards legst du unter Dashboard → Devices ein Push-Gerät an und sendest JSON per POST an /api/ingest/<key>; die Sensoren werden beim ersten POST automatisch übernommen. Beispiele für Pico W und Arduino findest du unter probeharbor.dev/about/adding-devices. Keine Hardware zur Hand? Probier den Demo-Pull-Schnellstart auf Overview aus.",
+        "Beim ESP32 geht es am schnellsten mit dem Web-Flasher unter probeharbor.dev/flash: Board per USB anschließen, die Firmware aus Chrome oder Edge installieren und WLAN-Zugangsdaten sowie Geräteschlüssel übertragen. Auf einem normalen ESP32 ist sie mit DS18B20-Fühlern, einem DHT22, einem BME280 und einem Türschalter getestet; SHT31- und AHT20-Sensoren, Wasser- und Akku-Eingänge sowie S3-/C3-Boards sind eingebaut, aber noch nicht auf Hardware getestet. Für andere Boards legst du unter Dashboard → Devices ein Push-Gerät an und sendest JSON per POST an /api/ingest/<key>; die Sensoren werden beim ersten POST automatisch übernommen. Beispiele für Pico W und Arduino findest du unter probeharbor.dev/about/adding-devices. Keine Hardware zur Hand? Probier den Demo-Pull-Schnellstart auf Overview aus.",
     },
     {
       question: "Muss ich programmieren können?",

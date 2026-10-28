@@ -237,7 +237,7 @@ export default {
     {
       question: "Hat ProbeHarbor einen eingebauten Browser-Flasher?",
       answer:
-        "Ja, als Beta: probeharbor.dev/flash installiert fertige Firmware auf einem ESP32, ESP32-S3 oder ESP32-C3 aus Chrome oder Edge und überträgt dann WLAN-Zugangsdaten und Geräteschlüssel per USB auf das Board. Wenn du den Code lieber selbst anpassen möchtest, lade unter Devices eine vorausgefüllte .ino/.py herunter und flashe sie mit Arduino IDE, PlatformIO oder Thonny. Anleitung: probeharbor.dev/about/esp32-web-flash.",
+        "Ja, als Beta: probeharbor.dev/flash installiert fertige Firmware auf einem ESP32 aus Chrome oder Edge (getestet auf dem originalen ESP32; Images für ESP32-S3 und ESP32-C3 sind gebaut, aber noch nicht auf Hardware getestet) und überträgt dann WLAN-Zugangsdaten und Geräteschlüssel per USB auf das Board. Wenn du den Code lieber selbst anpassen möchtest, lade unter Devices eine vorausgefüllte .ino/.py herunter und flashe sie mit Arduino IDE, PlatformIO oder Thonny. Anleitung: probeharbor.dev/about/esp32-web-flash.",
     },
   ],
   "pico-w-ingest": [

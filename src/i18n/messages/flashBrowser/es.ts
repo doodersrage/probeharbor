@@ -8,7 +8,7 @@ import type { BrowserFlasherMessages } from "./en";
 const es: BrowserFlasherMessages = {
   installTitle: "1. Instala el firmware",
   installCopy:
-    "Conecta el ESP32 a este ordenador con un cable USB de datos, haz clic en Instalar y elige el puerto serie de la placa. Tarda alrededor de un minuto. Funciona con placas ESP32, ESP32-S3 y ESP32-C3.",
+    "Conecta el ESP32 a este ordenador con un cable USB de datos, haz clic en Instalar y elige el puerto serie de la placa. Tarda alrededor de un minuto. Probado en el ESP32 original; las imágenes para ESP32-S3 y ESP32-C3 están compiladas, pero aún no se han probado en hardware.",
   installButton: "Instalar firmware",
   unsupportedHtml:
     'Este navegador no puede comunicarse con dispositivos serie USB. Abre esta página en Chrome o Edge en un ordenador de sobremesa o portátil, o usa las <a class="text-link" href="/about/esp32-web-flash">otras opciones de flasheo</a>.',

@@ -13,7 +13,7 @@ const en = {
     {
       question: "What do I need?",
       answer:
-        "An ESP32, ESP32-S3, or ESP32-C3 board, a waterproof DS18B20 probe or a DHT22 (or DHT11) temperature and humidity sensor with a 4.7kΩ pull-up resistor on GPIO 4, a USB data cable, and Chrome or Edge on a desktop or laptop.",
+        "An ESP32 board (the original ESP32 is tested; ESP32-S3 and ESP32-C3 are built but not yet hardware-tested), a waterproof DS18B20 probe or a DHT22 temperature and humidity sensor (a DHT11 is supported but not yet hardware-tested) with a 4.7kΩ pull-up resistor on GPIO 4, a USB data cable, and Chrome or Edge on a desktop or laptop.",
     },
     {
       question: "Do I need the Arduino IDE?",
@@ -28,7 +28,7 @@ const en = {
     {
       question: "What else can I connect?",
       answer:
-        "An I²C temperature and humidity sensor (BME280, SHT31, or AHT20, found automatically; a BME280 also reports air pressure), a leak or water contact for flood alerts, a magnetic door switch, and a battery through a 1:1 resistor divider for battery-life estimates. Tick the leak, door, and battery options when you send settings so the board knows they're wired.",
+        "An I²C temperature and humidity sensor (BME280, SHT31, or AHT20, found automatically; a BME280 also reports air pressure), a leak or water contact for flood alerts, a magnetic door switch, and a battery through a 1:1 resistor divider for battery-life estimates. Tick the leak, door, and battery options when you send settings so the board knows they're wired. Tested on hardware so far: the BME280 and the door switch. SHT31, AHT20, leak and battery support is built but not yet hardware-tested.",
     },
     {
       question: "Does it work with a DHT22?",
@@ -48,7 +48,7 @@ const en = {
   ],
   buy: {
     board: "Board (pick one)",
-    s3c3: "Or an S3 / C3 board (stock varies)",
+    s3c3: "Or an S3 / C3 board (not yet hardware-tested; stock varies)",
     sensor: "Sensor on GPIO 4",
     i2c: "Or an I²C air sensor (no resistor needed)",
     extras: "Optional extras",
@@ -83,7 +83,7 @@ const en = {
     'Add a push device under <a class="text-link" href="/dashboard/devices">Dashboard → Devices</a> and copy its device key. The free plan includes two devices.',
   buyTitle: "What to buy",
   buyIntro:
-    "Parts that match the pins above. A plain ESP32 is the tested choice and does everything here. The S3 and C3 links are Espressif's own dev boards, which the firmware is built for; when they're sold out, another ESP32-S3-DevKitC-1 or ESP32-C3-DevKitM-1 board (or a clone with the same pinout) works too.",
+    "Parts that match the pins above. A plain ESP32 is the tested choice. The S3 and C3 links are Espressif's own dev boards, which the firmware is built for; when they're sold out, another ESP32-S3-DevKitC-1 or ESP32-C3-DevKitM-1 board (or a clone with the same pinout) should work too, but S3 and C3 boards haven't been tested on hardware yet.",
   leakHtml:
     '<strong>Leak sensor:</strong> the easiest low-cost option is an LM393 "rain / water sensor" module (sold by many shops): VCC to the board\'s 3.3V pin (never 5V, so its output stays safe for the ESP32), GND to GND, DO to the leak pin. Turn its dial until a drop of water reads Wet, then check it reads Dry again. Its exposed pads corrode if left wet, so treat it as a starter part. For a longer-lasting install, use two stainless screws or probes about 5&nbsp;mm apart, one to the leak pin and one to GND. Either way, test with your own water: very clean water or a thin film may not trip it. Sensors whose output goes high when wet, such as Adafruit\'s water sensor, need a different input and don\'t work with this firmware.',
   afterTitle: "After it is live",

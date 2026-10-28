@@ -14,7 +14,7 @@ const es: FlashMessages = {
     {
       question: "¿Qué necesito?",
       answer:
-        "Una placa ESP32, ESP32-S3 o ESP32-C3; una sonda impermeable DS18B20 o un sensor de temperatura y humedad DHT22 (o DHT11) con una resistencia pull-up de 4,7 kΩ en GPIO 4; un cable USB de datos, y Chrome o Edge en un ordenador de sobremesa o portátil.",
+        "Una placa ESP32 (el ESP32 original está probado; ESP32-S3 y ESP32-C3 están compilados, pero aún no probados en hardware); una sonda impermeable DS18B20 o un sensor de temperatura y humedad DHT22 (el DHT11 es compatible, pero aún no se ha probado en hardware) con una resistencia pull-up de 4,7 kΩ en GPIO 4; un cable USB de datos, y Chrome o Edge en un ordenador de sobremesa o portátil.",
     },
     {
       question: "¿Necesito el Arduino IDE?",
@@ -29,7 +29,7 @@ const es: FlashMessages = {
     {
       question: "¿Qué más puedo conectar?",
       answer:
-        "Un sensor I²C de temperatura y humedad (BME280, SHT31 o AHT20, que se detectan automáticamente; el BME280 también mide la presión del aire), un contacto de fuga o de agua para alertas de inundación, un interruptor magnético de puerta y una batería a través de un divisor resistivo 1:1 para estimar su duración. Marca las opciones de fuga, puerta y batería al enviar los ajustes para que la placa sepa que están conectadas.",
+        "Un sensor I²C de temperatura y humedad (BME280, SHT31 o AHT20, que se detectan automáticamente; el BME280 también mide la presión del aire), un contacto de fuga o de agua para alertas de inundación, un interruptor magnético de puerta y una batería a través de un divisor resistivo 1:1 para estimar su duración. Marca las opciones de fuga, puerta y batería al enviar los ajustes para que la placa sepa que están conectadas. Probados en hardware hasta ahora: el BME280 y el interruptor de puerta. SHT31, AHT20, fuga y batería están incluidos, pero aún no se han probado en hardware.",
     },
     {
       question: "¿Funciona con un DHT22?",
@@ -49,7 +49,7 @@ const es: FlashMessages = {
   ],
   buy: {
     board: "Placa (elige una)",
-    s3c3: "O una placa S3 / C3 (la disponibilidad varía)",
+    s3c3: "O una placa S3 / C3 (aún no probada en hardware; la disponibilidad varía)",
     sensor: "Sensor en GPIO 4",
     i2c: "O un sensor de aire I²C (sin resistencia)",
     extras: "Extras opcionales",
@@ -85,7 +85,7 @@ const es: FlashMessages = {
     'Añade un dispositivo push en <a class="text-link" href="/dashboard/devices">Dashboard → Devices</a> y copia su clave de dispositivo. El plan gratuito incluye dos dispositivos.',
   buyTitle: "Qué comprar",
   buyIntro:
-    "Piezas que encajan con los pines de arriba. Un ESP32 normal es la opción probada y hace todo lo que se describe aquí. Los enlaces S3 y C3 son las placas de desarrollo de la propia Espressif, para las que está compilado el firmware; si están agotadas, también sirve otra placa ESP32-S3-DevKitC-1 o ESP32-C3-DevKitM-1 (o un clon con el mismo pinout).",
+    "Piezas que encajan con los pines de arriba. Un ESP32 normal es la opción probada. Los enlaces S3 y C3 son las placas de desarrollo de la propia Espressif, para las que está compilado el firmware; si están agotadas, debería servir otra placa ESP32-S3-DevKitC-1 o ESP32-C3-DevKitM-1 (o un clon con el mismo pinout), aunque las placas S3 y C3 aún no se han probado en hardware.",
   leakHtml:
     '<strong>Sensor de fugas:</strong> la opción barata más sencilla es un módulo LM393 de «sensor de lluvia / agua» (lo venden muchas tiendas): VCC al pin de 3,3 V de la placa (nunca a 5 V, para que su salida sea segura para el ESP32), GND a GND y DO al pin de fuga. Gira su potenciómetro hasta que una gota de agua marque mojado y comprueba que vuelve a marcar seco. Sus pistas expuestas se corroen si quedan mojadas, así que tómalo como una pieza para empezar. Para una instalación más duradera, usa dos tornillos o puntas de acero inoxidable separados unos 5&nbsp;mm, uno al pin de fuga y otro a GND. En cualquier caso, prueba con tu propia agua: el agua muy limpia o una película fina pueden no activarlo. Los sensores cuya salida pasa a nivel alto al mojarse, como el sensor de agua de Adafruit, necesitan otra entrada y no funcionan con este firmware.',
   afterTitle: "Cuando ya esté funcionando",

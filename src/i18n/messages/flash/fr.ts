@@ -14,7 +14,7 @@ const fr: FlashMessages = {
     {
       question: "De quoi ai-je besoin ?",
       answer:
-        "Une carte ESP32, ESP32-S3 ou ESP32-C3, une sonde étanche DS18B20 ou un capteur de température et d’humidité DHT22 (ou DHT11) avec une résistance de tirage de 4,7 kΩ sur GPIO 4, un câble USB de données, et Chrome ou Edge sur un ordinateur fixe ou portable.",
+        "Une carte ESP32 (l’ESP32 d’origine est testé ; les ESP32-S3 et ESP32-C3 sont compilés, mais pas encore testés sur du matériel), une sonde étanche DS18B20 ou un capteur de température et d’humidité DHT22 (le DHT11 est pris en charge, mais pas encore testé sur du matériel) avec une résistance de tirage de 4,7 kΩ sur GPIO 4, un câble USB de données, et Chrome ou Edge sur un ordinateur fixe ou portable.",
     },
     {
       question: "Ai-je besoin de l’Arduino IDE ?",
@@ -29,7 +29,7 @@ const fr: FlashMessages = {
     {
       question: "Que puis-je connecter d’autre ?",
       answer:
-        "Un capteur I²C de température et d’humidité (BME280, SHT31 ou AHT20, détecté automatiquement ; le BME280 mesure aussi la pression atmosphérique), un contact de fuite ou d’eau pour les alertes d’inondation, un interrupteur magnétique de porte et une batterie via un pont diviseur 1:1 pour estimer son autonomie. Cochez les options fuite, porte et batterie en envoyant les réglages pour que la carte sache qu’ils sont câblés.",
+        "Un capteur I²C de température et d’humidité (BME280, SHT31 ou AHT20, détecté automatiquement ; le BME280 mesure aussi la pression atmosphérique), un contact de fuite ou d’eau pour les alertes d’inondation, un interrupteur magnétique de porte et une batterie via un pont diviseur 1:1 pour estimer son autonomie. Cochez les options fuite, porte et batterie en envoyant les réglages pour que la carte sache qu’ils sont câblés. Testés sur du matériel à ce jour : le BME280 et l’interrupteur de porte. Les SHT31, AHT20, la fuite et la batterie sont pris en charge, mais pas encore testés sur du matériel.",
     },
     {
       question: "Est-ce que ça marche avec un DHT22 ?",
@@ -49,7 +49,7 @@ const fr: FlashMessages = {
   ],
   buy: {
     board: "Carte (choisissez-en une)",
-    s3c3: "Ou une carte S3 / C3 (stock variable)",
+    s3c3: "Ou une carte S3 / C3 (pas encore testée sur du matériel ; stock variable)",
     sensor: "Capteur sur GPIO 4",
     i2c: "Ou un capteur d’air I²C (sans résistance)",
     extras: "Extras facultatifs",
@@ -85,7 +85,7 @@ const fr: FlashMessages = {
     'Ajoutez un appareil push dans <a class="text-link" href="/dashboard/devices">Dashboard → Devices</a> et copiez sa clé d’appareil. L’offre gratuite inclut deux appareils.',
   buyTitle: "Quoi acheter",
   buyIntro:
-    "Des pièces qui correspondent aux broches ci-dessus. Un ESP32 classique est le choix testé et fait tout ce qui est décrit ici. Les liens S3 et C3 renvoient aux cartes de développement d’Espressif, pour lesquelles le firmware est compilé ; en cas de rupture, une autre carte ESP32-S3-DevKitC-1 ou ESP32-C3-DevKitM-1 (ou un clone au brochage identique) fonctionne aussi.",
+    "Des pièces qui correspondent aux broches ci-dessus. Un ESP32 classique est le choix testé. Les liens S3 et C3 renvoient aux cartes de développement d’Espressif, pour lesquelles le firmware est compilé ; en cas de rupture, une autre carte ESP32-S3-DevKitC-1 ou ESP32-C3-DevKitM-1 (ou un clone au brochage identique) devrait aussi fonctionner, mais les cartes S3 et C3 ne sont pas encore testées sur du matériel.",
   leakHtml:
     '<strong>Capteur de fuite :</strong> l’option bon marché la plus simple est un module LM393 « capteur de pluie / d’eau » (vendu par de nombreuses boutiques) : VCC sur la broche 3,3 V de la carte (jamais 5 V, pour que sa sortie reste sans danger pour l’ESP32), GND sur GND, DO sur la broche de fuite. Tournez son potentiomètre jusqu’à ce qu’une goutte d’eau donne mouillé, puis vérifiez qu’il repasse à sec. Ses pistes à nu se corrodent si elles restent mouillées : voyez-le comme une pièce pour débuter. Pour une installation plus durable, utilisez deux vis ou pointes en inox espacées d’environ 5&nbsp;mm, l’une sur la broche de fuite, l’autre sur GND. Dans tous les cas, testez avec votre propre eau : une eau très pure ou une fine pellicule peut ne pas le déclencher. Les capteurs dont la sortie passe à l’état haut quand ils sont mouillés, comme le capteur d’eau d’Adafruit, nécessitent une autre entrée et ne fonctionnent pas avec ce firmware.',
   afterTitle: "Une fois en service",

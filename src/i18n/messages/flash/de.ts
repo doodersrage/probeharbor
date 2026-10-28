@@ -14,7 +14,7 @@ const de: FlashMessages = {
     {
       question: "Was brauche ich?",
       answer:
-        "Ein ESP32-, ESP32-S3- oder ESP32-C3-Board, einen wasserdichten DS18B20-Fühler oder einen DHT22- (bzw. DHT11-)Sensor für Temperatur und Luftfeuchtigkeit mit 4,7-kΩ-Pull-up-Widerstand an GPIO 4, ein USB-Datenkabel sowie Chrome oder Edge auf einem Desktop-PC oder Laptop.",
+        "Ein ESP32-Board (getestet ist der originale ESP32; ESP32-S3 und ESP32-C3 sind gebaut, aber noch nicht auf Hardware getestet), einen wasserdichten DS18B20-Fühler oder einen DHT22-Sensor für Temperatur und Luftfeuchtigkeit (ein DHT11 wird unterstützt, ist aber noch nicht auf Hardware getestet) mit 4,7-kΩ-Pull-up-Widerstand an GPIO 4, ein USB-Datenkabel sowie Chrome oder Edge auf einem Desktop-PC oder Laptop.",
     },
     {
       question: "Brauche ich die Arduino IDE?",
@@ -29,7 +29,7 @@ const de: FlashMessages = {
     {
       question: "Was kann ich noch anschließen?",
       answer:
-        "Einen I²C-Sensor für Temperatur und Luftfeuchtigkeit (BME280, SHT31 oder AHT20, wird automatisch erkannt; ein BME280 meldet zusätzlich den Luftdruck), einen Leck- oder Wasserkontakt für Überschwemmungsalarme, einen magnetischen Türschalter und einen Akku über einen 1:1-Spannungsteiler für die Schätzung der Akkulaufzeit. Hake beim Senden der Einstellungen Leck, Tür und Akku an, damit das Board weiß, dass sie angeschlossen sind.",
+        "Einen I²C-Sensor für Temperatur und Luftfeuchtigkeit (BME280, SHT31 oder AHT20, wird automatisch erkannt; ein BME280 meldet zusätzlich den Luftdruck), einen Leck- oder Wasserkontakt für Überschwemmungsalarme, einen magnetischen Türschalter und einen Akku über einen 1:1-Spannungsteiler für die Schätzung der Akkulaufzeit. Hake beim Senden der Einstellungen Leck, Tür und Akku an, damit das Board weiß, dass sie angeschlossen sind. Bisher auf Hardware getestet: der BME280 und der Türschalter. SHT31, AHT20, Leck und Akku sind eingebaut, aber noch nicht auf Hardware getestet.",
     },
     {
       question: "Funktioniert es mit einem DHT22?",
@@ -49,7 +49,7 @@ const de: FlashMessages = {
   ],
   buy: {
     board: "Board (eins auswählen)",
-    s3c3: "Oder ein S3-/C3-Board (Verfügbarkeit schwankt)",
+    s3c3: "Oder ein S3-/C3-Board (noch nicht auf Hardware getestet; Verfügbarkeit schwankt)",
     sensor: "Sensor an GPIO 4",
     i2c: "Oder ein I²C-Luftsensor (kein Widerstand nötig)",
     extras: "Optionale Extras",
@@ -85,7 +85,7 @@ const de: FlashMessages = {
     'Lege unter <a class="text-link" href="/dashboard/devices">Dashboard → Devices</a> ein Push-Gerät an und kopiere seinen Geräteschlüssel. Im kostenlosen Tarif sind zwei Geräte enthalten.',
   buyTitle: "Was du kaufen solltest",
   buyIntro:
-    "Teile, die zu den Pins oben passen. Ein normaler ESP32 ist die getestete Wahl und kann alles, was hier beschrieben ist. Die S3- und C3-Links führen zu Espressifs eigenen Entwicklerboards, für die die Firmware gebaut ist; sind sie ausverkauft, funktioniert auch ein anderes ESP32-S3-DevKitC-1- oder ESP32-C3-DevKitM-1-Board (oder ein Klon mit derselben Pinbelegung).",
+    "Teile, die zu den Pins oben passen. Ein normaler ESP32 ist die getestete Wahl. Die S3- und C3-Links führen zu Espressifs eigenen Entwicklerboards, für die die Firmware gebaut ist; sind sie ausverkauft, sollte auch ein anderes ESP32-S3-DevKitC-1- oder ESP32-C3-DevKitM-1-Board (oder ein Klon mit derselben Pinbelegung) funktionieren; S3- und C3-Boards sind aber noch nicht auf Hardware getestet.",
   leakHtml:
     '<strong>Lecksensor:</strong> Die einfachste günstige Lösung ist ein LM393-Modul „Regen-/Wassersensor“ (gibt es in vielen Shops): VCC an den 3,3-V-Pin des Boards (nie 5 V, damit sein Ausgang für den ESP32 sicher bleibt), GND an GND, DO an den Leck-Pin. Dreh am Poti, bis ein Wassertropfen „nass“ ergibt, und prüfe dann, dass er wieder „trocken“ meldet. Die offenen Kontaktflächen korrodieren, wenn sie nass bleiben, also sieh ihn als Einsteigerteil. Für eine langlebigere Installation nimm zwei Edelstahlschrauben oder -spitzen im Abstand von etwa 5&nbsp;mm, eine an den Leck-Pin und eine an GND. So oder so: Teste mit deinem eigenen Wasser, denn sehr sauberes Wasser oder ein dünner Film lösen ihn eventuell nicht aus. Sensoren, deren Ausgang bei Nässe auf High geht, etwa der Wassersensor von Adafruit, brauchen einen anderen Eingang und funktionieren mit dieser Firmware nicht.',
   afterTitle: "Wenn er läuft",

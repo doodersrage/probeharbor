@@ -10,7 +10,7 @@ export default {
     {
       question: "Comment connecter des capteurs ESP32, Pico W ou Arduino ?",
       answer:
-        "Pour un ESP32, le plus rapide est le flasheur web sur probeharbor.dev/flash : branchez la carte en USB, installez le firmware depuis Chrome ou Edge, puis envoyez-lui votre Wi-Fi et votre clé d’appareil. Il lit des sondes DS18B20, un DHT22 ou un capteur I²C (BME280, SHT31, AHT20), ainsi que des entrées facultatives de fuite, de porte et de batterie. Pour les autres cartes, créez un appareil push dans Dashboard → Devices et envoyez du JSON en POST à /api/ingest/<key> ; les capteurs s’importent automatiquement au premier POST. Les exemples pour Pico W et Arduino se trouvent sur probeharbor.dev/about/adding-devices. Pas de matériel ? Essayez le démarrage rapide avec le flux de démonstration (pull) dans Overview.",
+        "Pour un ESP32, le plus rapide est le flasheur web sur probeharbor.dev/flash : branchez la carte en USB, installez le firmware depuis Chrome ou Edge, puis envoyez-lui votre Wi-Fi et votre clé d’appareil. Sur un ESP32 classique, il est testé avec des sondes DS18B20, un DHT22, un BME280 et un interrupteur de porte ; les capteurs SHT31 et AHT20, les entrées fuite et batterie et les cartes S3/C3 sont pris en charge, mais pas encore testés sur du matériel. Pour les autres cartes, créez un appareil push dans Dashboard → Devices et envoyez du JSON en POST à /api/ingest/<key> ; les capteurs s’importent automatiquement au premier POST. Les exemples pour Pico W et Arduino se trouvent sur probeharbor.dev/about/adding-devices. Pas de matériel ? Essayez le démarrage rapide avec le flux de démonstration (pull) dans Overview.",
     },
     {
       question: "Faut-il savoir programmer ?",
