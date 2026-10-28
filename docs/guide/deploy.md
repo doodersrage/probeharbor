@@ -97,30 +97,46 @@ npx wrangler rollback <version-id> --config dist/server/wrangler.json -m "reason
 
 ### Database backups (Supabase)
 
-What Supabase keeps depends on the project's plan. Check **Dashboard →
-Database → Backups** for the backup schedule and whether point-in-time
-recovery is on, and restore from there. Restoring replaces the whole
-database, so readings and alert history written after the backup are lost.
+**The production project is on the Supabase Free plan, which keeps no
+backups and has no point-in-time recovery** (checked 2026-10-28). The only
+copies are the ones you make. If the database is lost or corrupted, every
+reading, alert, account and device key is gone.
 
-Before risky changes (bulk data fixes, destructive migrations), take your
-own copy:
+Make a backup regularly (at least weekly) and always before a migration
+that changes or removes data:
 
 ```bash
-npx supabase db dump --linked -f backup-schema.sql
-npx supabase db dump --linked --data-only -f backup-data.sql
+pnpm db:backup
 ```
 
-The Supabase CLI runs `pg_dump` in Docker, so Docker must be running and
-your user must be able to reach it. Without Docker, use the Postgres
-client's `pg_dump` with the connection string from **Dashboard → Connect**.
-Dumps contain user data and hashed credentials: store them encrypted and
-delete them when done.
+- It needs `SUPABASE_DB_URL` in `.env`: Supabase → **Connect** → a Postgres
+  connection string with the database password filled in. It's local only
+  and isn't pushed to the Worker.
+- It needs `pg_dump` 17 or newer (the server runs Postgres 17).
+- It writes `backups/probeharbor-<UTC time>.dump` (compressed, custom
+  format; `backups/` is gitignored). It only reads from the database.
+- A failed run leaves no file behind.
+- The dump holds user data and hashed credentials: keep it encrypted, off
+  shared drives, and delete old ones you don't need.
+- Check a dump with `pg_restore --list <file> | head`.
+
+To restore into a **new, empty** project (never over the live database
+without a fresh dump first):
+
+```bash
+pg_restore --no-owner --no-privileges --dbname "<connection string of the new project>" <file>
+```
+
+Restoring loses everything written after the dump. Moving to a paid plan
+(daily backups, optional PITR) removes most of this manual work.
 
 ### Other state
 
-- **R2 `thermaltrace-history`** (history archives and chart images): check
-  in the Cloudflare dashboard whether object versioning or a lifecycle rule
-  is set. Deleted objects can't be recovered otherwise.
+- **R2 `thermaltrace-history`** (history archives and chart images): R2
+  has no object versioning, so a deleted or overwritten object can't be
+  recovered. The archive job had written no objects as of 2026-10-27
+  (`history_archives` was empty); the bucket mainly holds shared chart
+  images, which aren't in the database dump.
 - **Worker secrets** come from your local `.env` via `pnpm secrets:push`.
   Keep `.env` in a password manager. A lost `.env` means rotating every key.
 - **Stripe** is the source of truth for subscriptions. After a database

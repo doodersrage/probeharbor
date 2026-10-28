@@ -2434,8 +2434,9 @@ Audit gaps (M4): no backup/restore or rollback docs; migrations are manual
   `thermaltrace-history`. On this machine Docker isn't reachable and
   `pg_dump` isn't installed, so a manual dump needs one of them set up.
 - **Follow-ups (need the owner):**
-  1. Look up the Supabase backup and PITR settings and R2 versioning, and
-     write them into the doc.
+  1. ~~Look up the Supabase backup and PITR settings and R2 versioning~~
+     The owner confirmed on 2026-10-28: Free plan, so **no backups and no
+     PITR**; R2 has no versioning. See 4.4.
   2. Rehearse one restore (e.g. a dump restored into a scratch Supabase
      project).
   3. Decide whether CI should fail when `supabase/migrations` has files
@@ -2489,3 +2490,47 @@ device's values in text beside the chart.)
   `pnpm build`: pass. Not checked with a screen reader (signed-in page).
 - Units stay °F, matching these charts' axes; they don't follow the °C
   preference yet.
+
+------------------------------------------------------------------------
+
+## Milestone 4, increment 4.4: `pnpm db:backup`, since production has no backups (2026-10-28)
+
+**Status: Implemented and tested without a database. No migration. Not
+deployed (script and docs only).**
+
+Finding (from the owner, 2026-10-28): the production Supabase project is on
+the **Free plan, so it has no backups and no point-in-time recovery**. R2
+has no object versioning. Losing the database would lose every reading,
+alert, account and device key. This is the most serious open operational
+risk.
+
+- [x] `scripts/db-backup.mjs` (`pnpm db:backup`) runs `pg_dump` against
+      `SUPABASE_DB_URL` from `.env` and writes
+      `backups/probeharbor-<UTC>.dump`:
+      - custom format, compressed, `--no-owner --no-privileges`
+      - file mode 600, folder 700
+      - read-only on the server
+      - credentials go through libpq env vars (`PGPASSWORD`…), never argv
+        or output
+      - refuses pg_dump older than 17
+      - deletes a partial file on failure
+- [x] `backups/` gitignored. `SUPABASE_DB_URL` documented in `.env.example`
+      as local-only (`secrets:push` uses an allowlist, so it's never sent
+      to the Worker).
+- [x] `docs/guide/deploy.md` states the Free-plan fact, a weekly and
+      pre-migration backup routine, how to check and restore a dump (into
+      a new project), and the R2 no-versioning note.
+- Evidence (no production access from here): missing URL → exit 1 with
+  guidance; non-postgres URL → exit 1; an unreachable server → pg_dump
+  error, exit 1, no file left, and the password doesn't appear in the
+  output. That test caught a leftover partial file, now fixed. pg_dump
+  18.6 is installed. VitePress build passes. `pnpm lint`: 64 warnings
+  (baseline).
+- **Not verified:** a real dump of production, and any restore.
+- **Owner next steps:**
+  1. Add `SUPABASE_DB_URL` to `.env` and run `pnpm db:backup` once.
+  2. Check the file with `pg_restore --list`.
+  3. Store it encrypted.
+  4. Repeat weekly, or set a reminder.
+  5. Consider a paid plan for automatic daily backups.
+  6. Rehearse one restore into a scratch project.

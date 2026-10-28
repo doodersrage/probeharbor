@@ -42,3 +42,6 @@ __pycache__/
 # playwright
 test-results/
 playwright-report/
+
+# pg_dump output from `pnpm db:backup` (user data; never commit)
+backups/
