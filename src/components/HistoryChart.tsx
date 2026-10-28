@@ -46,10 +46,10 @@ export const HISTORY_CHART_UI_EN = {
   emptySteps: "{addDevice} → verify ingest → {openLive} so snapshots can collect.",
   emptyAddDevice: "Add a device",
   emptyOpenLive: "open Live",
-  summaryLatest: "Latest reading {temp}°F.",
-  summaryRange: "Range over this period: {min}°F to {max}°F.",
-  summaryBelow: "Dropped to or below the {freeze}°F freeze line in {below} of {total} readings.",
-  summaryAbove: "Stayed above the {freeze}°F freeze line the whole period.",
+  summaryLatest: "Latest reading {temp}{unit}.",
+  summaryRange: "Range over this period: {min}{unit} to {max}{unit}.",
+  summaryBelow: "Dropped to or below the {freeze}{unit} freeze line in {below} of {total} readings.",
+  summaryAbove: "Stayed above the {freeze}{unit} freeze line the whole period.",
   hoverAlert: "Alert: {title}",
   guideFreeze: "Freeze",
   guideTarget: "Target",
@@ -87,7 +87,7 @@ export const HISTORY_CHART_UI_EN = {
   loadedWindow: "Loaded window is about {hours}h.",
   seriesAria: "Series visibility",
   humidityPct: "Humidity %",
-  dewPointF: "dew point °F",
+  dewPointF: "dew point {unit}",
   dashed: " (dashed)",
   chartTips: "Chart tips",
   tipsExpanded: "Expanded view — drag to select a range, scroll to zoom, Esc or Close to exit.",
@@ -102,11 +102,11 @@ export const HISTORY_CHART_UI_EN = {
   tooltipDew: "dew",
   optionsSummary: "Chart options: guide lines",
   optionsSummaryHumidity: ", humidity",
-  targetAmbient: "Target ambient (°F)",
-  highWarning: "High warning (°F)",
+  targetAmbient: "Target ambient ({unit})",
+  highWarning: "High warning ({unit})",
   optional: "Optional",
   humidityDew: "Humidity + dew",
-  freezeLineFromAlerts: "Freeze line from alerts: {temp}°F",
+  freezeLineFromAlerts: "Freeze line from alerts: {temp}{unit}",
 };
 
 export type HistoryChartUi = typeof HISTORY_CHART_UI_EN;
@@ -187,6 +187,8 @@ interface Props {
   ui?: Partial<HistoryChartUi>;
   /** BCP 47 tag for number/date formatting. Omitted or English keeps the original formatting. */
   locale?: string;
+  /** Show temperatures in °C (the user's display preference). Props stay in °F. */
+  useCelsius?: boolean;
 }
 
 // Series avoid blue/orange (freeze/high guides and below/above segments) and
@@ -197,20 +199,23 @@ const COLOR_BELOW = "#38bdf8";
 const COLOR_ABOVE = "#fb923c";
 const HUMIDITY_COLOR = "#a78bfa";
 const DEW_COLOR = "#2dd4bf";
-const STORAGE_HIGH = "tt-chart-high-f";
-const STORAGE_TARGET = "tt-chart-target-f";
+// Saved guide values are in the unit they were entered in, so each unit has its own key.
+const storageHigh = (celsius: boolean) => (celsius ? "tt-chart-high-c" : "tt-chart-high-f");
+const storageTarget = (celsius: boolean) => (celsius ? "tt-chart-target-c" : "tt-chart-target-f");
+const toCelsius = (f: number) => ((f - 32) * 5) / 9;
 
-function dewPointF(tempF: number, rhPct: number): number | null {
-  if (!Number.isFinite(tempF) || !Number.isFinite(rhPct) || rhPct <= 0 || rhPct > 100) {
+/** Dew point in the same unit as `temp` (°C when `celsius`, else °F). */
+function dewPointF(temp: number, rhPct: number, celsius = false): number | null {
+  if (!Number.isFinite(temp) || !Number.isFinite(rhPct) || rhPct <= 0 || rhPct > 100) {
     return null;
   }
-  const tC = (tempF - 32) * (5 / 9);
+  const tC = celsius ? temp : (temp - 32) * (5 / 9);
   const a = 17.62;
   const b = 243.12;
   const gamma = Math.log(rhPct / 100) + (a * tC) / (b + tC);
   const tdC = (b * gamma) / (a - gamma);
   if (!Number.isFinite(tdC)) return null;
-  return tdC * (9 / 5) + 32;
+  return celsius ? tdC : tdC * (9 / 5) + 32;
 }
 
 function readStoredNumber(key: string): number | null {
@@ -244,7 +249,7 @@ function segmentColor(
   return base;
 }
 
-export default function HistoryChart({
+function HistoryChartView({
   points,
   priorYearPoints = [],
   priorYearLegend = null,
@@ -263,7 +268,12 @@ export default function HistoryChart({
   guest = false,
   ui,
   locale,
-}: Props) {
+  celsius,
+}: Omit<Props, "useCelsius"> & { celsius: boolean }) {
+  const unit = celsius ? "°C" : "°F";
+  /** A threshold in the display unit: whole °F as before; °C to at most one decimal. */
+  const deg = (value: number) =>
+    celsius ? fixed(value, Number.isInteger(Math.round(value * 10) / 10) ? 0 : 1, locale) : String(value);
   const t = useMemo<HistoryChartUi>(() => {
     const merged = { ...HISTORY_CHART_UI_EN };
     if (ui) {
@@ -343,8 +353,8 @@ export default function HistoryChart({
       setHumidityOn(prefs.humidityOn);
     }
 
-    const storedHigh = readStoredNumber(STORAGE_HIGH);
-    const storedTarget = readStoredNumber(STORAGE_TARGET);
+    const storedHigh = readStoredNumber(storageHigh(celsius));
+    const storedTarget = readStoredNumber(storageTarget(celsius));
     if (storedHigh != null) setHighTempF(storedHigh);
     else if (defaultHighTempF != null) setHighTempF(defaultHighTempF);
     if (storedTarget != null) setTargetAmbientF(storedTarget);
@@ -377,12 +387,12 @@ export default function HistoryChart({
 
   useEffect(() => {
     if (!hydrated) return;
-    writeStoredNumber(STORAGE_HIGH, highTempF);
+    writeStoredNumber(storageHigh(celsius), highTempF);
   }, [highTempF, hydrated]);
 
   useEffect(() => {
     if (!hydrated) return;
-    writeStoredNumber(STORAGE_TARGET, targetAmbientF);
+    writeStoredNumber(storageTarget(celsius), targetAmbientF);
   }, [targetAmbientF, hydrated]);
 
   useEffect(() => {
@@ -522,14 +532,14 @@ export default function HistoryChart({
     }
     const latest = points[points.length - 1]!;
     const parts = [
-      fill(t.summaryLatest, { temp: fixed(latest.tempf, 1, locale) }),
-      fill(t.summaryRange, { min: fixed(min.tempf, 1, locale), max: fixed(max.tempf, 1, locale) }),
+      fill(t.summaryLatest, { temp: fixed(latest.tempf, 1, locale), unit }),
+      fill(t.summaryRange, { min: fixed(min.tempf, 1, locale), max: fixed(max.tempf, 1, locale), unit }),
     ];
     if (freezeThresholdF != null) {
       parts.push(
         below > 0
-          ? fill(t.summaryBelow, { freeze: freezeThresholdF, below, total: points.length })
-          : fill(t.summaryAbove, { freeze: freezeThresholdF }),
+          ? fill(t.summaryBelow, { freeze: deg(freezeThresholdF), unit, below, total: points.length })
+          : fill(t.summaryAbove, { freeze: deg(freezeThresholdF), unit }),
       );
     }
     return parts.join(" ");
@@ -543,7 +553,7 @@ export default function HistoryChart({
     if (hoverHits.length) {
       const when = hoverTime(hoverHits[0]!.timestamp, locale);
       parts.push(
-        `${when}: ${hoverHits.map((h) => `${h.probeLabel} ${fixed(h.tempf, 1, locale)}°F`).join(", ")}`,
+        `${when}: ${hoverHits.map((h) => `${h.probeLabel} ${fixed(h.tempf, 1, locale)}${unit}`).join(", ")}`,
       );
     }
     return parts.join(". ");
@@ -611,7 +621,7 @@ export default function HistoryChart({
       const dewInView = plotHumidity
         ? humidityPoints
             .filter((p) => inView(Date.parse(p.timestamp)))
-            .map((p) => dewPointF(p.tempf, p.humidity))
+            .map((p) => dewPointF(p.tempf, p.humidity, celsius))
             .filter((v): v is number => v != null)
         : [];
 
@@ -626,7 +636,9 @@ export default function HistoryChart({
         ...houseInView.map((p) => p.tempf),
         ...dewInView,
       ];
-      const { min, max, offscale } = temperatureScale(dataTemps, guideTemps);
+      const { min, max, offscale } = celsius
+        ? temperatureScale(dataTemps, guideTemps, (2 * 5) / 9, (10 * 5) / 9)
+        : temperatureScale(dataTemps, guideTemps);
       const range = max - min || 1;
 
       plotBoundsRef.current = {
@@ -665,7 +677,7 @@ export default function HistoryChart({
         g.fillStyle = "#94a3b8";
         g.font = "10px system-ui, sans-serif";
         g.textAlign = "right";
-        g.fillText(`${fixed(val, 0, locale)}°F`, pad.left - 6, y + 3);
+        g.fillText(`${fixed(val, 0, locale)}${unit}`, pad.left - 6, y + 3);
         if (plotHumidity) {
           const rh = 100 - (100 / 4) * i;
           g.textAlign = "left";
@@ -691,7 +703,7 @@ export default function HistoryChart({
           g.textAlign = "left";
           const stack = edgeLabels[off.side]++ * 12;
           const edgeY = off.side === "below" ? pad.top + innerH - 4 - stack : pad.top + 12 + stack;
-          g.fillText(`${label} ${fixed(tempf, 0, locale)}°F ${off.side === "below" ? "↓" : "↑"}`, pad.left + 4, edgeY);
+          g.fillText(`${label} ${fixed(tempf, 0, locale)}${unit} ${off.side === "below" ? "↓" : "↑"}`, pad.left + 4, edgeY);
           g.restore();
           return;
         }
@@ -708,7 +720,7 @@ export default function HistoryChart({
         g.fillStyle = color;
         g.font = "10px system-ui, sans-serif";
         g.textAlign = "left";
-        g.fillText(`${label} ${fixed(tempf, 0, locale)}°F`, pad.left + 4, y - 4);
+        g.fillText(`${label} ${fixed(tempf, 0, locale)}${unit}`, pad.left + 4, y - 4);
         g.restore();
       }
 
@@ -1239,7 +1251,7 @@ export default function HistoryChart({
         <p class="m-0 mb-2 text-xs text-[var(--color-text-muted)]">
           <span style={{ color: HUMIDITY_COLOR }}>{t.humidityPct}</span>
           {" · "}
-          <span style={{ color: DEW_COLOR }}>{t.dewPointF}</span>{t.dashed}
+          <span style={{ color: DEW_COLOR }}>{fill(t.dewPointF, { unit })}</span>{t.dashed}
         </p>
       )}
       <details class="history-chart-tips m-0 mb-2 text-xs text-[var(--color-text-muted)]">
@@ -1306,14 +1318,14 @@ export default function HistoryChart({
                   />
                   <span class="history-chart-tooltip-label">{hit.probeLabel}</span>
                   <span class="history-chart-tooltip-value">
-                    {fixed(hit.tempf, 1, locale)}°F
+                    {fixed(hit.tempf, 1, locale)}{unit}
                     {humidityOn &&
                       hit.humidity != null &&
                       Number.isFinite(hit.humidity) &&
                       hit.humidity > 0 &&
                       ` · ${fixed(hit.humidity, 0, locale)}%`}
                     {hit.dewPointF != null &&
-                      ` · ${t.tooltipDew} ${fixed(hit.dewPointF, 1, locale)}°F`}
+                      ` · ${t.tooltipDew} ${fixed(hit.dewPointF, 1, locale)}${unit}`}
                   </span>
                 </li>
               ))}
@@ -1333,7 +1345,7 @@ export default function HistoryChart({
         onSubmit={(e) => e.preventDefault()}
       >
         <label class="chart-threshold-field">
-          <span>{t.targetAmbient}</span>
+          <span>{fill(t.targetAmbient, { unit })}</span>
           <input
             type="number"
             step="0.5"
@@ -1347,7 +1359,7 @@ export default function HistoryChart({
           />
         </label>
         <label class="chart-threshold-field">
-          <span>{t.highWarning}</span>
+          <span>{fill(t.highWarning, { unit })}</span>
           <input
             type="number"
             step="0.5"
@@ -1374,7 +1386,7 @@ export default function HistoryChart({
         )}
         {freezeThresholdF != null && (
           <p class="chart-threshold-note mb-0">
-            {fill(t.freezeLineFromAlerts, { temp: freezeThresholdF })}
+            {fill(t.freezeLineFromAlerts, { temp: deg(freezeThresholdF), unit })}
           </p>
         )}
       </form>
@@ -1382,4 +1394,30 @@ export default function HistoryChart({
       </div>
     </>
   );
+}
+
+const convertPoints = (list: Point[] | undefined) =>
+  list?.map((p) => ({ ...p, tempf: toCelsius(p.tempf) }));
+const convertValue = (value: number | null | undefined) =>
+  value == null ? value : toCelsius(value);
+
+/**
+ * Readings and thresholds arrive in °F. For a °C user they're converted once
+ * here, so the chart's scaling, guides and colouring all work in the unit
+ * that's shown (and axis ticks come out round in °C too).
+ */
+export default function HistoryChart({ useCelsius = false, ...props }: Props) {
+  const converted = useMemo(() => {
+    if (!useCelsius) return props;
+    return {
+      ...props,
+      points: convertPoints(props.points) ?? [],
+      priorYearPoints: convertPoints(props.priorYearPoints),
+      housePoints: convertPoints(props.housePoints),
+      freezeThresholdF: convertValue(props.freezeThresholdF),
+      defaultHighTempF: convertValue(props.defaultHighTempF),
+      defaultTargetAmbientF: convertValue(props.defaultTargetAmbientF),
+    };
+  }, [useCelsius, props]);
+  return <HistoryChartView {...converted} celsius={useCelsius} />;
 }

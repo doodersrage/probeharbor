@@ -2965,3 +2965,49 @@ Not done:
   preference)
 - the CSV `from`/`to` filter uses UTC days
 - there's no browser or screen-reader review of signed-in pages
+
+------------------------------------------------------------------------
+
+## Milestone 6, increment 6.8: the main temperature chart follows the °C preference (2026-10-28)
+
+**Status: Implemented and verified locally. No migration. Not deployed.**
+
+`HistoryChart` (History page and the Overview 7-day chart) always drew in
+°F, even for users with `use_celsius`.
+
+- [x] New `useCelsius` prop. A thin wrapper converts readings (probe,
+      house, prior year), the freeze threshold and the default guides to °C
+      **once**. The chart then scales, colours and draws in the display
+      unit, so °C axis ticks come out round. Props and stored data stay in
+      °F.
+- [x] Dew point is computed in the display unit (Magnus takes °C directly
+      when `celsius`).
+- [x] `temperatureScale` takes `reachMin` as well as `padF`; for °C they're
+      2°F and 10°F expressed in °C (× 5/9), so the zoom matches °F.
+- [x] User-edited guide values (high warning, target ambient) are saved
+      under per-unit keys (`tt-chart-high-c` / `-f`, `tt-chart-target-c` /
+      `-f`), so a value entered in °F is never shown as °C.
+- [x] Every °F label is now `{unit}`:
+      - 6 in drawing code (axis, guides, off-scale labels, tooltips, dew
+        tooltip)
+      - 8 copy keys (summaries, dew legend, guide labels, freeze line) in
+        English, the History charts copy and the demo-island copy
+        (4 locales each)
+
+      Thresholds in °C show to at most one decimal (34°F → 1.1°C).
+- [x] The History page (via `GarageTempHistory`) and the Overview
+      (`DashboardWeekChart`) pass the preference. The public demo stays °F
+      (no user).
+- Evidence: `HistoryChart.units.test.ts` renders the chart to HTML with
+  Astro's `preact-render-to-string` (ESM build, so one Preact instance):
+  °F output unchanged by default; for °C, latest 0.0°C, range 0.0–10.0°C,
+  freeze line 1.1°C, "Target ambient (°C)", and no `°F`.
+  `pnpm test`: 3188 passed. `pnpm typecheck`: 0 errors. `pnpm lint`: 64
+  warnings (baseline). `pnpm build`: pass. `pnpm test:e2e`: 47 passed,
+  13 skipped.
+- **Not verified:** canvas output (axis ticks, guides, tooltips) in a
+  browser; that only runs client-side, on signed-in pages.
+- **Not changed (follow-ups):** the History comparison charts
+  (`IndoorOutdoorChart`, `ProbeSpreadChart`, `FreezeHoursChart`) and their
+  summaries are still °F, though labelled °F; the readings table and CSV
+  show both units already.

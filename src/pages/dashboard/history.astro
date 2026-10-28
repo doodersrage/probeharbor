@@ -1,4 +1,5 @@
 ---
+import { getDisplayPreferencesFromMetadata } from "../../lib/userPreferences";
 import DashboardLayout from "../../layouts/DashboardLayout.astro";
 import GarageTempHistory from "../../components/GarageTempHistory.astro";
 import UpgradeNudge from "../../components/UpgradeNudge.astro";
@@ -70,6 +71,9 @@ const { session, user } = shell
 if (!session || !user) {
   return Astro.redirect("/signin");
 }
+
+// Charts follow the °C display preference; readings stay in °F underneath.
+const useCelsius = getDisplayPreferencesFromMetadata(user).useCelsius;
 
 const defaultHistoryViewId =
   typeof user.user_metadata?.default_history_view_id === "string"
@@ -508,6 +512,7 @@ const freezeTemp = plain(alertSettings.freezeThresholdF);
     {(historyTab === "chart" || historyTab === "table") && (
       <>
         <GarageTempHistory
+          useCelsius={useCelsius}
           history={history}
           chartPoints={chartData.points}
           priorYearPoints={overlayPoints}

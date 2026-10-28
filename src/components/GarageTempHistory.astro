@@ -12,6 +12,8 @@ import { appHistoryMessages } from "../i18n/messages/app/history";
 import { appHistoryChartsMessages } from "../i18n/messages/app/history/charts";
 
 interface Props {
+  /** The user's °C display preference (charts only; the table and CSV stay in both units). */
+  useCelsius?: boolean;
   history: PaginatedGarageTemps;
   chartPoints: ChartPoint[];
   priorYearPoints?: ChartPoint[];
@@ -49,6 +51,7 @@ interface Props {
 }
 
 const {
+  useCelsius = false,
   history,
   chartPoints,
   priorYearPoints = [],
@@ -382,6 +385,7 @@ function comparePresetHref(preset: "prior_week" | "prior_month"): string {
       canShareChart={canShareChart}
       ui={chartUi}
       locale={chartLocale}
+      useCelsius={useCelsius}
     />
   )}
 

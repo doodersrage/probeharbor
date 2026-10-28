@@ -10,6 +10,8 @@ export function temperatureScale(
   dataTemps: number[],
   guideTemps: number[],
   padF = 2,
+  /** Guides within this many degrees of the data stay in view (10 in °F). */
+  reachMin = 10,
 ): { min: number; max: number; offscale: OffscaleGuide[] } {
   const data = dataTemps.filter(Number.isFinite);
   const guides = guideTemps.filter(Number.isFinite);
@@ -20,7 +22,7 @@ export function temperatureScale(
   const dataMin = Math.min(...data);
   const dataMax = Math.max(...data);
   // Near enough to keep in view: within 10°F, or a quarter of the data's span.
-  const reach = Math.max(10, (dataMax - dataMin) / 4);
+  const reach = Math.max(reachMin, (dataMax - dataMin) / 4);
   const inRange: number[] = [];
   const offscale: OffscaleGuide[] = [];
   for (const value of guides) {

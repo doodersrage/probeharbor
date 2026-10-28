@@ -16,6 +16,8 @@ interface Props {
   showHumidity?: boolean;
   days?: number;
   alertMarkers?: import("../../lib/chartAlertMarkers").ChartAlertMarker[];
+  /** The user's °C display preference. */
+  useCelsius?: boolean;
 }
 
 const {
@@ -27,6 +29,7 @@ const {
   showHumidity = true,
   days = 7,
   alertMarkers = [],
+  useCelsius = false,
 } = Astro.props;
 
 const locale = getLocale(Astro);
@@ -61,6 +64,7 @@ const chartUi = locale === "en" ? undefined : demoIslandMessages(locale).chart;
         showHumidity={showHumidity}
         alertMarkers={alertMarkers}
         ui={chartUi}
+        useCelsius={useCelsius}
       >
         <ChartSkeleton slot="fallback" />
       </HistoryChart>

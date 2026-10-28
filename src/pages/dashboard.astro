@@ -1000,6 +1000,7 @@ const onboardingProps = {
       <div class:list={["dashboard-insights", showInsights && "dashboard-insights--with-side"]}>
         <div class="dashboard-insights-primary">
           <DashboardWeekChart
+            useCelsius={useCelsius}
             points={chartWeek.points}
             housePoints={houseChartOverlay.points}
             houseLegend={
