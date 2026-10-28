@@ -525,6 +525,24 @@ At the end of each milestone, provide:
 7.  **Next recommendation:** one next milestone or tightly scoped task,
     justified by the remaining evidence.
 
+## Current status (updated 2026-10-28)
+
+The detailed increment log follows the Milestone 0 audit below. Summary:
+
+| Milestone | State | Done (see the increments) | Open |
+|---|---|---|---|
+| 1 Sensor data | Done for the audit gaps | 1.1–1.8, D5, D6 (cleanup sizing: all zero) | — |
+| 2 Alerts | Done for the audit gaps | 2.1–2.7, D1–D8, D7b | Property name in alert titles (deferred) |
+| 3 Setup / hardware | Code done; hardware tests open | 3.1–3.3 | Physical tests in `firmware/probeharbor-probe/HARDWARE-TESTS.md` |
+| 4 Operations | Partial | 4.1–4.4 | Restore rehearsal; migration check in CI (decision) |
+| 5 Security | Mostly done | S1–S8, rate limiting | Clear old raw share/status tokens (~2026-11-04); remove legacy snooze/invite branches (after 2026-11-05); require webhook V2 (after the usage query) |
+| 6 Dashboard | Done | 6.1–6.9 | CSV `from`/`to` in UTC days |
+| 7 Integrations | Spec done | 7.1–7.4 | HA/HACS repo still signs inbound webhooks body-only (separate repo) |
+| 8 Polish | Partial | 8.1–8.3 | Signed-in axe checks; billing e2e |
+
+**Operational must-do:** production is on the Supabase Free plan (no
+backups). Run `pnpm db:backup` weekly, or move to a paid plan.
+
 ## Start here
 
 Begin with **Milestone 0 only**. Audit the repository as it exists
