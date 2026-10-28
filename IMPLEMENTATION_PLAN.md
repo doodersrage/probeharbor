@@ -1909,9 +1909,10 @@ changed either policy.
 
 ## Security fix S3, step 1: timestamped webhook signatures (2026-10-28)
 
-**Status: Implemented and verified locally. Not deployed. Migration
+**Status: Implemented and verified locally. Migration
 `20261028130000_inbound_webhook_signature_format.sql` (additive, nullable
-column) not yet applied.**
+column) applied to production 2026-10-28 by the owner (`pnpm db:push`).
+Code deploys on push; the deploy hasn't been confirmed here.**
 
 Problem (verified): every webhook HMAC covered only the body
 (`inboundSigning.ts`, `notify.ts`, `alertAckPlaybook.ts`,
