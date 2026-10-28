@@ -2534,3 +2534,35 @@ risk.
   4. Repeat weekly, or set a reminder.
   5. Consider a paid plan for automatic daily backups.
   6. Rehearse one restore into a scratch project.
+
+------------------------------------------------------------------------
+
+## Milestone 7, increment 7.1: OpenAPI matches the push ingest route (2026-10-28)
+
+**Status: Implemented and verified locally. Docs/contract only; no code
+behaviour changed. Not deployed.**
+
+Audit (M7): `public/openapi.yaml` listed only 200/401 for
+`POST /api/ingest/{deviceKey}` and had no `X-Ingest-Key` header or `_` path.
+
+- [x] The ingest operation now documents:
+      - the optional `X-Ingest-Key` header (preferred; the header wins over
+        the path) and `_` as the path placeholder
+      - the 64 KiB body limit, detected payload shapes and server
+        timestamps
+      - responses 200 (`ok`, `readings`, `sensors_created`, `rejected[]`),
+        400 (with `rejected`), 401, 413, 429 (`Retry-After`; the per-key
+        limit is counted per instance, so approximate) and 500 (safe to
+        retry)
+- [x] New `components.schemas`: `Error`, and `RejectedReading` with
+      `reason` ∈ `sensor_fault` | `out_of_range`. Spec version 1.2.0 →
+      1.2.1 (additive).
+- [x] Drift guard `openapiIngestContract.test.ts`: every `status: NNN` in
+      the route and `ingestLimits.ts` must appear in the spec's ingest
+      section, along with the header, `_`, Retry-After and the body limit.
+      It fails 3/3 against the old spec.
+- Evidence: the spec parses (js-yaml check: 6 responses, 2 parameters, 2
+  schemas). `pnpm test`: 3124 passed. `pnpm typecheck`: 0 errors.
+  `pnpm lint`: 64 warnings (baseline). `pnpm build`: pass.
+- Not changed: other operations in the spec (MQTT bridge, v1 API, share)
+  weren't re-audited. That's a follow-up.

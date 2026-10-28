@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: ProbeHarbor API
-  version: 1.2.0
+  version: 1.2.1
   description: |
     HTTP endpoints for device ingest, share links, metrics, devices CRUD, MQTT bridge, and inbound automations.
     Authenticated dashboard routes use Supabase session cookies; programmatic access uses API keys (Pro).
@@ -11,14 +11,29 @@ paths:
   /api/ingest/{deviceKey}:
     post:
       summary: Push sensor readings
+      description: |
+        Send the device key either in the path or in the `X-Ingest-Key` header.
+        With the header, use `_` as the path segment (`/api/ingest/_`) so the key
+        stays out of URLs and logs. If both are present, the header wins.
+        New sensor keys are created on the first POST. Values outside physical
+        ranges, or known sensor fault codes, are not stored and are listed in
+        `rejected`. Timestamps are set by the server.
       parameters:
         - name: deviceKey
           in: path
           required: true
+          description: The device key, or `_` when sending it in `X-Ingest-Key`.
+          schema:
+            type: string
+        - name: X-Ingest-Key
+          in: header
+          required: false
+          description: The device key (preferred over the path).
           schema:
             type: string
       requestBody:
         required: true
+        description: JSON, at most 65536 bytes. ProbeHarbor, SenML and Home Assistant REST shapes are detected.
         content:
           application/json:
             schema:
@@ -26,9 +41,72 @@ paths:
               additionalProperties: true
       responses:
         "200":
-          description: Readings accepted
+          description: Readings stored
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ok, readings, sensors_created]
+                properties:
+                  ok:
+                    type: boolean
+                    const: true
+                  readings:
+                    type: integer
+                    description: Number of readings stored
+                  sensors_created:
+                    type: integer
+                    description: Sensors created by this request
+                  rejected:
+                    type: array
+                    description: Present only when some values were not stored
+                    items:
+                      $ref: "#/components/schemas/RejectedReading"
+        "400":
+          description: |
+            Missing device key, invalid JSON, or no usable sensor values
+            (`No sensor values found`, or `No valid sensor values` with `rejected`).
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [error]
+                properties:
+                  error:
+                    type: string
+                  rejected:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/RejectedReading"
         "401":
           description: Invalid device key
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "413":
+          description: Body larger than 65536 bytes
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "429":
+          description: Too many requests for this device key (about 60 per minute; counted per server instance, so approximate)
+          headers:
+            Retry-After:
+              description: Seconds to wait before retrying, when known
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Readings could not be stored; safe to retry
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
   /api/ingest/mqtt:
     post:
       summary: MQTT-over-HTTP bridge
@@ -245,6 +323,26 @@ paths:
         "200":
           description: Token removed
 components:
+  schemas:
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+    RejectedReading:
+      type: object
+      required: [key, kind, value, reason]
+      properties:
+        key:
+          type: string
+        kind:
+          type: string
+        value:
+          type: number
+        reason:
+          type: string
+          enum: [sensor_fault, out_of_range]
   securitySchemes:
     bearerAuth:
       type: http
