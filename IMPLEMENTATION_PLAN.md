@@ -1765,3 +1765,27 @@ migration:
 2. Delete the rows in (2).
 3. Delete (3a) sensors' rows (and hide the sensors), and the (3b) rows.
 4. Add an optional reading id only if (4) is significant.
+
+------------------------------------------------------------------------
+
+## Increment D7 (decision M2-6): rule alerts re-arm when they stop matching (2026-10-28)
+
+**Status: Implemented and verified locally. No migration.**
+
+- [x] When an evaluation finds no rule matching, the open rule alert is
+      auto-resolved as `recovered`, silently with no notice
+      (`maybeSendRuleAlerts`).
+- [x] A new match after that recovery alerts once it's 10 min old,
+      instead of waiting out the 4 h cooldown (2.2's `cooldownBlocks`).
+      A continuing match stays quiet.
+- [x] There's no extra evaluation cost while steady. During the cooldown
+      rules are evaluated only when the last rule alert is still open or
+      has recovered; that's one alert-log lookup.
+- **Deviation:** doors only alert through `door_open` rules, so "doors
+  recover on close" uses the same silent rule recovery. No separate
+  "door closed" notice was added. Say if you want one; it's a small
+  addition (copy in 5 locales).
+- Evidence: `alertNotifications.test.ts` +4. The 2 recovery tests fail
+  against the previous code. `pnpm test`: 3015 passed. `pnpm typecheck`:
+  0 errors. `pnpm lint`: 64 warnings (baseline). `pnpm build`: pass.
+  `pnpm test:e2e`: 44 passed, 12 skipped.

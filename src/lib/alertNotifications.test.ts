@@ -723,3 +723,54 @@ describe("no 'back to normal' from a probe that stopped reporting", () => {
     expect(thresholdResolves()).toHaveLength(1);
   });
 });
+
+describe("rule alerts re-arm when the rule stops matching", () => {
+  const rule = { id: "r1", name: "Garage door left open", conditions: [], channels: [] };
+  const minutesAgo = (m: number) => new Date(Date.now() - m * 60_000).toISOString();
+  const settings = { ...DEFAULT_ALERT_SETTINGS, enabled: true, alertRules: [rule] as never, lastRuleAlertAt: minutesAgo(60) };
+  const openRuleEvent = { kind: "rule", channels_sent: ["push"], channels_skipped: [], created_at: minutesAgo(60), acknowledged_at: null };
+
+  it("closes the open rule alert silently once nothing matches", async () => {
+    mockListRecentAlertEvents.mockResolvedValue([openRuleEvent]);
+    mockEvaluateAlertRules.mockReturnValue([]);
+    mockAutoResolveAlerts.mockClear();
+    const { maybeSendRuleAlerts } = await import("./alertNotifications");
+
+    await maybeSendRuleAlerts("user-1", "a@example.com", [], settings, freezingReading);
+
+    expect(mockAutoResolveAlerts).toHaveBeenCalledWith("user-1", { kinds: ["rule"], reason: "recovered" });
+    expect(mockNotifyUser).not.toHaveBeenCalled(); // no "back to normal" for rules
+  });
+
+  it("alerts a new match after the earlier one recovered", async () => {
+    mockListRecentAlertEvents.mockResolvedValue([
+      { ...openRuleEvent, acknowledged_at: minutesAgo(30), meta: { autoResolved: "recovered" } },
+    ]);
+    mockEvaluateAlertRules.mockReturnValue(["Garage door open 20 min"]);
+    const { maybeSendRuleAlerts } = await import("./alertNotifications");
+
+    await maybeSendRuleAlerts("user-1", "a@example.com", [], settings, freezingReading);
+
+    expect(mockNotifyUser.mock.calls.some((call) => call[3]?.kind === "rule")).toBe(true);
+  });
+
+  it("stays quiet while the same match continues", async () => {
+    mockListRecentAlertEvents.mockResolvedValue([openRuleEvent]);
+    mockEvaluateAlertRules.mockReturnValue(["Garage door open 80 min"]);
+    const { maybeSendRuleAlerts } = await import("./alertNotifications");
+
+    await maybeSendRuleAlerts("user-1", "a@example.com", [], settings, freezingReading);
+
+    expect(mockNotifyUser).not.toHaveBeenCalled();
+  });
+
+  it("skips evaluation in the cooldown when nothing is open or recovered", async () => {
+    mockListRecentAlertEvents.mockResolvedValue([{ ...openRuleEvent, acknowledged_at: minutesAgo(40), meta: {} }]);
+    mockEvaluateAlertRules.mockClear();
+    const { maybeSendRuleAlerts } = await import("./alertNotifications");
+
+    await maybeSendRuleAlerts("user-1", "a@example.com", [], settings, freezingReading);
+
+    expect(mockEvaluateAlertRules).not.toHaveBeenCalled();
+  });
+});
