@@ -1690,3 +1690,78 @@ Order of work: M2-1 → M2-3 → M2-4 → M2-5 → M1-B → M1-C (sizing first).
 - Not changed: other freshness callers (overview extras, HA
   diagnostics, share and status pages) still use fixed thresholds.
   Follow-up if slow devices show up there.
+
+------------------------------------------------------------------------
+
+## Step D6 (decisions M1-A, M1-C): read-only sizing queries — waiting on the owner
+
+Run these in the Supabase SQL editor. They only `select`. Paste the
+results back; no data changes until the counts are agreed.
+
+```sql
+-- 1. °C values stored as °F (sensors[] with a Celsius unit, before 722c2f9).
+--    A sensor whose unit is still C-like, or that has since had a converted
+--    reading (meta.sent_unit), stored its older rows unconverted.
+with c_sensors as (
+  select s.id from device_sensors s
+  where s.kind = 'temperature' and (
+    lower(replace(coalesce(s.unit, ''), '°', '')) in ('c', 'cel', 'celsius', 'degc', 'k', 'kelvin')
+    or exists (select 1 from sensor_readings r where r.sensor_id = s.id and r.meta ? 'sent_unit'))
+)
+select
+  (select count(*) from c_sensors) as sensors,
+  (select count(*) from sensor_readings r join c_sensors c on c.id = r.sensor_id
+     where not (r.meta ? 'sent_unit')) as raw_rows_to_convert,
+  (select count(*) from sensor_reading_rollups u join c_sensors c on c.id = u.sensor_id) as rollup_rows;
+
+-- 2. DS18B20 fault codes stored as temperatures (185°F reset, -196.6°F disconnected).
+select
+  (select count(*) from sensor_readings r join device_sensors s on s.id = r.sensor_id
+     where s.kind = 'temperature'
+       and (abs(r.value_num - 185) < 0.05 or abs(r.value_num + 196.6) < 0.05)) as raw_fault_rows,
+  (select count(*) from sensor_reading_rollups u join device_sensors s on s.id = u.sensor_id
+     where s.kind = 'temperature' and (u.min_num <= -196 or u.max_num >= 184.95)) as rollups_touched;
+
+-- 3a. Humidity sensors that only ever stored 0% (fabricated siblings of temp-only probes).
+select count(*) as sensors, coalesce(sum(n), 0) as rows
+from (
+  select s.id, count(*) as n
+  from device_sensors s join sensor_readings r on r.sensor_id = s.id
+  where s.kind = 'humidity'
+  group by s.id
+  having min(r.value_num) = 0 and max(r.value_num) = 0
+) x;
+
+-- 3b. 0°F temperature rows stored alongside a real humidity value at the same
+--     instant (humidity-only SenML / Home Assistant feeds).
+select count(*) as rows
+from sensor_readings t
+join device_sensors st on st.id = t.sensor_id and st.kind = 'temperature'
+join device_sensors sh on sh.device_id = st.device_id and sh.key = st.key and sh.kind = 'humidity'
+join sensor_readings h on h.sensor_id = sh.id and h.recorded_at = t.recorded_at
+where t.value_num = 0 and h.value_num <> 0;
+
+-- 4. (M1-A) Likely retry duplicates in the last 7 days: same sensor, same
+--    value, under 5 seconds apart.
+select count(*) as likely_duplicates
+from (
+  select recorded_at, value_num, value_bool,
+         lag(recorded_at) over w as prev_at,
+         lag(value_num) over w as prev_num,
+         lag(value_bool) over w as prev_bool
+  from sensor_readings
+  where recorded_at > now() - interval '7 days'
+  window w as (partition by sensor_id order by recorded_at)
+) x
+where recorded_at - prev_at < interval '5 seconds'
+  and value_num is not distinct from prev_num
+  and value_bool is not distinct from prev_bool;
+```
+
+Planned fixes once the counts are known, each as its own reviewed
+migration:
+1. Convert the rows in (1) to °F, keeping the original in `meta`, and
+   recompute affected rollups.
+2. Delete the rows in (2).
+3. Delete (3a) sensors' rows (and hide the sensors), and the (3b) rows.
+4. Add an optional reading id only if (4) is significant.
