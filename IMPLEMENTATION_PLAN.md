@@ -1863,9 +1863,11 @@ ingest bug is found later.
 
 ## Security fix S2: viewers can't read webhook secrets or status tokens (2026-10-28)
 
-**Status: Implemented and checked locally. Migration
-`20261028120000_tighten_webhook_and_status_token_rls.sql` is NOT
-applied yet; it needs the owner's approval to run in production.**
+**Status: Migration
+`20261028120000_tighten_webhook_and_status_token_rls.sql` applied to
+production 2026-10-28 by the owner (`pnpm db:push`, no errors; the two
+"does not exist, skipping" notices are the idempotent `drop policy if
+exists`). The `pg_policies` check below hasn't been reported yet.**
 
 Problem (verified): `inbound_webhooks_member_select`
 (`20260826160000:66-69`) and `status_page_tokens_member_select`
