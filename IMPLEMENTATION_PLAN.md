@@ -706,9 +706,9 @@ per-isolate rate limits, and the other Milestone 5 hardening items.
   deletes *all* rows older than the cutoff (`jobRuns.ts:164-167`).
   Readings beyond the cap are deleted with no rollup.
 - Still open from the Milestone 5 audit: per-isolate rate limits;
-  viewers can read inbound `signing_secret` and status tokens; webhook
-  HMACs have no timestamp; snooze, share and invite tokens are stored in
-  plaintext.
+  ~~viewers can read inbound `signing_secret` and status tokens~~ (fixed
+  in S2 below); webhook HMACs have no timestamp; snooze, share and
+  invite tokens are stored in plaintext.
 
 ------------------------------------------------------------------------
 
@@ -1858,3 +1858,45 @@ ingest bug is found later.
   skipped.
 - Limit: the alert-log lookup reads the latest 50 events, so a very busy
   night could leave older held alerts out of the count.
+
+------------------------------------------------------------------------
+
+## Security fix S2: viewers can't read webhook secrets or status tokens (2026-10-28)
+
+**Status: Implemented and checked locally. Migration
+`20261028120000_tighten_webhook_and_status_token_rls.sql` is NOT
+applied yet; it needs the owner's approval to run in production.**
+
+Problem (verified): `inbound_webhooks_member_select`
+(`20260826160000:66-69`) and `status_page_tokens_member_select`
+(`20260826180000:41-44`) let any household member, including viewers and
+alert-only members, read these rows with their own login. That exposes
+`signing_secret` and the status-page `token`. No later migration had
+changed either policy.
+
+- [x] Both select policies now use `is_household_manager` (owner or
+      member), the same as `share_links` and `household_invites` in
+      `20260908120000`. That matches the app: both management routes
+      require `canManageHousehold` (`api/inbound-webhooks/index.ts:53`,
+      `api/status/manage.ts` via `requireHouseholdManager`).
+- [x] App unaffected. All reads and writes of these tables go through
+      the service-role client (`inboundWebhooks.ts`, `statusPage.ts`), and
+      no browser Supabase client in `src/` touches them. Public status
+      pages and inbound webhook calls also run on the service role.
+- [ ] Database-level policy test. **Not done:** same limit as S1 (no
+      local Supabase or pgTAP). Reviewed by hand against `20260908120000`.
+- Evidence: `pnpm test`: 3021 passed. `pnpm typecheck`: 0 errors.
+  `pnpm lint`: 64 warnings (baseline). `pnpm build`: pass. No e2e run;
+  no UI or route code changed.
+- **Deploy:** apply the migration; it's independent of the code. To
+  check afterwards, read-only: `select policyname from pg_policies where
+  tablename in ('inbound_webhooks','status_page_tokens');` should list
+  only the two `*_manager_select` policies.
+- **Rollback:** recreate the two `*_member_select` policies from the
+  lines above.
+- **Compatibility risk (unverified):** the separate mobile apps aren't
+  in this repo. If they read these tables as a viewer through PostgREST,
+  those reads now return no rows.
+- **Next in Milestone 5:** add a timestamp to webhook HMAC signatures
+  (replay protection). That changes the signature contract for anyone
+  verifying webhooks, so it needs a compatible rollout.
