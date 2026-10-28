@@ -632,8 +632,8 @@ ingest error leak and the per-request round trips.
 
 ## Security fix S1: archive isolation and direct-write RLS (2026-10-27)
 
-**Status: Implemented and verified locally. Not deployed. Migration not
-applied.** Scope: Milestone 0 gaps 1 and 4. Non-goals: R2 cleanup,
+**Status: Deployed (`412213d`). Migration `20261027210000` applied
+2026-10-27.** Scope: Milestone 0 gaps 1 and 4. Non-goals: R2 cleanup,
 per-isolate rate limits, and the other Milestone 5 hardening items.
 
 ### Acceptance criteria
@@ -685,7 +685,12 @@ per-isolate rate limits, and the other Milestone 5 hardening items.
 
 ### Remaining risks and follow-ups
 
-- **Existing archives (needs approval; production data).** Retention
+- **Existing archives: resolved, nothing to clean up.** Production
+  `history_archives` had 0 rows (checked 2026-10-27), so no archive was
+  ever recorded. Residual: an R2 put whose `history_archives` insert then
+  failed would leave an unrecorded object. That's unlikely, because the
+  insert has no user-controlled constraints.
+- *(Original note)* **Existing archives (needs approval; production data).** Retention
   (`worker.ts:273`) deletes raw readings older than 90 days before the
   archive job runs (`worker.ts:413`), so most archive runs found
   nothing. Any `archives/*` object written on a day when retention
@@ -777,3 +782,66 @@ Retention data loss: `runSensorReadingRetention` rolls up at most
 20,000 rows (`jobRuns.ts:96-101`) but deletes every row older than the
 cutoff (`jobRuns.ts:164-167`). This permanently loses history on busy
 days and is a data-integrity bug with no user-visible symptom.
+
+------------------------------------------------------------------------
+
+## Milestone 1, increment 1.2: retention without data loss (2026-10-27)
+
+**Status: Implemented and verified locally. Not deployed. Migration
+`20261027220000` not applied.**
+
+### Problem (verified in code)
+
+`runSensorReadingRetention` (`jobRuns.ts`) had three problems:
+- It fetched at most 20,000 old rows, and in practice PostgREST
+  `max_rows` caps a response at 1,000 by default; this project's
+  setting isn't visible in the repo.
+- It then deleted **every** row older than the cutoff, so rows past the
+  cap were lost with no rollup.
+- The cutoff wasn't hour-aligned, and buckets were upserted by
+  overwriting, so an hour split across two daily runs kept only the
+  later part.
+
+### Acceptance criteria
+
+- [x] Rollup and delete run in one transaction
+      (`roll_up_and_prune_readings`). Nothing is deleted unless its
+      rollup is written, and there's no row cap.
+- [x] Existing buckets merge (weighted average, min, max, summed
+      count), using the same rule as `replace_device_sensor`.
+- [x] The cutoff is the start of the UTC hour (`retentionCutoff`).
+- [x] If the function is missing or errors, the job reports the error
+      (existing ops notification path) and deletes nothing.
+- [x] The function refuses a cutoff less than 1 day old and is
+      executable only by `service_role`.
+- [ ] SQL executed against a real database. **Not done:** there is no
+      local Postgres and Docker isn't accessible. The SQL was reviewed by
+      hand: unique (sensor, hour) keys, so the conflict clause doesn't
+      touch a row twice; the grouped-expression rule is respected; and
+      cascade FKs mean no orphan rollups.
+
+### Evidence
+
+- `jobRuns.test.ts`: the rpc call with an hour-aligned cutoff, no
+  Worker-side reads or deletes, the error path deletes nothing, and the
+  cutoff helper.
+- `pnpm test`: 2889 passed (7 old retention tests replaced by 4).
+  `pnpm typecheck`: 0 errors. `pnpm lint`: 64 warnings (baseline).
+  `pnpm build`: pass.
+
+### Deployment order
+
+1. `pnpm db:push` (applies `20261027220000`).
+2. Push the code.
+
+If the code ships first, the daily retention job reports
+"function not found" and keeps raw rows. That's safe but noisy.
+
+### Risks
+
+- A single statement over a very large backlog could hit a statement
+  timeout. The normal load is one day of readings. Check the first
+  production `sensor-retention` row in `job_runs`.
+- Rollups lost before this fix can't be recovered.
+- Archive job: still a no-op, because retention deletes first (Milestone
+  4 decision).

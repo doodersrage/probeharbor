@@ -74,13 +74,20 @@ export async function listRecentJobRuns(
   return { runs: (data ?? []) as JobRun[], error: null };
 }
 
-function hourBucket(iso: string): string {
-  const d = new Date(iso);
-  d.setUTCMinutes(0, 0, 0);
-  return d.toISOString();
+/** Start of the UTC hour `retentionDays` before `now`, so an hour is never split across runs. */
+export function retentionCutoff(retentionDays: number, now = new Date()): string {
+  const cutoff = new Date(now);
+  cutoff.setUTCDate(cutoff.getUTCDate() - retentionDays);
+  cutoff.setUTCMinutes(0, 0, 0);
+  return cutoff.toISOString();
 }
 
-/** Roll up numeric readings older than retention into hourly averages, then delete raw rows. */
+/**
+ * Roll numeric readings older than retention into hourly rollups, then delete
+ * the raw rows. Runs as one database transaction (roll_up_and_prune_readings),
+ * so nothing is deleted without its rollup and there is no row cap. If the
+ * function is missing or fails, nothing is deleted.
+ */
 export async function runSensorReadingRetention(
   retentionDays = RAW_READING_RETENTION_DAYS,
 ): Promise<{
@@ -89,86 +96,14 @@ export async function runSensorReadingRetention(
   error: string | null;
 }> {
   const supabase = createServerClient();
-  const cutoff = new Date();
-  cutoff.setUTCDate(cutoff.getUTCDate() - retentionDays);
-  const cutoffIso = cutoff.toISOString();
-
-  const { data: oldRows, error } = await supabase
-    .from("sensor_readings")
-    .select("sensor_id, household_id, recorded_at, value_num")
-    .lt("recorded_at", cutoffIso)
-    .not("value_num", "is", null)
-    .limit(20000);
+  const { data, error } = await supabase.rpc("roll_up_and_prune_readings", {
+    p_cutoff: retentionCutoff(retentionDays),
+  });
 
   if (error) {
     return { rolledUp: 0, deleted: 0, error: error.message };
   }
 
-  const buckets = new Map<
-    string,
-    {
-      sensor_id: string;
-      household_id: string;
-      bucket_start: string;
-      sum: number;
-      min: number;
-      max: number;
-      count: number;
-    }
-  >();
-
-  for (const row of oldRows ?? []) {
-    if (row.value_num == null) continue;
-    const bucket_start = hourBucket(row.recorded_at);
-    const key = `${row.sensor_id}|${bucket_start}`;
-    const existing = buckets.get(key);
-    if (!existing) {
-      buckets.set(key, {
-        sensor_id: row.sensor_id,
-        household_id: row.household_id,
-        bucket_start,
-        sum: row.value_num,
-        min: row.value_num,
-        max: row.value_num,
-        count: 1,
-      });
-    } else {
-      existing.sum += row.value_num;
-      existing.min = Math.min(existing.min, row.value_num);
-      existing.max = Math.max(existing.max, row.value_num);
-      existing.count += 1;
-    }
-  }
-
-  const rollupRows = [...buckets.values()].map((b) => ({
-    sensor_id: b.sensor_id,
-    household_id: b.household_id,
-    bucket_start: b.bucket_start,
-    avg_num: b.sum / b.count,
-    min_num: b.min,
-    max_num: b.max,
-    sample_count: b.count,
-  }));
-
-  let rolledUp = 0;
-  if (rollupRows.length > 0) {
-    const { error: upsertError } = await supabase
-      .from("sensor_reading_rollups")
-      .upsert(rollupRows, { onConflict: "sensor_id,bucket_start" });
-    if (upsertError) {
-      return { rolledUp: 0, deleted: 0, error: upsertError.message };
-    }
-    rolledUp = rollupRows.length;
-  }
-
-  const { error: deleteError, count } = await supabase
-    .from("sensor_readings")
-    .delete({ count: "exact" })
-    .lt("recorded_at", cutoffIso);
-
-  if (deleteError) {
-    return { rolledUp, deleted: 0, error: deleteError.message };
-  }
-
-  return { rolledUp, deleted: count ?? 0, error: null };
+  const result = (data ?? {}) as { rolled_up?: number; deleted?: number };
+  return { rolledUp: result.rolled_up ?? 0, deleted: result.deleted ?? 0, error: null };
 }

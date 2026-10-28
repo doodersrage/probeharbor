@@ -1990,6 +1990,10 @@ export type Database = {
           recorded_at: string
         }[]
       }
+      roll_up_and_prune_readings: {
+        Args: { p_cutoff: string }
+        Returns: Json
+      }
       replace_device_sensor: {
         Args: { p_household_id: string; p_old_sensor_id: string; p_new_sensor_id: string }
         Returns: Json
