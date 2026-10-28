@@ -2,6 +2,7 @@ import { createAdminClient, createServerClient } from "./supabase";
 import { createStripeClient, isActiveSubscriptionStatus } from "./stripe";
 import { getUserSubscription } from "./stripeSubscriptions";
 import { notifyOps } from "./opsNotify";
+import { isChartShareKey } from "./chartShareKeys";
 
 // Deleting the account must not leave a live subscription billing someone who
 // can no longer sign in to cancel it themselves. Cancel first; if Stripe is
@@ -73,7 +74,7 @@ async function deleteStoredFilesForAccount(
       await deleteR2Prefix(bucket, `archives/${householdId}/`);
     }
     const { data } = await supabase.from("chart_share_tokens").select("r2_key").eq("user_id", userId);
-    const keys = (data ?? []).map((row) => row.r2_key).filter(Boolean);
+    const keys = (data ?? []).map((row) => row.r2_key).filter(isChartShareKey);
     if (keys.length) await bucket.delete(keys);
   } catch (error) {
     console.error("Account deletion: stored file cleanup failed:", error);

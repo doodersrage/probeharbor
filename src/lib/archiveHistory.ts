@@ -35,6 +35,7 @@ export async function archiveOldReadings(options?: {
     const { data: readings } = await supabase
       .from("sensor_readings")
       .select("id, value_num, recorded_at, sensor_id")
+      .eq("household_id", household.id)
       .lt("recorded_at", cutoff.toISOString())
       .limit(5000);
 

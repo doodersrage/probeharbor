@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 function mockQuery(result: { data?: unknown; error?: unknown }) {
   const builder: Record<string, unknown> = {};
-  for (const method of ["select", "lt", "limit", "insert"]) {
+  for (const method of ["select", "eq", "lt", "limit", "insert"]) {
     builder[method] = vi.fn(() => builder);
   }
   (builder as { then: unknown }).then = (
@@ -134,6 +134,53 @@ describe("archiveOldReadings", () => {
     const result = await archiveOldReadings({ r2: r2Bucket() as never });
 
     expect(result).toEqual({ archived: 3, skipped: false, error: null });
+  });
+
+  it("only archives each household's own readings", async () => {
+    const householdsBuilder = mockQuery({
+      data: [{ id: "house-1" }, { id: "house-2" }],
+      error: null,
+    });
+    const rowsByHousehold: Record<string, unknown[]> = {
+      "house-1": [{ id: "r1", sensor_id: "s1" }],
+      "house-2": [{ id: "r2", sensor_id: "s2" }, { id: "r3", sensor_id: "s2" }],
+    };
+    const readingFilters: string[] = [];
+    mockFrom.mockImplementation((table: string) => {
+      if (table === "households") return householdsBuilder;
+      if (table === "sensor_readings") {
+        let household = "";
+        const builder = mockQuery({});
+        builder.eq = vi.fn((column: string, value: string) => {
+          if (column === "household_id") {
+            household = value;
+            readingFilters.push(value);
+          }
+          return builder;
+        });
+        (builder as { then: unknown }).then = (resolve: (value: unknown) => unknown) =>
+          Promise.resolve({ data: household ? rowsByHousehold[household] : [] }).then(resolve);
+        return builder;
+      }
+      return mockQuery({ error: null });
+    });
+    const r2 = r2Bucket();
+    const { archiveOldReadings } = await import("./archiveHistory");
+
+    const result = await archiveOldReadings({ r2: r2 as never, retentionDays: 90 });
+
+    expect(readingFilters).toEqual(["house-1", "house-2"]);
+    expect(r2.put).toHaveBeenCalledWith(
+      "archives/house-1/2024-03-17.json",
+      JSON.stringify(rowsByHousehold["house-1"]),
+      expect.anything(),
+    );
+    expect(r2.put).toHaveBeenCalledWith(
+      "archives/house-2/2024-03-17.json",
+      JSON.stringify(rowsByHousehold["house-2"]),
+      expect.anything(),
+    );
+    expect(result.archived).toBe(3);
   });
 
   it("handles a null households result as an empty list", async () => {

@@ -1,4 +1,5 @@
 import { env as cloudflareEnv } from "cloudflare:workers";
+import { chartShareKey, isChartShareKey } from "./chartShareKeys";
 import { createServerClient } from "./supabase";
 
 function randomToken(): string {
@@ -28,7 +29,7 @@ export async function createChartShare(input: {
   }
 
   const token = randomToken();
-  const key = `chart-shares/${token}.png`;
+  const key = chartShareKey(token);
   const expiresDays = Math.min(30, Math.max(1, input.expiresDays ?? 14));
   const expiresAt = new Date(
     Date.now() + expiresDays * 24 * 60 * 60 * 1000,
@@ -73,6 +74,8 @@ export async function getChartShareByToken(token: string): Promise<{
 
   if (!data) return null;
   if (Date.parse(data.expires_at as string) < Date.now()) return null;
+  // Never serve anything but a chart image from the shared bucket.
+  if (!isChartShareKey(data.r2_key)) return null;
 
   const bucket = getHistoryArchiveBucket();
   if (!bucket) return null;

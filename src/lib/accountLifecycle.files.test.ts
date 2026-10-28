@@ -30,6 +30,7 @@ function query(result: unknown) {
   return builder;
 }
 let memberQueries = 0;
+let chartShareRows: Array<{ r2_key: string }> = [{ r2_key: "chart-shares/tok1.png" }];
 const mockDeleteUser = vi.fn().mockResolvedValue({ error: null });
 vi.mock("./supabase", () => ({
   createServerClient: () => ({
@@ -38,7 +39,7 @@ vi.mock("./supabase", () => ({
         memberQueries += 1;
         return query(memberQueries === 1 ? { data: [{ household_id: "h1" }] } : { count: 1 });
       }
-      if (table === "chart_share_tokens") return query({ data: [{ r2_key: "chart-shares/tok1.png" }] });
+      if (table === "chart_share_tokens") return query({ data: chartShareRows });
       return query({ error: null });
     },
   }),
@@ -49,6 +50,7 @@ beforeEach(() => {
   objects.clear();
   deleteSpy.mockClear();
   memberQueries = 0;
+  chartShareRows = [{ r2_key: "chart-shares/tok1.png" }];
   mockDeleteUser.mockClear();
 });
 
@@ -69,6 +71,16 @@ describe("deleteUserAccount stored files", () => {
     expect(result.error).toBeNull();
     expect([...objects].sort()).toEqual(["archives/h2/2026-10-01.json", "chart-shares/other.png"]);
     expect(mockDeleteUser).toHaveBeenCalledWith("user-1");
+  });
+
+  it("ignores a chart-share row whose key points outside chart-shares/", async () => {
+    for (const key of ["archives/h2/2026-10-01.json", "chart-shares/tok1.png"]) objects.add(key);
+    chartShareRows = [{ r2_key: "archives/h2/2026-10-01.json" }, { r2_key: "chart-shares/tok1.png" }];
+
+    const { deleteUserAccount } = await import("./accountLifecycle");
+    await deleteUserAccount("user-1");
+
+    expect([...objects]).toEqual(["archives/h2/2026-10-01.json"]);
   });
 
   it("still deletes the account when storage cleanup fails", async () => {
