@@ -1531,3 +1531,54 @@ Against the milestone's acceptance criteria:
 Viewers can read inbound `signing_secret` and status-page tokens through
 RLS (`20260826160000:67`, `20260826180000:42`), and webhook HMACs have
 no timestamp, so they can be replayed. The first is a small migration.
+
+------------------------------------------------------------------------
+
+## Decisions (2026-10-28, approved by the owner)
+
+Order of work: M2-1 → M2-3 → M2-4 → M2-5 → M1-B → M1-C (sizing first).
+
+| Item | Decision |
+|---|---|
+| M2-1 Snooze scope | Snooze never mutes freeze (`threshold`), like vacation mode. Leak and power were already exempt. "I'm on it" copy no longer says freeze alerts are snoozed; acknowledging already stops repeats while that freeze continues. |
+| M2-2 Quiet hours | Later: one summary when quiet hours end, instead of dropping non-critical alerts. |
+| M2-3 Delivery wording | "Sent" becomes "Accepted by provider" in 5 locales. No provider delivery callbacks for now. |
+| M2-4 `waitUntil` | Run webhooks and alerts after the response. Failures stay in the alert log. |
+| M2-5 Alert content | Add reading time ("as of 14:05"), property name, and the °C preference (5 locales). |
+| M2-6 Recovery | Doors recover on close (short notice). Rules re-arm silently when they stop matching. |
+| M1-A Idempotency | Measure duplicates first (read-only). Add an optional reading id only if they're common. |
+| M1-B Freshness | Infer each device's interval from recent spacing; "delayed" past ~3× it, "offline" at `outageHours`. |
+| M1-C Cleanup | Read-only sizing first. Then convert °C rows, delete exact DS18B20 fault rows, and fix only clear-cut fabricated zeros, with the owner's sign-off on counts. |
+
+------------------------------------------------------------------------
+
+## Increment D1 (decision M2-1): snooze never mutes freeze (2026-10-28)
+
+**Status: Implemented and verified locally. No migration.**
+
+- [x] Removed `threshold` from `SNOOZE_BLOCKED` (`alertSnooze.ts`).
+      Snooze now quiets routine alerts only; freeze, leak and power-off
+      always get through, like vacation mode. A battery warning's snooze
+      link can no longer silence a freeze.
+- [x] Copy in 5 locales:
+      - "I'm on it" playbook results now say "other alerts snoozed…;
+        freeze alerts stay on; this one won't repeat while it continues"
+        (`alertJobs/*`).
+      - The "stop the noise while you fix it" tip points to "I'm on it"
+        and threshold changes instead of snooze (`alerts/*`).
+- [x] Delivery watchdog: snoozed members are now checked, since they're
+      expected to receive freeze alerts (`alertDeliveryWatchdog.ts`).
+- Found during the work: snoozing to quiet *false* freeze alarms was a
+  documented workflow (tip copy, false-alarm action). It's still
+  covered: acknowledging stops repeats while that freeze continues, and
+  "False alarm" still raises the threshold.
+- Evidence:
+  - tests updated: `alertSnooze.test.ts`, `alertAckPlaybook.test.ts`
+    (messages), and `alertDeliveryWatchdog.test.ts` (snoozed member is
+    checked; alerts-off member skipped)
+  - `pnpm test`: 2995 passed
+  - `pnpm typecheck`: 0 errors
+  - `pnpm lint`: 64 warnings (baseline)
+  - `pnpm build`: pass
+  - `pnpm test:e2e`: 44 passed, 12 skipped
+- Translations are mine and haven't been reviewed by a native speaker.

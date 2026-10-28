@@ -161,9 +161,9 @@ const en = {
       hrefLabel: "Alert essentials",
     },
     snooze: {
-      title: "Snooze while you fix it",
+      title: "Stop the noise while you fix it",
       detail:
-        "Working in a cold bay? Snooze 4–24 hours so threshold noise stops while you weatherstrip, drip faucets, or reseat the probe: forecast and flood alerts still get through on vacation mode.",
+        "Working in a cold bay? Tap “I'm on it” on the alert: it won't repeat while that freeze continues. Snooze quiets routine alerts, but freeze, leak, and power alerts always get through. For false alarms, raise the threshold or reseat the probe.",
     },
     splash: {
       title: "Splash and condensation bounce",

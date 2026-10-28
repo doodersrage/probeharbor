@@ -101,9 +101,9 @@ const ptBr: AlertJobsMessages = {
     falseAlarmTip: "Marcado como alarme falso: alertas adiados por 24 h. Correção sugerida: {tip}. Abra {href}",
     results: {
       ack: "Alerta marcado como resolvido.",
-      snooze_1h: "Alerta resolvido: alertas de congelamento adiados por 1 hora.",
-      snooze_4h: "Alerta resolvido: alertas de congelamento adiados por 4 horas.",
-      snooze_24h: "Alerta resolvido: alertas de congelamento adiados por 24 horas.",
+      snooze_1h: "Alerta resolvido: outros alertas adiados por 1 hora. Alertas de congelamento continuam ativos; este não se repetirá enquanto continuar.",
+      snooze_4h: "Alerta resolvido: outros alertas adiados por 4 horas. Alertas de congelamento continuam ativos; este não se repetirá enquanto continuar.",
+      snooze_24h: "Alerta resolvido: outros alertas adiados por 24 horas. Alertas de congelamento continuam ativos; este não se repetirá enquanto continuar.",
       false_alarm:
         "Marcado como alarme falso: alertas adiados por 24 h. Se continuar acontecendo, verifique a posição da sonda.",
       raise_threshold: "Alarme falso resolvido e limite de congelamento elevado.",

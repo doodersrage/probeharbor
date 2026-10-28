@@ -159,9 +159,9 @@ const es: AlertsMessages = {
       hrefLabel: "Ajustes esenciales de alertas",
     },
     snooze: {
-      title: "Pospón mientras lo arreglas",
+      title: "Detén el ruido mientras lo arreglas",
       detail:
-        "¿Trabajando en un espacio frío? Pospón de 4 a 24 horas para que el ruido del umbral se detenga mientras sellas burletes, dejas gotear grifos o recolocas la sonda: las alertas de pronóstico e inundación siguen llegando en modo vacaciones.",
+        "¿Trabajando en un espacio frío? Pulsa «Me encargo» en la alerta: no se repetirá mientras siga esa helada. Posponer silencia las alertas rutinarias, pero las de congelación, fuga y corte de luz siempre llegan. Para falsas alarmas, sube el umbral o recoloca la sonda.",
     },
     splash: {
       title: "Rebotes por salpicaduras y condensación",

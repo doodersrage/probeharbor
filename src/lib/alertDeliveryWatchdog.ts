@@ -102,8 +102,9 @@ export async function runAlertDeliveryWatchdog(nowMs = Date.now()): Promise<{
             member.user_id,
             data.user?.user_metadata as Record<string, unknown> | undefined,
           );
-          // Members who turned alerts off, paused them, or have no channel
-          // aren't expected to receive anything.
+          // Members who turned alerts off or have no channel aren't expected to
+          // receive anything. (Snooze never mutes freeze alerts, so this check
+          // only skips a member if that ever changes.)
           if (
             !settings.enabled ||
             shouldSuppressForSnoozeOrVacation(settings, "threshold") ||

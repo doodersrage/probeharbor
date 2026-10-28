@@ -105,9 +105,9 @@ const en = {
     falseAlarmTip: "Marked as false alarm: alerts snoozed 24h. Suggested fix: {tip}. Open {href}",
     results: {
       ack: "Alert marked as handled.",
-      snooze_1h: "Alert handled: freeze alerts snoozed for 1 hour.",
-      snooze_4h: "Alert handled: freeze alerts snoozed for 4 hours.",
-      snooze_24h: "Alert handled: freeze alerts snoozed for 24 hours.",
+      snooze_1h: "Alert handled: other alerts snoozed for 1 hour. Freeze alerts stay on; this one won't repeat while it continues.",
+      snooze_4h: "Alert handled: other alerts snoozed for 4 hours. Freeze alerts stay on; this one won't repeat while it continues.",
+      snooze_24h: "Alert handled: other alerts snoozed for 24 hours. Freeze alerts stay on; this one won't repeat while it continues.",
       false_alarm: "Marked as false alarm: alerts snoozed 24h. Check probe placement if this keeps happening.",
       raise_threshold: "False alarm handled and freeze threshold raised.",
       notify_tenant: "Alert handled: tenant contact emailed.",

@@ -101,9 +101,9 @@ const de: AlertJobsMessages = {
     falseAlarmTip: "Als Fehlalarm markiert: Alarme 24 h pausiert. Vorschlag: {tip}. Öffne {href}",
     results: {
       ack: "Alarm als erledigt markiert.",
-      snooze_1h: "Alarm erledigt: Frostalarme für 1 Stunde pausiert.",
-      snooze_4h: "Alarm erledigt: Frostalarme für 4 Stunden pausiert.",
-      snooze_24h: "Alarm erledigt: Frostalarme für 24 Stunden pausiert.",
+      snooze_1h: "Alarm erledigt: andere Alarme für 1 Stunde pausiert. Frostalarme bleiben aktiv; dieser wiederholt sich nicht, solange er andauert.",
+      snooze_4h: "Alarm erledigt: andere Alarme für 4 Stunden pausiert. Frostalarme bleiben aktiv; dieser wiederholt sich nicht, solange er andauert.",
+      snooze_24h: "Alarm erledigt: andere Alarme für 24 Stunden pausiert. Frostalarme bleiben aktiv; dieser wiederholt sich nicht, solange er andauert.",
       false_alarm:
         "Als Fehlalarm markiert: Alarme 24 h pausiert. Prüfe die Position des Fühlers, wenn das öfter passiert.",
       raise_threshold: "Fehlalarm erledigt und Frost-Schwellenwert erhöht.",

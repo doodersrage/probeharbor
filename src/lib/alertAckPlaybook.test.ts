@@ -108,9 +108,9 @@ describe("executeAlertAckPlaybook", () => {
   });
 
   it.each([
-    ["snooze_1h", 1, "Alert handled: freeze alerts snoozed for 1 hour."],
-    ["snooze_4h", 4, "Alert handled: freeze alerts snoozed for 4 hours."],
-    ["snooze_24h", 24, "Alert handled: freeze alerts snoozed for 24 hours."],
+    ["snooze_1h", 1, "Alert handled: other alerts snoozed for 1 hour. Freeze alerts stay on; this one won't repeat while it continues."],
+    ["snooze_4h", 4, "Alert handled: other alerts snoozed for 4 hours. Freeze alerts stay on; this one won't repeat while it continues."],
+    ["snooze_24h", 24, "Alert handled: other alerts snoozed for 24 hours. Freeze alerts stay on; this one won't repeat while it continues."],
     [
       "false_alarm",
       24,

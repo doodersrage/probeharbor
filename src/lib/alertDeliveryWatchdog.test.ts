@@ -144,12 +144,21 @@ describe("runAlertDeliveryWatchdog", () => {
     expect(result.findings).toEqual([]);
   });
 
-  it("skips members who snoozed alerts or have none enabled", async () => {
+  it("still checks members who snoozed (freeze alerts aren't snoozed)", async () => {
     mockGetAlertSettingsForUser.mockResolvedValue({
       ...settings,
       // isSnoozeActive reads the real clock.
       snoozeUntil: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
     });
+    const { runAlertDeliveryWatchdog } = await import("./alertDeliveryWatchdog");
+
+    const result = await runAlertDeliveryWatchdog(NOW);
+
+    expect(result.checked).toBe(1);
+  });
+
+  it("skips members who turned alerts off", async () => {
+    mockGetAlertSettingsForUser.mockResolvedValue({ ...settings, enabled: false });
     const { runAlertDeliveryWatchdog } = await import("./alertDeliveryWatchdog");
 
     const result = await runAlertDeliveryWatchdog(NOW);

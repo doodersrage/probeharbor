@@ -101,9 +101,9 @@ const es: AlertJobsMessages = {
     falseAlarmTip: "Marcada como falsa alarma: alertas pospuestas 24 h. Solución sugerida: {tip}. Abre {href}",
     results: {
       ack: "Alerta marcada como gestionada.",
-      snooze_1h: "Alerta gestionada: alertas de congelación pospuestas 1 hora.",
-      snooze_4h: "Alerta gestionada: alertas de congelación pospuestas 4 horas.",
-      snooze_24h: "Alerta gestionada: alertas de congelación pospuestas 24 horas.",
+      snooze_1h: "Alerta gestionada: otras alertas pospuestas 1 hora. Las alertas de congelación siguen activas; esta no se repetirá mientras continúe.",
+      snooze_4h: "Alerta gestionada: otras alertas pospuestas 4 horas. Las alertas de congelación siguen activas; esta no se repetirá mientras continúe.",
+      snooze_24h: "Alerta gestionada: otras alertas pospuestas 24 horas. Las alertas de congelación siguen activas; esta no se repetirá mientras continúe.",
       false_alarm:
         "Marcada como falsa alarma: alertas pospuestas 24 h. Si se repite, revisa dónde está colocada la sonda.",
       raise_threshold: "Falsa alarma gestionada y umbral de congelación subido.",

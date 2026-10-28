@@ -8,13 +8,17 @@ import {
 import { DEFAULT_ALERT_SETTINGS } from "./alerts";
 
 describe("alert snooze and vacation", () => {
-  it("snooze blocks threshold but not outage", () => {
+  it("snooze quiets routine alerts but never freeze, leak or power", () => {
     const settings = {
       ...DEFAULT_ALERT_SETTINGS,
       snoozeUntil: snoozeUntilFromHours(1),
     };
     expect(isSnoozeActive(settings)).toBe(true);
-    expect(shouldSuppressForSnoozeOrVacation(settings, "threshold")).toBe(true);
+    // A battery warning's snooze link must not silence a freeze.
+    expect(shouldSuppressForSnoozeOrVacation(settings, "threshold")).toBe(false);
+    expect(shouldSuppressForSnoozeOrVacation(settings, "power")).toBe(false);
+    expect(shouldSuppressForSnoozeOrVacation(settings, "battery")).toBe(true);
+    expect(shouldSuppressForSnoozeOrVacation(settings, "rate")).toBe(true);
     expect(shouldSuppressForSnoozeOrVacation(settings, "outage")).toBe(false);
     expect(shouldSuppressForSnoozeOrVacation(settings, "flood")).toBe(false);
   });

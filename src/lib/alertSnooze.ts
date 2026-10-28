@@ -1,7 +1,12 @@
 import type { AlertSettings, NotifyKind } from "./alerts";
 
+/**
+ * Snooze quiets routine alerts. Freeze (threshold), leak (flood) and power-off
+ * alerts always get through, like vacation mode: an unattended freeze is the
+ * failure ProbeHarbor exists to catch. To stop repeats of one freeze, use
+ * "I'm on it" (acknowledge), which holds them while that freeze continues.
+ */
 const SNOOZE_BLOCKED: NotifyKind[] = [
-  "threshold",
   "rate",
   "digest",
   "generic",

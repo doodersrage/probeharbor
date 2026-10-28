@@ -102,9 +102,9 @@ const fr: AlertJobsMessages = {
       "Marquée comme fausse alerte : alertes mises en pause 24 h. Solution suggérée : {tip}. Ouvrez {href}",
     results: {
       ack: "Alerte marquée comme traitée.",
-      snooze_1h: "Alerte traitée : alertes gel mises en pause pendant 1 heure.",
-      snooze_4h: "Alerte traitée : alertes gel mises en pause pendant 4 heures.",
-      snooze_24h: "Alerte traitée : alertes gel mises en pause pendant 24 heures.",
+      snooze_1h: "Alerte traitée : autres alertes mises en pause pendant 1 heure. Les alertes gel restent actives ; celle-ci ne se répétera pas tant qu’elle dure.",
+      snooze_4h: "Alerte traitée : autres alertes mises en pause pendant 4 heures. Les alertes gel restent actives ; celle-ci ne se répétera pas tant qu’elle dure.",
+      snooze_24h: "Alerte traitée : autres alertes mises en pause pendant 24 heures. Les alertes gel restent actives ; celle-ci ne se répétera pas tant qu’elle dure.",
       false_alarm:
         "Marquée comme fausse alerte : alertes mises en pause 24 h. Vérifiez l’emplacement de la sonde si cela se reproduit.",
       raise_threshold: "Fausse alerte traitée et seuil de gel relevé.",

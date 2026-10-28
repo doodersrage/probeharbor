@@ -159,9 +159,9 @@ const de: AlertsMessages = {
       hrefLabel: "Alarm-Grundeinstellungen",
     },
     snooze: {
-      title: "Pausieren, während du es behebst",
+      title: "Ruhe, während du es behebst",
       detail:
-        "Du arbeitest in einem kalten Raum? Pausiere 4–24 Stunden, damit die Schwellenwert-Alarme schweigen, während du abdichtest, Wasserhähne tropfen lässt oder den Fühler neu setzt: Vorhersage- und Wasserschaden-Alarme kommen auch im Urlaubsmodus durch.",
+        "Du arbeitest in einem kalten Raum? Tippe im Alarm auf „Ich kümmere mich“: Er wiederholt sich nicht, solange dieser Frost anhält. Pausieren stellt Routine-Alarme stumm, aber Frost-, Wasserschaden- und Stromausfall-Alarme kommen immer durch. Bei Fehlalarmen den Schwellenwert anheben oder den Fühler neu setzen.",
     },
     splash: {
       title: "Spritzwasser und Kondenswasser",

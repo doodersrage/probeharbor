@@ -159,9 +159,9 @@ const fr: AlertsMessages = {
       hrefLabel: "Alertes essentielles",
     },
     snooze: {
-      title: "Mettez en pause pendant la réparation",
+      title: "Coupez le bruit pendant la réparation",
       detail:
-        "Vous travaillez dans un espace froid ? Mettez en pause 4 à 24 heures pour faire taire les alertes de seuil pendant que vous posez des joints, laissez goutter les robinets ou replacez la sonde : les alertes de prévision et d’inondation passent toujours en mode vacances.",
+        "Vous travaillez dans un espace froid ? Touchez « Je m’en occupe » sur l’alerte : elle ne se répétera pas tant que ce gel dure. La pause coupe les alertes de routine, mais les alertes gel, fuite et coupure de courant passent toujours. Pour une fausse alerte, relevez le seuil ou replacez la sonde.",
     },
     splash: {
       title: "Éclaboussures et condensation",

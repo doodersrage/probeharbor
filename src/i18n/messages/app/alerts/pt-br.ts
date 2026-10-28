@@ -159,9 +159,9 @@ const ptBr: AlertsMessages = {
       hrefLabel: "Alertas essenciais",
     },
     snooze: {
-      title: "Adie enquanto conserta",
+      title: "Pare o barulho enquanto conserta",
       detail:
-        "Trabalhando num espaço frio? Adie por 4 a 24 horas para os alertas de limite pararem enquanto você veda frestas, deixa torneiras pingando ou reposiciona a sonda: alertas de previsão e de alagamento continuam chegando no modo férias.",
+        "Trabalhando num espaço frio? Toque em “Estou cuidando” no alerta: ele não se repetirá enquanto esse congelamento continuar. Adiar silencia alertas de rotina, mas alertas de congelamento, vazamento e queda de energia sempre chegam. Para alarmes falsos, aumente o limite ou reposicione a sonda.",
     },
     splash: {
       title: "Respingos e condensação",
