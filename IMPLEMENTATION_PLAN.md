@@ -2711,3 +2711,22 @@ deployed.** This completes the spec audit: every operation in
       route's `status_error` values plus its form content type.
 - Evidence: `pnpm test` (full suite) and `pnpm build` pass. `pnpm lint`:
   baseline.
+
+------------------------------------------------------------------------
+
+## CI fix: device-ingest e2e race (2026-10-28)
+
+CI run 40731022065 (the S8 push) failed in e2e, so the deploy was
+skipped. Production stayed on the previous version.
+`device-ingest.spec.ts:55` gave `page.goto: net::ERR_ABORTED`. Cause: after
+the test posts a reading, the Devices page it's still on (polling every 5 s
+for the first reading) redirects itself with `location.replace(…ingest_ok=1)`,
+and that aborts the test's own navigation if they overlap. It's timing-
+dependent; earlier runs passed. It isn't related to S8 (the test doesn't
+use `/api/v1`).
+
+- [x] The test now waits for the page's own `ingest_ok=1` redirect (up to
+      15 s, then carries on) before navigating, which also covers the
+      waiting screen detecting the reading.
+- Can only run in CI (needs E2E credentials); locally the signed-in case
+  is skipped.

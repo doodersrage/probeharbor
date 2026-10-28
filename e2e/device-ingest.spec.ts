@@ -51,6 +51,12 @@ test.describe("device ingest", () => {
       });
       expect(ingestRes.ok()).toBeTruthy();
 
+      // This page polls for the first reading every 5 s and then redirects itself
+      // (`ingest_ok=1`). Navigating away while that redirect fires aborts our
+      // goto (net::ERR_ABORTED), so let it land first. It also checks that the
+      // waiting screen notices the reading.
+      await page.waitForURL(/ingest_ok=1/, { timeout: 15_000 }).catch(() => {});
+
       // The device page lists the auto-imported sensor with its reading.
       await page.goto(`/dashboard/devices/${encodeURIComponent(deviceId!)}`);
       await expect(page.getByRole("heading", { name: /Sensors \(1\)/ })).toBeVisible({ timeout: 15_000 });
