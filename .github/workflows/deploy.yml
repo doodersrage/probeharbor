@@ -63,7 +63,7 @@ env:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    # contents: write pushes the app-v<date> tag after a successful deploy.
+    # contents: write publishes the app-v<date> release and tag after a successful deploy.
     permissions:
       contents: write
     # Only pushes to this repo's main: pull_request CI runs (including forks with
@@ -168,16 +168,29 @@ jobs:
           npx wrangler deploy --config dist/server/wrangler.json --tag "$APP_VERSION"
           echo "deployed=true" >> "$GITHUB_ENV"
 
-      # Tag only what actually shipped. Concurrency group above keeps deploys serial,
-      # so two runs can't pick the same version.
-      - name: Tag release
+      # Publish a GitHub Release (and its app-v tag) only for what actually shipped.
+      # The concurrency group above keeps deploys serial, so two runs can't pick
+      # the same version. Notes list the commits since the previous app release.
+      - name: Publish release
         if: env.skip != 'true' && env.deployed == 'true'
         env:
+          GH_TOKEN: ${{ github.token }}
           RELEASE_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
         run: |
-          git tag "app-v$APP_VERSION" "$RELEASE_SHA"
-          if ! git push origin "app-v$APP_VERSION"; then
-            echo "::warning::Deployed $APP_VERSION but could not push tag app-v$APP_VERSION. The next deploy today may reuse this version."
+          prev="$(gh release list --limit 50 --json tagName --jq '[.[] | select(.tagName | startswith("app-v"))][0].tagName // ""')"
+          {
+            echo "Deployed to probeharbor.dev from ${RELEASE_SHA:0:7}."
+            if [ -n "$prev" ]; then
+              echo
+              echo "## Changes since ${prev#app-v}"
+              echo
+              gh api "repos/$GITHUB_REPOSITORY/compare/$prev...$RELEASE_SHA" \
+                --jq '.commits[] | "- \(.commit.message | split("\n")[0]) (\(.sha[0:7]))"'
+            fi
+          } > "$RUNNER_TEMP/release-notes.md"
+          if ! gh release create "app-v$APP_VERSION" --target "$RELEASE_SHA" \
+              --title "$APP_VERSION" --notes-file "$RUNNER_TEMP/release-notes.md" --latest; then
+            echo "::warning::Deployed $APP_VERSION but could not publish release app-v$APP_VERSION. The next deploy today may reuse this version."
           fi
 
       # Static files (OG images, assetlinks.json, /developers docs) otherwise stay

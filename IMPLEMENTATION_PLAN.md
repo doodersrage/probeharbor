@@ -3258,3 +3258,10 @@ bumped) and Sentry releases were opaque Cloudflare version ids.
 - Not verified: the workflow itself (tag push with `GITHUB_TOKEN`, a tag
   ruleset could refuse it; the step warns instead of failing), the
   `wrangler deployments list` tag, and the Sentry release name in production.
+- Follow-up (same day): deploy 8ef6bc4 shipped `2026.10.28`, pushed tag
+  `app-v2026.10.28`, and the live footer shows it. Tags don't appear under
+  GitHub Releases, so the workflow's "Tag release" step became "Publish
+  release": `gh release create app-v<version> --target <sha> --latest`
+  with the commits since the previous `app-v*` release as notes (compare
+  API). The notes commands were dry-run against the repo; the step itself
+  runs on the next deploy. The `2026.10.28` tag has no release yet.

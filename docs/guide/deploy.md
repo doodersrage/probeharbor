@@ -64,7 +64,9 @@ The workflow:
   Sentry groups Worker errors under that release;
 - passes it to `wrangler deploy --tag`, so it appears as the tag in
   `wrangler deployments list`;
-- pushes the git tag `app-v<version>` on the deployed commit, after the deploy succeeds.
+- after the deploy succeeds, publishes a GitHub Release `app-v<version>`
+  (which creates the tag on the deployed commit), with the commits since the
+  previous app release as its notes.
 
 `node scripts/app-version.mjs` prints the next version. A local `pnpm deploy`
 has no version: the footer hides it and Sentry falls back to the Cloudflare
