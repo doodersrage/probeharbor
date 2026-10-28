@@ -103,3 +103,23 @@ describe("device health and battery explanations match the code", async () => {
     expect(batteryText).toContain(minDrop);
   });
 });
+
+describe("space status explanation matches computeGarageRiskStatus", () => {
+  const risk = readFileSync("src/lib/garageRiskStatus.ts", "utf8");
+  const soon = num(/hoursUntil <= (\d+)\) \{\s*return \{\s*level: "risk"/, risk);
+  const later = num(/hoursUntil <= (\d+)\) \{\s*return \{\s*level: "watch"/, risk);
+  const near = num(/freezeThresholdF \+ (\d+);/, risk);
+
+  it.each([
+    ["en", cardsEn],
+    ["de", cardsDe],
+    ["es", cardsEs],
+    ["fr", cardsFr],
+    ["pt-br", cardsPt],
+  ] as const)("%s states the 4 h / 12 h / 5°F rules", (_l, m) => {
+    const text = m.riskCard.how;
+    expect(text).toMatch(new RegExp(`\\b${soon}\\s`));
+    expect(text).toMatch(new RegExp(`\\b${later}\\s`));
+    expect(text).toMatch(new RegExp(`\\b${near}\\s?°F`));
+  });
+});

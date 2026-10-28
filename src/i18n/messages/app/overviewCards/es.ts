@@ -267,6 +267,8 @@ const es: OverviewCardsMessages = {
     coldest: "Más fría: {label}",
     staleTitle: "La última lectura es antigua; puede que no esté al día.",
     noReading: "Sin lecturas",
+    howSummary: "Cómo se elige este estado",
+    how: "Se muestra lo primero que se cumpla, de más a menos urgente: aún no hay dispositivos o lecturas; un sensor de fuga marca mojado (rojo); un sensor dejó de informar (ámbar); la sonda más fría está en tu límite de helada o por debajo (rojo); se prevé que lo alcance en 4 horas (rojo) o 12 horas (ámbar); hay una ola de frío o noches de helada en el pronóstico (ámbar); las alertas de helada o de correo están desactivadas (ámbar); la sonda más fría está a menos de 5 °F del límite (ámbar). Si no, todo está bien.",
   },
   timeToFreezeCard: {
     title: "Tiempo hasta congelación",

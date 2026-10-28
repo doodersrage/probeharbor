@@ -2870,5 +2870,32 @@ session) found:
 - Evidence: `pnpm test`: 3165 passed. `pnpm typecheck`: 0 errors.
   `pnpm lint`: 64 warnings (baseline). `pnpm build`: pass. Not seen in a
   browser (signed-in pages).
-- Still unexplained (survey): the garage-risk status cascade, cold-air
-  index, portfolio health %, the anomaly rule and the dew-point series.
+- Still unexplained (survey): ~~the garage-risk status cascade~~ (6.5),
+  cold-air index, portfolio health %, the anomaly rule and the dew-point
+  series.
+
+------------------------------------------------------------------------
+
+## Milestone 6, increment 6.5: explain how the space status is chosen (2026-10-28)
+
+**Status: Implemented and verified locally. No migration. Not deployed.**
+
+- [x] The Space status card (top of Overview) has a collapsed "How this
+      status is chosen". It lists the `computeGarageRiskStatus` order, most
+      urgent first, with the colour each state gives:
+      - no devices or no reading
+      - a wet leak sensor (red)
+      - a sensor stopped reporting (amber)
+      - coldest probe at or below the freeze line (red)
+      - projected within 4 h (red) or 12 h (amber)
+      - cold snap or freezing nights forecast (amber)
+      - freeze or email alerts off (amber)
+      - within 5°F of the line (amber)
+      - otherwise OK
+
+      5 locales.
+- [x] The drift guard reads the 4 h / 12 h / +5°F rules from
+      `garageRiskStatus.ts`. A mutation (12 → 10) fails 5 tests.
+- Evidence: `pnpm test`: 3170 passed. `pnpm typecheck`: 0 errors.
+  `pnpm lint`: 64 warnings (baseline). `pnpm build`: pass.
+  `pnpm test:e2e`: passes locally (signed-in specs skipped; CI runs them).

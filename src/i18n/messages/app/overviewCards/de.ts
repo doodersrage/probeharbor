@@ -267,6 +267,8 @@ const de: OverviewCardsMessages = {
     coldest: "Am kältesten: {label}",
     staleTitle: "Der letzte Messwert ist alt; er ist womöglich nicht aktuell.",
     noReading: "Kein Messwert",
+    howSummary: "So wird dieser Status gewählt",
+    how: "Es wird das Erste angezeigt, das zutrifft, das Dringendste zuerst: noch keine Geräte oder kein Messwert; ein Wassersensor meldet nass (rot); ein Sensor meldet sich nicht mehr (gelb); der kälteste Fühler liegt auf oder unter deiner Frostgrenze (rot); sie wird voraussichtlich innerhalb von 4 Stunden (rot) oder 12 Stunden (gelb) erreicht; eine Kältewelle oder Frostnächte sind vorhergesagt (gelb); Frost- oder E-Mail-Alarme sind aus (gelb); der kälteste Fühler liegt weniger als 5 °F über der Frostgrenze (gelb). Sonst ist alles OK.",
   },
   timeToFreezeCard: {
     title: "Zeit bis Frost",

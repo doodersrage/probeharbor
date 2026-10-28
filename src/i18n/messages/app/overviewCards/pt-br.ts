@@ -267,6 +267,8 @@ const ptBr: OverviewCardsMessages = {
     coldest: "Mais fria: {label}",
     staleTitle: "A última leitura é antiga; talvez não esteja atualizada.",
     noReading: "Sem leitura",
+    howSummary: "Como este status é escolhido",
+    how: "Mostra o primeiro item que se aplica, do mais urgente para o menos: ainda sem dispositivos ou leituras; um sensor de vazamento indica molhado (vermelho); um sensor parou de enviar (âmbar); a sonda mais fria está no seu limite de congelamento ou abaixo (vermelho); a previsão é chegar lá em 4 horas (vermelho) ou 12 horas (âmbar); há onda de frio ou noites de congelamento na previsão (âmbar); os alertas de congelamento ou de e-mail estão desligados (âmbar); a sonda mais fria está a menos de 5 °F do limite (âmbar). Caso contrário, está tudo bem.",
   },
   timeToFreezeCard: {
     title: "Tempo até congelar",

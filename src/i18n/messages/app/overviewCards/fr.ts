@@ -267,6 +267,8 @@ const fr: OverviewCardsMessages = {
     coldest: "La plus froide : {label}",
     staleTitle: "La dernière mesure est ancienne ; elle n’est peut-être plus à jour.",
     noReading: "Aucune mesure",
+    howSummary: "Comment ce statut est choisi",
+    how: "Il affiche le premier cas qui s’applique, du plus urgent au moins urgent : pas encore d’appareil ni de mesure ; un capteur de fuite est mouillé (rouge) ; un capteur ne remonte plus rien (orange) ; la sonde la plus froide est à votre seuil de gel ou en dessous (rouge) ; elle devrait l’atteindre dans les 4 heures (rouge) ou 12 heures (orange) ; une vague de froid ou des nuits de gel sont prévues (orange) ; les alertes de gel ou par e-mail sont désactivées (orange) ; la sonde la plus froide est à moins de 5 °F du seuil (orange). Sinon, tout va bien.",
   },
   timeToFreezeCard: {
     title: "Délai avant gel",

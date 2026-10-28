@@ -280,6 +280,8 @@ const en = {
     coldest: "Coldest: {label}",
     staleTitle: "Last reading is old; this may not be current.",
     noReading: "No reading",
+    howSummary: "How this status is chosen",
+    how: "It shows the first of these that applies, most urgent first: no devices or no reading yet; a leak sensor reads wet (red); a sensor stopped reporting (amber); the coldest probe is at or below your freeze line (red); it's projected to get there within 4 hours (red) or 12 hours (amber); a cold snap or freezing nights are forecast (amber); freeze or email alerts are off (amber); the coldest probe is within 5°F of the freeze line (amber). Otherwise it's OK.",
   },
   timeToFreezeCard: {
     title: "Time to freeze",

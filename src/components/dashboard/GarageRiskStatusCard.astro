@@ -64,6 +64,10 @@ const probeStale = coldestProbe ? formatRelativeAge(coldestProbe.recordedAt).sta
   >
     {status.actionLabel}
   </a>
+  <details class="mt-3 text-sm">
+    <summary class="cursor-pointer text-[var(--color-text-muted)]">{t.howSummary}</summary>
+    <p class="mt-1 mb-0 text-[var(--color-text-muted)]">{t.how}</p>
+  </details>
   {Astro.slots.has("default") && (
     <div class="garage-risk-extras">
       <slot />
