@@ -12,7 +12,7 @@ are set after flashing.
 | I²C (auto-detected) | SHT31, BME280, or AHT20 on SDA/SCL → `temp_air`, `humidity_air` (+ `pressure_air` from a BME280) |
 | Leak / door / battery | Only when enabled (`TTEXTRAS<TAB>leak,door,battery` over USB, or the portal's extras box): `leak1` (wet = pin to GND), `door1` (true = open; reed switch to GND when shut), `battery_pct` (1:1 divider, 3.3–4.2 V) |
 | Pins | ESP32: I²C 21/22, leak 27, door 26, battery 35 · S3: I²C 8/9, leak 5, door 6, battery 7 · C3: I²C 6/7, leak 5, door 10, battery 3 |
-| Interval | One POST a minute to `/api/ingest/<device key>` |
+| Interval | One POST a minute to `/api/ingest/<device key>`; from 1.2.3 also right away when the door changes (held 200 ms, at most one extra POST per 5 s). 1.2.3 is compile-tested only: the published `/flash` images are still 1.2.2 |
 
 ## Setup after flashing
 

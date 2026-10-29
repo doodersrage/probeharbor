@@ -1,4 +1,4 @@
-# Hardware tests still open (firmware 1.2.2)
+# Hardware tests still open (firmware 1.2.2; 1.2.3 adds post on door change)
 
 Verified so far, on a plain ESP32: browser flash → USB settings → Wi-Fi → first
 reading, with a DS18B20 (1.0.1), a DHT22 (1.1.1), and a BME280 on I2C (1.2.2:
@@ -80,6 +80,12 @@ Turn them on in `/flash` ("extras") or the portal's extras box before saving.
     measure it with a multimeter: about 3.3V dry, near 0V wet. Set its dial so a
     drop of water reads Wet and dry reads Dry.
 - **Door (verified on a plain ESP32):** reed switch between the door pin and GND. Magnet away = Open.
+  - **1.2.3, not yet tested on hardware: post on door change.** With the serial
+    console open, move the magnet away and back. Expect a post within about a
+    second of each change (not only every 60 s), and on the device page the door
+    flips Open/Closed at those times. Open and close within ~10 s: History →
+    Doors should list that short opening. Wave the magnet back and forth quickly
+    for ~20 s: posts should come at most every 5 s (no flood, no 429s).
 - **Battery:** a single Li-ion cell through a 1:1 divider (two equal resistors, e.g.
   100k + 100k) to the battery pin. `battery_pct` should track a multimeter reading.
 

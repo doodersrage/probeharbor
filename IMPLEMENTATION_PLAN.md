@@ -3602,3 +3602,47 @@ testing.
   before today's fixes) keep that start; the reference-sensor overlay cap
   (~7 days of 30 at one reading a minute); per-door filter / several
   sensors per door on the Doors tab; the 20k-row cap for very long ranges.
+
+## Still-open items: door filter, reference line, start fixes, long ranges, firmware (2026-10-29)
+
+Migration results reported by the user after 20261029160000/160100:
+2 openings backfilled, 0 duplicates removed.
+
+- [x] **Per-door filter** on History → Doors and in the door CSV (`door`
+      param; only a label of one of the household's door sensors is used,
+      anything else means all doors). Copy in 5 locales.
+- [x] **Reference line covers the whole window.** Migration
+      `20261029180000_sensor_bucket_averages`: read-only SQL function
+      (service role only) returning per-sensor bucket averages; the house
+      reference overlay asks for ~900 buckets in one call instead of paging
+      up to 10,000 raw rows (which covered only ~7 days of 30 at one reading
+      a minute). Falls back to paging if the function isn't there.
+- [x] **Truncated starts fixed.** Migration
+      `20261029180100_door_open_events_fix_starts`: for saved openings whose
+      real opening (rebuilt from raw readings) closed at the same moment but
+      opened earlier, moves opened_at back and recomputes duration; logs
+      old values in `door_open_events_start_fix_log` (recovery in file).
+- [x] **Long ranges without a row cap.** Migration
+      `20261029180200_rollup_bucket_averages`: temperature/humidity rollups
+      averaged into wider buckets (weighted by sample count) with key,
+      label, kind, offset and device name; bucket width keeps buckets ×
+      sensors near 900 rows. Falls back to the 20-page paging if missing.
+- [x] **Firmware 1.2.3 (source only): post on door change.** A new door
+      state held 200 ms posts at once; change-triggered posts ≥ 5 s apart
+      (server allows 60/min). Compiles for esp32, esp32s3, esp32c3
+      (PlatformIO 6.2.0). **Not tested on hardware; published `/flash`
+      images unchanged (still 1.2.2)** — publishing needs `pnpm
+      firmware:build` and a commit of `public/firmware/`. Test steps in
+      HARDWARE-TESTS.md §6.
+- Evidence: unit tests (+12: door filter list/validate/query, CSV filter;
+  bucket sizing, bucket path, raw fallback; rollup bucket path and sizing).
+  `pnpm test`: 3309 passed. `pnpm typecheck`: 0 errors. Biome: no new
+  warnings. Migrations run on a throwaway PostgreSQL 18: start fix moved a
+  23:30 start back to the real 20:00 (logged, re-run no-op); bucket
+  averages correct, other household excluded, anon/authenticated denied;
+  a year of hourly rollups for 2 sensors → 902 rows, door excluded,
+  weighted mean correct.
+- **Apply with `pnpm db:pending`** (three migrations).
+- Next candidate: the main History/Overview chart still pages every raw
+  temperature/humidity row (~86k rows / 87 requests for 30 days of
+  minute readings from one probe); it could use sensor_bucket_averages too.

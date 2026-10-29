@@ -40,7 +40,7 @@
 #include <Wire.h>
 
 #ifndef FIRMWARE_VERSION
-#define FIRMWARE_VERSION "1.2.2"
+#define FIRMWARE_VERSION "1.2.3"
 #endif
 #ifndef INGEST_HOST
 #define INGEST_HOST "probeharbor.dev"
@@ -230,6 +230,31 @@ unsigned long offlineSince = 0;
 bool firstPostDone = false;
 bool postNow = false;
 
+// Door changes post right away (not just every POST_INTERVAL_MS), so the
+// server sees each open/close at the time it happened and an opening shorter
+// than a minute isn't missed. A new state must hold DOOR_DEBOUNCE_MS (reed
+// switch bounce), and change-triggered posts are at least DOOR_MIN_GAP_MS
+// apart so a flapping switch can't flood the server.
+static const unsigned long DOOR_DEBOUNCE_MS = 200UL;
+static const unsigned long DOOR_MIN_GAP_MS = 5000UL;
+int doorPosted = -1;  // pin level in the last post; -1 until the first one
+int doorCandidate = -1;
+unsigned long doorCandidateSince = 0;
+
+static void checkDoorChange(unsigned long now) {
+  if (!optDoor) return;
+  int level = digitalRead(DOOR_PIN);
+  if (level != doorCandidate) {
+    doorCandidate = level;
+    doorCandidateSince = now;
+    return;
+  }
+  if (doorPosted < 0 || level == doorPosted) return;
+  if (now - doorCandidateSince < DOOR_DEBOUNCE_MS) return;
+  if (lastPost != 0 && now - lastPost < DOOR_MIN_GAP_MS) return;  // retried on a later loop
+  postNow = true;
+}
+
 /** Accept a bare key or a pasted ingest URL; keep only the key. */
 String normalizeKey(String raw) {
   raw.trim();
@@ -416,7 +441,9 @@ void postReadings() {
   }
   if (optDoor) {
     // Reed switch closes (pulls low) when the magnet is next to it: door shut.
-    body += String("\"door1\":") + (digitalRead(DOOR_PIN) == HIGH ? "true" : "false") + ",";
+    int doorLevel = digitalRead(DOOR_PIN);
+    doorPosted = doorLevel;
+    body += String("\"door1\":") + (doorLevel == HIGH ? "true" : "false") + ",";
     sent++;
   }
   if (optBattery) {
@@ -486,6 +513,7 @@ void loop() {
   checkResetButton();
 
   unsigned long now = millis();
+  checkDoorChange(now);
 
   // A router that boots slower than this board (after a power cut) must not
   // leave the probe parked in the setup portal: once the portal has timed out
