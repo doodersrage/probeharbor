@@ -1,6 +1,5 @@
 import type { ChartDoorBand } from "./chartDoorBands";
-import { computeDoorOpenSessions } from "./doorDuration";
-import { fetchRecentBoolReadings } from "./sensorReadings";
+import { readDoorSessions } from "./doorEvents";
 import { createServerClient } from "./supabase";
 
 /** PostgREST returns at most this many rows by default (`max_rows`). */
@@ -51,10 +50,8 @@ export async function fetchChartDoorBands(
     const since = new Date(now - OPEN_SESSION_LOOKBACK_MS).toISOString();
     for (const sensor of doorSensors) {
       try {
-        const readings = await fetchRecentBoolReadings(sensor.id, since);
-        const sessions = computeDoorOpenSessions(
-          readings.map((r) => ({ label: sensor.label, kind: "door", value: r.value, recordedAt: r.recordedAt })),
-        );
+        // Includes a door open since before the 24 h window (true start).
+        const sessions = await readDoorSessions(sensor, since);
         for (const session of sessions) {
           if (!session.stillOpen) continue;
           bands.push({ label: session.label, openedAt: session.openedAt, closedAt: null });

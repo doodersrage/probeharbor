@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const mockFetchRecentBoolReadings = vi.fn();
-vi.mock("./sensorReadings", () => ({
-  fetchRecentBoolReadings: (...a: unknown[]) => mockFetchRecentBoolReadings(...a),
+const mockReadDoorSessions = vi.fn();
+vi.mock("./doorEvents", () => ({
+  readDoorSessions: (...a: unknown[]) => mockReadDoorSessions(...a),
 }));
 
 const mockQueryResult = vi.fn();
@@ -34,7 +34,7 @@ describe("fetchChartDoorBands", () => {
 
   beforeEach(() => {
     queryCalls.length = 0;
-    mockFetchRecentBoolReadings.mockReset().mockResolvedValue([]);
+    mockReadDoorSessions.mockReset().mockResolvedValue([]);
     mockQueryResult.mockReset().mockResolvedValue({ data: [], error: null });
   });
 
@@ -67,22 +67,21 @@ describe("fetchChartDoorBands", () => {
     expect(result.bands.map((b) => b.openedAt)).toEqual(["2026-10-28T09:00:00Z", "2026-10-29T09:00:00Z"]);
   });
 
-  it("adds a door that is open now from recent readings", async () => {
-    mockFetchRecentBoolReadings.mockResolvedValue([
-      { value: true, recordedAt: "2026-10-29T08:00:00Z" },
-      { value: false, recordedAt: "2026-10-29T08:05:00Z" },
-      { value: true, recordedAt: "2026-10-29T11:30:00Z" },
+  it("adds a door that is open now (with its true start) from recent readings", async () => {
+    mockReadDoorSessions.mockResolvedValue([
+      { label: "Garage door", openedAt: "2026-10-29T08:00:00Z", closedAt: "2026-10-29T08:05:00Z", durationMs: 300000, stillOpen: false },
+      { label: "Garage door", openedAt: "2026-10-26T11:30:00Z", closedAt: null, durationMs: null, stillOpen: true },
     ]);
 
     const result = await fetchChartDoorBands("hh-1", "2026-10-22T12:00:00Z", "2026-10-29T12:00:00Z", sensors, NOW);
 
-    expect(mockFetchRecentBoolReadings).toHaveBeenCalledWith("door-1", "2026-10-28T12:00:00.000Z");
-    expect(result.bands).toEqual([{ label: "Garage door", openedAt: "2026-10-29T11:30:00Z", closedAt: null }]);
+    expect(mockReadDoorSessions).toHaveBeenCalledWith(sensors[0], "2026-10-28T12:00:00.000Z");
+    expect(result.bands).toEqual([{ label: "Garage door", openedAt: "2026-10-26T11:30:00Z", closedAt: null }]);
   });
 
   it("skips the open-now lookup for a window that ended more than a day ago", async () => {
     await fetchChartDoorBands("hh-1", "2026-09-01T00:00:00Z", "2026-09-08T00:00:00Z", sensors, NOW);
-    expect(mockFetchRecentBoolReadings).not.toHaveBeenCalled();
+    expect(mockReadDoorSessions).not.toHaveBeenCalled();
   });
 
   it("returns the error instead of an empty-looking success when the query fails", async () => {
@@ -91,7 +90,7 @@ describe("fetchChartDoorBands", () => {
     const result = await fetchChartDoorBands("hh-1", "2026-10-22T12:00:00Z", "2026-10-29T12:00:00Z", sensors, NOW);
 
     expect(result).toEqual({ bands: [], error: "db down" });
-    expect(mockFetchRecentBoolReadings).not.toHaveBeenCalled();
+    expect(mockReadDoorSessions).not.toHaveBeenCalled();
   });
 });
 

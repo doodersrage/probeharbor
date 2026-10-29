@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildDoorEventRows } from "./doorEvents";
+import { buildDoorEventRows, doorEventKey } from "./doorEvents";
 import type { DoorOpenSession } from "./doorDuration";
 
 describe("door event rows", () => {
@@ -21,7 +21,8 @@ describe("door event rows", () => {
   ];
 
   it("skips open sessions and duplicates", () => {
-    const existing = new Set(["Garage door:2026-01-01T12:00:00Z"]);
+    // Saved as "+00:00" by Postgres; still the same instant.
+    const existing = new Set([doorEventKey("Garage door", "2026-01-01T12:00:00+00:00")]);
     const sensorMap = new Map([["Garage door", "sensor-1"]]);
     const rows = buildDoorEventRows("hh-1", sessions, existing, sensorMap);
     expect(rows).toHaveLength(0);
