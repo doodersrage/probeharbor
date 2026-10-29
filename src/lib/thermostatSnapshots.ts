@@ -1,4 +1,5 @@
 import { createServerClient } from "./supabase";
+import { fetchNewestFirstPages } from "./pagedRows";
 import type { ChartPoint } from "./garageTempsHistory";
 import { getUserEntitlements } from "./entitlements";
 import { listConnectionsForHousehold } from "./thermostatConnections";
@@ -143,24 +144,25 @@ export async function fetchThermostatSnapshotChartPoints(
   const defaultFrom = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
   const from = filters.from ?? defaultFrom;
 
-  let query = supabase
-    .from("thermostat_snapshots")
-    .select("recorded_at, ambient_temp_f")
-    .eq("household_id", householdId)
-    .gte("recorded_at", from)
-    .order("recorded_at", { ascending: true });
-
-  if (filters.to) {
-    query = query.lte("recorded_at", filters.to);
-  }
-
-  const { data, error } = await query;
+  // Snapshots every 15 min are ~2900 rows in 30 days, past the 1000-row
+  // limit: page through, newest first (reading oldest-first stopped the
+  // Overview house line ~10 days in).
+  const { rows, error, capped } = await fetchNewestFirstPages((start, end) => {
+    let query = supabase
+      .from("thermostat_snapshots")
+      .select("recorded_at, ambient_temp_f")
+      .eq("household_id", householdId)
+      .gte("recorded_at", from);
+    if (filters.to) query = query.lte("recorded_at", filters.to);
+    return query.order("recorded_at", { ascending: false }).range(start, end);
+  });
   if (error) {
-    console.error("fetchThermostatSnapshotChartPoints failed:", error.message);
+    console.error("fetchThermostatSnapshotChartPoints failed:", error);
     return [];
   }
+  if (capped) console.warn(`Thermostat chart for household ${householdId}: row cap hit; oldest snapshots not shown`);
 
-  return (data ?? [])
+  return rows
     .map((row) =>
       chartPointFromSnapshot(row.recorded_at, row.ambient_temp_f, locale),
     )

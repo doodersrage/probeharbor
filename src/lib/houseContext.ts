@@ -8,6 +8,7 @@ import {
 import { findReferenceSensorLabel } from "./indoorReference";
 import type { ChartPoint } from "./garageTempsHistory";
 import { fetchThermostatSnapshotChartPoints } from "./thermostatSnapshots";
+import { fetchNewestFirstPages } from "./pagedRows";
 import { fmt, type Locale } from "../i18n";
 import { libFixed, libTextMessages } from "../i18n/messages/app/libText";
 
@@ -86,10 +87,12 @@ export async function fetchReferenceSensorChartPoints(
   const defaultFrom = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
   const from = filters.from ?? defaultFrom;
 
-  let query = supabase
-    .from("sensor_readings")
-    .select(
-      `
+  // Past the 1000-row limit: page through, newest first, so the line never stops short of now.
+  const { rows, error, capped } = await fetchNewestFirstPages((start, end) => {
+    let query = supabase
+      .from("sensor_readings")
+      .select(
+        `
       recorded_at,
       value_num,
       device_sensors!inner (
@@ -98,24 +101,21 @@ export async function fetchReferenceSensorChartPoints(
         kind
       )
     `,
-    )
-    .eq("household_id", householdId)
-    .eq("device_sensors.id", sensorId)
-    .eq("device_sensors.kind", "temperature")
-    .gte("recorded_at", from)
-    .order("recorded_at", { ascending: true });
-
-  if (filters.to) {
-    query = query.lte("recorded_at", filters.to);
-  }
-
-  const { data, error } = await query;
+      )
+      .eq("household_id", householdId)
+      .eq("device_sensors.id", sensorId)
+      .eq("device_sensors.kind", "temperature")
+      .gte("recorded_at", from);
+    if (filters.to) query = query.lte("recorded_at", filters.to);
+    return query.order("recorded_at", { ascending: false }).range(start, end);
+  });
   if (error) {
-    console.error("fetchReferenceSensorChartPoints failed:", error.message);
+    console.error("fetchReferenceSensorChartPoints failed:", error);
     return [];
   }
+  if (capped) console.warn(`House reference chart for household ${householdId}: row cap hit; oldest readings not shown`);
 
-  return (data ?? [])
+  return rows
     .map((row): ChartPoint | null => {
       const label =
         (row.device_sensors as { label?: string } | null)?.label ?? libTextMessages(locale).house.house;
