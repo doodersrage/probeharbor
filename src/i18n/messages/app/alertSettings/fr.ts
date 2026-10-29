@@ -123,6 +123,7 @@ const fr: AlertSettingsMessages = {
     compositeRules: "Règles combinées",
     compositeHintHtml:
       'Se déclenchent quand toutes (ou l’une) des conditions d’une règle sont vraies, par ex. tuyau sous 3 °C (38 °F) ET extérieur sous −7 °C (20 °F). Les inondations alertent déjà dès que c’est mouillé ; n’ajoutez une condition d’inondation ici que pour la combiner à d’autres vérifications. Exemple porte + froid : <a class="text-link" href="/about/garage-door-cold-playbook">guide de la porte de garage</a>.',
+    doorDurationHint: "« Porte ouverte plus de N minutes » se déclenche quand une porte est ouverte depuis N minutes et s’arrête à sa fermeture : les ouvertures rapides n’alertent pas. Utilisez « Porte ouverte » pour être prévenu à chaque ouverture.",
     addRule: "Ajouter une règle",
     addHeatRule: "Ajouter une règle de chaleur ({threshold} °F)",
     playbooks: "Scénarios d’alerte",

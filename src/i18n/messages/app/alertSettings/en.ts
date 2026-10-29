@@ -123,6 +123,7 @@ const en = {
     compositeRules: "Composite rules",
     compositeHintHtml:
       'Fire when all (or any) of a rule\'s conditions are true, e.g. pipe below 38°F AND outdoor below 20°F. Flood already alerts when wet; add a flood condition here only to combine it with other checks. Door + cold example: <a class="text-link" href="/about/garage-door-cold-playbook">garage door playbook</a>.',
+    doorDurationHint: "“Door open longer than N minutes” fires once a door has been open N minutes and clears when it closes, so quick openings don't alert. Use “Door open” to hear about every opening.",
     addRule: "Add rule",
     addHeatRule: "Add heat rule ({threshold}°F)",
     playbooks: "Alert playbooks",

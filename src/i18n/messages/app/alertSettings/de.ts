@@ -123,6 +123,7 @@ const de: AlertSettingsMessages = {
     compositeRules: "Kombinierte Regeln",
     compositeHintHtml:
       'Lösen aus, wenn alle (oder eine) der Bedingungen einer Regel zutreffen, z. B. Leitung unter 3 °C (38 °F) UND draußen unter −7 °C (20 °F). Überflutung alarmiert bereits bei Nässe; füge hier nur dann eine Überflutungsbedingung hinzu, wenn du sie mit anderen Prüfungen kombinieren willst. Beispiel Tür + Kälte: <a class="text-link" href="/about/garage-door-cold-playbook">Leitfaden Garagentor</a>.',
+    doorDurationHint: "„Tür länger als N Minuten offen“ löst aus, sobald eine Tür N Minuten offen ist, und endet, wenn sie geschlossen wird – kurzes Öffnen alarmiert also nicht. Nutze „Tür offen“, um bei jedem Öffnen Bescheid zu bekommen.",
     addRule: "Regel hinzufügen",
     addHeatRule: "Hitzeregel hinzufügen ({threshold} °F)",
     playbooks: "Alarm-Abläufe",

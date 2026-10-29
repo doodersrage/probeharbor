@@ -123,6 +123,7 @@ const es: AlertSettingsMessages = {
     compositeRules: "Reglas combinadas",
     compositeHintHtml:
       'Se activan cuando se cumplen todas (o alguna) de las condiciones de una regla, p. ej. tubería por debajo de 3 °C (38 °F) Y exterior por debajo de −7 °C (20 °F). Las inundaciones ya avisan al detectar agua; añade aquí una condición de inundación solo para combinarla con otras comprobaciones. Ejemplo de puerta + frío: <a class="text-link" href="/about/garage-door-cold-playbook">guía de la puerta del garaje</a>.',
+    doorDurationHint: "«Puerta abierta más de N minutos» se activa cuando una puerta lleva abierta N minutos y se cancela al cerrarla, así que las aperturas rápidas no avisan. Usa «Puerta abierta» para enterarte de cada apertura.",
     addRule: "Añadir regla",
     addHeatRule: "Añadir regla de calor ({threshold} °F)",
     playbooks: "Guías de alerta",

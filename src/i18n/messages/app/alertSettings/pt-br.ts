@@ -123,6 +123,7 @@ const ptBr: AlertSettingsMessages = {
     compositeRules: "Regras combinadas",
     compositeHintHtml:
       'Disparam quando todas (ou alguma) das condições de uma regra forem verdadeiras, por ex. cano abaixo de 3 °C (38 °F) E área externa abaixo de −7 °C (20 °F). Alagamento já alerta quando molha; adicione uma condição de alagamento aqui só para combiná-la com outras verificações. Exemplo de porta + frio: <a class="text-link" href="/about/garage-door-cold-playbook">guia do portão da garagem</a>.',
+    doorDurationHint: "“Porta aberta por mais de N minutos” dispara quando uma porta fica aberta por N minutos e é encerrada quando ela fecha, então aberturas rápidas não alertam. Use “Porta aberta” para saber de cada abertura.",
     addRule: "Adicionar regra",
     addHeatRule: "Adicionar regra de calor ({threshold} °F)",
     playbooks: "Roteiros de alerta",
