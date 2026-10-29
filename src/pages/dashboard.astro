@@ -307,6 +307,7 @@ const chartPromise = loadChart
   : Promise.resolve({
       points: [] as Awaited<ReturnType<typeof fetchGarageTempChartData>>["points"],
       humidityOnly: [] as NonNullable<Awaited<ReturnType<typeof fetchGarageTempChartData>>["humidityOnly"]>,
+      sampleIntervalMs: 0,
       error: null as string | null,
     });
 const nightsPromise = showInsights
@@ -1034,6 +1035,7 @@ const onboardingProps = {
             alertMarkers={chartAlertMarkers}
             doorBands={overviewDoorBands.bands}
             humidityOnlyPoints={chartWeek.humidityOnly ?? []}
+            sampleIntervalMs={chartWeek.sampleIntervalMs ?? 0}
             doorBandsError={overviewDoorBands.error != null}
           />
           {showInsights && (

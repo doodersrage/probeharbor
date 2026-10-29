@@ -58,9 +58,11 @@ describe("fetchGarageTempChartData with sensor_bucket_samples", () => {
         : { data: [], error: null },
     );
 
-    const { points, error } = await fetchGarageTempChartData("user-1", 7);
+    const { points, error, sampleIntervalMs } = await fetchGarageTempChartData("user-1", 7);
 
     expect(error).toBeNull();
+    // The bucket width goes to the chart's gap rule (seconds → ms).
+    expect(sampleIntervalMs).toBe((mockRpc.mock.calls.find((c) => c[0] === "sensor_bucket_samples")![1] as { p_bucket_seconds: number }).p_bucket_seconds * 1000);
     expect(points.map((p) => [p.tempf, p.humidity])).toEqual([
       [45, 60],
       [33, null],

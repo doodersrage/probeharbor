@@ -230,6 +230,7 @@ const [
     : Promise.resolve({
         points: [] as Awaited<ReturnType<typeof fetchGarageTempChartData>>["points"],
         humidityOnly: [] as NonNullable<Awaited<ReturnType<typeof fetchGarageTempChartData>>["humidityOnly"]>,
+        sampleIntervalMs: 0,
         error: null as string | null,
       }),
   loadFiltersUi
@@ -661,6 +662,7 @@ const freezeTemp = plain(alertSettings.freezeThresholdF);
           highlightAlertId={highlightAlertId}
           doorBands={doorBandsResult.bands}
           humidityOnlyPoints={chartData.humidityOnly ?? []}
+            sampleIntervalMs={chartData.sampleIntervalMs ?? 0}
           timeZone={filterTimeZone}
           doorBandsError={doorBandsResult.error != null}
           canUseClaimsPack={entitlements.canUseClaimsPack}

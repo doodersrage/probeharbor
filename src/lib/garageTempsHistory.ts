@@ -616,7 +616,7 @@ async function fetchSampledSensorRows(
   householdId: string,
   fromIso: string,
   toIso?: string,
-): Promise<SensorRow[] | null> {
+): Promise<{ rows: SensorRow[]; bucketMs: number } | null> {
   const supabase = createServerClient();
   const to = toIso ?? new Date().toISOString();
   const { data: sensors, error: sensorError } = await supabase
@@ -637,7 +637,7 @@ async function fetchSampledSensorRows(
     devices: { name: string } | null;
   };
   const list = (sensors ?? []) as unknown as SensorMeta[];
-  if (list.length === 0) return [];
+  if (list.length === 0) return { rows: [], bucketMs: 0 };
 
   const buckets = sampleBucketCount(list.filter((s) => s.kind === "temperature").length);
   const spanSec = Math.max(0, (Date.parse(to) - Date.parse(fromIso)) / 1000);
@@ -681,7 +681,7 @@ async function fetchSampledSensorRows(
       });
     }
   }
-  return rows;
+  return { rows, bucketMs: bucketSeconds * 1000 };
 }
 
 /** Humidity from a sensor whose key matched no temperature probe (see probePairingKey). */
@@ -691,7 +691,13 @@ export async function fetchGarageTempChartData(
   userId: string,
   days = 7,
   filters: HistoryFilters = {},
-): Promise<{ points: ChartPoint[]; humidityOnly?: HumidityOnlyPoint[]; error: string | null }> {
+): Promise<{
+  points: ChartPoint[];
+  humidityOnly?: HumidityOnlyPoint[];
+  /** Bucket width when points are samples (for the chart's gap rule); 0 for raw readings. */
+  sampleIntervalMs?: number;
+  error: string | null;
+}> {
   const since = new Date();
   since.setDate(since.getDate() - days);
   const sinceIso = filters.from ?? since.toISOString();
@@ -704,7 +710,7 @@ export async function fetchGarageTempChartData(
   let fromSensor: { readings: GarageTempReading[]; error: string | null };
   if (sampled) {
     fromSensor = {
-      readings: pairTempHumidityRows(sampled, userId).filter((reading) => matchesFilters(reading, chartFilters)),
+      readings: pairTempHumidityRows(sampled.rows, userId).filter((reading) => matchesFilters(reading, chartFilters)),
       error: null,
     };
   } else {
@@ -748,11 +754,16 @@ export async function fetchGarageTempChartData(
       ? await fetchRollupChartPointsForHousehold(householdId, sinceIso, filters)
       : [];
     if (rollupPoints.length > 0) {
-      return { points: disambiguateChartLabels(mergeChartPoints(points, rollupPoints)), humidityOnly, error: null };
+      return {
+        points: disambiguateChartLabels(mergeChartPoints(points, rollupPoints)),
+        humidityOnly,
+        sampleIntervalMs: sampled?.bucketMs ?? 0,
+        error: null,
+      };
     }
   }
 
-  return { points: disambiguateChartLabels(points), humidityOnly, error: null };
+  return { points: disambiguateChartLabels(points), humidityOnly, sampleIntervalMs: sampled?.bucketMs ?? 0, error: null };
 }
 
 /** Most rollup points handed to a chart; longer series are averaged into wider buckets. */
@@ -945,7 +956,7 @@ export async function fetchHouseholdChartData(
   // Same sampled path as the signed-in charts; raw rows only as a fallback.
   const sampled = await fetchSampledSensorRows(householdId, sinceIso);
   const { rows, error } = sampled
-    ? { rows: sampled, error: null }
+    ? { rows: sampled.rows, error: null }
     : await fetchAllRawSensorRows(householdId, { from: sinceIso }, { ascending: true });
 
   if (error) {

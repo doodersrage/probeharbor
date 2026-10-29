@@ -3745,3 +3745,25 @@ humidity, ties → more readings) landed on the less useful one.
 - Open: the user reports the Overview chart looks "off" after removing a
   probe while History looks fine; cause not yet known (needs a screenshot).
 
+## Fix: Overview chart broken into fragments with "No data" (2026-10-29)
+
+User screenshot: after e4a1816 (sampled chart readings) the Overview chart
+showed short temperature fragments and "No data" shading everywhere, while
+humidity and History looked fine.
+
+- Cause: the gap rule (`gapThresholdMs`: 4 × median spacing, at least
+  90 min) assumes evenly spaced raw readings. Samples bunch up: the first
+  reading is often also the lowest or highest, and the other extreme sits
+  at the bucket's end, so most spacings are a minute or two and the
+  threshold falls to 90 min. Overview's 30-day buckets (~4–7 h) then turned
+  every within-bucket stretch into a "gap". History's 7-day buckets (~1 h)
+  stayed under it; humidity (one sample per bucket) was evenly spaced.
+- Fix: `fetchGarageTempChartData` returns `sampleIntervalMs` (bucket
+  width); History and Overview pass it to HistoryChart; `gapThresholdMs` /
+  `findSharedGaps` never call less than 2.5 bucket widths a gap. Real
+  gaps (empty buckets) are still found.
+- Evidence: chartGaps tests (+3: old rule flags bucket boundaries; no gaps
+  with the width; an empty stretch still found), samples test checks the
+  width. `pnpm test` / typecheck / Biome as below. Headless render of
+  clustered 4.3 h samples: without the width → "No data" everywhere and
+  dots (as in the screenshot); with it → continuous lines.

@@ -45,6 +45,8 @@ interface Props {
   /** Show table times in this IANA zone (the browser's); otherwise the server's. */
   timeZone?: string;
   doorBands?: import("../lib/chartDoorBands").ChartDoorBand[];
+  /** Bucket width (ms) when chart points are samples. */
+  sampleIntervalMs?: number;
   humidityOnlyPoints?: import("../lib/garageTempsHistory").HumidityOnlyPoint[];
   doorBandsError?: boolean;
   canUseClaimsPack?: boolean;
@@ -86,6 +88,7 @@ const {
   timeZone,
   doorBandsError = false,
   humidityOnlyPoints = [],
+  sampleIntervalMs = 0,
   canUseClaimsPack = false,
   compareFrom = "",
   compareTo = "",
@@ -393,6 +396,7 @@ function comparePresetHref(preset: "prior_week" | "prior_month"): string {
       doorBands={doorBands}
       doorBandsError={doorBandsError}
       humidityOnlyPoints={humidityOnlyPoints}
+      sampleIntervalMs={sampleIntervalMs}
       canUseClaimsPack={canUseClaimsPack}
       canShareChart={canShareChart}
       ui={chartUi}

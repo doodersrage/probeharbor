@@ -203,6 +203,8 @@ interface Props {
   defaultTargetAmbientF?: number | null;
   /** Plot humidity % and dew point on a secondary axis when data exists. */
   showHumidity?: boolean;
+  /** Bucket width (ms) when points are samples; keeps the gap rule from breaking lines between buckets. */
+  sampleIntervalMs?: number;
   /** Humidity sensors with no matching temperature probe; drawable as humidity (no dew point). */
   humidityOnlyPoints?: HumidityOnlyPoint[];
   /** Optional alert event ticks overlaid on the chart. */
@@ -302,6 +304,7 @@ function HistoryChartView({
   defaultTargetAmbientF = null,
   showHumidity = false,
   humidityOnlyPoints = [],
+  sampleIntervalMs = 0,
   alertMarkers = [],
   highlightAlertId = null,
   doorBands = [],
@@ -890,7 +893,7 @@ function HistoryChartView({
         const ordered = [...series].sort(
           (a, b) => Date.parse(a.timestamp) - Date.parse(b.timestamp),
         );
-        const gapMs = gapThresholdMs(ordered.map((p) => Date.parse(p.timestamp)));
+        const gapMs = gapThresholdMs(ordered.map((p) => Date.parse(p.timestamp)), sampleIntervalMs);
         for (let i = 1; i < ordered.length; i++) {
           const a = ordered[i - 1]!;
           const b = ordered[i]!;
@@ -907,7 +910,7 @@ function HistoryChartView({
 
       /** Path through the points, lifting the pen across stretches with no data. */
       function traceBrokenAtGaps<P extends { timestamp: string }>(ordered: P[], yOf: (point: P) => number) {
-        const gapMs = gapThresholdMs(ordered.map((p) => Date.parse(p.timestamp)));
+        const gapMs = gapThresholdMs(ordered.map((p) => Date.parse(p.timestamp)), sampleIntervalMs);
         let prevTs: number | null = null;
         for (const point of ordered) {
           const ts = Date.parse(point.timestamp);
@@ -949,7 +952,7 @@ function HistoryChartView({
       const visibleSeriesMs = [...byProbe.entries()]
         .filter(([label]) => visibleProbes.has(label))
         .map(([, series]) => series.map((p) => Date.parse(p.timestamp)).sort((a, b) => a - b));
-      for (const gap of findSharedGaps(visibleSeriesMs)) {
+      for (const gap of findSharedGaps(visibleSeriesMs, sampleIntervalMs)) {
         const x0 = Math.max(pad.left, xFor(gap.startMs));
         const x1 = Math.min(width - pad.right, xFor(gap.endMs));
         if (x1 - x0 < 2) continue;
@@ -1100,6 +1103,7 @@ function HistoryChartView({
     humidityOn,
     humidityPoints,
     humiditySeries,
+    sampleIntervalMs,
     visibleProbes,
     houseVisible,
     byProbe,

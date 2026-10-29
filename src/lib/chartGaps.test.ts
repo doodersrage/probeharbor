@@ -43,3 +43,27 @@ describe("segmentStarts", () => {
     expect(segmentStarts(hourly)).toEqual([true, false, false, false, false]);
   });
 });
+
+describe("sampled data (first / lowest / highest per bucket)", () => {
+  // 4.3 h buckets: each has points minutes apart at its start, plus one near its end.
+  const bucket = 4.3 * 3600_000;
+  const ms: number[] = [];
+  for (let b = 0; b < 12; b += 1) {
+    const start = Date.parse("2026-10-27T00:00:00Z") + b * bucket;
+    ms.push(start, start + 60_000, start + bucket - 120_000);
+  }
+
+  it("calls every bucket boundary a gap without the bucket width (the old bug)", () => {
+    expect(findGaps(ms, gapThresholdMs(ms)).length).toBeGreaterThan(5);
+  });
+
+  it("sees no gaps when told the bucket width", () => {
+    expect(findGaps(ms, gapThresholdMs(ms, bucket))).toEqual([]);
+    expect(findSharedGaps([ms, ms], bucket)).toEqual([]);
+  });
+
+  it("still finds a real gap: buckets with no data", () => {
+    const withHole = ms.filter((t) => t < ms[12]! || t >= ms[24]!); // drop buckets 4-7
+    expect(findGaps(withHole, gapThresholdMs(withHole, bucket))).toHaveLength(1);
+  });
+});
