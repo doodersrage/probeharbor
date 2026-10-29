@@ -11,18 +11,21 @@ const dedupSince: string[] = [];
 // sensor_readings lookups for findOpenStartBefore: [last closed, first open].
 const mockLastClosed = vi.fn();
 const mockFirstOpen = vi.fn();
+// lastDoorStateBefore: the door's previous reading.
+const mockLastState = vi.fn();
 vi.mock("./supabase", () => ({
   createServerClient: () => ({
     from: (table: string) => {
       if (table === "sensor_readings") {
         const filters: Record<string, unknown> = {};
         const q: Record<string, unknown> = {};
-        for (const m of ["select", "lt", "gt", "order"]) q[m] = () => q;
+        for (const m of ["select", "lt", "gt", "order", "not"]) q[m] = () => q;
         q.eq = (col: string, val: unknown) => {
           filters[col] = val;
           return q;
         };
-        q.limit = () => (filters.value_bool === false ? mockLastClosed() : mockFirstOpen());
+        q.limit = () =>
+          filters.value_bool === false ? mockLastClosed() : filters.value_bool === true ? mockFirstOpen() : mockLastState();
         return q;
       }
       return {
@@ -47,6 +50,7 @@ beforeEach(() => {
   mockRecentSelect.mockReset().mockResolvedValue({ data: [], error: null });
   mockLastClosed.mockReset().mockResolvedValue({ data: [], error: null });
   mockFirstOpen.mockReset().mockResolvedValue({ data: [], error: null });
+  mockLastState.mockReset().mockResolvedValue({ data: [], error: null });
   dedupSince.length = 0;
   mockInsert.mockReset().mockResolvedValue({ error: null });
 });
@@ -187,5 +191,41 @@ describe("recordDoorSessions", () => {
 
     expect(mockLastClosed).not.toHaveBeenCalled();
     expect(mockInsert).toHaveBeenCalledWith([expect.objectContaining({ opened_at: "2026-10-29T10:00:00Z" })]);
+  });
+
+  describe("recordDoorSessionsIfJustClosed", () => {
+    const session = [
+      { value: true, recordedAt: "2026-10-29T10:00:00Z" },
+      { value: false, recordedAt: "2026-10-29T10:20:00Z" },
+    ];
+
+    it("saves when the previous report was open", async () => {
+      mockLastState.mockResolvedValue({ data: [{ value_bool: true }], error: null });
+      mockFetchRecentBoolReadings.mockResolvedValue(session);
+      const { recordDoorSessionsIfJustClosed } = await import("./doorEvents");
+
+      await recordDoorSessionsIfJustClosed("hh-1", [{ id: "door-1", label: "Garage door" }], "2026-10-29T10:20:00Z");
+
+      expect(mockInsert).toHaveBeenCalledTimes(1);
+    });
+
+    it("does nothing more on a repeated 'closed' report", async () => {
+      mockLastState.mockResolvedValue({ data: [{ value_bool: false }], error: null });
+      const { recordDoorSessionsIfJustClosed } = await import("./doorEvents");
+
+      await recordDoorSessionsIfJustClosed("hh-1", [{ id: "door-1", label: "Garage door" }], "2026-10-29T10:21:00Z");
+
+      expect(mockFetchRecentBoolReadings).not.toHaveBeenCalled();
+      expect(mockInsert).not.toHaveBeenCalled();
+    });
+
+    it("still saves when there is no earlier reading to compare with", async () => {
+      mockFetchRecentBoolReadings.mockResolvedValue(session);
+      const { recordDoorSessionsIfJustClosed } = await import("./doorEvents");
+
+      await recordDoorSessionsIfJustClosed("hh-1", [{ id: "door-1", label: "Garage door" }], "2026-10-29T10:20:00Z");
+
+      expect(mockFetchRecentBoolReadings).toHaveBeenCalledTimes(1);
+    });
   });
 });

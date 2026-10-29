@@ -89,7 +89,7 @@ vi.mock("../../../lib/supabase", () => ({
 
 const mockRecordDoorSessions = vi.fn();
 vi.mock("../../../lib/doorEvents", () => ({
-  recordDoorSessions: (...a: unknown[]) => mockRecordDoorSessions(...a),
+  recordDoorSessionsIfJustClosed: (...a: unknown[]) => mockRecordDoorSessions(...a),
 }));
 
 const mockSendThresholdAlertsIfNeeded = vi.fn();
@@ -431,9 +431,11 @@ describe("POST /api/ingest/[deviceKey]", () => {
     const response = await POST(makeContext({ headerKey: "good-key" }));
 
     expect(response.status).toBe(200);
-    expect(mockRecordDoorSessions).toHaveBeenCalledWith("house-1", [
-      { id: "door-1", label: "Garage door" },
-    ]);
+    expect(mockRecordDoorSessions).toHaveBeenCalledWith(
+      "house-1",
+      [{ id: "door-1", label: "Garage door" }],
+      expect.stringMatching(/^\d{4}-\d{2}-\d{2}T/),
+    );
   });
 
   it("does not look for door sessions when a door reports open or no door reports", async () => {

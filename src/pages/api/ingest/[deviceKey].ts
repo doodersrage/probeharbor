@@ -215,8 +215,8 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
   // Door history is saved for every household, not only those with alert rules.
   if (closedDoors.length > 0) {
     await runAfterResponse(locals, "Ingest door history", async () => {
-      const { recordDoorSessions } = await import("../../../lib/doorEvents");
-      await recordDoorSessions(device.household_id, closedDoors);
+      const { recordDoorSessionsIfJustClosed } = await import("../../../lib/doorEvents");
+      await recordDoorSessionsIfJustClosed(device.household_id, closedDoors, recordedAt);
     });
   }
 

@@ -160,6 +160,41 @@ export async function recordDoorSessions(
   await persistDoorSessions(householdId, sessions, sensorIdByLabel);
 }
 
+/** The door's last reported state before `beforeIso` (true = open); null when there is none. */
+export async function lastDoorStateBefore(sensorId: string, beforeIso: string): Promise<boolean | null> {
+  const supabase = createServerClient();
+  const { data, error } = await supabase
+    .from("sensor_readings")
+    .select("value_bool")
+    .eq("sensor_id", sensorId)
+    .not("value_bool", "is", null)
+    .lt("recorded_at", beforeIso)
+    .order("recorded_at", { ascending: false })
+    .limit(1);
+  if (error) throw new Error(`last door state lookup failed: ${error.message}`);
+  const value = data?.[0]?.value_bool;
+  return typeof value === "boolean" ? value : null;
+}
+
+/**
+ * Ingest entry point: a door just reported "closed" at `closedAt`. Only a
+ * door whose previous report was "open" (or unknown) can have finished a
+ * session, so repeated "closed" reports (the ProbeHarbor firmware sends the
+ * door state every minute) cost one small query instead of a full save.
+ */
+export async function recordDoorSessionsIfJustClosed(
+  householdId: string,
+  sensors: Array<{ id: string; label: string }>,
+  closedAt: string,
+): Promise<void> {
+  const justClosed: Array<{ id: string; label: string }> = [];
+  for (const sensor of sensors) {
+    // Unknown (lookup returned nothing) still records, so a first close isn't lost.
+    if ((await lastDoorStateBefore(sensor.id, closedAt)) !== false) justClosed.push(sensor);
+  }
+  if (justClosed.length > 0) await recordDoorSessions(householdId, justClosed);
+}
+
 export async function listDoorEvents(
   householdId: string,
   limit = 20,
