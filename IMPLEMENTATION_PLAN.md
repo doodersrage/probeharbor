@@ -3678,3 +3678,30 @@ Migration results reported by the user after 20261029160000/160100:
   kept, humidity samples all on temperature sample times, other household
   excluded, anon/authenticated denied.
 - Apply with `pnpm db:pending`.
+
+## True reading counts, door rule note, cleanup (2026-10-29)
+
+- [x] **Recorded reading counts.** History → Exports "Readings" and the
+      claims pack's "Total readings" / "Readings ≤ threshold" (and its
+      executive summary sentence) showed the number of chart points, which
+      are now samples. Migration `20261029210000_temperature_reading_counts`:
+      read-only function returning raw readings + rolled-up hours'
+      sample_count (exact; they never overlap) and the count at or below
+      the threshold (calibration offset applied; rolled-up hours count only
+      if their highest reading was at or below it, so it's a minimum and
+      the pack says "≥ N … at least"). Respects History's device/probe
+      filter. Without the function the old figures stay; a failed count
+      never breaks the claims pack.
+- [x] **Duration rule note** under Alerts → Composite rules: fires after N
+      minutes, clears on close, use "Door open" for every opening (5 locales).
+- [x] **Cleanup.** Migration `20261029210100_drop_door_migration_logs`
+      drops the three recovery tables (results checked first: 0 duplicates,
+      2 backfilled, 0 starts fixed). Those migrations can no longer be
+      undone from them.
+- Evidence: `readingCounts.test.ts` (+7), claimsPackGenerate (+1). `pnpm
+  test`: 3320 passed. `pnpm typecheck`: 0 errors. Biome: no new warnings.
+  Throwaway PostgreSQL 18: 150 readings (humidity excluded), 100 at/below
+  34 °F with a −1 °F offset; with rollups 270 / 160 and from_rollups true
+  (only the all-cold hour counted); probe filter and household isolation
+  correct; anon denied.
+- Apply with `pnpm db:pending` (two migrations).
