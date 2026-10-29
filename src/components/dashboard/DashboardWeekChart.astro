@@ -16,6 +16,9 @@ interface Props {
   showHumidity?: boolean;
   days?: number;
   alertMarkers?: import("../../lib/chartAlertMarkers").ChartAlertMarker[];
+  /** Door-open periods shaded behind the lines (as on History). */
+  doorBands?: import("../../lib/chartDoorBands").ChartDoorBand[];
+  doorBandsError?: boolean;
   /** The user's °C display preference. */
   useCelsius?: boolean;
 }
@@ -29,6 +32,8 @@ const {
   showHumidity = true,
   days = 7,
   alertMarkers = [],
+  doorBands = [],
+  doorBandsError = false,
   useCelsius = false,
 } = Astro.props;
 
@@ -63,6 +68,8 @@ const chartUi = locale === "en" ? undefined : demoIslandMessages(locale).chart;
         freezeThresholdF={freezeThresholdF}
         showHumidity={showHumidity}
         alertMarkers={alertMarkers}
+        doorBands={doorBands}
+        doorBandsError={doorBandsError}
         ui={chartUi}
         useCelsius={useCelsius}
       >

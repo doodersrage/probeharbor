@@ -3465,3 +3465,37 @@ humidity readings were still arriving.
   sample data, scratchpad harness): one-door and five-door layouts, hover
   over an open door, hiding a door; no page errors. Screenshots reviewed.
 - Not verified: the real History page with production data, mobile widths.
+
+## Fixes: humidity source, Overview house line, doors on Overview (2026-10-29)
+
+User report after deploy 2026.10.29.1: still no humidity/dew point on the
+chart; the house thermostat line stopped updating on Overview (fine on
+History); doors missing on Overview.
+
+- **Humidity source.** The chart has one humidity axis and drew the first
+  probe (in time order) with any humidity, ignoring hidden probes. A probe
+  taken down days ago sorts first, so the line ended off-screen.
+  `pickHumiditySource` (`src/lib/chartHumidity.ts`, browser-safe) now
+  picks the visible probe with the newest humidity reading (ties: more
+  readings; hidden probes only as a fallback), and the legend names it
+  ("· from Bay") when there are several probes. Copy in 5 locales.
+- **Overview house line.** `fetchThermostatSnapshotChartPoints` and
+  `fetchReferenceSensorChartPoints` read oldest-first with no paging, so
+  PostgREST's 1000-row limit cut them off: snapshots every 15 min are
+  ~2900 rows in Overview's 30-day window, so the line stopped ~10 days in.
+  History's 7-day window (~670 rows) fit, which is why it looked right
+  there. Both now page newest-first via `fetchNewestFirstPages`
+  (`src/lib/pagedRows.ts`, max 10 pages; if capped, the newest rows are
+  kept and a warning is logged).
+- **Doors on Overview.** The Overview chart now gets door bands too
+  (`fetchChartDoorBands` over the chart window), with the same rows,
+  legend and hover as History.
+- Evidence: `chartHumidity.test.ts` (+5), `pagedRows.test.ts` (+4),
+  `thermostatSnapshots.chart.test.ts` (+1: 2880 snapshots, newest
+  included, 3 pages). `pnpm test`: 3276 passed. `pnpm typecheck`: 0
+  errors. Biome: clean. Headless render: a removed probe with humidity
+  plus a live one → line follows the live probe, legend "from Bay".
+- Not verified: the user's data (which remaining probes report humidity).
+  If neither remaining garage probe measures humidity, there is no current
+  humidity to draw. The reference-sensor overlay at one reading a minute
+  keeps only the newest ~7 days of a 30-day window (10-page cap).

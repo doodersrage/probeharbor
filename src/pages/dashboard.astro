@@ -72,6 +72,7 @@ import {
 } from "../lib/thermostatCorrelation";
 import { getIndoorReferenceSensorId } from "../lib/indoorReference";
 import { buildHouseContext, fetchHouseChartOverlay } from "../lib/houseContext";
+import { fetchChartDoorBands } from "../lib/chartDoorBands.server";
 import ProductAnalyticsTracker from "../components/ProductAnalyticsTracker.astro";
 import UnackedAlertsBanner from "../components/UnackedAlertsBanner.astro";
 import ColdSnapChecklistCard from "../components/ColdSnapChecklistCard.astro";
@@ -457,6 +458,23 @@ const [thermostatOverview, houseChartOverlay] = await Promise.all([
       }, locale)
     : Promise.resolve({ points: [], source: null as "thermostat" | "reference" | null }),
 ]);
+
+// Door-open periods over the chart window, shaded as on History.
+const overviewDoorSensors = devices.flatMap((device) =>
+  device.sensors.filter((sensor) => sensor.kind === "door").map((sensor) => ({ id: sensor.id, label: sensor.label })),
+);
+const overviewDoorBands =
+  household.householdId && overviewDoorSensors.length > 0 && chartMarkerTimes.length > 0
+    ? await fetchChartDoorBands(
+        household.householdId,
+        new Date(Math.min(...chartMarkerTimes)).toISOString(),
+        new Date(Math.max(...chartMarkerTimes)).toISOString(),
+        overviewDoorSensors,
+      )
+    : { bands: [], error: null };
+if (overviewDoorBands.error) {
+  console.error("Overview door bands failed:", overviewDoorBands.error);
+}
 
 const houseContext = buildHouseContext({
   thermostatSnapshot: thermostatOverview?.snapshot ?? null,
@@ -1013,6 +1031,8 @@ const onboardingProps = {
             freezeThresholdF={alertSettings.freezeThresholdF}
             days={chartWindowDays}
             alertMarkers={chartAlertMarkers}
+            doorBands={overviewDoorBands.bands}
+            doorBandsError={overviewDoorBands.error != null}
           />
           {showInsights && (
             <NightsAtRiskCard
