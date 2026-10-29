@@ -101,6 +101,10 @@ export const HISTORY_CHART_UI_EN = {
   dashed: " (dashed)",
   humidityFrom: " · from {probe}",
   humidityNoDew: " (no dew point: this humidity sensor has no matching temperature)",
+  humidityFromLabel: "Humidity from",
+  humidityAuto: "Newest reading",
+  humidityAll: "All probes",
+  humidityAllLegend: "Humidity (thin line) and dew point (dashed) in each probe's color",
   chartTips: "Chart tips",
   tipsExpanded: "Expanded view — drag to select a range, scroll to zoom, Esc or Close to exit.",
   tipsDefault: "Drag to select a range (Shift+drag when zoomed), scroll to zoom, Link to copy this window, PNG to save.",
@@ -389,22 +393,49 @@ function HistoryChartView({
     return map;
   }, [points, t.probe]);
 
-  // One humidity axis, so one source: the visible probe (or humidity-only
-  // sensor, which has no toggle) with the newest humidity.
+  /** A probe's humidity samples: paired with its temperature, else from a humidity-only sensor. */
+  const humiditySamplesFor = (label: string): HumiditySample[] => {
+    const paired = points.filter((p) => (p.probeLabel || t.probe) === label).filter(hasHumidity);
+    if (paired.length >= 2) return paired;
+    return humidityOnlyPoints
+      .filter((p) => p.probeLabel === label && Number.isFinite(p.humidity) && p.humidity > 0)
+      .map((p) => ({ ...p, tempf: null }));
+  };
+  // Probes the user can pick humidity from: visible probes and humidity-only
+  // sensors (no toggle) with at least two humidity readings.
+  const humidityCandidates = useMemo(() => {
+    if (!showHumidity) return [] as string[];
+    const labels = [...probeLabels.filter((l) => visibleProbes.has(l)), ...new Set(humidityOnlyPoints.map((p) => p.probeLabel))];
+    return [...new Set(labels)].filter((label) => humiditySamplesFor(label).length >= 2);
+  }, [points, humidityOnlyPoints, probeLabels, visibleProbes, showHumidity, t.probe]);
+  // "auto" (newest humidity), a probe label, or "all"; saved in this browser.
+  const [humidityChoice, setHumidityChoice] = useState<string>("auto");
   const humiditySource = useMemo(() => {
     if (!showHumidity) return null;
+    if (humidityChoice !== "auto" && humidityChoice !== "all" && humidityCandidates.includes(humidityChoice)) {
+      return humidityChoice;
+    }
     const candidates = [...points, ...humidityOnlyPoints];
     const visible = new Set([...visibleProbes, ...humidityOnlyPoints.map((p) => p.probeLabel)]);
     return pickHumiditySource(candidates, visible, (p) => p.probeLabel || t.probe);
-  }, [points, humidityOnlyPoints, visibleProbes, showHumidity, t.probe]);
-  const humidityPoints = useMemo((): HumiditySample[] => {
+  }, [points, humidityOnlyPoints, visibleProbes, showHumidity, humidityChoice, humidityCandidates, t.probe]);
+  const showAllHumidity = humidityChoice === "all" && humidityCandidates.length > 1;
+  /** What to draw: one series in the humidity/dew colors, or every probe's in its own color. */
+  const humiditySeries = useMemo(() => {
+    if (showAllHumidity) {
+      return humidityCandidates.map((label) => {
+        const i = probeLabels.indexOf(label);
+        const color = i >= 0 ? PROBE_COLORS[i % PROBE_COLORS.length]! : HUMIDITY_COLOR;
+        return { label, humidityColor: color, dewColor: color, points: humiditySamplesFor(label) };
+      });
+    }
     if (!humiditySource) return [];
-    const paired = points.filter((p) => (p.probeLabel || t.probe) === humiditySource).filter(hasHumidity);
-    if (paired.length >= 2) return paired;
-    return humidityOnlyPoints
-      .filter((p) => p.probeLabel === humiditySource && Number.isFinite(p.humidity) && p.humidity > 0)
-      .map((p) => ({ ...p, tempf: null }));
-  }, [points, humidityOnlyPoints, humiditySource, t.probe]);
+    const samples = humiditySamplesFor(humiditySource);
+    return samples.length >= 2
+      ? [{ label: humiditySource, humidityColor: HUMIDITY_COLOR, dewColor: DEW_COLOR, points: samples }]
+      : [];
+  }, [showAllHumidity, humidityCandidates, humiditySource, points, humidityOnlyPoints, probeLabels, t.probe]);
+  const humidityPoints = useMemo(() => humiditySeries.flatMap((s) => s.points), [humiditySeries]);
   const humidityHasDew = humidityPoints.some((p) => p.tempf != null);
 
   useEffect(() => {
@@ -416,6 +447,7 @@ function HistoryChartView({
     if (showHumidity && typeof prefs?.humidityOn === "boolean") {
       setHumidityOn(prefs.humidityOn);
     }
+    if (typeof prefs?.humiditySource === "string") setHumidityChoice(prefs.humiditySource);
 
     const storedHigh = readStoredNumber(storageHigh(celsius));
     const storedTarget = readStoredNumber(storageTarget(celsius));
@@ -669,7 +701,7 @@ function HistoryChartView({
       canvas.height = height * dpr;
       g.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-      const plotHumidity = humidityOn && humidityPoints.length >= 2;
+      const plotHumidity = humidityOn && humiditySeries.length > 0;
 
       const lanes = doorLaneInfo.lanes;
       const pad = {
@@ -964,29 +996,32 @@ function HistoryChartView({
       }
 
       if (plotHumidity) {
-        const orderedHum = [...humidityPoints].sort(
-          (a, b) => Date.parse(a.timestamp) - Date.parse(b.timestamp),
-        );
-        g.save();
-        g.strokeStyle = HUMIDITY_COLOR;
-        g.lineWidth = 1.5;
-        g.globalAlpha = 0.9;
-        g.beginPath();
-        traceBrokenAtGaps(orderedHum, (point) => yForRh(point.humidity));
-        g.stroke();
-
-        g.strokeStyle = DEW_COLOR;
-        g.setLineDash([4, 3]);
-        g.beginPath();
         // Temps here are in the display unit (°C when chosen): compute the dew point in it too.
         const dewOf = (point: HumiditySample) =>
           point.tempf == null ? null : dewPointF(point.tempf, point.humidity, celsius);
-        traceBrokenAtGaps(
-          orderedHum.filter((point) => dewOf(point) != null),
-          (point) => yFor(dewOf(point)!),
-        );
-        g.stroke();
-        g.restore();
+        for (const series of humiditySeries) {
+          const orderedHum = [...series.points].sort(
+            (a, b) => Date.parse(a.timestamp) - Date.parse(b.timestamp),
+          );
+          g.save();
+          g.strokeStyle = series.humidityColor;
+          // With several probes, humidity is a thinner line than temperature.
+          g.lineWidth = humiditySeries.length > 1 ? 1 : 1.5;
+          g.globalAlpha = 0.9;
+          g.beginPath();
+          traceBrokenAtGaps(orderedHum, (point) => yForRh(point.humidity));
+          g.stroke();
+
+          g.strokeStyle = series.dewColor;
+          g.setLineDash([4, 3]);
+          g.beginPath();
+          traceBrokenAtGaps(
+            orderedHum.filter((point) => dewOf(point) != null),
+            (point) => yFor(dewOf(point)!),
+          );
+          g.stroke();
+          g.restore();
+        }
       }
 
       if (alertMarkers.length > 0 && plotBoundsRef.current) {
@@ -1064,6 +1099,7 @@ function HistoryChartView({
     targetAmbientF,
     humidityOn,
     humidityPoints,
+    humiditySeries,
     visibleProbes,
     houseVisible,
     byProbe,
@@ -1411,18 +1447,47 @@ function HistoryChartView({
           {priorYearLegend ?? t.comparisonOverlay}
         </p>
       )}
-      {humidityOn && humidityPoints.length >= 2 && (
-        <p class="m-0 mb-2 text-xs text-[var(--color-text-muted)]">
-          <span style={{ color: HUMIDITY_COLOR }}>{t.humidityPct}</span>
-          {humidityHasDew ? (
-            <>
-              {" · "}
-              <span style={{ color: DEW_COLOR }}>{fill(t.dewPointF, { unit })}</span>{t.dashed}
-            </>
+      {humidityOn && humiditySeries.length > 0 && (
+        <p class="m-0 mb-2 text-xs text-[var(--color-text-muted)] flex flex-wrap items-center gap-x-2 gap-y-1">
+          {showAllHumidity ? (
+            <span>{t.humidityAllLegend}</span>
           ) : (
-            t.humidityNoDew
+            <span>
+              <span style={{ color: HUMIDITY_COLOR }}>{t.humidityPct}</span>
+              {humidityHasDew ? (
+                <>
+                  {" · "}
+                  <span style={{ color: DEW_COLOR }}>{fill(t.dewPointF, { unit })}</span>{t.dashed}
+                </>
+              ) : (
+                t.humidityNoDew
+              )}
+              {humidityCandidates.length <= 1 && (probeLabels.length > 1 || !humidityHasDew) && humiditySource
+                ? fill(t.humidityFrom, { probe: humiditySource })
+                : ""}
+            </span>
           )}
-          {(probeLabels.length > 1 || !humidityHasDew) && humiditySource ? fill(t.humidityFrom, { probe: humiditySource }) : ""}
+          {humidityCandidates.length > 1 && (
+            <label class="inline-flex items-center gap-1">
+              <span>{t.humidityFromLabel}</span>
+              <select
+                class="form-input py-0 text-xs"
+                style={{ width: "auto" }}
+                value={humidityChoice === "auto" || humidityChoice === "all" || humidityCandidates.includes(humidityChoice) ? humidityChoice : "auto"}
+                onChange={(e) => {
+                  const value = (e.currentTarget as HTMLSelectElement).value;
+                  setHumidityChoice(value);
+                  writeHistoryChartPrefs({ humiditySource: value });
+                }}
+              >
+                <option value="auto">{humiditySource && humidityChoice === "auto" ? `${t.humidityAuto} (${humiditySource})` : t.humidityAuto}</option>
+                {humidityCandidates.map((label) => (
+                  <option key={label} value={label}>{label}</option>
+                ))}
+                <option value="all">{t.humidityAll}</option>
+              </select>
+            </label>
+          )}
         </p>
       )}
       <details class="history-chart-tips m-0 mb-2 text-xs text-[var(--color-text-muted)]">
@@ -1524,7 +1589,7 @@ function HistoryChartView({
       </p>
       {/* Display-only guide lines (saved in this browser), folded so the chart stays the focus. */}
       <details class="history-chart-tips m-0 mt-2 text-xs text-[var(--color-text-muted)]">
-      <summary>{t.optionsSummary}{showHumidity && humidityPoints.length >= 2 ? t.optionsSummaryHumidity : ""}</summary>
+      <summary>{t.optionsSummary}{showHumidity && humidityCandidates.length > 0 ? t.optionsSummaryHumidity : ""}</summary>
       <form
         class="chart-threshold-controls"
         onSubmit={(e) => e.preventDefault()}
@@ -1557,7 +1622,7 @@ function HistoryChartView({
             }}
           />
         </label>
-        {showHumidity && humidityPoints.length >= 2 && (
+        {showHumidity && humidityCandidates.length > 0 && (
           <label class="chart-threshold-field chart-threshold-check">
             <span>{t.humidityDew}</span>
             <input

@@ -5,6 +5,8 @@ export type HistoryChartPrefs = {
   visibleProbes?: string[];
   houseVisible?: boolean;
   humidityOn?: boolean;
+  /** Humidity line source: "auto" (newest humidity), a probe label, or "all". */
+  humiditySource?: string;
 };
 
 export const HISTORY_CHART_PREFS_KEY = "tt-history-chart-prefs-v1";

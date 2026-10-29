@@ -3720,3 +3720,28 @@ Migration results reported by the user after 20261029160000/160100:
 - Evidence: door-events tests (+6: day range in a zone, timestamps and
   limit cap, plan-window clamp, truncated, 400s, 500), zonedDay (+1).
   `pnpm test`: 3327 passed. `pnpm typecheck`: 0 errors. Biome: clean.
+
+## Chart: choose which probe's humidity to show, or all (2026-10-29)
+
+User: with two probes reporting humidity, the automatic pick (newest
+humidity, ties → more readings) landed on the less useful one.
+
+- [x] "Humidity from" select next to the humidity legend when more than
+      one visible probe (or humidity-only sensor) has humidity: "Newest
+      reading (<probe>)" (the old automatic pick, default), each probe,
+      or "All probes". Saved in this browser with the other chart prefs
+      (`humiditySource`, shared by History and Overview); a saved probe
+      that's gone or hidden falls back to automatic.
+- [x] "All probes": each probe's humidity (thin solid) and dew point
+      (dashed) in that probe's colour; the axis scales to every dew line.
+      One source keeps the usual humidity/dew colours.
+- Copy in 5 locales (History charts and demo island).
+- Evidence: `pnpm test` 3327 passed; `pnpm typecheck` 0 errors; Biome
+  clean. Headless render with two humidity probes: default shows the
+  automatic pick with the select; "All probes" draws both probes'
+  humidity and dew point in their colours; picking one probe switches
+  the line to it. No unit test for the select itself (component logic;
+  `pickHumiditySource` is tested).
+- Open: the user reports the Overview chart looks "off" after removing a
+  probe while History looks fine; cause not yet known (needs a screenshot).
+
