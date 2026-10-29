@@ -6,7 +6,11 @@ vi.mock("./sensorReadings", () => ({
 }));
 
 const mockRecentSelect = vi.fn();
+// Saves go through upsert (ignore duplicates); a plain insert is the fallback.
 const mockInsert = vi.fn();
+const mockUpsertResult = vi.fn();
+const mockPlainInsert = vi.fn();
+const upsertOptions: unknown[] = [];
 const dedupSince: string[] = [];
 // sensor_readings lookups for findOpenStartBefore: [last closed, first open].
 const mockLastClosed = vi.fn();
@@ -37,7 +41,13 @@ vi.mock("./supabase", () => ({
             },
           }),
         }),
-        insert: (rows: unknown) => mockInsert(rows),
+        upsert: async (rows: unknown, options: unknown) => {
+          upsertOptions.push(options);
+          const result = await mockUpsertResult();
+          if (!result?.error) return mockInsert(rows);
+          return result;
+        },
+        insert: (rows: unknown) => mockPlainInsert(rows),
       };
     },
   }),
@@ -53,6 +63,9 @@ beforeEach(() => {
   mockLastState.mockReset().mockResolvedValue({ data: [], error: null });
   dedupSince.length = 0;
   mockInsert.mockReset().mockResolvedValue({ error: null });
+  mockUpsertResult.mockReset().mockResolvedValue({ error: null });
+  mockPlainInsert.mockReset().mockResolvedValue({ error: null });
+  upsertOptions.length = 0;
 });
 
 describe("recordDoorSessions", () => {
@@ -226,6 +239,39 @@ describe("recordDoorSessions", () => {
       await recordDoorSessionsIfJustClosed("hh-1", [{ id: "door-1", label: "Garage door" }], "2026-10-29T10:20:00Z");
 
       expect(mockFetchRecentBoolReadings).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe("duplicate-safe saving", () => {
+    const session = [
+      { value: true, recordedAt: "2026-10-29T10:00:00Z" },
+      { value: false, recordedAt: "2026-10-29T10:20:00Z" },
+    ];
+
+    it("inserts with ON CONFLICT DO NOTHING on the session key", async () => {
+      mockFetchRecentBoolReadings.mockResolvedValue(session);
+      const { recordDoorSessions } = await import("./doorEvents");
+      await recordDoorSessions("hh-1", [{ id: "door-1", label: "Garage door" }], NOW);
+      expect(upsertOptions).toEqual([{ onConflict: "household_id,label,opened_at", ignoreDuplicates: true }]);
+      expect(mockPlainInsert).not.toHaveBeenCalled();
+    });
+
+    it("falls back to a plain insert before the unique index exists (42P10)", async () => {
+      mockFetchRecentBoolReadings.mockResolvedValue(session);
+      mockUpsertResult.mockResolvedValue({ error: { code: "42P10", message: "no unique constraint" } });
+      const { recordDoorSessions } = await import("./doorEvents");
+      await recordDoorSessions("hh-1", [{ id: "door-1", label: "Garage door" }], NOW);
+      expect(mockPlainInsert).toHaveBeenCalledTimes(1);
+    });
+
+    it("reports any other save error", async () => {
+      mockFetchRecentBoolReadings.mockResolvedValue(session);
+      mockUpsertResult.mockResolvedValue({ error: { code: "57014", message: "timeout" } });
+      const { recordDoorSessions } = await import("./doorEvents");
+      await expect(recordDoorSessions("hh-1", [{ id: "door-1", label: "Garage door" }], NOW)).rejects.toThrow(
+        "door_open_events insert failed: timeout",
+      );
+      expect(mockPlainInsert).not.toHaveBeenCalled();
     });
   });
 });

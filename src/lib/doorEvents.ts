@@ -76,6 +76,17 @@ export async function persistDoorSessions(
   const rows = buildDoorEventRows(householdId, sessions, existing, sensorIdByLabel);
   if (rows.length === 0) return;
 
+  // The unique index door_open_events_session_key (migration
+  // 20261029160000) makes two saves at the same moment safe: the second is
+  // ignored. Deploys don't apply migrations, so until it exists Postgres
+  // answers 42P10 (no matching unique index); fall back to a plain insert.
+  const { error: upsertError } = await supabase
+    .from("door_open_events")
+    .upsert(rows, { onConflict: "household_id,label,opened_at", ignoreDuplicates: true });
+  if (!upsertError) return;
+  if (upsertError.code !== "42P10") {
+    throw new Error(`door_open_events insert failed: ${upsertError.message}`);
+  }
   const { error: insertError } = await supabase.from("door_open_events").insert(rows);
   if (insertError) {
     throw new Error(`door_open_events insert failed: ${insertError.message}`);
