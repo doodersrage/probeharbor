@@ -54,6 +54,7 @@ const de: AppHistoryChartsMessages = {
     dewPointF: "Taupunkt {unit}",
     dashed: " (gestrichelt)",
     humidityFrom: " · von {probe}",
+    humidityNoDew: " (kein Taupunkt: dieser Feuchtesensor hat keine passende Temperatur)",
     chartTips: "Tipps zum Diagramm",
     tipsExpanded: "Vergrößerte Ansicht: Ziehen wählt einen Bereich, Scrollen zoomt, Esc oder Schließen beendet die Ansicht.",
     tipsDefault: "Ziehen wählt einen Bereich (gezoomt: Umschalt + Ziehen), Scrollen zoomt, Link kopiert diesen Ausschnitt, PNG speichert ihn.",

@@ -54,6 +54,7 @@ const es: AppHistoryChartsMessages = {
     dewPointF: "punto de rocío {unit}",
     dashed: " (discontinua)",
     humidityFrom: " · de {probe}",
+    humidityNoDew: " (sin punto de rocío: este sensor de humedad no tiene una temperatura asociada)",
     chartTips: "Consejos del gráfico",
     tipsExpanded: "Vista ampliada: arrastra para seleccionar un rango, usa la rueda para hacer zoom y pulsa Esc o Cerrar para salir.",
     tipsDefault: "Arrastra para seleccionar un rango (Mayús + arrastrar con zoom), usa la rueda para hacer zoom, Enlace para copiar esta ventana y PNG para guardarla.",

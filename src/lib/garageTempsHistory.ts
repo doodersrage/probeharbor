@@ -568,11 +568,14 @@ export async function fetchAllGarageTempReadings(
   return { readings, error: null };
 }
 
+/** Humidity from a sensor whose key matched no temperature probe (see probePairingKey). */
+export type HumidityOnlyPoint = { timestamp: string; humidity: number; probeLabel: string };
+
 export async function fetchGarageTempChartData(
   userId: string,
   days = 7,
   filters: HistoryFilters = {},
-): Promise<{ points: ChartPoint[]; error: string | null }> {
+): Promise<{ points: ChartPoint[]; humidityOnly?: HumidityOnlyPoint[]; error: string | null }> {
   const since = new Date();
   since.setDate(since.getDate() - days);
   const sinceIso = filters.from ?? since.toISOString();
@@ -603,6 +606,12 @@ export async function fetchGarageTempChartData(
           device: row.feed_name ?? undefined,
         }],
   );
+  // Humidity that paired with no temperature: the chart can still draw it (no dew point).
+  const humidityOnly: HumidityOnlyPoint[] = readings.flatMap((row) =>
+    row.tempf == null && row.humidity != null && Number.isFinite(row.humidity)
+      ? [{ timestamp: row.timestamp, humidity: row.humidity, probeLabel: row.probe_label?.trim() || row.probe_key || "Humidity" }]
+      : [],
+  );
 
   // For windows beyond raw retention, fill gaps from hourly rollups.
   if (days > 90 || points.length < 10) {
@@ -611,11 +620,11 @@ export async function fetchGarageTempChartData(
       ? await fetchRollupChartPointsForHousehold(householdId, sinceIso, filters)
       : [];
     if (rollupPoints.length > 0) {
-      return { points: disambiguateChartLabels(mergeChartPoints(points, rollupPoints)), error: null };
+      return { points: disambiguateChartLabels(mergeChartPoints(points, rollupPoints)), humidityOnly, error: null };
     }
   }
 
-  return { points: disambiguateChartLabels(points), error: null };
+  return { points: disambiguateChartLabels(points), humidityOnly, error: null };
 }
 
 async function fetchRollupChartPointsForHousehold(

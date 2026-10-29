@@ -18,6 +18,7 @@ interface Props {
   alertMarkers?: import("../../lib/chartAlertMarkers").ChartAlertMarker[];
   /** Door-open periods shaded behind the lines (as on History). */
   doorBands?: import("../../lib/chartDoorBands").ChartDoorBand[];
+  humidityOnlyPoints?: import("../../lib/garageTempsHistory").HumidityOnlyPoint[];
   doorBandsError?: boolean;
   /** The user's °C display preference. */
   useCelsius?: boolean;
@@ -34,6 +35,7 @@ const {
   alertMarkers = [],
   doorBands = [],
   doorBandsError = false,
+  humidityOnlyPoints = [],
   useCelsius = false,
 } = Astro.props;
 
@@ -70,6 +72,7 @@ const chartUi = locale === "en" ? undefined : demoIslandMessages(locale).chart;
         alertMarkers={alertMarkers}
         doorBands={doorBands}
         doorBandsError={doorBandsError}
+        humidityOnlyPoints={humidityOnlyPoints}
         ui={chartUi}
         useCelsius={useCelsius}
       >

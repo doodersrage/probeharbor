@@ -43,6 +43,7 @@ interface Props {
   alertMarkers?: import("../lib/chartAlertMarkers").ChartAlertMarker[];
   highlightAlertId?: number | null;
   doorBands?: import("../lib/chartDoorBands").ChartDoorBand[];
+  humidityOnlyPoints?: import("../lib/garageTempsHistory").HumidityOnlyPoint[];
   doorBandsError?: boolean;
   canUseClaimsPack?: boolean;
   compareFrom?: string;
@@ -81,6 +82,7 @@ const {
   highlightAlertId = null,
   doorBands = [],
   doorBandsError = false,
+  humidityOnlyPoints = [],
   canUseClaimsPack = false,
   compareFrom = "",
   compareTo = "",
@@ -387,6 +389,7 @@ function comparePresetHref(preset: "prior_week" | "prior_month"): string {
       highlightAlertId={highlightAlertId}
       doorBands={doorBands}
       doorBandsError={doorBandsError}
+      humidityOnlyPoints={humidityOnlyPoints}
       canUseClaimsPack={canUseClaimsPack}
       canShareChart={canShareChart}
       ui={chartUi}
