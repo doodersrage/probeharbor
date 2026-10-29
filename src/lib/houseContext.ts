@@ -76,6 +76,48 @@ export function buildHouseContext(input: {
   };
 }
 
+/** Aim for about this many points: PostgREST returns at most 1000 rows, function results included. */
+const REFERENCE_TARGET_POINTS = 900;
+
+/** Bucket width (seconds) so [from, to] comes out near `target` points; at least a minute. */
+export function bucketSecondsFor(fromIso: string, toIso: string, target = REFERENCE_TARGET_POINTS): number {
+  const spanSec = Math.max(0, (Date.parse(toIso) - Date.parse(fromIso)) / 1000);
+  return Math.max(60, Math.ceil(spanSec / target));
+}
+
+/** null when the bucket function isn't available (or fails): the caller falls back to raw rows. */
+async function fetchReferenceSensorBuckets(
+  supabase: ReturnType<typeof import("./supabase").createServerClient>,
+  householdId: string,
+  sensorId: string,
+  fromIso: string,
+  toIso: string | undefined,
+  locale: Locale,
+): Promise<ChartPoint[] | null> {
+  const to = toIso ?? new Date().toISOString();
+  const { data: sensor } = await supabase
+    .from("device_sensors")
+    .select("label, kind")
+    .eq("id", sensorId)
+    .maybeSingle();
+  if (sensor && sensor.kind !== "temperature") return [];
+  const { data, error } = await supabase.rpc("sensor_bucket_averages", {
+    p_household_id: householdId,
+    p_sensor_ids: [sensorId],
+    p_from: fromIso,
+    p_to: to,
+    p_bucket_seconds: bucketSecondsFor(fromIso, to),
+  });
+  if (error) {
+    console.warn("sensor_bucket_averages unavailable, reading raw rows:", error.message);
+    return null;
+  }
+  const label = (sensor?.label as string | undefined) ?? libTextMessages(locale).house.house;
+  return (data ?? [])
+    .filter((row) => typeof row.avg_num === "number" && Number.isFinite(row.avg_num))
+    .map((row) => ({ timestamp: row.bucket_start, tempf: row.avg_num, humidity: null, probeLabel: label }));
+}
+
 export async function fetchReferenceSensorChartPoints(
   householdId: string,
   sensorId: string,
@@ -87,7 +129,13 @@ export async function fetchReferenceSensorChartPoints(
   const defaultFrom = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
   const from = filters.from ?? defaultFrom;
 
-  // Past the 1000-row limit: page through, newest first, so the line never stops short of now.
+  // Preferred: averages per time bucket in one call (sensor_bucket_averages,
+  // migration 20261029180000), so a sensor reporting every minute still
+  // covers the whole window.
+  const bucketed = await fetchReferenceSensorBuckets(supabase, householdId, sensorId, from, filters.to, locale);
+  if (bucketed) return bucketed;
+
+  // Fallback (function not there yet): page through, newest first, so the line never stops short of now.
   const { rows, error, capped } = await fetchNewestFirstPages((start, end) => {
     let query = supabase
       .from("sensor_readings")
