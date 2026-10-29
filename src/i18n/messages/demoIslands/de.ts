@@ -101,6 +101,7 @@ const de: DemoIslandMessages = {
     humidityPct: "Luftfeuchte %",
     dewPointF: "Taupunkt {unit}",
     dashed: " (gestrichelt)",
+    humidityFrom: " · von {probe}",
     chartTips: "Tipps zum Diagramm",
     tipsExpanded: "Vergrößerte Ansicht: Ziehen wählt einen Bereich, Scrollen zoomt, Esc oder Schließen beendet die Ansicht.",
     tipsDefault: "Ziehen wählt einen Bereich (gezoomt: Umschalt + Ziehen), Scrollen zoomt, Link kopiert diesen Ausschnitt, PNG speichert ihn.",

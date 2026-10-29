@@ -40,6 +40,7 @@ import {
 import { expandedChartDialogAttrs } from "../lib/chartLightbox";
 import { temperatureScale } from "../lib/chartScale";
 import { findSharedGaps, gapThresholdMs } from "../lib/chartGaps";
+import { pickHumiditySource } from "../lib/chartHumidity";
 
 /**
  * Every visible string, aria-label and title. Plain strings only (island props
@@ -98,6 +99,7 @@ export const HISTORY_CHART_UI_EN = {
   humidityPct: "Humidity %",
   dewPointF: "dew point {unit}",
   dashed: " (dashed)",
+  humidityFrom: " · from {probe}",
   chartTips: "Chart tips",
   tipsExpanded: "Expanded view — drag to select a range, scroll to zoom, Esc or Close to exit.",
   tipsDefault: "Drag to select a range (Shift+drag when zoomed), scroll to zoom, Link to copy this window, PNG to save.",
@@ -379,16 +381,15 @@ function HistoryChartView({
     return map;
   }, [points, t.probe]);
 
+  // One humidity axis, so one probe: the visible probe with the newest humidity.
+  const humiditySource = useMemo(
+    () => (showHumidity ? pickHumiditySource(points, visibleProbes, (p) => p.probeLabel || t.probe) : null),
+    [points, visibleProbes, showHumidity, t.probe],
+  );
   const humidityPoints = useMemo(() => {
-    if (!showHumidity) return [] as HumidityPoint[];
-    const labeled = probeLabels.find((label) =>
-      points.some((p) => (p.probeLabel || t.probe) === label && hasHumidity(p)),
-    );
-    const source = labeled
-      ? points.filter((p) => (p.probeLabel || t.probe) === labeled)
-      : points;
-    return source.filter(hasHumidity);
-  }, [points, probeLabels, showHumidity, t.probe]);
+    if (!humiditySource) return [] as HumidityPoint[];
+    return points.filter((p) => (p.probeLabel || t.probe) === humiditySource).filter(hasHumidity);
+  }, [points, humiditySource, t.probe]);
 
   useEffect(() => {
     const prefs = readHistoryChartPrefs();
@@ -1395,6 +1396,7 @@ function HistoryChartView({
           <span style={{ color: HUMIDITY_COLOR }}>{t.humidityPct}</span>
           {" · "}
           <span style={{ color: DEW_COLOR }}>{fill(t.dewPointF, { unit })}</span>{t.dashed}
+          {probeLabels.length > 1 && humiditySource ? fill(t.humidityFrom, { probe: humiditySource }) : ""}
         </p>
       )}
       <details class="history-chart-tips m-0 mb-2 text-xs text-[var(--color-text-muted)]">

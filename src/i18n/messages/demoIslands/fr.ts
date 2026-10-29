@@ -101,6 +101,7 @@ const fr: DemoIslandMessages = {
     humidityPct: "Humidité %",
     dewPointF: "point de rosée {unit}",
     dashed: " (pointillés)",
+    humidityFrom: " · de {probe}",
     chartTips: "Astuces",
     tipsExpanded: "Vue agrandie : faites glisser pour sélectionner une plage, utilisez la molette pour zoomer, puis Échap ou Fermer pour quitter.",
     tipsDefault: "Faites glisser pour sélectionner une plage (Maj + glisser une fois zoomé), utilisez la molette pour zoomer, Lien pour copier cette fenêtre et PNG pour l’enregistrer.",

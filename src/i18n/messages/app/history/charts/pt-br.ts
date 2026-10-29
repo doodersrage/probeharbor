@@ -53,6 +53,7 @@ const ptBr: AppHistoryChartsMessages = {
     humidityPct: "Umidade %",
     dewPointF: "ponto de orvalho {unit}",
     dashed: " (tracejado)",
+    humidityFrom: " · de {probe}",
     chartTips: "Dicas do gráfico",
     tipsExpanded: "Visão ampliada: arraste para selecionar um período, role para dar zoom e use Esc ou Fechar para sair.",
     tipsDefault: "Arraste para selecionar um período (Shift + arrastar com zoom), role para dar zoom, use Link para copiar esta janela e PNG para salvar.",
