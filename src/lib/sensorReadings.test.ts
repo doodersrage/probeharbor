@@ -4,7 +4,7 @@ import type { TempFeedResult, TempProbeConfig } from "./tempFeedConfig";
 
 function mockQuery(result: { data?: unknown; error?: unknown }) {
   const builder: Record<string, unknown> = {};
-  for (const method of ["select", "eq", "in", "gte", "lt", "not", "order", "limit", "insert"]) {
+  for (const method of ["select", "eq", "in", "gte", "lt", "not", "order", "limit", "insert", "range"]) {
     builder[method] = vi.fn(() => builder);
   }
   builder.maybeSingle = vi.fn(() => Promise.resolve(result));
@@ -278,6 +278,36 @@ describe("fetchRecentBoolReadings", () => {
     const { fetchRecentBoolReadings } = await import("./sensorReadings");
 
     expect(await fetchRecentBoolReadings("sensor-1", "2024-01-01")).toEqual([]);
+  });
+
+  it("reads a whole day of once-a-minute door states, including the newest (not just the oldest 1000)", async () => {
+    // 1440 readings, door closed except opened for the last 10 minutes.
+    const start = Date.parse("2026-10-28T12:00:00Z");
+    const newestFirst = Array.from({ length: 1440 }, (_, i) => ({
+      value_bool: i >= 1430,
+      recorded_at: new Date(start + i * 60000).toISOString(),
+    })).reverse();
+    mockFrom.mockImplementation(() => {
+      const q = mockQuery({ data: [] });
+      q.range = vi.fn((from: number, to: number) => Promise.resolve({ data: newestFirst.slice(from, to + 1), error: null }));
+      return q;
+    });
+    const { fetchRecentBoolReadings } = await import("./sensorReadings");
+
+    const result = await fetchRecentBoolReadings("door-1", "2026-10-28T12:00:00Z");
+
+    expect(result).toHaveLength(1440);
+    expect(result[0]?.recordedAt).toBe("2026-10-28T12:00:00.000Z");
+    expect(result.at(-1)).toEqual({ value: true, recordedAt: new Date(start + 1439 * 60000).toISOString() });
+  });
+
+  it("returns no readings (and logs) when the query fails", async () => {
+    mockFrom.mockReturnValue(mockQuery({ data: null, error: { message: "timeout" } }));
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const { fetchRecentBoolReadings } = await import("./sensorReadings");
+    expect(await fetchRecentBoolReadings("door-1", "2026-10-28T12:00:00Z")).toEqual([]);
+    expect(spy).toHaveBeenCalled();
+    spy.mockRestore();
   });
 });
 

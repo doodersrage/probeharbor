@@ -4,6 +4,7 @@ import type { DeviceSensor, DeviceWithSensors } from "./devices";
 import type { TempFeedResult, TempProbeConfig } from "./tempFeedConfig";
 import { applySensorOffset } from "./sensorCalibration";
 import { implausibleReason } from "./readingPlausibility";
+import { fetchNewestFirstPages } from "./pagedRows";
 export type { TypedSensorValue } from "./ingestPayload";
 export { parseIngestPayload, inferSensorKind } from "./ingestPayload";
 
@@ -192,15 +193,27 @@ export async function fetchRecentBoolReadings(
   sinceIso: string,
 ): Promise<Array<{ value: boolean; recordedAt: string }>> {
   const supabase = createServerClient();
-  const { data } = await supabase
-    .from("sensor_readings")
-    .select("value_bool, recorded_at")
-    .eq("sensor_id", sensorId)
-    .gte("recorded_at", sinceIso)
-    .not("value_bool", "is", null)
-    .order("recorded_at", { ascending: true });
+  // A device posting every minute sends 1440 door states a day, past the
+  // 1000-row limit. Reading oldest-first cut off the newest ~7 hours, so
+  // door alerts, door history and "open now" saw a stale state. Page
+  // through newest-first (10 pages ≈ a week at one reading a minute).
+  const { rows: data, error, capped } = await fetchNewestFirstPages((start, end) =>
+    supabase
+      .from("sensor_readings")
+      .select("value_bool, recorded_at")
+      .eq("sensor_id", sensorId)
+      .gte("recorded_at", sinceIso)
+      .not("value_bool", "is", null)
+      .order("recorded_at", { ascending: false })
+      .range(start, end),
+  );
+  if (error) {
+    console.error(`fetchRecentBoolReadings(${sensorId}) failed:`, error);
+    return [];
+  }
+  if (capped) console.warn(`fetchRecentBoolReadings(${sensorId}): row cap hit; oldest readings not included`);
 
-  return (data ?? [])
+  return data
     .filter((row) => typeof row.value_bool === "boolean")
     .map((row) => ({
       value: row.value_bool as boolean,
