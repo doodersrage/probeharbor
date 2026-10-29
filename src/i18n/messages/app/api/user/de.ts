@@ -35,6 +35,9 @@ const de: ApiUserMessages = {
   csvRequiresPlan: "Der CSV-Export erfordert ein aktives Abo oder Administratorzugriff",
   doorCsvFailed: "Der Export des Türverlaufs ist fehlgeschlagen. Bitte versuch es gleich noch einmal.",
   doorCsvTooMany: "Zu viele Türöffnungen für eine CSV (mehr als 5.000). Wähl weniger Tage aus und versuch es noch einmal.",
+  doorEventsInvalidDate: "Verwende für from und to JJJJ-MM-TT oder einen vollständigen Zeitstempel.",
+  doorEventsRangeOrder: "„from“ muss vor „to“ liegen.",
+  doorEventsFailed: "Der Türverlauf konnte nicht geladen werden. Bitte versuch es gleich noch einmal.",
   push: {
     invalidSubscription: "Ungültiges Abonnement",
     missingEndpoint: "Endpoint fehlt",

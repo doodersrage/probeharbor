@@ -35,6 +35,9 @@ const es: ApiUserMessages = {
   csvRequiresPlan: "Para exportar CSV necesitas una suscripción activa o acceso de administrador",
   doorCsvFailed: "No se pudo exportar el historial de puertas. Inténtalo de nuevo en un momento.",
   doorCsvTooMany: "Hay demasiadas aperturas de puertas para un solo CSV (más de 5000). Elige menos días e inténtalo de nuevo.",
+  doorEventsInvalidDate: "Usa AAAA-MM-DD o una marca de tiempo completa en from y to.",
+  doorEventsRangeOrder: "«from» debe ser anterior a «to».",
+  doorEventsFailed: "No se pudo cargar el historial de puertas. Inténtalo de nuevo en un momento.",
   push: {
     invalidSubscription: "Suscripción no válida",
     missingEndpoint: "Falta el endpoint",

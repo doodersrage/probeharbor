@@ -44,6 +44,9 @@ const en = {
   csvRequiresPlan: "CSV export requires an active subscription or admin access",
   doorCsvFailed: "Door events export failed. Please try again in a moment.",
   doorCsvTooMany: "Too many door openings for one CSV (more than 5,000). Pick fewer days and try again.",
+  doorEventsInvalidDate: "Use YYYY-MM-DD or a full timestamp for from and to.",
+  doorEventsRangeOrder: "\"from\" must be before \"to\".",
+  doorEventsFailed: "Door history couldn't be loaded. Please try again in a moment.",
   /** /api/push/* */
   push: {
     invalidSubscription: "Invalid subscription",

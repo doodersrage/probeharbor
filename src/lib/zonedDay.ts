@@ -72,3 +72,18 @@ export function zonedDayEndIso(day: string, timeZone: string): string | null {
   const next = new Date(Date.UTC(y, mo - 1, d + 1));
   return new Date(startMs(next.getUTCFullYear(), next.getUTCMonth() + 1, next.getUTCDate(), timeZone) - 1).toISOString();
 }
+
+/**
+ * A date-range bound from a query string: YYYY-MM-DD is a whole day in
+ * `timeZone` (start, or end when `endOfDay`); anything else must be a full
+ * timestamp. undefined = not given; null = given but not a date.
+ */
+export function parseRangeBound(raw: string | null, timeZone: string, endOfDay: boolean): string | null | undefined {
+  const value = raw?.trim();
+  if (!value) return undefined;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return (endOfDay ? zonedDayEndIso(value, timeZone) : zonedDayStartIso(value, timeZone)) ?? null;
+  }
+  const ms = Date.parse(value);
+  return Number.isFinite(ms) ? new Date(ms).toISOString() : null;
+}

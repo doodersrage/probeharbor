@@ -35,6 +35,9 @@ const ptBr: ApiUserMessages = {
   csvRequiresPlan: "A exportação em CSV exige uma assinatura ativa ou acesso de administrador",
   doorCsvFailed: "Não foi possível exportar o histórico das portas. Tente de novo em instantes.",
   doorCsvTooMany: "Há aberturas de portas demais para um único CSV (mais de 5.000). Escolha menos dias e tente de novo.",
+  doorEventsInvalidDate: "Use AAAA-MM-DD ou um carimbo de data e hora completo em from e to.",
+  doorEventsRangeOrder: "“from” precisa ser anterior a “to”.",
+  doorEventsFailed: "Não foi possível carregar o histórico das portas. Tente de novo em instantes.",
   push: {
     invalidSubscription: "Inscrição inválida",
     missingEndpoint: "Endpoint ausente",

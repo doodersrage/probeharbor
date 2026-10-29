@@ -3705,3 +3705,18 @@ Migration results reported by the user after 20261029160000/160100:
   (only the all-cold hour counted); probe filter and household isolation
   correct; anon denied.
 - Apply with `pnpm db:pending` (two migrations).
+
+## Door-events API: date range (2026-10-29)
+
+- [x] `GET /api/user/door-events` takes optional `from` / `to`
+      (`YYYY-MM-DD` = whole day in the browser's zone via ph_tz, or an
+      ISO timestamp; `parseRangeBound` in zonedDay.ts). With either: the
+      openings that started in that range, newest first, clamped to the
+      plan's history window, `limit` default 100 / max 500, plus `range`
+      and `truncated`. Without: unchanged (latest `limit`, default 12, max
+      50). Bad date or from > to → 400; query failure → 500 (not an empty
+      list). Copy in 5 locales. Documented in docs/api/index.md (with the
+      door CSV).
+- Evidence: door-events tests (+6: day range in a zone, timestamps and
+  limit cap, plan-window clamp, truncated, 400s, 500), zonedDay (+1).
+  `pnpm test`: 3327 passed. `pnpm typecheck`: 0 errors. Biome: clean.

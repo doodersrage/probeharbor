@@ -26,6 +26,8 @@ Machine-readable contract:
 | `POST` | `/api/ingest/{deviceKey}` | Path key | Push sensor readings |
 | `POST` | `/api/ingest/mqtt` | `X-Ingest-Key` | MQTT→HTTP bridge |
 | `POST` | `/api/user/pull-setup` | Session cookie | Save pull feeds + probe labels (JSON body) |
+| `GET` | `/api/user/door-events` | Session cookie | Door openings: the latest `limit` (default 12, max 50), or with `from` / `to` (`YYYY-MM-DD` in your browser's time zone, or ISO timestamps) the openings that started in that range, newest first (`limit` default 100, max 500; adds `range` and `truncated`). Also `live_sessions` for the last 24 h |
+| `GET` | `/api/door-events/export.csv` | Session cookie (CSV plan) | Door openings with temperature and humidity at open and close (`from`, `to`, `days`, `door`); UTC times |
 | `POST` | `/api/devices/reveal-ingest-key` | Session cookie | Recover encrypted push ingest key (rate-limited; audited) |
 | `GET` | `/api/v1/metrics` | Bearer API key | Prometheus text exposition |
 | `GET` | `/api/v1/devices` | Bearer API key | List household devices |

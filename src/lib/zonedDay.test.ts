@@ -41,3 +41,15 @@ describe("time zone cookie", () => {
     expect(isValidTimeZone("x".repeat(100))).toBe(false);
   });
 });
+
+describe("parseRangeBound", () => {
+  it("reads whole days in a zone, full timestamps, and rejects anything else", async () => {
+    const { parseRangeBound } = await import("./zonedDay");
+    expect(parseRangeBound("2026-10-01", "America/New_York", false)).toBe("2026-10-01T04:00:00.000Z");
+    expect(parseRangeBound("2026-10-01", "America/New_York", true)).toBe("2026-10-02T03:59:59.999Z");
+    expect(parseRangeBound("2026-10-01T06:30:00+02:00", "UTC", false)).toBe("2026-10-01T04:30:00.000Z");
+    expect(parseRangeBound("", "UTC", false)).toBeUndefined();
+    expect(parseRangeBound(null, "UTC", false)).toBeUndefined();
+    expect(parseRangeBound("last-tuesday", "UTC", false)).toBeNull();
+  });
+});
