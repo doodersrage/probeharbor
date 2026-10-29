@@ -1,7 +1,8 @@
 import type { DoorStateAtTime } from "./anomalyDetection";
-import { computeDoorOpenSessions } from "./doorDuration";
-import { fetchRecentBoolReadings } from "./sensorReadings";
-import { createServerClient } from "./supabase";
+
+// Browser-safe: HistoryChart (a client island) imports this file, so it must
+// not import server code (Supabase clients, sensor reads). The database
+// fetch lives in chartDoorBands.server.ts.
 
 /**
  * A stretch of time a door sensor reported open, for shading the History
@@ -13,11 +14,6 @@ export type ChartDoorBand = {
   openedAt: string;
   closedAt: string | null;
 };
-
-/** PostgREST returns at most this many rows by default (`max_rows`). */
-const DOOR_BAND_LIMIT = 1000;
-/** Same lookback the ingest and alert paths use to find an open session. */
-const OPEN_SESSION_LOOKBACK_MS = 24 * 60 * 60 * 1000;
 
 function bandEndMs(band: ChartDoorBand): number {
   return band.closedAt ? Date.parse(band.closedAt) : Number.POSITIVE_INFINITY;
@@ -48,14 +44,44 @@ export function doorBandsAt(bands: ChartDoorBand[], ts: number): ChartDoorBand[]
   });
 }
 
-/** How many open periods overlap the window, and which doors they belong to. */
+/** How many open periods overlap the window, in total and per door (in door order). */
 export function summarizeDoorBands(
   bands: ChartDoorBand[],
   minTs: number,
   maxTs: number,
-): { count: number; labels: string[] } {
+): { count: number; labels: string[]; perDoor: Array<{ label: string; count: number }> } {
   const clipped = clipDoorBands(bands, minTs, maxTs);
-  return { count: clipped.length, labels: [...new Set(clipped.map((b) => b.label))] };
+  const counts = new Map<string, number>();
+  for (const band of clipped) counts.set(band.label, (counts.get(band.label) ?? 0) + 1);
+  const labels = doorLabels(clipped);
+  return {
+    count: clipped.length,
+    labels,
+    perDoor: labels.map((label) => ({ label, count: counts.get(label) ?? 0 })),
+  };
+}
+
+/** Door names in a stable order (alphabetical), each once. */
+export function doorLabels(bands: Array<{ label: string }>): string[] {
+  return [...new Set(bands.map((b) => b.label))].sort((a, b) => a.localeCompare(b));
+}
+
+/** At most this many per-door rows above the chart; other doors are still shaded. */
+export const MAX_DOOR_LANES = 4;
+
+/**
+ * Which doors get their own row above the chart. One door (or none) needs
+ * no rows: its band and top strip inside the plot already say it all.
+ */
+export function doorLanes(
+  visibleLabels: string[],
+  maxLanes = MAX_DOOR_LANES,
+): { lanes: string[]; overflow: number } {
+  if (visibleLabels.length <= 1) return { lanes: [], overflow: 0 };
+  return {
+    lanes: visibleLabels.slice(0, maxLanes),
+    overflow: Math.max(0, visibleLabels.length - maxLanes),
+  };
 }
 
 /** Door periods in the shape `detectTemperatureAnomalies` takes. */
@@ -66,64 +92,4 @@ export function toDoorStates(bands: ChartDoorBand[]): DoorStateAtTime[] {
     recordedAt: band.openedAt,
     until: band.closedAt,
   }));
-}
-
-/**
- * Door-open periods that overlap [fromIso, toIso] for a household: saved
- * sessions from `door_open_events`, plus a door that is open right now
- * (worked out from the last 24 h of readings, as the alert path does).
- * Returns an error instead of throwing, so the chart can still draw.
- */
-export async function fetchChartDoorBands(
-  householdId: string,
-  fromIso: string,
-  toIso: string,
-  doorSensors: Array<{ id: string; label: string }>,
-  now = Date.now(),
-): Promise<{ bands: ChartDoorBand[]; error: string | null }> {
-  const supabase = createServerClient();
-  const { data, error } = await supabase
-    .from("door_open_events")
-    .select("label, opened_at, closed_at")
-    .eq("household_id", householdId)
-    .lte("opened_at", toIso)
-    .gte("closed_at", fromIso)
-    .order("opened_at", { ascending: false })
-    .limit(DOOR_BAND_LIMIT);
-  if (error) {
-    return { bands: [], error: error.message };
-  }
-  if ((data ?? []).length === DOOR_BAND_LIMIT) {
-    console.warn(`Door bands for household ${householdId}: hit the ${DOOR_BAND_LIMIT}-row limit; oldest not shown`);
-  }
-
-  const bands: ChartDoorBand[] = (data ?? [])
-    .filter((row) => typeof row.opened_at === "string")
-    .map((row) => ({
-      label: row.label as string,
-      openedAt: row.opened_at as string,
-      closedAt: (row.closed_at as string | null) ?? null,
-    }))
-    .reverse();
-
-  // A door that is open now has no saved session yet.
-  if (Date.parse(toIso) >= now - OPEN_SESSION_LOOKBACK_MS) {
-    const since = new Date(now - OPEN_SESSION_LOOKBACK_MS).toISOString();
-    for (const sensor of doorSensors) {
-      try {
-        const readings = await fetchRecentBoolReadings(sensor.id, since);
-        const sessions = computeDoorOpenSessions(
-          readings.map((r) => ({ label: sensor.label, kind: "door", value: r.value, recordedAt: r.recordedAt })),
-        );
-        for (const session of sessions) {
-          if (!session.stillOpen) continue;
-          bands.push({ label: session.label, openedAt: session.openedAt, closedAt: null });
-        }
-      } catch (err) {
-        console.error(`Door bands: reading door ${sensor.id} failed:`, err);
-      }
-    }
-  }
-
-  return { bands, error: null };
 }

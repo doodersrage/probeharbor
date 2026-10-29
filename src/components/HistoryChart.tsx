@@ -23,7 +23,15 @@ import {
   nearestAlertMarker,
   type ChartAlertMarker,
 } from "../lib/chartAlertMarkers";
-import { clipDoorBands, doorBandsAt, summarizeDoorBands, type ChartDoorBand } from "../lib/chartDoorBands";
+import {
+  clipDoorBands,
+  doorBandsAt,
+  doorLabels,
+  doorLanes,
+  MAX_DOOR_LANES,
+  summarizeDoorBands,
+  type ChartDoorBand,
+} from "../lib/chartDoorBands";
 import { useHistoryChartInteraction } from "../lib/useHistoryChartInteraction";
 import {
   buildHistoryChartUrl,
@@ -108,13 +116,15 @@ export const HISTORY_CHART_UI_EN = {
   optional: "Optional",
   humidityDew: "Humidity + dew",
   freezeLineFromAlerts: "Freeze line from alerts: {temp}{unit}",
-  doorsLegend: "Doors open",
   doorOpenFor: "open {duration}",
   doorStillOpen: "open, no close reported yet",
   durationMinutes: "{minutes} min",
   durationHoursMinutes: "{hours} h {minutes} min",
-  summaryDoors: "Door-open periods shaded on the chart: {count} ({doors}).",
-  tipsDoors: " Shaded bands show when a door sensor in your household reported open.",
+  summaryDoors: "Door-open periods shaded on the chart: {list}.",
+  summaryDoorItem: "{door}: {count}",
+  doorLegendTitle: "Show or hide when {door} was open",
+  tipsDoors: " Shaded bands show when a door sensor in your household reported open; with more than one door, each door has its own row above the chart.",
+  doorLanesMore: " Rows show up to {max} doors; the others are still shaded and listed when you hover.",
   doorsUnavailable: "Door history couldn't be loaded, so open doors aren't shaded.",
 };
 
@@ -213,6 +223,9 @@ const COLOR_ABOVE = "#fb923c";
 const HUMIDITY_COLOR = "#a78bfa";
 const DEW_COLOR = "#2dd4bf";
 const DOOR_COLOR = "#fde68a";
+/** Height of one per-door row above the plot, and the step between rows. */
+const DOOR_LANE_H = 8;
+const DOOR_LANE_STEP = 12;
 // Saved guide values are in the unit they were entered in, so each unit has its own key.
 const storageHigh = (celsius: boolean) => (celsius ? "tt-chart-high-c" : "tt-chart-high-f");
 const storageTarget = (celsius: boolean) => (celsius ? "tt-chart-target-c" : "tt-chart-target-f");
@@ -333,7 +346,23 @@ function HistoryChartView({
     null,
   );
   const [houseVisible, setHouseVisible] = useState(true);
-  const [doorsVisible, setDoorsVisible] = useState(true);
+  const [hiddenDoors, setHiddenDoors] = useState<Set<string>>(() => new Set());
+  const allDoorLabels = useMemo(() => doorLabels(doorBands), [doorBands]);
+  const visibleDoorBands = useMemo(
+    () => (hiddenDoors.size === 0 ? doorBands : doorBands.filter((b) => !hiddenDoors.has(b.label))),
+    [doorBands, hiddenDoors],
+  );
+  const doorLaneInfo = useMemo(
+    () => doorLanes(allDoorLabels.filter((label) => !hiddenDoors.has(label))),
+    [allDoorLabels, hiddenDoors],
+  );
+  const toggleDoor = (label: string) =>
+    setHiddenDoors((prev) => {
+      const next = new Set(prev);
+      if (next.has(label)) next.delete(label);
+      else next.add(label);
+      return next;
+    });
   const [hoverDoors, setHoverDoors] = useState<ChartDoorBand[]>([]);
   const [linkCopied, setLinkCopied] = useState(false);
   const [shareBusy, setShareBusy] = useState(false);
@@ -472,7 +501,7 @@ function HistoryChartView({
             ? Date.parse(hits[0].timestamp)
             : ts;
 
-        const doors = doorsVisible ? doorBandsAt(doorBands, ts) : [];
+        const doors = doorBandsAt(visibleDoorBands, ts);
 
         setHoverTs(Number.isFinite(snapTs) ? snapTs : ts);
         setHoverHits(hits);
@@ -493,8 +522,7 @@ function HistoryChartView({
     }),
     [
       alertMarkers,
-      doorBands,
-      doorsVisible,
+      visibleDoorBands,
       byProbe,
       visibleProbes,
       houseVisible,
@@ -582,7 +610,8 @@ function HistoryChartView({
       const times = points.map((p) => Date.parse(p.timestamp)).filter(Number.isFinite);
       const doors = summarizeDoorBands(doorBands, Math.min(...times), Math.max(...times));
       if (doors.count > 0) {
-        parts.push(fill(t.summaryDoors, { count: doors.count, doors: doors.labels.join(", ") }));
+        const list = doors.perDoor.map((d) => fill(t.summaryDoorItem, { door: d.label, count: d.count })).join(", ");
+        parts.push(fill(t.summaryDoors, { list }));
       }
     }
     return parts.join(" ");
@@ -624,8 +653,10 @@ function HistoryChartView({
 
       const plotHumidity = humidityOn && humidityPoints.length >= 2;
 
+      const lanes = doorLaneInfo.lanes;
       const pad = {
-        top: 16,
+        // Room for one row per door above the plot when there are several doors.
+        top: 16 + lanes.length * DOOR_LANE_STEP,
         right: plotHumidity ? 40 : 16,
         bottom: 28,
         left: 44,
@@ -774,6 +805,31 @@ function HistoryChartView({
       drawGuide(targetAmbientF, "rgba(167, 139, 250, 0.85)", t.guideTarget, [2, 4]);
       drawGuide(highTempF, "rgba(251, 146, 60, 0.9)", t.guideHigh, [6, 4]);
 
+      // One row per door above the plot: a faint track, solid where that door was open.
+      lanes.forEach((label, i) => {
+        const y = 4 + i * DOOR_LANE_STEP;
+        g.save();
+        g.fillStyle = "rgba(148, 163, 184, 0.12)";
+        g.fillRect(pad.left, y, innerW, DOOR_LANE_H);
+        g.fillStyle = "rgba(253, 230, 138, 0.85)";
+        for (const band of clipDoorBands(visibleDoorBands, minTs, maxTs)) {
+          if (band.label !== label) continue;
+          const x0 = Math.max(pad.left, xFor(band.startMs));
+          const x1 = Math.min(width - pad.right, xFor(band.endMs));
+          g.fillRect(x0, y, Math.max(2, x1 - x0), DOOR_LANE_H);
+        }
+        // Name at the left on a see-through dark chip: readable, and a bar under it still shows.
+        g.font = "9px system-ui, sans-serif";
+        g.textAlign = "left";
+        const text = label.length > 28 ? `${label.slice(0, 27)}…` : label;
+        const tw = g.measureText(text).width;
+        g.fillStyle = "rgba(15, 31, 44, 0.6)";
+        g.fillRect(pad.left + 2, y - 1, tw + 6, DOOR_LANE_H + 2);
+        g.fillStyle = "#e2e8f0";
+        g.fillText(text, pad.left + 5, y + DOOR_LANE_H - 1);
+        g.restore();
+      });
+
       g.save();
       g.beginPath();
       g.rect(pad.left, pad.top, innerW, innerH);
@@ -859,19 +915,21 @@ function HistoryChartView({
         g.restore();
       }
 
-      // Door-open periods: a light wash behind the lines, with a solid strip on top.
-      if (doorsVisible) {
-        for (const band of clipDoorBands(doorBands, minTs, maxTs)) {
-          const x0 = Math.max(pad.left, xFor(band.startMs));
-          const x1 = Math.min(width - pad.right, xFor(band.endMs));
-          const w = Math.max(2, x1 - x0);
-          g.save();
-          g.fillStyle = "rgba(253, 230, 138, 0.12)";
-          g.fillRect(x0, pad.top, w, innerH);
+      // Door-open periods: a light wash behind the lines (any visible door).
+      // With one door, a solid strip on top marks it; several doors use the rows above.
+      for (const band of clipDoorBands(visibleDoorBands, minTs, maxTs)) {
+        const x0 = Math.max(pad.left, xFor(band.startMs));
+        const x1 = Math.min(width - pad.right, xFor(band.endMs));
+        const w = Math.max(2, x1 - x0);
+        g.save();
+        // A warmer, stronger wash than the grey "no data" gaps, so the two don't read alike.
+        g.fillStyle = "rgba(253, 230, 138, 0.16)";
+        g.fillRect(x0, pad.top, w, innerH);
+        if (lanes.length === 0) {
           g.fillStyle = "rgba(253, 230, 138, 0.75)";
           g.fillRect(x0, pad.top, w, 3);
-          g.restore();
         }
+        g.restore();
       }
 
       if (priorYearPoints.length >= 2) {
@@ -996,8 +1054,8 @@ function HistoryChartView({
     brushRange,
     alertMarkers,
     highlightAlertId,
-    doorBands,
-    doorsVisible,
+    visibleDoorBands,
+    doorLaneInfo,
     bindWheelZoom,
     locale,
     t,
@@ -1304,17 +1362,22 @@ function HistoryChartView({
               {houseLegend ?? t.house}
             </button>
           )}
-          {doorBands.length > 0 && (
-            <button
-              type="button"
-              class={`history-chart-legend-btn${doorsVisible ? " is-on" : ""}`}
-              style={{ "--legend-color": DOOR_COLOR } as never}
-              aria-pressed={doorsVisible}
-              onClick={() => setDoorsVisible((v) => !v)}
-            >
-              {t.doorsLegend}
-            </button>
-          )}
+          {allDoorLabels.map((label) => {
+            const on = !hiddenDoors.has(label);
+            return (
+              <button
+                key={`door:${label}`}
+                type="button"
+                class={`history-chart-legend-btn history-chart-legend-btn--door${on ? " is-on" : ""}`}
+                style={{ "--legend-color": DOOR_COLOR } as never}
+                aria-pressed={on}
+                title={fill(t.doorLegendTitle, { door: label })}
+                onClick={() => toggleDoor(label)}
+              >
+                {label}
+              </button>
+            );
+          })}
         </div>
       )}
       {doorBandsError && (
@@ -1344,6 +1407,7 @@ function HistoryChartView({
         })}
         {humidityOn && humidityPoints.length >= 2 ? t.tipsDew : ""}
         {doorBands.length > 0 ? t.tipsDoors : ""}
+        {doorLaneInfo.overflow > 0 ? fill(t.doorLanesMore, { max: MAX_DOOR_LANES }) : ""}
       </details>
       <div
         class="history-chart-canvas-wrap"

@@ -4098,6 +4098,11 @@
     vertical-align: -0.05rem;
   }
 
+  /* Doors are time periods, not lines: a square swatch sets them apart from probes. */
+  .history-chart-legend-btn--door::before {
+    border-radius: 2px;
+  }
+
   .history-chart-tooltip {
     position: absolute;
     z-index: 2;

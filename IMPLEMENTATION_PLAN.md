@@ -3433,3 +3433,35 @@ humidity readings were still arriving.
 - Still open: humidity keys that match no temperature (`bme_t` / `bme_h`)
   stay off the temperature chart; hourly rollups (windows > 90 days) are
   temperature-only, so humidity is blank there.
+
+## Door history, step 2b: one row per door on the History chart (2026-10-29)
+
+- [x] With two or more doors, each door gets a labelled row above the plot
+      (faint track, solid where open); the wash behind the lines shows any
+      visible door. One door: unchanged (wash + top strip, no rows).
+      Rows are capped at 4 (`MAX_DOOR_LANES`, alphabetical); extra doors
+      are still shaded and listed on hover, and a chart tip says so.
+- [x] One legend button per door (square swatch, `--door` class) instead of
+      a single "Doors open" toggle; hiding a door frees its row.
+- [x] Screen-reader summary lists openings per door ("Garage door: 2, Side
+      door: 1"). Copy in 5 locales (`summaryDoors` now takes `{list}`,
+      new `summaryDoorItem`, `doorLegendTitle`, `doorLanesMore`; `tipsDoors`
+      updated; `doorsLegend` removed).
+- [x] Door wash a little warmer (alpha 0.16) so it doesn't read like the
+      grey "no data" gaps; row labels on a see-through chip.
+- **Bug fixed (from step 2):** `chartDoorBands.ts` held the server fetch
+  (Supabase + sensor reads) next to the pure helpers, and the chart island
+  imports it, so the browser bundle pulled in the Supabase server client
+  and threw "supabaseUrl is required". With door data the History chart
+  would likely not have rendered. The fetch moved to
+  `chartDoorBands.server.ts`; a test now fails if `chartDoorBands.ts`
+  imports anything at runtime. Not caught by unit tests, typecheck or build;
+  found by rendering the chart.
+- Evidence: `chartDoorBands.test.ts` (7), `chartDoorBands.server.test.ts`
+  (5, incl. the import guard). `pnpm test`: 3266 passed. `pnpm typecheck`:
+  0 errors. `pnpm build`: pass; the built `HistoryChart` chunk and every
+  chunk it imports contain no Supabase or `door_open_events` code.
+  Rendered the real `HistoryChart` in headless Chromium (Vite bundle,
+  sample data, scratchpad harness): one-door and five-door layouts, hover
+  over an open door, hiding a door; no page errors. Screenshots reviewed.
+- Not verified: the real History page with production data, mobile widths.

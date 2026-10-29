@@ -44,7 +44,8 @@ import { formatHistoryRetention, getUserEntitlements } from "../../lib/entitleme
 import { getAlertSettingsForUser } from "../../lib/notify";
 import { listAlertEventsInRange } from "../../lib/alertEvents";
 import { toChartAlertMarkers } from "../../lib/chartAlertMarkers";
-import { fetchChartDoorBands, toDoorStates } from "../../lib/chartDoorBands";
+import { toDoorStates } from "../../lib/chartDoorBands";
+import { fetchChartDoorBands } from "../../lib/chartDoorBands.server";
 import { doorReportRange, loadDoorReport, summarizeDoorReport, type DoorReportRow } from "../../lib/doorEventReport";
 import { formatDurationMs } from "../../lib/doorDuration";
 import { listHistorySavedViews, searchParamsFromView } from "../../lib/historySavedViews";
