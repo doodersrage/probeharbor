@@ -3643,6 +3643,11 @@ Migration results reported by the user after 20261029160000/160100:
       `formatDurationMs` (History → Doors, door cards, door history) and
       the chart's door tooltip now show "5 s" below 60 s (German "5 Sek.");
       1 min and longer unchanged. Tests: 0/5/59.4/59.6/90 s and 90 min, plus de.
+      On the live site, the hardware test's ~5 s openings read 5 s, 5 s, 8 s. One read 2 s
+      despite the 5 s minimum gap between posts: durations use server
+      arrival times (the probe sends no timestamp), so they're within a few
+      seconds. Exact times would need NTP plus a device timestamp in the
+      payload; not planned unless second-level accuracy is needed.
 - Evidence: unit tests (+12: door filter list/validate/query, CSV filter;
   bucket sizing, bucket path, raw fallback; rollup bucket path and sizing).
   `pnpm test`: 3309 passed. `pnpm typecheck`: 0 errors. Biome: no new

@@ -85,6 +85,11 @@ Turn them on in `/flash` ("extras") or the portal's extras box before saving.
     flashed from source over USB and the switch was on a real door, with no console. The device
     page flipped Open/Closed as the door moved, and History → Doors listed separate
     sub-minute openings (three within 5:35 PM), which 1.2.2 could not record.
+    With seconds shown, openings of about 5 s read 5 s, 5 s and 8 s (others: 26 s, 2 s).
+    Durations are the gap between the server's arrival times (the probe sends
+    no timestamp), so they can be off by a few seconds: one read 2 s although
+    the probe starts posts at least 5 s apart, likely because one post took
+    longer to read sensors and connect.
     Still open: the ~1 s latency and the 5 s minimum gap between posts during rapid
     toggling (no 429s) weren't measured. Check with the serial console, or compare
     the device's readings export (second-level times) against noted door times.
