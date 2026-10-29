@@ -7,6 +7,7 @@
 import type { Entitlements } from "./entitlements";
 import { clampIsoToHistoryWindow, historyCutoffIso } from "./retentionSchedule";
 import { fetchGarageTempChartData } from "./garageTempsHistory";
+import { fetchTemperatureReadingCounts } from "./readingCounts";
 import { getAlertSettingsForUser } from "./notify";
 import { getUserHouseholdId } from "./households";
 import { listHouseholdDevices } from "./devices";
@@ -97,6 +98,11 @@ export async function generateClaimsPackForUser(
       .map((s) => ({ label: s.label, kind: s.kind })),
   }));
 
+  // Recorded readings (not chart samples) for "Total readings" / "Readings ≤ threshold".
+  const readingCounts = householdId
+    ? await fetchTemperatureReadingCounts(householdId, rangeFrom, rangeTo, alertSettings.freezeThresholdF)
+    : null;
+
   const cleanSiteUrl = siteUrl.replace(/\/$/, "");
   const fromQ = claimsDateQueryValue(rangeFrom);
   const toQ = claimsDateQueryValue(rangeTo);
@@ -116,6 +122,7 @@ export async function generateClaimsPackForUser(
     readingsCsvUrl: `${cleanSiteUrl}/api/garage-temps/export.csv?${qs}`,
     alertsCsvUrl: `${cleanSiteUrl}/api/alerts/export.csv?${qs}`,
     historyUrl: buildHistoryChartUrl(cleanSiteUrl, { from: fromQ, to: toQ }),
+    readingCounts,
   });
 
   return { pack, householdId, fromQ, toQ };

@@ -2060,6 +2060,20 @@ export type Database = {
           value_num: number
         }[]
       }
+      temperature_reading_counts: {
+        Args: {
+          p_household_id: string
+          p_from: string
+          p_to: string
+          p_threshold_f: number
+          p_sensor_ids?: string[] | null
+        }
+        Returns: {
+          total_count: number
+          below_count: number
+          from_rollups: boolean
+        }[]
+      }
       sensor_values_before: {
         Args: {
           p_household_id: string

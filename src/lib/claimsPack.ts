@@ -43,6 +43,8 @@ export type ClaimsPackData = {
   adjusterNotes: string;
   /** Live History deep-link for the same window. */
   historyUrl?: string;
+  /** Readings ≤ threshold is a minimum (older hours are hourly summaries). */
+  readingCountsApproximate?: boolean;
   /** Set after the pack is persisted as a durable export -- see claimsPackExports.ts. */
   verifyUrl?: string | null;
   contentHash?: string | null;
@@ -119,8 +121,14 @@ export function buildClaimsPackData(input: {
   alertsCsvUrl: string;
   /** Deep-link to History for the same window. */
   historyUrl?: string;
+  /** True recorded counts (temperature_reading_counts); without them the chart's sample counts are used. */
+  readingCounts?: import("./readingCounts").ReadingCounts | null;
 }): ClaimsPackData {
-  const freezeHours = computeFreezeHours(input.points, input.freezeThresholdF);
+  const fromPoints = computeFreezeHours(input.points, input.freezeThresholdF);
+  // Chart points are samples, so take the counts of recorded readings when available.
+  const freezeHours = input.readingCounts
+    ? { ...fromPoints, totalReadings: input.readingCounts.total, readingsBelow34: input.readingCounts.below }
+    : fromPoints;
   const probes = summarizeProbesForReport(input.points);
   const criticalEvents = filterCriticalAlertEvents(input.events);
   const floodAlertCount = criticalEvents.filter((e) => e.kind === "flood").length;
@@ -140,6 +148,7 @@ export function buildClaimsPackData(input: {
     readingsCsvUrl: input.readingsCsvUrl,
     alertsCsvUrl: input.alertsCsvUrl,
     historyUrl: input.historyUrl,
+    readingCountsApproximate: input.readingCounts?.approximate === true,
     disclaimer: CLAIMS_DISCLAIMER,
     executiveSummary: buildClaimsExecutiveSummary({
       householdLabel: input.householdLabel,
@@ -306,7 +315,11 @@ export function buildClaimsPackHtml(data: ClaimsPackData): string {
       <div class="stats">
         ${statBlock("Coldest", formatTemp(data.freezeHours.coldestF))}
         ${statBlock("Hours ≤ threshold", `${data.freezeHours.hoursBelow34.toFixed(1)} h`, `≤ ${data.freezeThresholdF}°F`)}
-        ${statBlock("Readings ≤ threshold", String(data.freezeHours.readingsBelow34))}
+        ${statBlock(
+          "Readings ≤ threshold",
+          data.readingCountsApproximate ? `≥ ${data.freezeHours.readingsBelow34}` : String(data.freezeHours.readingsBelow34),
+          data.readingCountsApproximate ? "at least: older hours are kept as hourly summaries" : undefined,
+        )}
         ${statBlock("Total readings", String(data.freezeHours.totalReadings))}
         ${statBlock("Freeze threshold", `${data.freezeThresholdF}°F`)}
         ${statBlock("Critical alerts", String(data.criticalEvents.length), "freeze / leak / rate / NWS / forecast / time-to-freeze")}

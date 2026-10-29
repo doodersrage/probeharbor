@@ -55,6 +55,7 @@ import {
   type DoorReportRow,
 } from "../../lib/doorEventReport";
 import { formatDurationMs } from "../../lib/doorDuration";
+import { fetchTemperatureReadingCounts, temperatureSensorIdsForFilter } from "../../lib/readingCounts";
 import { listHistorySavedViews, searchParamsFromView } from "../../lib/historySavedViews";
 import { fmt, formatDateTime, formatNumber, getLocale, LOCALE_META, plural } from "../../i18n";
 import { appHistoryMessages } from "../../i18n/messages/app/history";
@@ -339,6 +340,17 @@ const indoorOutdoorSeries = outdoorDelta
   ? buildIndoorOutdoorSeries(chartData.points, outdoorDelta.outdoorF)
   : [];
 const freezeHours = computeFreezeHours(chartData.points, alertSettings.freezeThresholdF);
+// Exports → "Readings": recorded readings in the chart window, not chart samples.
+const exportsReadingCounts =
+  loadExportsSummary && householdId && !historyEmpty
+    ? await fetchTemperatureReadingCounts(
+        householdId,
+        chartFilters.from ?? new Date(Date.now() - chartWindowDays * 24 * 60 * 60 * 1000).toISOString(),
+        chartFilters.to ?? new Date().toISOString(),
+        alertSettings.freezeThresholdF,
+        temperatureSensorIdsForFilter(householdDevicesResult.devices, chartFilters),
+      )
+    : null;
 const coldSnapReplay =
   historyTab === "chart" ? buildColdSnapReplay(chartData.points, alertSettings.freezeThresholdF, alertEvents, locale) : null;
 const dailyFreezeHours = computeDailyFreezeHours(
@@ -961,7 +973,7 @@ const freezeTemp = plain(alertSettings.freezeThresholdF);
                 </div>
                 <div>
                   <p class="m-0 text-xs text-[var(--color-text-muted)]">{t.exports.readings}</p>
-                  <p class="m-0 text-lg font-semibold">{plain(freezeHours.totalReadings)}</p>
+                  <p class="m-0 text-lg font-semibold">{plain(exportsReadingCounts?.total ?? freezeHours.totalReadings)}</p>
                 </div>
                 <div>
                   <p class="m-0 text-xs text-[var(--color-text-muted)]">{t.exports.criticalTicks}</p>

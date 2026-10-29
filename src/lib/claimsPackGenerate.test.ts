@@ -33,6 +33,11 @@ vi.mock("./supabase", () => ({
 }));
 
 const mockBuildClaimsPackData = vi.fn();
+const mockReadingCounts = vi.fn();
+vi.mock("./readingCounts", () => ({
+  fetchTemperatureReadingCounts: (...a: unknown[]) => mockReadingCounts(...a),
+}));
+
 vi.mock("./claimsPack", () => ({
   buildClaimsPackData: (...a: unknown[]) => mockBuildClaimsPackData(...a),
 }));
@@ -55,6 +60,7 @@ beforeEach(() => {
     select: () => ({ eq: () => ({ maybeSingle: mockMaybeSingle }) }),
   });
   mockBuildClaimsPackData.mockReset().mockReturnValue({ exportedAt: "stub" });
+  mockReadingCounts.mockReset().mockResolvedValue({ total: 4321, below: 12, approximate: false });
 });
 
 afterEach(() => {
@@ -260,5 +266,19 @@ describe("generateClaimsPackForUser", () => {
       fromQ: "2024-06-01",
       toQ: "2024-06-10",
     });
+  });
+
+  it("passes the recorded reading counts (not chart samples) to the pack", async () => {
+    const { generateClaimsPackForUser } = await import("./claimsPackGenerate");
+    await generateClaimsPackForUser(
+      { id: "user-1", email: "a@example.com" },
+      { historyDays: 30 } as Entitlements,
+      { from: "2026-10-01", to: "2026-10-05" },
+      "https://probeharbor.dev",
+    );
+    expect(mockReadingCounts).toHaveBeenCalledWith("house-1", expect.any(String), expect.any(String), expect.any(Number));
+    expect(mockBuildClaimsPackData).toHaveBeenCalledWith(
+      expect.objectContaining({ readingCounts: { total: 4321, below: 12, approximate: false } }),
+    );
   });
 });
