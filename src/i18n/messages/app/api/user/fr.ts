@@ -33,6 +33,8 @@ const fr: ApiUserMessages = {
   noValidFeeds: "Aucun flux valide fourni.",
   feedIdRequired: "L’identifiant du flux est obligatoire",
   csvRequiresPlan: "L’export CSV nécessite un abonnement actif ou un accès administrateur",
+  doorCsvFailed: "L’export de l’historique des portes a échoué. Réessayez dans un instant.",
+  doorCsvTooMany: "Trop d’ouvertures de portes pour un seul CSV (plus de 5 000). Choisissez moins de jours et réessayez.",
   push: {
     invalidSubscription: "Abonnement non valide",
     missingEndpoint: "Endpoint manquant",

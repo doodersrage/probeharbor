@@ -33,6 +33,8 @@ const ptBr: ApiUserMessages = {
   noValidFeeds: "Nenhum feed válido informado.",
   feedIdRequired: "O id do feed é obrigatório",
   csvRequiresPlan: "A exportação em CSV exige uma assinatura ativa ou acesso de administrador",
+  doorCsvFailed: "Não foi possível exportar o histórico das portas. Tente de novo em instantes.",
+  doorCsvTooMany: "Há aberturas de portas demais para um único CSV (mais de 5.000). Escolha menos dias e tente de novo.",
   push: {
     invalidSubscription: "Inscrição inválida",
     missingEndpoint: "Endpoint ausente",

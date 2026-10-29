@@ -42,6 +42,8 @@ const en = {
   feedIdRequired: "Feed id is required",
   /** /api/garage-temps/export.csv */
   csvRequiresPlan: "CSV export requires an active subscription or admin access",
+  doorCsvFailed: "Door events export failed. Please try again in a moment.",
+  doorCsvTooMany: "Too many door openings for one CSV (more than 5,000). Pick fewer days and try again.",
   /** /api/push/* */
   push: {
     invalidSubscription: "Invalid subscription",

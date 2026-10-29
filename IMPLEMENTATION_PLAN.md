@@ -3355,3 +3355,50 @@ were lost for good. The Overview "Door history" card hides when empty.
   local database; `.env` points at the hosted project). No door hardware.
 - Next: optional step 3 (door event list with date filters and CSV export;
   temperature change while open).
+
+## Door history, step 3: door openings list, CSV, and change while open (2026-10-29)
+
+- [x] Migration `20261029120000_sensor_values_before.sql`: read-only SQL
+      function, service role only. For each (sensor, time) it returns the
+      latest numeric reading at or before the time, at most 30 min old,
+      limited to one household. Caps: 50 sensors, 2000 times per call.
+      Rollback line is in the file. **Must be applied before deploy**
+      (`pnpm db:pending`); without it the Doors tab shows the openings with
+      a "readings couldn't be loaded" note and the CSV answers 500.
+- [x] `src/lib/doorEventReport.ts`: pairs each door with one temperature
+      and one humidity sensor (first visible one on the door's device, else
+      on another device in the same space, else none), lists closed events
+      in a window (paged 1000 at a time; tab 500, CSV 5000), reads values
+      at open and close in batched calls, applies calibration offsets,
+      change = close − open. Missing readings stay null (blank / "no
+      reading near that time"), never 0. `doorReportRange` is shared by
+      the tab and the CSV.
+- [x] History → **Doors** tab (shown when `shell.latest` has a door sensor;
+      `?tab=doors` always works): 7/30/90-day links and a from/to form
+      (whole days, browser zone), summary (openings, total open time, mean
+      temperature and humidity change with "from N of M openings"), a
+      "How these numbers are worked out" note, mobile cards + desktop
+      table with the compared sensor and whether it's on the same device
+      or in the same space, times in the browser's zone (named).
+- [x] `GET /api/door-events/export.csv`: needs `canDownloadCsv` (403
+      before any data is read), UTC ISO times, °F and %RH, empty cell = no
+      reading, labels go through `escapeCsvField`. More than 5000 events →
+      422 "pick fewer days"; event or readings failure → 500. It never
+      returns a silently partial file.
+- Copy in 5 locales (`app/history` `doors.*`, `tabs.doors`;
+  `app/api/user` `doorCsvFailed`, `doorCsvTooMany`).
+- Evidence: `doorEventReport.test.ts` (+19), `door-events/export.csv.test.ts`
+  (+6). `pnpm test`: 3257 passed. `pnpm typecheck`: 0 errors. `pnpm build`:
+  pass. Biome on changed files: clean. Migration applied to a throwaway
+  local PostgreSQL 18 (minimal `sensor_readings` + Supabase roles): right
+  values at open/close, other household and stale readings excluded,
+  non-numeric rows skipped, anon/authenticated can't execute, over-cap
+  returns nothing, index scan on `sensor_readings_sensor_recorded_idx`
+  (1000 lookups over 200k rows ≈ 3 ms).
+- Not verified: the migration on Supabase's Postgres version, the Doors tab
+  in a browser, real door hardware.
+- Known limits: readings older than 90 days are rolled up, so values at
+  open/close are missing for those events. The change uses the readings
+  nearest each moment, which can be up to 30 min before it. One sensor per
+  kind per door; no per-door filter. The existing History table still
+  formats times in the server's zone (separate issue).

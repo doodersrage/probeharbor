@@ -33,6 +33,8 @@ const de: ApiUserMessages = {
   noValidFeeds: "Keine gültigen Feeds angegeben.",
   feedIdRequired: "Feed-ID fehlt",
   csvRequiresPlan: "Der CSV-Export erfordert ein aktives Abo oder Administratorzugriff",
+  doorCsvFailed: "Der Export des Türverlaufs ist fehlgeschlagen. Bitte versuch es gleich noch einmal.",
+  doorCsvTooMany: "Zu viele Türöffnungen für eine CSV (mehr als 5.000). Wähl weniger Tage aus und versuch es noch einmal.",
   push: {
     invalidSubscription: "Ungültiges Abonnement",
     missingEndpoint: "Endpoint fehlt",

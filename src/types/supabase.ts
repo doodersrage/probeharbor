@@ -2010,6 +2010,20 @@ export type Database = {
         Args: { p_household_id: string; p_old_sensor_id: string; p_new_sensor_id: string }
         Returns: Json
       }
+      sensor_values_before: {
+        Args: {
+          p_household_id: string
+          p_sensor_ids: string[]
+          p_times: string[]
+          p_max_age_seconds?: number
+        }
+        Returns: {
+          sensor_id: string
+          at_time: string
+          value_num: number
+          recorded_at: string
+        }[]
+      }
       get_user_household_id: {
         Args: { target_user_id: string }
         Returns: string
