@@ -55,6 +55,16 @@ describe("pairTempHumidityRows", () => {
     expect(paired[0]?.humidity).toBe(22.5);
   });
 
+  it("pairs suffixed keys (ESPHome guide: garage_temp + garage_rh) so humidity reaches the chart", () => {
+    const at = "2026-10-29T10:00:00.000Z";
+    const paired = pairTempHumidityRows(
+      [tempRow("Garage ESP", "garage_temp", at, 48.2), humidityRow("Garage ESP", "garage_rh", at, 61)],
+      "user-1",
+    );
+    expect(paired).toHaveLength(1);
+    expect(paired[0]).toMatchObject({ tempf: 48.2, humidity: 61, probe_key: "garage_temp" });
+  });
+
   it("never pairs across devices or merges two temperature sensors", () => {
     const at = "2026-10-12T10:56:27.950Z";
     const paired = pairTempHumidityRows(

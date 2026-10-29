@@ -153,6 +153,14 @@ describe("DHT22 and same-named probes", () => {
     expect(readings).toEqual([{ label: "Temp1", tempf: 39.9, humidity: 82, space: null, sensorId: "t", recordedAt: null }]);
   });
 
+  it("pairs suffixed keys (garage_temp + garage_rh) so humidity alerts can fire", () => {
+    const readings = buildAlertReadingsFromLatestSensors([
+      { sensor: sensor({ id: "t", device_id: "esp", key: "garage_temp", kind: "temperature", label: "Garage" }), deviceName: "Garage ESP", value_num: 48.2 },
+      { sensor: sensor({ id: "h", device_id: "esp", key: "garage_rh", kind: "humidity", label: "Garage humidity" }), deviceName: "Garage ESP", value_num: 61 },
+    ]);
+    expect(readings).toEqual([{ label: "Garage", tempf: 48.2, humidity: 61, space: null, sensorId: "t", recordedAt: null }]);
+  });
+
   it("keeps both devices' 'Temp1' probes when merging feed and stored readings", () => {
     const stored = [
       { label: "Temp1", tempf: 70, humidity: 0, sensorId: "ds18b20" },

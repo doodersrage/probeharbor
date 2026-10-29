@@ -96,6 +96,8 @@ Matches the Ethernet garage firmware JSON shape. Sample sketch:
 
 Supported `kind` values: `temperature`, `humidity`, `co2`, `pressure`, `pm25`, `voc`, `level`, `energy`, `door`, `power`, `flood`, `motion`, `generic`.
 
+Humidity is matched to the temperature probe on the same device whose key shares the same name once a `temp`/`temperature`/`humidity`/`hum`/`rh` prefix or `_`/`-` suffix is removed: `temp1` + `humidity1`, `temp_air` + `humidity_air`, `garage_temp` + `garage_rh`. Matched pairs give the charts their humidity and dew-point lines and let humidity alerts fire. A humidity key that matches no temperature (for example `bme_h` next to `bme_t`) is still stored, but isn't drawn on the temperature chart.
+
 Temperatures are stored and alerted on in °F. A `temperature` value with `unit` `C`, `°C`, `Cel`, `celsius`, `degC`, `K` or `kelvin` is converted to °F when it arrives; the value and unit you sent are kept in the reading's `meta` (`sent_value`, `sent_unit`). No unit, or `F`, is taken as °F.
 
 ### Implausible values

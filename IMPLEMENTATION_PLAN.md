@@ -3402,3 +3402,34 @@ were lost for good. The Overview "Door history" card hides when empty.
   nearest each moment, which can be up to 30 min before it. One sensor per
   kind per door; no per-door filter. The existing History table still
   formats times in the server's zone (separate issue).
+
+## Fix: humidity and dew point missing from charts for suffixed sensor keys (2026-10-29)
+
+User report: humidity and dew point stopped showing on the chart while
+humidity readings were still arriving.
+
+- Cause: `probePairingKey` only stripped a kind *prefix* (`temp1` ↔
+  `humidity1`). Suffixed keys such as the ESPHome guide's own
+  `garage_temp` + `garage_rh` never paired. Until 0e55eba (2026-10-27)
+  the unpaired humidity was charted against a fake 0°F temperature, which
+  is how a humidity line appeared; since then readings without a
+  temperature are (rightly) left off the temperature chart, so the
+  humidity line and dew point disappeared. The same miss kept humidity off
+  alert readings (humidity alerts couldn't fire) and off discovery labels.
+- [x] `probePairingKey` also strips a `_`/`-` + kind suffix
+      (`temperature|temp|humidity|hum|rh`). A separator is required, so
+      `bath` / `airtemp` are unchanged. Prefix behaviour is unchanged.
+- Effects: History chart/table/CSV show humidity in the temperature row
+  (fewer separate humidity-only rows); dew point returns; humidity on
+  alert readings, so configured humidity/condensation alerts can now fire
+  for these devices; newly discovered sensors get labels like "Garage ESP
+  garage" instead of "Garage ESP garage_temp" (existing labels untouched).
+- Docs: `docs/ingest/index.md` explains how humidity is matched.
+- Evidence: `probePairing.test.ts` (+4), `garageTempsHistory.test.ts` (+1),
+  `alertReadings.test.ts` (+1); the three suffix tests fail on the old
+  function and pass now. `pnpm test`: 3263 passed. `pnpm typecheck`: 0
+  errors. Biome: clean.
+- Not verified: the user's actual sensor keys (production data not read).
+- Still open: humidity keys that match no temperature (`bme_t` / `bme_h`)
+  stay off the temperature chart; hourly rollups (windows > 90 days) are
+  temperature-only, so humidity is blank there.
