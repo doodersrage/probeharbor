@@ -87,6 +87,11 @@ vi.mock("../../../lib/supabase", () => ({
   createAdminClient: () => mockCreateAdminClient(),
 }));
 
+const mockRecordDoorSessions = vi.fn();
+vi.mock("../../../lib/doorEvents", () => ({
+  recordDoorSessions: (...a: unknown[]) => mockRecordDoorSessions(...a),
+}));
+
 const mockSendThresholdAlertsIfNeeded = vi.fn();
 vi.mock("../../../lib/alertNotifications", () => ({
   sendThresholdAlertsIfNeeded: (...a: unknown[]) => mockSendThresholdAlertsIfNeeded(...a),
@@ -162,6 +167,7 @@ beforeEach(() => {
   mockGetAlertSettingsForUser.mockReset().mockResolvedValue({});
   mockSendReadingWebhook.mockReset().mockResolvedValue(undefined);
   mockSendThresholdAlertsIfNeeded.mockReset().mockResolvedValue(undefined);
+  mockRecordDoorSessions.mockReset().mockResolvedValue(undefined);
   mockCreateAdminClient.mockReset().mockReturnValue({
     auth: { admin: { getUserById: vi.fn().mockResolvedValue({ data: { user: null } }) } },
   });
@@ -409,6 +415,65 @@ describe("POST /api/ingest/[deviceKey]", () => {
     expect(waitUntil).toHaveBeenCalledTimes(1);
     await waitUntil.mock.calls[0]![0];
     expect(mockSendThresholdAlertsIfNeeded).toHaveBeenCalledTimes(1);
+  });
+
+  it("saves door history when a door reports closed, even with no household members or rules", async () => {
+    mockFindDeviceByIngestKeyHash.mockResolvedValue({
+      ...device,
+      sensors: [{ id: "door-1", key: "garage", label: "Garage door", kind: "door", unit: null }],
+    });
+    mockParseIngestPayload.mockReturnValue({
+      tempProbes: {},
+      typed: [{ key: "garage", kind: "door", bool: false }],
+    });
+    const { POST } = await import("./[deviceKey]");
+
+    const response = await POST(makeContext({ headerKey: "good-key" }));
+
+    expect(response.status).toBe(200);
+    expect(mockRecordDoorSessions).toHaveBeenCalledWith("house-1", [
+      { id: "door-1", label: "Garage door" },
+    ]);
+  });
+
+  it("does not look for door sessions when a door reports open or no door reports", async () => {
+    mockFindDeviceByIngestKeyHash.mockResolvedValue({
+      ...device,
+      sensors: [{ id: "door-1", key: "garage", label: "Garage door", kind: "door", unit: null }],
+    });
+    mockParseIngestPayload.mockReturnValue({
+      tempProbes: {},
+      typed: [{ key: "garage", kind: "door", bool: true }],
+    });
+    const { POST } = await import("./[deviceKey]");
+
+    await POST(makeContext({ headerKey: "good-key" }));
+    mockParseIngestPayload.mockReturnValue({ tempProbes: { "0": { c: 5, f: 41, h: 40 } }, typed: [] });
+    await POST(makeContext({ headerKey: "good-key" }));
+
+    expect(mockRecordDoorSessions).not.toHaveBeenCalled();
+  });
+
+  it("still answers 200 and runs alerts when saving door history fails", async () => {
+    mockListHouseholdMembers.mockResolvedValue({ members: [{ user_id: "user-a" }] });
+    mockFindDeviceByIngestKeyHash.mockResolvedValue({
+      ...device,
+      sensors: [{ id: "door-1", key: "garage", label: "Garage door", kind: "door", unit: null }],
+    });
+    mockParseIngestPayload.mockReturnValue({
+      tempProbes: {},
+      typed: [{ key: "garage", kind: "door", bool: false }],
+    });
+    mockRecordDoorSessions.mockRejectedValue(new Error("db down"));
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const { POST } = await import("./[deviceKey]");
+
+    const response = await POST(makeContext({ headerKey: "good-key" }));
+
+    expect(response.status).toBe(200);
+    expect(mockSendThresholdAlertsIfNeeded).toHaveBeenCalledTimes(1);
+    expect(errorSpy).toHaveBeenCalledWith("Ingest door history failed:", expect.any(Error));
+    errorSpy.mockRestore();
   });
 
   it("learns how often the device reports", async () => {

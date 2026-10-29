@@ -3294,3 +3294,35 @@ bumped) and Sentry releases were opaque Cloudflare version ids.
       `app-v2026.10.28.1...ae522ed` → skip.
 - Caveat: re-running a Deploy run for an already-released commit now
   skips; use `workflow_dispatch` instead.
+
+## Door history, step 1: save door sessions without alert rules (2026-10-29)
+
+User report: a new door sensor showed no history. Audit: door open/close
+sessions (`door_open_events`) were only saved inside the rule-alert pass
+(`maybeSendRuleAlerts` → `buildRuleContext`), which returns early when
+alerts are off, there are no rules, or the rule cooldown blocks it. Raw
+door readings are pruned after 90 days with no rollup, so those sessions
+were lost for good. The Overview "Door history" card hides when empty.
+
+- [x] `recordDoorSessions(householdId, sensors)` in `src/lib/doorEvents.ts`:
+      reads each door sensor's last 24 h of readings, builds sessions with
+      `computeDoorOpenSessions`, saves closed ones via `persistDoorSessions`
+      (same `label:opened_at` duplicate check).
+- [x] Ingest (`/api/ingest/[deviceKey]`, and MQTT through it) calls it after
+      the response whenever a door reports closed (`value_bool === false`),
+      for every household. Failures are logged and don't affect the
+      response or alerts. The rule pass still saves too (backup path).
+- Evidence: `doorEvents.record.test.ts` (+5: saves a session with sensor
+  id; skips one already saved; nothing while open or with only closed
+  readings; no sensors; insert error thrown), `[deviceKey].test.ts` (+3:
+  called on close with no members; not on open or non-door; failure keeps
+  200 and alerts). `pnpm test`: 3221 passed. `pnpm typecheck`: 0 errors.
+  Biome on changed files: clean.
+- Not verified: real door hardware or production data.
+- Known limits: a door open longer than 24 h is not saved (the lookback
+  misses the open reading). No unique index on `door_open_events`, so two
+  writers at the same instant could both insert a session. Sessions closed
+  before this deploy, outside the rule pass, are not backfilled; raw
+  readings from the last 90 days could be backfilled in a later step.
+- Next: step 2, shade door-open periods on the History chart and pass door
+  events to `detectTemperatureAnomalies`.

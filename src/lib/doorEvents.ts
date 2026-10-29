@@ -1,5 +1,6 @@
 import { createServerClient } from "./supabase";
-import type { DoorOpenSession } from "./doorDuration";
+import { computeDoorOpenSessions, type DoorOpenSession } from "./doorDuration";
+import { fetchRecentBoolReadings } from "./sensorReadings";
 
 export type DoorEventRow = {
   id: string;
@@ -71,6 +72,44 @@ export async function persistDoorSessions(
   if (insertError) {
     throw new Error(`door_open_events insert failed: ${insertError.message}`);
   }
+}
+
+/** How far back to look for the "opened" reading that a close completes. */
+const DOOR_SESSION_LOOKBACK_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * Save the finished open/close sessions for these door sensors.
+ *
+ * Called from ingest whenever a door reports "closed", so door history is
+ * kept whether or not anyone has alert rules. (Before, sessions were only
+ * saved while rules were evaluated, and raw door readings are pruned after
+ * 90 days without a rollup.) The rule pass still saves too; duplicates are
+ * skipped by `persistDoorSessions`.
+ */
+export async function recordDoorSessions(
+  householdId: string,
+  sensors: Array<{ id: string; label: string }>,
+  now = Date.now(),
+): Promise<void> {
+  if (sensors.length === 0) return;
+  const since = new Date(now - DOOR_SESSION_LOOKBACK_MS).toISOString();
+  const sessions: DoorOpenSession[] = [];
+  const sensorIdByLabel = new Map<string, string>();
+  for (const sensor of sensors) {
+    sensorIdByLabel.set(sensor.label, sensor.id);
+    const readings = await fetchRecentBoolReadings(sensor.id, since);
+    sessions.push(
+      ...computeDoorOpenSessions(
+        readings.map((r) => ({
+          label: sensor.label,
+          kind: "door",
+          value: r.value,
+          recordedAt: r.recordedAt,
+        })),
+      ),
+    );
+  }
+  await persistDoorSessions(householdId, sessions, sensorIdByLabel);
 }
 
 export async function listDoorEvents(

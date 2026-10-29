@@ -120,6 +120,9 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
   const recordedAt = new Date().toISOString();
   const rows = [];
   let sensorFailures = 0;
+  // Door sensors that just reported "closed": each close may finish an
+  // open/close session to save in door history.
+  const closedDoors: Array<{ id: string; label: string }> = [];
   // The device's sensors came with the device lookup; only query for a
   // sensor that's new (or whose saved unit needs correcting to °F).
   const knownSensors = new Map(device.sensors.map((s) => [`${s.key}::${s.kind}`, s]));
@@ -135,6 +138,9 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
       sensorFailures += 1;
       console.error(`Ingest for device ${device.id}: sensor ${reading.key} (${reading.kind}) not saved:`, sensor.error);
       continue;
+    }
+    if (reading.kind === "door" && reading.value_bool === false) {
+      closedDoors.push({ id: sensor.sensor.id, label: sensor.sensor.label ?? reading.label });
     }
     rows.push({
       sensor_id: sensor.sensor.id,
@@ -204,6 +210,14 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
     );
   } else {
     await touchDeviceLastSeen(device.id);
+  }
+
+  // Door history is saved for every household, not only those with alert rules.
+  if (closedDoors.length > 0) {
+    await runAfterResponse(locals, "Ingest door history", async () => {
+      const { recordDoorSessions } = await import("../../../lib/doorEvents");
+      await recordDoorSessions(device.household_id, closedDoors);
+    });
   }
 
   // Webhooks and alerts run after the response (waitUntil), so a slow
