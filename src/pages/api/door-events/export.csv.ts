@@ -3,7 +3,13 @@ import { getAuthFromCookies } from "../../../lib/auth";
 import { getUserEntitlements } from "../../../lib/entitlements";
 import { getOrCreateHouseholdForUser } from "../../../lib/households";
 import { listHouseholdDevices } from "../../../lib/devices";
-import { buildDoorEventsCsv, DOOR_CSV_LIMIT, doorReportRange, loadDoorReport } from "../../../lib/doorEventReport";
+import {
+  buildDoorEventsCsv,
+  DOOR_CSV_LIMIT,
+  doorReportRange,
+  loadDoorReport,
+  validDoorFilter,
+} from "../../../lib/doorEventReport";
 import { timeZoneFromCookie, zonedDayEndIso, zonedDayStartIso } from "../../../lib/zonedDay";
 import { apiCommonMessages, apiLocale } from "../../../i18n/messages/app/api/common";
 import { apiUserMessages } from "../../../i18n/messages/app/api/user";
@@ -43,7 +49,8 @@ export const GET: APIRoute = async ({ cookies, url, locals }) => {
   );
 
   const { devices } = await listHouseholdDevices(household.householdId);
-  const report = await loadDoorReport(household.householdId, devices, fromIso, toIso, DOOR_CSV_LIMIT);
+  const doorFilter = validDoorFilter(url.searchParams.get("door"), devices);
+  const report = await loadDoorReport(household.householdId, devices, fromIso, toIso, DOOR_CSV_LIMIT, doorFilter);
   if (report.error) {
     console.error("Door events CSV failed:", report.error);
     return new Response(apiUserMessages(locale).doorCsvFailed, { status: 500 });

@@ -168,6 +168,8 @@ const fr: AppHistoryMessages = {
     from: "Du",
     to: "Au",
     apply: "Appliquer",
+    doorFilter: "Porte",
+    allDoors: "Toutes les portes",
     openings: "Ouvertures",
     totalOpen: "Durée totale d’ouverture",
     avgTempChange: "Variation moyenne de température porte ouverte",

@@ -46,7 +46,14 @@ import { listAlertEventsInRange } from "../../lib/alertEvents";
 import { toChartAlertMarkers } from "../../lib/chartAlertMarkers";
 import { toDoorStates } from "../../lib/chartDoorBands";
 import { fetchChartDoorBands } from "../../lib/chartDoorBands.server";
-import { doorReportRange, loadDoorReport, summarizeDoorReport, type DoorReportRow } from "../../lib/doorEventReport";
+import {
+  doorReportRange,
+  doorSensorLabels,
+  loadDoorReport,
+  summarizeDoorReport,
+  validDoorFilter,
+  type DoorReportRow,
+} from "../../lib/doorEventReport";
 import { formatDurationMs } from "../../lib/doorDuration";
 import { listHistorySavedViews, searchParamsFromView } from "../../lib/historySavedViews";
 import { fmt, formatDateTime, formatNumber, getLocale, LOCALE_META, plural } from "../../i18n";
@@ -481,11 +488,15 @@ const doorRange = doorReportRange(
 );
 let doorSensorCount = 0;
 let doorReport: Awaited<ReturnType<typeof loadDoorReport>> | null = null;
+let doorChoices: string[] = [];
+let doorFilter: string | null = null;
 if (loadDoors && householdId) {
   const { devices } = await listHouseholdDevices(householdId);
   doorSensorCount = devices.reduce((n, d) => n + d.sensors.filter((s) => s.kind === "door").length, 0);
+  doorChoices = doorSensorLabels(devices);
+  doorFilter = validDoorFilter(Astro.url.searchParams.get("door"), devices);
   if (doorSensorCount > 0) {
-    doorReport = await loadDoorReport(householdId, devices, doorRange.fromIso, doorRange.toIso);
+    doorReport = await loadDoorReport(householdId, devices, doorRange.fromIso, doorRange.toIso, undefined, doorFilter);
     if (doorReport.error) console.error("History door report failed:", doorReport.error);
     if (doorReport.readingsError) console.error("History door report readings failed:", doorReport.readingsError);
   }
@@ -518,6 +529,7 @@ function doorCell(row: DoorReportRow, which: "temperature" | "humidity"): { text
 }
 function doorRangeHref(days: number): string {
   const params = new URLSearchParams({ tab: "doors", days: String(days) });
+  if (doorFilter) params.set("door", doorFilter);
   return `/dashboard/history?${params.toString()}`;
 }
 const doorCsvHref = (() => {
@@ -525,6 +537,7 @@ const doorCsvHref = (() => {
   if (fromDate) params.set("from", fromDate);
   if (toDate) params.set("to", toDate);
   if (!fromDate) params.set("days", String(requestedDays));
+  if (doorFilter) params.set("door", doorFilter);
   return `/api/door-events/export.csv?${params.toString()}`;
 })();
 
@@ -777,6 +790,17 @@ const freezeTemp = plain(alertSettings.freezeThresholdF);
               </nav>
               <form method="get" action="/dashboard/history" class="flex flex-wrap items-end gap-2">
                 <input type="hidden" name="tab" value="doors" />
+                {doorChoices.length > 1 && (
+                  <div class="form-field mb-0">
+                    <label class="form-label" for="door-filter">{td.doorFilter}</label>
+                    <select class="form-input" id="door-filter" name="door">
+                      <option value="" selected={!doorFilter}>{td.allDoors}</option>
+                      {doorChoices.map((label) => (
+                        <option value={label} selected={doorFilter === label}>{label}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
                 <div class="form-field mb-0">
                   <label class="form-label" for="door-from">{td.from}</label>
                   <input class="form-input" type="date" id="door-from" name="from" value={fromDate} min={cutoffDate} />

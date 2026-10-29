@@ -168,6 +168,8 @@ const ptBr: AppHistoryMessages = {
     from: "De",
     to: "Até",
     apply: "Aplicar",
+    doorFilter: "Porta",
+    allDoors: "Todas as portas",
     openings: "Aberturas",
     totalOpen: "Tempo total aberta",
     avgTempChange: "Variação média de temperatura com a porta aberta",

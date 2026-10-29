@@ -102,6 +102,8 @@ export async function listDoorEventsForReport(
   fromIso: string,
   toIso: string,
   limit = DOOR_REPORT_LIMIT,
+  /** Only this door (its label); omitted = every door. */
+  doorLabel?: string | null,
 ): Promise<{ events: DoorEventRecord[]; truncated: boolean; error: string | null }> {
   const supabase = createServerClient();
   type Row = {
@@ -125,6 +127,7 @@ export async function listDoorEventsForReport(
       .gte("opened_at", fromIso)
       .lte("opened_at", toIso)
       .not("closed_at", "is", null)
+      .match(doorLabel ? { label: doorLabel } : {})
       // id breaks ties so pages never skip or repeat a row.
       .order("opened_at", { ascending: false })
       .order("id", { ascending: true })
@@ -235,8 +238,9 @@ export async function loadDoorReport(
   fromIso: string,
   toIso: string,
   limit = DOOR_REPORT_LIMIT,
+  doorLabel?: string | null,
 ): Promise<{ rows: DoorReportRow[]; truncated: boolean; error: string | null; readingsError: string | null }> {
-  const listed = await listDoorEventsForReport(householdId, fromIso, toIso, limit);
+  const listed = await listDoorEventsForReport(householdId, fromIso, toIso, limit, doorLabel);
   if (listed.error) return { rows: [], truncated: false, error: listed.error, readingsError: null };
 
   const pairs = pairDoorSensors(devices);
@@ -320,6 +324,19 @@ export function buildDoorEventsCsv(rows: DoorReportRow[]): string {
       .join(","),
   );
   return [headers.join(","), ...lines].join("\n");
+}
+
+/** The door filter if it names one of the household's door sensors; otherwise every door. */
+export function validDoorFilter(raw: string | null | undefined, devices: DeviceWithSensors[]): string | null {
+  const wanted = raw?.trim();
+  if (!wanted) return null;
+  return doorSensorLabels(devices).includes(wanted) ? wanted : null;
+}
+
+/** The household's door sensor labels, alphabetical, each once. */
+export function doorSensorLabels(devices: DeviceWithSensors[]): string[] {
+  const labels = devices.flatMap((d) => d.sensors.filter((s) => s.kind === "door").map((s) => s.label));
+  return [...new Set(labels)].sort((a, b) => a.localeCompare(b));
 }
 
 /**

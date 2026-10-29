@@ -7,7 +7,7 @@ const listCalls: Array<[string, unknown[]]> = [];
 vi.mock("./supabase", () => ({
   createServerClient: () => {
     const builder: Record<string, unknown> = {};
-    for (const method of ["from", "select", "eq", "gte", "lte", "not", "order"]) {
+    for (const method of ["from", "select", "eq", "gte", "lte", "not", "order", "match"]) {
       builder[method] = (...args: unknown[]) => {
         listCalls.push([method, args]);
         return builder;
@@ -26,6 +26,8 @@ import {
   buildDoorEventsCsv,
   buildDoorReportRows,
   doorReportRange,
+  doorSensorLabels,
+  validDoorFilter,
   fetchValuesBefore,
   listDoorEventsForReport,
   pairDoorSensors,
@@ -323,5 +325,34 @@ describe("database access", () => {
     expect(result.truncated).toBe(true);
     expect(result.events.map((e) => e.id)).toEqual(["a", "b"]);
     expect(result.events[1]?.durationMs).toBe(5 * 60 * 1000);
+  });
+});
+
+describe("door filter", () => {
+  const devices = [
+    device("esp", [sensor("door-1", "door", { label: "Garage door" }), sensor("t-1", "temperature")]),
+    device("shelly", [sensor("door-2", "door", { label: "Side door" })]),
+  ];
+
+  it("lists the household's doors alphabetically", () => {
+    expect(doorSensorLabels(devices)).toEqual(["Garage door", "Side door"]);
+  });
+
+  it("accepts a known door and ignores anything else", () => {
+    expect(validDoorFilter("Side door", devices)).toBe("Side door");
+    expect(validDoorFilter(" Side door ", devices)).toBe("Side door");
+    expect(validDoorFilter("Attic hatch", devices)).toBeNull();
+    expect(validDoorFilter("", devices)).toBeNull();
+    expect(validDoorFilter(null, devices)).toBeNull();
+  });
+
+  it("asks only for that door's events when filtered", async () => {
+    listCalls.length = 0;
+    mockListResult.mockResolvedValue({ data: [], error: null });
+    await listDoorEventsForReport("hh-1", "a", "b", 500, "Side door");
+    expect(listCalls).toEqual(expect.arrayContaining([["match", [{ label: "Side door" }]]]));
+    listCalls.length = 0;
+    await listDoorEventsForReport("hh-1", "a", "b", 500);
+    expect(listCalls).toEqual(expect.arrayContaining([["match", [{}]]]));
   });
 });

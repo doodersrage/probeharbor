@@ -83,6 +83,7 @@ describe("GET /api/door-events/export.csv", () => {
       "2026-10-01T04:00:00.000Z",
       "2026-10-06T03:59:59.999Z",
       5000,
+      null,
     );
     const body = await response.text();
     expect(body.split("\n")[1]).toBe(
@@ -117,5 +118,18 @@ describe("GET /api/door-events/export.csv", () => {
     expect((await GET(makeContext(""))).status).toBe(500);
 
     errorSpy.mockRestore();
+  });
+
+  it("exports one door when ?door= names a door sensor, and ignores unknown names", async () => {
+    mockListHouseholdDevices.mockResolvedValue({
+      devices: [{ id: "esp", sensors: [{ kind: "door", label: "Side door" }] }],
+    });
+    const { GET } = await import("./export.csv");
+
+    await GET(makeContext("?door=Side%20door"));
+    expect(mockLoadDoorReport.mock.calls.at(-1)?.[5]).toBe("Side door");
+
+    await GET(makeContext("?door=Nope"));
+    expect(mockLoadDoorReport.mock.calls.at(-1)?.[5]).toBeNull();
   });
 });

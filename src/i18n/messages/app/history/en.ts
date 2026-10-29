@@ -172,6 +172,8 @@ const en = {
     from: "From",
     to: "To",
     apply: "Apply",
+    doorFilter: "Door",
+    allDoors: "All doors",
     openings: "Openings",
     totalOpen: "Total time open",
     avgTempChange: "Avg. temperature change while open",
