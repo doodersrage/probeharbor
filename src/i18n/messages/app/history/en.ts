@@ -137,6 +137,7 @@ const en = {
     goDevices: "Go to Devices",
     humidityRh: "{value}% RH",
     colRecorded: "Recorded",
+    colRecordedIn: "Recorded ({zone})",
     colFeed: "Feed",
     colProbe: "Probe",
     colTempF: "Temperature (°F)",

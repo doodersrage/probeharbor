@@ -42,6 +42,8 @@ interface Props {
   tab?: string;
   alertMarkers?: import("../lib/chartAlertMarkers").ChartAlertMarker[];
   highlightAlertId?: number | null;
+  /** Show table times in this IANA zone (the browser's); otherwise the server's. */
+  timeZone?: string;
   doorBands?: import("../lib/chartDoorBands").ChartDoorBand[];
   humidityOnlyPoints?: import("../lib/garageTempsHistory").HumidityOnlyPoint[];
   doorBandsError?: boolean;
@@ -81,6 +83,7 @@ const {
   alertMarkers = [],
   highlightAlertId = null,
   doorBands = [],
+  timeZone,
   doorBandsError = false,
   humidityOnlyPoints = [],
   canUseClaimsPack = false,
@@ -107,7 +110,7 @@ function int(value: number): string {
   return locale === "en" ? String(value) : formatNumber(value, locale);
 }
 function readingTime(timestamp: string): string {
-  return formatReadingTimestamp(timestamp, locale);
+  return formatReadingTimestamp(timestamp, locale, timeZone);
 }
 
 const showingFrom = totalCount === 0 ? 0 : (page - 1) * pageSize + 1;
@@ -449,7 +452,7 @@ function comparePresetHref(preset: "prior_week" | "prior_month"): string {
           <table class="data-table data-table-history">
             <thead>
               <tr>
-                <th scope="col">{t.colRecorded}</th>
+                <th scope="col">{timeZone ? fmt(t.colRecordedIn, { zone: timeZone }) : t.colRecorded}</th>
                 <th scope="col">{t.colFeed}</th>
                 <th scope="col">{t.colProbe}</th>
                 <th scope="col">{t.colTempF}</th>

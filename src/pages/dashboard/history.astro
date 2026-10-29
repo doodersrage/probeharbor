@@ -636,6 +636,7 @@ const freezeTemp = plain(alertSettings.freezeThresholdF);
           highlightAlertId={highlightAlertId}
           doorBands={doorBandsResult.bands}
           humidityOnlyPoints={chartData.humidityOnly ?? []}
+          timeZone={filterTimeZone}
           doorBandsError={doorBandsResult.error != null}
           canUseClaimsPack={entitlements.canUseClaimsPack}
         />

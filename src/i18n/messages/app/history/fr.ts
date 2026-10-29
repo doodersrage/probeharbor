@@ -133,6 +133,7 @@ const fr: AppHistoryMessages = {
     goDevices: "Aller aux Appareils",
     humidityRh: "{value} % HR",
     colRecorded: "Enregistré",
+    colRecordedIn: "Enregistré ({zone})",
     colFeed: "Flux",
     colProbe: "Sonde",
     colTempF: "Température (°F)",

@@ -53,3 +53,13 @@ describe("fetchGarageTempChartData", () => {
     expect(calls).toEqual(expect.arrayContaining([["in", ["device_sensors.kind", ["temperature", "humidity"]]]]));
   });
 });
+
+describe("formatReadingTimestamp", () => {
+  it("shows the time in the browser's zone when given", async () => {
+    const { formatReadingTimestamp } = await import("./garageTempsHistory");
+    // 03:00 UTC is still the evening before in New York.
+    const text = formatReadingTimestamp("2026-10-29T03:00:00Z", "en", "America/New_York");
+    expect(text).toContain("Oct 28, 2026");
+    expect(text).toContain("11:00");
+  });
+});

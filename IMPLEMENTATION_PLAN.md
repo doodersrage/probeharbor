@@ -3561,3 +3561,44 @@ is open and has been open at least N minutes.
 - Evidence: `alertRules.test.ts` (+6: just opened → no; at N → yes with
   detail; open since 3 days → yes; closed long opening → no; label filter;
   unknown start → no). alertNotifications tests (incl. door recovery) pass.
+
+## Remaining items: chart cost, repeated "closed" reports, duplicates, backfill (2026-10-29)
+
+User has the /flash firmware (ProbeHarbor probe): it posts every 60 s and
+reads the door only at post time (no post on change), so door times are to
+the minute and an opening shorter than a minute between posts can be missed.
+Firmware change (post on door change) left as a follow-up: needs hardware
+testing.
+
+- [x] **Chart loading cost.** `fetchAllRawSensorRows` read every reading in
+      the household (door, leak, battery…) and kept temperature/humidity in
+      code; now filters `device_sensors.kind` in the query.
+- [x] **Repeated "closed" reports.** Ingest calls
+      `recordDoorSessionsIfJustClosed`: one query for the door's previous
+      reading; the full save runs only if it was open (or unknown).
+- [x] **Duplicates.** Migration `20261029160000_door_open_events_unique`:
+      copies duplicate rows (all but the earliest-created per household +
+      label + opened_at) to `door_open_events_dedupe_backup`, deletes them,
+      adds unique index `door_open_events_session_key`. The app saves with
+      upsert/ignoreDuplicates and falls back to a plain insert on 42P10
+      (index not there yet), so deploy order doesn't matter.
+- [x] **Backfill.** Migration `20261029160100_door_open_events_backfill`
+      rebuilds closed openings from the last 90 days of raw door readings
+      (state changes via lag/lead, same rule as computeDoorOpenSessions),
+      skips openings overlapping a saved one, logs every inserted id in
+      `door_open_events_backfill_log`. Recovery lines are in both files.
+- [x] **History table times** in the browser's zone (named in the column
+      header); were the server's (UTC). Copy in 5 locales.
+- Evidence: unit tests (+8: kind filter in the query; just-closed / repeat
+  / unknown; upsert key, 42P10 fallback, other error; table time zone).
+  `pnpm test`: 3300 passed. `pnpm typecheck`: 0 errors. Biome: no new
+  warnings. Both migrations run on a throwaway PostgreSQL 18 (minimal
+  schema): duplicate moved to backup and blocked afterwards; missing
+  opening filled and logged; overlapping truncated row left, not
+  duplicated; door open now skipped; re-run is a no-op; 90 days of
+  minute readings (129,541 rows) → 180 openings in ~0.05 s.
+- **Apply with `pnpm db:pending`** (both migrations, in order).
+- Not done: rows saved earlier with a truncated start (door open > ~17 h
+  before today's fixes) keep that start; the reference-sensor overlay cap
+  (~7 days of 30 at one reading a minute); per-door filter / several
+  sensors per door on the Doors tab; the 20k-row cap for very long ranges.

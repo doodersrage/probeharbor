@@ -133,6 +133,7 @@ const ptBr: AppHistoryMessages = {
     goDevices: "Ir para Dispositivos",
     humidityRh: "{value}% UR",
     colRecorded: "Registrada",
+    colRecordedIn: "Registrado ({zone})",
     colFeed: "Feed",
     colProbe: "Sonda",
     colTempF: "Temperatura (°F)",

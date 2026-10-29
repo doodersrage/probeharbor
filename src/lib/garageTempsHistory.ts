@@ -119,8 +119,9 @@ const POSTGREST_PAGE_SIZE = 1000;
 /** Max chart points after full-window fetch; applied per-probe so lines stay balanced. */
 export const CHART_DISPLAY_CAP = 500;
 
-export function formatReadingTimestamp(timestamp: string, locale: Locale = "en"): string {
-  return formatDateTime(timestamp, locale, { dateStyle: "medium", timeStyle: "short" });
+/** `timeZone`: an IANA zone (the browser's, from the ph_tz cookie); omitted = the server's. */
+export function formatReadingTimestamp(timestamp: string, locale: Locale = "en", timeZone?: string): string {
+  return formatDateTime(timestamp, locale, { dateStyle: "medium", timeStyle: "short", ...(timeZone ? { timeZone } : {}) });
 }
 
 export function getReadingFeedName(reading: GarageTempReading): string {
