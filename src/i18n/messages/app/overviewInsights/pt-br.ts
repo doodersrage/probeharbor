@@ -133,6 +133,7 @@ const ptBr: OverviewInsightsMessages = {
     closeExpanded: "Fechar gráfico ampliado",
   },
   duration: {
+    seconds: "{count} s",
     minutes: "{count} min",
     hoursMinutes: "{hours} h {minutes} min",
     hours: "{hours} h",

@@ -79,6 +79,7 @@ const es: AppHistoryChartsMessages = {
     freezeLineFromAlerts: "Línea de helada de las alertas: {temp} {unit}",
     doorOpenFor: "abierta {duration}",
     doorStillOpen: "abierta, aún no se ha registrado el cierre",
+    durationSeconds: "{seconds} s",
     durationMinutes: "{minutes} min",
     durationHoursMinutes: "{hours} h {minutes} min",
     summaryDoors: "Periodos con una puerta abierta sombreados en el gráfico: {list}.",

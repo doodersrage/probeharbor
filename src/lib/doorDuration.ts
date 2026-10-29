@@ -57,6 +57,9 @@ export function computeDoorOpenSessions(readings: BoolReading[]): DoorOpenSessio
 export function formatDurationMs(ms: number, locale: Locale = "en"): string {
   const t = overviewInsightsMessages(locale).duration;
   const n = (value: number) => formatNumber(value, locale, { useGrouping: false });
+  // Under a minute, show seconds: a 5 s opening would otherwise read "0 min".
+  const seconds = Math.max(0, Math.round(ms / 1000));
+  if (seconds < 60) return fmt(t.seconds, { count: n(seconds) });
   const minutes = Math.round(ms / 60000);
   if (minutes < 60) return fmt(t.minutes, { count: n(minutes) });
   const hours = Math.floor(minutes / 60);

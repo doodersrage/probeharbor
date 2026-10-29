@@ -125,6 +125,7 @@ export const HISTORY_CHART_UI_EN = {
   freezeLineFromAlerts: "Freeze line from alerts: {temp}{unit}",
   doorOpenFor: "open {duration}",
   doorStillOpen: "open, no close reported yet",
+  durationSeconds: "{seconds} s",
   durationMinutes: "{minutes} min",
   durationHoursMinutes: "{hours} h {minutes} min",
   summaryDoors: "Door-open periods shaded on the chart: {list}.",
@@ -626,8 +627,10 @@ function HistoryChartView({
     dragActiveRef.current = isPanning || isBrushing;
   }, [isPanning, isBrushing]);
 
-  /** "35 min" / "2 h 5 min" for how long a door was open. */
+  /** "5 s" / "35 min" / "2 h 5 min" for how long a door was open. */
   const doorDuration = (ms: number) => {
+    const seconds = Math.max(0, Math.round(ms / 1000));
+    if (seconds < 60) return fill(t.durationSeconds, { seconds });
     const minutes = Math.max(0, Math.round(ms / 60000));
     if (minutes < 60) return fill(t.durationMinutes, { minutes });
     return fill(t.durationHoursMinutes, { hours: Math.floor(minutes / 60), minutes: minutes % 60 });

@@ -3638,6 +3638,11 @@ Migration results reported by the user after 20261029160000/160100:
       gap under rapid toggling weren't measured. ESP32-S3/C3 are
       compile-tested only. `/flash` images rebuilt as 1.2.3 (`pnpm
       firmware:build`, PIO set to PlatformIO 6.2.0).
+- [x] **Door durations under a minute show seconds** (2026-10-29). The
+      hardware test's ~5 s openings read "0 min" in History → Doors.
+      `formatDurationMs` (History → Doors, door cards, door history) and
+      the chart's door tooltip now show "5 s" below 60 s (German "5 Sek.");
+      1 min and longer unchanged. Tests: 0/5/59.4/59.6/90 s and 90 min, plus de.
 - Evidence: unit tests (+12: door filter list/validate/query, CSV filter;
   bucket sizing, bucket path, raw fallback; rollup bucket path and sizing).
   `pnpm test`: 3309 passed. `pnpm typecheck`: 0 errors. Biome: no new

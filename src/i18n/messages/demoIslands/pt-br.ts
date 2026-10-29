@@ -127,6 +127,7 @@ const ptBr: DemoIslandMessages = {
     freezeLineFromAlerts: "Linha de congelamento dos alertas: {temp} {unit}",
     doorOpenFor: "aberta {duration}",
     doorStillOpen: "aberta, fechamento ainda não informado",
+    durationSeconds: "{seconds} s",
     durationMinutes: "{minutes} min",
     durationHoursMinutes: "{hours} h {minutes} min",
     summaryDoors: "Períodos com porta aberta sombreados no gráfico: {list}.",

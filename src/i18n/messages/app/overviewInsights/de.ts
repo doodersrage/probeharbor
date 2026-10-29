@@ -133,6 +133,7 @@ const de: OverviewInsightsMessages = {
     closeExpanded: "Vergrößertes Diagramm schließen",
   },
   duration: {
+    seconds: "{count} Sek.",
     minutes: "{count} Min.",
     hoursMinutes: "{hours} Std. {minutes} Min.",
     hours: "{hours} Std.",

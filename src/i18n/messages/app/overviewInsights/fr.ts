@@ -133,6 +133,7 @@ const fr: OverviewInsightsMessages = {
     closeExpanded: "Fermer le graphique agrandi",
   },
   duration: {
+    seconds: "{count} s",
     minutes: "{count} min",
     hoursMinutes: "{hours} h {minutes} min",
     hours: "{hours} h",

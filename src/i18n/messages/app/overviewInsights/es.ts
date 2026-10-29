@@ -133,6 +133,7 @@ const es: OverviewInsightsMessages = {
     closeExpanded: "Cerrar gráfico ampliado",
   },
   duration: {
+    seconds: "{count} s",
     minutes: "{count} min",
     hoursMinutes: "{hours} h {minutes} min",
     hours: "{hours} h",

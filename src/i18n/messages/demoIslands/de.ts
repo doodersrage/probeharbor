@@ -127,6 +127,7 @@ const de: DemoIslandMessages = {
     freezeLineFromAlerts: "Frostlinie aus den Alarmen: {temp} {unit}",
     doorOpenFor: "offen {duration}",
     doorStillOpen: "offen, noch kein Schließen gemeldet",
+    durationSeconds: "{seconds} Sek.",
     durationMinutes: "{minutes} Min.",
     durationHoursMinutes: "{hours} Std. {minutes} Min.",
     summaryDoors: "Im Diagramm hinterlegte Zeiten mit offener Tür: {list}.",

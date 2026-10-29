@@ -136,6 +136,7 @@ const en = {
   },
   /** formatDurationMs in src/lib/doorDuration.ts */
   duration: {
+    seconds: "{count} s",
     minutes: "{count} min",
     hoursMinutes: "{hours}h {minutes}m",
     hours: "{hours}h",
