@@ -3538,3 +3538,26 @@ History); doors missing on Overview.
   a humidity-only sensor: humidity line, no dew line, legend explains.
 - Not verified: production data. Not changed (needs a product decision):
   `door_open_duration` matches as soon as a door is open, whatever N is.
+
+## Door "open longer than N minutes" rule means what it says (2026-10-29)
+
+Decision (user, 2026-10-29): `door_open_duration` matches only while a door
+is open and has been open at least N minutes.
+
+- Before: any open door matched at once (N ignored while open), and any
+  opening ≥ N in the last 24 h kept the rule matching for up to a day
+  after the door closed, which delayed the "door alert cleared" notice
+  and blocked a fresh alert. The about page already promised the intended
+  behaviour ("reduces noise from quick trips to the car").
+- Now: open now and `now − openedAt ≥ N`; closed openings never match.
+  `openedAt` is the true start (`readDoorSessions`, so opens longer than
+  24 h count fully). Unknown start → no match. Details: "Garage door has
+  been open 47 min (≥ 30 min)" / "...open 5 min; needs 30" / "No door
+  matching … is open now". Copy in 5 locales (old 24 h keys removed).
+- Release note: existing duration rules stop alerting for short openings;
+  use "Door open" for every opening. Devices that report only on change
+  (Shelly) are re-checked by the 15-min cron, so alerts may lag N by up to
+  15 min (docs/integrations/esphome-shelly.md).
+- Evidence: `alertRules.test.ts` (+6: just opened → no; at N → yes with
+  detail; open since 3 days → yes; closed long opening → no; label filter;
+  unknown start → no). alertNotifications tests (incl. door recovery) pass.

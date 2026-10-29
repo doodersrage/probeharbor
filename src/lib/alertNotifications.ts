@@ -118,7 +118,6 @@ import {
 import type { DeviceWithSensors } from "./devices";
 import {
   fetchLatestSensorValues,
-  fetchRecentBoolReadings,
   getRecentNumericReadings,
   getFreezeDwellSamples,
   getRecentNumericReadingSamples,
@@ -145,8 +144,7 @@ import { personalWeatherConfigFromMetadata } from "./personalWeatherStations";
 import { fetchNwsAlerts, hasFreezeRelatedNwsAlert } from "./nwsAlerts";
 import { buildSnoozeUrl } from "./alertSnoozeTokens";
 import { buildSiteUrl } from "./siteUrl";
-import { computeDoorOpenSessions } from "./doorDuration";
-import { persistDoorSessions } from "./doorEvents";
+import { persistDoorSessions, readDoorSessions } from "./doorEvents";
 import { createAdminClient } from "./supabase";
 import type { StuckSensor } from "./stuckSensors";
 import { getUserEntitlements } from "./entitlements";
@@ -835,15 +833,9 @@ async function buildRuleContext(
       for (const sensor of device.sensors) {
         if (sensor.kind !== "door") continue;
         sensorIdByLabel.set(sensor.label, sensor.id);
-        const readings = await fetchRecentBoolReadings(sensor.id, doorSince);
-        const sessions = computeDoorOpenSessions(
-          readings.map((r) => ({
-            label: sensor.label,
-            kind: "door",
-            value: r.value,
-            recordedAt: r.recordedAt,
-          })),
-        );
+        // True start even for a door open since before the 24 h window,
+        // so "open longer than N minutes" measures the whole opening.
+        const sessions = await readDoorSessions({ id: sensor.id, label: sensor.label }, doorSince);
         doorOpenSessions.push(...sessions);
       }
     }

@@ -347,3 +347,63 @@ describe("explainAlertRules", () => {
     expect(evaluateAlertRules(rules, ctx).map((m) => m.match(/"(.+)"/)?.[1])).toEqual(explained);
   });
 });
+
+describe("door_open_duration: open longer than N minutes", () => {
+  const NOW = Date.parse("2026-10-29T12:00:00Z");
+  const rule: AlertRule = {
+    id: "d",
+    enabled: true,
+    name: "Garage door left open",
+    all: [{ type: "door_open_duration", value: 30, labelIncludes: "garage" }],
+  };
+  const ctx = (sessions: RuleEvalContext["doorOpenSessions"]): RuleEvalContext => ({
+    readings: [],
+    boolSensors: [],
+    numericSensors: [],
+    doorOpenSessions: sessions,
+    rateDrops: [],
+    outages: [],
+    freezeThresholdF: 34,
+    humidityThreshold: 75,
+    rateChangeF: 5,
+    outageHours: 2,
+    now: NOW,
+  });
+  const openSince = (iso: string, label = "Garage door") => ({ label, openedAt: iso, durationMs: null, stillOpen: true });
+  const closed = (minutes: number, label = "Garage door") => ({
+    label,
+    openedAt: "2026-10-29T06:00:00Z",
+    durationMs: minutes * 60000,
+    stillOpen: false,
+  });
+
+  it("doesn't fire for a door that has just opened", () => {
+    expect(evaluateAlertRules([rule], ctx([openSince("2026-10-29T11:55:00Z")]))).toHaveLength(0);
+    const [why] = explainAlertRules([rule], ctx([openSince("2026-10-29T11:55:00Z")]));
+    expect(why?.conditions[0]?.detail).toBe("Garage door has been open 5 min; needs 30.");
+  });
+
+  it("fires once the door has been open N minutes", () => {
+    expect(evaluateAlertRules([rule], ctx([openSince("2026-10-29T11:30:00Z")]))).toHaveLength(1);
+    const [why] = explainAlertRules([rule], ctx([openSince("2026-10-29T11:13:00Z")]));
+    expect(why?.conditions[0]?.detail).toBe("Garage door has been open 47 min (≥ 30 min).");
+  });
+
+  it("measures a door open since before the 24 h window from its real start", () => {
+    expect(evaluateAlertRules([rule], ctx([openSince("2026-10-26T08:00:00Z")]))).toHaveLength(1);
+  });
+
+  it("doesn't match a long opening that has already closed (so the alert clears)", () => {
+    expect(evaluateAlertRules([rule], ctx([closed(120)]))).toHaveLength(0);
+    const [why] = explainAlertRules([rule], ctx([closed(120)]));
+    expect(why?.conditions[0]?.detail).toBe('No door matching "garage" is open now.');
+  });
+
+  it("only looks at doors matching the label filter", () => {
+    expect(evaluateAlertRules([rule], ctx([openSince("2026-10-29T09:00:00Z", "Side door")]))).toHaveLength(0);
+  });
+
+  it("doesn't fire when the open time is unknown", () => {
+    expect(evaluateAlertRules([rule], ctx([{ label: "Garage door", durationMs: null, stillOpen: true }]))).toHaveLength(0);
+  });
+});

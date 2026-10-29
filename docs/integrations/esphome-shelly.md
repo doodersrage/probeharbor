@@ -83,6 +83,8 @@ Use `false` when the door closes. Map `garage_door` as a door sensor in Devices.
 Dashboard → **Alerts → Rules** → add a rule with **all** of:
 
 - Door open (or door open longer than N minutes)
+
+  "Door open longer than N minutes" fires once a door has been open N minutes and clears when it closes; short openings don't alert (use "Door open" for that). A Shelly only reports when the door changes, so rules are also checked every 15 minutes: the alert can arrive up to 15 minutes after N.
 - Temperature below threshold
 
 Product walkthrough: [Garage door + cold playbook](https://probeharbor.dev/about/garage-door-cold-playbook).

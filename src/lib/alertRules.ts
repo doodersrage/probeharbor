@@ -48,6 +48,8 @@ export type RuleEvalContext = {
   numericSensors: Array<{ label: string; kind: string; value: number }>;
   doorOpenSessions: Array<{
     label: string;
+    /** When this opening started (true start, even if before the 24 h window). */
+    openedAt?: string;
     durationMs: number | null;
     stillOpen: boolean;
   }>;
@@ -59,6 +61,8 @@ export type RuleEvalContext = {
   outageHours: number;
   /** Current outdoor temperature from the weather source; null when unknown. */
   outdoorTempF?: number | null;
+  /** Evaluation time (ms); defaults to Date.now(). */
+  now?: number;
 };
 
 /** Default for temp_above: hot enough to cook batteries, paint, and electronics. */
@@ -175,26 +179,34 @@ export function explainCondition(condition: AlertCondition, ctx: RuleEvalContext
     case "door_open":
       return boolCheck(ctx, "door", true, n.doorSensor, t.states.open, t, locale, inc);
     case "door_open_duration": {
+      // "Open longer than N minutes": a door that is open now and has been
+      // open at least N minutes. Closed openings never match, so the alert
+      // clears (and the "cleared" notice goes out) when the door closes.
+      // Before, any open door matched at once, and a long opening kept the
+      // rule matching for 24 h after it closed.
       const minMinutes = condition.value ?? 30;
-      const sessions = ctx.doorOpenSessions.filter((session) => matchesLabel(session.label, inc));
-      if (sessions.length === 0) {
-        return { matched: false, detail: inc ? fill(t.noDoorOpeningsFor, { includes: inc }) : t.noDoorOpenings };
+      const now = ctx.now ?? Date.now();
+      const open = ctx.doorOpenSessions
+        .filter((session) => session.stillOpen && matchesLabel(session.label, inc))
+        .map((session) => {
+          const start = session.openedAt ? Date.parse(session.openedAt) : Number.NaN;
+          return { label: session.label, minutes: Number.isFinite(start) ? (now - start) / 60000 : null };
+        });
+      if (open.length === 0) {
+        return { matched: false, detail: inc ? fill(t.noOpenDoorFor, { includes: inc }) : t.noOpenDoor };
       }
-      const hit = sessions.find((session) => session.stillOpen || (session.durationMs ?? 0) >= minMinutes * 60 * 1000);
+      const hit = open.find((door) => door.minutes != null && door.minutes >= minMinutes);
       if (hit) {
         return {
           matched: true,
-          detail: hit.stillOpen
-            ? fill(t.doorOpenNow, { label: hit.label })
-            : fill(t.doorWasOpen, {
-                label: hit.label,
-                minutes: Math.round((hit.durationMs ?? 0) / 60000),
-                min: minMinutes,
-              }),
+          detail: fill(t.doorOpenFor, { label: hit.label, minutes: Math.floor(hit.minutes ?? 0), min: minMinutes }),
         };
       }
-      const longest = Math.max(...sessions.map((session) => session.durationMs ?? 0));
-      return { matched: false, detail: fill(t.doorLongest, { minutes: Math.round(longest / 60000), min: minMinutes }) };
+      const longest = open.reduce((a, b) => ((b.minutes ?? -1) > (a.minutes ?? -1) ? b : a));
+      return {
+        matched: false,
+        detail: fill(t.doorOpenShort, { label: longest.label, minutes: Math.floor(Math.max(0, longest.minutes ?? 0)), min: minMinutes }),
+      };
     }
     case "flood":
       return boolCheck(ctx, "flood", true, n.leakSensor, t.states.wet, t, locale, inc);
