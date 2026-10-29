@@ -3630,10 +3630,14 @@ Migration results reported by the user after 20261029160000/160100:
 - [x] **Firmware 1.2.3 (source only): post on door change.** A new door
       state held 200 ms posts at once; change-triggered posts ≥ 5 s apart
       (server allows 60/min). Compiles for esp32, esp32s3, esp32c3
-      (PlatformIO 6.2.0). **Not tested on hardware; published `/flash`
-      images unchanged (still 1.2.2)** — publishing needs `pnpm
-      firmware:build` and a commit of `public/firmware/`. Test steps in
-      HARDWARE-TESTS.md §6.
+      (PlatformIO 6.2.0). Test steps in HARDWARE-TESTS.md §6.
+      **Update 2026-10-29: verified on a plain ESP32** (ESP32-D0WD-V3,
+      flashed from source over USB, reed switch on a real door). The
+      device page flipped Open/Closed with the door, and History → Doors
+      listed separate sub-minute openings. The ~1 s latency and the 5 s
+      gap under rapid toggling weren't measured. ESP32-S3/C3 are
+      compile-tested only. `/flash` images rebuilt as 1.2.3 (`pnpm
+      firmware:build`, PIO set to PlatformIO 6.2.0).
 - Evidence: unit tests (+12: door filter list/validate/query, CSV filter;
   bucket sizing, bucket path, raw fallback; rollup bucket path and sizing).
   `pnpm test`: 3309 passed. `pnpm typecheck`: 0 errors. Biome: no new

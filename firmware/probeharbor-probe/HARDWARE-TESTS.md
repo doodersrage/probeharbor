@@ -1,13 +1,14 @@
-# Hardware tests still open (firmware 1.2.2; 1.2.3 adds post on door change)
+# Hardware tests still open (firmware 1.2.3)
 
 Verified so far, on a plain ESP32: browser flash → USB settings → Wi-Fi → first
 reading, with a DS18B20 (1.0.1), a DHT22 (1.1.1), and a BME280 on I2C (1.2.2:
-temperature, humidity, and pressure). The door reed switch (1.2.2) works too.
+temperature, humidity, and pressure). The door reed switch (1.2.2) works too, and so does posting
+right away on a door change (1.2.3).
 Everything else below has only been compiled.
 
 Keep the board on USB with the serial console open in `/flash` (or any serial
 monitor at 115200 baud). Lines starting `TT` are the ones to watch. Write the
-result and the firmware line (`TT … 1.2.2`) next to each test.
+result and the firmware line (`TT … 1.2.3`) next to each test.
 
 ## Parts to order
 
@@ -80,12 +81,13 @@ Turn them on in `/flash` ("extras") or the portal's extras box before saving.
     measure it with a multimeter: about 3.3V dry, near 0V wet. Set its dial so a
     drop of water reads Wet and dry reads Dry.
 - **Door (verified on a plain ESP32):** reed switch between the door pin and GND. Magnet away = Open.
-  - **1.2.3, not yet tested on hardware: post on door change.** With the serial
-    console open, move the magnet away and back. Expect a post within about a
-    second of each change (not only every 60 s), and on the device page the door
-    flips Open/Closed at those times. Open and close within ~10 s: History →
-    Doors should list that short opening. Wave the magnet back and forth quickly
-    for ~20 s: posts should come at most every 5 s (no flood, no 429s).
+  - **1.2.3 post on door change: verified on a plain ESP32 (2026-10-29).** The board was
+    flashed from source over USB and the switch was on a real door, with no console. The device
+    page flipped Open/Closed as the door moved, and History → Doors listed separate
+    sub-minute openings (three within 5:35 PM), which 1.2.2 could not record.
+    Still open: the ~1 s latency and the 5 s minimum gap between posts during rapid
+    toggling (no 429s) weren't measured. Check with the serial console, or compare
+    the device's readings export (second-level times) against noted door times.
 - **Battery:** a single Li-ion cell through a 1:1 divider (two equal resistors, e.g.
   100k + 100k) to the battery pin. `battery_pct` should track a multimeter reading.
 
