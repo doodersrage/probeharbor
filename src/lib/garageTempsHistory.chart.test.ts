@@ -12,6 +12,8 @@ const rows = Array.from({ length: 20 }, (_, i) => {
   ];
 }).flat();
 
+const calls: Array<[string, unknown[]]> = [];
+
 vi.mock("./supabase", () => ({
   createServerClient: () => {
     const builder: Record<string, unknown> = new Proxy(
@@ -20,7 +22,10 @@ vi.mock("./supabase", () => ({
         get: (_t, prop) => {
           if (prop === "range") return async (from: number, to: number) => ({ data: rows.slice(from, to + 1), error: null });
           if (prop === "then") return undefined;
-          return () => builder;
+          return (...args: unknown[]) => {
+            calls.push([String(prop), args]);
+            return builder;
+          };
         },
       },
     );
@@ -40,5 +45,11 @@ describe("fetchGarageTempChartData", () => {
     // ...and the humidity is returned on its own instead of being dropped.
     expect(humidityOnly).toHaveLength(20);
     expect(humidityOnly?.[0]).toEqual({ timestamp: "2026-10-29T00:00:00.000Z", humidity: 60, probeLabel: "Garage air" });
+  });
+
+  it("asks the database for temperature and humidity only (not door, leak or battery readings)", async () => {
+    calls.length = 0;
+    await fetchGarageTempChartData("user-1", 30);
+    expect(calls).toEqual(expect.arrayContaining([["in", ["device_sensors.kind", ["temperature", "humidity"]]]]));
   });
 });

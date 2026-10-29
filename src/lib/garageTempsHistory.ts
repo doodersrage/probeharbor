@@ -275,10 +275,15 @@ async function fetchAllRawSensorRows(
   const rows: SensorRow[] = [];
 
   for (let offset = 0; ; offset += POSTGREST_PAGE_SIZE) {
+    // Filter by kind in the database (the select joins device_sensors!inner):
+    // without it every door, leak, battery… reading was read and dropped
+    // here, and a device posting door state every minute multiplied the
+    // pages a 30-day chart needed.
     let query = supabase
       .from("sensor_readings")
       .select(SENSOR_READING_SELECT)
-      .eq("household_id", householdId);
+      .eq("household_id", householdId)
+      .in("device_sensors.kind", kinds);
 
     query = applyHistoryFiltersToQuery(query, filters);
     query = query
