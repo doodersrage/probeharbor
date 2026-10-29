@@ -575,6 +575,115 @@ export async function fetchAllGarageTempReadings(
   return { readings, error: null };
 }
 
+/** Readings per call stay under PostgREST's 1000 rows. */
+const SAMPLE_ROWS_PER_CALL = 900;
+/** Aim for about this many temperature points in total (first + min + max per bucket). */
+const SAMPLE_TARGET_TEMP_POINTS = 1000;
+
+/** Buckets per sensor for `tempSensors` temperature sensors: 50–300. */
+export function sampleBucketCount(tempSensors: number): number {
+  return Math.min(300, Math.max(50, Math.floor(SAMPLE_TARGET_TEMP_POINTS / (3 * Math.max(1, tempSensors)))));
+}
+
+/** Split sensors into calls whose expected rows (temperature 3 per bucket, humidity 1) fit one response. */
+export function groupSensorsForSampling<T extends { kind: string }>(sensors: T[], buckets: number): T[][] {
+  const groups: T[][] = [];
+  let current: T[] = [];
+  let rows = 0;
+  for (const sensor of sensors) {
+    const cost = (sensor.kind === "temperature" ? 3 : 1) * buckets;
+    if (current.length > 0 && rows + cost > SAMPLE_ROWS_PER_CALL) {
+      groups.push(current);
+      current = [];
+      rows = 0;
+    }
+    current.push(sensor);
+    rows += cost;
+  }
+  if (current.length > 0) groups.push(current);
+  return groups;
+}
+
+/**
+ * Temperature/humidity chart readings for [fromIso, toIso] via
+ * sensor_bucket_samples (migration 20261029200000): per time bucket the
+ * first reading, plus the lowest and highest temperature. Real readings,
+ * so dips survive and same-post humidity still pairs. Shaped like raw rows
+ * for pairTempHumidityRows. null when the function isn't available or a
+ * call fails (callers then read raw rows as before).
+ */
+async function fetchSampledSensorRows(
+  householdId: string,
+  fromIso: string,
+  toIso?: string,
+): Promise<SensorRow[] | null> {
+  const supabase = createServerClient();
+  const to = toIso ?? new Date().toISOString();
+  const { data: sensors, error: sensorError } = await supabase
+    .from("device_sensors")
+    .select("id, key, label, kind, offset_num, devices!inner(name, household_id)")
+    .eq("devices.household_id", householdId)
+    .in("kind", ["temperature", "humidity"]);
+  if (sensorError) {
+    console.warn("Chart sensors lookup failed, reading raw rows:", sensorError.message);
+    return null;
+  }
+  type SensorMeta = {
+    id: string;
+    key: string;
+    label: string;
+    kind: string;
+    offset_num: number | null;
+    devices: { name: string } | null;
+  };
+  const list = (sensors ?? []) as unknown as SensorMeta[];
+  if (list.length === 0) return [];
+
+  const buckets = sampleBucketCount(list.filter((s) => s.kind === "temperature").length);
+  const spanSec = Math.max(0, (Date.parse(to) - Date.parse(fromIso)) / 1000);
+  const bucketSeconds = Math.max(60, Math.ceil(spanSec / buckets));
+  const byId = new Map(list.map((s) => [s.id, s]));
+
+  const results = await Promise.all(
+    groupSensorsForSampling(list, buckets).map((group) =>
+      supabase.rpc("sensor_bucket_samples", {
+        p_household_id: householdId,
+        p_sensor_ids: group.map((s) => s.id),
+        p_extreme_sensor_ids: group.filter((s) => s.kind === "temperature").map((s) => s.id),
+        p_from: fromIso,
+        p_to: to,
+        p_bucket_seconds: bucketSeconds,
+      }),
+    ),
+  );
+  const failed = results.find((r) => r.error);
+  if (failed?.error) {
+    console.warn("sensor_bucket_samples unavailable, reading raw rows:", failed.error.message);
+    return null;
+  }
+
+  const rows: SensorRow[] = [];
+  for (const result of results) {
+    for (const row of result.data ?? []) {
+      const sensor = byId.get(row.sensor_id);
+      if (!sensor || typeof row.value_num !== "number") continue;
+      rows.push({
+        recorded_at: row.recorded_at,
+        value_num: row.value_num,
+        meta: {},
+        device_sensors: {
+          key: sensor.key,
+          label: sensor.label,
+          kind: sensor.kind,
+          offset_num: sensor.offset_num,
+          devices: { name: sensor.devices?.name ?? "Device" },
+        },
+      });
+    }
+  }
+  return rows;
+}
+
 /** Humidity from a sensor whose key matched no temperature probe (see probePairingKey). */
 export type HumidityOnlyPoint = { timestamp: string; humidity: number; probeLabel: string };
 
@@ -588,10 +697,22 @@ export async function fetchGarageTempChartData(
   const sinceIso = filters.from ?? since.toISOString();
   const chartFilters = { ...filters, from: sinceIso };
 
-  const fromSensor = await fetchPairedFromSensorReadings(userId, chartFilters, {
-    ascending: true,
-    limit: CHART_DISPLAY_CAP,
-  });
+  // Preferred: sampled readings in a few calls (first/min/max per bucket).
+  // Fallback: every raw row, then 500 evenly spaced readings (as before).
+  const householdId = await getUserHouseholdId(userId);
+  const sampled = householdId ? await fetchSampledSensorRows(householdId, sinceIso, filters.to) : null;
+  let fromSensor: { readings: GarageTempReading[]; error: string | null };
+  if (sampled) {
+    fromSensor = {
+      readings: pairTempHumidityRows(sampled, userId).filter((reading) => matchesFilters(reading, chartFilters)),
+      error: null,
+    };
+  } else {
+    fromSensor = await fetchPairedFromSensorReadings(userId, chartFilters, {
+      ascending: true,
+      limit: CHART_DISPLAY_CAP,
+    });
+  }
 
   if (fromSensor.error) {
     return { points: [], error: fromSensor.error };
@@ -821,9 +942,11 @@ export async function fetchHouseholdChartData(
   since.setDate(since.getDate() - days);
   const sinceIso = since.toISOString();
 
-  const { rows, error } = await fetchAllRawSensorRows(householdId, { from: sinceIso }, {
-    ascending: true,
-  });
+  // Same sampled path as the signed-in charts; raw rows only as a fallback.
+  const sampled = await fetchSampledSensorRows(householdId, sinceIso);
+  const { rows, error } = sampled
+    ? { rows: sampled, error: null }
+    : await fetchAllRawSensorRows(householdId, { from: sinceIso }, { ascending: true });
 
   if (error) {
     return { points: [], error };

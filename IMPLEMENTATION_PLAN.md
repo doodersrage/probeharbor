@@ -3646,3 +3646,35 @@ Migration results reported by the user after 20261029160000/160100:
 - Next candidate: the main History/Overview chart still pages every raw
   temperature/humidity row (~86k rows / 87 requests for 30 days of
   minute readings from one probe); it could use sensor_bucket_averages too.
+
+## Main charts read sampled readings, not every raw row (2026-10-29)
+
+- Before: `fetchGarageTempChartData` / `fetchHouseholdChartData` paged
+  every raw temperature/humidity row (~86,000 rows / ~87 requests for 30
+  days of one probe reporting every minute), then kept 500 evenly spaced
+  readings, which could drop the coldest one.
+- Decision: **samples, not averages.** Chart points also feed freeze
+  hours, "coldest", cold-snap replays, digest/report emails and the claims
+  pack; averages would hide short dips and read warmer.
+- Migration `20261029200000_sensor_bucket_samples`: read-only SQL
+  function (service role only, one household): per sensor and time bucket
+  the first reading, plus the lowest and highest for temperature sensors.
+  Every row is a measured reading with its own time, so same-post humidity
+  still pairs (pairTempHumidityRows unchanged).
+- `fetchSampledSensorRows`: loads the household's temperature/humidity
+  sensors, picks 50–300 buckets per sensor (~1000 temperature points in
+  total), splits sensors into parallel calls under 900 rows each, and
+  shapes rows like raw ones. History, Overview and share-link charts use it;
+  any error → the old raw-row path.
+- Effects: chart points may now include each bucket's lowest/highest
+  reading, so coldest / freeze-hour figures can be a little more extreme
+  (closer to the raw data) than with the old even sampling; "Readings" on
+  the Exports summary counts chart points, as before.
+- Evidence: `garageTempsHistory.samples.test.ts` (+4: dip kept and humidity
+  paired; calls split; bucket sizing; raw fallback). `pnpm test`: 3313
+  passed. `pnpm typecheck`: 0 errors. Biome: no new warnings. Throwaway
+  PostgreSQL 18, 30 days of minute readings (86,401 rows): 601
+  temperature + 300 humidity rows in ~0.04 s, a 2-minute dip to 31 °F
+  kept, humidity samples all on temperature sample times, other household
+  excluded, anon/authenticated denied.
+- Apply with `pnpm db:pending`.

@@ -2045,6 +2045,21 @@ export type Database = {
           sample_count: number
         }[]
       }
+      sensor_bucket_samples: {
+        Args: {
+          p_household_id: string
+          p_sensor_ids: string[]
+          p_extreme_sensor_ids: string[]
+          p_from: string
+          p_to: string
+          p_bucket_seconds: number
+        }
+        Returns: {
+          sensor_id: string
+          recorded_at: string
+          value_num: number
+        }[]
+      }
       sensor_values_before: {
         Args: {
           p_household_id: string
