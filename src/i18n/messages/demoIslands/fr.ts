@@ -119,6 +119,14 @@ const fr: DemoIslandMessages = {
     optional: "Facultatif",
     humidityDew: "Humidité + rosée",
     freezeLineFromAlerts: "Seuil de gel des alertes : {temp} {unit}",
+    doorsLegend: "Portes ouvertes",
+    doorOpenFor: "ouverte {duration}",
+    doorStillOpen: "ouverte, fermeture pas encore signalée",
+    durationMinutes: "{minutes} min",
+    durationHoursMinutes: "{hours} h {minutes} min",
+    summaryDoors: "Périodes de porte ouverte grisées sur le graphique : {count} ({doors}).",
+    tipsDoors: " Les bandes grisées indiquent quand un capteur de porte de votre foyer a signalé une porte ouverte.",
+    doorsUnavailable: "Impossible de charger l’historique des portes : les portes ouvertes ne sont pas indiquées.",
   },
 };
 

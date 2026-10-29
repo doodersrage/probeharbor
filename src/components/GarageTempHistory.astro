@@ -42,6 +42,8 @@ interface Props {
   tab?: string;
   alertMarkers?: import("../lib/chartAlertMarkers").ChartAlertMarker[];
   highlightAlertId?: number | null;
+  doorBands?: import("../lib/chartDoorBands").ChartDoorBand[];
+  doorBandsError?: boolean;
   canUseClaimsPack?: boolean;
   compareFrom?: string;
   compareTo?: string;
@@ -77,6 +79,8 @@ const {
   tab = "",
   alertMarkers = [],
   highlightAlertId = null,
+  doorBands = [],
+  doorBandsError = false,
   canUseClaimsPack = false,
   compareFrom = "",
   compareTo = "",
@@ -381,6 +385,8 @@ function comparePresetHref(preset: "prior_week" | "prior_month"): string {
       showHumidity
       alertMarkers={alertMarkers}
       highlightAlertId={highlightAlertId}
+      doorBands={doorBands}
+      doorBandsError={doorBandsError}
       canUseClaimsPack={canUseClaimsPack}
       canShareChart={canShareChart}
       ui={chartUi}

@@ -12,6 +12,12 @@ export type DoorStateAtTime = {
   label: string;
   open: boolean;
   recordedAt: string;
+  /**
+   * When set, the door stayed open from `recordedAt` until this time (null:
+   * no close reported yet), so a drop part-way through still counts.
+   * Left out, only the moment `recordedAt` is checked.
+   */
+  until?: string | null;
 };
 
 /** Flag sudden temperature drops; note if a door was open nearby. */
@@ -76,6 +82,9 @@ function doorWasOpenNear(
   return events.some((event) => {
     if (!event.open) return false;
     const t = Date.parse(event.recordedAt);
-    return Math.abs(t - atMs) <= windowMs;
+    if (event.until === undefined) return Math.abs(t - atMs) <= windowMs;
+    const end = event.until === null ? Number.POSITIVE_INFINITY : Date.parse(event.until);
+    // The open period overlaps [atMs - windowMs, atMs + windowMs].
+    return t <= atMs + windowMs && end >= atMs - windowMs;
   });
 }

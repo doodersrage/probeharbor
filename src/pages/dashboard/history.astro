@@ -44,6 +44,7 @@ import { formatHistoryRetention, getUserEntitlements } from "../../lib/entitleme
 import { getAlertSettingsForUser } from "../../lib/notify";
 import { listAlertEventsInRange } from "../../lib/alertEvents";
 import { toChartAlertMarkers } from "../../lib/chartAlertMarkers";
+import { fetchChartDoorBands, toDoorStates } from "../../lib/chartDoorBands";
 import { listHistorySavedViews, searchParamsFromView } from "../../lib/historySavedViews";
 import { fmt, formatDateTime, formatNumber, getLocale, LOCALE_META, plural } from "../../i18n";
 import { appHistoryMessages } from "../../i18n/messages/app/history";
@@ -302,6 +303,25 @@ const priorYearData = { points: priorYearBundle.points, error: null };
 
 const chartAlertMarkers = toChartAlertMarkers(alertEvents);
 
+// Door-open periods over the chart window (every door in the household).
+const doorSensors = householdDevicesResult.devices.flatMap((device) =>
+  device.sensors
+    .filter((sensor) => sensor.kind === "door")
+    .map((sensor) => ({ id: sensor.id, label: sensor.label })),
+);
+const doorBandsResult =
+  loadChartExtras && householdId && doorSensors.length > 0 && chartMarkerTimes.length > 0
+    ? await fetchChartDoorBands(
+        householdId,
+        new Date(Math.min(...chartMarkerTimes)).toISOString(),
+        new Date(Math.max(...chartMarkerTimes)).toISOString(),
+        doorSensors,
+      )
+    : { bands: [], error: null };
+if (doorBandsResult.error) {
+  console.error("History door bands failed:", doorBandsResult.error);
+}
+
 const indoorOutdoorSeries = outdoorDelta
   ? buildIndoorOutdoorSeries(chartData.points, outdoorDelta.outdoorF)
   : [];
@@ -360,7 +380,13 @@ if (loadTable && history.totalPages > 0 && pageParam > history.totalPages) {
 }
 
 const subscriptionNotice = Astro.url.searchParams.get("subscription");
-const anomalies = detectTemperatureAnomalies(chartData.points, undefined, undefined, undefined, locale);
+const anomalies = detectTemperatureAnomalies(
+  chartData.points,
+  undefined,
+  undefined,
+  toDoorStates(doorBandsResult.bands),
+  locale,
+);
 const probeCompare = compareProbeAverages(chartData.points, locale);
 
 const houseChartOverlay =
@@ -539,6 +565,8 @@ const freezeTemp = plain(alertSettings.freezeThresholdF);
           canShareChart={canDownloadCsv}
           alertMarkers={chartAlertMarkers}
           highlightAlertId={highlightAlertId}
+          doorBands={doorBandsResult.bands}
+          doorBandsError={doorBandsResult.error != null}
           canUseClaimsPack={entitlements.canUseClaimsPack}
         />
 

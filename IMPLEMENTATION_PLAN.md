@@ -3326,3 +3326,32 @@ were lost for good. The Overview "Door history" card hides when empty.
   readings from the last 90 days could be backfilled in a later step.
 - Next: step 2, shade door-open periods on the History chart and pass door
   events to `detectTemperatureAnomalies`.
+
+## Door history, step 2: door-open periods on the History chart (2026-10-29)
+
+- [x] `src/lib/chartDoorBands.ts`: `fetchChartDoorBands` loads saved sessions
+      overlapping the chart window (`opened_at <= to`, `closed_at >= from`,
+      newest 1000, warns when the limit is hit) plus a door open right now
+      (last 24 h of readings, only when the window reaches the last day).
+      A query error is returned, not thrown. Pure helpers: `clipDoorBands`,
+      `doorBandsAt`, `summarizeDoorBands`, `toDoorStates`.
+- [x] `HistoryChart`: door-open periods shaded behind the lines (pale
+      yellow wash + top strip; open-now runs to the chart end), a "Doors
+      open" legend toggle, hover rows ("Garage door · open 35 min" / "open,
+      no close reported yet"), a sentence in the screen-reader summary, a
+      chart tip, and a note when door history failed to load.
+- [x] History page passes door bands to the chart and to
+      `detectTemperatureAnomalies` (it was given nothing before, so the
+      "a door was open" note never showed). `DoorStateAtTime.until` makes a
+      door that was already open during the drop count (overlap check);
+      events without `until` behave as before.
+- Bands cover every door in the household, also when the chart is filtered
+  to one probe or feed.
+- Copy in 5 locales (History charts and the demo island copy).
+- Evidence: `chartDoorBands.test.ts` (+9), `anomalyDetection.test.ts` (+2).
+  `pnpm test`: 3232 passed. `pnpm typecheck`: 0 errors. Biome on changed
+  files: clean.
+- Not verified: the canvas drawing, hover and legend in a browser (no
+  local database; `.env` points at the hosted project). No door hardware.
+- Next: optional step 3 (door event list with date filters and CSV export;
+  temperature change while open).

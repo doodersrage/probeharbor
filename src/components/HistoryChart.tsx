@@ -23,6 +23,7 @@ import {
   nearestAlertMarker,
   type ChartAlertMarker,
 } from "../lib/chartAlertMarkers";
+import { clipDoorBands, doorBandsAt, summarizeDoorBands, type ChartDoorBand } from "../lib/chartDoorBands";
 import { useHistoryChartInteraction } from "../lib/useHistoryChartInteraction";
 import {
   buildHistoryChartUrl,
@@ -107,6 +108,14 @@ export const HISTORY_CHART_UI_EN = {
   optional: "Optional",
   humidityDew: "Humidity + dew",
   freezeLineFromAlerts: "Freeze line from alerts: {temp}{unit}",
+  doorsLegend: "Doors open",
+  doorOpenFor: "open {duration}",
+  doorStillOpen: "open, no close reported yet",
+  durationMinutes: "{minutes} min",
+  durationHoursMinutes: "{hours} h {minutes} min",
+  summaryDoors: "Door-open periods shaded on the chart: {count} ({doors}).",
+  tipsDoors: " Shaded bands show when a door sensor in your household reported open.",
+  doorsUnavailable: "Door history couldn't be loaded, so open doors aren't shaded.",
 };
 
 export type HistoryChartUi = typeof HISTORY_CHART_UI_EN;
@@ -177,6 +186,10 @@ interface Props {
   alertMarkers?: ChartAlertMarker[];
   /** Highlight a specific alert tick (e.g. from ?alert=). */
   highlightAlertId?: number | null;
+  /** Door-open periods (any door in the household), shaded behind the lines. */
+  doorBands?: ChartDoorBand[];
+  /** Door history failed to load: say so instead of showing no doors. */
+  doorBandsError?: boolean;
   /** Show claims-pack deep-link for the visible window (History only). */
   canUseClaimsPack?: boolean;
   /** Allow uploading a PNG snapshot to a public share URL. */
@@ -199,6 +212,7 @@ const COLOR_BELOW = "#38bdf8";
 const COLOR_ABOVE = "#fb923c";
 const HUMIDITY_COLOR = "#a78bfa";
 const DEW_COLOR = "#2dd4bf";
+const DOOR_COLOR = "#fde68a";
 // Saved guide values are in the unit they were entered in, so each unit has its own key.
 const storageHigh = (celsius: boolean) => (celsius ? "tt-chart-high-c" : "tt-chart-high-f");
 const storageTarget = (celsius: boolean) => (celsius ? "tt-chart-target-c" : "tt-chart-target-f");
@@ -263,6 +277,8 @@ function HistoryChartView({
   showHumidity = false,
   alertMarkers = [],
   highlightAlertId = null,
+  doorBands = [],
+  doorBandsError = false,
   canUseClaimsPack = false,
   canShareChart = false,
   guest = false,
@@ -317,6 +333,8 @@ function HistoryChartView({
     null,
   );
   const [houseVisible, setHouseVisible] = useState(true);
+  const [doorsVisible, setDoorsVisible] = useState(true);
+  const [hoverDoors, setHoverDoors] = useState<ChartDoorBand[]>([]);
   const [linkCopied, setLinkCopied] = useState(false);
   const [shareBusy, setShareBusy] = useState(false);
   const [shareMessage, setShareMessage] = useState<string | null>(null);
@@ -416,6 +434,7 @@ function HistoryChartView({
         setHoverTs(null);
         setHoverHits([]);
         setHoverMarker(null);
+        setHoverDoors([]);
         setTooltipPos(null);
       },
       updateHover(clientX: number, clientY: number) {
@@ -430,6 +449,7 @@ function HistoryChartView({
           setHoverTs(null);
           setHoverHits([]);
           setHoverMarker(null);
+          setHoverDoors([]);
           setTooltipPos(null);
           return;
         }
@@ -452,11 +472,14 @@ function HistoryChartView({
             ? Date.parse(hits[0].timestamp)
             : ts;
 
+        const doors = doorsVisible ? doorBandsAt(doorBands, ts) : [];
+
         setHoverTs(Number.isFinite(snapTs) ? snapTs : ts);
         setHoverHits(hits);
         setHoverMarker(marker);
+        setHoverDoors(doors);
 
-        if (hits.length === 0 && !marker) {
+        if (hits.length === 0 && !marker && doors.length === 0) {
           setTooltipPos(null);
           return;
         }
@@ -470,6 +493,8 @@ function HistoryChartView({
     }),
     [
       alertMarkers,
+      doorBands,
+      doorsVisible,
       byProbe,
       visibleProbes,
       houseVisible,
@@ -520,6 +545,17 @@ function HistoryChartView({
     dragActiveRef.current = isPanning || isBrushing;
   }, [isPanning, isBrushing]);
 
+  /** "35 min" / "2 h 5 min" for how long a door was open. */
+  const doorDuration = (ms: number) => {
+    const minutes = Math.max(0, Math.round(ms / 60000));
+    if (minutes < 60) return fill(t.durationMinutes, { minutes });
+    return fill(t.durationHoursMinutes, { hours: Math.floor(minutes / 60), minutes: minutes % 60 });
+  };
+  const doorStatus = (band: ChartDoorBand) =>
+    band.closedAt
+      ? fill(t.doorOpenFor, { duration: doorDuration(Date.parse(band.closedAt) - Date.parse(band.openedAt)) })
+      : t.doorStillOpen;
+
   const chartSummary = useMemo(() => {
     if (points.length < 2) return t.notEnough;
     let min = points[0]!;
@@ -542,13 +578,23 @@ function HistoryChartView({
           : fill(t.summaryAbove, { freeze: deg(freezeThresholdF), unit }),
       );
     }
+    if (doorBands.length > 0) {
+      const times = points.map((p) => Date.parse(p.timestamp)).filter(Number.isFinite);
+      const doors = summarizeDoorBands(doorBands, Math.min(...times), Math.max(...times));
+      if (doors.count > 0) {
+        parts.push(fill(t.summaryDoors, { count: doors.count, doors: doors.labels.join(", ") }));
+      }
+    }
     return parts.join(" ");
-  }, [points, freezeThresholdF, t, locale]);
+  }, [points, freezeThresholdF, doorBands, t, locale]);
 
   const hoverLive = useMemo(() => {
     const parts: string[] = [];
     if (hoverMarker) {
       parts.push(fill(t.hoverAlert, { title: hoverMarker.title }));
+    }
+    for (const band of hoverDoors) {
+      parts.push(`${band.label} ${doorStatus(band)}`);
     }
     if (hoverHits.length) {
       const when = hoverTime(hoverHits[0]!.timestamp, locale);
@@ -557,7 +603,7 @@ function HistoryChartView({
       );
     }
     return parts.join(". ");
-  }, [hoverHits, hoverMarker, t, locale]);
+  }, [hoverHits, hoverMarker, hoverDoors, t, locale]);
 
   useEffect(() => {
     const canvasEl = canvasRef.current;
@@ -813,6 +859,21 @@ function HistoryChartView({
         g.restore();
       }
 
+      // Door-open periods: a light wash behind the lines, with a solid strip on top.
+      if (doorsVisible) {
+        for (const band of clipDoorBands(doorBands, minTs, maxTs)) {
+          const x0 = Math.max(pad.left, xFor(band.startMs));
+          const x1 = Math.min(width - pad.right, xFor(band.endMs));
+          const w = Math.max(2, x1 - x0);
+          g.save();
+          g.fillStyle = "rgba(253, 230, 138, 0.12)";
+          g.fillRect(x0, pad.top, w, innerH);
+          g.fillStyle = "rgba(253, 230, 138, 0.75)";
+          g.fillRect(x0, pad.top, w, 3);
+          g.restore();
+        }
+      }
+
       if (priorYearPoints.length >= 2) {
         drawSeriesFlat(priorYearPoints, "rgba(148, 163, 184, 0.55)");
       }
@@ -855,7 +916,7 @@ function HistoryChartView({
         });
       }
 
-      if (hoverTs != null && (hoverHits.length > 0 || hoverMarker)) {
+      if (hoverTs != null && (hoverHits.length > 0 || hoverMarker || hoverDoors.length > 0)) {
         const lineBounds = plotBoundsRef.current!;
         const lineX = timestampToX(hoverTs, lineBounds);
         g.strokeStyle = "rgba(248, 250, 252, 0.45)";
@@ -930,10 +991,13 @@ function HistoryChartView({
     hoverTs,
     hoverHits,
     hoverMarker,
+    hoverDoors,
     activeView,
     brushRange,
     alertMarkers,
     highlightAlertId,
+    doorBands,
+    doorsVisible,
     bindWheelZoom,
     locale,
     t,
@@ -1038,7 +1102,7 @@ function HistoryChartView({
 
   const showTooltip =
     tooltipPos &&
-    (hoverHits.length > 0 || hoverMarker) &&
+    (hoverHits.length > 0 || hoverMarker || hoverDoors.length > 0) &&
     !isPanning &&
     !isBrushing;
 
@@ -1211,7 +1275,7 @@ function HistoryChartView({
           {fill(t.loadedWindow, { hours: Math.max(1, Math.round((domain.maxTs - domain.minTs) / 36e5)) })}
         </p>
       )}
-      {(probeLabels.length > 0 || housePoints.length >= 2) && (
+      {(probeLabels.length > 0 || housePoints.length >= 2 || doorBands.length > 0) && (
         // biome-ignore lint/a11y/useSemanticElements: button toolbar; <fieldset> would add form semantics and default borders
         <div class="history-chart-legend" role="group" aria-label={t.seriesAria}>
           {probeLabels.map((label, i) => {
@@ -1240,7 +1304,23 @@ function HistoryChartView({
               {houseLegend ?? t.house}
             </button>
           )}
+          {doorBands.length > 0 && (
+            <button
+              type="button"
+              class={`history-chart-legend-btn${doorsVisible ? " is-on" : ""}`}
+              style={{ "--legend-color": DOOR_COLOR } as never}
+              aria-pressed={doorsVisible}
+              onClick={() => setDoorsVisible((v) => !v)}
+            >
+              {t.doorsLegend}
+            </button>
+          )}
         </div>
+      )}
+      {doorBandsError && (
+        <p class="m-0 mb-2 text-xs text-[var(--color-text-muted)]" role="status">
+          {t.doorsUnavailable}
+        </p>
       )}
       {priorYearPoints.length >= 2 && (
         <p class="m-0 mb-2 text-xs text-[var(--color-text-muted)]">
@@ -1263,6 +1343,7 @@ function HistoryChartView({
           warm: <span style={{ color: COLOR_ABOVE }}>{t.tipsWarm}</span>,
         })}
         {humidityOn && humidityPoints.length >= 2 ? t.tipsDew : ""}
+        {doorBands.length > 0 ? t.tipsDoors : ""}
       </details>
       <div
         class="history-chart-canvas-wrap"
@@ -1271,6 +1352,7 @@ function HistoryChartView({
             setHoverTs(null);
             setHoverHits([]);
             setHoverMarker(null);
+            setHoverDoors([]);
             setTooltipPos(null);
           }
         }}
@@ -1295,7 +1377,11 @@ function HistoryChartView({
             <p class="history-chart-tooltip-time">
               {hoverMarker
                 ? hoverTime(hoverMarker.createdAt, locale)
-                : hoverTime(hoverHits[0]!.timestamp, locale)}
+                : hoverHits[0]
+                  ? hoverTime(hoverHits[0].timestamp, locale)
+                  : hoverTs != null
+                    ? hoverTime(new Date(hoverTs).toISOString(), locale)
+                    : null}
             </p>
             <ul class="history-chart-tooltip-list">
               {hoverMarker && (
@@ -1310,6 +1396,13 @@ function HistoryChartView({
                   </span>
                 </li>
               )}
+              {hoverDoors.map((band) => (
+                <li key={`door:${band.label}:${band.openedAt}`}>
+                  <span class="history-chart-tooltip-swatch" style={{ background: DOOR_COLOR }} />
+                  <span class="history-chart-tooltip-label">{band.label}</span>
+                  <span class="history-chart-tooltip-value">{doorStatus(band)}</span>
+                </li>
+              ))}
               {hoverHits.map((hit) => (
                 <li key={hit.probeLabel}>
                   <span
