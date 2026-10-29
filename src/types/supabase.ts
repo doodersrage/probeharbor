@@ -2010,6 +2010,24 @@ export type Database = {
         Args: { p_household_id: string; p_old_sensor_id: string; p_new_sensor_id: string }
         Returns: Json
       }
+      rollup_bucket_averages: {
+        Args: {
+          p_household_id: string
+          p_from: string
+          p_to: string
+          p_bucket_seconds: number
+        }
+        Returns: {
+          sensor_id: string
+          key: string
+          label: string
+          kind: string
+          offset_num: number
+          device_name: string
+          bucket_start: string
+          avg_num: number
+        }[]
+      }
       sensor_bucket_averages: {
         Args: {
           p_household_id: string

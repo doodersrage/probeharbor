@@ -5,6 +5,8 @@ vi.mock("./households", () => ({ getUserHouseholdId: async () => "hh-1" }));
 type Row = { bucket_start: string; avg_num: number | null; device_sensors: unknown };
 let table: Row[] = [];
 const calls: Array<[string, unknown[]]> = [];
+// rollup_bucket_averages: missing by default, so these tests cover the paging fallback.
+const mockRpc = vi.fn();
 
 vi.mock("./supabase", () => ({
   createServerClient: () => {
@@ -25,11 +27,11 @@ vi.mock("./supabase", () => ({
         },
       },
     );
-    return { from: () => builder };
+    return { from: () => builder, rpc: (...a: unknown[]) => mockRpc(...a) };
   },
 }));
 
-import { fetchRollupChartPointsForHousehold, thinChartPoints } from "./garageTempsHistory";
+import { fetchRollupChartPointsForHousehold, rollupBucketSeconds, thinChartPoints } from "./garageTempsHistory";
 
 const sensor = (key: string, kind: string, label: string, offset = 0) => ({
   key,
@@ -41,6 +43,8 @@ const sensor = (key: string, kind: string, label: string, offset = 0) => ({
 
 beforeEach(() => {
   calls.length = 0;
+  mockRpc.mockReset().mockResolvedValue({ data: null, error: { code: "PGRST202", message: "function not found" } });
+  vi.spyOn(console, "warn").mockImplementation(() => {});
 });
 
 describe("fetchRollupChartPointsForHousehold", () => {
@@ -82,6 +86,33 @@ describe("fetchRollupChartPointsForHousehold", () => {
     expect(points.length).toBeLessThanOrEqual(1500);
     expect(points[0]?.timestamp).toBe("2026-06-01T00:00:00.000Z");
     expect(Date.parse(points.at(-1)!.timestamp)).toBeGreaterThan(Date.parse("2026-09-13T00:00:00Z"));
+  });
+});
+
+describe("fetchRollupChartPointsForHousehold with rollup_bucket_averages", () => {
+  it("gets wide buckets in one call and pairs humidity, without paging", async () => {
+    mockRpc.mockResolvedValue({
+      data: [
+        { sensor_id: "t", key: "garage_temp", label: "Garage", kind: "temperature", offset_num: 0, device_name: "Shop ESP", bucket_start: "2025-01-01T00:00:00+00:00", avg_num: 40 },
+        { sensor_id: "h", key: "garage_rh", label: "Garage humidity", kind: "humidity", offset_num: 0, device_name: "Shop ESP", bucket_start: "2025-01-01T00:00:00+00:00", avg_num: 65 },
+      ],
+      error: null,
+    });
+
+    const points = await fetchRollupChartPointsForHousehold("hh-1", "2025-01-01T00:00:00Z", { to: "2026-01-01T00:00:00Z" });
+
+    expect(points).toEqual([{ timestamp: "2025-01-01T00:00:00+00:00", tempf: 40, humidity: 65, probeLabel: "Garage", device: "Shop ESP" }]);
+    expect(calls.filter(([m]) => m === "range")).toHaveLength(0);
+    const args = mockRpc.mock.calls[0]![1] as { p_bucket_seconds: number };
+    // A year for one sensor (the mocked count is unknown → 1) → ~900 buckets of ~9.7 h.
+    expect(args.p_bucket_seconds).toBe(Math.ceil((365 * 24 * 3600) / 900));
+  });
+});
+
+describe("rollupBucketSeconds", () => {
+  it("keeps buckets × sensors near 900 rows and never under an hour", () => {
+    expect(rollupBucketSeconds("2025-01-01T00:00:00Z", "2026-01-01T00:00:00Z", 6)).toBe(Math.ceil((365 * 24 * 3600 * 6) / 900));
+    expect(rollupBucketSeconds("2026-01-01T00:00:00Z", "2026-01-02T00:00:00Z", 2)).toBe(3600);
   });
 });
 

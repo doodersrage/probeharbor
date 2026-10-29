@@ -692,6 +692,13 @@ export async function fetchRollupChartPointsForHousehold(
   filters: HistoryFilters = {},
 ): Promise<ChartPoint[]> {
   const supabase = createServerClient();
+
+  // Preferred: one call returning wider buckets (rollup_bucket_averages,
+  // migration 20261029180200), so any range length fits. Falls back to
+  // paging the hourly rows when the function isn't there yet.
+  const bucketed = await fetchRollupBuckets(supabase, householdId, sinceIso, filters.to);
+  if (bucketed) return thinChartPoints(rollupRowsToPoints(bucketed, filters));
+
   const { rows, error, capped } = await fetchNewestFirstPages<RollupRow>((start, end) => {
     let query = supabase
       .from("sensor_reading_rollups")
@@ -723,7 +730,56 @@ export async function fetchRollupChartPointsForHousehold(
     return [];
   }
   if (capped) console.warn(`Rollup chart for household ${householdId}: row cap hit; oldest hours not shown`);
+  return thinChartPoints(rollupRowsToPoints(rows, filters));
+}
 
+/** Rows per call stay under PostgREST's 1000: buckets × sensors ≈ this. */
+const ROLLUP_TARGET_ROWS = 900;
+
+/** Bucket width (s) for `sensorCount` sensors over [from, to]: at least an hour. */
+export function rollupBucketSeconds(fromIso: string, toIso: string, sensorCount: number): number {
+  const spanSec = Math.max(0, (Date.parse(toIso) - Date.parse(fromIso)) / 1000);
+  return Math.max(3600, Math.ceil((spanSec * Math.max(1, sensorCount)) / ROLLUP_TARGET_ROWS));
+}
+
+/** Rollups averaged into wider buckets, shaped like hourly rows; null if the function isn't available. */
+async function fetchRollupBuckets(
+  supabase: ReturnType<typeof createServerClient>,
+  householdId: string,
+  sinceIso: string,
+  toIso?: string,
+): Promise<RollupRow[] | null> {
+  const to = toIso ?? new Date().toISOString();
+  const { count } = await supabase
+    .from("device_sensors")
+    .select("id, devices!inner(household_id)", { count: "exact", head: true })
+    .eq("devices.household_id", householdId)
+    .in("kind", ["temperature", "humidity"]);
+  const { data, error } = await supabase.rpc("rollup_bucket_averages", {
+    p_household_id: householdId,
+    p_from: sinceIso,
+    p_to: to,
+    p_bucket_seconds: rollupBucketSeconds(sinceIso, to, typeof count === "number" ? count : 1),
+  });
+  if (error) {
+    console.warn("rollup_bucket_averages unavailable, paging hourly rollups:", error.message);
+    return null;
+  }
+  return (data ?? []).map((row) => ({
+    bucket_start: row.bucket_start,
+    avg_num: row.avg_num,
+    device_sensors: {
+      key: row.key,
+      label: row.label,
+      kind: row.kind,
+      offset_num: row.offset_num,
+      devices: { name: row.device_name },
+    },
+  }));
+}
+
+/** Pair each bucket's humidity with its temperature (device + probePairingKey + bucket). */
+function rollupRowsToPoints(rows: RollupRow[], filters: HistoryFilters): ChartPoint[] {
   const offsetOf = (s: NonNullable<RollupRow["device_sensors"]>) =>
     typeof s.offset_num === "number" ? s.offset_num : 0;
   const humidityByPair = new Map<string, number>();
@@ -754,7 +810,7 @@ export async function fetchRollupChartPointsForHousehold(
       device: feedName,
     });
   }
-  return thinChartPoints(points);
+  return points;
 }
 
 export async function fetchHouseholdChartData(
