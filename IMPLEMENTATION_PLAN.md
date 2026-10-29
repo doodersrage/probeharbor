@@ -3499,3 +3499,42 @@ History); doors missing on Overview.
   If neither remaining garage probe measures humidity, there is no current
   humidity to draw. The reference-sensor overlay at one reading a minute
   keeps only the newest ~7 days of a 30-day window (10-page cap).
+
+## Open items: door readings, long opens, unpaired humidity, long ranges (2026-10-29)
+
+- **Door readings cut off at 1000 rows (found while auditing the 24 h
+  item).** `fetchRecentBoolReadings` read oldest-first with no paging. The
+  ProbeHarbor firmware posts door state every 60 s (1440/day), so only the
+  oldest ~17 h of a 24 h window came back. Effects: `door_open_duration`
+  rules and the door-alert recovery notice judged a ~7 h-old state (a door
+  since closed could look open; a door open now could be missed); door
+  sessions were saved ~7 h late; "open now" bands and Overview door cards
+  were stale. Now pages newest-first (`fetchNewestFirstPages`, ≤10 pages).
+- **Doors open longer than 24 h.** `readDoorSessions` finds the real start
+  of a stretch that was already open at the window edge
+  (`findOpenStartBefore`: last "closed" before it, then first "open"
+  after; two indexed queries, only when needed). Used by ingest saving and
+  the chart's "open now". The duplicate check in `persistDoorSessions` now
+  starts at the earliest candidate session and compares instants
+  (`doorEventKey`), so a multi-day session isn't re-saved on every
+  "closed" report (the old fixed 48 h window would have).
+- **Unpaired humidity.** Humidity whose key matches no temperature probe
+  (`bme_t` / `bme_h`) is returned as `humidityOnly` by
+  `fetchGarageTempChartData` and can be the chart's humidity source (no
+  dew point; the legend says why). History and Overview pass it.
+- **Long ranges (> 90 days, prior-year overlay).**
+  `fetchRollupChartPointsForHousehold` asked for the oldest 2000 rollups
+  (PostgREST returns 1000), ignored the end date and dropped humidity.
+  Now: newest-first pages (≤20, tie-broken by sensor_id), end date
+  honoured, temperature/humidity only, hourly humidity paired like raw
+  readings, and series thinned to ≤1500 points (`thinChartPoints`).
+- **Also fixed:** for °C users the dew-point line and hover dew point
+  were computed as if the converted temperatures were °F.
+- Evidence: `sensorReadings.test.ts` (+2: 1440 minute readings incl.
+  newest; error logged), `doorEvents.record.test.ts` (+3: multi-day
+  start, no re-save, no lookback when closed), `garageTempsHistory.chart`
+  (+1), `garageTempsHistory.rollups` (+4). `pnpm test`: 3286 passed.
+  `pnpm typecheck`: 0 errors. Biome: no new warnings. Headless render of
+  a humidity-only sensor: humidity line, no dew line, legend explains.
+- Not verified: production data. Not changed (needs a product decision):
+  `door_open_duration` matches as soon as a door is open, whatever N is.

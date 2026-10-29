@@ -1,5 +1,6 @@
 import { createServerClient } from "./supabase";
 import { probePairingKey } from "./probePairing";
+import { fetchNewestFirstPages } from "./pagedRows";
 import { escapeCsvField } from "./csvEscape";
 import { getUserHouseholdId } from "./households";
 import { applySensorOffset } from "./sensorCalibration";
@@ -627,16 +628,69 @@ export async function fetchGarageTempChartData(
   return { points: disambiguateChartLabels(points), humidityOnly, error: null };
 }
 
-async function fetchRollupChartPointsForHousehold(
+/** Most rollup points handed to a chart; longer series are averaged into wider buckets. */
+export const ROLLUP_POINT_CAP = 1500;
+
+/**
+ * Average a long series down to about `maxPoints`, per probe (device +
+ * label): every `factor` consecutive points become one, at the first
+ * point's time. Humidity averages only real values (null stays null).
+ */
+export function thinChartPoints(points: ChartPoint[], maxPoints = ROLLUP_POINT_CAP): ChartPoint[] {
+  if (points.length <= maxPoints) return points;
+  const factor = Math.ceil(points.length / maxPoints);
+  const byProbe = new Map<string, ChartPoint[]>();
+  for (const p of points) {
+    const key = `${p.device ?? ""}|${p.probeLabel}`;
+    const list = byProbe.get(key) ?? [];
+    list.push(p);
+    byProbe.set(key, list);
+  }
+  const out: ChartPoint[] = [];
+  for (const list of byProbe.values()) {
+    list.sort((x, y) => Date.parse(x.timestamp) - Date.parse(y.timestamp));
+    for (let i = 0; i < list.length; i += factor) {
+      const chunk = list.slice(i, i + factor);
+      const hums = chunk.map((c) => c.humidity).filter((h): h is number => h != null && Number.isFinite(h));
+      out.push({
+        ...chunk[0]!,
+        tempf: chunk.reduce((sum, c) => sum + c.tempf, 0) / chunk.length,
+        humidity: hums.length ? hums.reduce((x, y) => x + y, 0) / hums.length : null,
+      });
+    }
+  }
+  return out.sort((x, y) => Date.parse(x.timestamp) - Date.parse(y.timestamp));
+}
+
+type RollupRow = {
+  bucket_start: string;
+  avg_num: number | null;
+  device_sensors: {
+    key: string;
+    label: string;
+    kind: string;
+    offset_num?: number | null;
+    devices: { name: string } | null;
+  } | null;
+};
+
+/**
+ * Hourly rollups as chart points, temperature with its paired humidity
+ * (same pairing rule as raw readings: device + probePairingKey + hour).
+ * Reads every page newest-first (was: one request for the oldest rows, cut
+ * at PostgREST's 1000-row limit, temperature only, ignoring `filters.to`).
+ */
+export async function fetchRollupChartPointsForHousehold(
   householdId: string,
   sinceIso: string,
   filters: HistoryFilters = {},
 ): Promise<ChartPoint[]> {
   const supabase = createServerClient();
-  const { data, error } = await supabase
-    .from("sensor_reading_rollups")
-    .select(
-      `
+  const { rows, error, capped } = await fetchNewestFirstPages<RollupRow>((start, end) => {
+    let query = supabase
+      .from("sensor_reading_rollups")
+      .select(
+        `
       bucket_start,
       avg_num,
       device_sensors!inner (
@@ -647,49 +701,54 @@ async function fetchRollupChartPointsForHousehold(
         devices!inner ( name )
       )
     `,
-    )
-    .eq("household_id", householdId)
-    .gte("bucket_start", sinceIso)
-    .order("bucket_start", { ascending: true })
-    .limit(2000);
+      )
+      .eq("household_id", householdId)
+      .in("device_sensors.kind", ["temperature", "humidity"])
+      .gte("bucket_start", sinceIso);
+    if (filters.to) query = query.lte("bucket_start", filters.to);
+    // sensor_id breaks ties within an hour so pages never skip or repeat a row.
+    return query
+      .order("bucket_start", { ascending: false })
+      .order("sensor_id", { ascending: true })
+      .range(start, end) as unknown as PromiseLike<{ data: RollupRow[] | null; error: { message: string } | null }>;
+  }, 20);
+  if (error) {
+    console.error("fetchRollupChartPointsForHousehold failed:", error);
+    return [];
+  }
+  if (capped) console.warn(`Rollup chart for household ${householdId}: row cap hit; oldest hours not shown`);
 
-  if (error || !data) return [];
+  const offsetOf = (s: NonNullable<RollupRow["device_sensors"]>) =>
+    typeof s.offset_num === "number" ? s.offset_num : 0;
+  const humidityByPair = new Map<string, number>();
+  for (const row of rows) {
+    const sensor = row.device_sensors;
+    if (row.avg_num == null || sensor?.kind !== "humidity") continue;
+    const device = sensor.devices?.name ?? "Device";
+    humidityByPair.set(
+      `${device}::${probePairingKey(sensor.key)}::${Date.parse(row.bucket_start)}`,
+      applySensorOffset(Number(row.avg_num), offsetOf(sensor)),
+    );
+  }
 
   const points: ChartPoint[] = [];
-  for (const row of data as Array<{
-    bucket_start: string;
-    avg_num: number | null;
-    device_sensors: {
-      key: string;
-      label: string;
-      kind: string;
-      offset_num?: number | null;
-      devices: { name: string } | null;
-    } | null;
-  }>) {
-    if (row.avg_num == null || row.device_sensors?.kind !== "temperature") continue;
-    const probeLabel =
-      row.device_sensors.label.replace(/ humidity$/i, "") ||
-      row.device_sensors.key ||
-      "Probe";
-    const feedName = row.device_sensors.devices?.name ?? "Device";
+  for (const row of rows) {
+    const sensor = row.device_sensors;
+    if (row.avg_num == null || sensor?.kind !== "temperature") continue;
+    const probeLabel = sensor.label.replace(/ humidity$/i, "") || sensor.key || "Probe";
+    const feedName = sensor.devices?.name ?? "Device";
     if (filters.feedName && feedName !== filters.feedName) continue;
-    if (filters.probeKey && row.device_sensors.key !== filters.probeKey) continue;
+    if (filters.probeKey && sensor.key !== filters.probeKey) continue;
     points.push({
       timestamp: row.bucket_start,
-      tempf: applySensorOffset(
-        Number(row.avg_num),
-        typeof row.device_sensors.offset_num === "number"
-          ? row.device_sensors.offset_num
-          : 0,
-      ),
-      // Hourly rollups here are temperature-only; humidity isn't known.
-      humidity: null,
+      tempf: applySensorOffset(Number(row.avg_num), offsetOf(sensor)),
+      // Hourly mean humidity of the paired sensor; null when none (never 0).
+      humidity: humidityByPair.get(`${feedName}::${probePairingKey(sensor.key)}::${Date.parse(row.bucket_start)}`) ?? null,
       probeLabel,
       device: feedName,
     });
   }
-  return points;
+  return thinChartPoints(points);
 }
 
 export async function fetchHouseholdChartData(
