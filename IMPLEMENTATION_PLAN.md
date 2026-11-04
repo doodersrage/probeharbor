@@ -3877,7 +3877,7 @@ in 7.x. Whether the RCE was reachable in production (runtime
 
 ## Overview: tidy the Sensor extras column (2026-11-04)
 
-**Status: Implemented and verified locally. No migration. Not deployed.**
+**Status: Deployed 2026-11-04 (9f81d05, live with 2e5ad4b). No migration.**
 
 From a user screenshot of the Overview's Sensor extras column.
 
@@ -3907,6 +3907,10 @@ From a user screenshot of the Overview's Sensor extras column.
   card title, RSSI labels). typecheck 0 errors; lint at baseline; build
   passes; e2e 58 passed, 14 skipped (signed-in; CI runs them). Visual check
   with a temporary page and sample data at the column's width (removed).
-- Not verified: the real dashboard with your devices (needs sign-in). The
-  blank signal chart in the screenshot did not reproduce with sample data;
-  likely capture timing, unconfirmed.
+- Production: CI for 9f81d05 failed before running code (runner had Node
+  22.23.3; Astro 7 needs >=22.23.4). Fixed in 2e5ad4b: `check-latest` on
+  every setup-node step, including deploy; `engines.node` >=22.23.4. CI then
+  green (3337 unit, 71 e2e, Lighthouse) and Deploy succeeded. The user
+  checked the Overview with their real devices: looks good.
+- The blank signal chart in the original screenshot did not reproduce with
+  sample data; likely capture timing.
