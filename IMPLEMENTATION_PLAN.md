@@ -3855,7 +3855,20 @@ in 7.x. Whether the RCE was reachable in production (runtime
   succeeded and uploaded source maps to Sentry. Live pages report Astro
   7.4.5; `/hardware` shows the SHT31 recipe; signed-out `/pricing` shows
   the header buttons. The user checked the signed-in dashboard: fine.
-- Still open: the signed-in E2E specs (need credentials), the
-  `garageTempsHistory.samples` failure (local only; CI passed it), and the
-  10 build-time audit
-  advisories.
+- Follow-ups closed (2026-11-04):
+  - Signed-in E2E: CI runs them with the E2E secrets. On 090fd6a (Astro 7)
+    CI e2e was 71 passed, 1 skipped (checkout or Ops-email, which skip by
+    account plan/role). Locally they skip because Playwright doesn't load
+    `.env`; left that way so a local run doesn't touch the real project.
+  - `garageTempsHistory.samples` (3604a83): the "last N days" chart windows
+    used local calendar math (169 h across the Nov 1 DST change; Workers
+    run in UTC so production was unaffected). Now exactly N × 24 h via
+    `rollingWindowStart`; regression test in America/New_York and UTC.
+    3333 tests pass in local TZ and TZ=UTC.
+  - Audit (30307eb): zod, source-map-js, browserslist (+ data packages),
+    baseline-browser-mapping and brace-expansion updated within existing
+    ranges; built CSS byte-identical. `pnpm audit --prod`: 10 → 2 moderate.
+- Accepted: glob 13 / minimatch 10 via `@sentry/bundler-plugins`, which
+  requires glob ^13 even in its latest release (fixes are in glob 14 /
+  minimatch 11). Build-time only, on our own patterns. Revisit when Sentry
+  moves to glob 14.
