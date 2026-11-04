@@ -123,9 +123,6 @@ export default function BatteryTrendChart({
       canvas.height = height * dpr;
       g.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-      const pad = { top: 16, right: 16, bottom: 28, left: 44 };
-      const innerW = width - pad.left - pad.right;
-      const innerH = height - pad.top - pad.bottom;
       const minTs = domain!.minTs;
       const maxTs = domain!.maxTs;
       const tsRange = maxTs - minTs || 1;
@@ -135,6 +132,15 @@ export default function BatteryTrendChart({
       const min = rawMin - valuePad;
       const max = rawMax + valuePad;
       const range = max - min || 1;
+      const tickLabels = [0, 1, 2, 3, 4].map(
+        (i) => `${(max - (range / 4) * i).toFixed(0)}${unitSuffix}`,
+      );
+      g.font = "10px system-ui, sans-serif";
+      // Fit the widest axis label (e.g. "-80 dBm") so nothing is clipped.
+      const labelWidth = Math.max(...tickLabels.map((label) => g.measureText(label).width));
+      const pad = { top: 16, right: 16, bottom: 28, left: Math.max(44, Math.ceil(labelWidth) + 10) };
+      const innerW = width - pad.left - pad.right;
+      const innerH = height - pad.top - pad.bottom;
 
       plotBoundsRef.current = {
         padLeft: pad.left,
@@ -164,11 +170,10 @@ export default function BatteryTrendChart({
         g.moveTo(pad.left, y);
         g.lineTo(width - pad.right, y);
         g.stroke();
-        const val = max - (range / 4) * i;
         g.fillStyle = "#94a3b8";
         g.font = "10px system-ui, sans-serif";
         g.textAlign = "right";
-        g.fillText(`${val.toFixed(0)}${unitSuffix}`, pad.left - 6, y + 3);
+        g.fillText(tickLabels[i]!, pad.left - 6, y + 3);
       }
 
       usable.forEach((s, index) => {
@@ -268,14 +273,13 @@ export default function BatteryTrendChart({
             )}
           </div>
         </div>
-        <p class="m-0 mb-2 text-xs text-[var(--color-text-muted)]">
+        <ul class="m-0 mb-2 p-0 list-none flex flex-wrap gap-x-3 gap-y-1 text-xs">
           {usable.map((s, i) => (
-            <span key={s.label}>
-              {i > 0 ? " · " : ""}
-              <span style={{ color: s.color ?? COLORS[i % COLORS.length] }}>{s.label}</span>
-            </span>
+            <li key={s.label} class="whitespace-nowrap" style={{ color: s.color ?? COLORS[i % COLORS.length] }}>
+              {s.label}
+            </li>
           ))}
-        </p>
+        </ul>
         <div
           class="history-chart-canvas-wrap"
           onPointerLeave={() => {
