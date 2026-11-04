@@ -155,6 +155,6 @@ describe("portfolio, anomaly and cold-air explanations match the code", async ()
   });
 
   it.each(insightMsgs)("%s door card defines the cold-air index base", (_l, m) => {
-    expect(m.doorTemp.subtitle as string).toMatch(new RegExp(`\\b${coldBase}\\s?°F`));
+    expect(m.door.coldAirHelp as string).toMatch(new RegExp(`\\b${coldBase}\\s?°F`));
   });
 });

@@ -3872,3 +3872,41 @@ in 7.x. Whether the RCE was reachable in production (runtime
   requires glob ^13 even in its latest release (fixes are in glob 14 /
   minimatch 11). Build-time only, on our own patterns. Revisit when Sentry
   moves to glob 14.
+
+------------------------------------------------------------------------
+
+## Overview: tidy the Sensor extras column (2026-11-04)
+
+**Status: Implemented and verified locally. No migration. Not deployed.**
+
+From a user screenshot of the Overview's Sensor extras column.
+
+- [x] Doors: "Door vs temperature", "Door duration" and "Door open history"
+      showed the same openings three times, and the history card said
+      "last 48h" while listing the 12 most recent regardless of age. One
+      `DoorsCard` now shows the 24 h insight (cold-air index explained only
+      when that insight shows), the last 5 openings, and a link to
+      History → Doors. `buildDoorTempSummary` returns which insight it
+      picked (`kind`).
+- [x] Pressure: a BME280 alone made an "Air quality" card promising CO₂,
+      particles and VOC. With pressure only it is titled "Barometric
+      pressure" and shows the measured change since a reading 3–4 h before
+      the latest (`loadPressureTrends`: one indexed row per pressure sensor,
+      at most 4). Labels use simplified Met Office tendency bands (<1.6
+      steady, ≤3.5 rising/falling, >3.5 quickly); stated as not a forecast.
+- [x] Signal strength: each device gets strong / good / fair / weak
+      (`rssiQuality`; weak uses the user's existing threshold); subtitle in
+      plain words. Shared chart (`BatteryTrendChart`): the y-axis margin now
+      fits the widest label (the minus in "-80 dBm" was clipped), and the
+      legend wraps by whole name.
+- [x] The claims-pack prompt moved out of Sensor extras to its own card
+      between At a glance and Tips.
+- [x] All five locales. Guard test for the cold-air base now reads
+      `door.coldAirHelp`.
+- Evidence: `pnpm test` 3337 passed (+door kinds, pressure tendency and
+  card title, RSSI labels). typecheck 0 errors; lint at baseline; build
+  passes; e2e 58 passed, 14 skipped (signed-in; CI runs them). Visual check
+  with a temporary page and sample data at the column's width (removed).
+- Not verified: the real dashboard with your devices (needs sign-in). The
+  blank signal chart in the screenshot did not reproduce with sample data;
+  likely capture timing, unconfirmed.

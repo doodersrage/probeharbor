@@ -13,6 +13,7 @@ import { parseBatteryHistory, batterySparklinePath } from "./batterySparkline";
 import { parseRssiHistory, type RssiSample } from "./rssiHistory";
 import {
   fetchRecentBoolReadings,
+  getNumericReadingInWindow,
   getRecentNumericReadingSamples,
   type LatestSensorRow,
 } from "./sensorReadings";
@@ -98,19 +99,89 @@ export type AirQualityRow = {
   kindLabel: string;
   display: string;
   watch: boolean;
+  /** Pressure only: measured change over ~3 h, e.g. "falling 2.1 hPa in 3 h". */
+  trend?: string;
 };
 
 export type AirQualityOverview = {
   rows: AirQualityRow[];
   watchCount: number;
+  /** True when the only readings are barometric pressure (no CO₂, PM2.5, VOC). */
+  pressureOnly: boolean;
 };
+
+/** Measured pressure change between the latest reading and one ~3 h before it. */
+export type PressureTrend = { deltaHpa: number };
+
+/** Look back this far from the latest pressure reading for the comparison reading. */
+const PRESSURE_TREND_MS = 3 * 60 * 60 * 1000;
+/** Accept a comparison reading up to 1 h older than that (sparse reporting). */
+const PRESSURE_TREND_SLACK_MS = 60 * 60 * 1000;
+
+/**
+ * 3-hour pressure tendency, simplified from the UK Met Office bands:
+ * under 1.6 hPa steady, 1.6–3.5 rising/falling, over 3.5 quickly.
+ * Describes what was measured; it is not a forecast.
+ */
+export function pressureTendency(
+  deltaHpa: number,
+): "steady" | "rising" | "falling" | "risingFast" | "fallingFast" {
+  const size = Math.abs(deltaHpa);
+  if (size < 1.6) return "steady";
+  if (deltaHpa > 0) return size > 3.5 ? "risingFast" : "rising";
+  return size > 3.5 ? "fallingFast" : "falling";
+}
+
+/**
+ * For each pressure sensor in `latest`, the change since a reading ~3 h before
+ * its latest one (null when there is no reading 3–4 h earlier). One-row query
+ * per pressure sensor, at most 4.
+ */
+export async function loadPressureTrends(
+  latest: LatestSensorRow[],
+): Promise<Record<string, PressureTrend | null>> {
+  const pressure = latest
+    .filter((row) => row.sensor.kind === "pressure" && row.value_num != null)
+    .slice(0, 4);
+  const entries = await Promise.all(
+    pressure.map(async (row) => {
+      const latestMs = Date.parse(row.recorded_at);
+      if (!Number.isFinite(latestMs)) return [row.sensor.id, null] as const;
+      const before = await getNumericReadingInWindow(
+        row.sensor.id,
+        new Date(latestMs - PRESSURE_TREND_MS - PRESSURE_TREND_SLACK_MS).toISOString(),
+        new Date(latestMs - PRESSURE_TREND_MS).toISOString(),
+      );
+      return [
+        row.sensor.id,
+        before ? { deltaHpa: (row.value_num as number) - before.value } : null,
+      ] as const;
+    }),
+  );
+  return Object.fromEntries(entries);
+}
+
+export type RssiQuality = "strong" | "good" | "fair" | "weak";
 
 export type RssiOverviewRow = {
   deviceName: string;
   rssi: number;
   weak: boolean;
+  quality: RssiQuality;
   samples: RssiSample[];
 };
+
+/**
+ * Plain-language Wi-Fi signal label (common guidance: −60 dBm or better is
+ * strong, down to −70 good). At or below the user's weak threshold (default
+ * −80, the same one the weak-signal alert uses) it is weak; otherwise fair.
+ */
+export function rssiQuality(rssi: number, weakThresholdDbm = -80): RssiQuality {
+  if (rssi <= weakThresholdDbm) return "weak";
+  if (rssi >= -60) return "strong";
+  if (rssi >= -70) return "good";
+  return "fair";
+}
 
 export type InsightCallout = {
   title: string;
@@ -158,12 +229,20 @@ export function doorOpenMinutesFromSessions(sessions: DoorOpenSession[]): number
   return ms / (60 * 1000);
 }
 
+/** Which door insight was picked (the Doors card explains the cold-air index). */
+export type DoorTempSummary = {
+  kind: "openNow" | "cooling" | "coldAir" | "activity";
+  title: string;
+  detail: string;
+  tone: "warning" | "info";
+};
+
 export function buildDoorTempSummary(
   sessions: DoorOpenSession[],
   points: ChartPoint[],
   outdoorTempF: number | null,
   locale: Locale = "en",
-): { title: string; detail: string; tone: "warning" | "info" } | null {
+): DoorTempSummary | null {
   const t = msgs(locale).summaries;
   const minutes = doorOpenMinutesFromSessions(sessions);
   const openNow = sessions.filter((s) => s.stillOpen);
@@ -171,6 +250,7 @@ export function buildDoorTempSummary(
   if (openNow.length > 0) {
     const labels = openNow.map((s) => s.label).join(", ");
     return {
+      kind: "openNow",
       title: t.doorOpenNow,
       detail:
         rate != null && rate < 0
@@ -184,6 +264,7 @@ export function buildDoorTempSummary(
   }
   if (minutes >= 10 && rate != null && rate < -0.5) {
     return {
+      kind: "cooling",
       title: t.doorVsTemp,
       detail: fmt(t.doorVsTempDetail, {
         minutes: fixed(Math.round(minutes), 0, locale),
@@ -199,6 +280,7 @@ export function buildDoorTempSummary(
   ) {
     const coldAirIndex = Math.round(minutes * Math.max(0, 32 - outdoorTempF));
     return {
+      kind: "coldAir",
       title: t.coldAir,
       detail: fmt(t.coldAirDetail, {
         minutes: fixed(Math.round(minutes), 0, locale),
@@ -210,6 +292,7 @@ export function buildDoorTempSummary(
   }
   if (minutes >= 5) {
     return {
+      kind: "activity",
       title: t.doorActivity,
       detail: fmt(t.doorActivityDetail, { minutes: fixed(Math.round(minutes), 0, locale) }),
       tone: "info",
@@ -473,8 +556,10 @@ export function feedHealthFromDevices(
 export function buildAirQualityOverview(
   latest: LatestSensorRow[],
   locale: Locale = "en",
+  pressureTrends: Record<string, PressureTrend | null> = {},
 ): AirQualityOverview {
-  const kindLabels: Record<string, string> = msgs(locale).airQuality.kinds;
+  const aq = msgs(locale).airQuality;
+  const kindLabels: Record<string, string> = aq.kinds;
   const kinds = new Set(["co2", "pm25", "voc", "pressure"]);
   const rows: AirQualityRow[] = [];
   for (const row of latest) {
@@ -495,12 +580,22 @@ export function buildAirQualityOverview(
     } else if (kind === "pressure") {
       display = `${fixed(value, 1, locale)} hPa`;
     }
+    let trend: string | undefined;
+    if (kind === "pressure" && row.sensor.id in pressureTrends) {
+      const change = pressureTrends[row.sensor.id];
+      trend = change
+        ? fmt(aq.trend[pressureTendency(change.deltaHpa)], {
+            delta: fixed(Math.abs(change.deltaHpa), 1, locale),
+          })
+        : aq.trend.pending;
+    }
     rows.push({
       label: row.sensor.label,
       kind,
       kindLabel: kindLabels[kind] ?? SENSOR_KIND_LABELS[kind] ?? kind,
       display,
       watch,
+      ...(trend ? { trend } : {}),
     });
   }
   rows.sort(
@@ -511,6 +606,7 @@ export function buildAirQualityOverview(
   return {
     rows: rows.slice(0, 8),
     watchCount: rows.filter((r) => r.watch).length,
+    pressureOnly: rows.length > 0 && rows.every((r) => r.kind === "pressure"),
   };
 }
 
@@ -526,6 +622,7 @@ export function buildRssiOverview(
       deviceName: device.name,
       rssi,
       weak: rssi <= weakThresholdDbm,
+      quality: rssiQuality(rssi, weakThresholdDbm),
       samples: parseRssiHistory(device.meta),
     });
   }

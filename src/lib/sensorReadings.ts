@@ -116,6 +116,30 @@ export async function getRecentNumericReadings(
     .filter((v): v is number => typeof v === "number");
 }
 
+/**
+ * The latest numeric reading in [notBeforeIso, atOrBeforeIso], or null.
+ * One row; used for "change over the last N hours" comparisons.
+ */
+export async function getNumericReadingInWindow(
+  sensorId: string,
+  notBeforeIso: string,
+  atOrBeforeIso: string,
+): Promise<{ value: number; at: string } | null> {
+  const supabase = createServerClient();
+  const { data } = await supabase
+    .from("sensor_readings")
+    .select("value_num, recorded_at")
+    .eq("sensor_id", sensorId)
+    .gte("recorded_at", notBeforeIso)
+    .lte("recorded_at", atOrBeforeIso)
+    .order("recorded_at", { ascending: false })
+    .limit(1);
+  const row = data?.[0];
+  return row && typeof row.value_num === "number" && typeof row.recorded_at === "string"
+    ? { value: row.value_num, at: row.recorded_at }
+    : null;
+}
+
 /** True when the sensor reported a value above `thresholdF` at or after `sinceIso` (one-row probe). */
 export async function hasNumericReadingAboveSince(
   sensorId: string,

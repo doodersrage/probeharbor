@@ -1,0 +1,66 @@
+---
+import DashboardCard from "./DashboardCard.astro";
+import { listDoorEvents } from "../../lib/doorEvents";
+import { formatDurationMs } from "../../lib/doorDuration";
+import type { DoorTempSummary } from "../../lib/overviewExtras";
+import { getLocale, LOCALE_META } from "../../i18n";
+import { overviewInsightsMessages } from "../../i18n/messages/app/overviewInsights";
+
+interface Props {
+  /** Door vs temperature insight for the last 24 h, if any. */
+  summary: DoorTempSummary | null;
+  householdId: string | null;
+}
+
+/** How many recent openings to list; the rest are in History → Doors. */
+const RECENT_LIMIT = 5;
+
+const { summary, householdId } = Astro.props;
+const locale = getLocale(Astro);
+const t = overviewInsightsMessages(locale).door;
+const intl = locale === "en" ? undefined : LOCALE_META[locale].intl;
+const events = householdId ? await listDoorEvents(householdId, RECENT_LIMIT) : [];
+
+if (!summary && events.length === 0) {
+  return null;
+}
+---
+<DashboardCard>
+  <h2 class="card-title">{t.title}</h2>
+  <p class="card-subtitle mb-4">{t.subtitle}</p>
+  {summary && (
+    <div class:list={[summary.tone === "warning" ? "alert-warning" : "alert-info", "mb-4"]}>
+      <p class="m-0 mb-1"><strong>{summary.title}</strong></p>
+      <p class="m-0 text-sm">{summary.detail}</p>
+      {summary.kind === "coldAir" && (
+        <p class="m-0 mt-1 text-xs">{t.coldAirHelp}</p>
+      )}
+    </div>
+  )}
+  <h3 class="text-sm font-semibold mb-2">{t.recentTitle}</h3>
+  {events.length > 0 ? (
+    <ul class="space-y-2 mb-0 text-sm">
+      {events.map((event) => (
+        <li class="flex flex-wrap justify-between gap-2 border-b border-border pb-2 last:border-0 last:pb-0">
+          <span>
+            <strong>{event.label}</strong>
+            {" · "}
+            {new Date(event.opened_at).toLocaleString(intl)}
+          </span>
+          <span class="text-muted-foreground">
+            {event.duration_ms != null
+              ? formatDurationMs(event.duration_ms, locale)
+              : event.closed_at == null
+                ? t.openNow
+                : "—"}
+          </span>
+        </li>
+      ))}
+    </ul>
+  ) : (
+    <p class="mb-0 text-sm text-[var(--color-text-muted)]">{t.none}</p>
+  )}
+  <p class="mt-4 mb-0 text-sm">
+    <a class="text-link" href="/dashboard/history?tab=doors">{t.viewAll}</a>
+  </p>
+</DashboardCard>

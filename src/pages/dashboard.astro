@@ -129,6 +129,7 @@ import {
   computeProbeSpreadF,
   doorOpenMinutesFromSessions,
   loadDoorSessions24h,
+  loadPressureTrends,
   loadEnergyOverview,
   loadFloodLevelOverview,
   loadMotionSessions24h,
@@ -137,6 +138,7 @@ import {
 import FloodLevelCard from "../components/dashboard/FloodLevelCard.astro";
 import OverviewFlash from "../components/dashboard/OverviewFlash.astro";
 import OverviewInsightsExtras from "../components/dashboard/OverviewInsightsExtras.astro";
+import ClaimsPackPromptCard from "../components/dashboard/ClaimsPackPromptCard.astro";
 
 import DashboardMetricGrid from "../components/dashboard/DashboardMetricGrid.astro";
 import MetricCard from "../components/dashboard/MetricCard.astro";
@@ -605,7 +607,11 @@ const indoorOutdoorDeltaF = computeIndoorOutdoorDelta(
 );
 const condensation = computeCondensationHours(chartWeek.points);
 const feedUptime = computeFeedUptimePct(feedHealth.statuses);
-const airQualityOverview = buildAirQualityOverview(latest, locale);
+const airQualityOverview = buildAirQualityOverview(
+  latest,
+  locale,
+  showInsights ? await loadPressureTrends(latest) : {},
+);
 const rssiOverview = buildRssiOverview(
   devices,
   alertSettings.rssiThreshold ?? -80,
@@ -1060,17 +1066,12 @@ const onboardingProps = {
               doorTempSummary={doorTempSummary}
               powerTempSummary={powerTempSummary}
               motionSummary={motionSummary}
-              devices={devices}
-              doorSessions={doorSessions}
               householdId={household.householdId}
               batteryOverview={batteryOverview}
               rssiOverview={rssiOverview}
               airQualityOverview={airQualityOverview}
               energyOverview={energyOverview}
               coolingRateFPerHour={coolingRateFPerHour}
-              canUseClaimsPack={entitlements.canUseClaimsPack}
-              tier={entitlements.tier}
-              showClaimsPackPrompt={showClaimsPackPrompt}
             />
           </aside>
         )}
@@ -1384,6 +1385,12 @@ const onboardingProps = {
         </details>
       )}
     </section>
+
+    <ClaimsPackPromptCard
+      canUseClaimsPack={entitlements.canUseClaimsPack}
+      tier={entitlements.tier}
+      show={showClaimsPackPrompt}
+    />
 
     {showTipsStrip && (
       <AttentionNeededStrip

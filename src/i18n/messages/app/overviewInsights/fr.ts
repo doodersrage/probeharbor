@@ -65,13 +65,19 @@ const fr: OverviewInsightsMessages = {
     motionSubtitle: "Activité des dernières 24 heures.",
     openDevices: "Ouvrir Appareils",
   },
-  doorTemp: {
-    title: "Porte et température",
-    subtitle: "Durée d’ouverture comparée à la vitesse de refroidissement récente. Indice d’air froid = minutes d’ouverture × degrés sous 32 °F dehors.",
-  },
   airQuality: {
     title: "Qualité de l’air",
     subtitle: "Dernières mesures de CO₂, particules, COV et pression.",
+    pressureTitle: "Pression atmosphérique",
+    pressureSubtitle: "Dernière mesure et variation mesurée sur les 3 dernières heures. Ce n’est pas une prévision.",
+    trend: {
+      steady: "stable sur 3 h",
+      rising: "en hausse de {delta} hPa en 3 h",
+      falling: "en baisse de {delta} hPa en 3 h",
+      risingFast: "hausse rapide : {delta} hPa en 3 h",
+      fallingFast: "baisse rapide : {delta} hPa en 3 h",
+      pending: "tendance après 3 h de mesures",
+    },
     watch: {
       one: "{count} mesure au-dessus des plages de confort habituelles d’un atelier.",
       other: "{count} mesures au-dessus des plages de confort habituelles d’un atelier.",
@@ -98,7 +104,13 @@ const fr: OverviewInsightsMessages = {
   },
   rssi: {
     title: "Force du signal",
-    subtitle: "RSSI d’après les métadonnées récentes des appareils : les liaisons faibles perdent des mesures en premier.",
+    subtitle: "Signal Wi-Fi indiqué en dernier par chaque appareil, en dBm (plus près de 0 = plus fort). Les liaisons faibles perdent des mesures en premier.",
+    quality: {
+      strong: "fort",
+      good: "bon",
+      fair: "moyen",
+      weak: "faible",
+    },
     samples: " · {count} relevés",
     chartTitle: "RSSI sur les derniers relevés",
     trendHintHtml:
@@ -119,13 +131,13 @@ const fr: OverviewInsightsMessages = {
     included: "Contenu du dossier",
   },
   door: {
-    durationTitle: "Durée d’ouverture des portes",
-    durationSubtitle: "Ouvertures des dernières 24 heures.",
-    openSince: "ouverte depuis le {time}",
-    wasOpen: "est restée ouverte {duration}",
-    none: "Aucune ouverture de porte enregistrée ces dernières 24 heures.",
-    historyTitle: "Historique d’ouverture des portes",
-    historySubtitle: "Ouvertures de porte récentes terminées (dernières 48 h).",
+    title: "Portes",
+    subtitle: "Ouvertures et leur effet sur la température de l’espace.",
+    recentTitle: "Ouvertures récentes",
+    openNow: "ouverte maintenant",
+    none: "Aucune ouverture de porte enregistrée pour l’instant.",
+    viewAll: "Tout voir dans Historique → Portes",
+    coldAirHelp: "Indice d’air froid = minutes d’ouverture × degrés sous 32 °F à l’extérieur.",
   },
   chart: {
     expand: "Agrandir",

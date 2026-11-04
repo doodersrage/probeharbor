@@ -1,21 +1,16 @@
 ---
-import DoorDurationCard from "../DoorDurationCard.astro";
-import DoorEventHistory from "../DoorEventHistory.astro";
 import BatteryDeclineCard from "./BatteryDeclineCard.astro";
-import DoorTempInsightCard from "./DoorTempInsightCard.astro";
+import DoorsCard from "./DoorsCard.astro";
 import EnergyOverviewCard from "./EnergyOverviewCard.astro";
 import AirQualityCard from "./AirQualityCard.astro";
 import InsightCalloutCard from "./InsightCalloutCard.astro";
 import RssiOverviewCard from "./RssiOverviewCard.astro";
-import ClaimsPackPromptCard from "./ClaimsPackPromptCard.astro";
 import { getLocale } from "../../i18n";
 import { overviewInsightsMessages } from "../../i18n/messages/app/overviewInsights";
-import type { DeviceWithSensors } from "../../lib/devices";
-import type { DoorOpenSession } from "../../lib/doorDuration";
-import type { PlanTier } from "../../lib/entitlements";
 import type {
   AirQualityOverview,
   BatteryOverviewRow,
+  DoorTempSummary,
   EnergyOverview,
   RssiOverviewRow,
 } from "../../lib/overviewExtras";
@@ -27,37 +22,27 @@ interface Callout {
 }
 
 interface Props {
-  doorTempSummary: Callout | null;
+  doorTempSummary: DoorTempSummary | null;
   powerTempSummary: Callout | null;
   motionSummary: Callout | null;
-  devices: DeviceWithSensors[];
-  doorSessions: DoorOpenSession[];
   householdId: string | null;
   batteryOverview: BatteryOverviewRow[];
   rssiOverview: RssiOverviewRow[];
   airQualityOverview: AirQualityOverview;
   energyOverview: EnergyOverview | null;
   coolingRateFPerHour: number | null;
-  canUseClaimsPack: boolean;
-  tier: PlanTier;
-  showClaimsPackPrompt: boolean;
 }
 
 const {
   doorTempSummary,
   powerTempSummary,
   motionSummary,
-  devices,
-  doorSessions,
   householdId,
   batteryOverview,
   rssiOverview,
   airQualityOverview,
   energyOverview,
   coolingRateFPerHour,
-  canUseClaimsPack,
-  tier,
-  showClaimsPackPrompt,
 } = Astro.props;
 
 const t = overviewInsightsMessages(getLocale(Astro)).extras;
@@ -70,13 +55,7 @@ function calloutTone(tone?: string): "warning" | "info" {
 <details class="card">
   <summary class="dashboard-recommendations-summary">{t.summary}</summary>
   <div class="dashboard-recommendations-body space-y-4">
-    {doorTempSummary && (
-      <DoorTempInsightCard
-        title={doorTempSummary.title}
-        detail={doorTempSummary.detail}
-        tone={calloutTone(doorTempSummary.tone)}
-      />
-    )}
+    <DoorsCard summary={doorTempSummary} householdId={householdId} />
     {powerTempSummary && (
       <InsightCalloutCard
         title={t.powerTitle}
@@ -97,8 +76,6 @@ function calloutTone(tone?: string): "warning" | "info" {
         tone={calloutTone(motionSummary.tone)}
       />
     )}
-    <DoorDurationCard devices={devices} sessions={doorSessions} />
-    <DoorEventHistory householdId={householdId} />
     <BatteryDeclineCard rows={batteryOverview} />
     <RssiOverviewCard rows={rssiOverview} />
     <AirQualityCard overview={airQualityOverview} />
@@ -108,10 +85,5 @@ function calloutTone(tone?: string): "warning" | "info" {
         coolingRateFPerHour={coolingRateFPerHour}
       />
     )}
-    <ClaimsPackPromptCard
-      canUseClaimsPack={canUseClaimsPack}
-      tier={tier}
-      show={showClaimsPackPrompt}
-    />
   </div>
 </details>

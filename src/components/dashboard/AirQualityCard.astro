@@ -11,22 +11,34 @@ interface Props {
 const { overview } = Astro.props;
 const locale = getLocale(Astro);
 const t = overviewInsightsMessages(locale).airQuality;
+// Pressure alone isn't air quality: title the card for what it shows.
+const title = overview.pressureOnly ? t.pressureTitle : t.title;
+const subtitle = overview.pressureOnly ? t.pressureSubtitle : t.subtitle;
 ---
 {overview.rows.length > 0 && (
   <DashboardCard>
-    <h2 class="card-title">{t.title}</h2>
-    <p class="card-subtitle mb-4">{t.subtitle}</p>
-    <ul class="space-y-2 mb-0">
+    <h2 class="card-title">{title}</h2>
+    <p class="card-subtitle mb-4">{subtitle}</p>
+    <ul class="space-y-2 mb-0 p-0 list-none">
       {overview.rows.map((row) => (
-        <li class="text-sm flex flex-wrap justify-between gap-2">
-          <span>
-            <strong>{row.label}</strong>
-            {" · "}
-            {row.kindLabel}
-          </span>
-          <span class:list={[row.watch && "text-[var(--color-warning-text)]"]}>
-            {row.display}
-          </span>
+        <li class="text-sm">
+          <div class="flex flex-wrap justify-between gap-2">
+            <span>
+              <strong>{row.label}</strong>
+              {!overview.pressureOnly && (
+                <>
+                  {" · "}
+                  {row.kindLabel}
+                </>
+              )}
+            </span>
+            <span class:list={[row.watch && "text-[var(--color-warning-text)]"]}>
+              {row.display}
+            </span>
+          </div>
+          {row.trend && (
+            <p class="m-0 mt-0.5 text-xs text-[var(--color-text-muted)]">{row.trend}</p>
+          )}
         </li>
       ))}
     </ul>

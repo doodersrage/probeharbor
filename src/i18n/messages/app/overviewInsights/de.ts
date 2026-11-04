@@ -65,13 +65,19 @@ const de: OverviewInsightsMessages = {
     motionSubtitle: "Aktivität in den letzten 24 Stunden.",
     openDevices: "Geräte öffnen",
   },
-  doorTemp: {
-    title: "Tür und Temperatur",
-    subtitle: "Öffnungsdauer im Vergleich zur jüngsten Abkühlrate. Kaltluft-Index = Minuten offen × Grad unter 32 °F draußen.",
-  },
   airQuality: {
     title: "Luftqualität",
     subtitle: "Neueste Messwerte für CO₂, Feinstaub, VOC und Luftdruck.",
+    pressureTitle: "Luftdruck",
+    pressureSubtitle: "Letzter Messwert und die gemessene Änderung der letzten 3 Stunden. Keine Vorhersage.",
+    trend: {
+      steady: "stabil über 3 Std.",
+      rising: "steigt um {delta} hPa in 3 Std.",
+      falling: "fällt um {delta} hPa in 3 Std.",
+      risingFast: "steigt schnell: {delta} hPa in 3 Std.",
+      fallingFast: "fällt schnell: {delta} hPa in 3 Std.",
+      pending: "Trend nach 3 Std. Messwerten",
+    },
     watch: {
       one: "{count} Messwert über den üblichen Komfortbereichen einer Werkstatt.",
       other: "{count} Messwerte über den üblichen Komfortbereichen einer Werkstatt.",
@@ -98,7 +104,13 @@ const de: OverviewInsightsMessages = {
   },
   rssi: {
     title: "Signalstärke",
-    subtitle: "RSSI aus den letzten Gerätemetadaten: Bei schwachen Verbindungen fallen zuerst Messwerte aus.",
+    subtitle: "WLAN-Signal, das jedes Gerät zuletzt gemeldet hat, in dBm (näher an 0 ist stärker). Schwache Verbindungen verlieren zuerst Messwerte.",
+    quality: {
+      strong: "stark",
+      good: "gut",
+      fair: "mittel",
+      weak: "schwach",
+    },
     samples: " · {count} Messungen",
     chartTitle: "RSSI über die letzten Messungen",
     trendHintHtml:
@@ -119,13 +131,13 @@ const de: OverviewInsightsMessages = {
     included: "Was enthalten ist",
   },
   door: {
-    durationTitle: "Türöffnungsdauer",
-    durationSubtitle: "Öffnungen in den letzten 24 Stunden.",
-    openSince: "offen seit {time}",
-    wasOpen: "war {duration} offen",
-    none: "In den letzten 24 Stunden wurden keine Türöffnungen erfasst.",
-    historyTitle: "Verlauf der Türöffnungen",
-    historySubtitle: "Zuletzt abgeschlossene Türöffnungen (letzte 48 Std.).",
+    title: "Türen",
+    subtitle: "Öffnungen und ihr Einfluss auf die Temperatur im Raum.",
+    recentTitle: "Letzte Öffnungen",
+    openNow: "jetzt offen",
+    none: "Noch keine Türöffnungen erfasst.",
+    viewAll: "Alle unter Verlauf → Türen ansehen",
+    coldAirHelp: "Kaltluft-Index = Minuten offen × Grad unter 32 °F draußen.",
   },
   chart: {
     expand: "Vergrößern",

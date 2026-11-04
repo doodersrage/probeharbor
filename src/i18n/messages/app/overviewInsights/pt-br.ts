@@ -65,13 +65,19 @@ const ptBr: OverviewInsightsMessages = {
     motionSubtitle: "Atividade nas últimas 24 horas.",
     openDevices: "Abrir Dispositivos",
   },
-  doorTemp: {
-    title: "Porta x temperatura",
-    subtitle: "Tempo aberta comparado à taxa de resfriamento recente. Índice de ar frio = minutos aberta × graus abaixo de 32 °F lá fora.",
-  },
   airQuality: {
     title: "Qualidade do ar",
     subtitle: "Leituras mais recentes de CO₂, partículas, COV e pressão.",
+    pressureTitle: "Pressão barométrica",
+    pressureSubtitle: "Última leitura e a variação medida nas últimas 3 horas. Não é uma previsão.",
+    trend: {
+      steady: "estável em 3 h",
+      rising: "subindo {delta} hPa em 3 h",
+      falling: "caindo {delta} hPa em 3 h",
+      risingFast: "subindo rápido: {delta} hPa em 3 h",
+      fallingFast: "caindo rápido: {delta} hPa em 3 h",
+      pending: "tendência após 3 h de leituras",
+    },
     watch: {
       one: "{count} leitura acima das faixas de conforto típicas de uma oficina.",
       other: "{count} leituras acima das faixas de conforto típicas de uma oficina.",
@@ -98,7 +104,13 @@ const ptBr: OverviewInsightsMessages = {
   },
   rssi: {
     title: "Intensidade do sinal",
-    subtitle: "RSSI dos metadados recentes do dispositivo: conexões fracas perdem leituras primeiro.",
+    subtitle: "Sinal de Wi-Fi informado por último por cada dispositivo, em dBm (mais perto de 0 é mais forte). Conexões fracas perdem leituras primeiro.",
+    quality: {
+      strong: "forte",
+      good: "bom",
+      fair: "razoável",
+      weak: "fraco",
+    },
     samples: " · {count} amostras",
     chartTitle: "RSSI nas amostras recentes",
     trendHintHtml:
@@ -119,13 +131,13 @@ const ptBr: OverviewInsightsMessages = {
     included: "O que está incluído",
   },
   door: {
-    durationTitle: "Duração das portas abertas",
-    durationSubtitle: "Aberturas nas últimas 24 horas.",
-    openSince: "aberta desde {time}",
-    wasOpen: "ficou aberta {duration}",
-    none: "Nenhuma abertura de porta registrada nas últimas 24 horas.",
-    historyTitle: "Histórico de aberturas",
-    historySubtitle: "Aberturas de porta encerradas recentemente (últimas 48 h).",
+    title: "Portas",
+    subtitle: "Aberturas e como elas afetam a temperatura do espaço.",
+    recentTitle: "Aberturas recentes",
+    openNow: "aberta agora",
+    none: "Nenhuma abertura de porta registrada ainda.",
+    viewAll: "Ver todas em Histórico → Portas",
+    coldAirHelp: "Índice de ar frio = minutos aberta × graus abaixo de 32 °F lá fora.",
   },
   chart: {
     expand: "Ampliar",

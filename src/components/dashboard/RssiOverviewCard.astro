@@ -31,6 +31,8 @@ const chartSeries = rows
           <strong>{row.deviceName}</strong>
           <span class:list={[row.weak && "text-[var(--color-warning-text)]"]}>
             {formatNumber(row.rssi, locale, { useGrouping: false })} dBm
+            {" · "}
+            {t.quality[row.quality]}
             {row.samples.length >= 2 ? fmt(t.samples, { count: formatNumber(row.samples.length, locale) }) : ""}
           </span>
         </li>
