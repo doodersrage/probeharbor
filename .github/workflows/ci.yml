@@ -51,6 +51,8 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: 22
+          # Astro 7 needs >=22.23.4; runner caches can hold an older 22.x.
+          check-latest: true
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm typecheck
@@ -65,6 +67,8 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: 22
+          # Astro 7 needs >=22.23.4; runner caches can hold an older 22.x.
+          check-latest: true
           cache: pnpm
       # Blocking: lint errors fail CI. Formatting isn't enforced (most files
       # predate the Biome formatter); run `pnpm format` to adopt it.
@@ -81,6 +85,8 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: 22
+          # Astro 7 needs >=22.23.4; runner caches can hold an older 22.x.
+          check-latest: true
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm test
@@ -128,6 +134,8 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: 22
+          # Astro 7 needs >=22.23.4; runner caches can hold an older 22.x.
+          check-latest: true
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps chromium
@@ -149,6 +157,8 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: 22
+          # Astro 7 needs >=22.23.4; runner caches can hold an older 22.x.
+          check-latest: true
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm build || (rm -rf node_modules/.vite && pnpm build)
