@@ -5,7 +5,9 @@ const isCI = Boolean(process.env.CI);
 // `pnpm preview` on 4321 silently tested whatever dist/ it was started with.
 // CI builds in an earlier step, so it only serves.
 const port = isCI ? 4321 : 4322;
-const preview = `pnpm preview --host 127.0.0.1 --port ${port}`;
+// --ignore-lock keeps it in the foreground: Astro 7 backgrounds `astro preview`
+// when it detects an AI agent, and Playwright would see the command exit.
+const preview = `pnpm preview --host 127.0.0.1 --port ${port} --ignore-lock`;
 
 export default defineConfig({
   testDir: "./e2e",

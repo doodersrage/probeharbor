@@ -133,11 +133,13 @@ export default defineConfig({
     }),
   ],
 
-  experimental: {
-    cache: {
-      provider: memoryCache(),
-    },
+  cache: {
+    provider: memoryCache(),
   },
+
+  // Astro 7 defaults to 'jsx', which drops whitespace between inline elements.
+  // Keep the v6 behavior so rendered pages don't change.
+  compressHTML: true,
 
   fonts: [
     {

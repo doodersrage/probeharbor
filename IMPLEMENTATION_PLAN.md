@@ -3800,3 +3800,56 @@ serial `TT sensor:` line and accuracy against a reference were not checked.
 - [x] `/flash` FAQ, marketing FAQ (all locales) and `llms.txt` list the
       SHT31 as tested; AHT20, leak, battery and S3/C3 stay untested.
 - Still compile-only: AHT20, DHT11, leak, battery, ESP32-S3/C3, Feathers.
+
+------------------------------------------------------------------------
+
+## Upgrade to Astro 7 (2026-11-04)
+
+**Status: Implemented and verified locally. No migration. Not deployed.**
+
+Why: Astro 6 has had no release since 6.4.8 (2026-06-17). `pnpm audit
+--prod` flagged astro 6.4.8 with a critical RCE (AVIF image optimization,
+GHSA-26w7-cxv4-gfx2, fixed 7.2.8), a `base`-stripping authorization bypass
+(GHSA-376h-93r7-7g6f, fixed 7.2.4) and four XSS advisories, all fixed only
+in 7.x. Whether the RCE was reachable in production (runtime
+`imageService: 'passthrough'`) was not checked.
+
+- [x] astro 6.4.8 → 7.4.5, @astrojs/cloudflare 13.7.0 → 14.4.4,
+      @astrojs/preact 5.1.5 → 6.1.1, @astrojs/sitemap 3.7.3 → 3.7.4,
+      wrangler 4.105.0 → 4.157.0 (adapter needs ^4.125), @lucide/astro
+      1.21.0 → 1.67.0 (old range excluded Astro 7; 1.68.0 is under the
+      one-day minimum release age, and pnpm had silently added a
+      `minimumReleaseAgeExclude` for it, removed). Vite override ^7 → ^8.
+      @sentry/astro 10.72 already supports Astro 7. Vitest 3 keeps its own
+      Vite 7.
+- [x] `astro.config.mjs`: `experimental.cache` → top-level `cache`;
+      `compressHTML: true` keeps v6 whitespace handling (v7 default `'jsx'`
+      can drop spaces between inline elements).
+- [x] Lucide renamed two icons used in `DashboardSidebar.astro`:
+      `building-2` → `building-complex`, `history` → `rotate-ccw-clock`
+      (same artwork; old names are listed as aliases).
+- [x] `playwright.config.ts`: preview runs with `--ignore-lock`. Astro 7
+      backgrounds `astro preview` when it detects an AI agent, and
+      Playwright then saw the command exit. CI is not affected.
+- [x] README and `docs/guide/architecture.md` say Astro 7.
+- Behavior change: `/pricing` (signed out) now shows the header's
+  "Create free account" / "Sign in" buttons. They have been in the page
+  since 6069176 (2026-08-31) as `slot="actions"` inside a fragment, which
+  Astro 6 dropped. Checked visually at 1280 px and 390 px.
+- Evidence: `pnpm build` passes; the Rust compiler reported no invalid HTML.
+  `pnpm test`: 3330 passed, 1 failed (`garageTempsHistory.samples.test.ts`,
+  fails identically before the upgrade; likely the Nov 1 DST change).
+  `pnpm typecheck`: 0 errors. `pnpm lint`: 64 warnings (baseline).
+  `pnpm test:e2e`: 58 passed, 14 skipped (signed-in specs need E2E
+  credentials; not run). `wrangler deploy --dry-run`: same bindings, crons
+  and compatibility date; gzip 1998 → 2123 KiB.
+  Astro 6 (worktree at a8fc5fd) vs Astro 7 previews, all 252 sitemap pages
+  in headless Chromium, `innerText` compared: 8 differences: 4 live clocks
+  (`/about/probe-demo`, `/system-status`), 2 the new SHT31 recipe on
+  `/hardware` (separate uncommitted change), 2 the `/pricing` buttons above.
+  Raw HTML differs only in whitespace.
+- `pnpm audit --prod`: 65 advisories (1 critical) → 10 (6 high, 4
+  moderate), all in build-time tools (Tailwind, Babel/browserslist, Sentry
+  bundler plugin's glob, sitemap's zod). Follow-up, not in this change.
+- Not verified: signed-in dashboard pages (no E2E credentials), Sentry
+  source-map upload (no token locally), and anything on the deployed Worker.

@@ -1,6 +1,6 @@
 # ProbeHarbor
 
-Open-source dashboard to **track, log, and analyze sensors in garages, workshops, attics, crawlspaces, and shops** — **Astro 6**, **Cloudflare Workers**, **Supabase**, and **Stripe**.
+Open-source dashboard to **track, log, and analyze sensors in garages, workshops, attics, crawlspaces, and shops** — **Astro 7**, **Cloudflare Workers**, **Supabase**, and **Stripe**.
 
 Runs in production at [probeharbor.dev](https://probeharbor.dev) with 15-minute history polling, CI, Playwright smoke, and `pnpm ops:smoke`.
 
@@ -44,7 +44,7 @@ Plans and limits: [probeharbor.dev/pricing](https://probeharbor.dev/pricing) · 
 
 ## Stack
 
-Astro 6 + Preact islands + Tailwind v4 · Cloudflare Workers · Supabase (Auth, Postgres, RLS) · Stripe · Cloudflare Email · Twilio SMS (Pro) · Web Push (Pro). **Node.js `>=22.12.0`** and **pnpm**.
+Astro 7 + Preact islands + Tailwind v4 · Cloudflare Workers · Supabase (Auth, Postgres, RLS) · Stripe · Cloudflare Email · Twilio SMS (Pro) · Web Push (Pro). **Node.js `>=22.12.0`** and **pnpm**.
 
 ## Quick start
 

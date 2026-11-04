@@ -4,7 +4,7 @@ description: "How ProbeHarbor is built: Astro on Cloudflare Workers, Supabase Po
 
 # Architecture
 
-ProbeHarbor is an **Astro 6** app with **`output: 'server'`** on **Cloudflare Workers**, **Supabase** (Auth + Postgres + RLS), and **Stripe** for paid plans.
+ProbeHarbor is an **Astro 7** app with **`output: 'server'`** on **Cloudflare Workers**, **Supabase** (Auth + Postgres + RLS), and **Stripe** for paid plans.
 
 ```
 Sensors / relays ──push or pull──► Cloudflare Worker (Astro)
