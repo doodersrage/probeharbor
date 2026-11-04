@@ -684,6 +684,15 @@ async function fetchSampledSensorRows(
   return { rows, bucketMs: bucketSeconds * 1000 };
 }
 
+/**
+ * Start of a rolling "last N days" chart window: exactly N × 24 h before now.
+ * Local calendar math (setDate) gives 23 or 25 h days across a DST change;
+ * Workers run in UTC, so this matches what production already got.
+ */
+export function rollingWindowStart(days: number, now: number = Date.now()): Date {
+  return new Date(now - days * 24 * 60 * 60 * 1000);
+}
+
 /** Humidity from a sensor whose key matched no temperature probe (see probePairingKey). */
 export type HumidityOnlyPoint = { timestamp: string; humidity: number; probeLabel: string };
 
@@ -698,8 +707,7 @@ export async function fetchGarageTempChartData(
   sampleIntervalMs?: number;
   error: string | null;
 }> {
-  const since = new Date();
-  since.setDate(since.getDate() - days);
+  const since = rollingWindowStart(days);
   const sinceIso = filters.from ?? since.toISOString();
   const chartFilters = { ...filters, from: sinceIso };
 
@@ -949,8 +957,7 @@ export async function fetchHouseholdChartData(
   householdId: string,
   days = 7,
 ): Promise<{ points: ChartPoint[]; error: string | null }> {
-  const since = new Date();
-  since.setDate(since.getDate() - days);
+  const since = rollingWindowStart(days);
   const sinceIso = since.toISOString();
 
   // Same sampled path as the signed-in charts; raw rows only as a fallback.
