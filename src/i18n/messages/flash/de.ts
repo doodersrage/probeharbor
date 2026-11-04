@@ -29,7 +29,7 @@ const de: FlashMessages = {
     {
       question: "Was kann ich noch anschließen?",
       answer:
-        "Einen I²C-Sensor für Temperatur und Luftfeuchtigkeit (BME280, SHT31 oder AHT20, wird automatisch erkannt; ein BME280 meldet zusätzlich den Luftdruck), einen Leck- oder Wasserkontakt für Überschwemmungsalarme, einen magnetischen Türschalter und einen Akku über einen 1:1-Spannungsteiler für die Schätzung der Akkulaufzeit. Hake beim Senden der Einstellungen Leck, Tür und Akku an, damit das Board weiß, dass sie angeschlossen sind. Bisher auf Hardware getestet: der BME280 und der Türschalter. SHT31, AHT20, Leck und Akku sind eingebaut, aber noch nicht auf Hardware getestet.",
+        "Einen I²C-Sensor für Temperatur und Luftfeuchtigkeit (BME280, SHT31 oder AHT20, wird automatisch erkannt; ein BME280 meldet zusätzlich den Luftdruck), einen Leck- oder Wasserkontakt für Überschwemmungsalarme, einen magnetischen Türschalter und einen Akku über einen 1:1-Spannungsteiler für die Schätzung der Akkulaufzeit. Hake beim Senden der Einstellungen Leck, Tür und Akku an, damit das Board weiß, dass sie angeschlossen sind. Bisher auf Hardware getestet: der BME280, der SHT31 und der Türschalter. AHT20, Leck und Akku sind eingebaut, aber noch nicht auf Hardware getestet.",
     },
     {
       question: "Funktioniert es mit einem DHT22?",

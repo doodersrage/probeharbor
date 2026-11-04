@@ -28,7 +28,7 @@ const en = {
     {
       question: "What else can I connect?",
       answer:
-        "An I²C temperature and humidity sensor (BME280, SHT31, or AHT20, found automatically; a BME280 also reports air pressure), a leak or water contact for flood alerts, a magnetic door switch, and a battery through a 1:1 resistor divider for battery-life estimates. Tick the leak, door, and battery options when you send settings so the board knows they're wired. Tested on hardware so far: the BME280 and the door switch. SHT31, AHT20, leak and battery support is built but not yet hardware-tested.",
+        "An I²C temperature and humidity sensor (BME280, SHT31, or AHT20, found automatically; a BME280 also reports air pressure), a leak or water contact for flood alerts, a magnetic door switch, and a battery through a 1:1 resistor divider for battery-life estimates. Tick the leak, door, and battery options when you send settings so the board knows they're wired. Tested on hardware so far: the BME280, the SHT31, and the door switch. AHT20, leak and battery support is built but not yet hardware-tested.",
     },
     {
       question: "Does it work with a DHT22?",

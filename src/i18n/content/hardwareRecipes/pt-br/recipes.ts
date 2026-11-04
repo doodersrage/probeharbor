@@ -28,12 +28,20 @@ export default {
       "Detectado automaticamente na inicialização: SDA no GPIO 21, SCL no GPIO 22, mais 3,3 V e GND. Também informa a pressão do ar. Um BMP280 parece igual, mas não mede umidade, então confira o anúncio.",
     links: [flash],
   },
-  "esp32-i2c": {
-    title: "Outros sensores de ar I²C",
-    hardware: "ESP32 + SHT31 ou AHT20 via I²C",
+  "esp32-sht31": {
+    title: "Temperatura + umidade via I²C",
+    hardware: "Placa de desenvolvimento ESP32 + SHT31 via I²C",
     path: "Gravador web (sem código)",
     notes:
-      "Ligados do mesmo jeito que o BME280 (SDA 21, SCL 22 em um ESP32 clássico) e detectados automaticamente.",
+      "Detectado automaticamente na inicialização: SDA no GPIO 21, SCL no GPIO 22, mais 3,3 V e GND. Mede só temperatura e umidade, sem pressão.",
+    links: [flash],
+  },
+  "esp32-i2c": {
+    title: "Outros sensores de ar I²C",
+    hardware: "ESP32 + AHT20 via I²C",
+    path: "Gravador web (sem código)",
+    notes:
+      "Ligado do mesmo jeito que o BME280 e o SHT31 (SDA 21, SCL 22 em um ESP32 clássico) e detectado automaticamente.",
     links: [flash],
   },
   "esp32-door": {

@@ -570,7 +570,7 @@ until the audit is complete.
 | Not run | `pnpm ops:smoke`, `smoke:public` against production, Lighthouse, and any hardware tests. |
 
 Hardware evidence on a plain ESP32: DS18B20 (fw 1.0.1), DHT22 (1.1.1),
-BME280 and the door reed switch (1.2.2). Everything else is compile-only
+BME280 and the door reed switch (1.2.2), SHT31 (1.2.3). Everything else is compile-only
 (`firmware/probeharbor-probe/HARDWARE-TESTS.md`).
 
 ### Audit matrix
@@ -3781,3 +3781,22 @@ humidity and History looked fine.
   width. `pnpm test` / typecheck / Biome as below. Headless render of
   clustered 4.3 h samples: without the width → "No data" everywhere and
   dots (as in the screenshot); with it → continuous lines.
+
+------------------------------------------------------------------------
+
+## Hardware: SHT31 on a plain ESP32 is verified (2026-11-04)
+
+**Status: Copy and docs only. No migration. No firmware change.**
+
+User report: firmware 1.2.3 installed from `/flash` on a plain ESP32 with
+an SHT31 on I²C; temperature and humidity showed on the device page. The
+serial `TT sensor:` line and accuracy against a reference were not checked.
+
+- [x] `HARDWARE-TESTS.md`: SHT31 recorded under test 5; test 5 now covers
+      only the AHT20.
+- [x] `/hardware`: new `esp32-sht31` recipe marked "verified"; the
+      `esp32-i2c` recipe (still "built-in") now lists only the AHT20.
+      All five locales.
+- [x] `/flash` FAQ, marketing FAQ (all locales) and `llms.txt` list the
+      SHT31 as tested; AHT20, leak, battery and S3/C3 stay untested.
+- Still compile-only: AHT20, DHT11, leak, battery, ESP32-S3/C3, Feathers.

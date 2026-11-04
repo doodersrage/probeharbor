@@ -28,12 +28,20 @@ export default {
       "Wird beim Start automatisch erkannt: SDA an GPIO 21, SCL an GPIO 22, dazu 3,3 V und GND. Liefert zusätzlich den Luftdruck. Ein BMP280 sieht gleich aus, misst aber keine Luftfeuchtigkeit – prüfe also das Angebot.",
     links: [flash],
   },
-  "esp32-i2c": {
-    title: "Weitere I²C-Luftsensoren",
-    hardware: "ESP32 + SHT31 oder AHT20 per I²C",
+  "esp32-sht31": {
+    title: "Temperatur + Luftfeuchtigkeit per I²C",
+    hardware: "ESP32-Entwicklerboard + SHT31 per I²C",
     path: "Web-Flasher (ohne Code)",
     notes:
-      "Genauso verkabelt wie der BME280 (SDA 21, SCL 22 auf einem klassischen ESP32) und automatisch erkannt.",
+      "Wird beim Start automatisch erkannt: SDA an GPIO 21, SCL an GPIO 22, dazu 3,3 V und GND. Misst nur Temperatur und Luftfeuchtigkeit, keinen Luftdruck.",
+    links: [flash],
+  },
+  "esp32-i2c": {
+    title: "Weitere I²C-Luftsensoren",
+    hardware: "ESP32 + AHT20 per I²C",
+    path: "Web-Flasher (ohne Code)",
+    notes:
+      "Genauso verkabelt wie BME280 und SHT31 (SDA 21, SCL 22 auf einem klassischen ESP32) und automatisch erkannt.",
     links: [flash],
   },
   "esp32-door": {

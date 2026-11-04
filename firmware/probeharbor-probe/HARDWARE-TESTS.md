@@ -1,8 +1,9 @@
 # Hardware tests still open (firmware 1.2.3)
 
 Verified so far, on a plain ESP32: browser flash → USB settings → Wi-Fi → first
-reading, with a DS18B20 (1.0.1), a DHT22 (1.1.1), and a BME280 on I2C (1.2.2:
-temperature, humidity, and pressure). The door reed switch (1.2.2) works too, and so does posting
+reading, with a DS18B20 (1.0.1), a DHT22 (1.1.1), a BME280 on I2C (1.2.2:
+temperature, humidity, and pressure), and an SHT31 on I2C (1.2.3 from `/flash`:
+temperature and humidity). The door reed switch (1.2.2) works too, and so does posting
 right away on a door change (1.2.3).
 Everything else below has only been compiled.
 
@@ -15,7 +16,7 @@ result and the firmware line (`TT … 1.2.3`) next to each test.
 Buy links are on [/flash](https://probeharbor.dev/flash#what-to-buy) (source: `src/lib/bomLinks.ts`).
 
 - Test 4: an ESP32-S3-DevKitC-1 and an ESP32-C3-DevKitM-1.
-- Test 5: an SHT31-D or AHT20 (BME280 done).
+- Test 5: an AHT20 (BME280 and SHT31 done).
 - Test 6: an LM393 "rain / water sensor" module plus two bare wires for the leak contact (door switch done), two 100kΩ resistors, and a
   single Li-ion cell.
 - Test 8: an Adafruit HUZZAH32 or ESP32 Feather V2 (plus a STEMMA QT sensor for
@@ -61,7 +62,12 @@ differ by board:
 | Door reed switch | 26 | 6 | 10 |
 | Battery (1:1 divider) | 35 | 7 | 3 |
 
-## 5. I2C sensor (SHT31 or AHT20; BME280 verified)
+## 5. I2C sensor (AHT20; BME280 and SHT31 verified)
+
+**SHT31: verified on a plain ESP32 (reported 2026-11-04), firmware 1.2.3
+installed from `/flash`.** Temperature and humidity showed on the device page.
+Not checked: the `TT sensor:` serial line, and readings against a reference
+thermometer/hygrometer.
 
 1. Wire SDA/SCL from the table, 3.3 V and GND. No probe on GPIO 4.
 2. Expect `TT sensor: <name> on I2C (SDA …, SCL …)` and temperature plus humidity on

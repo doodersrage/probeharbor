@@ -29,7 +29,7 @@ const ptBr: FlashMessages = {
     {
       question: "O que mais posso conectar?",
       answer:
-        "Um sensor I²C de temperatura e umidade (BME280, SHT31 ou AHT20, detectado automaticamente; o BME280 também informa a pressão do ar), um contato de vazamento ou de água para alertas de alagamento, um interruptor magnético de porta e uma bateria por um divisor resistivo 1:1 para estimar a autonomia. Marque as opções de vazamento, porta e bateria ao enviar as configurações para que a placa saiba que estão ligados. Testados em hardware até agora: o BME280 e o interruptor de porta. SHT31, AHT20, vazamento e bateria estão incluídos, mas ainda não foram testados em hardware.",
+        "Um sensor I²C de temperatura e umidade (BME280, SHT31 ou AHT20, detectado automaticamente; o BME280 também informa a pressão do ar), um contato de vazamento ou de água para alertas de alagamento, um interruptor magnético de porta e uma bateria por um divisor resistivo 1:1 para estimar a autonomia. Marque as opções de vazamento, porta e bateria ao enviar as configurações para que a placa saiba que estão ligados. Testados em hardware até agora: o BME280, o SHT31 e o interruptor de porta. AHT20, vazamento e bateria estão incluídos, mas ainda não foram testados em hardware.",
     },
     {
       question: "Funciona com um DHT22?",

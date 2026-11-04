@@ -29,7 +29,7 @@ const fr: FlashMessages = {
     {
       question: "Que puis-je connecter d’autre ?",
       answer:
-        "Un capteur I²C de température et d’humidité (BME280, SHT31 ou AHT20, détecté automatiquement ; le BME280 mesure aussi la pression atmosphérique), un contact de fuite ou d’eau pour les alertes d’inondation, un interrupteur magnétique de porte et une batterie via un pont diviseur 1:1 pour estimer son autonomie. Cochez les options fuite, porte et batterie en envoyant les réglages pour que la carte sache qu’ils sont câblés. Testés sur du matériel à ce jour : le BME280 et l’interrupteur de porte. Les SHT31, AHT20, la fuite et la batterie sont pris en charge, mais pas encore testés sur du matériel.",
+        "Un capteur I²C de température et d’humidité (BME280, SHT31 ou AHT20, détecté automatiquement ; le BME280 mesure aussi la pression atmosphérique), un contact de fuite ou d’eau pour les alertes d’inondation, un interrupteur magnétique de porte et une batterie via un pont diviseur 1:1 pour estimer son autonomie. Cochez les options fuite, porte et batterie en envoyant les réglages pour que la carte sache qu’ils sont câblés. Testés sur du matériel à ce jour : le BME280, le SHT31 et l’interrupteur de porte. L’AHT20, la fuite et la batterie sont pris en charge, mais pas encore testés sur du matériel.",
     },
     {
       question: "Est-ce que ça marche avec un DHT22 ?",
