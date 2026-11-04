@@ -3805,7 +3805,7 @@ serial `TT sensor:` line and accuracy against a reference were not checked.
 
 ## Upgrade to Astro 7 (2026-11-04)
 
-**Status: Implemented and verified locally. No migration. Not deployed.**
+**Status: Deployed 2026-11-04 (090fd6a). No migration.**
 
 Why: Astro 6 has had no release since 6.4.8 (2026-06-17). `pnpm audit
 --prod` flagged astro 6.4.8 with a critical RCE (AVIF image optimization,
@@ -3851,5 +3851,11 @@ in 7.x. Whether the RCE was reachable in production (runtime
 - `pnpm audit --prod`: 65 advisories (1 critical) → 10 (6 high, 4
   moderate), all in build-time tools (Tailwind, Babel/browserslist, Sentry
   bundler plugin's glob, sitemap's zod). Follow-up, not in this change.
-- Not verified: signed-in dashboard pages (no E2E credentials), Sentry
-  source-map upload (no token locally), and anything on the deployed Worker.
+- Production (090fd6a, 2026-11-04): CI, Docs and Firmware green; Deploy
+  succeeded and uploaded source maps to Sentry. Live pages report Astro
+  7.4.5; `/hardware` shows the SHT31 recipe; signed-out `/pricing` shows
+  the header buttons. The user checked the signed-in dashboard: fine.
+- Still open: the signed-in E2E specs (need credentials), the
+  `garageTempsHistory.samples` failure (local only; CI passed it), and the
+  10 build-time audit
+  advisories.
