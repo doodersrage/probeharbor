@@ -80,8 +80,10 @@ and the OpenAPI spec keep semver, because devices and integrators compare them.
 ## Migrations and deploy order
 
 Pushes to `main` deploy the Workers automatically. **Database migrations do
-not run in CI**: apply them yourself with `pnpm db:push` (Supabase CLI,
-linked project).
+not run in CI**: apply them yourself with `pnpm db:push` (Supabase CLI v3,
+`supabase db push --remote`, the linked project). The CLI asks before it
+changes the hosted database and the default answer is **No**: type `y` to
+apply.
 
 - **Additive migrations** (new nullable column, new table, new index) can
   go first, then push the code. That's the default order.

@@ -9,7 +9,7 @@
   "scripts": {
     "deploy": "astro build && pnpm docs:build:site && node scripts/gen-i18n-catalog.mjs && wrangler deploy --config workers/i18n/wrangler.jsonc && wrangler deploy --config dist/server/wrangler.json",
     "i18n:catalog": "node scripts/gen-i18n-catalog.mjs",
-    "db:push": "supabase db push --linked",
+    "db:push": "supabase db push --remote",
     "db:backup": "node scripts/db-backup.mjs",
     "db:pending": "node scripts/db-pending.mjs",
     "secrets:push": "node scripts/push-worker-secrets.mjs",
@@ -46,7 +46,7 @@
     "docs:dev": "pnpm --dir docs --ignore-workspace dev",
     "docs:build": "pnpm --dir docs --ignore-workspace build",
     "docs:build:site": "node scripts/build-docs-site.mjs",
-    "generate-types": "supabase gen types typescript --linked > src/types/supabase.ts && wrangler types"
+    "generate-types": "supabase gen types typescript --remote > src/types/supabase.ts && wrangler types"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^14.4.4",
@@ -73,7 +73,7 @@
     "@astrojs/check": "^0.9.12",
     "@axe-core/playwright": "^4.14.0",
     "@playwright/test": "^1.64.1",
-    "supabase": "^2.108.0",
+    "supabase": "^3.0.0",
     "typescript": "~5.8.3",
     "vitest": "^5.1.0"
   },
