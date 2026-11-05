@@ -223,6 +223,20 @@ const fr: AlertsMessages = {
     },
     noSignups: "Aucune inscription pour l’instant, partagez le lien ci-dessus.",
   },
+  deliveryState: {
+    column: "Envoi",
+    heldQuietHours: "Retenue (heures calmes)",
+    heldSnooze: "Retenue (pause ou vacances)",
+    failed: "Échec : {channels}",
+    notSetUp: "Non envoyée : aucun canal configuré",
+    partial: "Envoyée en partie : acceptée par {sent} ; échec : {failed}",
+    alsoFailed: "Échec également : {channels}",
+    fixChannels: "Vérifier les canaux",
+    fixPause: "Réglages de pause",
+    heldTitle: "Retenue volontairement : personne n’a été prévenu.",
+    failedTitle: "L’envoi a échoué, ou il manque au canal son adresse, son numéro ou son webhook.",
+    notSetUpTitle: "Aucun canal n’était actif pour cette alerte, ou les règles de routage n’en ont laissé aucun.",
+  },
 };
 
 export default fr;

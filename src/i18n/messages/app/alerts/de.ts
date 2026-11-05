@@ -222,6 +222,20 @@ const de: AlertsMessages = {
     },
     noSignups: "Noch keine Anmeldungen – teile den Link oben.",
   },
+  deliveryState: {
+    column: "Zustellung",
+    heldQuietHours: "Zurückgehalten (Ruhezeiten)",
+    heldSnooze: "Zurückgehalten (pausiert oder Urlaub)",
+    failed: "Fehlgeschlagen: {channels}",
+    notSetUp: "Nicht gesendet: kein Kanal eingerichtet",
+    partial: "Teilweise gesendet: angenommen von {sent}; fehlgeschlagen: {failed}",
+    alsoFailed: "Ebenfalls fehlgeschlagen: {channels}",
+    fixChannels: "Kanäle prüfen",
+    fixPause: "Pause-Einstellungen",
+    heldTitle: "Absichtlich zurückgehalten, daher wurde niemand benachrichtigt.",
+    failedTitle: "Das Senden ist fehlgeschlagen, oder dem Kanal fehlt Adresse, Nummer oder Webhook.",
+    notSetUpTitle: "Für diesen Alarm war kein Kanal aktiv, oder Routing-Regeln haben keinen übrig gelassen.",
+  },
 };
 
 export default de;

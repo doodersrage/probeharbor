@@ -222,6 +222,20 @@ const ptBr: AlertsMessages = {
     },
     noSignups: "Nenhum cadastro ainda, compartilhe o link acima.",
   },
+  deliveryState: {
+    column: "Entrega",
+    heldQuietHours: "Retido (horário silencioso)",
+    heldSnooze: "Retido (adiado ou férias)",
+    failed: "Falhou: {channels}",
+    notSetUp: "Não enviado: nenhum canal configurado",
+    partial: "Enviado em parte: aceito por {sent}; falhou: {failed}",
+    alsoFailed: "Também falhou: {channels}",
+    fixChannels: "Verificar canais",
+    fixPause: "Ajustes de pausa",
+    heldTitle: "Retido de propósito, então ninguém foi avisado.",
+    failedTitle: "O envio falhou, ou falta ao canal o endereço, o número ou o webhook.",
+    notSetUpTitle: "Nenhum canal estava ativo para este alerta, ou as regras de roteamento não deixaram nenhum.",
+  },
 };
 
 export default ptBr;

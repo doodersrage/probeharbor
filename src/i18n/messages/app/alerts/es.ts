@@ -222,6 +222,20 @@ const es: AlertsMessages = {
     },
     noSignups: "Aún no hay registros. Comparte el enlace de arriba.",
   },
+  deliveryState: {
+    column: "Entrega",
+    heldQuietHours: "Retenida (horas de silencio)",
+    heldSnooze: "Retenida (pospuesta o vacaciones)",
+    failed: "Falló: {channels}",
+    notSetUp: "No enviada: ningún canal configurado",
+    partial: "Enviada en parte: aceptada por {sent}; falló: {failed}",
+    alsoFailed: "También falló: {channels}",
+    fixChannels: "Revisar canales",
+    fixPause: "Ajustes de pausa",
+    heldTitle: "Retenida a propósito, así que no se avisó a nadie.",
+    failedTitle: "El envío falló, o al canal le falta la dirección, el número o el webhook.",
+    notSetUpTitle: "Ningún canal estaba activo para esta alerta, o las reglas de enrutamiento no dejaron ninguno.",
+  },
 };
 
 export default es;

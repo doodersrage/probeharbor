@@ -7,7 +7,8 @@ import {
   localizeFalseAlarmTip,
   type FalseAlarmHint,
 } from "../../lib/falseAlarmHints";
-import { formatAlertChannelList } from "../../lib/alertChannelLabels";
+import { alertDeliveryState } from "../../lib/alertDeliveryState";
+import { formatAlertDeliveryState, type AlertDeliveryLabel } from "../../lib/alertDeliveryLabel";
 import { isUnhandledAlertEvent, type AlertEventRow } from "../../lib/alertEvents";
 import AlertAckActions from "./AlertAckActions.astro";
 import { groupAlertEvents } from "../../lib/alertEventGroups";
@@ -33,6 +34,7 @@ const {
 
 const locale = getLocale(Astro);
 const t = alertsMessages(locale).list;
+const td = alertsMessages(locale).deliveryState;
 
 // Runs of look-alike alerts show the newest row plus "Show N more like this".
 const items = groupAlertEvents(events).flatMap((group, groupIndex) => {
@@ -57,6 +59,11 @@ function handledLabel(event: AlertEventRow): string {
   return t.handled;
 }
 
+/** "Accepted by email", "Held (quiet hours)", "Failed: email, SMS", … with a next step. */
+function deliveryFor(event: AlertEventRow): AlertDeliveryLabel {
+  return formatAlertDeliveryState(alertDeliveryState(event), locale);
+}
+
 function tipForEvent(event: AlertEventRow): FalseAlarmHint | null {
   const tipId = event.meta?.suggestedTipId;
   if (!tipId) return null;
@@ -76,6 +83,8 @@ function tipForEvent(event: AlertEventRow): FalseAlarmHint | null {
         const age = formatRelativeAge(event.created_at, undefined, locale);
         const why = formatAlertWhyMeta(event.meta ?? {}, locale);
         const tip = tipForEvent(event);
+        const state = alertDeliveryState(event).state;
+        const delivery = deliveryFor(event);
         return (
           <>
           <article
@@ -90,9 +99,16 @@ function tipForEvent(event: AlertEventRow): FalseAlarmHint | null {
             <p class="m-0 mt-1 text-xs text-[var(--color-text-muted)]">
               {formatAlertKind(event.kind, locale)}
               {" · "}
-              {fmt(t.sent, { channels: formatAlertChannelList(event.channels_sent, locale) || "—" })}
-              {event.channels_skipped.length > 0 && (
-                <> · {fmt(t.skipped, { channels: formatAlertChannelList(event.channels_skipped, locale) })}</>
+              <span
+                class:list={["alert-delivery", delivery.tone === "warn" && "is-warn"]}
+                data-delivery-state={state}
+                title={delivery.title ?? undefined}
+              >
+                {delivery.label}
+              </span>
+              {delivery.extra && <> · {delivery.extra}</>}
+              {delivery.fix && canEdit && (
+                <> · <a class="text-link" href={delivery.fix.href}>{delivery.fix.label}</a></>
               )}
             </p>
             {why && (
@@ -159,8 +175,7 @@ function tipForEvent(event: AlertEventRow): FalseAlarmHint | null {
             <th scope="col" class="py-2 pr-3">{t.columns.kind}</th>
             <th scope="col" class="py-2 pr-3">{t.columns.title}</th>
             <th scope="col" class="py-2 pr-3">{t.columns.why}</th>
-            <th scope="col" class="py-2 pr-3">{t.columns.sent}</th>
-            <th scope="col" class="py-2 pr-3">{t.columns.skipped}</th>
+            <th scope="col" class="py-2 pr-3">{td.column}</th>
             <th scope="col" class="py-2">{t.columns.ack}</th>
           </tr>
         </thead>
@@ -169,6 +184,8 @@ function tipForEvent(event: AlertEventRow): FalseAlarmHint | null {
             const age = formatRelativeAge(event.created_at, undefined, locale);
             const why = formatAlertWhyMeta(event.meta ?? {}, locale);
             const tip = tipForEvent(event);
+            const state = alertDeliveryState(event).state;
+            const delivery = deliveryFor(event);
             return (
               <>
               <tr
@@ -209,8 +226,21 @@ function tipForEvent(event: AlertEventRow): FalseAlarmHint | null {
                     </form>
                   )}
                 </td>
-                <td class="py-2 pr-3">{formatAlertChannelList(event.channels_sent, locale) || "—"}</td>
-                <td class="py-2 pr-3">{formatAlertChannelList(event.channels_skipped, locale) || "—"}</td>
+                <td class="py-2 pr-3">
+                  <span
+                    class:list={["alert-delivery", delivery.tone === "warn" && "is-warn"]}
+                    data-delivery-state={state}
+                    title={delivery.title ?? undefined}
+                  >
+                    {delivery.label}
+                  </span>
+                  {delivery.extra && (
+                    <span class="block text-xs text-[var(--color-text-muted)]">{delivery.extra}</span>
+                  )}
+                  {delivery.fix && canEdit && (
+                    <a class="block text-link text-xs" href={delivery.fix.href}>{delivery.fix.label}</a>
+                  )}
+                </td>
                 <td class="py-2">
                   {event.acknowledged_at ? (
                     <span class="text-[var(--color-text-muted)]">{handledLabel(event)}</span>
@@ -228,7 +258,7 @@ function tipForEvent(event: AlertEventRow): FalseAlarmHint | null {
               </tr>
               {moreCount > 0 && (
                 <tr>
-                  <td colspan="7" class="pb-2">
+                  <td colspan="6" class="pb-2">
                     <button type="button" class="btn-ghost btn-sm" data-alert-group-toggle={groupId} data-hide-label={plural(t.hideSimilar, moreCount, locale)} aria-expanded="false">
                       {plural(t.showMore, moreCount, locale, { oldest: oldestLabel })}
                     </button>
@@ -264,6 +294,11 @@ function tipForEvent(event: AlertEventRow): FalseAlarmHint | null {
 </script>
 
 <style>
+  .alert-delivery.is-warn {
+    color: var(--color-warning-text);
+    font-weight: 600;
+  }
+
   .alert-activity-desktop {
     display: none;
   }

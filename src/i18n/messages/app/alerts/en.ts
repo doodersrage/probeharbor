@@ -228,6 +228,21 @@ const en = {
     },
     noSignups: "No signups yet, share the link above.",
   },
+  /** Activity: what happened to each alert's delivery (see lib/alertDeliveryState). Providers only accept; never say delivered. */
+  deliveryState: {
+    column: "Delivery",
+    heldQuietHours: "Held (quiet hours)",
+    heldSnooze: "Held (snooze or vacation)",
+    failed: "Failed: {channels}",
+    notSetUp: "Not sent: no channel set up",
+    partial: "Partly sent: accepted by {sent}; failed: {failed}",
+    alsoFailed: "Also failed: {channels}",
+    fixChannels: "Check channels",
+    fixPause: "Pause settings",
+    heldTitle: "Held back on purpose, so nobody was told.",
+    failedTitle: "The send failed, or the channel is missing its address, number or webhook.",
+    notSetUpTitle: "No channel was on for this alert, or routing rules left none.",
+  },
 };
 
 export type AlertsMessages = typeof en;
