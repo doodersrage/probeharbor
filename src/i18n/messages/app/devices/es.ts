@@ -101,6 +101,17 @@ const es: DevicesMessages = {
     checkNow: "Comprobar ahora",
     metaAuto: "Comprobando automáticamente cada 5 segundos mientras esta página esté abierta.",
     metaManual: "Envía un POST y luego pulsa Comprobar ahora o recarga.",
+    help: {
+      title: "¿No aparece nada?",
+      lede: "La mayoría de las primeras lecturas llegan en menos de un minuto después de que el dispositivo se conecta al Wi-Fi. Si todavía no ha llegado nada, revisa esto:",
+      wifi: "Wi-Fi: la mayoría de las placas (ESP32, Pico W) solo se conectan a redes de 2,4 GHz, no de 5 GHz. Revisa el nombre de la red y la contraseña que le diste al dispositivo.",
+      key: "Clave: si escribiste o pegaste la clave tú mismo, debe coincidir exactamente con tu clave, sin espacios de más. ¿La perdiste? Usa Rotar clave en la tarjeta del dispositivo y actualiza el dispositivo.",
+      network: "Red: el dispositivo necesita salir a internet por HTTPS (puerto 443). Las redes de invitados y el Wi-Fi que pide iniciar sesión en una página suelen bloquearlo.",
+      payloadChecker: "Comprobar un payload",
+      staleGuide: "Depurar lecturas que faltan",
+      troubleshooting: "Guía de solución de problemas",
+      reflash: "Volver a flashear un ESP32",
+    },
   },
   wizard: {
     title: "Configuración del dispositivo",

@@ -101,6 +101,17 @@ const fr: DevicesMessages = {
     checkNow: "Vérifier maintenant",
     metaAuto: "Vérification automatique toutes les 5 secondes tant que cette page est ouverte.",
     metaManual: "Envoyez un POST, puis cliquez sur Vérifier maintenant ou actualisez.",
+    help: {
+      title: "Rien ne s’affiche ?",
+      lede: "La plupart des premières mesures arrivent moins d’une minute après la connexion de l’appareil au Wi-Fi. Si rien n’est encore arrivé, vérifiez ceci :",
+      wifi: "Wi-Fi : la plupart des cartes (ESP32, Pico W) ne se connectent qu’aux réseaux 2,4 GHz, pas 5 GHz. Vérifiez le nom du réseau et le mot de passe donnés à l’appareil.",
+      key: "Clé : si vous avez saisi ou collé la clé vous-même, elle doit correspondre exactement à votre clé, sans espace en trop. Perdue ? Utilisez Renouveler la clé sur la fiche de l’appareil et mettez l’appareil à jour.",
+      network: "Réseau : l’appareil doit pouvoir joindre Internet en HTTPS (port 443). Les réseaux invités et les Wi-Fi qui demandent une page de connexion le bloquent souvent.",
+      payloadChecker: "Vérifier un payload",
+      staleGuide: "Déboguer des mesures manquantes",
+      troubleshooting: "Guide de dépannage",
+      reflash: "Flasher à nouveau un ESP32",
+    },
   },
   wizard: {
     title: "Configuration de l’appareil",

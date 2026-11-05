@@ -101,6 +101,17 @@ const ptBr: DevicesMessages = {
     checkNow: "Verificar agora",
     metaAuto: "Verificando automaticamente a cada 5 segundos enquanto esta página estiver aberta.",
     metaManual: "Envie um POST e depois clique em Verificar agora ou recarregue.",
+    help: {
+      title: "Nada aparecendo?",
+      lede: "A maioria das primeiras leituras chega em até um minuto depois que o dispositivo entra no Wi-Fi. Se nada chegou ainda, confira:",
+      wifi: "Wi-Fi: a maioria das placas (ESP32, Pico W) só se conecta a redes de 2,4 GHz, não de 5 GHz. Confira o nome da rede e a senha que você deu ao dispositivo.",
+      key: "Chave: se você digitou ou colou a chave, ela precisa ser exatamente igual à sua chave, sem espaços extras. Perdeu? Use Trocar chave no cartão do dispositivo e atualize o dispositivo.",
+      network: "Rede: o dispositivo precisa acessar a internet por HTTPS (porta 443). Redes de convidados e Wi-Fi que pede login em uma página costumam bloquear isso.",
+      payloadChecker: "Verificar um payload",
+      staleGuide: "Depurar leituras ausentes",
+      troubleshooting: "Guia de solução de problemas",
+      reflash: "Gravar um ESP32 de novo",
+    },
   },
   wizard: {
     title: "Configuração do dispositivo",

@@ -101,6 +101,17 @@ const en = {
     checkNow: "Check now",
     metaAuto: "Auto-checking every 5 seconds while this page is open.",
     metaManual: "Send a POST, then click Check now or refresh.",
+    help: {
+      title: "Not seeing anything?",
+      lede: "Most first readings arrive within a minute of the device joining Wi-Fi. If nothing has shown up yet, check these:",
+      wifi: "Wi-Fi: most boards (ESP32, Pico W) only join 2.4 GHz networks, not 5 GHz. Check the network name and password you gave the device.",
+      key: "Key: if you typed or pasted the key yourself, it must match your key exactly, with no extra spaces. Lost it? Use Rotate key on the device card and update the device.",
+      network: "Network: the device needs to reach the internet over HTTPS (port 443). Guest networks and Wi-Fi that needs a sign-in page usually block it.",
+      payloadChecker: "Check a payload",
+      staleGuide: "Debugging missing readings",
+      troubleshooting: "Troubleshooting guide",
+      reflash: "Flash an ESP32 again",
+    },
   },
   wizard: {
     title: "Device setup",

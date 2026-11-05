@@ -581,6 +581,28 @@ const redirectTo =
             ? t.waiting.metaAuto
             : t.waiting.metaManual}
         </p>
+        {/* Revealed by the polling script after a couple of minutes with no reading. */}
+        <div
+          class="rounded-lg border border-[var(--color-border)] p-3 mt-4"
+          data-waiting-help
+          role="region"
+          aria-labelledby="waiting-help-title"
+          hidden
+        >
+          <h3 class="form-label mb-1" id="waiting-help-title">{t.waiting.help.title}</h3>
+          <p class="text-sm mt-0 mb-2">{t.waiting.help.lede}</p>
+          <ul class="list-disc pl-5 space-y-1 text-sm mt-0 mb-3">
+            <li>{t.waiting.help.wifi}</li>
+            <li>{t.waiting.help.key}</li>
+            <li>{t.waiting.help.network}</li>
+          </ul>
+          <div class="flex flex-wrap gap-3">
+            <a class="btn-secondary" href="/payload-checker">{t.waiting.help.payloadChecker}</a>
+            <a class="btn-ghost" href="/about/debugging-stale-readings">{t.waiting.help.staleGuide}</a>
+            <a class="btn-ghost" href="/developers/guide/troubleshooting">{t.waiting.help.troubleshooting}</a>
+            <a class="btn-ghost" href="/flash">{t.waiting.help.reflash}</a>
+          </div>
+        </div>
       </section>
     )}
 
@@ -748,8 +770,19 @@ const redirectTo =
       const metaEl = root.querySelector("[data-waiting-meta]");
       const stepEl = root.querySelector('[data-waiting-step="post"]');
       const refreshBtn = root.querySelector("[data-waiting-refresh]");
+      const helpEl = root.querySelector("[data-waiting-help]");
+      // After this long with no reading, show the "Not seeing anything?" checklist.
+      // Polling carries on either way.
+      const HELP_AFTER_MS = 150000;
+      const startedAt = Date.now();
       let timer = 0;
       let inFlight = false;
+
+      function maybeShowHelp() {
+        if (helpEl instanceof HTMLElement && helpEl.hidden && Date.now() - startedAt >= HELP_AFTER_MS) {
+          helpEl.hidden = false;
+        }
+      }
 
       async function checkOnce() {
         if (inFlight) return;
@@ -787,6 +820,7 @@ const redirectTo =
           if (metaEl) metaEl.textContent = waitingText.checkFailed;
         } finally {
           inFlight = false;
+          maybeShowHelp();
         }
       }
 

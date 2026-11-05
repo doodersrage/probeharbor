@@ -101,6 +101,17 @@ const de: DevicesMessages = {
     checkNow: "Jetzt prüfen",
     metaAuto: "Automatische Prüfung alle 5 Sekunden, solange diese Seite geöffnet ist.",
     metaManual: "Sende einen POST und klicke dann auf Jetzt prüfen oder lade neu.",
+    help: {
+      title: "Noch nichts zu sehen?",
+      lede: "Die meisten ersten Messwerte kommen innerhalb einer Minute an, nachdem das Gerät im WLAN ist. Wenn noch nichts angekommen ist, prüfe Folgendes:",
+      wifi: "WLAN: Die meisten Boards (ESP32, Pico W) verbinden sich nur mit 2,4-GHz-Netzen, nicht mit 5 GHz. Prüfe Netzwerkname und Passwort, die du dem Gerät gegeben hast.",
+      key: "Schlüssel: Wenn du den Schlüssel selbst eingetippt oder eingefügt hast, muss er genau mit deinem Schlüssel übereinstimmen, ohne zusätzliche Leerzeichen. Verloren? Nutze Schlüssel erneuern auf der Gerätekarte und aktualisiere das Gerät.",
+      network: "Netzwerk: Das Gerät muss das Internet per HTTPS (Port 443) erreichen. Gästenetze und WLANs mit Anmeldeseite blockieren das meist.",
+      payloadChecker: "Payload prüfen",
+      staleGuide: "Fehlende Messwerte untersuchen",
+      troubleshooting: "Anleitung zur Fehlerbehebung",
+      reflash: "ESP32 erneut flashen",
+    },
   },
   wizard: {
     title: "Geräteeinrichtung",
