@@ -1,5 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { REDACTED, scrubBreadcrumb, scrubDeep, scrubEvent, scrubText, scrubUrl } from "./sentryScrub";
+import {
+  REDACTED,
+  SENTRY_DATA_COLLECTION,
+  scrubBreadcrumb,
+  scrubDeep,
+  scrubEvent,
+  scrubSpan,
+  scrubText,
+  scrubUrl,
+} from "./sentryScrub";
 
 const KEY = "0123456789abcdef0123456789abcdef0123456789abcdef";
 
@@ -95,5 +104,54 @@ describe("scrubBreadcrumb / scrubDeep", () => {
   it("scrubs strings nested in replay recording events", () => {
     const recording = scrubDeep({ data: { payload: { description: `https://probeharbor.dev/share/${KEY}`, list: [KEY] } } });
     expect(JSON.stringify(recording)).not.toContain(KEY);
+  });
+});
+
+describe("scrubSpan", () => {
+  it("removes credentials from streamed span names, attributes and links", () => {
+    const span = scrubSpan({
+      name: `GET /api/ingest/${KEY}`,
+      attributes: {
+        "sentry.op": "http.server",
+        "url.full": `https://probeharbor.dev/api/alerts/snooze?token=${KEY}&lang=de`,
+        "http.target": `/share/${KEY}`,
+        "http.request.header.x_ingest_key": KEY,
+        "http.request.header.stripe-signature": "t=1,v1=abc",
+        "http.request.header.user_agent": "ESP32",
+        "http.response.status_code": 200,
+        "sentry.sample_rate": 0.1,
+        tags: [`/invite/${KEY}`, 3],
+      },
+      links: [{ attributes: { "url.full": "https://api.telegram.org/bot1:secret/sendMessage" } }],
+    });
+
+    const json = JSON.stringify(span);
+    expect(json).not.toContain(KEY);
+    expect(json).not.toContain("secret");
+    expect(json).not.toContain("v1=abc");
+    expect(span.name).toBe(`GET /api/ingest/${REDACTED}`);
+    expect(span.attributes["url.full"]).toBe(`https://probeharbor.dev/api/alerts/snooze?token=${REDACTED}&lang=de`);
+    expect(span.attributes).not.toHaveProperty("http.request.header.x_ingest_key");
+    expect(span.attributes).not.toHaveProperty("http.request.header.stripe-signature");
+    expect(span.attributes["http.request.header.user_agent"]).toBe("ESP32");
+    expect(span.attributes["http.response.status_code"]).toBe(200);
+    expect(span.attributes["sentry.sample_rate"]).toBe(0.1);
+    expect(span.attributes.tags).toEqual([`/invite/${REDACTED}`, 3]);
+  });
+
+  it("keeps ordinary span names readable", () => {
+    expect(scrubSpan({ name: "GET /dashboard/sensors", attributes: {} }).name).toBe("GET /dashboard/sensors");
+  });
+});
+
+describe("SENTRY_DATA_COLLECTION", () => {
+  it("keeps the v10 sendDefaultPii: false baseline (v11 defaults collect more)", () => {
+    expect(SENTRY_DATA_COLLECTION.userInfo).toBe(false);
+    expect(SENTRY_DATA_COLLECTION.cookies).toBe(false);
+    expect(SENTRY_DATA_COLLECTION.httpBodies).toEqual([]);
+    expect(SENTRY_DATA_COLLECTION.databaseQueryData).toBe(false);
+    expect(SENTRY_DATA_COLLECTION.queues).toBe(false);
+    expect(SENTRY_DATA_COLLECTION.genAI).toEqual({ inputs: false, outputs: false });
+    expect(SENTRY_DATA_COLLECTION.httpHeaders.request).toEqual({ deny: expect.arrayContaining(["-ip", "forwarded"]) });
   });
 });

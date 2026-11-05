@@ -40,7 +40,7 @@ import { formatWatchdogFindings, runAlertDeliveryWatchdog } from "./lib/alertDel
 import { checkStripeWebhookHealth } from "./lib/stripeWebhookHealth";
 import { createStripeClient } from "./lib/stripe";
 import { ensureAllLocales } from "./i18n/catalog";
-import { scrubBreadcrumb, scrubEvent } from "./lib/sentryScrub";
+import { SENTRY_DATA_COLLECTION, scrubBreadcrumb, scrubEvent, scrubSpan } from "./lib/sentryScrub";
 import { appVersion } from "./lib/appVersion";
 
 type WorkerEnv = Env & {
@@ -63,9 +63,13 @@ function sentryOptions(env: WorkerEnv) {
     release: appVersion() ?? env.CF_VERSION_METADATA?.id,
     tracesSampleRate: 0.1,
     // URLs here carry device keys and share/invite/snooze tokens; never send them.
-    sendDefaultPii: false,
+    // v10 `sendDefaultPii: false` baseline (v11's default collects more).
+    dataCollection: SENTRY_DATA_COLLECTION,
+    // v10 default; v11 defaults to true (adds synthetic stacks, regroups issues).
+    attachStacktrace: false,
     beforeSend: scrubEvent,
-    beforeSendTransaction: scrubEvent,
+    // Spans are streamed (v11 default), so beforeSendTransaction never runs.
+    beforeSendSpan: scrubSpan,
     beforeBreadcrumb: scrubBreadcrumb,
     // Cron + waitUntil work continues after the response; stream spans as they finish.
     traceLifecycle: "stream" as const,

@@ -165,6 +165,69 @@ export function scrubEvent<T extends ScrubbableEvent>(event: T): T {
   return event;
 }
 
+type SpanAttributes = Record<string, unknown>;
+type ScrubbableSpan = {
+  name: string;
+  attributes: SpanAttributes;
+  links?: Array<{ attributes?: SpanAttributes }>;
+};
+
+/** Header span attributes look like `http.request.header.x_ingest_key`. */
+const HEADER_ATTRIBUTE = /^http\.(?:request|response)\.header\.(.+)$/i;
+
+function scrubSpanAttributes(attributes: SpanAttributes): void {
+  for (const key of Object.keys(attributes)) {
+    const header = HEADER_ATTRIBUTE.exec(key);
+    if (header && DROP_HEADERS.test(header[1]!.replace(/_/g, "-"))) {
+      delete attributes[key];
+      continue;
+    }
+    const value = attributes[key];
+    if (typeof value === "string") attributes[key] = scrubText(value);
+    else if (Array.isArray(value)) {
+      attributes[key] = value.map((item) => (typeof item === "string" ? scrubText(item) : item));
+    }
+  }
+}
+
+/**
+ * Scrub a streamed span (`beforeSendSpan`). SDK v11 streams spans by default
+ * and no longer calls `beforeSendTransaction`, so span names (`GET /share/…`)
+ * and attributes (`url.full`, `http.target`, headers) are scrubbed here.
+ */
+export function scrubSpan<T extends ScrubbableSpan>(span: T): T {
+  span.name = scrubText(span.name);
+  scrubSpanAttributes(span.attributes);
+  for (const link of span.links ?? []) {
+    if (link.attributes) scrubSpanAttributes(link.attributes);
+  }
+  return span;
+}
+
+/**
+ * SDK v11 replaced `sendDefaultPii` with `dataCollection`, and leaving it
+ * unset now collects more (cookies, bodies, user IP). This is the migration
+ * guide's equivalent of the v10 `sendDefaultPii: false` baseline.
+ */
+const PII_HEADER_DENY = ["forwarded", "-ip", "remote-", "via", "-user"];
+export const SENTRY_DATA_COLLECTION = {
+  userInfo: false,
+  cookies: false,
+  httpHeaders: {
+    request: { deny: PII_HEADER_DENY },
+    response: { deny: PII_HEADER_DENY },
+  },
+  httpBodies: [],
+  urlQueryParams: { deny: PII_HEADER_DENY },
+  genAI: { inputs: false, outputs: false },
+  mcp: { inputs: false, outputs: false },
+  databaseQueryData: false,
+  queues: false,
+  graphQL: { document: false, variables: false },
+  // v10 default; v11 lowered it to 5.
+  frameContextLines: 7,
+};
+
 /**
  * Scrub every string in a value (replay recording events nest URLs in
  * performance spans and navigation entries). Bounded depth; returns the input.

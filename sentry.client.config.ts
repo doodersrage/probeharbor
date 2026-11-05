@@ -1,6 +1,6 @@
 import * as Sentry from "@sentry/astro";
 import { appVersion } from "./src/lib/appVersion";
-import { scrubBreadcrumb, scrubDeep, scrubEvent } from "./src/lib/sentryScrub";
+import { SENTRY_DATA_COLLECTION, scrubBreadcrumb, scrubDeep, scrubEvent, scrubSpan } from "./src/lib/sentryScrub";
 
 const dsn =
   import.meta.env.PUBLIC_SENTRY_DSN?.trim() ||
@@ -26,9 +26,13 @@ if (dsn && dsn !== "off" && import.meta.env.PROD) {
     ],
     tracesSampleRate: 0.1,
     // Page URLs carry share/status/invite/snooze tokens; scrub before sending.
-    sendDefaultPii: false,
+    // v10 `sendDefaultPii: false` baseline (v11's default collects more).
+    dataCollection: SENTRY_DATA_COLLECTION,
+    // v10 default; v11 defaults to true (adds synthetic stacks, regroups issues).
+    attachStacktrace: false,
     beforeSend: scrubEvent,
-    beforeSendTransaction: scrubEvent,
+    // SDK v11 streams spans by default; beforeSendTransaction no longer runs.
+    beforeSendSpan: scrubSpan,
     beforeBreadcrumb: scrubBreadcrumb,
     replaysSessionSampleRate: 0,
     replaysOnErrorSampleRate: 0.5,

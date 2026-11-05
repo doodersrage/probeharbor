@@ -118,12 +118,13 @@ export default defineConfig({
         client: true,
         server: false,
       },
-      sourceMapsUploadOptions: {
-        enabled: Boolean(sentryAuthToken && sentryOrg && sentryProject),
-        org: sentryOrg,
-        project: sentryProject || undefined,
-        authToken: sentryAuthToken || undefined,
+      // SDK v11 removed sourceMapsUploadOptions; these are its top-level equivalents.
+      sourcemaps: {
+        disable: !(sentryAuthToken && sentryOrg && sentryProject),
       },
+      org: sentryOrg,
+      project: sentryProject || undefined,
+      authToken: sentryAuthToken || undefined,
       sentryUrl: process.env.SENTRY_URL?.trim() || "https://us.sentry.io",
     }),
   ],
