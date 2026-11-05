@@ -3965,5 +3965,11 @@ From a user screenshot of the Overview's Sensor extras column.
   is hidden on /privacy (dea5deb); privacy page backticks, old app name,
   export path (23d0708).
 - Still to verify after deploy: Web Push on Chrome, Firefox, Safari/iOS;
-  Sentry events and source maps arriving; `pnpm db:pending` against the
-  linked project; signed-in dashboard islands and chart Expand views.
+  Sentry events arriving; signed-in dashboard islands and chart Expand
+  views. (Source maps: uploaded by the deploy.)
+- `pnpm db:pending` on CLI v3 (2026-11-05): first run exited 2, "Invalid
+  access token". v3 reads SUPABASE_ACCESS_TOKEN from `.env`, and that token
+  was revoked (v2 used `supabase login`). After the user replaced it:
+  "All local migrations are applied". Cross-checked with the Supabase
+  migration list: the same 67 versions locally and remotely. db-pending
+  now prints a hint for a rejected token; deploy guide notes it.
