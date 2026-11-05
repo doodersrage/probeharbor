@@ -184,6 +184,10 @@ const fr: OverviewMessages = {
       },
     },
   },
+  channelFailing: {
+    label: "Les alertes par {channels} échouent (dernier essai {age}).",
+    fix: "Corriger",
+  },
 };
 
 export default fr;

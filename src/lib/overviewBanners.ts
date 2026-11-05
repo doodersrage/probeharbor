@@ -3,6 +3,8 @@ import { isCriticalOverviewBanner, isOpsAttentionBanner } from "./dashboardComfo
 export type OverviewBanner = { id: string; priority: number; show: boolean };
 
 export type OverviewBannerFlags = {
+  /** An alert channel that's switched on failed its most recent attempt. */
+  channelFailing?: boolean;
   lowBattery: boolean;
   stale: boolean;
   quietActive: boolean;
@@ -18,6 +20,8 @@ export type OverviewBannerFlags = {
 
 export function buildOverviewBannerQueue(flags: OverviewBannerFlags): OverviewBanner[] {
   return [
+    // Alerts aren't getting through: shown even in dashboard quiet mode.
+    { id: "channelFailing", priority: 1, show: flags.channelFailing === true },
     { id: "lowBattery", priority: 2, show: flags.lowBattery },
     { id: "stale", priority: 3, show: flags.stale },
     { id: "testAlert", priority: 5, show: !flags.quietActive && flags.showTestAlertNudge },

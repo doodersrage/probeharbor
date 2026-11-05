@@ -1,4 +1,4 @@
-import type { AlertChannelName } from "./alerts";
+import type { AlertChannelName, AlertSettings } from "./alerts";
 
 export const ALERT_CHANNEL_NAMES: readonly AlertChannelName[] = [
   "email",
@@ -67,4 +67,37 @@ export function channelLastAttemptFailed(delivery: ChannelDelivery | undefined):
   if (!delivery?.lastFailedAt) return false;
   if (!delivery.lastSentAt) return true;
   return Date.parse(delivery.lastFailedAt) > Date.parse(delivery.lastSentAt);
+}
+
+/** The settings switch for each channel. */
+const CHANNEL_SWITCH = {
+  email: "channelEmail",
+  sms: "channelSms",
+  discord: "channelDiscord",
+  push: "channelPush",
+  webhook: "channelWebhook",
+  telegram: "channelTelegram",
+  slack: "channelSlack",
+  teams: "channelTeams",
+  ntfy: "channelNtfy",
+  pushover: "channelPushover",
+  whatsapp: "channelWhatsapp",
+} as const satisfies Record<AlertChannelName, keyof AlertSettings>;
+
+export type FailingAlertChannel = { channel: AlertChannelName; lastFailedAt: string };
+
+/**
+ * Channels that are switched on and whose most recent attempt failed (the
+ * same rule as the Settings status line), newest failure first. Empty while
+ * alerts are off: nothing is being attempted then.
+ */
+export function failingAlertChannels(
+  delivery: Partial<Record<AlertChannelName, ChannelDelivery>>,
+  settings: Pick<AlertSettings, "enabled" | (typeof CHANNEL_SWITCH)[AlertChannelName]>,
+): FailingAlertChannel[] {
+  if (!settings.enabled) return [];
+  return ALERT_CHANNEL_NAMES.filter((channel) => settings[CHANNEL_SWITCH[channel]] === true)
+    .filter((channel) => channelLastAttemptFailed(delivery[channel]))
+    .map((channel) => ({ channel, lastFailedAt: delivery[channel]?.lastFailedAt as string }))
+    .sort((a, b) => Date.parse(b.lastFailedAt) - Date.parse(a.lastFailedAt));
 }

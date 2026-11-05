@@ -184,6 +184,10 @@ const de: OverviewMessages = {
       },
     },
   },
+  channelFailing: {
+    label: "Alarme per {channels} schlagen fehl (letzter Versuch {age}).",
+    fix: "Beheben",
+  },
 };
 
 export default de;

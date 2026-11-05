@@ -184,6 +184,10 @@ const ptBr: OverviewMessages = {
       },
     },
   },
+  channelFailing: {
+    label: "Os alertas por {channels} estão falhando (última tentativa {age}).",
+    fix: "Corrigir",
+  },
 };
 
 export default ptBr;

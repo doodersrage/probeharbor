@@ -38,6 +38,21 @@ describe("overviewBanners", () => {
     expect(partitioned.secondaryTipBannerIds).not.toContain("upgrade");
   });
 
+  it("shows a failing alert channel first in the status card, even while quiet", () => {
+    for (const quietActive of [false, true]) {
+      const partitioned = partitionOverviewBanners(
+        buildOverviewBannerQueue({ ...base, quietActive, channelFailing: true, lowBattery: true }),
+      );
+      expect([...partitioned.primaryBannerIds]).toEqual(["channelFailing", "lowBattery"]);
+    }
+  });
+
+  it("has no failing-channel row when nothing failed", () => {
+    const partitioned = partitionOverviewBanners(buildOverviewBannerQueue({ ...base, channelFailing: false }));
+    expect(partitioned.primaryBannerIds.has("channelFailing")).toBe(false);
+    expect(partitionOverviewBanners(buildOverviewBannerQueue(base)).primaryBannerIds.has("channelFailing")).toBe(false);
+  });
+
   it("does not count cold-snap as an Attention strip item", () => {
     const queue = buildOverviewBannerQueue(base);
     expect(queue.map((b) => b.id)).not.toContain("coldSnap");

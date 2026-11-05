@@ -45,10 +45,11 @@ export const DEFAULT_PINNED_OVERVIEW_METRICS: PinnableOverviewMetric[] = [
 
 export const PINNED_METRICS_MAX = 5;
 
-const CRITICAL_BANNER_IDS = new Set(["lowBattery", "stale"]);
+const CRITICAL_BANNER_IDS = new Set(["channelFailing", "lowBattery", "stale"]);
 
 /** Ops Attention strip — sensors/alerts/freeze readiness only (not growth tips). */
 export const OPS_ATTENTION_BANNER_IDS = new Set([
+  "channelFailing",
   "lowBattery",
   "stale",
   "testAlert",

@@ -184,6 +184,10 @@ const es: OverviewMessages = {
       },
     },
   },
+  channelFailing: {
+    label: "Las alertas por {channels} están fallando (último intento {age}).",
+    fix: "Arreglar",
+  },
 };
 
 export default es;

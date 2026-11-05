@@ -325,6 +325,22 @@ export async function listRecentAlertEvents(
   }));
 }
 
+/** Recent send attempts, only the columns per-channel delivery status needs. */
+export async function listRecentDeliveryAttempts(
+  userId: string,
+  limit = 100,
+): Promise<Array<Pick<AlertEventRow, "created_at" | "channels_sent" | "channels_skipped">>> {
+  const supabase = createServerClient();
+  const { data, error } = await supabase
+    .from("alert_events")
+    .select("created_at, channels_sent, channels_skipped")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  if (error || !data) return [];
+  return data as Array<Pick<AlertEventRow, "created_at" | "channels_sent" | "channels_skipped">>;
+}
+
 export const ALERT_EVENTS_EXPORT_MAX = 5000;
 
 /** Alert events in [fromIso, toIso], oldest first, capped for export. */

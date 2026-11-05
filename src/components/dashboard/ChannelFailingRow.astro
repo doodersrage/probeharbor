@@ -1,0 +1,43 @@
+---
+/**
+ * Overview status-card row: a switched-on alert channel failed its latest
+ * attempt (same rule as the Settings status line), so alerts may not be
+ * reaching anyone there.
+ */
+import type { FailingAlertChannel } from "../../lib/channelDelivery";
+import { formatAlertChannelList } from "../../lib/alertChannelLabels";
+import { ALERT_CHANNEL_SETTINGS_HREF } from "../../lib/alertDeliveryLabel";
+import { formatRelativeAge } from "../../lib/relativeTime";
+import { fmt, getLocale } from "../../i18n";
+import { overviewMessages } from "../../i18n/messages/app/overview";
+
+interface Props {
+  failing: FailingAlertChannel[];
+  canEdit: boolean;
+}
+
+const { failing, canEdit } = Astro.props;
+const locale = getLocale(Astro);
+const t = overviewMessages(locale).channelFailing;
+const newest = failing[0];
+const text = newest
+  ? fmt(t.label, {
+      channels: formatAlertChannelList(
+        failing.map((row) => row.channel),
+        locale,
+      ),
+      age: formatRelativeAge(newest.lastFailedAt, undefined, locale).label,
+    })
+  : "";
+---
+{newest && (
+  <div class="garage-risk-row" role="status" data-channel-failing={failing.map((row) => row.channel).join(",")}>
+    {text}
+    {canEdit && (
+      <>
+        {" · "}
+        <a href={ALERT_CHANNEL_SETTINGS_HREF} class="text-link">{t.fix}</a>
+      </>
+    )}
+  </div>
+)}

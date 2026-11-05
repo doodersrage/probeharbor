@@ -93,7 +93,10 @@ import {
   countUnacknowledgedAlerts,
   listAlertEventsInRange,
   listRecentAlertEvents,
+  listRecentDeliveryAttempts,
 } from "../lib/alertEvents";
+import { failingAlertChannels, summarizeChannelDelivery } from "../lib/channelDelivery";
+import ChannelFailingRow from "../components/dashboard/ChannelFailingRow.astro";
 import { findAlertMoment } from "../lib/alertMomentNudge";
 import AlertMomentUpgradeCard from "../components/dashboard/AlertMomentUpgradeCard.astro";
 import { toChartAlertMarkers } from "../lib/chartAlertMarkers";
@@ -237,6 +240,8 @@ const roleFromShell =
   shell?.households.find((row) => row.household_id === activeHouseholdId)?.role ?? null;
 
 const evidencePromise = ensureAlertDeliveryEvidence(user.id, alertSettingsLoaded);
+// Same rows and rule as the per-channel status on Alerts → Settings.
+const deliveryAttemptsPromise = listRecentDeliveryAttempts(user.id, 100).catch(() => []);
 const shellLatest = latestFromShell(shell, household.householdId);
 const [
   { settings: alertSettings, hasDelivery },
@@ -265,6 +270,10 @@ const [
 ]);
 
 const latest = latestResult.rows;
+const failingChannels = failingAlertChannels(
+  summarizeChannelDelivery(await deliveryAttemptsPromise),
+  alertSettings,
+);
 const devices = householdDevicesResult.devices;
 // A failed devices/readings query must not read as "no devices yet".
 const devicesLoadError =
@@ -827,6 +836,7 @@ if (Astro.url.searchParams.get("demo_pull") === "1") {
 }
 
 const overviewBannerQueue = buildOverviewBannerQueue({
+  channelFailing: failingChannels.length > 0,
   lowBattery: Boolean(lowBatteryMessage),
   stale: staleSensorCount > 0,
   quietActive,
@@ -979,6 +989,7 @@ const onboardingProps = {
     {/* One status card: what is happening, then alerts to handle and quick actions. */}
     <GarageRiskStatusCard status={garageRisk} coldestProbe={coldestProbeSummary} useCelsius={useCelsius}>
       <UnackedAlertsBanner count={unackedAlertCount} embedded />
+      {primaryBannerIds.has("channelFailing") && <ChannelFailingRow failing={failingChannels} canEdit={canEdit} />}
       {primaryBannerIds.has("stale") && staleSensorCount > 0 && garageRisk.reason !== "stale" && (
         <div class="garage-risk-row" role="status" data-stale-banner>
           {staleSummary.bannerMessage}.

@@ -183,6 +183,11 @@ const en = {
       },
     },
   },
+  /** Status card row when a switched-on alert channel's latest attempt failed. {age} is a relative time ("5m ago"). */
+  channelFailing: {
+    label: "Alerts by {channels} are failing (last tried {age}).",
+    fix: "Fix",
+  },
 };
 
 export type OverviewMessages = typeof en;
