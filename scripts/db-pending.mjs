@@ -23,9 +23,16 @@ try {
   parsed = undefined;
 }
 if (result.status !== 0 || !Array.isArray(parsed?.migrations)) {
-  console.error(
-    parsed?.error?.message || result.stderr || result.stdout || "supabase migration list failed",
-  );
+  const message =
+    parsed?.error?.message || result.stderr || result.stdout || "supabase migration list failed";
+  console.error(message);
+  // CLI v3 reads SUPABASE_ACCESS_TOKEN from the project's .env before `supabase login`.
+  if (/invalid access token|status 401/i.test(message)) {
+    console.error(
+      "Hint: the Supabase access token was rejected. Check SUPABASE_ACCESS_TOKEN in .env " +
+        "(new token: https://supabase.com/dashboard/account/tokens), or remove it to use `supabase login`.",
+    );
+  }
   process.exit(2);
 }
 

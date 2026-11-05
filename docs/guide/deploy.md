@@ -85,6 +85,12 @@ not run in CI**: apply them yourself with `pnpm db:push` (Supabase CLI v3,
 changes the hosted database and the default answer is **No**: type `y` to
 apply.
 
+Run `pnpm db:pending` first to list migrations not yet applied. CLI v3
+reads `SUPABASE_ACCESS_TOKEN` from the project's `.env` and prefers it over
+`supabase login`. If that token is expired or revoked, every remote command
+fails with "Invalid access token": create a new one under Account → Access
+Tokens in the Supabase dashboard, or remove the line to use your login.
+
 - **Additive migrations** (new nullable column, new table, new index) can
   go first, then push the code. That's the default order.
 - If new code **writes** to a new column or table, apply the migration
