@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("./households", () => ({ getUserHouseholdId: async () => "hh-1" }));
 
@@ -34,6 +34,16 @@ vi.mock("./supabase", () => ({
 }));
 
 import { fetchGarageTempChartData, groupSensorsForSampling, sampleBucketCount } from "./garageTempsHistory";
+
+// The sample readings are dated 2026-10-29; pin "now" so they stay inside
+// the 7-day window. Only Date is faked, so promises and timers run normally.
+beforeAll(() => {
+  vi.useFakeTimers({ toFake: ["Date"] });
+  vi.setSystemTime(new Date("2026-10-30T12:00:00Z"));
+});
+afterAll(() => {
+  vi.useRealTimers();
+});
 
 beforeEach(() => {
   mockRpc.mockReset();
