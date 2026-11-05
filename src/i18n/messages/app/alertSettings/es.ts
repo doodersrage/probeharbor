@@ -280,6 +280,9 @@ const es: AlertSettingsMessages = {
     statusFailed: "No se pudo leer el estado de push.",
     enableFailed: "No se pudo activar push: {error}",
   },
+  planTags: {
+    pro: "(Pro)",
+  },
 };
 
 export default es;

@@ -442,6 +442,25 @@ export function isUnhandledAlertEvent(
   return (event.channels_sent ?? []).length > 0 || isSafetyAlertKind(event.kind);
 }
 
+/** Freeze and leak alerts: the incidents a claims evidence pack documents. */
+export const CLAIMS_PACK_ALERT_KINDS = ["threshold", "freeze", "flood"] as const;
+
+/** Any unhandled alert of these kinds (same rule as the count). */
+export async function hasUnhandledAlertOfKinds(userId: string, kinds: readonly string[]): Promise<boolean> {
+  const supabase = createServerClient();
+  const { data, error } = await supabase
+    .from("alert_events")
+    .select("id")
+    .eq("user_id", userId)
+    .is("acknowledged_at", null)
+    .not("kind", "in", INFORMATIONAL_KIND_FILTER)
+    .or(UNHANDLED_DELIVERY_FILTER)
+    .in("kind", [...kinds])
+    .limit(1);
+  if (error || !data) return false;
+  return data.length > 0;
+}
+
 export async function countUnacknowledgedAlerts(userId: string): Promise<number> {
   const supabase = createServerClient();
   const { count } = await supabase

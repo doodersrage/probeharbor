@@ -73,6 +73,7 @@ const ptBr: ShellMessages = {
     label: { one: "alerta sem tratamento.", other: "alertas sem tratamento." },
     review: "Revisar",
     claimsPack: "Baixar o pacote de provas para sinistro",
+    proTag: "(Pro)",
   },
   lowBattery: {
     deviceHealth: "Saúde dos dispositivos",

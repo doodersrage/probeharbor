@@ -284,6 +284,10 @@ const en = {
     statusFailed: "Could not read push status.",
     enableFailed: "Could not enable push: {error}",
   },
+  /** After a setting or channel the current plan doesn't include. */
+  planTags: {
+    pro: "(Pro)",
+  },
 };
 
 export type AlertSettingsMessages = typeof en;

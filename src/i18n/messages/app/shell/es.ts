@@ -73,6 +73,7 @@ const es: ShellMessages = {
     label: { one: "alerta sin atender.", other: "alertas sin atender." },
     review: "Revisar",
     claimsPack: "Descargar el paquete de pruebas para reclamaciones",
+    proTag: "(Pro)",
   },
   lowBattery: {
     deviceHealth: "Estado de los dispositivos",

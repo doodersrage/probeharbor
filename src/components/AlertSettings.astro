@@ -323,7 +323,7 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
         </div>
         <label class="checkbox-row mb-0">
           <input type="checkbox" name="nws_freeze_alerts_enabled" value="true" checked={settings.nwsFreezeAlertsEnabled} disabled={!entitlements.canUseNwsAlerts} />
-          <span>{t.essentials.nwsToggle} {!entitlements.canUseNwsAlerts && <span class="text-[var(--color-text-muted)]">(Pro)</span>}</span>
+          <span>{t.essentials.nwsToggle} {!entitlements.canUseNwsAlerts && <span class="text-[var(--color-text-muted)]">{t.planTags.pro}</span>}</span>
         </label>
       </div>
     </details>
@@ -508,19 +508,19 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
       </label>
       <label class="checkbox-row mb-0">
         <input type="checkbox" name="channel_whatsapp" value="true" checked={settings.channelWhatsapp} disabled={!entitlements.canUseSms} data-channel-toggle="whatsapp" />
-        <span>WhatsApp {!entitlements.canUseSms && <span class="text-[var(--color-text-muted)]">(Pro)</span>}</span>
+        <span>WhatsApp {!entitlements.canUseSms && <span class="text-[var(--color-text-muted)]">{t.planTags.pro}</span>}</span>
       </label>
       <label class="checkbox-row mb-0">
         <input type="checkbox" name="channel_sms" value="true" checked={settings.channelSms} disabled={!entitlements.canUseSms} data-channel-toggle="sms" />
-        <span>SMS {!entitlements.canUseSms && <span class="text-[var(--color-text-muted)]">(Pro)</span>}</span>
+        <span>SMS {!entitlements.canUseSms && <span class="text-[var(--color-text-muted)]">{t.planTags.pro}</span>}</span>
       </label>
       <label class="checkbox-row mb-0">
         <input type="checkbox" name="channel_push" value="true" checked={settings.channelPush} disabled={!entitlements.canUsePush} data-channel-toggle="push" />
-        <span>{t.channels.push} {!entitlements.canUsePush && <span class="text-[var(--color-text-muted)]">(Pro)</span>}</span>
+        <span>{t.channels.push} {!entitlements.canUsePush && <span class="text-[var(--color-text-muted)]">{t.planTags.pro}</span>}</span>
       </label>
       <label class="checkbox-row mb-0">
         <input type="checkbox" name="channel_webhook" value="true" checked={settings.channelWebhook} disabled={!entitlements.canUseOutboundWebhook} data-channel-toggle="webhook" />
-        <span>{t.channels.outboundWebhook} {!entitlements.canUseOutboundWebhook && <span class="text-[var(--color-text-muted)]">(Pro)</span>}</span>
+        <span>{t.channels.outboundWebhook} {!entitlements.canUseOutboundWebhook && <span class="text-[var(--color-text-muted)]">{t.planTags.pro}</span>}</span>
       </label>
     </div>
 

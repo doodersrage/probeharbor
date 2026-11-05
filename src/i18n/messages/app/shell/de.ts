@@ -73,6 +73,7 @@ const de: ShellMessages = {
     label: { one: "unbearbeiteter Alarm.", other: "unbearbeitete Alarme." },
     review: "Ansehen",
     claimsPack: "Nachweispaket für die Versicherung herunterladen",
+    proTag: "(Pro)",
   },
   lowBattery: {
     deviceHealth: "Gerätezustand",

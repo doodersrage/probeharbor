@@ -281,6 +281,9 @@ const de: AlertSettingsMessages = {
     statusFailed: "Push-Status konnte nicht gelesen werden.",
     enableFailed: "Push konnte nicht aktiviert werden: {error}",
   },
+  planTags: {
+    pro: "(Pro)",
+  },
 };
 
 export default de;

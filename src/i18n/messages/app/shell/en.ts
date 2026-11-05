@@ -159,6 +159,8 @@ const en = {
     label: { one: "unhandled alert.", other: "unhandled alerts." },
     review: "Review",
     claimsPack: "Download claims evidence pack",
+    /** After the claims link for accounts without the claims pack (an upgrade hint). */
+    proTag: "(Pro)",
   },
   lowBattery: {
     deviceHealth: "Device health",

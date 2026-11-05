@@ -94,6 +94,8 @@ import {
   listAlertEventsInRange,
   listRecentAlertEvents,
   listRecentDeliveryAttempts,
+  hasUnhandledAlertOfKinds,
+  CLAIMS_PACK_ALERT_KINDS,
 } from "../lib/alertEvents";
 import { failingAlertChannels, summarizeChannelDelivery } from "../lib/channelDelivery";
 import ChannelFailingRow from "../components/dashboard/ChannelFailingRow.astro";
@@ -242,6 +244,11 @@ const roleFromShell =
 const evidencePromise = ensureAlertDeliveryEvidence(user.id, alertSettingsLoaded);
 // Same rows and rule as the per-channel status on Alerts → Settings.
 const deliveryAttemptsPromise = listRecentDeliveryAttempts(user.id, 100).catch(() => []);
+// The claims-pack link only makes sense next to an open freeze or leak alert.
+const claimsRelevantPromise =
+  unackedAlertCount > 0
+    ? hasUnhandledAlertOfKinds(user.id, CLAIMS_PACK_ALERT_KINDS).catch(() => false)
+    : Promise.resolve(false);
 const shellLatest = latestFromShell(shell, household.householdId);
 const [
   { settings: alertSettings, hasDelivery },
@@ -270,6 +277,7 @@ const [
 ]);
 
 const latest = latestResult.rows;
+const unackedClaimsRelevant = await claimsRelevantPromise;
 const failingChannels = failingAlertChannels(
   summarizeChannelDelivery(await deliveryAttemptsPromise),
   alertSettings,
@@ -988,7 +996,12 @@ const onboardingProps = {
 
     {/* One status card: what is happening, then alerts to handle and quick actions. */}
     <GarageRiskStatusCard status={garageRisk} coldestProbe={coldestProbeSummary} useCelsius={useCelsius}>
-      <UnackedAlertsBanner count={unackedAlertCount} embedded />
+      <UnackedAlertsBanner
+        count={unackedAlertCount}
+        embedded
+        claimsRelevant={unackedClaimsRelevant}
+        canUseClaimsPack={entitlements.canUseClaimsPack}
+      />
       {primaryBannerIds.has("channelFailing") && <ChannelFailingRow failing={failingChannels} canEdit={canEdit} />}
       {primaryBannerIds.has("stale") && staleSensorCount > 0 && garageRisk.reason !== "stale" && (
         <div class="garage-risk-row" role="status" data-stale-banner>

@@ -177,6 +177,23 @@ describe("undelivered safety alerts count as unhandled", () => {
     expect(db.table("alert_events").find((e) => e.id === 1)!.meta).toEqual({ autoResolved: "recovered" });
   });
 
+  it("finds an open freeze or leak alert for the claims-pack link, held ones included", async () => {
+    const { hasUnhandledAlertOfKinds, CLAIMS_PACK_ALERT_KINDS } = await import("./alertEvents");
+    seed([
+      { id: 1, kind: "rule", channels_sent: ["email"] },
+      { id: 2, kind: "power", channels_sent: ["email"] },
+    ]);
+    expect(await hasUnhandledAlertOfKinds("u1", CLAIMS_PACK_ALERT_KINDS)).toBe(false);
+    seed([{ id: 3, kind: "flood", channels_skipped: ["quiet_hours"] }]);
+    expect(await hasUnhandledAlertOfKinds("u1", CLAIMS_PACK_ALERT_KINDS)).toBe(true);
+  });
+
+  it("an acknowledged freeze alert doesn't make the claims-pack link relevant", async () => {
+    const { hasUnhandledAlertOfKinds, CLAIMS_PACK_ALERT_KINDS } = await import("./alertEvents");
+    seed([{ id: 1, kind: "threshold", channels_sent: ["email"], acknowledged_at: minutesAgo(1) }]);
+    expect(await hasUnhandledAlertOfKinds("u1", CLAIMS_PACK_ALERT_KINDS)).toBe(false);
+  });
+
   it("isUnhandledAlertEvent matches the count's rule", async () => {
     const { isUnhandledAlertEvent } = await import("./alertEvents");
     const ev = (kind: string, sent: string[], acked: string | null = null) => ({

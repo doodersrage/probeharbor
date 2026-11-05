@@ -7,9 +7,16 @@ interface Props {
   count: number;
   /** Inside the Overview status card: a plain row instead of a warning box. */
   embedded?: boolean;
+  /**
+   * An unhandled freeze or leak alert is open, the incidents the claims
+   * evidence pack documents. Without one the claims link is left out.
+   */
+  claimsRelevant?: boolean;
+  /** The plan includes the claims pack; otherwise the link carries a "(Pro)" upgrade hint. */
+  canUseClaimsPack?: boolean;
 }
 
-const { count, embedded = false } = Astro.props;
+const { count, embedded = false, claimsRelevant = false, canUseClaimsPack = false } = Astro.props;
 const locale = getLocale(Astro);
 const t = shellMessages(locale).unacked;
 ---
@@ -24,12 +31,18 @@ const t = shellMessages(locale).unacked;
   <strong data-overview-field="unackedCount">{count}</strong>
   <span data-unacked-label>{" "}{plural(t.label, count, locale)}</span>
   <a href="/dashboard/alerts?tab=activity" class="text-link ml-1">{t.review}</a>
-  <span data-unacked-claims class:list={[count <= 0 && "hidden"]}>
-    {" · "}
-    <a href="/dashboard/history?tab=exports#claims-pack" class="text-link">
-      {t.claimsPack}
-    </a>
-    {" "}
-    <span class="text-[var(--color-text-muted)]">(Pro)</span>
-  </span>
+  {claimsRelevant && (
+    <span data-unacked-claims class:list={[count <= 0 && "hidden"]}>
+      {" · "}
+      <a href="/dashboard/history?tab=exports#claims-pack" class="text-link">
+        {t.claimsPack}
+      </a>
+      {!canUseClaimsPack && (
+        <>
+          {" "}
+          <span class="text-[var(--color-text-muted)]">{t.proTag}</span>
+        </>
+      )}
+    </span>
+  )}
 </div>

@@ -73,6 +73,7 @@ const fr: ShellMessages = {
     label: { one: "alerte non traitée.", other: "alertes non traitées." },
     review: "Voir",
     claimsPack: "Télécharger le dossier de preuves pour sinistre",
+    proTag: "(Pro)",
   },
   lowBattery: {
     deviceHealth: "État des appareils",

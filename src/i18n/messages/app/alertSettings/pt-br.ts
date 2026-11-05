@@ -281,6 +281,9 @@ const ptBr: AlertSettingsMessages = {
     statusFailed: "Não foi possível ler o status do push.",
     enableFailed: "Não foi possível ativar o push: {error}",
   },
+  planTags: {
+    pro: "(Pro)",
+  },
 };
 
 export default ptBr;

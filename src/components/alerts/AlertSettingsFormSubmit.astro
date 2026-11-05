@@ -30,10 +30,17 @@ const channelLabels = Object.fromEntries(
   const submitBtn = document.getElementById("alert-settings-submit");
   const saveAndTestBtn = document.getElementById("alert-settings-submit-test");
 
+  /**
+   * A per-channel "Send test" that asked to save unsaved edits first: the
+   * submit handler tests just this channel once the save went through.
+   */
+  let pendingChannelTest: string | null = null;
+
   /** Send the test after a save and turn the result into the page's flash params. */
-  async function sendTestAfterSave(params: URLSearchParams) {
+  async function sendTestAfterSave(params: URLSearchParams, channel: string | null = null) {
+    const url = channel ? `/api/user/alert-test?channel=${encodeURIComponent(channel)}` : "/api/user/alert-test";
     try {
-      const res = await fetch("/api/user/alert-test", {
+      const res = await fetch(url, {
         method: "POST",
         headers: { Accept: "application/json" },
         credentials: "same-origin",
@@ -73,7 +80,10 @@ const channelLabels = Object.fromEntries(
     event.preventDefault();
     if (!(form instanceof HTMLFormElement)) return;
     const submitter = (event as SubmitEvent).submitter;
-    const alsoTest = submitter instanceof HTMLElement && submitter.dataset.alsoTest === "1";
+    const channelTest = pendingChannelTest;
+    pendingChannelTest = null;
+    const alsoTest =
+      channelTest !== null || (submitter instanceof HTMLElement && submitter.dataset.alsoTest === "1");
 
     const sync = (
       window as Window & { syncAlertSettingsFormFields?: () => void }
@@ -111,7 +121,7 @@ const channelLabels = Object.fromEntries(
     if (alsoTest) {
       if (submitBtn instanceof HTMLButtonElement) submitBtn.disabled = true;
       showStatus(text.sending);
-      await sendTestAfterSave(params);
+      await sendTestAfterSave(params, channelTest);
     }
     window.location.assign(`/dashboard/alerts?${params.toString()}`);
   });
@@ -154,10 +164,19 @@ const channelLabels = Object.fromEntries(
   });
 
   // Per-channel "Send test": uses saved settings, reports the result inline.
+  // With unsaved edits, offer to save first (like "Send test now"), then test
+  // this channel with the new settings; cancelling sends nothing.
   document.querySelectorAll<HTMLButtonElement>("[data-channel-test]").forEach((btn) => {
     btn.addEventListener("click", async () => {
       const channel = btn.dataset.channelTest;
       if (!channel) return;
+      if (form && isUnsaved(form)) {
+        if (!window.confirm(text.saveBeforeTest)) return;
+        pendingChannelTest = channel;
+        if (submitBtn instanceof HTMLButtonElement) form.requestSubmit(submitBtn);
+        else form.requestSubmit();
+        return;
+      }
       const out = document.querySelector<HTMLElement>(`[data-channel-test-result="${channel}"]`);
       const say = (message: string, state: "pending" | "ok" | "error") => {
         if (!out) return;
