@@ -139,9 +139,9 @@ const de: OverviewMessages = {
     sendTestAlert: "Testalarm senden",
     essential: {
       device: {
-        title: "Push-Gerät verbinden",
+        title: "Ersten Sensor verbinden",
         detail:
-          "Schritt 1 von 3: Erstelle eine Push-Ingest-URL für ESP/Arduino (oder öffne Geräte für Demo- und HA-Wege).",
+          "Schritt 1 von 3: Füge auf der Seite Geräte ein Gerät hinzu (ESP32-Flasher, Home Assistant oder ein Demo-Feed).",
       },
       alerts: {
         title: "Frostschwelle + E-Mail einstellen",
@@ -156,9 +156,9 @@ const de: OverviewMessages = {
     },
     kit: {
       firstPost: {
-        title: "Ersten POST prüfen",
+        title: "Erster Messwert empfangen",
         detail:
-          "Erstelle ein Push-Gerät, sende einmal JSON per POST und prüfe auf der Seite Geräte, ob die Sensoren automatisch importiert wurden.",
+          "Füge ein Gerät hinzu und lass es einen Messwert senden. Seine Sensoren erscheinen dann von selbst auf der Seite Geräte.",
       },
       rename: {
         title: "Importierte Sensoren umbenennen",

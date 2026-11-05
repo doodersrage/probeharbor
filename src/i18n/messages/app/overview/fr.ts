@@ -139,9 +139,9 @@ const fr: OverviewMessages = {
     sendTestAlert: "Envoyer une alerte de test",
     essential: {
       device: {
-        title: "Connecter un appareil push",
+        title: "Connecter votre premier capteur",
         detail:
-          "Étape 1 sur 3 : créez une URL d’ingestion push pour ESP/Arduino (ou ouvrez Appareils pour les options démo/HA).",
+          "Étape 1 sur 3 : ajoutez un appareil sur la page Appareils (flasheur ESP32, Home Assistant ou flux de démo).",
       },
       alerts: {
         title: "Régler le seuil de gel + l’e-mail",
@@ -156,9 +156,9 @@ const fr: OverviewMessages = {
     },
     kit: {
       firstPost: {
-        title: "Vérifier le premier POST",
+        title: "Première mesure reçue",
         detail:
-          "Créez un appareil push, envoyez une fois du JSON en POST et vérifiez que les capteurs sont importés automatiquement sur la page Appareils.",
+          "Ajoutez un appareil et laissez-le envoyer une mesure. Ses capteurs apparaissent d’eux-mêmes sur la page Appareils.",
       },
       rename: {
         title: "Renommer les capteurs importés",

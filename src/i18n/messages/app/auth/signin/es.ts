@@ -8,7 +8,7 @@ const es: AuthSigninMessages = {
     heading: "Iniciar sesión",
     lede: "Continúa donde lo dejaste: tus preferencias, feeds y lecturas guardadas están en tu panel.",
     registeredHtml:
-      "Cuenta creada. Revisa tu correo para confirmarla y luego inicia sesión. Siguiente paso después de iniciar sesión: <strong>Dispositivos</strong>: crea una clave de envío y haz POST de tu primera lectura.",
+      "Cuenta creada. Revisa tu correo para confirmarla y luego inicia sesión. Siguiente paso después de iniciar sesión: <strong>Dispositivos</strong>: conecta tu primer sensor y espera su primera lectura.",
     confirmedHtml:
       "Correo confirmado. Inicia sesión para terminar la configuración: la siguiente parada es <strong>Dispositivos</strong>, donde conectas tu primer sensor.",
     signedOutAll: "Sesión cerrada en todos los dispositivos. Vuelve a iniciar sesión aquí cuando quieras.",

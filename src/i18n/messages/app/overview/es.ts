@@ -139,9 +139,9 @@ const es: OverviewMessages = {
     sendTestAlert: "Enviar alerta de prueba",
     essential: {
       device: {
-        title: "Conecta un dispositivo push",
+        title: "Conecta tu primer sensor",
         detail:
-          "Paso 1 de 3: crea una URL de ingesta push para ESP/Arduino (o abre Dispositivos para las opciones de demostración/HA).",
+          "Paso 1 de 3: añade un dispositivo en la página Dispositivos (flasheador ESP32, Home Assistant o un feed de demostración).",
       },
       alerts: {
         title: "Configura el umbral de congelación + correo",
@@ -156,9 +156,9 @@ const es: OverviewMessages = {
     },
     kit: {
       firstPost: {
-        title: "Verifica el primer POST",
+        title: "Primera lectura recibida",
         detail:
-          "Crea un dispositivo push, envía JSON por POST una vez y confirma que los sensores se importan automáticamente en la página Dispositivos.",
+          "Añade un dispositivo y deja que envíe una lectura. Sus sensores aparecen solos en la página Dispositivos.",
       },
       rename: {
         title: "Renombra los sensores importados",

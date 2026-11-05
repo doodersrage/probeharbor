@@ -8,7 +8,7 @@ const ptBr: AuthSigninMessages = {
     heading: "Entrar",
     lede: "Continue de onde parou: suas preferências, feeds e leituras salvas estão no seu painel.",
     registeredHtml:
-      "Conta criada. Confira seu e-mail para confirmar e depois entre. Próximo passo depois de entrar: <strong>Dispositivos</strong>: crie uma chave de envio e faça o POST da sua primeira leitura.",
+      "Conta criada. Confira seu e-mail para confirmar e depois entre. Próximo passo depois de entrar: <strong>Dispositivos</strong>: conecte seu primeiro sensor e aguarde a primeira leitura.",
     confirmedHtml:
       "E-mail confirmado. Entre para concluir a configuração: a próxima parada é <strong>Dispositivos</strong>, onde você conecta seu primeiro sensor.",
     signedOutAll: "Você saiu em todos os dispositivos. Entre novamente aqui quando quiser.",

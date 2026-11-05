@@ -141,8 +141,8 @@ const en = {
     sendTestAlert: "Send test alert",
     essential: {
       device: {
-        title: "Connect a push device",
-        detail: "Step 1 of 3: create a push ingest URL for ESP/Arduino (or open Devices for demo/HA paths).",
+        title: "Connect your first sensor",
+        detail: "Step 1 of 3: add a device on the Devices page (ESP32 flasher, Home Assistant, or a demo feed).",
       },
       alerts: {
         title: "Set freeze °F + email",
@@ -155,8 +155,8 @@ const en = {
     },
     kit: {
       firstPost: {
-        title: "Verify first POST",
-        detail: "Create a push device, POST JSON once, and confirm sensors auto-import on the Devices page.",
+        title: "First reading received",
+        detail: "Add a device and let it send one reading. Its sensors show up on the Devices page on their own.",
       },
       rename: {
         title: "Rename imported sensors",

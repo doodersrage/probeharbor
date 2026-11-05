@@ -8,7 +8,7 @@ const de: AuthSigninMessages = {
     heading: "Anmelden",
     lede: "Mach da weiter, wo du aufgehört hast: Einstellungen, Feeds und gespeicherte Messwerte findest du in deinem Dashboard.",
     registeredHtml:
-      "Konto erstellt. Bestätige es über die E-Mail, die wir dir geschickt haben, und melde dich dann an. Nächster Schritt nach der Anmeldung: <strong>Geräte</strong>: Erstelle einen Push-Schlüssel und sende (POST) deinen ersten Messwert.",
+      "Konto erstellt. Bestätige es über die E-Mail, die wir dir geschickt haben, und melde dich dann an. Nächster Schritt nach der Anmeldung: <strong>Geräte</strong>: Verbinde deinen ersten Sensor und warte auf seinen ersten Messwert.",
     confirmedHtml:
       "E-Mail bestätigt. Melde dich an, um die Einrichtung abzuschließen: Als Nächstes geht es zu <strong>Geräte</strong>, wo du deinen ersten Sensor verbindest.",
     signedOutAll: "Auf allen Geräten abgemeldet. Melde dich hier wieder an, wenn du so weit bist.",

@@ -9,7 +9,7 @@ const en = {
     heading: "Sign in",
     lede: "Pick up where you left off: preferences, feeds, and saved readings are in your dashboard.",
     registeredHtml:
-      "Account created. Check your email to confirm, then sign in. Next step after sign-in: <strong>Devices</strong>: create a push key and POST your first reading.",
+      "Account created. Check your email to confirm, then sign in. Next step after sign-in: <strong>Devices</strong>: connect your first sensor and wait for its first reading.",
     confirmedHtml:
       "Email confirmed. Sign in to finish setup: next stop is <strong>Devices</strong>, where you connect your first sensor.",
     signedOutAll: "Signed out on every device. Sign in again here when you're ready.",

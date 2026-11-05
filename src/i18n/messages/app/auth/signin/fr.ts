@@ -8,7 +8,7 @@ const fr: AuthSigninMessages = {
     heading: "Connexion",
     lede: "Reprenez là où vous vous étiez arrêté : vos préférences, flux et mesures enregistrées vous attendent dans votre tableau de bord.",
     registeredHtml:
-      "Compte créé. Consultez vos e-mails pour le confirmer, puis connectez-vous. Étape suivante après la connexion : <strong>Appareils</strong> : créez une clé d’envoi et envoyez (POST) votre première mesure.",
+      "Compte créé. Consultez vos e-mails pour le confirmer, puis connectez-vous. Étape suivante après la connexion : <strong>Appareils</strong> : connectez votre premier capteur et attendez sa première mesure.",
     confirmedHtml:
       "Adresse e-mail confirmée. Connectez-vous pour terminer la configuration : prochaine étape, <strong>Appareils</strong>, où vous connectez votre premier capteur.",
     signedOutAll: "Déconnecté sur tous les appareils. Reconnectez-vous ici quand vous le souhaitez.",
