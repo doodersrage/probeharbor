@@ -17,6 +17,9 @@ export const FREEZE_HOURS_CHART_TEXT_EN = {
   belowFreeze: "Below freeze",
   coldest: "Coldest",
   hoursValue: "{hours} h",
+  /** Screen-reader summary on the chart (canvas aria-label). */
+  summaryNone: "Days shown: {days}. No time at or below {temp}{unit}.",
+  summarySome: "Days shown: {days}. Days with time at or below {temp}{unit}: {belowDays}. Most: {hours} h on {day}.",
 };
 
 export type FreezeHoursChartText = typeof FREEZE_HOURS_CHART_TEXT_EN;
@@ -58,6 +61,28 @@ function dayLabel(day: DailyFreezeHours, locale?: string): string {
   return new Date(y, m - 1, d).toLocaleDateString(locale, { month: "short", day: "numeric" });
 }
 
+/** Short data summary for the canvas label, like the other History charts. */
+export function freezeHoursSummary(
+  days: DailyFreezeHours[],
+  text: Pick<FreezeHoursChartText, "summaryNone" | "summarySome">,
+  format: { temp: string; unit: string; hours: (h: number) => string; day: (d: DailyFreezeHours) => string },
+): string {
+  if (days.length === 0) return "";
+  const below = days.filter((d) => d.hoursBelow > 0);
+  if (below.length === 0) {
+    return fill(text.summaryNone, { days: days.length, temp: format.temp, unit: format.unit });
+  }
+  const worst = below.reduce((a, b) => (b.hoursBelow > a.hoursBelow ? b : a));
+  return fill(text.summarySome, {
+    days: days.length,
+    belowDays: below.length,
+    temp: format.temp,
+    unit: format.unit,
+    hours: format.hours(worst.hoursBelow),
+    day: format.day(worst),
+  });
+}
+
 export default function FreezeHoursChart({
   days,
   thresholdF = 34,
@@ -73,6 +98,17 @@ export default function FreezeHoursChart({
     [textProp],
   );
   const title = titleProp ?? text.title;
+  const thresholdLabel = useCelsius
+    ? fixed(shown(thresholdF), 1, locale)
+    : isEnglishLocale(locale)
+      ? String(thresholdF)
+      : new Intl.NumberFormat(locale, { maximumFractionDigits: 2, useGrouping: false }).format(thresholdF);
+  const summaryText = freezeHoursSummary(days, text, {
+    temp: thresholdLabel,
+    unit,
+    hours: (h) => fixed(h, 1, locale),
+    day: (d) => dayLabel(d, locale),
+  });
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
@@ -236,7 +272,7 @@ export default function FreezeHoursChart({
           </div>
         </div>
         <p class="m-0 mb-2 text-xs text-[var(--color-text-muted)]">
-          {fill(text.hint, { unit, temp: useCelsius ? fixed(shown(thresholdF), 1, locale) : isEnglishLocale(locale) ? thresholdF : new Intl.NumberFormat(locale, { maximumFractionDigits: 2, useGrouping: false }).format(thresholdF) })}
+          {fill(text.hint, { unit, temp: thresholdLabel })}
         </p>
         <div
           class="history-chart-canvas-wrap"
@@ -249,7 +285,7 @@ export default function FreezeHoursChart({
             ref={canvasRef}
             class="w-full history-chart-canvas history-chart-canvas--bars"
             role="img"
-            aria-label={title}
+            aria-label={summaryText ? `${title}. ${summaryText}` : title}
             onPointerMove={(e) => {
               const i = indexFromClientX(e.clientX);
               setHoverIndex(i);

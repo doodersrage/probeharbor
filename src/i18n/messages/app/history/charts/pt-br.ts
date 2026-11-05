@@ -99,6 +99,8 @@ const ptBr: AppHistoryChartsMessages = {
     belowFreeze: "Abaixo do congelamento",
     coldest: "Mínima",
     hoursValue: "{hours} h",
+    summaryNone: "Dias exibidos: {days}. Nenhum tempo a {temp}{unit} ou menos.",
+    summarySome: "Dias exibidos: {days}. Dias com tempo a {temp}{unit} ou menos: {belowDays}. Máximo: {hours} h em {day}.",
   },
   probeSpread: {
     summary: "Diferença mais recente entre a sonda mais quente e a mais fria: {spread} {unit} ({min} {unit} a {max} {unit}). Maior diferença neste período: {widest} {unit}, em {time}.",

@@ -3796,6 +3796,13 @@
     margin-left: auto;
   }
 
+  .dashboard-nav-dot--mobile {
+    position: absolute;
+    top: 0.35rem;
+    right: 0.6rem;
+    margin-left: 0;
+  }
+
   .dashboard-nav-link--warn {
     color: var(--color-warning-text);
   }

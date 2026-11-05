@@ -99,6 +99,8 @@ const de: AppHistoryChartsMessages = {
     belowFreeze: "Unter Frost",
     coldest: "Tiefstwert",
     hoursValue: "{hours} Std.",
+    summaryNone: "Angezeigte Tage: {days}. Keine Zeit bei oder unter {temp}{unit}.",
+    summarySome: "Angezeigte Tage: {days}. Tage mit Zeit bei oder unter {temp}{unit}: {belowDays}. Am meisten: {hours} Std. am {day}.",
   },
   probeSpread: {
     summary: "Zuletzt lag der Abstand zwischen wärmstem und kältestem Fühler bei {spread} {unit} ({min} {unit} bis {max} {unit}). Größter Abstand in diesem Zeitraum: {widest} {unit}, um {time}.",

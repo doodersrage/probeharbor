@@ -143,6 +143,7 @@ const ptBr: OverviewInsightsMessages = {
     expand: "Ampliar",
     close: "Fechar",
     closeExpanded: "Fechar gráfico ampliado",
+    summaryItem: "{label}: agora {value}{unit}, mínimo {min}{unit}",
   },
   duration: {
     seconds: "{count} s",

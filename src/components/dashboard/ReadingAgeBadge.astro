@@ -23,6 +23,7 @@ const {
   quietWhenFresh = false,
 } = Astro.props;
 const age = formatRelativeAge(iso, emptyLabel, locale);
+const ageText = shellMessages(locale).readingAge;
 const absoluteTitle = iso
   ? locale === "en"
     ? new Date(iso).toLocaleString()
@@ -38,6 +39,8 @@ const tone =
         : quietWhenFresh
           ? "neutral"
           : "ok";
+// Say it in words too: stale vs late shouldn't depend on telling red from amber.
+const stateLabel = !iso ? null : age.stale ? ageText.stale : age.lagging ? ageText.lagging : null;
 ---
 
 <span
@@ -50,6 +53,8 @@ const tone =
   data-iso={iso || undefined}
   data-quiet-fresh={quietWhenFresh ? "" : undefined}
 >
+  {/* Flex item: a plain trailing space would be dropped. */}
+  {stateLabel && <span class="reading-age-badge-state">{`${stateLabel} ·\u00a0`}</span>}
   {age.label}
 </span>
 

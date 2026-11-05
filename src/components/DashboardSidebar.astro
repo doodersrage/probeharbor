@@ -192,12 +192,13 @@ const mobileMonitor = mobileMonitorHrefs(showPortfolioInMonitor)
                   <Icon class="dashboard-nav-icon" size={16} aria-hidden="true" />
                   <span class="dashboard-nav-label">{label}</span>
                   {typeof badge === "number" && badge > 0 && (
-                    <span class="dashboard-nav-badge" aria-label={fmt(t.sidebar.unhandledBadge, { count: badge })}>
-                      {badge > 99 ? "99+" : badge}
+                    <span class="dashboard-nav-badge">
+                      <span aria-hidden="true">{badge > 99 ? "99+" : badge}</span>
+                      <span class="sr-only">{fmt(t.sidebar.unhandledBadge, { count: badge })}</span>
                     </span>
                   )}
                   {warn && !badge && (
-                    <span class="dashboard-nav-dot" aria-label={t.sidebar.laggingProbes}></span>
+                    <span class="dashboard-nav-dot" role="img" aria-label={t.sidebar.laggingProbes}></span>
                   )}
                 </a>
               </li>
@@ -249,7 +250,14 @@ const mobileMonitor = mobileMonitorHrefs(showPortfolioInMonitor)
       <Icon class="dashboard-mobile-monitor-icon" size={18} aria-hidden="true" />
       <span>{label}</span>
       {typeof badge === "number" && badge > 0 && (
-        <span class="dashboard-nav-badge dashboard-nav-badge--mobile">{badge > 99 ? "99+" : badge}</span>
+        <span class="dashboard-nav-badge dashboard-nav-badge--mobile">
+          <span aria-hidden="true">{badge > 99 ? "99+" : badge}</span>
+          <span class="sr-only">{fmt(t.sidebar.unhandledBadge, { count: badge })}</span>
+        </span>
+      )}
+      {/* Not colour alone: a dot, and its name for screen readers. */}
+      {warn && !badge && (
+        <span class="dashboard-nav-dot dashboard-nav-dot--mobile" role="img" aria-label={t.sidebar.laggingProbes}></span>
       )}
     </a>
   ))}

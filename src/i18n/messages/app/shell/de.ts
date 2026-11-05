@@ -61,6 +61,8 @@ const de: ShellMessages = {
   },
   readingAge: {
     never: "Nie",
+    stale: "Veraltet",
+    lagging: "Verspätet",
   },
   unacked: {
     label: { one: "unbearbeiteter Alarm.", other: "unbearbeitete Alarme." },

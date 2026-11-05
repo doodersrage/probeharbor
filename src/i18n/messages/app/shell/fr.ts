@@ -61,6 +61,8 @@ const fr: ShellMessages = {
   },
   readingAge: {
     never: "Jamais",
+    stale: "Périmé",
+    lagging: "En retard",
   },
   unacked: {
     label: { one: "alerte non traitée.", other: "alertes non traitées." },

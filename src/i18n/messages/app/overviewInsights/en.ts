@@ -145,6 +145,7 @@ const en = {
     expand: "Expand",
     close: "Close",
     closeExpanded: "Close expanded chart",
+    summaryItem: "{label}: now {value}{unit}, lowest {min}{unit}",
   },
   /** formatDurationMs in src/lib/doorDuration.ts */
   duration: {

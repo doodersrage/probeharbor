@@ -61,6 +61,8 @@ const es: ShellMessages = {
   },
   readingAge: {
     never: "Nunca",
+    stale: "Obsoleta",
+    lagging: "Con retraso",
   },
   unacked: {
     label: { one: "alerta sin atender.", other: "alertas sin atender." },

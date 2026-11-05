@@ -143,6 +143,7 @@ const es: OverviewInsightsMessages = {
     expand: "Ampliar",
     close: "Cerrar",
     closeExpanded: "Cerrar gráfico ampliado",
+    summaryItem: "{label}: ahora {value}{unit}, mínimo {min}{unit}",
   },
   duration: {
     seconds: "{count} s",

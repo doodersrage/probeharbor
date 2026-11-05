@@ -99,6 +99,8 @@ const fr: AppHistoryChartsMessages = {
     belowFreeze: "Sous le seuil de gel",
     coldest: "Minimum",
     hoursValue: "{hours} h",
+    summaryNone: "Jours affichés : {days}. Aucun temps à {temp}{unit} ou moins.",
+    summarySome: "Jours affichés : {days}. Jours avec du temps à {temp}{unit} ou moins : {belowDays}. Maximum : {hours} h le {day}.",
   },
   probeSpread: {
     summary: "Dernier écart entre la sonde la plus chaude et la plus froide : {spread} {unit} ({min} {unit} à {max} {unit}). Plus grand écart sur cette période : {widest} {unit}, à {time}.",

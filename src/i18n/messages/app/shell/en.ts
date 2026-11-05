@@ -144,6 +144,9 @@ const en = {
   },
   readingAge: {
     never: "Never",
+    /** Badge prefix so freshness is not colour-only. */
+    stale: "Stale",
+    lagging: "Late",
   },
   unacked: {
     /** Follows the bold count: "3 unhandled alerts." */

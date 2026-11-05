@@ -99,6 +99,8 @@ const es: AppHistoryChartsMessages = {
     belowFreeze: "Bajo congelación",
     coldest: "Mínima",
     hoursValue: "{hours} h",
+    summaryNone: "Días mostrados: {days}. Ningún tiempo a {temp}{unit} o menos.",
+    summarySome: "Días mostrados: {days}. Días con tiempo a {temp}{unit} o menos: {belowDays}. Máximo: {hours} h el {day}.",
   },
   probeSpread: {
     summary: "Última diferencia entre la sonda más cálida y la más fría: {spread} {unit} ({min} {unit} a {max} {unit}). Mayor diferencia en este periodo: {widest} {unit}, a las {time}.",

@@ -593,7 +593,7 @@ export default function LiveTempsPanel({
       )}
 
       {error && (
-        <div class="alert-warning mb-4">
+        <div class="alert-warning mb-4" role="alert">
           <p class="m-0">{error}</p>
           <button type="button" class="btn-secondary mt-3" onClick={() => void loadReadings()}>
             {text.retryNow}

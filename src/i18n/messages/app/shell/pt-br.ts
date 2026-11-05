@@ -61,6 +61,8 @@ const ptBr: ShellMessages = {
   },
   readingAge: {
     never: "Nunca",
+    stale: "Desatualizada",
+    lagging: "Atrasada",
   },
   unacked: {
     label: { one: "alerta sem tratamento.", other: "alertas sem tratamento." },

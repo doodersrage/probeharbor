@@ -143,6 +143,7 @@ const de: OverviewInsightsMessages = {
     expand: "Vergrößern",
     close: "Schließen",
     closeExpanded: "Vergrößertes Diagramm schließen",
+    summaryItem: "{label}: jetzt {value}{unit}, niedrigster Wert {min}{unit}",
   },
   duration: {
     seconds: "{count} Sek.",

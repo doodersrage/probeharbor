@@ -17,7 +17,25 @@ export type BatteryTrendChartText = {
   expand?: string;
   close?: string;
   closeExpanded?: string;
+  /** Per-series screen-reader summary: {label}, {value}, {min}, {unit}. */
+  summaryItem?: string;
 };
+
+/** "Garage: now 82%, lowest 80%; Attic: …" for the canvas label. */
+export function metaTrendSummary(series: MetaTrendSeries[], template: string, unit: string): string {
+  return series
+    .filter((s) => s.samples.length > 0)
+    .map((s) => {
+      const latest = s.samples.reduce((a, b) => (Date.parse(b.at) > Date.parse(a.at) ? b : a));
+      const min = Math.min(...s.samples.map((sample) => sample.value));
+      return template
+        .replace("{label}", () => s.label)
+        .replace("{value}", latest.value.toFixed(0))
+        .replace("{min}", min.toFixed(0))
+        .replace(/\{unit\}/g, unit);
+    })
+    .join("; ");
+}
 
 export type MetaTrendSample = { value: number; at: string };
 
@@ -59,6 +77,7 @@ export default function BatteryTrendChart({
   const expandLabel = text?.expand ?? en.chart.expand;
   const closeLabel = text?.close ?? en.chart.close;
   const closeExpandedLabel = text?.closeExpanded ?? en.chart.closeExpanded;
+  const summaryTemplate = text?.summaryItem ?? en.chart.summaryItem;
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const plotBoundsRef = useRef<PlotBounds | null>(null);
@@ -224,6 +243,8 @@ export default function BatteryTrendChart({
     return () => ro.disconnect();
   }, [usable, domain, hover, expanded, unitSuffix, valuePad, intl]);
 
+  const summaryText = metaTrendSummary(usable, summaryTemplate, unitSuffix);
+
   if (usable.length === 0) return null;
 
   return (
@@ -291,7 +312,7 @@ export default function BatteryTrendChart({
             ref={canvasRef}
             class={`w-full history-chart-canvas ${canvasClassName}`}
             role="img"
-            aria-label={title}
+            aria-label={summaryText ? `${title}. ${summaryText}` : title}
             onPointerMove={(e) => {
               const bounds = plotBoundsRef.current;
               const canvas = canvasRef.current;
