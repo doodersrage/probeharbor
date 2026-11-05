@@ -651,11 +651,18 @@
     background: #0b0f16;
   }
 
+  /* Below 960px the grid is one column: headline and "Start free" come first,
+     the (small, hard to read on a phone) dashboard image follows. */
   @media (max-width: 959px) {
     .home-hero-visual {
-      order: -1;
       max-width: 28rem;
       margin-inline: auto;
+    }
+  }
+
+  @media (max-width: 639px) {
+    .home-hero-visual-caption {
+      display: none;
     }
   }
 
