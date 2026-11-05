@@ -10,6 +10,8 @@ interface Props {
   alertSaved?: boolean;
   testSent?: boolean;
   testError?: boolean;
+  /** /api/user/alert-essentials could not save (?alert_error=1). */
+  saveError?: boolean;
 }
 
 const {
@@ -19,9 +21,12 @@ const {
   alertSaved = false,
   testSent = false,
   testError = false,
+  saveError = false,
 } = Astro.props;
 
-const redirectTo = "/dashboard/devices";
+// view=setup: once a device reports, bare /dashboard/devices opens the Devices
+// (ops) view, which doesn't render this card, so its saved/failed notes were lost.
+const redirectTo = "/dashboard/devices?view=setup";
 const t = devicesSetupMessages(getLocale(Astro)).firstAlert;
 ---
 
@@ -36,6 +41,11 @@ const t = devicesSetupMessages(getLocale(Astro)).firstAlert;
         {testSent
           ? t.savedAndTested
           : t.saved}
+      </p>
+    )}
+    {saveError && (
+      <p class="alert-warning mt-0 mb-4" role="alert">
+        {t.saveFailed}
       </p>
     )}
     {testError && (

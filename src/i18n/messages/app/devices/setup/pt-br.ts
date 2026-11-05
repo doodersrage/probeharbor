@@ -53,6 +53,8 @@ const ptBr: DevicesSetupMessages = {
       "Um limite e um e-mail, sem sair de Dispositivos. Contatos de alagamento/vazamento molhados disparam alerta automaticamente assim que os alertas estão ativados (e ignoram o adiamento e o modo férias). Adicione Telegram, Discord e outros depois.",
     savedAndTested: "Alerta de frio + água salvo e teste enviado, confira sua caixa de entrada.",
     saved: "Alerta de frio + água salvo.",
+    /** ?alert_error=1 from /api/user/alert-essentials. */
+    saveFailed: "Não foi possível salvar as configurações de alerta. Tente novamente.",
     testFailed:
       "Configurações salvas, mas não foi possível entregar o teste. Confirme o endereço de e-mail ou tente de novo em Alertas.",
     freezeLabel: "Limite de congelamento (°F)",

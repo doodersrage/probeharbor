@@ -53,6 +53,8 @@ const fr: DevicesSetupMessages = {
       "Un seuil et un e-mail, sans quitter Appareils. Les contacts d’inondation/fuite mouillés déclenchent une alerte automatique dès que les alertes sont activées (et ignorent la mise en pause et le mode vacances). Ajoutez Telegram, Discord et d’autres canaux plus tard.",
     savedAndTested: "Alerte froid + eau enregistrée et test envoyé, vérifiez votre boîte de réception.",
     saved: "Alerte froid + eau enregistrée.",
+    /** ?alert_error=1 from /api/user/alert-essentials. */
+    saveFailed: "Impossible d’enregistrer les paramètres d’alerte. Veuillez réessayer.",
     testFailed:
       "Paramètres enregistrés, mais le test n’a pas pu être envoyé. Vérifiez l’adresse e-mail ou réessayez depuis Alertes.",
     freezeLabel: "Seuil de gel (°F)",

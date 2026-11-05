@@ -233,6 +233,7 @@ const demoPullStarted = Astro.url.searchParams.get("demo_pull") === "1";
 const alertSaved = Astro.url.searchParams.get("alert_saved") === "1";
 const testSent = Astro.url.searchParams.get("test_sent") === "1";
 const testError = Astro.url.searchParams.get("test_error") === "1";
+const alertError = Astro.url.searchParams.has("alert_error");
 const analyticsEvents = [
   ...(ingestOk ? [{ name: "first_ingest" as const }] : []),
   ...(deviceCreated ? [{ name: "device_created" as const }] : []),
@@ -315,7 +316,7 @@ const postSetupFunnel = ingestOk && canEdit;
 const showFirstAlertSetup =
   canEdit &&
   (ingestOk || hasLiveIngest) &&
-  (!alertsEssentialsDone || alertSaved || testError);
+  (!alertsEssentialsDone || alertSaved || testError || alertError);
 const showPowerFeatures = hasLiveIngest || showAllDevices;
 const firmwareSensors =
   waitingSensors.length > 0
@@ -409,6 +410,7 @@ const redirectTo =
       alertSaved={alertSaved}
       testSent={testSent}
       testError={testError}
+      saveError={alertError}
     />
     )}
 
@@ -980,6 +982,7 @@ const redirectTo =
     "alert_saved",
     "test_sent",
     "test_error",
+    "alert_error",
   ];
   const url = new URL(window.location.href);
   let changed = false;

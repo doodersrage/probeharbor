@@ -56,6 +56,8 @@ const en = {
       "One threshold and an email, no need to leave Devices. Wet flood/leak contacts auto-alert once alerts are on (and bypass snooze/vacation). Add Telegram, Discord, and more later.",
     savedAndTested: "Cold + water alert saved and test sent, check your inbox.",
     saved: "Cold + water alert saved.",
+    /** ?alert_error=1 from /api/user/alert-essentials. */
+    saveFailed: "Could not save alert settings. Please try again.",
     testFailed:
       "Settings saved, but the test could not be delivered. Confirm the email address or try again from Alerts.",
     freezeLabel: "Freeze threshold (°F)",

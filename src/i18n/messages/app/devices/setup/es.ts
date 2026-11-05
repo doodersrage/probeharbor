@@ -53,6 +53,8 @@ const es: DevicesSetupMessages = {
       "Un umbral y un email, sin salir de Dispositivos. Los contactos de inundación/fuga mojados alertan automáticamente en cuanto las alertas están activadas (y se saltan la pausa y el modo vacaciones). Añade Telegram, Discord y más después.",
     savedAndTested: "Alerta de frío + agua guardada y prueba enviada, revisa tu bandeja de entrada.",
     saved: "Alerta de frío + agua guardada.",
+    /** ?alert_error=1 from /api/user/alert-essentials. */
+    saveFailed: "No se pudieron guardar los ajustes de alertas. Inténtalo de nuevo.",
     testFailed:
       "Ajustes guardados, pero no se pudo entregar la prueba. Confirma la dirección de email o inténtalo de nuevo desde Alertas.",
     freezeLabel: "Umbral de congelación (°F)",

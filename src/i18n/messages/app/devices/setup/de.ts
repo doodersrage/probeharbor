@@ -53,6 +53,8 @@ const de: DevicesSetupMessages = {
       "Ein Schwellenwert und eine E-Mail, ohne Geräte zu verlassen. Nasse Überflutungs-/Leckkontakte alarmieren automatisch, sobald Alarme aktiv sind (auch während Pausen und Urlaubsmodus). Telegram, Discord und mehr kannst du später hinzufügen.",
     savedAndTested: "Kälte- + Wasseralarm gespeichert und Test gesendet, schau in dein Postfach.",
     saved: "Kälte- + Wasseralarm gespeichert.",
+    /** ?alert_error=1 from /api/user/alert-essentials. */
+    saveFailed: "Alarmeinstellungen konnten nicht gespeichert werden. Bitte versuche es erneut.",
     testFailed:
       "Einstellungen gespeichert, aber der Test konnte nicht zugestellt werden. Prüfe die E-Mail-Adresse oder versuch es unter Alarme noch einmal.",
     freezeLabel: "Frost-Schwellenwert (°F)",
