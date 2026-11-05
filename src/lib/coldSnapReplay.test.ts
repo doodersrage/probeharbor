@@ -49,4 +49,16 @@ describe("buildColdSnapReplay", () => {
     const replay = buildColdSnapReplay([pt(0, 30), pt(1, 40), pt(10, 31), pt(11, 40)], 32)!;
     expect(replay.startAt).toBe(at(10));
   });
+
+  it("words the steps in °C when asked, keeping the numbers in °F", () => {
+    const points = [pt(0, 36), pt(1, 31.5), pt(2, 30), pt(3, 34)];
+    const f = buildColdSnapReplay(points, 32)!;
+    expect(f.steps[0]!.text).toBe("Garage pipe reached 31.5°F, at or below the 32°F line.");
+    expect(f.steps.at(-1)!.text).toBe("Back above 32°F.");
+    const c = buildColdSnapReplay(points, 32, [], "en", true)!;
+    expect(c.lowestF).toBe(30);
+    expect(c.steps[0]!.text).toBe("Garage pipe reached -0.3°C, at or below the 0°C line.");
+    expect(c.steps[1]!.text).toBe("Lowest: -1.1°C.");
+    expect(c.steps.at(-1)!.text).toBe("Back above 0°C.");
+  });
 });

@@ -16,9 +16,9 @@ const ptBr: LibTextMessages = {
     outdoorEstimateAt: "{detail} (estimativa externa em {location}).",
   },
   coldSnap: {
-    reached: "{probe} chegou a {temp} °F, no limite de {threshold} °F ou abaixo dele.",
-    lowest: "Mínima: {temp} °F.",
-    backAbove: "De volta acima de {threshold} °F.",
+    reached: "{probe} chegou a {temp} {unit}, no limite de {threshold} {unit} ou abaixo dele.",
+    lowest: "Mínima: {temp} {unit}.",
+    backAbove: "De volta acima de {threshold} {unit}.",
     alertSent: "Alerta enviado: {title} ({channels}).",
     allClearSent: "Aviso de normalização enviado: {title} ({channels}).",
     notDelivered: "Alerta não entregue: {title}.",

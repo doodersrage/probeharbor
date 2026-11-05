@@ -2,6 +2,7 @@ import type { AlertEventRow } from "./alertEvents";
 import type { ChartPoint } from "./garageTempsHistory";
 import { fmt, type Locale } from "../i18n";
 import { libFixed, libNumber, libTextMessages } from "../i18n/messages/app/libText";
+import { displayTempInputValue, tempUnitLabel, toDisplayTemp } from "./temperatureFormat";
 
 export type ColdSnapStep = { at: string; text: string; tone: "cold" | "alert" | "ok" | "info" };
 
@@ -41,9 +42,13 @@ export function buildColdSnapReplay(
   thresholdF: number,
   alertEvents: AlertEventRow[] = [],
   locale: Locale = "en",
+  /** Word the steps in °C (the History display preference). Numbers returned stay °F. */
+  useCelsius = false,
 ): ColdSnapReplay | null {
   const t = libTextMessages(locale).coldSnap;
-  const threshold = libNumber(thresholdF, locale);
+  const unit = tempUnitLabel(useCelsius);
+  const threshold = libNumber(displayTempInputValue(thresholdF, useCelsius), locale);
+  const temp = (tempF: number) => libFixed(toDisplayTemp(tempF, useCelsius), 1, locale);
   const bySeries = new Map<string, ChartPoint[]>();
   for (const point of points) {
     if (!Number.isFinite(point.tempf) || !Number.isFinite(Date.parse(point.timestamp))) continue;
@@ -91,13 +96,13 @@ export function buildColdSnapReplay(
   const steps: ColdSnapStep[] = [
     {
       at: startAt,
-      text: fmt(t.reached, { probe: latest.label, temp: libFixed(latest.points[0]!.tempf, 1, locale), threshold }),
+      text: fmt(t.reached, { probe: latest.label, temp: temp(latest.points[0]!.tempf), threshold, unit }),
       tone: "cold",
     },
-    { at: lowest.timestamp, text: fmt(t.lowest, { temp: libFixed(lowest.tempf, 1, locale) }), tone: "cold" },
+    { at: lowest.timestamp, text: fmt(t.lowest, { temp: temp(lowest.tempf), unit }), tone: "cold" },
   ];
   if (latest.endAt) {
-    steps.push({ at: latest.endAt, text: fmt(t.backAbove, { threshold }), tone: "ok" });
+    steps.push({ at: latest.endAt, text: fmt(t.backAbove, { threshold, unit }), tone: "ok" });
   }
 
   for (const event of alertEvents) {

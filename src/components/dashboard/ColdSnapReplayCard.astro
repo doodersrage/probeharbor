@@ -2,6 +2,7 @@
 import type { ColdSnapReplay } from "../../lib/coldSnapReplay";
 import { fmt, formatNumber, getLocale, LOCALE_META } from "../../i18n";
 import { appHistoryMessages } from "../../i18n/messages/app/history";
+import { displayTempInputValue, tempUnitLabel, toDisplayTemp } from "../../lib/temperatureFormat";
 
 /**
  * History → Chart: the most recent stretch below the freeze line, replayed
@@ -12,9 +13,12 @@ interface Props {
   replay: ColdSnapReplay;
   thresholdF: number;
   timeZone: string;
+  /** The °C display preference; `replay` and `thresholdF` stay °F. */
+  useCelsius?: boolean;
 }
 
-const { replay, thresholdF, timeZone } = Astro.props;
+const { replay, thresholdF, timeZone, useCelsius = false } = Astro.props;
+const unit = tempUnitLabel(useCelsius);
 const locale = getLocale(Astro);
 const t = appHistoryMessages(locale).coldSnap;
 
@@ -23,8 +27,13 @@ function num(value: number, digits: number): string {
   if (locale === "en") return value.toFixed(digits);
   return formatNumber(value, locale, { minimumFractionDigits: digits, maximumFractionDigits: digits, useGrouping: false });
 }
+const thresholdShown = displayTempInputValue(thresholdF, useCelsius);
 const thresholdText =
-  locale === "en" ? String(thresholdF) : formatNumber(thresholdF, locale, { maximumFractionDigits: 2, useGrouping: false });
+  locale === "en"
+    ? String(thresholdShown)
+    : formatNumber(thresholdShown, locale, { maximumFractionDigits: 2, useGrouping: false });
+/** A °F reading in the display unit, one decimal. */
+const tempNum = (tempF: number) => num(toDisplayTemp(tempF, useCelsius), 1);
 
 function formatAt(iso: string): string {
   const date = new Date(iso);
@@ -54,16 +63,17 @@ const toneLabel: Record<string, string> = t.tones;
     {fmt(replay.endAt ? t.subtitleEnded : t.subtitleOngoing, {
       probe: replay.probeLabel,
       temp: thresholdText,
+      unit,
       time: formatAt(replay.startAt),
     })}
   </p>
   <div class="stat-grid mb-4">
     <article class="stat-item">
       <span class="stat-label">{t.lowest}</span>
-      <p class="stat-value">{num(replay.lowestF, 1)}°F</p>
+      <p class="stat-value">{tempNum(replay.lowestF)}{unit}</p>
     </article>
     <article class="stat-item">
-      <span class="stat-label">{fmt(t.timeAtOrBelow, { temp: thresholdText })}</span>
+      <span class="stat-label">{fmt(t.timeAtOrBelow, { temp: thresholdText, unit })}</span>
       <p class="stat-value">{formatHours(replay.hoursBelow)}</p>
     </article>
     <article class="stat-item">
@@ -84,7 +94,7 @@ const toneLabel: Record<string, string> = t.tones;
     <p class="form-hint mt-4 mb-0">
       {fmt(t.otherLows, {
         list: replay.otherLows
-          .map((o) => fmt(t.otherLow, { probe: o.probeLabel, temp: num(o.lowestF, 1) }))
+          .map((o) => fmt(t.otherLow, { probe: o.probeLabel, temp: tempNum(o.lowestF), unit }))
           .join(t.listSeparator),
       })}
     </p>

@@ -1,5 +1,11 @@
 ---
 import { getDisplayPreferencesFromMetadata } from "../../lib/userPreferences";
+import {
+  displayTempInputValue,
+  tempUnitLabel,
+  toDisplayDelta,
+  toDisplayTemp,
+} from "../../lib/temperatureFormat";
 import { timeZoneFromCookie, zonedDayEndIso, zonedDayStartIso } from "../../lib/zonedDay";
 import DashboardLayout from "../../layouts/DashboardLayout.astro";
 import DemoFeedNotice from "../../components/dashboard/DemoFeedNotice.astro";
@@ -88,8 +94,12 @@ if (!session || !user) {
   return Astro.redirect("/signin");
 }
 
-// Charts follow the °C display preference; readings stay in °F underneath.
+// Charts and tiles follow the °C display preference; readings stay in °F underneath
+// (the readings table and CSV keep both units).
 const useCelsius = getDisplayPreferencesFromMetadata(user).useCelsius;
+const tempUnit = tempUnitLabel(useCelsius);
+/** A °F temperature as a number in the display unit (1 decimal unless `digits`). */
+const showTempNum = (tempF: number, digits = 1) => num(toDisplayTemp(tempF, useCelsius), digits);
 
 const defaultHistoryViewId =
   typeof user.user_metadata?.default_history_view_id === "string"
@@ -356,7 +366,7 @@ const exportsReadingCounts =
       )
     : null;
 const coldSnapReplay =
-  historyTab === "chart" ? buildColdSnapReplay(chartData.points, alertSettings.freezeThresholdF, alertEvents, locale) : null;
+  historyTab === "chart" ? buildColdSnapReplay(chartData.points, alertSettings.freezeThresholdF, alertEvents, locale, useCelsius) : null;
 const dailyFreezeHours = computeDailyFreezeHours(
   chartData.points,
   alertSettings.freezeThresholdF,
@@ -384,7 +394,11 @@ const overlayLegend = overlayColdest
     ? priorYearBundle.source === "outdoor_estimate"
       ? fmt(t.overlay.coldestOutdoorEstimated, { day: coldestOverlay.coldestDay })
       : coldestOverlay.minTempF != null
-        ? fmt(t.overlay.coldestDayLow, { day: coldestOverlay.coldestDay, temp: num(coldestOverlay.minTempF, 1) })
+        ? fmt(t.overlay.coldestDayLow, {
+            day: coldestOverlay.coldestDay,
+            temp: showTempNum(coldestOverlay.minTempF, 1),
+            unit: tempUnit,
+          })
         : fmt(t.overlay.coldestDay, { day: coldestOverlay.coldestDay })
     : priorYearBundle.earliestLocalReadingAt
       ? fmt(t.overlay.noPriorProbeData, {
@@ -526,16 +540,15 @@ const doorSummary = doorReport ? summarizeDoorReport(doorReport.rows) : null;
 const doorTime = (iso: string) =>
   formatDateTime(iso, locale, { dateStyle: "medium", timeStyle: "short", timeZone: filterTimeZone });
 const doorDay = (iso: string) => formatDateTime(iso, locale, { dateStyle: "medium", timeZone: filterTimeZone });
-const tempUnit = useCelsius ? "°C" : "°F";
 /** A °F reading in the display unit. */
-const showTemp = (f: number) => `${num(useCelsius ? ((f - 32) * 5) / 9 : f, 1)}${tempUnit}`;
+const showTemp = (f: number) => `${showTempNum(f, 1)}${tempUnit}`;
 /** A signed change: "+2.1°F" / "−3.4°F" (a °F difference is ×5/9 in °C). */
 function signed(value: number, unit: string): string {
   const rounded = Math.round(value * 10) / 10;
   const sign = rounded > 0 ? "+" : rounded < 0 ? "−" : "±";
   return `${sign}${num(Math.abs(rounded), 1)}${unit}`;
 }
-const showTempChange = (deltaF: number) => signed(useCelsius ? (deltaF * 5) / 9 : deltaF, tempUnit);
+const showTempChange = (deltaF: number) => signed(toDisplayDelta(deltaF, useCelsius), tempUnit);
 function doorCell(row: DoorReportRow, which: "temperature" | "humidity"): { text: string; note: string | null } {
   const sensor = which === "temperature" ? row.temperatureSensor : row.humiditySensor;
   if (!sensor) return { text: "—", note: td.notPaired };
@@ -580,7 +593,8 @@ function historyRetentionText(days: number): string {
   }
   return plural(t.page.retentionDays, days, locale, { count: plain(days) });
 }
-const freezeTemp = plain(alertSettings.freezeThresholdF);
+// The freeze line in the display unit: as stored in °F; °C to a tenth (34 °F → 1.1).
+const freezeTemp = plain(displayTempInputValue(alertSettings.freezeThresholdF, useCelsius));
 ---
 <DashboardLayout title={t.page.title} subtitle={t.page.subtitle}>
   {demoDevices.length > 0 && (
@@ -684,6 +698,7 @@ const freezeTemp = plain(alertSettings.freezeThresholdF);
             replay={coldSnapReplay}
             thresholdF={alertSettings.freezeThresholdF}
             timeZone={alertSettings.quietHoursTimezone}
+            useCelsius={useCelsius}
           />
         )}
 
@@ -702,18 +717,18 @@ const freezeTemp = plain(alertSettings.freezeThresholdF);
                   <div class="stat-grid">
                     <article class="stat-item">
                       <span class="stat-label">{t.compare.indoorAvg}</span>
-                      <p class="stat-value">{num(outdoorDelta.indoorAvgF, 1)}°F</p>
+                      <p class="stat-value">{showTemp(outdoorDelta.indoorAvgF)}</p>
                     </article>
                     <article class="stat-item">
                       <span class="stat-label">{t.compare.outdoorNow}</span>
-                      <p class="stat-value">{num(outdoorDelta.outdoorF, 1)}°F</p>
+                      <p class="stat-value">{showTemp(outdoorDelta.outdoorF)}</p>
                       <p class="stat-detail">{outdoorDelta.outdoorDescription}</p>
                     </article>
                     <article class="stat-item">
                       <span class="stat-label">{t.compare.delta}</span>
                       <p class="stat-value">
                         {outdoorDelta.deltaF > 0 ? "+" : ""}
-                        {num(outdoorDelta.deltaF, 1)}°F
+                        {`${num(toDisplayDelta(outdoorDelta.deltaF, useCelsius), 1)}${tempUnit}`}
                       </p>
                     </article>
                   </div>
@@ -751,21 +766,21 @@ const freezeTemp = plain(alertSettings.freezeThresholdF);
                 <section class="history-compare-section" aria-labelledby="history-compare-freeze">
                   <h3 class="card-title" id="history-compare-freeze">{t.compare.freezeTitle}</h3>
                   <p class="card-subtitle mb-4">
-                    {fmt(t.compare.freezeSubtitle, { temp: freezeTemp })}
+                    {fmt(t.compare.freezeSubtitle, { temp: freezeTemp, unit: tempUnit })}
                   </p>
                   <div class="stat-grid">
                     <article class="stat-item">
-                      <span class="stat-label">{fmt(t.compare.hoursAtOrBelow, { temp: freezeTemp })}</span>
+                      <span class="stat-label">{fmt(t.compare.hoursAtOrBelow, { temp: freezeTemp, unit: tempUnit })}</span>
                       <p class="stat-value">{num(freezeHours.hoursBelow34, 1)}</p>
                     </article>
                     <article class="stat-item">
-                      <span class="stat-label">{fmt(t.compare.readingsAtOrBelow, { temp: freezeTemp })}</span>
+                      <span class="stat-label">{fmt(t.compare.readingsAtOrBelow, { temp: freezeTemp, unit: tempUnit })}</span>
                       <p class="stat-value">{plain(freezeHours.readingsBelow34)}</p>
                     </article>
                     <article class="stat-item">
                       <span class="stat-label">{t.compare.coldest}</span>
                       <p class="stat-value">
-                        {freezeHours.coldestF != null ? `${num(freezeHours.coldestF, 1)}°F` : "—"}
+                        {freezeHours.coldestF != null ? showTemp(freezeHours.coldestF) : "—"}
                       </p>
                     </article>
                   </div>
@@ -973,12 +988,12 @@ const freezeTemp = plain(alertSettings.freezeThresholdF);
                 <div>
                   <p class="m-0 text-xs text-[var(--color-text-muted)]">{t.exports.coldest}</p>
                   <p class="m-0 text-lg font-semibold">
-                    {freezeHours.coldestF != null ? `${num(freezeHours.coldestF, 1)}°F` : "—"}
+                    {freezeHours.coldestF != null ? showTemp(freezeHours.coldestF) : "—"}
                   </p>
                 </div>
                 <div>
                   <p class="m-0 text-xs text-[var(--color-text-muted)]">
-                    {fmt(t.exports.hoursAtOrBelow, { temp: freezeTemp })}
+                    {fmt(t.exports.hoursAtOrBelow, { temp: freezeTemp, unit: tempUnit })}
                   </p>
                   <p class="m-0 text-lg font-semibold">
                     {fmt(t.exports.hoursValue, { hours: num(freezeHours.hoursBelow34, 1) })}

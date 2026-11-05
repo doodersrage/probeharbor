@@ -16,9 +16,9 @@ const es: LibTextMessages = {
     outdoorEstimateAt: "{detail} (estimación exterior en {location}).",
   },
   coldSnap: {
-    reached: "{probe} llegó a {temp} °F, en el umbral de {threshold} °F o por debajo.",
-    lowest: "Mínima: {temp} °F.",
-    backAbove: "De nuevo por encima de {threshold} °F.",
+    reached: "{probe} llegó a {temp} {unit}, en el umbral de {threshold} {unit} o por debajo.",
+    lowest: "Mínima: {temp} {unit}.",
+    backAbove: "De nuevo por encima de {threshold} {unit}.",
     alertSent: "Alerta enviada: {title} ({channels}).",
     allClearSent: "Aviso de normalidad enviado: {title} ({channels}).",
     notDelivered: "Alerta no entregada: {title}.",

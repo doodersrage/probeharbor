@@ -19,9 +19,9 @@ const en = {
     outdoorEstimateAt: "{detail} (outdoor estimate at {location}).",
   },
   coldSnap: {
-    reached: "{probe} reached {temp}°F, at or below the {threshold}°F line.",
-    lowest: "Lowest: {temp}°F.",
-    backAbove: "Back above {threshold}°F.",
+    reached: "{probe} reached {temp}{unit}, at or below the {threshold}{unit} line.",
+    lowest: "Lowest: {temp}{unit}.",
+    backAbove: "Back above {threshold}{unit}.",
     alertSent: "Alert sent: {title} ({channels}).",
     allClearSent: "All-clear sent: {title} ({channels}).",
     notDelivered: "Alert not delivered: {title}.",
