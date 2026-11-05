@@ -67,6 +67,12 @@ const es: OverviewCardsMessages = {
       title: "Cerca del umbral de congelación",
       detail: "La sonda más fría marca {temp} {unit}, a menos de {near} de {threshold} {unit}.",
     },
+    demo: {
+      title: "Datos de demostración: no es tu espacio",
+      detail:
+        "Estas lecturas están simuladas a partir del clima local, no las mide un sensor, así que esta tarjeta no puede decirte cómo está tu espacio, y las lecturas de demostración nunca envían alertas. Conecta un sensor real para ver su estado aquí.",
+      action: "Conectar un sensor",
+    },
     ok: {
       title: "Todo en orden",
       detail: "Las sondas están enviando datos: nada en el umbral de congelación, ningún contacto de inundación mojado.",

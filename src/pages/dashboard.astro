@@ -23,7 +23,7 @@ import {
 import { getUserEntitlements } from "../lib/entitlements";
 import { latestFromShell } from "../lib/dashboardShell";
 import { listHouseholdDevices } from "../lib/devices";
-import { isDemoDevice, onboardingDeviceStep, realReadingRows } from "../lib/demoFeed";
+import { isDemoDevice, onboardingDeviceStep, realReadingRows, statusReadingScope } from "../lib/demoFeed";
 import { ensureAlertDeliveryEvidence, getAlertSettingsForUser } from "../lib/notify";
 import {
   getOrCreateHouseholdForUser,
@@ -574,6 +574,10 @@ const newestReading = latest
 const lastAge = formatRelativeAge(newestReading, undefined, locale);
 const staleSummary = summarizeStaleSensors(latest, devices, undefined, locale);
 const staleSensorCount = staleSummary.total;
+// The status card and the "coldest probe" figures judge real probes only when
+// the household has any; with only the demo feed they show a labelled demo state.
+const statusScope = statusReadingScope(latest, devices);
+const statusStaleCount = summarizeStaleSensors(statusScope.rows, statusScope.devices, undefined, locale).total;
 const lowBatteryDevices = listLowBatteryDevices(
   devices,
   alertSettings.batteryThresholdPct,
@@ -614,7 +618,7 @@ const freezeReadiness = computeFreezeReadiness({
 
 // A probe that stopped reporting keeps its last value forever; don't let a
 // dead probe stand in for "coldest right now" (the stale banner covers it).
-const freshTemperatureRows = latest.filter(
+const freshTemperatureRows = statusScope.rows.filter(
   (row) =>
     row.sensor.kind === "temperature" &&
     row.value_num != null &&
@@ -625,7 +629,7 @@ const coldestProbeTempF = (() => {
   return temps.length > 0 ? Math.min(...temps) : null;
 })();
 
-const wetFloodCount = latest.filter(
+const wetFloodCount = statusScope.rows.filter(
   (row) => row.sensor.kind === "flood" && row.value_bool === true,
 ).length;
 
@@ -897,11 +901,13 @@ const alertsMetricDetail = lastAlertAt
     : tm.sendTest;
 
 const garageRiskComputed = computeGarageRiskStatus({
-  hasDevices,
-  hasLiveReading: latest.length > 0,
+  hasDevices:
+    statusScope.devices.some((d) => d.source === "push" || d.source === "pull_url") ||
+    statusScope.rows.length > 0,
+  hasLiveReading: statusScope.rows.length > 0,
   coldestProbeTempF,
   freezeThresholdF: alertSettings.freezeThresholdF,
-  staleSensorCount,
+  staleSensorCount: statusStaleCount,
   nightsRiskCount,
   alertsEnabled: hasAlertsEnabled,
   hasEmailAlerts,
@@ -911,6 +917,7 @@ const garageRiskComputed = computeGarageRiskStatus({
   hitsAtLabel: timeToFreeze.hitsAtLabel,
   wetFloodCount,
   useCelsius,
+  demoOnly: statusScope.demoOnly,
 }, locale, overviewCardsMessages(locale).garageRisk);
 const loadErrorText = shellMessages(locale).loadError;
 const garageRisk = devicesLoadError
@@ -1765,6 +1772,10 @@ const onboardingProps = {
             "garage-risk-status--" + data.risk,
           );
         }
+        // Simulated-only household: keep the card's "Demo data" badge in step.
+        document.querySelectorAll<HTMLElement>("[data-risk-demo-badge]").forEach(function (el) {
+          if (data.risk) el.hidden = data.risk !== "demo";
+        });
         if (riskAction) {
           if (data.riskActionLabel) riskAction.textContent = data.riskActionLabel;
           if (data.riskActionHref) riskAction.setAttribute("href", data.riskActionHref);

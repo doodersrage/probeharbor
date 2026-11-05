@@ -77,6 +77,12 @@ const en = {
       title: "Close to freeze threshold",
       detail: "Coldest probe {temp}{unit}, within {near} of {threshold}{unit}.",
     },
+    demo: {
+      title: "Demo data: not your space",
+      detail:
+        "These readings are simulated from local weather, not measured by a sensor, so this card can't tell you how your space is doing, and demo readings never send alerts. Connect a real sensor to see its status here.",
+      action: "Connect a sensor",
+    },
     ok: {
       title: "Looking good",
       detail: "Probes are reporting: nothing at freeze threshold, no wet flood contacts.",

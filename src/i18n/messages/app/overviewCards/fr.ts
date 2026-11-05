@@ -67,6 +67,12 @@ const fr: OverviewCardsMessages = {
       title: "Proche du seuil de gel",
       detail: "Sonde la plus froide à {temp} {unit}, à moins de {near} de {threshold} {unit}.",
     },
+    demo: {
+      title: "Données de démo : pas votre espace",
+      detail:
+        "Ces relevés sont simulés à partir de la météo locale, pas mesurés par un capteur : cette carte ne peut donc pas vous dire comment va votre espace, et les relevés de démo n’envoient jamais d’alerte. Connectez un vrai capteur pour voir son état ici.",
+      action: "Connecter un capteur",
+    },
     ok: {
       title: "Tout va bien",
       detail: "Les sondes envoient leurs mesures : rien au seuil de gel, aucun contact d’inondation humide.",

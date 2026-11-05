@@ -7,6 +7,7 @@ import { fetchLatestSensorValuesResult } from "../../../lib/sensorReadings";
 import { formatRelativeAge, STALE_MS } from "../../../lib/relativeTime";
 import { summarizeStaleSensors } from "../../../lib/sensorFreshness";
 import { computeGarageRiskStatus } from "../../../lib/garageRiskStatus";
+import { statusReadingScope } from "../../../lib/demoFeed";
 import { getDisplayPreferencesFromMetadata } from "../../../lib/userPreferences";
 import { countUnacknowledgedAlerts } from "../../../lib/alertEvents";
 import {
@@ -69,9 +70,13 @@ export const GET: APIRoute = async ({ cookies, locals }) => {
       .sort((a, b) => Date.parse(b!) - Date.parse(a!))[0] ?? null;
   const lastAge = formatRelativeAge(newestReading, tc.never, locale);
   const staleSummary = summarizeStaleSensors(latest, devices, undefined, locale);
+  // Match Overview: the status and coldest-probe figures judge real probes only
+  // when there are any; demo-only households get the labelled demo state.
+  const statusScope = statusReadingScope(latest, devices);
+  const statusStaleCount = summarizeStaleSensors(statusScope.rows, statusScope.devices, undefined, locale).total;
   const coldestProbeTempF = (() => {
     // Match Overview: skip probes whose last reading is stale.
-    const temps = latest
+    const temps = statusScope.rows
       .filter(
         (row) =>
           row.sensor.kind === "temperature" &&
@@ -81,7 +86,7 @@ export const GET: APIRoute = async ({ cookies, locals }) => {
       .map((row) => row.value_num as number);
     return temps.length > 0 ? Math.min(...temps) : null;
   })();
-  const wetFloodCount = latest.filter(
+  const wetFloodCount = statusScope.rows.filter(
     (row) => row.sensor.kind === "flood" && row.value_bool === true,
   ).length;
   const sensorCount = devices.reduce((sum, device) => sum + device.sensors.length, 0);
@@ -102,11 +107,14 @@ export const GET: APIRoute = async ({ cookies, locals }) => {
     outdoorTempF <= alertSettings.freezeThresholdF + 10;
 
   const risk = computeGarageRiskStatus({
-    hasDevices: devices.length > 0,
-    hasLiveReading: latest.length > 0,
+    // Same rule as the Overview page (push/pull devices or any reading).
+    hasDevices:
+      statusScope.devices.some((d) => d.source === "push" || d.source === "pull_url") ||
+      statusScope.rows.length > 0,
+    hasLiveReading: statusScope.rows.length > 0,
     coldestProbeTempF,
     freezeThresholdF: alertSettings.freezeThresholdF,
-    staleSensorCount: staleSummary.total,
+    staleSensorCount: statusStaleCount,
     nightsRiskCount: 0,
     alertsEnabled: alertSettings.enabled,
     hasEmailAlerts: alertSettings.channelEmail,
@@ -115,6 +123,7 @@ export const GET: APIRoute = async ({ cookies, locals }) => {
     hoursUntilFreeze: null,
     hitsAtLabel: null,
     wetFloodCount,
+    demoOnly: statusScope.demoOnly,
     // riskDetail is display text for the Overview, so it follows the °C preference;
     // the numeric fields below stay °F.
     useCelsius: getDisplayPreferencesFromMetadata(user).useCelsius,

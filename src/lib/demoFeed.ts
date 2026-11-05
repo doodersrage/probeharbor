@@ -103,3 +103,27 @@ export function onboardingDeviceStep(
   if (realReported) return "done";
   return realDevices.length > 0 ? "waiting" : "todo";
 }
+
+/**
+ * Which devices and latest readings the Overview status card ("Space status")
+ * judges, so a simulated demo temperature is never described as the space's
+ * real condition:
+ * - any real (non-demo) device or reading: real ones only, demo excluded
+ *   (a real device that hasn't reported yet reads "Waiting for a reading",
+ *   even while the demo feed is posting);
+ * - only demo devices: everything, with `demoOnly` set when there are demo
+ *   readings, so the card shows its neutral "Demo data" state instead of a
+ *   freeze/flood/stale verdict.
+ * Used by the Overview page and /api/user/dashboard-snapshot alike.
+ */
+export function statusReadingScope<
+  R extends { sensor: { device_id: string }; deviceDemo?: boolean },
+  D extends DemoCheckDevice & { id: string },
+>(rows: R[], devices: D[]): { rows: R[]; devices: D[]; demoOnly: boolean } {
+  const realDevices = excludeDemoDevices(devices);
+  const realRows = realReadingRows(rows, devices);
+  if (realDevices.length > 0 || realRows.length > 0) {
+    return { rows: realRows, devices: realDevices, demoOnly: false };
+  }
+  return { rows, devices, demoOnly: rows.length > 0 };
+}

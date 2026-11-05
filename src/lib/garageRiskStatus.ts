@@ -19,7 +19,11 @@ import overviewCardsEn, { type GarageRiskText } from "../i18n/messages/app/overv
  * Single Overview status: is the monitored space OK, worth watching, or at freeze/flood risk?
  */
 
-export type GarageRiskLevel = "ok" | "watch" | "risk" | "offline";
+/**
+ * "demo": the only readings are simulated demo data (lib/demoFeed), so the card
+ * makes no claim about the space: neutral styling, no freeze/flood urgency.
+ */
+export type GarageRiskLevel = "ok" | "watch" | "risk" | "offline" | "demo";
 
 export type GarageRiskStatus = {
   level: GarageRiskLevel;
@@ -78,6 +82,12 @@ export function computeGarageRiskStatus(
     wetFloodCount?: number;
     /** Word temperatures in °C (the dashboard display preference). Inputs stay °F. */
     useCelsius?: boolean;
+    /**
+     * Every reading above is simulated demo data (no real device in the
+     * household; see `statusReadingScope` in lib/demoFeed). The card then says
+     * so instead of judging them, however cold or wet they read.
+     */
+    demoOnly?: boolean;
   },
   locale: Locale = "en",
   text: GarageRiskText = overviewCardsEn.garageRisk,
@@ -105,6 +115,16 @@ export function computeGarageRiskStatus(
       title: t.waiting.title,
       detail: t.waiting.detail,
       actionLabel: t.waiting.action,
+      actionHref: devicesSetupPath(),
+    };
+  }
+
+  if (input.demoOnly) {
+    return {
+      level: "demo",
+      title: t.demo.title,
+      detail: t.demo.detail,
+      actionLabel: t.demo.action,
       actionHref: devicesSetupPath(),
     };
   }

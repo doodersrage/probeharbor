@@ -7,6 +7,7 @@ import {
   isDemoFeedUrl,
   onboardingDeviceStep,
   realReadingRows,
+  statusReadingScope,
 } from "./demoFeed";
 import { pullDeviceMeta } from "./devices";
 import { getExampleFeedUrl } from "./exampleFeed";
@@ -134,5 +135,43 @@ describe("onboardingDeviceStep", () => {
     expect(
       onboardingDeviceStep([demoDevice, pushNeverSeen], [demoRow, { sensor: { device_id: "push" }, deviceDemo: false }]),
     ).toBe("done");
+  });
+});
+
+describe("statusReadingScope", () => {
+  const demoDevice = { id: "demo", source: "pull_url", pull_url: "https://probeharbor.com/api/feeds/example" };
+  const pushDevice = { id: "push", source: "push", pull_url: null };
+  const demoRow = { sensor: { device_id: "demo" }, deviceDemo: true, value_num: 20 };
+  const realRow = { sensor: { device_id: "push" }, deviceDemo: false, value_num: 50 };
+
+  it("judges real devices only when any exist, demo excluded", () => {
+    const scope = statusReadingScope([demoRow, realRow], [demoDevice, pushDevice]);
+    expect(scope.rows).toEqual([realRow]);
+    expect(scope.devices).toEqual([pushDevice]);
+    expect(scope.demoOnly).toBe(false);
+  });
+
+  it("keeps a real device that hasn't reported: no rows rather than the demo ones", () => {
+    const scope = statusReadingScope([demoRow], [demoDevice, pushDevice]);
+    expect(scope.rows).toEqual([]);
+    expect(scope.devices).toEqual([pushDevice]);
+    expect(scope.demoOnly).toBe(false);
+  });
+
+  it("catches unflagged rows from a demo device by the device list", () => {
+    const unflagged = { sensor: { device_id: "demo" }, value_num: 20 };
+    const scope = statusReadingScope([unflagged, realRow], [demoDevice, pushDevice]);
+    expect(scope.rows).toEqual([realRow]);
+  });
+
+  it("marks demo-only when the only readings are demo", () => {
+    const scope = statusReadingScope([demoRow], [demoDevice]);
+    expect(scope.rows).toEqual([demoRow]);
+    expect(scope.demoOnly).toBe(true);
+  });
+
+  it("is not demo-only with nothing reported at all", () => {
+    expect(statusReadingScope([], [demoDevice]).demoOnly).toBe(false);
+    expect(statusReadingScope([], []).demoOnly).toBe(false);
   });
 });

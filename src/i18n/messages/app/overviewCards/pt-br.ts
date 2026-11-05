@@ -67,6 +67,12 @@ const ptBr: OverviewCardsMessages = {
       title: "Perto do limite de congelamento",
       detail: "Sonda mais fria em {temp} {unit}, a menos de {near} de {threshold} {unit}.",
     },
+    demo: {
+      title: "Dados de demonstração: não é o seu espaço",
+      detail:
+        "Estas leituras são simuladas a partir do clima local, não medidas por um sensor, então este cartão não consegue dizer como está o seu espaço, e leituras de demonstração nunca enviam alertas. Conecte um sensor real para ver o status dele aqui.",
+      action: "Conectar um sensor",
+    },
     ok: {
       title: "Tudo certo",
       detail: "As sondas estão enviando dados: nada no limite de congelamento, nenhum contato de alagamento molhado.",

@@ -4,6 +4,7 @@ import { formatRelativeAge } from "../../lib/relativeTime";
 import ReadingAgeBadge from "./ReadingAgeBadge.astro";
 import { fmt, getLocale } from "../../i18n";
 import { overviewCardsMessages } from "../../i18n/messages/app/overviewCards";
+import { shellMessages } from "../../i18n/messages/app/shell";
 
 /** Coldest temperature probe, so the card answers "which one, how cold, how fresh". */
 export type ColdestProbeSummary = {
@@ -25,6 +26,10 @@ interface Props {
 const { status, coldestProbe = null, useCelsius = false } = Astro.props;
 const locale = getLocale(Astro);
 const t = overviewCardsMessages(locale).riskCard;
+// Demo-only household: the readings are simulated, so say so in the card itself.
+// Rendered hidden otherwise so the Overview soft refresh can toggle it.
+const isDemo = status.level === "demo";
+const demoBadge = shellMessages(locale).demoData.badge;
 // A stale reading shouldn't look live: grey the value out.
 const probeStale = coldestProbe ? formatRelativeAge(coldestProbe.recordedAt).stale : false;
 ---
@@ -38,7 +43,10 @@ const probeStale = coldestProbe ? formatRelativeAge(coldestProbe.recordedAt).sta
   data-overview-risk
   data-risk-level={status.level}
 >
-  <p class="garage-risk-eyebrow">{t.eyebrow}</p>
+  <p class="garage-risk-eyebrow">
+    {t.eyebrow}
+    <span class="feed-group-badge garage-risk-demo-badge" data-risk-demo-badge hidden={!isDemo}>{demoBadge}</span>
+  </p>
   <h2
     id="garage-risk-heading"
     class="card-title garage-risk-title"
@@ -98,6 +106,18 @@ const probeStale = coldestProbe ? formatRelativeAge(coldestProbe.recordedAt).sta
   .garage-risk-probe-temp.is-stale {
     color: var(--color-text-muted);
     opacity: 0.7;
+  }
+  /* Demo data: no verdict about the space, so no success/warning/danger colour. */
+  .garage-risk-status--demo {
+    border-color: var(--color-border);
+  }
+  .garage-risk-demo-badge {
+    margin-left: 0.5rem;
+    text-transform: none;
+    letter-spacing: normal;
+  }
+  .garage-risk-demo-badge[hidden] {
+    display: none;
   }
   .garage-risk-status--ok {
     border-color: var(--color-success);

@@ -67,6 +67,12 @@ const de: OverviewCardsMessages = {
       title: "Nahe am Frost-Schwellenwert",
       detail: "Kältester Fühler {temp} {unit}, weniger als {near} über {threshold} {unit}.",
     },
+    demo: {
+      title: "Demodaten: nicht dein Raum",
+      detail:
+        "Diese Messwerte sind aus dem lokalen Wetter simuliert, nicht von einem Sensor gemessen. Diese Karte kann dir also nicht sagen, wie es deinem Raum geht, und Demowerte lösen nie Alarme aus. Verbinde einen echten Sensor, um hier seinen Status zu sehen.",
+      action: "Sensor verbinden",
+    },
     ok: {
       title: "Alles in Ordnung",
       detail: "Die Fühler melden sich: nichts am Frost-Schwellenwert, keine nassen Wasserkontakte.",

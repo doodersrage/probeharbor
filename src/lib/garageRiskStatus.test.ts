@@ -195,3 +195,27 @@ describe("computeGarageRiskStatus", () => {
     });
   });
 });
+
+describe("computeGarageRiskStatus with demo-only readings", () => {
+  it("shows a neutral demo state, never freeze urgency, however cold the demo probe reads", () => {
+    const status = computeGarageRiskStatus({ ...base, demoOnly: true, coldestProbeTempF: 20 });
+    expect(status.level).toBe("demo");
+    expect(status.title).toMatch(/demo data/i);
+    expect(status.detail).toMatch(/simulated/i);
+    expect(status.actionHref).toContain("devices");
+  });
+
+  it("does not report a demo flood contact as wet or a demo probe as stale", () => {
+    expect(computeGarageRiskStatus({ ...base, demoOnly: true, wetFloodCount: 1 }).level).toBe("demo");
+    expect(computeGarageRiskStatus({ ...base, demoOnly: true, staleSensorCount: 2 }).level).toBe("demo");
+  });
+
+  it("still asks for a device or a first reading before the demo state", () => {
+    expect(computeGarageRiskStatus({ ...base, demoOnly: true, hasDevices: false }).level).toBe("watch");
+    expect(computeGarageRiskStatus({ ...base, demoOnly: true, hasLiveReading: false }).level).toBe("offline");
+  });
+
+  it("judges readings normally when they are not demo-only", () => {
+    expect(computeGarageRiskStatus({ ...base, demoOnly: false, coldestProbeTempF: 20 }).level).toBe("risk");
+  });
+});
