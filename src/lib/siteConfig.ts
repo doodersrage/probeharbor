@@ -1,3 +1,5 @@
+import { RENAME_ARRIVAL_PARAM, RENAME_ARRIVAL_VALUE } from "./rebrand";
+
 /** Canonical public site URL — set SITE_URL or ORIGIN in Worker env / .env. */
 export const DEFAULT_SITE_URL = "https://probeharbor.dev";
 
@@ -30,6 +32,26 @@ export function shouldRedirectLegacyHost(
   if (pathname.startsWith("/api/")) return false;
   const verb = method.toUpperCase();
   return verb === "GET" || verb === "HEAD";
+}
+
+/**
+ * Where a legacy-host GET/HEAD should 301 to: same path and query on the
+ * canonical host. Page loads from a pre-rename host also carry
+ * ?ph_from=thermaltrace so the rename notice can show to people who knew the
+ * old name. File-like paths (last segment has a dot) stay clean for machine
+ * clients, and www.probeharbor.dev never gets the flag.
+ */
+export function legacyHostRedirectUrl(url: URL): URL {
+  const dest = new URL(url);
+  const fromFormerBrand = url.hostname !== `www.${CANONICAL_HOST}`;
+  dest.hostname = CANONICAL_HOST;
+  dest.protocol = "https:";
+  dest.port = "";
+  const lastSegment = url.pathname.split("/").pop() ?? "";
+  if (fromFormerBrand && !lastSegment.includes(".")) {
+    dest.searchParams.set(RENAME_ARRIVAL_PARAM, RENAME_ARRIVAL_VALUE);
+  }
+  return dest;
 }
 
 /**

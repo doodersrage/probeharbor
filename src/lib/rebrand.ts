@@ -12,6 +12,30 @@ export function shouldShowRenameNotice(now: Date = new Date()): boolean {
   return now < new Date(`${RENAME_NOTICE_UNTIL}T00:00:00Z`);
 }
 
+/**
+ * Query flag the legacy-host 301 adds to page URLs so the rename notice shows
+ * to people who came through an old ThermalTrace link. A cookie can't do this:
+ * it would be set on thermaltrace.dev, not probeharbor.dev. Not "from", which
+ * /dashboard/history already uses for its date range.
+ */
+export const RENAME_ARRIVAL_PARAM = "ph_from";
+export const RENAME_ARRIVAL_VALUE = "thermaltrace";
+
+/**
+ * Paths where the notice renders visible from the server: people signing in
+ * or using the dashboard have accounts that may predate the rename. Everyone
+ * else sees it only when the client script finds a ThermalTrace arrival
+ * signal (the query flag, a thermaltrace referrer, or an earlier arrival).
+ */
+export function isRenameNoticeAccountPath(pathname: string): boolean {
+  return (
+    pathname === "/signin" ||
+    pathname.startsWith("/signin/") ||
+    pathname === "/dashboard" ||
+    pathname.startsWith("/dashboard/")
+  );
+}
+
 /** Old public download paths kept as 301 redirects in middleware. */
 export const THERMALTRACE_STATIC_REDIRECTS: Record<string, string> = {
   "/esphome/thermaltrace.yaml": "/esphome/probeharbor.yaml",

@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it } from "vitest";
 import {
   DEFAULT_SITE_URL,
+  legacyHostRedirectUrl,
   resolveConfiguredSiteUrl,
   resolvePageUrl,
   trailingSlashRedirectPath,
@@ -118,6 +119,34 @@ describe("shouldRedirectLegacyHost", () => {
   it("never redirects the canonical host", async () => {
     const { shouldRedirectLegacyHost } = await import("./siteConfig");
     expect(shouldRedirectLegacyHost("probeharbor.dev", "GET")).toBe(false);
+  });
+});
+
+describe("legacyHostRedirectUrl", () => {
+  it("flags page loads from the pre-rename domain and keeps the query", () => {
+    const dest = legacyHostRedirectUrl(
+      new URL("http://thermaltrace.dev/dashboard/history?from=2026-01-01&to=2026-01-31"),
+    );
+    expect(dest.origin).toBe("https://probeharbor.dev");
+    expect(dest.pathname).toBe("/dashboard/history");
+    expect(dest.searchParams.get("from")).toBe("2026-01-01");
+    expect(dest.searchParams.get("to")).toBe("2026-01-31");
+    expect(dest.searchParams.get("ph_from")).toBe("thermaltrace");
+  });
+
+  it("flags the bare root of www.thermaltrace.dev", () => {
+    expect(legacyHostRedirectUrl(new URL("https://www.thermaltrace.dev/")).toString()).toBe(
+      "https://probeharbor.dev/?ph_from=thermaltrace",
+    );
+  });
+
+  it("leaves file downloads and www.probeharbor.dev unflagged", () => {
+    expect(
+      legacyHostRedirectUrl(new URL("https://thermaltrace.dev/esphome/thermaltrace.yaml")).toString(),
+    ).toBe("https://probeharbor.dev/esphome/thermaltrace.yaml");
+    expect(legacyHostRedirectUrl(new URL("https://www.probeharbor.dev/pricing")).toString()).toBe(
+      "https://probeharbor.dev/pricing",
+    );
   });
 });
 

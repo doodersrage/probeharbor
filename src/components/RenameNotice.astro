@@ -1,16 +1,34 @@
 ---
 /** Dismissible site-wide notice for the ThermalTrace → ProbeHarbor rename. */
 import { BRAND_NAME } from "../lib/brand";
-import { FORMER_BRAND_NAME, FORMER_DOMAIN, shouldShowRenameNotice } from "../lib/rebrand";
+import {
+  FORMER_BRAND_NAME,
+  FORMER_DOMAIN,
+  isRenameNoticeAccountPath,
+  RENAME_ARRIVAL_PARAM,
+  RENAME_ARRIVAL_VALUE,
+  shouldShowRenameNotice,
+} from "../lib/rebrand";
 import { fmt, getLocale } from "../i18n";
 import { layoutMessages } from "../i18n/messages/layout";
 
 const t = layoutMessages(getLocale(Astro)).renameNotice;
 
 const show = shouldShowRenameNotice();
+// Account pages render it visible; elsewhere it starts hidden and the script
+// below reveals it only for visitors with a ThermalTrace arrival signal.
+const accountPath = isRenameNoticeAccountPath(Astro.url.pathname);
 ---
 {show && (
-  <aside class="rename-notice" aria-label={t.label} data-rename-notice>
+  <aside
+    class="rename-notice"
+    aria-label={t.label}
+    data-rename-notice
+    data-account-path={accountPath ? "1" : undefined}
+    data-arrival-param={RENAME_ARRIVAL_PARAM}
+    data-arrival-value={RENAME_ARRIVAL_VALUE}
+    hidden={!accountPath}
+  >
     <p>
       <strong>{fmt(t.headline, { former: FORMER_BRAND_NAME, brand: BRAND_NAME })}</strong>
       {" "}{fmt(t.body, { domain: FORMER_DOMAIN })}
@@ -22,11 +40,31 @@ const show = shouldShowRenameNotice();
   <script is:inline>
     (function () {
       var KEY = "probeharbor.renameNoticeDismissed";
+      var ARRIVED_KEY = "probeharbor.renameNoticeArrived";
       var el = document.querySelector("[data-rename-notice]");
       if (!el) return;
+      var param = el.getAttribute("data-arrival-param");
+      var value = el.getAttribute("data-arrival-value");
+      var arrived = false;
       try {
-        if (localStorage.getItem(KEY) === "1") el.hidden = true;
+        var url = new URL(window.location.href);
+        if (param && url.searchParams.get(param) === value) {
+          arrived = true;
+          // Drop the flag from the address bar so it isn't shared or bookmarked.
+          url.searchParams.delete(param);
+          history.replaceState(history.state, "", url.pathname + url.search + url.hash);
+        }
       } catch (e) {}
+      if (/thermaltrace/i.test(document.referrer || "")) arrived = true;
+      try {
+        if (arrived) localStorage.setItem(ARRIVED_KEY, "1");
+        else arrived = localStorage.getItem(ARRIVED_KEY) === "1";
+      } catch (e) {}
+      var dismissed = false;
+      try {
+        dismissed = localStorage.getItem(KEY) === "1";
+      } catch (e) {}
+      el.hidden = dismissed || !(arrived || el.hasAttribute("data-account-path"));
       var btn = el.querySelector("[data-rename-dismiss]");
       if (btn) {
         btn.addEventListener("click", function () {

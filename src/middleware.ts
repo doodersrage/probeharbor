@@ -16,6 +16,7 @@ import { hasValidMfaStepUpProof } from "./lib/mfaStepUpProof";
 import { recordServerError } from "./lib/serverErrors";
 import {
   CANONICAL_HOST,
+  legacyHostRedirectUrl,
   shouldRedirectLegacyHost,
   trailingSlashRedirectPath,
 } from "./lib/siteConfig";
@@ -63,10 +64,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
   let { pathname } = context.url;
 
   if (shouldRedirectLegacyHost(hostname, context.request.method, pathname)) {
-    const dest = new URL(context.url);
-    dest.hostname = CANONICAL_HOST;
-    dest.protocol = "https:";
-    return context.redirect(dest.toString(), 301);
+    return context.redirect(legacyHostRedirectUrl(context.url).toString(), 301);
   }
 
   if (hostname === CANONICAL_HOST && protocol === "http:") {
