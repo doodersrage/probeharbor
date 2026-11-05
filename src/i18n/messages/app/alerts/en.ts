@@ -106,7 +106,7 @@ const en = {
     suggested: "Suggested: {tip}.",
     suggestedFix: "Suggested fix: {tip}.",
     open: "Open",
-    raiseThreshold: "Raise freeze threshold +2°F",
+    raiseThreshold: "Raise freeze threshold +{band}",
     checkPlacement: "Check probe placement",
     handled: "Handled",
     recovered: "Recovered",
@@ -135,7 +135,7 @@ const en = {
     snooze4h: "Handle & snooze 4h",
     snooze24h: "Handle & snooze 24h",
     falseAlarm: "False alarm (snooze 24h)",
-    raiseThreshold: "False alarm + raise threshold +2°F",
+    raiseThreshold: "False alarm + raise threshold +{band}",
     notifyTenant: "Handle & email tenant",
     webhookPing: "Handle & ping webhook",
   },
@@ -198,13 +198,13 @@ const en = {
     other:
       "{count} flood/leak sensors are wet right now: flood alerts bypass snooze and vacation. Check the pan, sump, or supply line.",
   },
-  /** Parts of the "Why" line, joined with " · ". Temperatures are stored in °F. */
+  /** Parts of the "Why" line, joined with " · ". Stored in °F; shown in the display unit ({unit}; ΔT is a difference). */
   why: {
-    probeAt: "{probe} at {temp}°F",
-    probeAtUnnamed: "Probe at {temp}°F",
-    threshold: "threshold {temp}°F",
-    outdoor: "outdoor {temp}°F",
-    deltaT: "ΔT {delta}°F",
+    probeAt: "{probe} at {temp}{unit}",
+    probeAtUnnamed: "Probe at {temp}{unit}",
+    threshold: "threshold {temp}{unit}",
+    outdoor: "outdoor {temp}{unit}",
+    deltaT: "ΔT {delta}{unit}",
     runway: "~{hours}h runway",
     doorOpen: "door open nearby",
   },

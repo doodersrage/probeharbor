@@ -3,26 +3,30 @@
  * One-click "I'm on it" plus the other acknowledge actions behind "More".
  * Each button submits its own `action` value to /api/user/alert-events/ack.
  */
-import { getLocale } from "../../i18n";
+import { fmt, getLocale } from "../../i18n";
 import { alertsMessages } from "../../i18n/messages/app/alerts";
+import { raiseThresholdBand } from "../../lib/falseAlarmHints";
 
 interface Props {
   eventId: number;
   hasTenantRelay: boolean;
   canPingWebhook: boolean;
   compact?: boolean;
+  /** The °C display preference (the raise-threshold step reads 1.1 °C). */
+  useCelsius?: boolean;
 }
 
-const { eventId, hasTenantRelay, canPingWebhook, compact = false } = Astro.props;
+const { eventId, hasTenantRelay, canPingWebhook, compact = false, useCelsius = false } = Astro.props;
 
-const t = alertsMessages(getLocale(Astro)).ack;
+const locale = getLocale(Astro);
+const t = alertsMessages(locale).ack;
 
 const moreActions: Array<{ value: string; label: string }> = [
   { value: "snooze_1h", label: t.snooze1h },
   { value: "snooze_4h", label: t.snooze4h },
   { value: "snooze_24h", label: t.snooze24h },
   { value: "false_alarm", label: t.falseAlarm },
-  { value: "raise_threshold", label: t.raiseThreshold },
+  { value: "raise_threshold", label: fmt(t.raiseThreshold, { band: raiseThresholdBand(locale, useCelsius) }) },
   ...(hasTenantRelay ? [{ value: "notify_tenant", label: t.notifyTenant }] : []),
   ...(canPingWebhook ? [{ value: "webhook_ping", label: t.webhookPing }] : []),
 ];

@@ -5,6 +5,15 @@
 import { fmt, formatNumber, plural } from "../i18n/format";
 import type { Locale } from "../i18n/locales";
 import { alertsMessages } from "../i18n/messages/app/alerts";
+import { displayTempInputValue, formatTempBand, tempUnitLabel, toDisplayDelta, toDisplayTemp } from "./temperatureFormat";
+
+/** "False alarm + raise threshold" adds this many °F (lib/alertAckPlaybook). */
+export const RAISE_THRESHOLD_STEP_F = 2;
+
+/** The raise step as button text in the display unit: "2°F" / "1.1°C" ("2 °F" / "1,1 °C" outside English). */
+export function raiseThresholdBand(locale: Locale, useCelsius: boolean): string {
+  return formatTempBand(RAISE_THRESHOLD_STEP_F, locale, useCelsius);
+}
 
 export type FalseAlarmHint = {
   id: string;
@@ -133,10 +142,14 @@ export function formatAlertWhyMeta(
     reasonSummary?: string;
   },
   locale: Locale = "en",
+  /** The dashboard °C display preference: temperatures with the offset, ΔT ×5/9. Meta stays °F. */
+  useCelsius = false,
 ): string | null {
   // Stored text written when the alert fired; shown as is.
   if (meta.reasonSummary?.trim()) return meta.reasonSummary.trim();
   const t = alertsMessages(locale).why;
+  const unit = tempUnitLabel(useCelsius);
+  const temp = (valueF: number) => toDisplayTemp(valueF, useCelsius);
   const fixed = (value: number, digits: number) =>
     formatNumber(Number(value.toFixed(digits)), locale, {
       minimumFractionDigits: digits,
@@ -145,25 +158,29 @@ export function formatAlertWhyMeta(
     });
   const parts: string[] = [];
   if (meta.probeLabel && meta.probeTempF != null) {
-    parts.push(fmt(t.probeAt, { probe: meta.probeLabel, temp: fixed(meta.probeTempF, 1) }));
+    parts.push(fmt(t.probeAt, { probe: meta.probeLabel, temp: fixed(temp(meta.probeTempF), 1), unit }));
   } else if (meta.probeTempF != null) {
-    parts.push(fmt(t.probeAtUnnamed, { temp: fixed(meta.probeTempF, 1) }));
+    parts.push(fmt(t.probeAtUnnamed, { temp: fixed(temp(meta.probeTempF), 1), unit }));
   }
   if (meta.thresholdF != null) {
+    // °F as stored; °C to a tenth (34 °F → 1.1), like the threshold input.
+    const threshold = displayTempInputValue(meta.thresholdF, useCelsius);
     parts.push(
       fmt(t.threshold, {
         temp:
           locale === "en"
-            ? String(meta.thresholdF)
-            : formatNumber(meta.thresholdF, locale, { maximumFractionDigits: 3, useGrouping: false }),
+            ? String(threshold)
+            : formatNumber(threshold, locale, { maximumFractionDigits: 3, useGrouping: false }),
+        unit,
       }),
     );
   }
   if (meta.outdoorTempF != null) {
-    parts.push(fmt(t.outdoor, { temp: fixed(meta.outdoorTempF, 0) }));
+    parts.push(fmt(t.outdoor, { temp: fixed(temp(meta.outdoorTempF), 0), unit }));
   }
   if (meta.deltaTF != null) {
-    parts.push(fmt(t.deltaT, { delta: `${meta.deltaTF >= 0 ? "+" : ""}${fixed(meta.deltaTF, 1)}` }));
+    const delta = toDisplayDelta(meta.deltaTF, useCelsius);
+    parts.push(fmt(t.deltaT, { delta: `${meta.deltaTF >= 0 ? "+" : ""}${fixed(delta, 1)}`, unit }));
   }
   if (meta.runwayHours != null) {
     parts.push(fmt(t.runway, { hours: fixed(meta.runwayHours, 1) }));
