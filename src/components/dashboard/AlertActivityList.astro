@@ -8,7 +8,7 @@ import {
   type FalseAlarmHint,
 } from "../../lib/falseAlarmHints";
 import { formatAlertChannelList } from "../../lib/alertChannelLabels";
-import { isActionableAlertKind, type AlertEventRow } from "../../lib/alertEvents";
+import { isUnhandledAlertEvent, type AlertEventRow } from "../../lib/alertEvents";
 import AlertAckActions from "./AlertAckActions.astro";
 import { groupAlertEvents } from "../../lib/alertEventGroups";
 import { formatAlertKind } from "../../lib/alertKindLabels";
@@ -129,7 +129,7 @@ function tipForEvent(event: AlertEventRow): FalseAlarmHint | null {
             <div class="mt-3">
               {event.acknowledged_at ? (
                 <span class="text-xs text-[var(--color-text-muted)]">{handledLabel(event)}</span>
-              ) : event.channels_sent.length > 0 && canEdit && isActionableAlertKind(event.kind) ? (
+              ) : canEdit && isUnhandledAlertEvent(event) ? (
                 <AlertAckActions
                   eventId={event.id}
                   hasTenantRelay={hasTenantRelay}
@@ -214,7 +214,7 @@ function tipForEvent(event: AlertEventRow): FalseAlarmHint | null {
                 <td class="py-2">
                   {event.acknowledged_at ? (
                     <span class="text-[var(--color-text-muted)]">{handledLabel(event)}</span>
-                  ) : event.channels_sent.length > 0 && canEdit && isActionableAlertKind(event.kind) ? (
+                  ) : canEdit && isUnhandledAlertEvent(event) ? (
                     <AlertAckActions
                       eventId={event.id}
                       hasTenantRelay={hasTenantRelay}

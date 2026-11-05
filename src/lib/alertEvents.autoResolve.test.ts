@@ -4,7 +4,7 @@ const calls: Array<{ op: string; args: unknown[] }> = [];
 const updates: Array<{ values: Record<string, unknown>; id?: unknown }> = [];
 function chain(result: unknown) {
   const c: Record<string, unknown> = {};
-  for (const op of ["select", "eq", "is", "not", "limit", "in", "lt"]) {
+  for (const op of ["select", "eq", "is", "not", "or", "limit", "in", "lt"]) {
     c[op] = (...args: unknown[]) => {
       calls.push({ op, args });
       return c;

@@ -153,6 +153,37 @@ class QueryBuilder implements PromiseLike<{ data: unknown; error: null; count: n
     else this.filters.push((row) => !sameValue(row[column], value));
     return this;
   }
+  /** PostgREST `or`: "col.op.value,col.op.value" with eq / neq / in / is. */
+  or(expression: string) {
+    const parts: string[] = [];
+    let depth = 0;
+    let current = "";
+    for (const char of expression) {
+      if (char === "(") depth += 1;
+      if (char === ")") depth -= 1;
+      if (char === "," && depth === 0) {
+        parts.push(current);
+        current = "";
+      } else {
+        current += char;
+      }
+    }
+    if (current) parts.push(current);
+    const predicates: Predicate[] = parts.map((part) => {
+      const [column, operator, ...rest] = part.trim().split(".");
+      const value = rest.join(".");
+      if (operator === "eq") return (row) => sameValue(row[column!], value);
+      if (operator === "neq") return (row) => !sameValue(row[column!], value);
+      if (operator === "is") return (row) => (value === "null" ? row[column!] == null : String(row[column!]) === value);
+      if (operator === "in") {
+        const values = value.replace(/^\(|\)$/g, "").split(",");
+        return (row) => values.includes(String(row[column!]));
+      }
+      throw new Error(`FakeSupabase.or: unsupported operator ${operator}`);
+    });
+    this.filters.push((row) => predicates.some((predicate) => predicate(row)));
+    return this;
+  }
   filter(column: string, operator: string, value: unknown) {
     return operator === "neq" ? this.neq(column, value) : this.eq(column, value);
   }

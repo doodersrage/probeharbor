@@ -2,6 +2,7 @@ import { createServerClient } from "./supabase";
 import { escapeCsvField } from "./csvEscape";
 import type { Locale } from "../i18n/locales";
 import { alertJobsMessages } from "../i18n/messages/app/alertJobs";
+import { SAFETY_ALERT_KINDS, isSafetyAlertKind } from "./alertDeliveryState";
 
 export type AlertEventMeta = {
   thresholdF?: number;
@@ -132,7 +133,7 @@ export async function acknowledgeAlertEvent(
   return { ok: true };
 }
 
-/** Acknowledge the most recent delivered alert that is still unhandled. */
+/** Acknowledge the most recent alert that is still unhandled (see isUnhandledAlertEvent). */
 export async function acknowledgeLatestUnackedAlert(
   userId: string,
   locale: Locale = "en",
@@ -143,8 +144,8 @@ export async function acknowledgeLatestUnackedAlert(
     .select("id")
     .eq("user_id", userId)
     .is("acknowledged_at", null)
-    .not("channels_sent", "eq", "{}")
     .not("kind", "in", INFORMATIONAL_KIND_FILTER)
+    .or(UNHANDLED_DELIVERY_FILTER)
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle();
@@ -157,7 +158,7 @@ export async function acknowledgeLatestUnackedAlert(
   return { ok: true, eventId: data.id };
 }
 
-/** Acknowledge every delivered alert that is still unhandled (capped). */
+/** Acknowledge every alert that is still unhandled, held safety alerts included (capped). */
 export async function acknowledgeAllUnackedAlerts(
   userId: string,
   limit = 50,
@@ -169,8 +170,8 @@ export async function acknowledgeAllUnackedAlerts(
     .select("id")
     .eq("user_id", userId)
     .is("acknowledged_at", null)
-    .not("channels_sent", "eq", "{}")
     .not("kind", "in", INFORMATIONAL_KIND_FILTER)
+    .or(UNHANDLED_DELIVERY_FILTER)
     .order("created_at", { ascending: false })
     .limit(limit);
 
@@ -193,7 +194,9 @@ export async function acknowledgeAllUnackedAlerts(
 /**
  * Close still-open alerts whose condition has cleared, so the unhandled count
  * means "needs attention now" instead of growing forever. Marks them handled
- * with meta.autoResolved so the Alerts page can say "Recovered".
+ * with meta.autoResolved so the Alerts page can say "Recovered". Closes the
+ * same rows the count counts, held/failed safety alerts included; those add
+ * no channels, so a recovery notice still only goes where an alert went.
  */
 export type AutoResolveResult = {
   resolved: number;
@@ -211,8 +214,8 @@ export async function autoResolveAlerts(
     .select("id, meta, channels_sent")
     .eq("user_id", userId)
     .is("acknowledged_at", null)
-    .not("channels_sent", "eq", "{}")
     .not("kind", "in", INFORMATIONAL_KIND_FILTER)
+    .or(UNHANDLED_DELIVERY_FILTER)
     .limit(200);
   if (options.kinds?.length) query = query.in("kind", options.kinds);
   if (options.olderThanMs) {
@@ -267,7 +270,11 @@ export async function listRecentAlertEventsFiltered(
     query = query.in("kind", [...options.kinds]);
   }
   if (options.unackedOnly) {
-    query = query.is("acknowledged_at", null).not("kind", "in", INFORMATIONAL_KIND_FILTER);
+    // Same rows the unhandled count counts.
+    query = query
+      .is("acknowledged_at", null)
+      .not("kind", "in", INFORMATIONAL_KIND_FILTER)
+      .or(UNHANDLED_DELIVERY_FILTER);
   }
 
   const { data, error } = await query;
@@ -398,6 +405,27 @@ export function isActionableAlertKind(kind: string): boolean {
   return !(INFORMATIONAL_ALERT_KINDS as readonly string[]).includes(kind);
 }
 
+/**
+ * PostgREST `or` for the delivery side of "unhandled": it reached someone, or
+ * it's a safety kind (held, failed or not set up still needs attention).
+ */
+const UNHANDLED_DELIVERY_FILTER = `channels_sent.neq.{},kind.in.(${SAFETY_ALERT_KINDS.join(",")})`;
+
+/**
+ * Needs attention until someone acknowledges it (or it auto-resolves):
+ * an actionable alert that reached someone, or a safety alert (freeze, leak,
+ * power off, sensor silent) that nobody was told about because it was held
+ * (quiet hours, snooze, vacation), every channel failed, or none was set up.
+ * Matches countUnacknowledgedAlerts and the acknowledge-all query.
+ */
+export function isUnhandledAlertEvent(
+  event: Pick<AlertEventRow, "kind" | "channels_sent" | "acknowledged_at">,
+): boolean {
+  if (event.acknowledged_at) return false;
+  if (!isActionableAlertKind(event.kind)) return false;
+  return (event.channels_sent ?? []).length > 0 || isSafetyAlertKind(event.kind);
+}
+
 export async function countUnacknowledgedAlerts(userId: string): Promise<number> {
   const supabase = createServerClient();
   const { count } = await supabase
@@ -405,8 +433,8 @@ export async function countUnacknowledgedAlerts(userId: string): Promise<number>
     .select("id", { count: "exact", head: true })
     .eq("user_id", userId)
     .is("acknowledged_at", null)
-    .not("channels_sent", "eq", "{}")
-    .not("kind", "in", INFORMATIONAL_KIND_FILTER);
+    .not("kind", "in", INFORMATIONAL_KIND_FILTER)
+    .or(UNHANDLED_DELIVERY_FILTER);
 
   return count ?? 0;
 }

@@ -58,3 +58,18 @@ export function alertDeliveryState(event: DeliveryColumns): AlertDeliveryState {
   if (failed.length > 0) return { state: "failed", failed };
   return { state: "not_set_up" };
 }
+
+/**
+ * Safety alerts: an unattended one can mean property damage, so when nobody
+ * was told (held, failed, nothing set up) it still needs attention on the
+ * dashboard. Stored kinds: "threshold" (freeze and humidity; "freeze" on
+ * legacy rows), "flood" (leak), "power" (power off) and "outage" (sensor
+ * silent / device offline). Routine kinds (rule, battery, rssi, forecast, …)
+ * count as unhandled only once they reached someone; informational kinds
+ * (test messages, digests, recovery notices) never do.
+ */
+export const SAFETY_ALERT_KINDS = ["threshold", "freeze", "flood", "power", "outage"] as const;
+
+export function isSafetyAlertKind(kind: string | null | undefined): boolean {
+  return typeof kind === "string" && (SAFETY_ALERT_KINDS as readonly string[]).includes(kind);
+}

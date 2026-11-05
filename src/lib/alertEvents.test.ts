@@ -18,6 +18,7 @@ function mockQuery(result: { data?: unknown; error?: unknown; count?: number | n
     "range",
     "in",
     "ilike",
+    "or",
   ]) {
     builder[method] = vi.fn(() => builder);
   }
