@@ -17,7 +17,7 @@ const fr: OverviewNudgesMessages = {
   },
   demoPull: {
     title: "Essayer sans matériel",
-    body: "Un clic ajoute notre flux HTTPS d’exemple public. La vue d’ensemble affiche alors des températures en direct, sans ESP.",
+    body: "Un clic ajoute notre flux HTTPS d’exemple public. La vue d’ensemble affiche alors des températures simulées, marquées Données de démo, sans ESP. Elles ne déclenchent jamais d’alerte.",
     button: "Essayer le flux de démo",
   },
   probeSimulator: {

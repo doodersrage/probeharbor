@@ -103,7 +103,7 @@ const en = {
     /** Label used by the Devices first-run card. */
     buttonFirstRun: "Try it with a demo feed",
     settingUp: "Setting up…",
-    hint: "Live weather JSON — no hardware required.",
+    hint: "Simulated from live weather, labeled Demo data. No hardware required.",
     couldNotSave: "Could not save example feed.",
     /** Name given to the saved example feed (simulated readings). */
     feedName: "Demo weather feed (simulated)",

@@ -104,7 +104,7 @@ const de: DeviceSetupPullMessages = {
     button: "Demo-Feed ausprobieren",
     buttonFirstRun: "Mit einem Demo-Feed ausprobieren",
     settingUp: "Wird eingerichtet…",
-    hint: "Live-Wetter-JSON – keine Hardware nötig.",
+    hint: "Aus dem Live-Wetter simuliert, als Demodaten gekennzeichnet. Keine Hardware nötig.",
     couldNotSave: "Beispiel-Feed konnte nicht gespeichert werden.",
     feedName: "Demo-Wetter-Feed (simuliert)",
   },

@@ -17,7 +17,7 @@ const de: OverviewNudgesMessages = {
   },
   demoPull: {
     title: "Ohne Hardware ausprobieren",
-    body: "Ein Klick fügt unseren öffentlichen HTTPS-Beispiel-Feed hinzu. Die Übersicht zeigt dann Live-Temperaturen, ganz ohne ESP.",
+    body: "Ein Klick fügt unseren öffentlichen HTTPS-Beispiel-Feed hinzu. Die Übersicht zeigt dann simulierte Temperaturen, als Demodaten gekennzeichnet, ganz ohne ESP. Demodaten lösen nie Alarme aus.",
     button: "Demo-Feed testen",
   },
   probeSimulator: {

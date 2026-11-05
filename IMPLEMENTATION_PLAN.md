@@ -3975,3 +3975,38 @@ From a user screenshot of the Overview's Sensor extras column.
   "All local migrations are applied". Cross-checked with the Supabase
   migration list: the same 67 versions locally and remotely. db-pending
   now prints a hint for a rejected token; deploy guide notes it.
+
+------------------------------------------------------------------------
+
+## Demo feed data and onboarding step 1 (2026-11-05)
+
+**Status: Implemented on a branch, not deployed. No migration.**
+
+The "Try it with a demo feed" quick start saves `/api/feeds/example`
+(weather-simulated probes) as an ordinary pull feed. Nothing marked those
+readings as demo, so they could fire freeze/rule/outage alerts, ticked
+"Connect your first sensor", and looked measured.
+
+- [x] Detection (`src/lib/demoFeed.ts`): a pull device whose URL path is
+      `/api/feeds/example` (any host) is demo, so feeds already in accounts
+      are covered; saving a pull feed also writes `devices.meta.demo`. No
+      schema change (meta is existing JSON).
+- [x] Alerts: every alert path reads sensors through
+      `fetchAlertSensorValues` and drops demo devices/feeds at its entry
+      (threshold, flood, power, runway, rules, rate/outage, battery/RSSI,
+      stuck, ingest-triggered, delivery watchdog, feed uptime). Integration
+      tests: real probes still alert next to a demo feed; demo ones don't.
+- [x] UI: "Demo data" notice with Remove demo feed (existing delete
+      endpoint) on Overview, Live, History, Devices; badges on Live cards and
+      feed groups, the Devices list and the pull-feed form. Demo feed name
+      and nudge copy translated (5 languages) and say "simulated".
+- [x] Onboarding step 1 is done only when a non-demo device has reported;
+      "Waiting for the first reading" while one exists but hasn't. First-run
+      focus / Insights still count the demo feed (unchanged), so the demo
+      stays explorable.
+- Evidence: see the branch report (unit, typecheck, lint, build, e2e).
+  Not checked signed in (no test account; .env points at production).
+- Open: the Overview status card can still describe a demo probe's
+  temperature (with the notice above it); the Android app doesn't show the
+  badge yet (`/api/home/readings` adds `demo`/`deviceDemo`); a push device
+  posting `?format=ingest` example payloads can't be recognized as demo.

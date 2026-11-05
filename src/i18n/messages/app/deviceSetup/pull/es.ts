@@ -103,7 +103,7 @@ const es: DeviceSetupPullMessages = {
     button: "Probar feed de demostración",
     buttonFirstRun: "Pruébalo con un feed de demostración",
     settingUp: "Configurando…",
-    hint: "JSON meteorológico en directo, sin hardware.",
+    hint: "Simulado a partir del tiempo en directo, marcado como datos de demostración. Sin hardware.",
     couldNotSave: "No se pudo guardar el feed de ejemplo.",
     feedName: "Feed meteorológico de demostración (simulado)",
   },

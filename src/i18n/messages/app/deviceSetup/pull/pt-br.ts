@@ -103,7 +103,7 @@ const ptBr: DeviceSetupPullMessages = {
     button: "Experimentar feed de demonstração",
     buttonFirstRun: "Experimente com um feed de demonstração",
     settingUp: "Configurando…",
-    hint: "JSON de clima ao vivo, sem precisar de hardware.",
+    hint: "Simulado a partir do clima ao vivo, marcado como dados de demonstração. Sem precisar de hardware.",
     couldNotSave: "Não foi possível salvar o feed de exemplo.",
     feedName: "Feed de clima de demonstração (simulado)",
   },

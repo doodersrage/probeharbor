@@ -17,7 +17,7 @@ const ptBr: OverviewNudgesMessages = {
   },
   demoPull: {
     title: "Teste sem hardware",
-    body: "Um clique adiciona nosso feed HTTPS público de exemplo. A visão geral mostra temperaturas ao vivo sem precisar de ESP.",
+    body: "Um clique adiciona nosso feed HTTPS público de exemplo. A visão geral mostra temperaturas simuladas, marcadas como dados de demonstração, sem precisar de ESP. Elas nunca enviam alertas.",
     button: "Testar o feed de demonstração",
   },
   probeSimulator: {

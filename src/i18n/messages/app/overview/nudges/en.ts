@@ -19,7 +19,7 @@ const en = {
   },
   demoPull: {
     title: "Try without hardware",
-    body: "One click adds our public example HTTPS feed. Overview shows live temperatures with no ESP required.",
+    body: "One click adds our public example HTTPS feed. Overview fills with simulated temperatures, labeled Demo data, with no ESP required. Demo readings never send alerts.",
     button: "Try demo feed",
   },
   probeSimulator: {
