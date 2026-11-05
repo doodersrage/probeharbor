@@ -372,11 +372,20 @@ export const CONDITION_OPTIONS: Array<{ value: AlertConditionType; label: string
   { value: "outdoor_below", label: `Outdoor temperature below (°F, default ${OUTDOOR_COLD_F})` },
 ];
 
-/** {@link CONDITION_OPTIONS} with labels in `locale`, for the rule editor. */
-export function conditionOptions(locale: Locale = "en"): Array<{ value: AlertConditionType; label: string }> {
+/**
+ * {@link CONDITION_OPTIONS} with labels in `locale`, for the rule editor.
+ * `useCelsius`: temperature labels say °C and the outdoor default reads in °C
+ * (20 °F → −6.7); the editor then shows and posts °C (temp_unit=C).
+ */
+export function conditionOptions(
+  locale: Locale = "en",
+  useCelsius = false,
+): Array<{ value: AlertConditionType; label: string }> {
   const labels = alertRulesMessages(locale).conditions;
+  const outdoorDefault = useCelsius ? Math.round((((OUTDOOR_COLD_F - 32) * 5) / 9) * 10) / 10 : OUTDOOR_COLD_F;
+  const shownDefault = locale === "en" ? String(outdoorDefault) : formatNumber(outdoorDefault, locale, { useGrouping: false });
   return CONDITION_OPTIONS.map(({ value }) => ({
     value,
-    label: fill(labels[value], { default: OUTDOOR_COLD_F }),
+    label: fill(labels[value], { default: shownDefault, unit: useCelsius ? "°C" : "°F" }),
   }));
 }

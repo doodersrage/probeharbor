@@ -10,6 +10,7 @@ import { parseAlertTemplates } from "./alertTemplates";
 import type { Entitlements } from "./entitlements";
 import { isSafeHttpsUrl } from "./ssrfGuard";
 import { parseDisplayTempInput } from "./temperatureFormat";
+import { rulesFromDisplayUnit, thresholdScopeFromDisplayUnit } from "./alertSettingsDisplayUnit";
 
 /** Checkbox fields use value="true" when checked; omitted when unchecked. */
 function formCheckbox(formData: FormData, key: string): boolean {
@@ -209,8 +210,14 @@ export function buildAlertSettingsFromFormData(
     quietHoursBypassFreeze: formCheckbox(formData, "quiet_hours_bypass_freeze"),
     quietHoursSmsCritical:
       formCheckbox(formData, "quiet_hours_sms_critical") && entitlements.canUseSms,
+    // Rule values are in the display unit when temp_unit=C (temperatures and
+    // the rate-drop difference convert separately; %, minutes, ppm never do).
     alertRules: formData.has("alert_rules_json")
-      ? parseAlertRulesFromForm(formData.get("alert_rules_json")?.toString())
+      ? rulesFromDisplayUnit(
+          parseAlertRulesFromForm(formData.get("alert_rules_json")?.toString()),
+          formData.get("temp_unit")?.toString(),
+          existing.alertRules,
+        )
       : existing.alertRules,
     monthlyReportEnabled: formCheckbox(formData, "monthly_report_enabled"),
     quarterlyReportEnabled: formCheckbox(formData, "quarterly_report_enabled"),
@@ -314,7 +321,14 @@ export function buildAlertSettingsFromFormData(
       }
       try {
         const raw = formData.get("threshold_sensor_scope_json")?.toString();
-        return raw ? parseThresholdSensorScope(JSON.parse(raw)) : existing.thresholdSensorScope;
+        // Per-sensor freeze overrides are in the display unit when temp_unit=C.
+        return raw
+          ? thresholdScopeFromDisplayUnit(
+              parseThresholdSensorScope(JSON.parse(raw)),
+              formData.get("temp_unit")?.toString(),
+              existing.thresholdSensorScope,
+            )
+          : existing.thresholdSensorScope;
       } catch {
         return existing.thresholdSensorScope;
       }

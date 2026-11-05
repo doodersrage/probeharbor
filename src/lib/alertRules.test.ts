@@ -336,6 +336,19 @@ describe("explainAlertRules", () => {
     expect(conditionOptions("de").find((o) => o.value === "outdoor_below")?.label).toBe(
       "Außentemperatur unter (°F, Standard 20)",
     );
+    expect(conditionOptions("de", true).find((o) => o.value === "outdoor_below")?.label).toBe(
+      "Außentemperatur unter (°C, Standard -6,7)",
+    );
+  });
+
+  it("labels the rule editor in the display unit", () => {
+    const label = (useCelsius: boolean, value: string) =>
+      conditionOptions("en", useCelsius).find((o) => o.value === value)?.label;
+    expect(label(false, "temp_above")).toBe("Temperature above (°F)");
+    expect(label(false, "outdoor_below")).toBe("Outdoor temperature below (°F, default 20)");
+    expect(label(true, "temp_above")).toBe("Temperature above (°C)");
+    expect(label(true, "outdoor_below")).toBe("Outdoor temperature below (°C, default -6.7)");
+    expect(label(true, "co2_above")).toBe("CO₂ above (ppm)");
   });
 
   it("agrees with evaluateAlertRules", () => {

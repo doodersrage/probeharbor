@@ -3,7 +3,7 @@ import type { AlertRulesMessages } from "./en";
 const es: AlertRulesMessages = {
   conditions: {
     temp_below: "Temperatura por debajo del umbral",
-    temp_above: "Temperatura por encima de (°F)",
+    temp_above: "Temperatura por encima de ({unit})",
     humidity_above: "Humedad por encima del umbral",
     door_open: "Puerta abierta",
     door_open_duration: "Puerta abierta más de (minutos)",
@@ -18,7 +18,7 @@ const es: AlertRulesMessages = {
     level_above: "Nivel de agua / sumidero por encima de (%)",
     energy_below: "Energía por debajo de (W)",
     motion_detected: "Movimiento detectado",
-    outdoor_below: "Temperatura exterior por debajo de (°F, predeterminado {default})",
+    outdoor_below: "Temperatura exterior por debajo de ({unit}, predeterminado {default})",
   },
   shortNames: {
     temp_below: "temperatura baja",

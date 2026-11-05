@@ -10,6 +10,7 @@ import { conditionOptions } from "../../lib/alertRules";
 const locale = getLocale(Astro);
 const t = ruleCheckMessages(locale);
 // English keeps the raw condition type names ("outdoor below") it always showed.
+// The check explains saved (°F) values from /api/user/rule-check, so labels say °F.
 const conditions =
   locale === "en" ? {} : Object.fromEntries(conditionOptions(locale).map((o) => [o.value, o.label]));
 const client = { ...t.client, conditions, intl: LOCALE_META[locale].intl };

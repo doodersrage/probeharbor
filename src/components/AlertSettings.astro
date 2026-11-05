@@ -14,6 +14,7 @@ import { fmt, getLocale, LOCALE_META } from "../i18n";
 import { alertSettingsMessages } from "../i18n/messages/app/alertSettings";
 import { shellMessages } from "../i18n/messages/app/shell";
 import UnsavedChangesGuard from "./UnsavedChangesGuard.astro";
+import { rulesToDisplayUnit, thresholdScopeToDisplayUnit } from "../lib/alertSettingsDisplayUnit";
 import {
   displayDeltaInputValue,
   displayTempInputValue,
@@ -42,7 +43,9 @@ interface Props {
   /**
    * The °C display preference: the freeze threshold and fast-drop inputs
    * show °C and the form says so (temp_unit=C), so the server converts back
-   * to °F. Per-sensor overrides and rules stay °F (labelled).
+   * to °F. Per-sensor freeze overrides and rule temperatures (and the
+   * rate-drop difference) are shown and posted in °C too; the server
+   * converts them (lib/alertSettingsDisplayUnit).
    */
   useCelsius?: boolean;
 }
@@ -159,7 +162,12 @@ const PLAYBOOK_KINDS = [
   { id: "generic", label: t.kindLabels.generic },
 ] as const;
 
-const rulesJson = JSON.stringify(settings.alertRules ?? []);
+// Rules and per-sensor overrides in the display unit, so what the hidden fields
+// post (with temp_unit) matches what the editor shows, with or without JS.
+const displayRules = rulesToDisplayUnit(settings.alertRules ?? [], useCelsius);
+const rulesJson = JSON.stringify(displayRules);
+const displayScope = thresholdScopeToDisplayUnit(settings.thresholdSensorScope, useCelsius);
+const heatThresholdShown = displayTempInputValue(HEAT_THRESHOLD_F, useCelsius);
 ---
 {!canEdit && (
   <p class="alert-warning mb-4" role="status">
@@ -346,7 +354,7 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
           </label>
           <div class="space-y-3" id="threshold-sensor-scope-editor">
             {thresholdSensors.map((sensor) => {
-              const override = settings.thresholdSensorScope.overrides[sensor.id];
+              const override = displayScope.overrides[sensor.id];
               return (
                 <div class="rounded border border-[var(--color-border)] p-3">
                   <label class="checkbox-row mb-2">
@@ -368,17 +376,17 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
                   </label>
                   <div class="form-field mb-0">
                     <label class="form-label" for={`sensor-freeze-${sensor.id}`}>
-                      {t.essentials.freezeOverride}
+                      {fmt(t.essentials.freezeOverride, { unit: tempUnit })}
                     </label>
                     <input
                       class="form-input threshold-sensor-override"
                       type="number"
-                      step="0.5"
+                      step={tempStep}
                       id={`sensor-freeze-${sensor.id}`}
                       data-sensor-id={sensor.id}
                       data-override-kind="freezeThresholdF"
                       value={override?.freezeThresholdF ?? ""}
-                      placeholder={fmt(t.defaultValue, { value: settings.freezeThresholdF })}
+                      placeholder={fmt(t.defaultValue, { value: displayTempInputValue(settings.freezeThresholdF, useCelsius) })}
                       disabled={!canEdit}
                     />
                   </div>
@@ -408,7 +416,7 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
             name="threshold_sensor_scope_json"
             rows={4}
             aria-hidden="true"
-          >{JSON.stringify(settings.thresholdSensorScope ?? {}, null, 2)}</textarea>
+          >{JSON.stringify(displayScope ?? {}, null, 2)}</textarea>
         </div>
       </details>
     )}
@@ -802,7 +810,7 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
     <div id="alert-rules-list" class="space-y-3 mb-3"></div>
     <div class="flex flex-wrap gap-2 mb-4">
       <button type="button" class="btn-secondary" id="add-alert-rule" data-unsaved-edit>{t.automation.addRule}</button>
-      <button type="button" class="btn-secondary" id="add-heat-rule" data-unsaved-edit>{fmt(t.automation.addHeatRule, { threshold: HEAT_THRESHOLD_F })}</button>
+      <button type="button" class="btn-secondary" id="add-heat-rule" data-unsaved-edit>{fmt(t.automation.addHeatRule, { threshold: heatThresholdShown, unit: tempUnit })}</button>
     </div>
     <RuleCheckPanel />
 
@@ -1030,7 +1038,7 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
 
 <AlertSettingsFormSubmit />
 <UnsavedChangesGuard />
-<AlertSettingsRulesScript initialRules={settings.alertRules} />
+<AlertSettingsRulesScript initialRules={displayRules} useCelsius={useCelsius} />
 <AlertSettingsPlaybooksScript
   initialPlaybooks={settings.alertPlaybooks ?? []}
   alertChannels={ALERT_CHANNELS}

@@ -37,7 +37,7 @@ const es: AlertSettingsMessages = {
     perSensorHint:
       "Por defecto, todos los sensores de temperatura usan los umbrales de congelación y humedad del hogar indicados arriba. Marca sensores concretos para limitar las alertas de umbral o define un valor propio por sensor.",
     allSensors: "Todos los sensores de temperatura (predeterminado)",
-    freezeOverride: "Umbral de congelación propio (°F, opcional)",
+    freezeOverride: "Umbral de congelación propio ({unit}, opcional)",
     humidityOverride: "Umbral de humedad propio (%, opcional)",
     healthSummary: "Batería, señal Wi-Fi y comprobación de feeds",
     lowBattery: "Alertas de batería baja",
@@ -125,7 +125,7 @@ const es: AlertSettingsMessages = {
       'Se activan cuando se cumplen todas (o alguna) de las condiciones de una regla, p. ej. tubería por debajo de 3 °C (38 °F) Y exterior por debajo de −7 °C (20 °F). Las inundaciones ya avisan al detectar agua; añade aquí una condición de inundación solo para combinarla con otras comprobaciones. Ejemplo de puerta + frío: <a class="text-link" href="/about/garage-door-cold-playbook">guía de la puerta del garaje</a>.',
     doorDurationHint: "«Puerta abierta más de N minutos» se activa cuando una puerta lleva abierta N minutos y se cancela al cerrarla, así que las aperturas rápidas no avisan. Usa «Puerta abierta» para enterarte de cada apertura.",
     addRule: "Añadir regla",
-    addHeatRule: "Añadir regla de calor ({threshold} °F)",
+    addHeatRule: "Añadir regla de calor ({threshold} {unit})",
     playbooks: "Guías de alerta",
     playbooksHint: "Pasos de seguimiento tras la alerta inicial: p. ej. un SMS 15 minutos después si nadie la ha confirmado.",
     addStep: "Añadir paso",

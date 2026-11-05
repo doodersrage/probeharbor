@@ -39,7 +39,7 @@ const en = {
     perSensorHint:
       "By default every temperature sensor uses the household freeze and humidity thresholds above. Check specific sensors to limit threshold alerts, or set an optional override per sensor.",
     allSensors: "All temperature sensors (default)",
-    freezeOverride: "Optional freeze override (°F)",
+    freezeOverride: "Optional freeze override ({unit})",
     humidityOverride: "Optional humidity override (%)",
     healthSummary: "Battery, Wi-Fi signal, and feed checks",
     lowBattery: "Low battery alerts",
@@ -125,7 +125,7 @@ const en = {
       'Fire when all (or any) of a rule\'s conditions are true, e.g. pipe below 38°F AND outdoor below 20°F. Flood already alerts when wet; add a flood condition here only to combine it with other checks. Door + cold example: <a class="text-link" href="/about/garage-door-cold-playbook">garage door playbook</a>.',
     doorDurationHint: "“Door open longer than N minutes” fires once a door has been open N minutes and clears when it closes, so quick openings don't alert. Use “Door open” to hear about every opening.",
     addRule: "Add rule",
-    addHeatRule: "Add heat rule ({threshold}°F)",
+    addHeatRule: "Add heat rule ({threshold}{unit})",
     playbooks: "Alert playbooks",
     playbooksHint: "Follow-up steps after the initial alert: e.g. SMS 15 minutes later if still unacknowledged.",
     addStep: "Add step",

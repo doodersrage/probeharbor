@@ -99,6 +99,40 @@ describe("buildAlertSettingsFromFormData", () => {
     expect(form({ temp_unit: "C" })).toMatchObject({ freezeThresholdF: 34, rateChangeF: 5 });
   });
 
+  it("converts °C rule values and per-sensor freeze overrides back to °F (temp_unit=C)", () => {
+    const rules: AlertRule[] = [
+      { id: "r1", enabled: true, name: "Cold", match: "all", all: [{ type: "temp_below", value: 38 }, { type: "rate_drop", value: 5 }] },
+    ];
+    const existing: AlertSettings = {
+      ...DEFAULT_ALERT_SETTINGS,
+      alertRules: rules,
+      thresholdSensorScope: { includedSensorIds: [], overrides: { s1: { freezeThresholdF: 30, humidityThreshold: 70 } } },
+    };
+    const form = (fields: Record<string, string>) => {
+      const fd = new FormData();
+      for (const [k, v] of Object.entries(fields)) fd.set(k, v);
+      return buildAlertSettingsFromFormData(prepareAlertSettingsFormData(fd), existing, proEntitlements);
+    };
+    const shownRules = JSON.stringify([{ ...rules[0], all: [{ type: "temp_below", value: 3.3 }, { type: "rate_drop", value: 2.8 }] }]);
+    const shownScope = JSON.stringify({ includedSensorIds: [], overrides: { s1: { freezeThresholdF: -1.1, humidityThreshold: 70 } } });
+    // Untouched °C form: stored °F values kept exactly.
+    const same = form({ temp_unit: "C", alert_rules_json: shownRules, threshold_sensor_scope_json: shownScope });
+    expect(same.alertRules[0]!.all.map((c) => c.value)).toEqual([38, 5]);
+    expect(same.thresholdSensorScope.overrides.s1).toEqual({ freezeThresholdF: 30, humidityThreshold: 70 });
+    // Edited: 0 °C → 32 °F; a 1 °C/h drop → 1.8 °F/h; humidity stays %.
+    const edited = form({
+      temp_unit: "C",
+      alert_rules_json: JSON.stringify([{ ...rules[0], all: [{ type: "temp_below", value: 0 }, { type: "rate_drop", value: 1 }] }]),
+      threshold_sensor_scope_json: JSON.stringify({ includedSensorIds: [], overrides: { s1: { freezeThresholdF: 0, humidityThreshold: 65 } } }),
+    });
+    expect(edited.alertRules[0]!.all.map((c) => c.value)).toEqual([32, 1.8]);
+    expect(edited.thresholdSensorScope.overrides.s1).toEqual({ freezeThresholdF: 32, humidityThreshold: 65 });
+    // °F forms (and forms without temp_unit) post °F as before.
+    const f = form({ alert_rules_json: JSON.stringify(rules), threshold_sensor_scope_json: JSON.stringify(existing.thresholdSensorScope) });
+    expect(f.alertRules[0]!.all.map((c) => c.value)).toEqual([38, 5]);
+    expect(f.thresholdSensorScope.overrides.s1?.freezeThresholdF).toBe(30);
+  });
+
   it("treats omitted checkboxes as off after prepareAlertSettingsFormData", () => {
     const existing = {
       ...DEFAULT_ALERT_SETTINGS,

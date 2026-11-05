@@ -37,7 +37,7 @@ const de: AlertSettingsMessages = {
     perSensorHint:
       "Standardmäßig nutzt jeder Temperatursensor die oben eingestellten Frost- und Luftfeuchte-Schwellenwerte des Haushalts. Wähle einzelne Sensoren aus, um Schwellenwert-Alarme einzuschränken, oder lege pro Sensor einen eigenen Wert fest.",
     allSensors: "Alle Temperatursensoren (Standard)",
-    freezeOverride: "Eigene Frostgrenze (°F, optional)",
+    freezeOverride: "Eigene Frostgrenze ({unit}, optional)",
     humidityOverride: "Eigener Luftfeuchte-Schwellenwert (%, optional)",
     healthSummary: "Akku, WLAN-Signal und Feed-Prüfung",
     lowBattery: "Alarme bei niedrigem Akkustand",
@@ -125,7 +125,7 @@ const de: AlertSettingsMessages = {
       'Lösen aus, wenn alle (oder eine) der Bedingungen einer Regel zutreffen, z. B. Leitung unter 3 °C (38 °F) UND draußen unter −7 °C (20 °F). Überflutung alarmiert bereits bei Nässe; füge hier nur dann eine Überflutungsbedingung hinzu, wenn du sie mit anderen Prüfungen kombinieren willst. Beispiel Tür + Kälte: <a class="text-link" href="/about/garage-door-cold-playbook">Leitfaden Garagentor</a>.',
     doorDurationHint: "„Tür länger als N Minuten offen“ löst aus, sobald eine Tür N Minuten offen ist, und endet, wenn sie geschlossen wird – kurzes Öffnen alarmiert also nicht. Nutze „Tür offen“, um bei jedem Öffnen Bescheid zu bekommen.",
     addRule: "Regel hinzufügen",
-    addHeatRule: "Hitzeregel hinzufügen ({threshold} °F)",
+    addHeatRule: "Hitzeregel hinzufügen ({threshold} {unit})",
     playbooks: "Alarm-Abläufe",
     playbooksHint: "Folgeschritte nach dem ersten Alarm: z. B. 15 Minuten später eine SMS, wenn noch niemand bestätigt hat.",
     addStep: "Schritt hinzufügen",

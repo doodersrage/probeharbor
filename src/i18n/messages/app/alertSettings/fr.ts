@@ -37,7 +37,7 @@ const fr: AlertSettingsMessages = {
     perSensorHint:
       "Par défaut, chaque capteur de température utilise les seuils de gel et d’humidité du foyer ci-dessus. Cochez certains capteurs pour limiter les alertes de seuil, ou définissez une valeur propre par capteur.",
     allSensors: "Tous les capteurs de température (par défaut)",
-    freezeOverride: "Seuil de gel propre (°F, facultatif)",
+    freezeOverride: "Seuil de gel propre ({unit}, facultatif)",
     humidityOverride: "Seuil d’humidité propre (%, facultatif)",
     healthSummary: "Batterie, signal Wi-Fi et vérification des flux",
     lowBattery: "Alertes de batterie faible",
@@ -125,7 +125,7 @@ const fr: AlertSettingsMessages = {
       'Se déclenchent quand toutes (ou l’une) des conditions d’une règle sont vraies, par ex. tuyau sous 3 °C (38 °F) ET extérieur sous −7 °C (20 °F). Les inondations alertent déjà dès que c’est mouillé ; n’ajoutez une condition d’inondation ici que pour la combiner à d’autres vérifications. Exemple porte + froid : <a class="text-link" href="/about/garage-door-cold-playbook">guide de la porte de garage</a>.',
     doorDurationHint: "« Porte ouverte plus de N minutes » se déclenche quand une porte est ouverte depuis N minutes et s’arrête à sa fermeture : les ouvertures rapides n’alertent pas. Utilisez « Porte ouverte » pour être prévenu à chaque ouverture.",
     addRule: "Ajouter une règle",
-    addHeatRule: "Ajouter une règle de chaleur ({threshold} °F)",
+    addHeatRule: "Ajouter une règle de chaleur ({threshold} {unit})",
     playbooks: "Scénarios d’alerte",
     playbooksHint: "Étapes de suivi après l’alerte initiale : par ex. un SMS 15 minutes plus tard si personne n’en a accusé réception.",
     addStep: "Ajouter une étape",

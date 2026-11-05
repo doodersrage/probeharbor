@@ -3,7 +3,7 @@ import type { AlertRulesMessages } from "./en";
 const ptBr: AlertRulesMessages = {
   conditions: {
     temp_below: "Temperatura abaixo do limite",
-    temp_above: "Temperatura acima de (°F)",
+    temp_above: "Temperatura acima de ({unit})",
     humidity_above: "Umidade acima do limite",
     door_open: "Porta aberta",
     door_open_duration: "Porta aberta por mais de (minutos)",
@@ -18,7 +18,7 @@ const ptBr: AlertRulesMessages = {
     level_above: "Nível de água / poço acima de (%)",
     energy_below: "Energia abaixo de (W)",
     motion_detected: "Movimento detectado",
-    outdoor_below: "Temperatura externa abaixo de (°F, padrão {default})",
+    outdoor_below: "Temperatura externa abaixo de ({unit}, padrão {default})",
   },
   shortNames: {
     temp_below: "temperatura baixa",

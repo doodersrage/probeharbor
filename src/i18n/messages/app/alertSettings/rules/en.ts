@@ -7,7 +7,7 @@ const en = {
   /** Condition picker in the rule editor. */
   conditions: {
     temp_below: "Temperature below threshold",
-    temp_above: "Temperature above (°F)",
+    temp_above: "Temperature above ({unit})",
     humidity_above: "Humidity above threshold",
     door_open: "Door open",
     door_open_duration: "Door open longer than (minutes)",
@@ -22,7 +22,7 @@ const en = {
     level_above: "Water / sump level above (%)",
     energy_below: "Energy below (W)",
     motion_detected: "Motion detected",
-    outdoor_below: "Outdoor temperature below (°F, default {default})",
+    outdoor_below: "Outdoor temperature below ({unit}, default {default})",
   },
   /** Short condition names joined into the alert line (`temp below AND door open`). */
   shortNames: {

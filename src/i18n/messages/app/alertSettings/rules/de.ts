@@ -3,7 +3,7 @@ import type { AlertRulesMessages } from "./en";
 const de: AlertRulesMessages = {
   conditions: {
     temp_below: "Temperatur unter Schwellenwert",
-    temp_above: "Temperatur über (°F)",
+    temp_above: "Temperatur über ({unit})",
     humidity_above: "Luftfeuchte über Schwellenwert",
     door_open: "Tür offen",
     door_open_duration: "Tür länger offen als (Minuten)",
@@ -18,7 +18,7 @@ const de: AlertRulesMessages = {
     level_above: "Wasser-/Sumpfpegel über (%)",
     energy_below: "Leistung unter (W)",
     motion_detected: "Bewegung erkannt",
-    outdoor_below: "Außentemperatur unter (°F, Standard {default})",
+    outdoor_below: "Außentemperatur unter ({unit}, Standard {default})",
   },
   shortNames: {
     temp_below: "Temperatur niedrig",

@@ -37,7 +37,7 @@ const ptBr: AlertSettingsMessages = {
     perSensorHint:
       "Por padrão, todo sensor de temperatura usa os limites de congelamento e umidade da casa definidos acima. Marque sensores específicos para restringir os alertas de limite ou defina um valor próprio por sensor.",
     allSensors: "Todos os sensores de temperatura (padrão)",
-    freezeOverride: "Limite de congelamento próprio (°F, opcional)",
+    freezeOverride: "Limite de congelamento próprio ({unit}, opcional)",
     humidityOverride: "Limite de umidade próprio (%, opcional)",
     healthSummary: "Bateria, sinal de Wi-Fi e verificação de feeds",
     lowBattery: "Alertas de bateria fraca",
@@ -125,7 +125,7 @@ const ptBr: AlertSettingsMessages = {
       'Disparam quando todas (ou alguma) das condições de uma regra forem verdadeiras, por ex. cano abaixo de 3 °C (38 °F) E área externa abaixo de −7 °C (20 °F). Alagamento já alerta quando molha; adicione uma condição de alagamento aqui só para combiná-la com outras verificações. Exemplo de porta + frio: <a class="text-link" href="/about/garage-door-cold-playbook">guia do portão da garagem</a>.',
     doorDurationHint: "“Porta aberta por mais de N minutos” dispara quando uma porta fica aberta por N minutos e é encerrada quando ela fecha, então aberturas rápidas não alertam. Use “Porta aberta” para saber de cada abertura.",
     addRule: "Adicionar regra",
-    addHeatRule: "Adicionar regra de calor ({threshold} °F)",
+    addHeatRule: "Adicionar regra de calor ({threshold} {unit})",
     playbooks: "Roteiros de alerta",
     playbooksHint: "Etapas de acompanhamento após o alerta inicial: por ex. SMS 15 minutos depois se ainda não foi confirmado.",
     addStep: "Adicionar etapa",
