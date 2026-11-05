@@ -93,11 +93,22 @@ describe("undelivered safety alerts count as unhandled", () => {
     expect(await countUnacknowledgedAlerts("u1")).toBe(3);
   });
 
+  it("counts held or failed early freeze warnings and stuck-probe alerts", async () => {
+    seed([
+      { id: 1, kind: "forecast", channels_skipped: ["quiet_hours"] },
+      { id: 2, kind: "runway", channels_skipped: ["email"] },
+      { id: 3, kind: "nws", channels_skipped: [] },
+      { id: 4, kind: "stuck", channels_skipped: ["snooze_or_vacation"] },
+    ]);
+    const { countUnacknowledgedAlerts } = await import("./alertEvents");
+    expect(await countUnacknowledgedAlerts("u1")).toBe(4);
+  });
+
   it("does not count held or failed routine and informational alerts", async () => {
     seed([
       { id: 1, kind: "rule", channels_skipped: ["quiet_hours"] },
       { id: 2, kind: "battery", channels_skipped: ["snooze_or_vacation"] },
-      { id: 3, kind: "forecast", channels_skipped: ["email"] },
+      { id: 3, kind: "rate", channels_skipped: ["email"] },
       { id: 4, kind: "generic", channels_skipped: ["quiet_hours"] },
       { id: 5, kind: "digest", channels_skipped: ["email"] },
       { id: 6, kind: "recovery", channels_skipped: [] },

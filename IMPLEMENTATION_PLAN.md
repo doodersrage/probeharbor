@@ -4094,8 +4094,10 @@ worktrees, one commit per item, merged and re-checked together.
 - Evidence (combined main): 3535 unit tests, typecheck 0 errors, lint 64
   (baseline), build, docs build, e2e 58 passed / 14 skipped, wrangler dry
   run same bindings (gzip 2191 KiB). Not checked signed in.
-- Open: decide whether `stuck`, `runway`, `forecast`, `nws` are safety
-  kinds; rule-check panel still reads °F; device calibration offset has no
+- Decided (owner, 2026-11-05): `forecast`, `runway`, `nws` and `stuck` are
+  safety kinds too (the first three are already "critical" for quiet hours
+  and expire after a day; stuck closes on recovery).
+- Open: rule-check panel still reads °F; device calibration offset has no
   unit; retention save errors aren't shown; the failing-channel row and
   claims link don't update on soft refresh; portfolio health and public
   share pages keep the fixed 2 h staleness.
