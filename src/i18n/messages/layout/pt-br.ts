@@ -16,7 +16,7 @@ const ptBr: LayoutMessages = {
   analytics: {
     label: "Aviso de análise",
     textHtml:
-      'As páginas de marketing usam Google Analytics e Ahrefs para entender o tráfego. O painel não. Detalhes em <a class="text-link" href="/privacy#analytics">Privacidade</a> (em inglês).',
+      'Estas páginas públicas usam Google Analytics e Ahrefs para contar visitas. Suas leituras de sensores nunca são enviadas a eles. <a class="text-link" href="/privacy#analytics">O que coletamos</a> (em inglês)',
     dismiss: "Entendi",
   },
   nav: {

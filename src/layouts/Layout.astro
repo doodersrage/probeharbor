@@ -447,7 +447,8 @@ const registerServiceWorker =
 		{loadTurnstile && (
 			<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer is:inline />
 		)}
-		<AnalyticsDisclosure show={loadAnalytics} />
+		{/* The privacy page is the details the notice links to. */}
+		<AnalyticsDisclosure show={loadAnalytics && currentPath !== "/privacy"} />
 		<script src="/nudge-dismiss.js" defer is:inline />
 		<script is:inline define:vars={{ registerServiceWorker, uiText: { menu: t.menu, close: t.close, copy: t.copy, copied: t.copied, copyFailed: t.copyFailed } }}>
 			(() => {

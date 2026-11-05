@@ -14,7 +14,7 @@ const en = {
   analytics: {
     label: "Analytics notice",
     textHtml:
-      'Marketing pages use Google Analytics and Ahrefs to understand traffic. Dashboard routes do not. Details in <a class="text-link" href="/privacy#analytics">Privacy</a>.',
+      'These public pages use Google Analytics and Ahrefs to count visits. Your sensor readings are never sent to them. <a class="text-link" href="/privacy#analytics">What we collect</a>',
     dismiss: "Got it",
   },
   nav: {

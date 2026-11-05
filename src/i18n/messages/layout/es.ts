@@ -16,7 +16,7 @@ const es: LayoutMessages = {
   analytics: {
     label: "Aviso de analítica",
     textHtml:
-      'Las páginas de marketing usan Google Analytics y Ahrefs para entender el tráfico. El panel no. Detalles en <a class="text-link" href="/privacy#analytics">Privacidad</a> (en inglés).',
+      'Estas páginas públicas usan Google Analytics y Ahrefs para contar visitas. Tus lecturas de sensores nunca se les envían. <a class="text-link" href="/privacy#analytics">Qué recopilamos</a> (en inglés)',
     dismiss: "Entendido",
   },
   nav: {

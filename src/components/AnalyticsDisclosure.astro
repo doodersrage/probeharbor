@@ -40,14 +40,17 @@ const t = layoutMessages(getLocale(Astro)).analytics;
       /* ignore */
     }
     root.hidden = false;
-    dismiss?.addEventListener("click", () => {
+    const hide = () => {
       root.hidden = true;
       try {
         localStorage.setItem(key, "1");
       } catch {
         /* ignore */
       }
-    });
+    };
+    dismiss?.addEventListener("click", hide);
+    // Following the link to the details counts as having seen the notice.
+    root.querySelector("a")?.addEventListener("click", hide);
   })();
 </script>
 
