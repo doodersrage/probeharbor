@@ -38,6 +38,13 @@ const de: AlertsMessages = {
     lastAlert: "Letzter Alarm {age}",
     noAlertsYet: "Noch keine Alarme gesendet",
   },
+  pause: {
+    snoozedUntil: "Routinealarme pausiert bis {time}.",
+    vacationUntil: "Urlaubsmodus bis {time}: Routinealarme werden zurückgehalten.",
+    stillSend: "Frost-, Leck-, Strom- und Offline-Alarme werden weiterhin gesendet.",
+    resume: "Alarme fortsetzen",
+    endVacation: "Urlaub beenden",
+  },
   activity: {
     heading: "Letzte Alarmaktivität",
     subtitle: "Protokoll der zugestellten und übersprungenen Kanäle.",

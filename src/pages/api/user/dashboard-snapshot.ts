@@ -8,7 +8,12 @@ import { formatRelativeAge, STALE_MS } from "../../../lib/relativeTime";
 import { summarizeStaleSensors } from "../../../lib/sensorFreshness";
 import { computeGarageRiskStatus } from "../../../lib/garageRiskStatus";
 import { countUnacknowledgedAlerts } from "../../../lib/alertEvents";
-import { isSnoozeActive, isVacationActive } from "../../../lib/alertSnooze";
+import {
+  formatAlertPauseUntil,
+  getAlertPauseState,
+  isSnoozeActive,
+  isVacationActive,
+} from "../../../lib/alertSnooze";
 import { fetchWeatherForUser } from "../../../lib/weatherContext";
 import { overviewCardsMessages } from "../../../i18n/messages/app/overviewCards";
 import { apiCommonMessages, apiLocale } from "../../../i18n/messages/app/api/common";
@@ -96,6 +101,8 @@ export const GET: APIRoute = async ({ cookies, locals }) => {
     wetFloodCount,
   }, locale, overviewCardsMessages(locale).garageRisk);
 
+  const alertPause = alertSettings.enabled ? getAlertPauseState(alertSettings) : null;
+
   const body = {
     at: new Date().toISOString(),
     householdId,
@@ -122,6 +129,10 @@ export const GET: APIRoute = async ({ cookies, locals }) => {
     vacationActive: isVacationActive(alertSettings),
     snoozeUntil: alertSettings.snoozeUntil,
     vacationUntil: alertSettings.vacationUntil,
+    /** When routine alerts resume (snooze/vacation), formatted; null when not paused. */
+    alertsPausedUntilLabel: alertPause
+      ? formatAlertPauseUntil(alertPause.until, locale, alertSettings.quietHoursTimezone)
+      : null,
   };
 
   return new Response(JSON.stringify(body), {

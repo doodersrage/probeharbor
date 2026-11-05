@@ -105,6 +105,8 @@ const ptBr: OverviewMessages = {
     totalCount: "{count} no total",
     on: "Ativados",
     off: "Desativados",
+    paused: "Pausados",
+    pausedUntil: "Até {time}",
     marginDetail: "{temp} °F vs. alerta em {threshold} °F",
     pinAria: "Fixar {label}",
     unpinAria: "Desafixar {label}",

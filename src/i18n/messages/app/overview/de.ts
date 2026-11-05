@@ -105,6 +105,8 @@ const de: OverviewMessages = {
     totalCount: "{count} insgesamt",
     on: "An",
     off: "Aus",
+    paused: "Pausiert",
+    pausedUntil: "Bis {time}",
     marginDetail: "{temp} °F, Alarm bei {threshold} °F",
     pinAria: "{label} anheften",
     unpinAria: "{label} lösen",

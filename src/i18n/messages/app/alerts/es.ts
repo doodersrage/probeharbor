@@ -38,6 +38,13 @@ const es: AlertsMessages = {
     lastAlert: "Última alerta {age}",
     noAlertsYet: "Aún no se ha enviado ninguna alerta",
   },
+  pause: {
+    snoozedUntil: "Alertas rutinarias pospuestas hasta {time}.",
+    vacationUntil: "Modo vacaciones hasta {time}: las alertas rutinarias quedan en espera.",
+    stillSend: "Las alertas de helada, fugas, corte de luz y sensor desconectado se siguen enviando.",
+    resume: "Reanudar alertas",
+    endVacation: "Terminar vacaciones",
+  },
   activity: {
     heading: "Actividad reciente de alertas",
     subtitle: "Registro de los canales entregados y omitidos.",

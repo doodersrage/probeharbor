@@ -1,0 +1,84 @@
+---
+/**
+ * "Routine alerts snoozed until … · Resume alerts". Display only: it reads
+ * snooze/vacation from alert settings and posts the existing clear actions to
+ * /api/user/alert-snooze. It does not change which alerts send.
+ */
+import type { AlertSettings } from "../../lib/alerts";
+import { formatAlertPauseUntil, getAlertPauseState } from "../../lib/alertSnooze";
+import { fmt, getLocale } from "../../i18n";
+import { alertsMessages } from "../../i18n/messages/app/alerts";
+
+interface Props {
+  settings: Pick<AlertSettings, "enabled" | "snoozeUntil" | "vacationUntil" | "quietHoursTimezone">;
+  canEdit: boolean;
+  /** Where the clear action redirects back to. */
+  redirect: string;
+  /** Row inside the Overview status card, or a plain paragraph. */
+  variant?: "row" | "inline";
+}
+
+const { settings, canEdit, redirect, variant = "row" } = Astro.props;
+const locale = getLocale(Astro);
+const t = alertsMessages(locale).pause;
+// With alerts off entirely there is nothing to resume; the Off state says enough.
+const pause = settings.enabled ? getAlertPauseState(settings) : null;
+const when = (iso: string) => formatAlertPauseUntil(iso, locale, settings.quietHoursTimezone);
+const lines = pause
+  ? [
+      pause.snoozeUntil && {
+        text: fmt(t.snoozedUntil, { time: when(pause.snoozeUntil) }),
+        kind: "snooze",
+        action: "clear_snooze",
+        label: t.resume,
+      },
+      pause.vacationUntil && {
+        text: fmt(t.vacationUntil, { time: when(pause.vacationUntil) }),
+        kind: "vacation",
+        action: "clear_vacation",
+        label: t.endVacation,
+      },
+    ].filter((line): line is { text: string; kind: string; action: string; label: string } => Boolean(line))
+  : [];
+---
+{lines.length > 0 && (
+  <div
+    class:list={[variant === "row" ? "garage-risk-row" : "alert-pause-inline", "alert-pause-notice"]}
+    role="status"
+    data-alert-pause
+  >
+    {lines.map((line) => (
+      <p class="m-0" data-alert-pause-kind={line.kind}>
+        {line.text}
+        {canEdit && (
+          <>
+            {" · "}
+            <form action="/api/user/alert-snooze" method="post" class="inline">
+              <input type="hidden" name="action" value={line.action} />
+              <input type="hidden" name="redirect" value={redirect} />
+              <button type="submit" class="text-link alert-pause-resume">{line.label}</button>
+            </form>
+          </>
+        )}
+      </p>
+    ))}
+    <p class="m-0 text-sm text-[var(--color-text-muted)]">{t.stillSend}</p>
+  </div>
+)}
+
+<style>
+  .alert-pause-notice form.inline {
+    display: inline;
+  }
+  .alert-pause-resume {
+    background: none;
+    border: 0;
+    padding: 0;
+    font: inherit;
+    cursor: pointer;
+  }
+  .alert-pause-inline {
+    margin: 0;
+    font-size: 0.875rem;
+  }
+</style>

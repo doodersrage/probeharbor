@@ -11,6 +11,8 @@ import DashboardYoureLive from "../components/DashboardYoureLive.astro";
 import AlertSetupNudge from "../components/dashboard/AlertSetupNudge.astro";
 import DashboardStoryCard from "../components/dashboard/DashboardStoryCard.astro";
 import GarageRiskStatusCard from "../components/dashboard/GarageRiskStatusCard.astro";
+import AlertPauseNotice from "../components/alerts/AlertPauseNotice.astro";
+import { formatAlertPauseUntil, getAlertPauseState } from "../lib/alertSnooze";
 import { computeGarageRiskStatus } from "../lib/garageRiskStatus";
 import { getAuthFromCookies } from "../lib/auth";
 import {
@@ -269,6 +271,8 @@ const hasDevices =
   devices.some((d) => d.source === "push" || d.source === "pull_url") ||
   latest.length > 0;
 const hasAlertsEnabled = alertSettings.enabled;
+// Snooze / vacation: routine alerts are held (display only, see alertSnooze).
+const alertPause = alertSettings.enabled ? getAlertPauseState(alertSettings) : null;
 const hasEmailAlerts =
   alertSettings.enabled &&
   alertSettings.channelEmail &&
@@ -830,6 +834,12 @@ function showPinnedMetric(id: PinnableOverviewMetric): boolean {
   return pinnedMetricSet.has(id);
 }
 
+const alertsMetricDetail = lastAlertAt
+  ? fmt(tm.lastAlert, { age: lastAlertAge.label })
+  : hasSentAnyAlert
+    ? tm.testSent
+    : tm.sendTest;
+
 const garageRisk = computeGarageRiskStatus({
   hasDevices,
   hasLiveReading: latest.length > 0,
@@ -891,7 +901,11 @@ const onboardingProps = {
 
   <ProductAnalyticsTracker events={analyticsEvents} />
   <I18nJson id="overview-i18n" data={t.client} />
-  <div class="dashboard-stack" data-overview-locale={locale}>
+  <div
+    class="dashboard-stack"
+    data-overview-locale={locale}
+    data-alerts-detail={alertsMetricDetail}
+  >
     <OverviewFlash
       passwordUpdated={passwordUpdated}
       prefsSaved={Boolean(prefsSaved)}
@@ -925,6 +939,7 @@ const onboardingProps = {
           <a href="/about/debugging-stale-readings" class="text-link">{t.stale.debugGuide}</a>
         </div>
       )}
+      <AlertPauseNotice settings={alertSettings} canEdit={canEdit} redirect="/dashboard" />
       {/* Nothing to acknowledge or check before the first device. */}
       {hasDevices && (
         <OverviewQuickActions
@@ -1182,12 +1197,16 @@ const onboardingProps = {
         {(canEdit || showPinnedMetric("alerts")) && (
           <MetricCard
             label={metricLabel("alerts")}
-            value={alertSettings.enabled ? t.client.on : t.client.off}
+            value={alertPause ? t.client.paused : alertSettings.enabled ? t.client.on : t.client.off}
             detail={
-              lastAlertAt ? fmt(tm.lastAlert, { age: lastAlertAge.label }) : hasSentAnyAlert ? tm.testSent : tm.sendTest
+              alertPause
+                ? fmt(t.client.pausedUntil, {
+                    time: formatAlertPauseUntil(alertPause.until, locale, alertSettings.quietHoursTimezone),
+                  })
+                : alertsMetricDetail
             }
             href="/dashboard/alerts"
-            tone={alertSettings.enabled ? "success" : "neutral"}
+            tone={alertPause ? "warning" : alertSettings.enabled ? "success" : "neutral"}
             metricId="alerts"
             pinned={showPinnedMetric("alerts")}
             statusVisible={showPinnedMetric("alerts")}
@@ -1715,8 +1734,35 @@ const onboardingProps = {
         }
 
         if (typeof data.alertsEnabled === "boolean") {
-          setMetric("alerts", data.alertsEnabled ? text.on : text.off, null, data.alertsEnabled ? "success" : "neutral");
+          var pausedLabel =
+            data.alertsEnabled && typeof data.alertsPausedUntilLabel === "string"
+              ? data.alertsPausedUntilLabel
+              : null;
+          if (pausedLabel) {
+            setMetric("alerts", text.paused, fmt(text.pausedUntil, { time: pausedLabel }), "warning");
+          } else {
+            var stack = document.querySelector<HTMLElement>("[data-alerts-detail]");
+            setMetric(
+              "alerts",
+              data.alertsEnabled ? text.on : text.off,
+              stack?.dataset.alertsDetail ?? null,
+              data.alertsEnabled ? "success" : "neutral",
+            );
+          }
         }
+
+        // A pause that ended (or was cleared from Quick actions) drops its line.
+        document.querySelectorAll<HTMLElement>("[data-alert-pause]").forEach(function (box) {
+          var anyLeft = false;
+          box.querySelectorAll<HTMLElement>("[data-alert-pause-kind]").forEach(function (line) {
+            var kind = line.getAttribute("data-alert-pause-kind");
+            var active = kind === "snooze" ? data.snoozeActive : kind === "vacation" ? data.vacationActive : true;
+            var show = active !== false;
+            line.hidden = !show;
+            if (show) anyLeft = true;
+          });
+          box.hidden = !anyLeft;
+        });
 
         if (typeof data.coldestMarginF === "number") {
           var margin = data.coldestMarginF;

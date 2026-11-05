@@ -105,6 +105,8 @@ const fr: OverviewMessages = {
     totalCount: "{count} au total",
     on: "Activées",
     off: "Désactivées",
+    paused: "En pause",
+    pausedUntil: "Jusqu’à {time}",
     marginDetail: "{temp} °F pour une alerte à {threshold} °F",
     pinAria: "Épingler {label}",
     unpinAria: "Désépingler {label}",

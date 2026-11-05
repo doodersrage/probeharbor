@@ -7,6 +7,7 @@ import ReferralCard from "../../components/ReferralCard.astro";
 import FalseAlarmTipsCard from "../../components/dashboard/FalseAlarmTipsCard.astro";
 import AlertActivityList from "../../components/dashboard/AlertActivityList.astro";
 import DashboardTabNav from "../../components/dashboard/DashboardTabNav.astro";
+import AlertPauseNotice from "../../components/alerts/AlertPauseNotice.astro";
 import { getAuthFromCookies } from "../../lib/auth";
 import { resolveSiteUrl } from "../../lib/schemaMarkup";
 import {
@@ -30,6 +31,7 @@ import { getTenantNotifySettings } from "../../lib/tenantRelay";
 import { listAlertSettingsHistory } from "../../lib/alertSettingsHistory";
 import { fmt, formatDateTime, getLocale } from "../../i18n";
 import { alertsMessages } from "../../i18n/messages/app/alerts";
+import { apiUserMessages } from "../../i18n/messages/app/api/user";
 
 const locale = getLocale(Astro);
 const t = alertsMessages(locale);
@@ -169,7 +171,11 @@ const alertNotice = Astro.url.searchParams.get("alert_saved") === "restored"
           ? Astro.url.searchParams.get("ack_msg") ?? notices.ackOk
           : Astro.url.searchParams.get("ack_error")
             ? Astro.url.searchParams.get("ack_msg") ?? notices.ackError
-            : null;
+            : Astro.url.searchParams.get("snooze_cleared")
+              ? apiUserMessages(locale).snooze.snoozeCleared
+              : Astro.url.searchParams.get("vacation_cleared")
+                ? apiUserMessages(locale).snooze.vacationCleared
+                : null;
 
 const alertNoticeIsError =
   Boolean(Astro.url.searchParams.get("alert_error")) ||
@@ -272,6 +278,12 @@ const referralRewardDays = Number(
             <> · {t.status.noAlertsYet}</>
           )}
         </p>
+        <AlertPauseNotice
+          settings={alertSettings}
+          canEdit={canEdit}
+          redirect="/dashboard/alerts?tab=activity"
+          variant="inline"
+        />
         <section class="card">
           <h2 class="card-title">{t.activity.heading}</h2>
           <p class="card-subtitle mb-4">{t.activity.subtitle}</p>

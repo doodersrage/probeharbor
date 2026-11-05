@@ -40,6 +40,14 @@ const en = {
     lastAlert: "Last alert {age}",
     noAlertsYet: "No alerts sent yet",
   },
+  /** Snooze / vacation notice (display only; does not change what sends). */
+  pause: {
+    snoozedUntil: "Routine alerts snoozed until {time}.",
+    vacationUntil: "Vacation mode until {time}: routine alerts are held.",
+    stillSend: "Freeze, leak, power and offline alerts still send.",
+    resume: "Resume alerts",
+    endVacation: "End vacation",
+  },
   activity: {
     heading: "Recent alert activity",
     subtitle: "Audit trail of delivered and skipped channels.",

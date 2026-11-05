@@ -1,4 +1,6 @@
 import type { AlertSettings, NotifyKind } from "./alerts";
+import { formatDateTime } from "../i18n/format";
+import type { Locale } from "../i18n/locales";
 
 /**
  * Snooze quiets routine alerts. Freeze (threshold), leak (flood) and power-off
@@ -33,16 +35,62 @@ const VACATION_BLOCKED: NotifyKind[] = [
   "rssi",
 ];
 
-export function isSnoozeActive(settings: AlertSettings, now = Date.now()): boolean {
+export function isSnoozeActive(settings: Pick<AlertSettings, "snoozeUntil">, now = Date.now()): boolean {
   if (!settings.snoozeUntil) return false;
   const until = Date.parse(settings.snoozeUntil);
   return Number.isFinite(until) && now < until;
 }
 
-export function isVacationActive(settings: AlertSettings, now = Date.now()): boolean {
+export function isVacationActive(settings: Pick<AlertSettings, "vacationUntil">, now = Date.now()): boolean {
   if (!settings.vacationUntil) return false;
   const until = Date.parse(settings.vacationUntil);
   return Number.isFinite(until) && now < until;
+}
+
+/**
+ * Which routine-alert pauses are active right now, for display only. Each
+ * field is the ISO end time when that mode is active, else null. Freeze,
+ * leak, power and sensor-offline alerts still send in both modes (see the
+ * blocked lists above), so callers must not present this as "all alerts off".
+ * Returns null when nothing is paused.
+ */
+export type AlertPauseState = {
+  snoozeUntil: string | null;
+  vacationUntil: string | null;
+  /** When the last active pause ends. */
+  until: string;
+};
+
+export function getAlertPauseState(
+  settings: Pick<AlertSettings, "snoozeUntil" | "vacationUntil">,
+  now = Date.now(),
+): AlertPauseState | null {
+  const snoozeUntil = isSnoozeActive(settings, now)
+    ? new Date(Date.parse(settings.snoozeUntil as string)).toISOString()
+    : null;
+  const vacationUntil = isVacationActive(settings, now)
+    ? new Date(Date.parse(settings.vacationUntil as string)).toISOString()
+    : null;
+  if (!snoozeUntil && !vacationUntil) return null;
+  const until = [snoozeUntil, vacationUntil]
+    .filter((value): value is string => value != null)
+    .sort((a, b) => Date.parse(b) - Date.parse(a))[0];
+  return { snoozeUntil, vacationUntil, until };
+}
+
+/** "Nov 5, 4:00 PM" in the alert-settings time zone (UTC if that zone is invalid). */
+export function formatAlertPauseUntil(iso: string, locale: Locale, timeZone: string | null | undefined): string {
+  const options: Intl.DateTimeFormatOptions = {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  };
+  try {
+    return formatDateTime(iso, locale, { ...options, timeZone: timeZone || "UTC" });
+  } catch {
+    return formatDateTime(iso, locale, { ...options, timeZone: "UTC", timeZoneName: "short" });
+  }
 }
 
 export function shouldSuppressForSnoozeOrVacation(

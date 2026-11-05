@@ -38,6 +38,13 @@ const ptBr: AlertsMessages = {
     lastAlert: "Último alerta {age}",
     noAlertsYet: "Nenhum alerta enviado ainda",
   },
+  pause: {
+    snoozedUntil: "Alertas de rotina adiados até {time}.",
+    vacationUntil: "Modo férias até {time}: alertas de rotina ficam retidos.",
+    stillSend: "Alertas de congelamento, vazamento, energia e sensor offline continuam sendo enviados.",
+    resume: "Retomar alertas",
+    endVacation: "Encerrar férias",
+  },
   activity: {
     heading: "Atividade recente de alertas",
     subtitle: "Registro dos canais entregues e ignorados.",

@@ -108,6 +108,8 @@ const en = {
     totalCount: "{count} total",
     on: "On",
     off: "Off",
+    paused: "Paused",
+    pausedUntil: "Until {time}",
     marginDetail: "{temp}°F vs {threshold}°F alert",
     pinAria: "Pin {label}",
     unpinAria: "Unpin {label}",

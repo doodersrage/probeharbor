@@ -38,6 +38,13 @@ const fr: AlertsMessages = {
     lastAlert: "Dernière alerte {age}",
     noAlertsYet: "Aucune alerte envoyée pour l’instant",
   },
+  pause: {
+    snoozedUntil: "Alertes de routine en pause jusqu’à {time}.",
+    vacationUntil: "Mode vacances jusqu’à {time} : les alertes de routine sont retenues.",
+    stillSend: "Les alertes de gel, de fuite, de coupure de courant et de capteur hors ligne sont toujours envoyées.",
+    resume: "Reprendre les alertes",
+    endVacation: "Terminer les vacances",
+  },
   activity: {
     heading: "Activité récente des alertes",
     subtitle: "Journal des canaux livrés et ignorés.",
