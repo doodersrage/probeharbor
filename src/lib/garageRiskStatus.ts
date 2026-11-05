@@ -7,8 +7,8 @@ import { fmt, formatNumber, plural } from "../i18n/format";
 import type { Locale } from "../i18n/locales";
 import {
   displayTempInputValue,
+  formatTempBand,
   tempUnitLabel,
-  toDisplayDelta,
   toDisplayTemp,
 } from "./temperatureFormat";
 // English table only: this module also runs in the ProbeDemo island, so it
@@ -53,10 +53,7 @@ export const NEAR_FREEZE_BAND_F = 5;
  * "How this status is chosen" note.
  */
 export function nearFreezeBandLabel(locale: Locale, useCelsius: boolean): string {
-  const value = useCelsius
-    ? fixed(toDisplayDelta(NEAR_FREEZE_BAND_F, true), 1, locale)
-    : rawNumber(NEAR_FREEZE_BAND_F, locale);
-  return `${value}${locale === "en" ? "" : " "}${tempUnitLabel(useCelsius)}`;
+  return formatTempBand(NEAR_FREEZE_BAND_F, locale, useCelsius);
 }
 
 /**

@@ -38,7 +38,7 @@ const en = {
     title: "You're receiving data",
     firstPost: "First POST received",
     alertDone: "Freeze alert configured",
-    alertTodo: "Set freeze °F + email, then send a test",
+    alertTodo: "Set freeze threshold + email, then send a test",
     shareLink: "Share a live link with family",
     optional: ": optional",
     renameHtml:

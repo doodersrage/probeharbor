@@ -35,7 +35,7 @@ const es: DevicesSetupMessages = {
     title: "Estás recibiendo datos",
     firstPost: "Primer POST recibido",
     alertDone: "Alerta de congelación configurada",
-    alertTodo: "Configura el umbral de congelación en °F + email y envía una prueba",
+    alertTodo: "Configura el umbral de congelación + email y envía una prueba",
     shareLink: "Comparte un enlace en vivo con tu familia",
     optional: ": opcional",
     renameHtml:

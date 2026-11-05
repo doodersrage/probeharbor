@@ -35,7 +35,7 @@ const ptBr: DevicesSetupMessages = {
     title: "Você está recebendo dados",
     firstPost: "Primeiro POST recebido",
     alertDone: "Alerta de congelamento configurado",
-    alertTodo: "Defina o limite de congelamento em °F + e-mail e envie um teste",
+    alertTodo: "Defina o limite de congelamento + e-mail e envie um teste",
     shareLink: "Compartilhe um link ao vivo com a família",
     optional: ": opcional",
     renameHtml:

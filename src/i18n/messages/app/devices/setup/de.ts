@@ -35,7 +35,7 @@ const de: DevicesSetupMessages = {
     title: "Du empfängst Daten",
     firstPost: "Erster POST empfangen",
     alertDone: "Frostalarm eingerichtet",
-    alertTodo: "Frostgrenze in °F + E-Mail festlegen, dann einen Test senden",
+    alertTodo: "Frostgrenze + E-Mail festlegen, dann einen Test senden",
     shareLink: "Teile einen Live-Link mit der Familie",
     optional: ": optional",
     renameHtml:

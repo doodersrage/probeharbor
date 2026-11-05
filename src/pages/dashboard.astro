@@ -148,7 +148,14 @@ import DashboardMetricGrid from "../components/dashboard/DashboardMetricGrid.ast
 import MetricCard from "../components/dashboard/MetricCard.astro";
 import DashboardWeekChart from "../components/dashboard/DashboardWeekChart.astro";
 import NightsAtRiskCard from "../components/dashboard/NightsAtRiskCard.astro";
-import { formatTemperature } from "../lib/temperatureFormat";
+import {
+  displayTempInputValue,
+  formatTemperature,
+  formatTempBand,
+  tempUnitLabel,
+  toDisplayDelta,
+  toDisplayTemp,
+} from "../lib/temperatureFormat";
 import I18nJson from "../components/I18nJson.astro";
 import { fmt, formatNumber, getLocale, plural, type Locale } from "../i18n";
 import { overviewMessages } from "../i18n/messages/app/overview";
@@ -649,6 +656,21 @@ const regionalBenchmark =
 
 
 const useCelsius = preferences.useCelsius;
+// Display unit for the Overview tiles; everything computed above stays °F.
+const tempUnit = tempUnitLabel(useCelsius);
+/** A °F temperature as a number in the display unit. */
+const showTempNum = (tempF: number, digits: number) => num(toDisplayTemp(tempF, useCelsius), digits);
+/** A °F difference (margin, spread, degree-hours) in the display unit: ×5/9 for °C, no offset. */
+const showDeltaNum = (deltaF: number, digits: number) => num(toDisplayDelta(deltaF, useCelsius), digits);
+/** The freeze threshold: whole °F as before; °C to a tenth (34 °F → 1.1). */
+const thresholdNum = plainNum(displayTempInputValue(alertSettings.freezeThresholdF, useCelsius));
+/** The fixed °F cut-offs quoted in "How these numbers are worked out" (same as the tile tones below). */
+const metricsHowBands: Record<string, Record<string, string>> = {
+  coldestMargin: { band: formatTempBand(5, locale, useCelsius) },
+  indoorOutdoor: { band: formatTempBand(5, locale, useCelsius) },
+  probeSpread: { band: formatTempBand(8, locale, useCelsius) },
+  condensation: { band: formatTempBand(5, locale, useCelsius), nowBand: formatTempBand(2, locale, useCelsius) },
+};
 const outdoorSplit = splitOpenMeteoPastAndForecast(outdoorHourly);
 const doorOpenNearby = latest.some(
   (row) =>
@@ -889,9 +911,7 @@ const showTipsStrip =
 const coldestProbeSummary = (() => {
   if (!coldestProbeRow || coldestProbeTempF == null || coldestProbeMarginF == null) return null;
   const marginAbsF = Math.abs(coldestProbeMarginF);
-  const marginText = useCelsius
-    ? `${num((marginAbsF * 5) / 9, 1)}°C`
-    : `${num(marginAbsF, 1)}°F`;
+  const marginText = `${showDeltaNum(marginAbsF, 1)}${tempUnit}`;
   return {
     label: coldestProbeRow.sensor.label,
     temp: formatTemperature(coldestProbeTempF, useCelsius, 1),
@@ -932,6 +952,7 @@ const onboardingProps = {
   <div
     class="dashboard-stack"
     data-overview-locale={locale}
+    data-overview-celsius={useCelsius ? "1" : undefined}
     data-alerts-detail={alertsMetricDetail}
   >
     <OverviewFlash
@@ -1269,12 +1290,13 @@ const onboardingProps = {
                 detail={
                   freezeHours.degreeHoursBelow > 0
                     ? fmt(tm.degreeHoursBelow, {
-                        value: num(freezeHours.degreeHoursBelow, 0),
-                        threshold: plainNum(alertSettings.freezeThresholdF),
+                        value: showDeltaNum(freezeHours.degreeHoursBelow, 0),
+                        threshold: thresholdNum,
+                        unit: tempUnit,
                       })
                     : freezeHours.coldestF != null
-                      ? fmt(tm.coldest, { temp: num(freezeHours.coldestF, 1) })
-                      : fmt(tm.atOrBelow, { threshold: plainNum(alertSettings.freezeThresholdF) })
+                      ? fmt(tm.coldest, { temp: showTempNum(freezeHours.coldestF, 1), unit: tempUnit })
+                      : fmt(tm.atOrBelow, { threshold: thresholdNum, unit: tempUnit })
                 }
                 href="/dashboard/history"
                 tone={freezeHours.hoursBelow34 > 0 ? "warning" : "neutral"}
@@ -1290,13 +1312,14 @@ const onboardingProps = {
                 value={
                   coldestProbeMarginF == null
                     ? "—"
-                    : `${signed(coldestProbeMarginF, 1)}°F`
+                    : `${signed(toDisplayDelta(coldestProbeMarginF, useCelsius), 1)}${tempUnit}`
                 }
                 detail={
                   coldestProbeTempF != null
                     ? fmt(t.client.marginDetail, {
-                        temp: num(coldestProbeTempF, 1),
-                        threshold: plainNum(alertSettings.freezeThresholdF),
+                        temp: showTempNum(coldestProbeTempF, 1),
+                        threshold: thresholdNum,
+                        unit: tempUnit,
                       })
                     : tm.noLiveProbe
                 }
@@ -1323,15 +1346,16 @@ const onboardingProps = {
                 value={
                   indoorOutdoorDeltaF == null
                     ? "—"
-                    : `${signed(indoorOutdoorDeltaF, 1)}°F`
+                    : `${signed(toDisplayDelta(indoorOutdoorDeltaF, useCelsius), 1)}${tempUnit}`
                 }
                 detail={
                   indoorOutdoorDeltaF == null
                     ? tm.needProbeWeather
                     : weatherSnapshot?.temp != null && coldestProbeTempF != null
                       ? fmt(tm.indoorVsOutdoor, {
-                          indoor: num(coldestProbeTempF, 0),
-                          outdoor: num(weatherSnapshot.temp, 0),
+                          indoor: showTempNum(coldestProbeTempF, 0),
+                          outdoor: showTempNum(weatherSnapshot.temp, 0),
+                          unit: tempUnit,
                         })
                       : tm.deltaColdest
                 }
@@ -1352,12 +1376,13 @@ const onboardingProps = {
             {(canEdit || showPinnedMetric("probe_spread")) && (
               <MetricCard
                 label={metricLabel("probe_spread")}
-                value={probeSpread ? `${num(probeSpread.spreadF, 1)}°F` : "—"}
+                value={probeSpread ? `${showDeltaNum(probeSpread.spreadF, 1)}${tempUnit}` : "—"}
                 detail={
                   probeSpread
                     ? fmt(tm.spreadDetail, {
-                        coldest: num(probeSpread.coldestF, 1),
-                        warmest: num(probeSpread.warmestF, 1),
+                        coldest: showTempNum(probeSpread.coldestF, 1),
+                        warmest: showTempNum(probeSpread.warmestF, 1),
+                        unit: tempUnit,
                         count: plainNum(probeSpread.probeCount),
                       })
                     : tm.needTwoTemps
@@ -1386,7 +1411,7 @@ const onboardingProps = {
                 }
                 detail={
                   condensation.latestMarginF != null
-                    ? fmt(tm.dewMargin, { margin: num(condensation.latestMarginF, 1) })
+                    ? fmt(tm.dewMargin, { margin: showDeltaNum(condensation.latestMarginF, 1), unit: tempUnit })
                     : tm.hoursNearDew
                 }
                 href="/dashboard/history"
@@ -1426,7 +1451,7 @@ const onboardingProps = {
           <summary class="cursor-pointer text-[var(--color-text-muted)]">{t.metricsHow.summary}</summary>
           <ul class="mt-2 mb-0 pl-5 list-disc space-y-1 text-[var(--color-text-muted)]">
             {(["freezeHours", "coldestMargin", "indoorOutdoor", "probeSpread", "condensation", "feedHealth"] as const).map((key) => (
-              <li>{fmt(t.metricsHow[key], { threshold: plainNum(alertSettings.freezeThresholdF) })}</li>
+              <li>{fmt(t.metricsHow[key], { threshold: thresholdNum, unit: tempUnit, ...metricsHowBands[key] })}</li>
             ))}
           </ul>
           <p class="mt-2 mb-0 text-xs text-[var(--color-text-muted)]">{t.metricsHow.measured}</p>
@@ -1489,11 +1514,19 @@ const onboardingProps = {
     import { fmt, plural, pageIntlLocale, readI18n, readI18nJson } from "../i18n/client";
     import { isLocale, type Locale } from "../i18n/locales";
     import overviewEn from "../i18n/messages/app/overview/en";
+    import {
+      displayTempInputValue,
+      tempUnitLabel,
+      toDisplayDelta,
+      toDisplayTemp,
+    } from "../lib/temperatureFormat";
 
     (function () {
       var text = readI18nJson("overview-i18n", overviewEn.client);
       var rawLocale = document.querySelector<HTMLElement>("[data-overview-locale]")?.dataset.overviewLocale;
       var pageLocale: Locale = rawLocale && isLocale(rawLocale) ? rawLocale : "en";
+      var useCelsius = document.querySelector<HTMLElement>("[data-overview-celsius]") != null;
+      var tempUnit = tempUnitLabel(useCelsius);
       var intl = pageIntlLocale();
       /** `toFixed` in English (unchanged output), locale digits elsewhere. */
       function num(value: number, digits: number): string {
@@ -1795,14 +1828,17 @@ const onboardingProps = {
 
         if (typeof data.coldestMarginF === "number") {
           var margin = data.coldestMarginF;
-          var marginLabel = (margin >= 0 ? "+" : "") + num(margin, 1) + "°F";
+          // The snapshot is °F; show it in the page's unit (a margin is a difference: ×5/9, no offset).
+          var marginShown = toDisplayDelta(margin, useCelsius);
+          var marginLabel = (marginShown >= 0 ? "+" : "") + num(marginShown, 1) + tempUnit;
           var marginDetail =
             data.coldestProbeTempF != null
               ? fmt(text.marginDetail, {
-                  temp: num(data.coldestProbeTempF, 1),
+                  temp: num(toDisplayTemp(data.coldestProbeTempF, useCelsius), 1),
                   threshold: typeof data.freezeThresholdF === "number"
-                    ? plainNum(data.freezeThresholdF)
+                    ? plainNum(displayTempInputValue(data.freezeThresholdF, useCelsius))
                     : String(data.freezeThresholdF),
+                  unit: tempUnit,
                 })
               : null;
           var marginTone =

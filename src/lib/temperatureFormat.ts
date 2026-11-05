@@ -1,3 +1,5 @@
+import { formatNumber } from "../i18n/format";
+import type { Locale } from "../i18n/locales";
 import { cToF, fToC } from "./tempUnits";
 
 export { fToC };
@@ -117,4 +119,22 @@ export function formatDeltaF(deltaF: number, useCelsius: boolean): string {
     return `${sign}${deltaC.toFixed(1)}°C`;
   }
   return `${sign}${deltaF.toFixed(1)}°F`;
+}
+
+/**
+ * A fixed °F band from a rule ("within 5°F", "8°F or more") as text in the
+ * display unit: "5°F" in English as before, "5 °F" elsewhere; a difference,
+ * so in °C it is ×5/9 to one decimal ("2.8°C" / "2,8 °C").
+ */
+export function formatTempBand(deltaF: number, locale: Locale, useCelsius: boolean): string {
+  const value = useCelsius
+    ? formatNumber(toDisplayDelta(deltaF, true), locale, {
+        minimumFractionDigits: 1,
+        maximumFractionDigits: 1,
+        useGrouping: false,
+      })
+    : locale === "en"
+      ? String(deltaF)
+      : formatNumber(deltaF, locale);
+  return `${value}${locale === "en" ? "" : " "}${tempUnitLabel(useCelsius)}`;
 }

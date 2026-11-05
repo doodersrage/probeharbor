@@ -35,7 +35,7 @@ const fr: DevicesSetupMessages = {
     title: "Vous recevez des données",
     firstPost: "Premier POST reçu",
     alertDone: "Alerte de gel configurée",
-    alertTodo: "Réglez le seuil de gel en °F + l’e-mail, puis envoyez un test",
+    alertTodo: "Réglez le seuil de gel + l’e-mail, puis envoyez un test",
     shareLink: "Partagez un lien en direct avec votre famille",
     optional: " : facultatif",
     renameHtml:

@@ -45,17 +45,31 @@ describe("overview metric explanations match the code", () => {
     ["pt-br", overviewPt],
   ] as const)("%s quotes the current tile cut-offs", (_l, m) => {
     const h = m.metricsHow;
-    expect(digits(h.coldestMargin)).toContain(cutoffs.coldestMargin);
-    expect(digits(h.indoorOutdoor)).toContain(cutoffs.indoorOutdoor);
-    expect(digits(h.probeSpread)).toContain(cutoffs.probeSpread);
+    // Temperature cut-offs are {band}/{nowBand} placeholders so they read in
+    // the display unit; the page fills them from metricsHowBands (checked below).
+    expect(h.coldestMargin).toContain("{band}");
+    expect(h.indoorOutdoor).toContain("{band}");
+    expect(h.probeSpread).toContain("{band}");
+    expect(h.condensation).toContain("{band}");
+    expect(h.condensation).toContain("{nowBand}");
     expect(digits(h.condensation)).toContain(cutoffs.condensationHours);
-    expect(digits(h.condensation)).toContain(cutoffs.condensationNow);
+    for (const text of Object.values(h)) expect(text).not.toContain("°F");
     expect(h.freezeHours).toContain("{threshold}");
+    expect(h.freezeHours).toContain("{unit}");
+  });
+
+  it("fills the bands with the same °F cut-offs as the tile tones", () => {
+    const band = (key: string, name = "band") =>
+      num(new RegExp(`${key}: \\{[^}]*\\b${name}: formatTempBand\\((\\d+),`), dashboard);
+    expect(band("coldestMargin")).toBe(cutoffs.coldestMargin);
+    expect(band("indoorOutdoor")).toBe(cutoffs.indoorOutdoor);
+    expect(band("probeSpread")).toBe(cutoffs.probeSpread);
+    expect(band("condensation", "nowBand")).toBe(cutoffs.condensationNow);
   });
 
   it("the condensation explanation uses the same dew-point margin as the code", () => {
     const margin = num(/export function computeCondensationHours\([\s\S]*?marginF = (\d+)/, overviewExtras);
-    expect(digits(overviewEn.metricsHow.condensation)).toContain(margin);
+    expect(num(/condensation: \{ band: formatTempBand\((\d+),/, dashboard)).toBe(margin);
   });
 });
 
