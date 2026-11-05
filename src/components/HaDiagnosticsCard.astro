@@ -2,6 +2,7 @@
 import type { DeviceWithSensors } from "../lib/devices";
 import { readIngestClient } from "../lib/ingestClient";
 import { formatRelativeAge } from "../lib/relativeTime";
+import { reportIntervalMsFromMeta } from "../lib/reportInterval";
 import { HACS_REPO_URL } from "../lib/homeAssistantIntegration";
 import { fmt, getLocale } from "../i18n";
 import { shareAgeLabel, shareMessages } from "../i18n/messages/app/share";
@@ -42,7 +43,7 @@ const fed = devices
           </thead>
           <tbody>
             {fed.map(({ device, client }) => {
-              const age = formatRelativeAge(device.last_seen_at);
+              const age = formatRelativeAge(device.last_seen_at, undefined, undefined, reportIntervalMsFromMeta(device.meta));
               return (
                 <tr>
                   <td class="py-2 pr-3">

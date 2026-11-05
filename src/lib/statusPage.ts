@@ -1,7 +1,8 @@
 import { createServerClient } from "./supabase";
 import { listHouseholdDevices } from "./devices";
 import { fetchLatestSensorValues } from "./sensorReadings";
-import { formatRelativeAge, STALE_MS } from "./relativeTime";
+import { formatRelativeAge } from "./relativeTime";
+import { newestRowFreshness, rowFreshness } from "./sensorFreshness";
 
 function randomToken(): string {
   const bytes = crypto.getRandomValues(new Uint8Array(18));
@@ -123,15 +124,11 @@ export async function buildStatusPageSnapshot(householdId: string) {
     fetchLatestSensorValues(householdId),
   ]);
 
-  const newest = latest
-    .map((r) => r.recorded_at)
-    .filter(Boolean)
-    .sort((a, b) => Date.parse(b!) - Date.parse(a!))[0] ?? null;
-  const age = formatRelativeAge(newest);
-  const staleCount = latest.filter((row) => {
-    if (!row.recorded_at) return true;
-    return Date.now() - Date.parse(row.recorded_at) >= STALE_MS;
-  }).length;
+  // Shared freshness rule: each probe by its device's report interval.
+  const newestLatest = newestRowFreshness(latest, devices);
+  const newest = newestLatest.recordedAt;
+  const age = formatRelativeAge(newest, undefined, undefined, newestLatest.reportIntervalMs);
+  const staleCount = latest.filter((row) => rowFreshness(row, devices).stale).length;
 
   return {
     updatedAt: newest,

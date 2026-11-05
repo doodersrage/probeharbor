@@ -89,7 +89,7 @@ export async function loadDashboardShellForUser(
       result.rows.length > 0 &&
       result.rows.some((row) => {
         if (!row.recorded_at) return true;
-        return formatRelativeAge(row.recorded_at).lagging;
+        return formatRelativeAge(row.recorded_at, undefined, undefined, row.reportIntervalMs).lagging;
       });
   }
 
@@ -129,6 +129,6 @@ export function computeLiveLagging(latest: LatestSensorRow[]): boolean {
   if (latest.length === 0) return true;
   return latest.some((row) => {
     if (!row.recorded_at) return true;
-    return formatRelativeAge(row.recorded_at).lagging;
+    return formatRelativeAge(row.recorded_at, undefined, undefined, row.reportIntervalMs).lagging;
   });
 }

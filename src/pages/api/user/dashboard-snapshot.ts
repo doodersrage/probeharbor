@@ -4,8 +4,8 @@ import { getOrCreateHouseholdForUser, getUserHouseholdRole } from "../../../lib/
 import { getAlertSettingsForUser } from "../../../lib/notify";
 import { listHouseholdDevices } from "../../../lib/devices";
 import { fetchLatestSensorValuesResult } from "../../../lib/sensorReadings";
-import { formatRelativeAge, STALE_MS } from "../../../lib/relativeTime";
-import { summarizeStaleSensors } from "../../../lib/sensorFreshness";
+import { formatRelativeAge } from "../../../lib/relativeTime";
+import { newestRowFreshness, rowFreshness, summarizeStaleSensors } from "../../../lib/sensorFreshness";
 import { computeGarageRiskStatus } from "../../../lib/garageRiskStatus";
 import { statusReadingScope } from "../../../lib/demoFeed";
 import { getDisplayPreferencesFromMetadata } from "../../../lib/userPreferences";
@@ -63,12 +63,10 @@ export const GET: APIRoute = async ({ cookies, locals }) => {
   }
   const latest = latestResult.rows;
   const devices = devicesResult.devices;
-  const newestReading =
-    latest
-      .map((row) => row.recorded_at)
-      .filter(Boolean)
-      .sort((a, b) => Date.parse(b!) - Date.parse(a!))[0] ?? null;
-  const lastAge = formatRelativeAge(newestReading, tc.never, locale);
+  // Same freshness rule as the Overview page: each probe by its own report interval.
+  const newestLatest = newestRowFreshness(latest, devices);
+  const newestReading = newestLatest.recordedAt;
+  const lastAge = formatRelativeAge(newestReading, tc.never, locale, newestLatest.reportIntervalMs);
   const staleSummary = summarizeStaleSensors(latest, devices, undefined, locale);
   // Match Overview: the status and coldest-probe figures judge real probes only
   // when there are any; demo-only households get the labelled demo state.
@@ -81,7 +79,7 @@ export const GET: APIRoute = async ({ cookies, locals }) => {
         (row) =>
           row.sensor.kind === "temperature" &&
           row.value_num != null &&
-          Date.now() - Date.parse(row.recorded_at) < STALE_MS,
+          !rowFreshness(row, devices).stale,
       )
       .map((row) => row.value_num as number);
     return temps.length > 0 ? Math.min(...temps) : null;
@@ -91,7 +89,7 @@ export const GET: APIRoute = async ({ cookies, locals }) => {
   ).length;
   const sensorCount = devices.reduce((sum, device) => sum + device.sensors.length, 0);
   const liveSensorCount = latest.filter(
-    (row) => row.recorded_at && !formatRelativeAge(row.recorded_at, tc.never, locale).stale,
+    (row) => row.recorded_at && !rowFreshness(row, devices).stale,
   ).length;
   const coldestMarginF =
     coldestProbeTempF != null
@@ -143,6 +141,8 @@ export const GET: APIRoute = async ({ cookies, locals }) => {
     lastReadingAt: newestReading,
     lastReadingAge: lastAge.label,
     lastReadingLagging: lastAge.lagging,
+    /** The newest probe's learned report interval (ms), so the page's age ticker uses the same rule. */
+    lastReadingIntervalMs: newestLatest.reportIntervalMs,
     staleSensors: staleSummary.total,
     staleBannerMessage: staleSummary.bannerMessage,
     sensorCount,

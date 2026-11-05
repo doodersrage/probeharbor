@@ -1,6 +1,7 @@
 import type { DeviceWithSensors } from "./devices";
 import type { LatestSensorRow } from "./sensorReadings";
-import { STALE_MS } from "./relativeTime";
+import { readingFreshness } from "./relativeTime";
+import { reportIntervalMsFromMeta } from "./reportInterval";
 import { parseBatteryHistory } from "./batterySparkline";
 import { estimateBatteryDaysRemaining } from "./batteryTrend";
 import type { StuckSensor } from "./stuckSensors";
@@ -25,7 +26,7 @@ function readMetaNumber(meta: unknown, key: string): number | null {
 }
 
 const DAY_MS = 24 * 60 * 60 * 1000;
-/** Silence past this is "offline"; between STALE_MS and this it is "watch". */
+/** Silence past this is "offline"; between the stale threshold (readingFreshness) and this it is "watch". */
 export const OFFLINE_MS = DAY_MS;
 
 /** Score a single device for the Devices health table. */
@@ -66,7 +67,8 @@ export function scoreDeviceHealth(
   }
 
   const ageMs = nowMs - Date.parse(device.last_seen_at);
-  const stale = !Number.isFinite(ageMs) || ageMs >= STALE_MS;
+  // Shared freshness rule: 2 h, or longer for a device that reports slowly.
+  const stale = readingFreshness(device.last_seen_at, reportIntervalMsFromMeta(device.meta), nowMs).stale;
 
   const deviceLatest = latest.filter((row) => row.sensor.device_id === device.id);
   const floodWet = deviceLatest.some(

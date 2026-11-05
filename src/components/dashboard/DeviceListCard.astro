@@ -91,7 +91,7 @@ const healthTone = {
               {row.firmwareUpdate && <span class="device-list-meta">{t.firmwareUpdate}</span>}
             </span>
             <span class="device-list-seen">
-              <ReadingAgeBadge iso={row.lastSeenAt} emptyLabel={t.never} />
+              <ReadingAgeBadge iso={row.lastSeenAt} emptyLabel={t.never} reportIntervalMs={row.reportIntervalMs} />
               {row.health.batteryPct != null && <span class="device-list-meta">{fmt(t.battery, { pct: row.health.batteryPct })}</span>}
             </span>
             <span class="device-list-chevron" aria-hidden="true">›</span>

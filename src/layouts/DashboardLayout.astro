@@ -43,6 +43,9 @@ const currentPath = Astro.url.pathname;
 const lag = typeof liveLagging === "boolean" ? liveLagging : shell.liveLagging;
 const lastReadingAt =
   shell.lastReadingAt ?? newestRecordedAt(shell.latest ?? []);
+// The newest probe's report interval, so the badge uses the shared freshness rule.
+const lastReadingIntervalMs =
+  (shell.latest ?? []).find((row) => row.recorded_at === lastReadingAt)?.reportIntervalMs ?? null;
 const switchRedirect = `${Astro.url.pathname}${Astro.url.search}`;
 const paletteHouseholds = shell.households.map((row) => ({
   id: row.household_id,
@@ -86,7 +89,12 @@ const householdError = Astro.url.searchParams.get("household_error") === "1";
             variant="chrome"
           />
           <div class="dashboard-topbar-freshness">
-            <ReadingAgeBadge iso={lastReadingAt} emptyLabel={t.topbar.noReading} quietWhenFresh />
+            <ReadingAgeBadge
+              iso={lastReadingAt}
+              emptyLabel={t.topbar.noReading}
+              quietWhenFresh
+              reportIntervalMs={lastReadingIntervalMs}
+            />
             <button
               type="button"
               class="btn-ghost btn-sm"

@@ -485,10 +485,13 @@ export default function LiveTempsPanel({
 
   useEffect(() => {
     const groupCount = groups.reduce((n, group) => n + (group.probes?.length ?? 0), 0);
+    const lastReadingAt = newestLiveReadingAt(sensors, updatedAt);
     window.dispatchEvent(
       new CustomEvent(LIVE_READINGS_EVENT, {
         detail: {
-          lastReadingAt: newestLiveReadingAt(sensors, updatedAt),
+          lastReadingAt,
+          // So the top-bar badge judges it by that probe's interval (shared freshness rule).
+          reportIntervalMs: sensors.find((s) => s.recorded_at === lastReadingAt)?.reportIntervalMs ?? null,
           sensorCount: sensors.length + groupCount,
         },
       }),
@@ -544,9 +547,7 @@ export default function LiveTempsPanel({
 
   const renderClimateCard = (sensor: LiveSensor) => {
     const display = formatSensorValue(sensor, text, f, pairedHumidity.get(pairKey(sensor)) ?? null);
-    const age = sensor.recorded_at
-      ? formatRelativeAge(sensor.recorded_at)
-      : formatRelativeAge(null);
+    const age = formatRelativeAge(sensor.recorded_at ?? null, undefined, undefined, sensor.reportIntervalMs);
     const freshnessClass = age.stale
       ? " stat-item-stale"
       : age.lagging
@@ -737,9 +738,12 @@ export default function LiveTempsPanel({
           <div class="stat-grid">
             {nonTempSensors.map((sensor) => {
               const display = formatSensorValue(sensor, text, f);
-              const age = sensor.recorded_at
-                ? formatRelativeAge(sensor.recorded_at)
-                : formatRelativeAge(null);
+              const age = formatRelativeAge(
+                sensor.recorded_at ?? null,
+                undefined,
+                undefined,
+                sensor.reportIntervalMs,
+              );
               const alert = isSensorAlert(sensor);
               const freshnessClass = age.stale
                 ? " stat-item-stale"

@@ -43,8 +43,11 @@ import {
 } from "../lib/dashboardInsights";
 import { fetchGarageTempChartData } from "../lib/garageTempsHistory";
 import { fetchLatestSensorValuesResult } from "../lib/sensorReadings";
-import { formatRelativeAge, STALE_MS } from "../lib/relativeTime";
+import { formatRelativeAge } from "../lib/relativeTime";
 import {
+  newestRowFreshness,
+  rowFreshness,
+  rowReportIntervalMs,
   summarizeStaleSensors,
 } from "../lib/sensorFreshness";
 import {
@@ -567,11 +570,10 @@ const spaceCheckedAtForHousehold =
       : null;
 const prefsError = Astro.url.searchParams.get("prefs_error");
 
-const newestReading = latest
-  .map((row) => row.recorded_at)
-  .filter(Boolean)
-  .sort((a, b) => Date.parse(b!) - Date.parse(a!))[0] ?? null;
-const lastAge = formatRelativeAge(newestReading, undefined, locale);
+// "Last reading": the newest probe, judged by its own report interval (shared freshness rule).
+const newestLatest = newestRowFreshness(latest, devices);
+const newestReading = newestLatest.recordedAt;
+const lastAge = formatRelativeAge(newestReading, undefined, locale, newestLatest.reportIntervalMs);
 const staleSummary = summarizeStaleSensors(latest, devices, undefined, locale);
 const staleSensorCount = staleSummary.total;
 // The status card and the "coldest probe" figures judge real probes only when
@@ -622,7 +624,7 @@ const freshTemperatureRows = statusScope.rows.filter(
   (row) =>
     row.sensor.kind === "temperature" &&
     row.value_num != null &&
-    Date.now() - Date.parse(row.recorded_at) < STALE_MS,
+    !rowFreshness(row, devices).stale,
 );
 const coldestProbeTempF = (() => {
   const temps = freshTemperatureRows.map((row) => row.value_num as number);
@@ -948,6 +950,7 @@ const coldestProbeSummary = (() => {
             margin: marginText,
           }),
     recordedAt: coldestProbeRow.recorded_at,
+    reportIntervalMs: rowReportIntervalMs(coldestProbeRow, devices),
   };
 })();
 const onboardingProps = {
@@ -1249,6 +1252,7 @@ const onboardingProps = {
             canPin={canEdit}
             snapshotField="last_reading"
             liveAgeIso={newestReading}
+            liveAgeIntervalMs={newestLatest.reportIntervalMs}
           />
         )}
         {(canEdit || showPinnedMetric("sensors")) && (
@@ -1804,11 +1808,20 @@ const onboardingProps = {
           var lastValue = document.querySelector(
             '[data-snapshot-field="last_reading"] [data-metric-value]',
           );
-          if (lastValue) lastValue.setAttribute("data-live-age-iso", data.lastReadingAt);
+          if (lastValue) {
+            lastValue.setAttribute("data-live-age-iso", data.lastReadingAt);
+            if (typeof data.lastReadingIntervalMs === "number") {
+              lastValue.setAttribute("data-report-interval-ms", String(data.lastReadingIntervalMs));
+            } else {
+              lastValue.removeAttribute("data-report-interval-ms");
+            }
+          }
           window.dispatchEvent(
             new CustomEvent("tt:live-readings", {
               detail: {
                 lastReadingAt: data.lastReadingAt,
+                reportIntervalMs:
+                  typeof data.lastReadingIntervalMs === "number" ? data.lastReadingIntervalMs : null,
                 sensorCount: typeof data.sensorCount === "number" ? data.sensorCount : undefined,
               },
             }),

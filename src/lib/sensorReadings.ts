@@ -6,6 +6,7 @@ import { applySensorOffset } from "./sensorCalibration";
 import { implausibleReason } from "./readingPlausibility";
 import { fetchNewestFirstPages } from "./pagedRows";
 import { isDemoDevice } from "./demoFeed";
+import { reportIntervalMsFromMeta } from "./reportInterval";
 export type { TypedSensorValue } from "./ingestPayload";
 export { parseIngestPayload, inferSensorKind } from "./ingestPayload";
 
@@ -256,6 +257,11 @@ export type LatestSensorRow = {
   recorded_at: string;
   /** From a demo (simulated) feed: label it, never alert on it (see demoFeed). */
   deviceDemo?: boolean;
+  /**
+   * The device's learned report interval (ms), null when not yet learned, so
+   * freshness checks can use the shared rule (relativeTime `readingFreshness`).
+   */
+  reportIntervalMs?: number | null;
 };
 
 type LatestReading = {
@@ -339,6 +345,7 @@ export async function fetchLatestSensorValuesResult(
     devices.map((d) => [d.id, typeof d.space === "string" ? d.space : null]),
   );
   const demoDeviceIds = new Set(devices.filter((d) => isDemoDevice(d)).map((d) => d.id));
+  const intervalByDevice = new Map(devices.map((d) => [d.id, reportIntervalMsFromMeta(d.meta)]));
 
   const { bySensor: readingBySensor, error: readingsError } = await fetchLatestReadingsBySensor(
     supabase,
@@ -372,6 +379,7 @@ export async function fetchLatestSensorValuesResult(
       value_text: reading.value_text,
       recorded_at: reading.recorded_at,
       deviceDemo: demoDeviceIds.has(sensor.device_id),
+      reportIntervalMs: intervalByDevice.get(sensor.device_id) ?? null,
     });
   }
 

@@ -19,6 +19,46 @@ export function freshnessThresholds(reportIntervalMs?: number | null): { lagMs: 
   return { lagMs, staleMs: Math.max(STALE_MS, 2 * lagMs) };
 }
 
+export type ReadingFreshness = {
+  /** Milliseconds since the reading; null with no (or an unparseable) timestamp. */
+  ageMs: number | null;
+  /** Late: past the lag threshold ("may be offline", amber). */
+  lagging: boolean;
+  /** Stale: past the stale threshold ("offline", red); never used as "right now". */
+  stale: boolean;
+};
+
+/**
+ * THE freshness rule for a sensor's (or device's) latest reading. Every
+ * fresh / late / stale judgment about a sensor goes through this, so the
+ * Overview status card, its badges, Live tiles, Devices and the dashboard
+ * snapshot agree:
+ *
+ * - Report interval known (`report_interval_s` on device meta, learned on
+ *   ingest; see reportInterval.ts): late after max(30 min, 3 × interval),
+ *   stale after max(2 h, 2 × the late threshold).
+ * - Interval unknown: the fixed fallback, late after 30 min ({@link LAG_MS}),
+ *   stale after 2 h ({@link STALE_MS}).
+ * - No timestamp, or one that doesn't parse: late and stale (nothing to trust).
+ * - A timestamp in the future (clock skew): fresh.
+ *
+ * So a probe that reports hourly is fresh 45 min after its last post, and a
+ * probe that posts every 30 s is late after 30 min of silence and stale after
+ * 2 h, as before.
+ */
+export function readingFreshness(
+  recordedAt: string | null | undefined,
+  reportIntervalMs?: number | null,
+  now: number = Date.now(),
+): ReadingFreshness {
+  const parsed = recordedAt ? Date.parse(recordedAt) : Number.NaN;
+  if (Number.isNaN(parsed)) return { ageMs: null, lagging: true, stale: true };
+  const ageMs = now - parsed;
+  if (ageMs < 0) return { ageMs, lagging: false, stale: false };
+  const { lagMs, staleMs } = freshnessThresholds(reportIntervalMs);
+  return { ageMs, lagging: ageMs >= lagMs, stale: ageMs >= staleMs };
+}
+
 export type RelativeAge = {
   label: string;
   /** True when older than the lag threshold (30m, or 3 missed reports for a slow device). */
@@ -32,12 +72,14 @@ export type RelativeAge = {
  * Age label ("15m ago") plus lag/stale flags. English keeps the compact
  * wording; other locales use Intl.RelativeTimeFormat ("hace 15 min") with the
  * same minute/hour/day buckets. Safe in browser code (no translation tables).
+ * The flags come from {@link readingFreshness}: pass the device's report
+ * interval whenever the age is about a sensor or device.
  */
 export function formatRelativeAge(
   iso: string | null | undefined,
   neverLabel = "never",
   locale: Locale = "en",
-  /** The device's usual reporting interval, when known (see freshnessThresholds). */
+  /** The device's usual reporting interval, when known (see readingFreshness). */
   reportIntervalMs?: number | null,
 ): RelativeAge {
   if (!iso) {
@@ -87,12 +129,8 @@ export function formatRelativeAge(
           : rtf.format(-Math.floor(hours / 24), "day");
   }
 
-  return {
-    label,
-    lagging: ms >= freshnessThresholds(reportIntervalMs).lagMs,
-    stale: ms >= freshnessThresholds(reportIntervalMs).staleMs,
-    absolute,
-  };
+  const { lagging, stale } = readingFreshness(iso, reportIntervalMs, parsed + ms);
+  return { label, lagging, stale, absolute };
 }
 
 /** "now" / "ahora" / "maintenant" / "jetzt" / "agora". */

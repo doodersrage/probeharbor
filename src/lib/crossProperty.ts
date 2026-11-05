@@ -1,4 +1,5 @@
-import { STALE_MS } from "./relativeTime";
+import { readingFreshness } from "./relativeTime";
+import { reportIntervalMsFromMeta } from "./reportInterval";
 import { createServerClient } from "./supabase";
 import { listUserHouseholds, type UserHousehold } from "./households";
 import { getAlertSettingsForUser } from "./notify";
@@ -58,7 +59,7 @@ export async function fetchCrossPropertySnapshots(
 
   const { data: devices } = await supabase
     .from("devices")
-    .select("id, household_id, enabled, last_seen_at")
+    .select("id, household_id, enabled, last_seen_at, meta")
     .in("household_id", householdIds);
 
   const deviceCountByHousehold = new Map<string, number>();
@@ -71,8 +72,9 @@ export async function fetchCrossPropertySnapshots(
       device.household_id,
       (deviceCountByHousehold.get(device.household_id) ?? 0) + 1,
     );
-    const lastSeen = device.last_seen_at ? Date.parse(device.last_seen_at) : NaN;
-    if (device.enabled && !(nowMs - lastSeen < STALE_MS)) {
+    // Shared freshness rule (2 h, longer for a slow-reporting device).
+    const silent = readingFreshness(device.last_seen_at, reportIntervalMsFromMeta(device.meta), nowMs).stale;
+    if (device.enabled && silent) {
       silentCountByHousehold.set(
         device.household_id,
         (silentCountByHousehold.get(device.household_id) ?? 0) + 1,

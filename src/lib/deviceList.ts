@@ -8,6 +8,7 @@ import type { StuckSensor } from "./stuckSensors";
 import type { Locale } from "../i18n/locales";
 import { libFixed } from "../i18n/messages/app/libText";
 import { isDemoDevice } from "./demoFeed";
+import { reportIntervalMsFromMeta } from "./reportInterval";
 
 /** One row in the Devices list: enough to tell probes apart and spot trouble. */
 export type DeviceListRow = {
@@ -17,6 +18,8 @@ export type DeviceListRow = {
   source: "push" | "pull_url";
   enabled: boolean;
   lastSeenAt: string | null;
+  /** Learned report interval (ms), for the shared freshness rule on `lastSeenAt`. */
+  reportIntervalMs: number | null;
   health: DeviceHealthScore;
   /** The reading people recognize the device by, e.g. "Pipe 41.2 °F". */
   headline: string | null;
@@ -74,6 +77,7 @@ export function buildDeviceListRows(input: {
       source: device.source === "pull_url" ? "pull_url" : "push",
       enabled: device.enabled,
       lastSeenAt: device.last_seen_at,
+      reportIntervalMs: reportIntervalMsFromMeta(device.meta),
       health,
       headline: headlineRow && value ? `${headlineRow.sensor.label} ${value}` : null,
       sensorCount: device.sensors.length,

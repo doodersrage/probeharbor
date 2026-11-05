@@ -4,6 +4,8 @@ export const LIVE_REFRESH_EVENT = "tt:live-refresh";
 
 export type LiveReadingsDetail = {
   lastReadingAt: string | null;
+  /** Report interval (ms) of the probe behind `lastReadingAt`, when learned (freshness rule). */
+  reportIntervalMs?: number | null;
   sensorCount: number;
 };
 

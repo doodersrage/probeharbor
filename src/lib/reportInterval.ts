@@ -25,6 +25,12 @@ export function reportIntervalSeconds(meta: unknown): number | null {
   return typeof value === "number" && Number.isFinite(value) && value > 0 ? value : null;
 }
 
+/** The learned interval in milliseconds, for the freshness rule (relativeTime `readingFreshness`). */
+export function reportIntervalMsFromMeta(meta: unknown): number | null {
+  const seconds = reportIntervalSeconds(meta);
+  return seconds == null ? null : seconds * 1000;
+}
+
 /**
  * The meta fields to write after a post, or null when nothing changed
  * (no previous post, a retry/burst, an outage gap, or a steady device).

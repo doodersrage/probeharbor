@@ -1,6 +1,7 @@
 import type { DeviceWithSensors } from "./devices";
 import type { LatestSensorRow } from "./sensorReadings";
 import { isSensorLagging } from "./sensorFreshness";
+import { reportIntervalMsFromMeta } from "./reportInterval";
 import type { Locale } from "../i18n/locales";
 import { devicesListMessages } from "../i18n/messages/app/devices/list";
 
@@ -51,6 +52,8 @@ export function buildProtectionCoverage(
 ): SpaceCoverage[] {
   const g = devicesListMessages(locale).coverage.gaps;
   const recordedBySensor = new Map(latest.map((row) => [row.sensor.id, row.recorded_at]));
+  // Same freshness rule as everywhere else: a slow-reporting device isn't "stale" between posts.
+  const intervalByDevice = new Map(devices.map((d) => [d.id, reportIntervalMsFromMeta(d.meta)]));
   const bySpace = new Map<string, DeviceWithSensors[]>();
   for (const device of devices) {
     if (!device.enabled) continue;
@@ -66,7 +69,11 @@ export function buildProtectionCoverage(
     for (const risk of Object.keys(RISK_KINDS) as CoverageRisk[]) {
       const matching = sensors.filter((s) => RISK_KINDS[risk].includes(s.kind));
       if (matching.length === 0) risks[risk] = "none";
-      else if (matching.some((s) => !isSensorLagging(recordedBySensor.get(s.id), now))) risks[risk] = "live";
+      else if (
+        matching.some(
+          (s) => !isSensorLagging(recordedBySensor.get(s.id), now, intervalByDevice.get(s.device_id)),
+        )
+      ) risks[risk] = "live";
       else risks[risk] = "stale";
     }
 

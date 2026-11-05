@@ -13,6 +13,12 @@ interface Props {
    * many probes) where green would read as "everything is fine".
    */
   quietWhenFresh?: boolean;
+  /**
+   * The sensor's device report interval (ms), when learned. Late/stale then
+   * follow the shared rule (relativeTime `readingFreshness`), here and in the
+   * 30-second ticker (public/reading-age-tick.js).
+   */
+  reportIntervalMs?: number | null;
 }
 
 const locale = getLocale(Astro);
@@ -21,8 +27,9 @@ const {
   emptyLabel = shellMessages(locale).readingAge.never,
   class: className,
   quietWhenFresh = false,
+  reportIntervalMs = null,
 } = Astro.props;
-const age = formatRelativeAge(iso, emptyLabel, locale);
+const age = formatRelativeAge(iso, emptyLabel, locale, reportIntervalMs);
 const ageText = shellMessages(locale).readingAge;
 const absoluteTitle = iso
   ? locale === "en"
@@ -52,6 +59,9 @@ const stateLabel = !iso ? null : age.stale ? ageText.stale : age.lagging ? ageTe
   title={absoluteTitle}
   data-iso={iso || undefined}
   data-quiet-fresh={quietWhenFresh ? "" : undefined}
+  data-report-interval-ms={reportIntervalMs != null && reportIntervalMs > 0 ? String(reportIntervalMs) : undefined}
+  data-state-stale={ageText.stale}
+  data-state-lagging={ageText.lagging}
 >
   {/* Flex item: a plain trailing space would be dropped. */}
   {stateLabel && <span class="reading-age-badge-state">{`${stateLabel} ·\u00a0`}</span>}

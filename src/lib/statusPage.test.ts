@@ -34,9 +34,10 @@ vi.mock("./sensorReadings", () => ({
 }));
 
 const mockFormatRelativeAge = vi.fn();
-vi.mock("./relativeTime", () => ({
+// Only the age label is mocked; the freshness rule (readingFreshness) is real.
+vi.mock("./relativeTime", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("./relativeTime")>()),
   formatRelativeAge: (...a: unknown[]) => mockFormatRelativeAge(...a),
-  STALE_MS: 2 * 60 * 60 * 1000,
 }));
 
 function reading(overrides: Partial<Record<string, unknown>> = {}) {
@@ -234,7 +235,7 @@ describe("buildStatusPageSnapshot", () => {
     expect(snapshot.deviceCount).toBe(1);
     expect(snapshot.staleSensorCount).toBe(0);
     expect(snapshot.sensors).toEqual([]);
-    expect(mockFormatRelativeAge).toHaveBeenCalledWith(null);
+    expect(mockFormatRelativeAge).toHaveBeenCalledWith(null, undefined, undefined, null);
   });
 
   it("picks the newest reading and counts stale sensors past the threshold", async () => {
