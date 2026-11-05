@@ -290,11 +290,12 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
           maybeSendRuleAlerts,
           buildAlertReadingsFromLatestSensors,
           buildFloodReadingsFromLatestSensors,
+          fetchAlertSensorValues,
         } = await import("../../../lib/alertNotifications");
-        const { fetchLatestSensorValues } = await import("../../../lib/sensorReadings");
 
         const devices = await listHouseholdDevices(device.household_id);
-        const latest = await fetchLatestSensorValues(device.household_id);
+        // Skips demo (simulated) feeds in the same household: they never alert.
+        const latest = await fetchAlertSensorValues(device.household_id);
         const readings = buildAlertReadingsFromLatestSensors(latest);
         const floodReadings = buildFloodReadingsFromLatestSensors(latest);
 

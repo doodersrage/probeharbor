@@ -219,6 +219,21 @@ describe("runFeedUptimeForAllUsers", () => {
     expect(mockNotifyUser).toHaveBeenCalled();
   });
 
+  it("records but never alerts on the demo (example) feed being down", async () => {
+    mockListAllHouseholdOwnerUserIds.mockResolvedValue(["u1"]);
+    mockCheckFeedHealth.mockResolvedValue({
+      statuses: [status({ ok: false, url: "https://probeharbor.com/api/feeds/example", feedName: "Demo" })],
+      error: null,
+    });
+    mockFrom.mockReturnValue(mockQuery({ error: null }));
+    const { runFeedUptimeForAllUsers } = await import("./feedUptimeMonitor");
+
+    const result = await runFeedUptimeForAllUsers();
+
+    expect(result).toMatchObject({ checked: 1, failed: 1, alertsSent: 0 });
+    expect(mockNotifyUser).not.toHaveBeenCalled();
+  });
+
   it("does not re-alert for a feed that has stayed down since the last alert", async () => {
     mockListAllHouseholdOwnerUserIds.mockResolvedValue(["u1"]);
     mockCheckFeedHealth.mockResolvedValue({

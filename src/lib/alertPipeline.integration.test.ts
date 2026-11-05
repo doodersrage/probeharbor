@@ -202,3 +202,149 @@ describe("freeze alert pipeline", () => {
     expect(thresholdEvents()).toHaveLength(1);
   });
 });
+
+describe("demo (simulated) feed readings", () => {
+  const DEMO_URL = "https://probeharbor.com/api/feeds/example";
+
+  /** The example feed saved by "Try it with a demo feed", with a cold reading. */
+  function seedDemoFeed(tempF = 20) {
+    db.seed("devices", [
+      {
+        id: "dev-demo",
+        household_id: HOUSE,
+        name: "Example weather feed",
+        source: "pull_url",
+        pull_url: DEMO_URL,
+        enabled: true,
+        space: null,
+        last_seen_at: null,
+        sort_order: 1,
+        meta: { pull_json_root: "temp" },
+      },
+    ]);
+    db.seed("device_sensors", [
+      { id: "sen-demo", device_id: "dev-demo", key: "0", label: "Probe 0", kind: "temperature", unit: "F", visible: true, offset_num: 0 },
+    ]);
+    db.seed("sensor_readings", [
+      { sensor_id: "sen-demo", household_id: HOUSE, value_num: tempF, value_bool: null, value_text: null, recorded_at: minutesAgo(1) },
+    ]);
+  }
+
+  /** The cron entry point (collectHistory) for one member. */
+  async function cronThresholdPass() {
+    const { maybeSendThresholdAlerts } = await import("./alertNotifications");
+    const { listHouseholdDevices } = await import("./devices");
+    const { devices } = await listHouseholdDevices(HOUSE);
+    await maybeSendThresholdAlerts(USER, "owner@example.com", {}, [], [], [], HOUSE, devices, "en");
+  }
+
+  it("never sends a freeze alert from a demo feed (cron path)", async () => {
+    seedHousehold();
+    seedReadings([[1, 50]]); // the real probe is warm
+    seedDemoFeed(20);
+
+    await cronThresholdPass();
+
+    expect(thresholdEvents()).toHaveLength(0);
+    expect(discordPosts()).toBe(0);
+  });
+
+  it("still alerts on a cold real probe next to a demo feed, naming only the real probe", async () => {
+    seedHousehold();
+    seedReadings([[1, 28]]);
+    seedDemoFeed(20);
+
+    await cronThresholdPass();
+
+    const events = thresholdEvents();
+    expect(events).toHaveLength(1);
+    expect(discordPosts()).toBe(1);
+    const text = JSON.stringify(events[0]);
+    expect(text).toContain("Garage");
+    expect(text).not.toContain("Probe 0");
+  });
+
+  it("skips demo readings on the ingest path (fetchAlertSensorValues)", async () => {
+    seedHousehold();
+    seedReadings([[1, 50]]);
+    seedDemoFeed(20);
+    const { getAlertSettingsForUser } = await import("./notify");
+    const { buildAlertReadingsFromLatestSensors, fetchAlertSensorValues, sendThresholdAlertsIfNeeded } =
+      await import("./alertNotifications");
+
+    const latest = await fetchAlertSensorValues(HOUSE);
+    expect(latest.map((row) => row.sensor.id)).toEqual(["sen-1"]);
+    await sendThresholdAlertsIfNeeded(
+      USER,
+      "owner@example.com",
+      await getAlertSettingsForUser(USER),
+      buildAlertReadingsFromLatestSensors(latest),
+      HOUSE,
+      { latestSensors: latest },
+    );
+
+    expect(thresholdEvents()).toHaveLength(0);
+  });
+
+  it("labels demo rows in the latest readings without hiding them from display", async () => {
+    seedHousehold();
+    seedReadings([[1, 50]]);
+    seedDemoFeed(20);
+    const { fetchLatestSensorValues } = await import("./sensorReadings");
+
+    const latest = await fetchLatestSensorValues(HOUSE);
+    const bySensor = Object.fromEntries(latest.map((row) => [row.sensor.id, row.deviceDemo]));
+    expect(bySensor).toEqual({ "sen-1": false, "sen-demo": true });
+  });
+
+  it("does not fire a custom rule from demo readings", async () => {
+    seedHousehold({
+      rules: [{ id: "r1", name: "Cold", enabled: true, all: [{ type: "temp_below", value: 40 }] }],
+    });
+    seedReadings([[1, 50]]);
+    seedDemoFeed(20);
+    const { maybeSendRuleAlerts, buildAlertReadingsFromLatestSensors, fetchAlertSensorValues } =
+      await import("./alertNotifications");
+    const { getAlertSettingsForUser } = await import("./notify");
+    const { listHouseholdDevices } = await import("./devices");
+    const { devices } = await listHouseholdDevices(HOUSE);
+
+    const readings = buildAlertReadingsFromLatestSensors(await fetchAlertSensorValues(HOUSE));
+    await maybeSendRuleAlerts(USER, "owner@example.com", devices, await getAlertSettingsForUser(USER), readings, HOUSE);
+
+    expect(db.table("alert_events").filter((e) => e.kind === "rule")).toHaveLength(0);
+  });
+
+  it("does not report a demo feed as a silent device, but still reports a real one", async () => {
+    seedHousehold();
+    seedDemoFeed(20);
+    const { maybeSendRateAndOutageAlerts } = await import("./alertNotifications");
+    const { getAlertSettingsForUser } = await import("./notify");
+    const { listHouseholdDevices } = await import("./devices");
+    const { devices } = await listHouseholdDevices(HOUSE);
+    const settings = await getAlertSettingsForUser(USER);
+
+    // Only the demo feed has never reported: nothing to say.
+    const demoOnly = devices.filter((d) => d.id === "dev-demo");
+    await maybeSendRateAndOutageAlerts(USER, "owner@example.com", demoOnly, settings, HOUSE);
+    expect(db.table("alert_events").filter((e) => e.kind === "outage")).toHaveLength(0);
+
+    // The real probe has never reported either: that one still alerts.
+    await maybeSendRateAndOutageAlerts(USER, "owner@example.com", devices, settings, HOUSE);
+    const outages = db.table("alert_events").filter((e) => e.kind === "outage");
+    expect(outages).toHaveLength(1);
+    expect(JSON.stringify(outages[0])).toContain("Garage probe");
+    expect(JSON.stringify(outages[0])).not.toContain("Example weather feed");
+  });
+
+  it("the watchdog does not expect alerts for demo readings", async () => {
+    seedHousehold();
+    seedDemoFeed(20);
+    const { runAlertDeliveryWatchdog } = await import("./alertDeliveryWatchdog");
+
+    const watchdog = await runAlertDeliveryWatchdog();
+
+    expect(watchdog.findings).toEqual([]);
+    expect(watchdog.checked).toBe(0);
+  });
+});

@@ -6,6 +6,7 @@ import { hasConfiguredAlertChannel } from "./freezeReadiness";
 import { listHouseholdIdsForCron, listHouseholdMembers } from "./households";
 import { getAlertSettingsForUser } from "./notify";
 import { fetchLatestSensorValues, getFreezeDwellSamples, type LatestSensorRow } from "./sensorReadings";
+import { excludeDemoRows } from "./demoFeed";
 import { createAdminClient } from "./supabase";
 import { freezeThresholdForReading } from "./thresholdSensorScope";
 
@@ -89,7 +90,8 @@ export async function runAlertDeliveryWatchdog(nowMs = Date.now()): Promise<{
 
   for (const { householdId } of await listHouseholdIdsForCron()) {
     try {
-      const latest = (await fetchLatestSensorValues(householdId)).filter(
+      // Demo (simulated) feeds never alert, so they can't be "overdue" either.
+      const latest = excludeDemoRows(await fetchLatestSensorValues(householdId)).filter(
         (row) => nowMs - Date.parse(row.recorded_at) <= FRESH_READING_MS,
       );
       if (latest.length === 0) continue;

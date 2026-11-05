@@ -13,6 +13,18 @@ import type { SensorKind } from "./sensorKinds";
 import { clampSensorOffset } from "./sensorCalibration";
 import type { Locale } from "../i18n/locales";
 import { apiDevicesMessages } from "../i18n/messages/app/api/devices";
+import { DEMO_DEVICE_META_KEY, isDemoFeedUrl } from "./demoFeed";
+
+/** Pull-device meta for a saved feed; marks the example feed as demo data. */
+export function pullDeviceMeta(
+  existing: Record<string, unknown>,
+  feed: Pick<TempFeedConfig, "url" | "jsonRoot">,
+): Record<string, unknown> {
+  const meta: Record<string, unknown> = { ...existing, pull_json_root: sanitizeJsonRoot(feed.jsonRoot) };
+  if (isDemoFeedUrl(feed.url)) meta[DEMO_DEVICE_META_KEY] = true;
+  else delete meta[DEMO_DEVICE_META_KEY];
+  return meta;
+}
 
 export type { SensorKind } from "./sensorKinds";
 export {
@@ -544,9 +556,7 @@ export async function savePullDevicesForHousehold(
           pull_url: feed.url,
           enabled: feed.enabled,
           sort_order: index,
-          meta: {
-            pull_json_root: sanitizeJsonRoot(feed.jsonRoot),
-          },
+          meta: pullDeviceMeta({}, feed) as Json,
         })
         .select("id")
         .single();
@@ -563,7 +573,7 @@ export async function savePullDevicesForHousehold(
         pull_url: feed.url,
         enabled: feed.enabled,
         sort_order: index,
-        meta: { pull_json_root: sanitizeJsonRoot(feed.jsonRoot) },
+        meta: pullDeviceMeta({}, feed),
         space: null,
         last_seen_at: null,
         ingest_key_prefix: null,
@@ -578,12 +588,12 @@ export async function savePullDevicesForHousehold(
           pull_url: feed.url,
           enabled: feed.enabled,
           sort_order: index,
-          meta: {
-            ...(device.meta && typeof device.meta === "object" && !Array.isArray(device.meta)
+          meta: pullDeviceMeta(
+            device.meta && typeof device.meta === "object" && !Array.isArray(device.meta)
               ? (device.meta as Record<string, unknown>)
-              : {}),
-            pull_json_root: sanitizeJsonRoot(feed.jsonRoot),
-          },
+              : {},
+            feed,
+          ) as Json,
           updated_at: new Date().toISOString(),
         })
         .eq("id", device.id);

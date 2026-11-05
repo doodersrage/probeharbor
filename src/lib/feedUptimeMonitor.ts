@@ -1,6 +1,7 @@
 import { createServerClient } from "./supabase";
 import { checkFeedHealth, type FeedHealthStatus } from "./collectHistory";
 import { feedHealthMessage } from "./feedErrorText";
+import { isDemoFeedUrl } from "./demoFeed";
 import { getAlertSettingsForUser, notifyUser } from "./notify";
 import { listAllHouseholdOwnerUserIds } from "./households";
 import type { Locale } from "../i18n/locales";
@@ -88,7 +89,9 @@ export async function runFeedUptimeForAllUsers(): Promise<{
       const down = health.statuses.filter((s) => !s.ok);
       failed += down.length;
 
-      if (down.length === 0) continue;
+      // The demo (example) feed being down is not worth an alert.
+      const alertable = down.filter((s) => !isDemoFeedUrl(s.url));
+      if (alertable.length === 0) continue;
 
       const settings = await getAlertSettingsForUser(userId);
       if (!settings.feedUptimeAlertsEnabled) continue;
@@ -99,7 +102,7 @@ export async function runFeedUptimeForAllUsers(): Promise<{
       if (Date.now() - lastAt < 4 * 60 * 60 * 1000) continue;
 
       const newlyDown: FeedHealthStatus[] = [];
-      for (const s of down) {
+      for (const s of alertable) {
         const lastOk = await lastOkCheckAt(userId, s.feedId);
         if (isNewFeedOutage(lastOk, settings.lastFeedUptimeAlertAt)) newlyDown.push(s);
       }

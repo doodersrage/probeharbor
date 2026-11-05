@@ -5,6 +5,7 @@ import type { TempFeedResult, TempProbeConfig } from "./tempFeedConfig";
 import { applySensorOffset } from "./sensorCalibration";
 import { implausibleReason } from "./readingPlausibility";
 import { fetchNewestFirstPages } from "./pagedRows";
+import { isDemoDevice } from "./demoFeed";
 export type { TypedSensorValue } from "./ingestPayload";
 export { parseIngestPayload, inferSensorKind } from "./ingestPayload";
 
@@ -253,6 +254,8 @@ export type LatestSensorRow = {
   value_bool: boolean | null;
   value_text: string | null;
   recorded_at: string;
+  /** From a demo (simulated) feed: label it, never alert on it (see demoFeed). */
+  deviceDemo?: boolean;
 };
 
 type LatestReading = {
@@ -312,7 +315,7 @@ export async function fetchLatestSensorValuesResult(
   const supabase = createServerClient();
   const { data: devices, error: devicesError } = await supabase
     .from("devices")
-    .select("id, name, space")
+    .select("id, name, space, source, pull_url, meta")
     .eq("household_id", householdId)
     .eq("enabled", true);
 
@@ -335,6 +338,7 @@ export async function fetchLatestSensorValuesResult(
   const deviceSpace = new Map(
     devices.map((d) => [d.id, typeof d.space === "string" ? d.space : null]),
   );
+  const demoDeviceIds = new Set(devices.filter((d) => isDemoDevice(d)).map((d) => d.id));
 
   const { bySensor: readingBySensor, error: readingsError } = await fetchLatestReadingsBySensor(
     supabase,
@@ -367,6 +371,7 @@ export async function fetchLatestSensorValuesResult(
       value_bool: reading.value_bool,
       value_text: reading.value_text,
       recorded_at: reading.recorded_at,
+      deviceDemo: demoDeviceIds.has(sensor.device_id),
     });
   }
 

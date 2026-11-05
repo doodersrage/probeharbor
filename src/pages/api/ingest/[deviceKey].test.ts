@@ -99,6 +99,7 @@ vi.mock("../../../lib/alertNotifications", () => ({
   maybeSendRuleAlerts: vi.fn().mockResolvedValue(undefined),
   buildAlertReadingsFromLatestSensors: vi.fn().mockReturnValue([]),
   buildFloodReadingsFromLatestSensors: vi.fn().mockReturnValue([]),
+  fetchAlertSensorValues: (...a: unknown[]) => mockFetchLatestSensorValues(...a),
 }));
 
 function makeContext(options: {

@@ -117,7 +117,7 @@ import {
 } from "./notify";
 import type { DeviceWithSensors } from "./devices";
 import {
-  fetchLatestSensorValues,
+  fetchLatestSensorValues as fetchAllLatestSensorValues,
   getRecentNumericReadings,
   getFreezeDwellSamples,
   getRecentNumericReadingSamples,
@@ -158,6 +158,7 @@ import {
   fetchOpenMeteoHourlyWindow,
   splitOpenMeteoPastAndForecast,
 } from "./openMeteoHistory";
+import { excludeDemoDevices, excludeDemoFeeds, excludeDemoRows, isDemoDevice } from "./demoFeed";
 
 export {
   buildAlertReadingsFromLatestSensors,
@@ -165,6 +166,28 @@ export {
   buildReadingsFromResults,
   mergeAlertReadings,
 } from "./alertReadings";
+
+/**
+ * Latest readings that alerts may act on: demo (simulated) feeds are left
+ * out, so the example feed never sends freeze, humidity, flood, power, rule
+ * or runway alerts. Every alert path reads sensors through this.
+ */
+export async function fetchAlertSensorValues(
+  householdId: string,
+): Promise<import("./sensorReadings").LatestSensorRow[]> {
+  return excludeDemoRows(await fetchAllLatestSensorValues(householdId));
+}
+
+/** Internal alias so every read in this module skips demo data. */
+const fetchLatestSensorValues = fetchAlertSensorValues;
+
+/** Stuck-probe findings minus probes on demo devices. */
+function excludeDemoStuck(stuck: StuckSensor[], devices: DeviceWithSensors[]): StuckSensor[] {
+  const demoSensorIds = new Set(
+    devices.filter((device) => isDemoDevice(device)).flatMap((device) => device.sensors.map((sensor) => sensor.id)),
+  );
+  return stuck.filter((item) => !demoSensorIds.has(item.sensorId));
+}
 
 /** Retry an alert that reached no channel at most this often. */
 const FAILED_DELIVERY_RETRY_MS = 30 * 60 * 1000;
@@ -611,7 +634,7 @@ export async function maybeSendRunwayAlert(
   if (!settings.enabled || !settings.runwayAlertEnabled) return;
   if (isAlertCooldownActive(settings.lastRunwayAlertAt)) return;
 
-  const temps = (latestSensors ?? []).filter(
+  const temps = excludeDemoRows(latestSensors ?? []).filter(
     (row) =>
       row.sensor.kind === "temperature" &&
       row.sensor.visible !== false &&
@@ -736,7 +759,10 @@ export async function maybeSendThresholdAlerts(
 ): Promise<void> {
   await ensureLocale(locale, ["app"]);
   const settings = await getAlertSettingsForUser(userId, userMetadata);
-  const visibleProbes = probes.filter((probe) => probe.visible);
+  // Demo (simulated) feeds never alert: drop them before anything is read.
+  const real = excludeDemoFeeds(feeds, probes);
+  const realFeeds = real.feeds;
+  const visibleProbes = real.probes.filter((probe) => probe.visible);
 
   let deviceList = devices ?? [];
   if (deviceList.length === 0 && householdId) {
@@ -744,14 +770,15 @@ export async function maybeSendThresholdAlerts(
     const listed = await listHouseholdDevices(householdId);
     deviceList = listed.devices;
   }
+  deviceList = excludeDemoDevices(deviceList);
 
   let feedReadings: AlertReading[] = [];
-  if (visibleProbes.length > 0 && feeds.length > 0) {
+  if (visibleProbes.length > 0 && realFeeds.length > 0) {
     let results = existingResults;
     if (!results) {
       const { fetchTemps } = await import("./FetchTemps");
       results = await fetchTemps({
-        feeds,
+        feeds: realFeeds,
         probes: visibleProbes,
         saveToDatabase: false,
       });
@@ -799,6 +826,7 @@ async function buildRuleContext(
   /** False for read-only checks (rule debugger): don't write door sessions. */
   persist = true,
 ): Promise<RuleEvalContext> {
+  devices = excludeDemoDevices(devices);
   const boolSensors: RuleEvalContext["boolSensors"] = [];
   const numericSensors: RuleEvalContext["numericSensors"] = [];
   const doorOpenSessions: RuleEvalContext["doorOpenSessions"] = [];
@@ -950,6 +978,7 @@ export async function maybeSendRuleAlerts(
   locale: Locale = "en",
 ): Promise<void> {
   if (!settings.enabled || settings.alertRules.length === 0) return;
+  devices = excludeDemoDevices(devices);
   // Rules have their own cooldown so a rule match never silences freeze alerts.
   const inCooldown = isAlertCooldownActive(settings.lastRuleAlertAt);
   // During the cooldown, only evaluate when the last rule alert is still open
@@ -1007,6 +1036,7 @@ export async function maybeSendRateAndOutageAlerts(
   display?: AlertDisplay,
 ): Promise<void> {
   if (!settings.enabled) return;
+  devices = excludeDemoDevices(devices);
   const t = await alertText(locale);
 
   const outageMessages: string[] = [];
@@ -1132,7 +1162,8 @@ export async function maybeSendDeviceHealthAlerts(
 ): Promise<void> {
   if (!settings.enabled) return;
   const t = await alertText(locale);
-  if (stuck) await maybeSendStuckSensorAlerts(userId, email, settings, stuck, locale);
+  if (stuck) await maybeSendStuckSensorAlerts(userId, email, settings, excludeDemoStuck(stuck, devices), locale);
+  devices = excludeDemoDevices(devices);
 
   const health = deviceHealthFromDevices(devices);
   const base = siteBaseUrl ?? buildSiteUrl();
