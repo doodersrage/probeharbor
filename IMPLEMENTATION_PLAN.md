@@ -3914,3 +3914,49 @@ From a user screenshot of the Overview's Sensor extras column.
   checked the Overview with their real devices: looks good.
 - The blank signal chart in the original screenshot did not reproduce with
   sample data; likely capture timing.
+
+------------------------------------------------------------------------
+
+## After Astro 7: cleanups, Node 24, dependency majors (2026-11-05)
+
+**Status: Committed locally (baca166..09986d0), not pushed. No migration.**
+
+- [x] Tests: two chart tests had readings fixed at 2026-10-29 and asked for
+      the last 7 days; they began failing on 2026-11-05 (CI too). Clock
+      pinned (baca166). Full suite also passes with the clock +60 days.
+- [x] Config: removed the adapter's `platformProxy` (no-op in adapter 14).
+      Kept the Actions `optimizeDeps` pre-warm: a cold build still showed
+      the optimizer starting mid-build.
+- [x] Middleware: no cookie/header reads on prerendered pages (build
+      warning on `/badge/freeze-map.svg`). Locale from header/cookie still
+      works on `/share` and `/embed` (checked on a local preview).
+- [x] Node 24 LTS in all workflows; `engines.node` >=24.11.0.
+- [x] Minor updates: Tailwind 4.3.4, tailwind-animations 1.0.2, Lucide
+      1.68.0, supabase-js 2.119.0, Playwright 1.64.1, @astrojs/check 0.9.12.
+- [x] web-push 2.0.0: standard aes128gcm + vapid auth instead of legacy
+      aesgcm. Likely fixes Safari/iOS push (Apple rejects the old format).
+      New request/decryption/delivery-accounting tests.
+- [x] vitest 5 (only Vite 8 left in the tree).
+- [x] Supabase CLI 3: `--remote` replaces `--linked`; `db:push` prompts
+      (default No). `db-pending` parses JSON output and exits 2 on anything
+      unreadable (the old parser would have reported a false all-clear).
+- [x] Sentry 11.10.0: `dataCollection` keeps the old no-PII baseline;
+      new `scrubSpan` (Worker spans were streamed unscrubbed on v10);
+      `attachStacktrace: false`; source-map options moved.
+- [x] TypeScript 6 (not 7: `astro check` refuses TS 7). Byte-array types
+      for TS 6 lib.dom.
+- [x] Preact 11: chart lightbox spacer height now has `px` (Preact 11 no
+      longer adds it).
+- Not done: Stripe SDK 23. It moves every API call from
+  `2026-06-24.dahlia` to `2026-10-28.endive` (`src/lib/stripe.ts` sets no
+  `apiVersion`). No code changes were needed, but it needs test-mode
+  checks first (checkout, webhooks, portal, upgrade/downgrade/cancel).
+  Ready in a worktree.
+- Evidence (Node 24.22.1): typecheck 0 errors; 3347 unit; lint at baseline
+  (64); build; e2e 58 passed, 14 skipped (need credentials); wrangler dry
+  run: same bindings, gzip 2125 → 2153 KiB; docs build. Firmware build not
+  run locally (no PlatformIO). Audit: 2 moderate (glob via Sentry's
+  bundler plugin; 11.11.0 should clear them).
+- Still to verify after deploy: Web Push on Chrome, Firefox, Safari/iOS;
+  Sentry events and source maps arriving; `pnpm db:pending` against the
+  linked project; signed-in dashboard islands and chart Expand views.
