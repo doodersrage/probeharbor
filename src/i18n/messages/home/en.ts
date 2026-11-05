@@ -16,7 +16,7 @@ const en = {
     openDashboard: "Open dashboard",
     liveReadings: "Live readings",
     startFree: "Start free",
-    seeDemo: "See the live demo",
+    seeDemo: "Try the interactive demo",
     signedInHtml:
       'Signed in — Overview for ops, Live for glanceable probes, or <a class="text-link" href="/dashboard/devices">Devices</a> to manage ingest.',
     guestHtml:

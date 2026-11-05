@@ -17,7 +17,7 @@ const ptBr: HomeMessages = {
     openDashboard: "Abrir o painel",
     liveReadings: "Leituras ao vivo",
     startFree: "Comece grátis",
-    seeDemo: "Ver a demo ao vivo",
+    seeDemo: "Experimente a demo interativa",
     signedInHtml:
       'Conectado: Visão geral para a operação, Ao vivo para uma olhada rápida nas sondas, ou <a class="text-link" href="/dashboard/devices">Dispositivos</a> para gerenciar a ingestão.',
     guestHtml:

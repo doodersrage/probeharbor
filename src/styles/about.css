@@ -969,6 +969,8 @@ a.about-figure-credit:hover {
 .probe-demo {
   display: grid;
   gap: 1.5rem;
+  /* /about/probe-demo#simulator lands below the sticky site header. */
+  scroll-margin-top: 5rem;
 }
 
 .probe-demo-presets {

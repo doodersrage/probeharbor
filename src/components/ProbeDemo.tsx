@@ -353,7 +353,7 @@ export default function ProbeDemo({ text = PROBE_DEMO_TEXT_EN, locale }: ProbeDe
   }
 
   return (
-    <div class="probe-demo">
+    <div class="probe-demo" id="simulator">
       <section class="card">
         <h2 class="card-title">{t.conditionsTitle}</h2>
         <p class="card-subtitle" dangerouslySetInnerHTML={{ __html: t.conditionsSubtitleHtml }} />

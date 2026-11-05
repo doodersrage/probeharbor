@@ -17,7 +17,7 @@ const de: HomeMessages = {
     openDashboard: "Dashboard öffnen",
     liveReadings: "Live-Werte",
     startFree: "Kostenlos starten",
-    seeDemo: "Live-Demo ansehen",
+    seeDemo: "Interaktive Demo ausprobieren",
     signedInHtml:
       'Angemeldet – Übersicht für den Betrieb, Live für einen schnellen Blick auf die Sensoren oder <a class="text-link" href="/dashboard/devices">Geräte</a>, um die Datenanbindung zu verwalten.',
     guestHtml:

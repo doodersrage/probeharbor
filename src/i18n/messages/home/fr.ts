@@ -17,7 +17,7 @@ const fr: HomeMessages = {
     openDashboard: "Ouvrir le tableau de bord",
     liveReadings: "Mesures en direct",
     startFree: "Commencer gratuitement",
-    seeDemo: "Voir la démo en direct",
+    seeDemo: "Essayer la démo interactive",
     signedInHtml:
       'Connecté : Vue d’ensemble pour le suivi, Direct pour un coup d’œil aux sondes, ou <a class="text-link" href="/dashboard/devices">Appareils</a> pour gérer l’ingestion.',
     guestHtml:

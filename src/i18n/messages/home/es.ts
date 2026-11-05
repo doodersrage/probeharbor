@@ -17,7 +17,7 @@ const es: HomeMessages = {
     openDashboard: "Abrir el panel",
     liveReadings: "Lecturas en vivo",
     startFree: "Empieza gratis",
-    seeDemo: "Ver la demo en vivo",
+    seeDemo: "Prueba la demo interactiva",
     signedInHtml:
       'Sesión iniciada: Resumen para la operación, En vivo para ver las sondas de un vistazo, o <a class="text-link" href="/dashboard/devices">Dispositivos</a> para gestionar la ingesta.',
     guestHtml:
