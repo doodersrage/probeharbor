@@ -30,7 +30,8 @@ export default function DemoPullQuickStart({
           feeds: [
             {
               id: "example-weather",
-              name: "Example weather feed",
+              // Localized; every view also marks it "Demo data" (see lib/demoFeed).
+              name: text.feedName,
               url: exampleFeedUrl,
               enabled: true,
               jsonRoot: "temp",

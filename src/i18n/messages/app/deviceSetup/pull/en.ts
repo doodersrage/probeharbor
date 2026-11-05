@@ -105,6 +105,8 @@ const en = {
     settingUp: "Setting up…",
     hint: "Live weather JSON — no hardware required.",
     couldNotSave: "Could not save example feed.",
+    /** Name given to the saved example feed (simulated readings). */
+    feedName: "Demo weather feed (simulated)",
   },
 };
 

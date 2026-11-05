@@ -105,6 +105,7 @@ const ptBr: DeviceSetupPullMessages = {
     settingUp: "Configurando…",
     hint: "JSON de clima ao vivo, sem precisar de hardware.",
     couldNotSave: "Não foi possível salvar o feed de exemplo.",
+    feedName: "Feed de clima de demonstração (simulado)",
   },
 };
 

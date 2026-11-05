@@ -105,6 +105,7 @@ const es: DeviceSetupPullMessages = {
     settingUp: "Configurando…",
     hint: "JSON meteorológico en directo, sin hardware.",
     couldNotSave: "No se pudo guardar el feed de ejemplo.",
+    feedName: "Feed meteorológico de demostración (simulado)",
   },
 };
 

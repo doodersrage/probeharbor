@@ -107,6 +107,7 @@ const fr: DeviceSetupPullMessages = {
     settingUp: "Configuration…",
     hint: "JSON météo en direct, sans matériel.",
     couldNotSave: "Impossible d’enregistrer le flux d’exemple.",
+    feedName: "Flux météo de démo (simulé)",
   },
 };
 

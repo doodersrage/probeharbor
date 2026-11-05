@@ -106,6 +106,7 @@ const de: DeviceSetupPullMessages = {
     settingUp: "Wird eingerichtet…",
     hint: "Live-Wetter-JSON – keine Hardware nötig.",
     couldNotSave: "Beispiel-Feed konnte nicht gespeichert werden.",
+    feedName: "Demo-Wetter-Feed (simuliert)",
   },
 };
 
