@@ -27,7 +27,9 @@ const en = {
   extraDoor: "Door reed switch",
   extraBattery: "Battery (1:1 divider)",
   extrasHint:
-    "Tick only what you've connected: an unwired pin would read as \"dry\" or \"open\". Pins are in the table above. DS18B20, DHT22 and I²C sensors (BME280, SHT31, AHT20) are found automatically.",
+    "Tick only what you've connected: an unwired pin would read as \"dry\" or \"open\". DS18B20, DHT22 and I²C sensors (BME280, SHT31, AHT20) are found automatically.",
+  /** Link to the pin table on /flash (#pins). */
+  pinsLink: "Which pin each one uses",
   sendButton: "Send settings over USB",
   phoneSetupHtml:
     "No USB serial in your browser, or the board is already mounted somewhere else? Power it up and join the <strong>ProbeHarbor-Setup</strong> Wi‑Fi network from a phone to enter the same settings. Holding the BOOT button for five seconds erases them.",

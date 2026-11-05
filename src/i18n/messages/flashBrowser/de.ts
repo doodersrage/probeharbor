@@ -30,7 +30,9 @@ const de: BrowserFlasherMessages = {
   extraDoor: "Tür-Reedschalter",
   extraBattery: "Akku (1:1-Teiler)",
   extrasHint:
-    "Hake nur an, was du angeschlossen hast: Ein unbelegter Pin würde als „trocken“ oder „offen“ gelesen. Die Pins stehen in der Tabelle oben. DS18B20, DHT22 und I²C-Sensoren (BME280, SHT31, AHT20) werden automatisch erkannt.",
+    "Hake nur an, was du angeschlossen hast: Ein unbelegter Pin würde als „trocken“ oder „offen“ gelesen. DS18B20, DHT22 und I²C-Sensoren (BME280, SHT31, AHT20) werden automatisch erkannt.",
+  /** Link to the pin table on /flash (#pins). */
+  pinsLink: "Welcher Pin wofür",
   sendButton: "Einstellungen per USB senden",
   phoneSetupHtml:
     "Kein USB-Seriell in deinem Browser, oder das Board ist schon woanders montiert? Schalte es ein und verbinde ein Handy mit dem WLAN <strong>ProbeHarbor-Setup</strong>, um dieselben Einstellungen einzugeben. Wenn du die BOOT-Taste fünf Sekunden gedrückt hältst, werden sie gelöscht.",

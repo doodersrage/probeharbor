@@ -30,7 +30,9 @@ const fr: BrowserFlasherMessages = {
   extraDoor: "Interrupteur reed de porte",
   extraBattery: "Batterie (pont diviseur 1:1)",
   extrasHint:
-    "Ne cochez que ce que vous avez branché : une broche non câblée serait lue comme « sec » ou « ouvert ». Les broches figurent dans le tableau ci-dessus. Les capteurs DS18B20, DHT22 et I²C (BME280, SHT31, AHT20) sont détectés automatiquement.",
+    "Ne cochez que ce que vous avez branché : une broche non câblée serait lue comme « sec » ou « ouvert ». Les capteurs DS18B20, DHT22 et I²C (BME280, SHT31, AHT20) sont détectés automatiquement.",
+  /** Link to the pin table on /flash (#pins). */
+  pinsLink: "Quelle broche pour chacun",
   sendButton: "Envoyer les réglages par USB",
   phoneSetupHtml:
     "Pas de série USB dans votre navigateur, ou la carte est déjà installée ailleurs ? Mettez-la sous tension et connectez un téléphone au réseau Wi‑Fi <strong>ProbeHarbor-Setup</strong> pour saisir les mêmes réglages. Maintenir le bouton BOOT cinq secondes les efface.",

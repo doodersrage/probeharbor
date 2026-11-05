@@ -4,7 +4,7 @@ const ptBr: DeviceSetupFirmwareMessages = {
   srTitle: "Gravar firmware",
   esp32Heading: "Configure um ESP32 por este navegador",
   esp32Lede:
-    "Sem Arduino IDE: instale o firmware por USB e depois envie o seu Wi‑Fi e a chave deste dispositivo (já preenchida). Chrome ou Edge em um computador. Funciona com um DS18B20, um DHT22 ou um sensor I²C nos pinos indicados.",
+    "Sem Arduino IDE: instale o firmware por USB e depois envie o seu Wi‑Fi e a chave deste dispositivo (já preenchida). Chrome ou Edge em um computador. Funciona com um DS18B20, um DHT22 ou um sensor I²C; a tabela de pinos está no link abaixo, junto aos extras opcionais.",
   preferCode: "Prefere código? Arduino IDE, MicroPython ou ESPHome",
   esp32StepsHtml: [
     "Instale o suporte às placas <strong>ESP32</strong> (ou ESP8266) no Arduino IDE / PlatformIO, não os exemplos de Uno Ethernet. O Pico W usa outro download, mais abaixo.",

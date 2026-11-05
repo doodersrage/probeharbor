@@ -30,7 +30,9 @@ const es: BrowserFlasherMessages = {
   extraDoor: "Interruptor reed de puerta",
   extraBattery: "Batería (divisor 1:1)",
   extrasHint:
-    "Marca solo lo que hayas conectado: un pin sin cablear se leería como «seco» o «abierto». Los pines están en la tabla de arriba. Los sensores DS18B20, DHT22 e I²C (BME280, SHT31, AHT20) se detectan automáticamente.",
+    "Marca solo lo que hayas conectado: un pin sin cablear se leería como «seco» o «abierto». Los sensores DS18B20, DHT22 e I²C (BME280, SHT31, AHT20) se detectan automáticamente.",
+  /** Link to the pin table on /flash (#pins). */
+  pinsLink: "Qué pin usa cada uno",
   sendButton: "Enviar ajustes por USB",
   phoneSetupHtml:
     "¿Tu navegador no tiene serie USB o la placa ya está montada en otro sitio? Enciéndela y conéctate desde un móvil a la red Wi‑Fi <strong>ProbeHarbor-Setup</strong> para introducir los mismos ajustes. Mantener pulsado el botón BOOT cinco segundos los borra.",

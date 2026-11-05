@@ -4,7 +4,7 @@ const de: DeviceSetupFirmwareMessages = {
   srTitle: "Firmware flashen",
   esp32Heading: "ESP32 direkt im Browser einrichten",
   esp32Lede:
-    "Ohne Arduino IDE: Firmware per USB installieren, dann WLAN-Daten und den Schlüssel dieses Geräts (schon eingetragen) übertragen. Chrome oder Edge auf einem Computer. Funktioniert mit einem DS18B20, einem DHT22 oder einem I²C-Sensor an den angezeigten Pins.",
+    "Ohne Arduino IDE: Firmware per USB installieren, dann WLAN-Daten und den Schlüssel dieses Geräts (schon eingetragen) übertragen. Chrome oder Edge auf einem Computer. Funktioniert mit einem DS18B20, einem DHT22 oder einem I²C-Sensor; die Pin-Tabelle ist unten bei den optionalen Extras verlinkt.",
   preferCode: "Lieber Code? Arduino IDE, MicroPython oder ESPHome",
   esp32StepsHtml: [
     "Installiere die Board-Unterstützung für <strong>ESP32</strong> (oder ESP8266) in Arduino IDE / PlatformIO, nicht die Uno-Ethernet-Beispiele. Für den Pico W gibt es unten einen eigenen Download.",

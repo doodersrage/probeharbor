@@ -3,7 +3,7 @@ const en = {
   srTitle: "Flash firmware",
   esp32Heading: "Set up an ESP32 from this browser",
   esp32Lede:
-    "No Arduino IDE: install the firmware over USB, then send it your Wi‑Fi and this device's key (already filled in). Chrome or Edge on a computer. Works with a DS18B20, a DHT22, or an I²C sensor on the pins shown.",
+    "No Arduino IDE: install the firmware over USB, then send it your Wi‑Fi and this device's key (already filled in). Chrome or Edge on a computer. Works with a DS18B20, a DHT22, or an I²C sensor; the pin table is linked under the optional extras below.",
   preferCode: "Prefer code? Arduino IDE, MicroPython, or ESPHome",
   esp32StepsHtml: [
     "Install <strong>ESP32</strong> (or ESP8266) board support in Arduino IDE / PlatformIO, not the Uno Ethernet samples. Pico W uses a different download below.",
