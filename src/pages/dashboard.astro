@@ -1118,6 +1118,7 @@ const onboardingProps = {
               weatherSnapshot={weatherSnapshot}
               weatherHasCoords={weatherHasCoords}
               nwsAlerts={nwsAlerts}
+              useCelsius={useCelsius}
             />
           )}
         </div>
@@ -1125,7 +1126,7 @@ const onboardingProps = {
           <aside class="dashboard-insights-side">
             <WeekCompareCard compare={weekCompareResult.compare} useCelsius={useCelsius} />
             {regionalBenchmark && (
-              <RegionalBenchmarkCard benchmark={regionalBenchmark} />
+              <RegionalBenchmarkCard benchmark={regionalBenchmark} useCelsius={useCelsius} />
             )}
             <HeatingInsightsCard insights={heatingInsights} />
             <OverviewInsightsExtras

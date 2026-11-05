@@ -347,20 +347,20 @@ const en = {
   benchmarkCard: {
     title: "Regional comparison",
     subtitle: "Your coldest probe vs other opted-in households in {city}.",
-    cityAvg: "city avg {temp}°F",
-    warmer: "Warmer than typical by about {delta}°F right now.",
-    colder: "Colder than typical by about {delta}°F right now.",
+    cityAvg: "city avg {temp}{unit}",
+    warmer: "Warmer than typical by about {delta}{unit} right now.",
+    colder: "Colder than typical by about {delta}{unit} right now.",
     publicMap: "Public freeze map",
     mapSettings: "Map settings",
     yourRegion: "your region",
     /** Mirrors lib/regionalBenchmark's message for other languages. */
     typical: "About typical for other ProbeHarbor households in {city} tonight.",
-    colderMessage: "{delta}°F colder than typical ProbeHarbor households in {city} right now.",
-    warmerMessage: "{delta}°F warmer than typical ProbeHarbor households in {city} right now.",
+    colderMessage: "{delta}{unit} colder than typical ProbeHarbor households in {city} right now.",
+    warmerMessage: "{delta}{unit} warmer than typical ProbeHarbor households in {city} right now.",
   },
   nightsCard: {
     title: "Nights at risk this week",
-    subtitle: "Forecast overnight lows vs your freeze threshold ({threshold}°F).",
+    subtitle: "Forecast overnight lows vs your freeze threshold ({threshold}{unit}).",
     atRiskCount: {
       one: "{count} night(s) look at risk.",
       other: "{count} night(s) look at risk.",
