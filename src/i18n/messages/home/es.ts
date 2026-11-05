@@ -31,10 +31,10 @@ const es: HomeMessages = {
   },
   live: {
     title: "Dos formas de probarlo (sin cuenta)",
-    lede: "Abre la puerta del garaje y provoca una ola de frío en el simulador, o mira abajo las sondas reales de la demo.",
+    lede: "Abre la puerta del garaje y provoca una ola de frío en el simulador, o mira abajo cómo el taller de demostración simulado reacciona al tiempo real de tu zona.",
     coldSnap: "Simular una ola de frío",
-    demoFeed: "Datos de la demo en vivo",
-    readingsLabel: "Lecturas de la demo en vivo",
+    demoFeed: "Taller de demo según el tiempo real",
+    readingsLabel: "Lecturas de demo simuladas",
   },
   steps: {
     title: "Cómo funciona",

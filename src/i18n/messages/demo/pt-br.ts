@@ -8,32 +8,32 @@ import type { DemoMessages } from "./en";
 const ptBr: DemoMessages = {
   title: "Demo de sondas ao vivo",
   description:
-    "Experimente o ProbeHarbor sem conta: simulador interativo de sondas, sondas de demo reais ao vivo e o mesmo caminho de alertas de congelamento e alagamento do seu hardware.",
+    "Experimente o ProbeHarbor sem conta: um simulador interativo de sondas, uma oficina de demonstração simulada movida pelo clima real da sua região e a mesma configuração de alertas de congelamento e inundação que o seu hardware vai usar.",
   ogImageAlt: "Curvas de temperatura ao vivo das sondas do ProbeHarbor, sem precisar de conta",
   breadcrumbHome: "Início",
   breadcrumbDemo: "Demo ao vivo",
   schemaName: "Demo de sondas ao vivo do ProbeHarbor",
   schemaDescription:
-    "Demos do ProbeHarbor sem conta: simulador interativo de sondas com várias zonas e sondas de demo ao vivo no caminho de ingestão de produção.",
+    "Demos do ProbeHarbor sem conta: um simulador interativo de sondas multizona e uma oficina de demonstração simulada movida pelo clima real da região.",
   header: {
     kicker: "Experimente (sem conta)",
-    title: "Demos: simulador + feed ao vivo",
-    lede: "Provoque um congelamento no simulador interativo de sondas ou acompanhe sondas de demo reais ao lado do clima externo: o mesmo caminho de ingestão que seu ESP ou Arduino vai usar para alertas de congelamento e alagamento.",
+    title: "Demos: simulador + oficina movida pelo clima",
+    lede: "Provoque um congelamento no simulador interativo de sondas ou veja uma oficina de demonstração simulada reagir ao clima real de hoje, no mesmo formato de leituras que o seu ESP ou Arduino vai enviar para alertas de congelamento e inundação.",
     simulator: "Simulador interativo",
-    liveReadings: "Leituras ao vivo",
+    liveReadings: "Leituras da oficina demo",
     connect: "Conectar minhas sondas",
   },
   paths: {
     title: "Três jeitos de experimentar o ProbeHarbor",
-    lede: "Comece pelo simulador se quiser sentir o risco de congelamento reagir ao que você faz e depois confirme com o feed ao vivo e o caminho de alagamento acionado automaticamente quando molha.",
+    lede: "Comece pelo simulador se quiser sentir o risco de congelamento reagir a você e depois veja a oficina de demonstração movida pelo clima e o caminho de alerta automático de água.",
     items: [
       {
         label: "Simulador interativo de sondas",
         text: "Mão na massa (a melhor primeira parada). Ajuste porta aberta ou fechada, sol, ar externo e limite de congelamento. Provoque uma onda de frio e veja as barras de cada zona e o JSON push/pull se atualizarem.",
       },
       {
-        label: "Feed de demo ao vivo",
-        text: "Para observar. Sondas de demo reais se atualizam aqui pelo caminho de ingestão de produção. Ideal para responder “isso é de mentira?” com números ao vivo.",
+        label: "Oficina demo movida pelo clima",
+        text: "Para observar. Três sondas de oficina simuladas, recalculadas a partir do clima real da região a cada atualização. Ideal para ver as leituras acompanharem as condições externas reais antes de ligar qualquer fio.",
       },
       {
         label: "Configuração do kit por QR",
@@ -49,10 +49,10 @@ const ptBr: DemoMessages = {
     openFull: "Abrir o simulador completo",
   },
   live: {
-    title: "Feed de demo ao vivo",
+    title: "Oficina demo movida pelo clima",
     ledeHtml:
-      'Leituras reais das sondas de demo e clima externo, não uma maquete. Prefere mexer nas variáveis você mesmo? <a class="text-link" href="/about/probe-demo">Abra o simulador interativo</a>.',
-    readingsLabel: "Leituras da demo ao vivo",
+      'Oficina de demonstração simulada, movida pelo clima real da região: as leituras das sondas vêm de um modelo da oficina; as condições externas são ao vivo. Prefere mexer nas variáveis você mesmo? <a class="text-link" href="/about/probe-demo">Abra o simulador interativo</a>.',
+    readingsLabel: "Leituras de demo simuladas",
     historyNote:
       "As curvas das sondas são o modelo da oficina de demo rodado sobre o clima real, hora a hora, da última semana; a linha tracejada é a temperatura externa.",
   },
@@ -110,7 +110,7 @@ const ptBr: DemoMessages = {
   },
   explore: {
     title: "Continue explorando",
-    lede: "Já provocou uma onda de frio simulada? Confirme com o feed ao vivo e depois leia uma história de vazamento, veja uma cidade no mapa ou configure o QR do kit.",
+    lede: "Já provocou uma onda de frio simulada? Veja a oficina de demonstração movida pelo clima e depois experimente uma história de inundação ou vazamento, consulte o mapa de uma cidade ou configure o QR do kit.",
     items: [
       { label: "Simulador interativo de sondas", hint: "A principal demo mão na massa: porta, sol, ar externo, limite de congelamento" },
       { label: "Mapa comunitário de congelamento", hint: "Dados agregados por cidade, com participação opcional, sem conta" },

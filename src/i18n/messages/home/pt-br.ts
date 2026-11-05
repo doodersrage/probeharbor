@@ -31,10 +31,10 @@ const ptBr: HomeMessages = {
   },
   live: {
     title: "Duas formas de experimentar (sem conta)",
-    lede: "Abra a porta da garagem e provoque uma onda de frio no simulador, ou acompanhe abaixo as sondas reais da demo.",
+    lede: "Abra a porta da garagem e provoque uma onda de frio no simulador, ou veja abaixo a oficina de demonstração simulada reagir ao clima real da região.",
     coldSnap: "Simular uma onda de frio",
-    demoFeed: "Feed da demo ao vivo",
-    readingsLabel: "Leituras da demo ao vivo",
+    demoFeed: "Oficina demo movida pelo clima",
+    readingsLabel: "Leituras de demo simuladas",
   },
   steps: {
     title: "Como funciona",

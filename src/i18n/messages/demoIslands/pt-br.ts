@@ -3,8 +3,8 @@ import type { DemoIslandMessages } from "./en";
 const ptBr: DemoIslandMessages = {
   temps: {
     loading: "Carregando temperaturas das sondas…",
-    title: "Leituras da demo ao vivo",
-    subtitle: "Temperaturas públicas das sondas. Crie uma conta grátis (sem cartão) para conectar seus próprios sensores.",
+    title: "Oficina de demonstração simulada",
+    subtitle: "Temperaturas das sondas modeladas a partir do clima real da região. Crie uma conta grátis (sem cartão) para conectar seus próprios sensores.",
     loadError: "Não foi possível carregar as temperaturas das sondas",
     rateLimited: "Muitas solicitações. Tente de novo em instantes.",
     retry: "Tentar de novo",

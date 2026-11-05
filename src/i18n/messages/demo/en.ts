@@ -7,32 +7,32 @@
 const en = {
   title: "Live probe demo",
   description:
-    "Try ProbeHarbor without an account: interactive probe simulator, real live demo probes, and the same freeze/flood alert path your hardware will use.",
+    "Try ProbeHarbor without an account: an interactive probe simulator, a simulated demo shop driven by real local weather, and the freeze/flood alert setup your hardware will use.",
   ogImageAlt: "ProbeHarbor live probe temperature curves, no account required",
   breadcrumbHome: "Home",
   breadcrumbDemo: "Live demo",
   schemaName: "ProbeHarbor live probe demo",
   schemaDescription:
-    "No-account ProbeHarbor demos: interactive multi-zone probe simulator plus live demo probes on the production ingest path.",
+    "No-account ProbeHarbor demos: an interactive multi-zone probe simulator plus a simulated demo shop driven by real local weather.",
   header: {
     kicker: "Try it (no account)",
-    title: "Demos: simulator + live feed",
-    lede: "Cause a freeze event in the interactive probe simulator, or watch real demo probes next to outdoor weather: same ingest path your ESP or Arduino will use for freeze and flood alerts.",
+    title: "Demos: simulator + weather-driven shop",
+    lede: "Cause a freeze event in the interactive probe simulator, or watch a simulated demo shop react to today’s real outdoor weather, in the same reading format your ESP or Arduino will send for freeze and flood alerts.",
     simulator: "Interactive simulator",
-    liveReadings: "Live readings",
+    liveReadings: "Demo shop readings",
     connect: "Connect my probes",
   },
   paths: {
     title: "Three ways to try ProbeHarbor",
-    lede: "Start with the simulator if you want to feel freeze risk respond to you, then confirm with the live feed and auto-wet flood path.",
+    lede: "Start with the simulator if you want to feel freeze risk respond to you, then watch the weather-driven demo shop and the auto-wet flood path.",
     items: [
       {
         label: "Interactive probe simulator",
         text: "Hands-on (best first stop). Tweak door open/closed, sun load, outdoor air, and freeze threshold. Cause a cold snap; watch multi-zone bars and push/pull JSON update.",
       },
       {
-        label: "Live demo feed",
-        text: "Observational. Real demo probes refresh here on the production ingest path. Best when you want “is this fake?” answered with live numbers.",
+        label: "Weather-driven demo shop",
+        text: "Observational. Three simulated shop probes, recomputed from real local weather on every refresh. Best when you want to see readings move with actual outdoor conditions before you wire anything.",
       },
       {
         label: "Kit QR onboarding",
@@ -48,10 +48,10 @@ const en = {
     openFull: "Open full simulator",
   },
   live: {
-    title: "Live demo feed",
+    title: "Weather-driven demo shop",
     ledeHtml:
-      'Real demo probe readings and outdoor weather, not a mockup. Prefer to manipulate variables yourself? <a class="text-link" href="/about/probe-demo">Open the interactive simulator</a>.',
-    readingsLabel: "Live demo readings",
+      'Simulated demo shop, driven by real local weather: the probe readings come from a shop model, the outdoor conditions are live. Prefer to manipulate variables yourself? <a class="text-link" href="/about/probe-demo">Open the interactive simulator</a>.',
+    readingsLabel: "Simulated demo readings",
     historyNote:
       "Probe curves are the demo shop model run over the past week's real hourly weather; the dashed line is outdoor temperature.",
   },
@@ -108,7 +108,7 @@ const en = {
   },
   explore: {
     title: "Keep exploring",
-    lede: "Already triggered a simulated cold snap? Confirm with the live feed, then try a flood/leak story, map a city, or set up kit QR.",
+    lede: "Already triggered a simulated cold snap? Watch the weather-driven demo shop, then try a flood/leak story, map a city, or set up kit QR.",
     items: [
       { label: "Interactive probe simulator", hint: "Primary hands-on demo: door, sun, outdoor, freeze threshold" },
       { label: "Community freeze map", hint: "Opt-in city aggregates, no account required" },

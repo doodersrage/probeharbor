@@ -8,32 +8,32 @@ import type { DemoMessages } from "./en";
 const de: DemoMessages = {
   title: "Live-Fühler-Demo",
   description:
-    "Teste ProbeHarbor ohne Konto: interaktiver Fühlersimulator, echte Live-Demofühler und derselbe Frost- und Wasseralarm-Pfad, den deine Hardware nutzt.",
+    "Teste ProbeHarbor ohne Konto: interaktiver Fühlersimulator, eine simulierte Demo-Werkstatt, angetrieben vom echten Wetter vor Ort, und derselbe Frost- und Wasseralarm-Aufbau, den deine Hardware nutzt.",
   ogImageAlt: "Live-Temperaturkurven von ProbeHarbor-Fühlern, ohne Konto",
   breadcrumbHome: "Startseite",
   breadcrumbDemo: "Live-Demo",
   schemaName: "ProbeHarbor Live-Fühler-Demo",
   schemaDescription:
-    "ProbeHarbor-Demos ohne Konto: interaktiver Mehrzonen-Fühlersimulator plus Live-Demofühler auf dem Ingest-Pfad der Produktion.",
+    "ProbeHarbor-Demos ohne Konto: interaktiver Mehrzonen-Fühlersimulator plus eine simulierte Demo-Werkstatt, angetrieben vom echten Wetter vor Ort.",
   header: {
     kicker: "Ausprobieren (ohne Konto)",
-    title: "Demos: Simulator + Live-Feed",
-    lede: "Löse im interaktiven Fühlersimulator einen Frost aus oder beobachte echte Demofühler neben dem Außenwetter: derselbe Ingest-Pfad, über den dein ESP oder Arduino Frost- und Wasseralarme auslöst.",
+    title: "Demos: Simulator + wettergesteuerte Werkstatt",
+    lede: "Löse im interaktiven Fühlersimulator einen Frost aus oder sieh zu, wie eine simulierte Demo-Werkstatt auf das echte Außenwetter von heute reagiert – im selben Messwertformat, das dein ESP oder Arduino für Frost- und Wasseralarme sendet.",
     simulator: "Interaktiver Simulator",
-    liveReadings: "Live-Messwerte",
+    liveReadings: "Werte der Demo-Werkstatt",
     connect: "Meine Fühler verbinden",
   },
   paths: {
     title: "Drei Wege, ProbeHarbor auszuprobieren",
-    lede: "Fang mit dem Simulator an, wenn du spüren willst, wie das Frostrisiko auf dich reagiert, und prüf es dann mit dem Live-Feed und dem automatischen Nässe-Alarmpfad.",
+    lede: "Fang mit dem Simulator an, wenn du spüren willst, wie das Frostrisiko auf dich reagiert, und sieh dir dann die wettergesteuerte Demo-Werkstatt und den automatischen Nässe-Alarmpfad an.",
     items: [
       {
         label: "Interaktiver Fühlersimulator",
         text: "Zum Selbermachen (der beste Einstieg). Stell Tor offen/zu, Sonneneinstrahlung, Außenluft und Frostschwelle ein. Lös eine Kältewelle aus und sieh zu, wie sich die Balken der Zonen und das Push-/Pull-JSON aktualisieren.",
       },
       {
-        label: "Live-Demo-Feed",
-        text: "Zum Beobachten. Echte Demofühler aktualisieren sich hier über den Ingest-Pfad der Produktion. Ideal, wenn du die Frage „Ist das echt?“ mit Live-Zahlen beantworten willst.",
+        label: "Wettergesteuerte Demo-Werkstatt",
+        text: "Zum Beobachten. Drei simulierte Werkstattfühler, bei jeder Aktualisierung aus dem echten Wetter vor Ort neu berechnet. Ideal, wenn du sehen willst, wie sich Messwerte mit dem tatsächlichen Außenwetter bewegen, bevor du etwas verkabelst.",
       },
       {
         label: "Kit-Einrichtung per QR",
@@ -49,10 +49,10 @@ const de: DemoMessages = {
     openFull: "Vollen Simulator öffnen",
   },
   live: {
-    title: "Live-Demo-Feed",
+    title: "Wettergesteuerte Demo-Werkstatt",
     ledeHtml:
-      'Echte Messwerte der Demofühler und Außenwetter, kein Mock-up. Lieber selbst an den Variablen drehen? <a class="text-link" href="/about/probe-demo">Öffne den interaktiven Simulator</a>.',
-    readingsLabel: "Live-Messwerte der Demo",
+      'Simulierte Demo-Werkstatt, angetrieben vom echten Wetter vor Ort: Die Fühlerwerte stammen aus einem Werkstattmodell, das Außenwetter ist live. Lieber selbst an den Variablen drehen? <a class="text-link" href="/about/probe-demo">Interaktiven Simulator öffnen</a>.',
+    readingsLabel: "Simulierte Demo-Werte",
     historyNote:
       "Die Fühlerkurven stammen aus dem Modell der Demowerkstatt, gerechnet mit dem echten stündlichen Wetter der letzten Woche; die gestrichelte Linie ist die Außentemperatur.",
   },
@@ -110,7 +110,7 @@ const de: DemoMessages = {
   },
   explore: {
     title: "Weiter entdecken",
-    lede: "Schon eine simulierte Kältewelle ausgelöst? Prüf es mit dem Live-Feed, dann lies eine Wasserschaden-Geschichte, schau dir eine Stadt auf der Karte an oder richte den Kit-QR ein.",
+    lede: "Schon eine simulierte Kältewelle ausgelöst? Sieh dir die wettergesteuerte Demo-Werkstatt an, dann lies eine Wasserschaden-Geschichte, schau dir eine Stadt auf der Karte an oder richte den Kit-QR ein.",
     items: [
       { label: "Interaktiver Fühlersimulator", hint: "Die wichtigste Demo zum Selbermachen: Tor, Sonne, außen, Frostschwelle" },
       { label: "Frostkarte der Community", hint: "Freiwillig geteilte Werte pro Stadt, ohne Konto" },

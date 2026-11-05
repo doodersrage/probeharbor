@@ -51,12 +51,12 @@ export default {
     {
       question: "Qual a diferença entre esta página e a demo da página inicial?",
       answer:
-        "A página inicial leva você primeiro ao simulador interativo de sondas, com uma prévia curta das leituras ao vivo. Esta página tem as duas coisas: um destaque para o simulador e o feed ao vivo completo (sondas + clima externo), contexto sobre alertas de congelamento, passos do kit e onboarding por QR.",
+        "A página inicial leva você primeiro ao simulador interativo de sondas, com uma prévia curta da oficina demo movida pelo clima. Esta página traz os dois: um destaque para o simulador e a oficina demo completa (sondas simuladas + clima externo ao vivo), contexto dos alertas de congelamento, passos do kit e configuração por QR.",
     },
     {
       question: "Feed ao vivo ou simulador interativo: qual devo testar?",
       answer:
-        "Comece pelo simulador interativo de sondas (/about/probe-demo) quando quiser provocar uma onda de frio ou uma corrente de ar pela porta e ver o risco em várias zonas reagir. Use o feed ao vivo desta página para ver sondas reais da demo no mesmo caminho de ingestão que o seu ESP/Arduino vai usar: prova observacional, não um ambiente de testes.",
+        "Comece pelo simulador interativo de sondas (/about/probe-demo) quando quiser provocar uma onda de frio ou uma corrente de ar pela porta e ver o risco reagir em várias zonas. Use a oficina demo desta página para ver leituras simuladas acompanharem o clima externo real de hoje, sem mexer em nenhum controle.",
     },
     {
       question: "O que é o onboarding por QR do kit?",
@@ -64,9 +64,9 @@ export default {
         "Depois que você cria um dispositivo push, o ProbeHarbor mostra um QR code com a URL de ingestão completa (por cerca de 30 minutos). Escaneie com o celular ou imprima em uma etiqueta do kit para que o firmware ou o Home Assistant façam POST sem digitar a chave. Passo a passo: probeharbor.dev/about/kit-qr-onboarding.",
     },
     {
-      question: "Os dados da demo ao vivo são falsos?",
+      question: "A demo ao vivo usa dados reais de sensores?",
       answer:
-        "Não. As leituras vêm do feed público de demo do ProbeHarbor pelo mesmo caminho HTTPS de ingestão/pull que os dispositivos em produção usam. O simulador interativo é sintético de propósito, para que você possa mexer no ar externo, no sol e no estado da porta: ele reutiliza o mesmo auxiliar de status do ambiente do Overview para o risco de congelamento.",
+        "Não, e ela não tenta parecer que usa. As três sondas da oficina demo são simuladas: um modelo da oficina movido pelo clima real da região (temperatura externa, nebulosidade, hora do dia) ou por valores típicos de reserva se o serviço de clima estiver indisponível. Ela é servida no mesmo formato de feed JSON que o ProbeHarbor aceita de dispositivos reais. O simulador interativo vai além e deixa você ajustar o ar externo, o sol e o estado da porta; os dois reutilizam o mesmo auxiliar de status do espaço do Overview para o risco de congelamento. As leituras reais começam quando você conecta o seu próprio sensor.",
     },
     {
       question: "Preciso de uma conta para testar?",

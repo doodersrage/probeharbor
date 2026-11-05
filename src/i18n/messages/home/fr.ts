@@ -31,10 +31,10 @@ const fr: HomeMessages = {
   },
   live: {
     title: "Deux façons d’essayer (sans compte)",
-    lede: "Ouvrez la porte du garage et déclenchez une vague de froid dans le simulateur, ou suivez ci-dessous les vraies sondes de démonstration.",
+    lede: "Ouvrez la porte du garage et déclenchez une vague de froid dans le simulateur, ou regardez ci-dessous l’atelier de démo simulé réagir à la météo locale réelle.",
     coldSnap: "Simuler une vague de froid",
-    demoFeed: "Flux de démo en direct",
-    readingsLabel: "Mesures de démo en direct",
+    demoFeed: "Atelier de démo piloté par la météo",
+    readingsLabel: "Relevés de démo simulés",
   },
   steps: {
     title: "Comment ça marche",

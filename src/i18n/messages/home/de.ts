@@ -31,10 +31,10 @@ const de: HomeMessages = {
   },
   live: {
     title: "Zwei Wege zum Ausprobieren (ohne Konto)",
-    lede: "Öffne im Simulator das Garagentor und löse einen Kälteeinbruch aus – oder sieh dir unten die echten Demo-Sensoren an.",
+    lede: "Öffne im Simulator das Garagentor und löse einen Kälteeinbruch aus – oder sieh unten zu, wie die simulierte Demo-Werkstatt auf das echte Wetter vor Ort reagiert.",
     coldSnap: "Kälteeinbruch simulieren",
-    demoFeed: "Live-Demo-Feed",
-    readingsLabel: "Live-Demo-Werte",
+    demoFeed: "Wettergesteuerte Demo-Werkstatt",
+    readingsLabel: "Simulierte Demo-Werte",
   },
   steps: {
     title: "So funktioniert’s",

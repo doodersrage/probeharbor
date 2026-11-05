@@ -30,10 +30,10 @@ const en = {
   },
   live: {
     title: "Two ways to try it (no account)",
-    lede: "Open the garage door and trigger a cold snap in the simulator, or watch the real demo probes below.",
+    lede: "Open the garage door and trigger a cold snap in the simulator, or watch the simulated demo shop below react to real local weather.",
     coldSnap: "Try a cold snap",
-    demoFeed: "Live demo feed",
-    readingsLabel: "Live demo readings",
+    demoFeed: "Weather-driven demo shop",
+    readingsLabel: "Simulated demo readings",
   },
   steps: {
     title: "How it works",

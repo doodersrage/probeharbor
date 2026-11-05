@@ -22,8 +22,8 @@ type FeedGroup = {
  */
 export const DEMO_TEMPS_TEXT_EN = {
   loading: "Loading probe temperatures…",
-  title: "Live demo readings",
-  subtitle: "Public probe temperatures — free account (no card) to connect your own sensors.",
+  title: "Simulated demo shop",
+  subtitle: "Probe temperatures modeled from real local weather — free account (no card) to connect your own sensors.",
   loadError: "Unable to load probe temperatures",
   rateLimited: "Too many requests",
   retry: "Retry now",

@@ -52,12 +52,12 @@ export default {
     {
       question: "Quelle différence avec la démo de la page d’accueil ?",
       answer:
-        "La page d’accueil vous oriente d’abord vers le simulateur de sondes interactif, avec un bref aperçu des relevés en direct. Cette page propose les deux : une mise en avant du simulateur et le flux en direct complet (sondes + météo extérieure), le contexte des alertes de gel, les étapes du kit et l’activation par QR code.",
+        "La page d’accueil vous oriente d’abord vers le simulateur de sondes interactif, avec un bref aperçu de l’atelier de démo piloté par la météo. Cette page propose les deux : une mise en avant du simulateur et l’atelier de démo complet (sondes simulées + météo extérieure en direct), le contexte des alertes gel, les étapes du kit et l’intégration par QR.",
     },
     {
       question: "Flux en direct ou simulateur interactif : lequel essayer ?",
       answer:
-        "Commencez par le simulateur de sondes interactif (/about/probe-demo) si vous voulez provoquer une vague de froid ou un courant d’air par la porte et voir le risque réagir sur plusieurs zones. Utilisez le flux en direct de cette page pour voir de vraies sondes de démonstration sur le même chemin d’ingestion que votre ESP/Arduino : une preuve par l’observation, pas un bac à sable.",
+        "Commencez par le simulateur de sondes interactif (/about/probe-demo) si vous voulez provoquer une vague de froid ou un courant d’air par la porte et voir le risque réagir dans plusieurs zones. Utilisez l’atelier de démo de cette page pour voir des relevés simulés suivre la vraie météo extérieure du jour, sans toucher à aucun réglage.",
     },
     {
       question: "Qu’est-ce que l’activation du kit par QR code ?",
@@ -65,9 +65,9 @@ export default {
         "Après la création d’un appareil push, ProbeHarbor affiche un QR code contenant l’URL d’ingestion complète (pendant environ 30 minutes). Scannez-le avec un téléphone ou imprimez-le sur une étiquette du kit pour que le firmware ou Home Assistant puisse faire un POST sans saisir la clé. Pas-à-pas : probeharbor.dev/about/kit-qr-onboarding.",
     },
     {
-      question: "La démo en direct utilise-t-elle de fausses données ?",
+      question: "La démo en direct, ce sont de vrais relevés de capteurs ?",
       answer:
-        "Non. Les relevés proviennent du flux de démonstration public de ProbeHarbor, par le même chemin HTTPS d’ingestion/pull que les appareils en production. Le simulateur interactif est volontairement synthétique pour que vous puissiez jouer sur l’air extérieur, le soleil et l’état de la porte : il réutilise le vrai calcul d’état de l’espace d’Overview pour le risque de gel.",
+        "Non, et elle ne cherche pas à le faire croire. Les trois sondes de l’atelier de démo sont simulées : un modèle d’atelier piloté par la météo locale réelle (température extérieure, couverture nuageuse, heure de la journée), ou par des valeurs typiques de secours si le service météo est indisponible. Il est servi dans le même format de flux JSON que ProbeHarbor accepte des appareils réels. Le simulateur interactif va plus loin et vous laisse régler l’air extérieur, le soleil et l’état de la porte ; les deux réutilisent le même assistant d’état de l’espace que la vue Overview pour le risque de gel. Les vrais relevés commencent quand vous connectez votre propre capteur.",
     },
     {
       question: "Faut-il un compte pour essayer ?",

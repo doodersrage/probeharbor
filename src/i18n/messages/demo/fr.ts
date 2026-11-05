@@ -8,32 +8,32 @@ import type { DemoMessages } from "./en";
 const fr: DemoMessages = {
   title: "Démo des sondes en direct",
   description:
-    "Essayez ProbeHarbor sans compte : simulateur de sondes interactif, vraies sondes de démo en direct et le même circuit d’alertes gel/inondation que votre matériel.",
+    "Essayez ProbeHarbor sans compte : un simulateur de sondes interactif, un atelier de démonstration simulé piloté par la météo locale réelle, et la même configuration d’alertes gel et inondation que votre matériel utilisera.",
   ogImageAlt: "Courbes de température en direct des sondes ProbeHarbor, sans compte",
   breadcrumbHome: "Accueil",
   breadcrumbDemo: "Démo en direct",
   schemaName: "Démo des sondes en direct ProbeHarbor",
   schemaDescription:
-    "Démos ProbeHarbor sans compte : simulateur de sondes multizone interactif et sondes de démo en direct sur le circuit d’ingestion de production.",
+    "Démos ProbeHarbor sans compte : un simulateur de sondes multizone interactif et un atelier de démonstration simulé piloté par la météo locale réelle.",
   header: {
     kicker: "Essayez (sans compte)",
-    title: "Démos : simulateur + flux en direct",
-    lede: "Provoquez un épisode de gel dans le simulateur de sondes interactif, ou suivez de vraies sondes de démo à côté de la météo extérieure : le même circuit d’ingestion que votre ESP ou Arduino utilisera pour les alertes gel et inondation.",
+    title: "Démos : simulateur + atelier piloté par la météo",
+    lede: "Déclenchez un épisode de gel dans le simulateur de sondes interactif, ou regardez un atelier de démonstration simulé réagir à la vraie météo du jour, dans le même format de relevés que votre ESP ou Arduino enverra pour les alertes gel et inondation.",
     simulator: "Simulateur interactif",
-    liveReadings: "Relevés en direct",
+    liveReadings: "Relevés de l’atelier de démo",
     connect: "Connecter mes sondes",
   },
   paths: {
     title: "Trois façons d’essayer ProbeHarbor",
-    lede: "Commencez par le simulateur pour voir le risque de gel réagir à vos réglages, puis vérifiez avec le flux en direct et le circuit d’inondation déclenché automatiquement au contact de l’eau.",
+    lede: "Commencez par le simulateur pour sentir le risque de gel réagir à vos actions, puis regardez l’atelier de démo piloté par la météo et le circuit d’alerte automatique en cas d’eau.",
     items: [
       {
         label: "Simulateur de sondes interactif",
         text: "Pratique (le meilleur point de départ). Réglez la porte ouverte ou fermée, l’ensoleillement, l’air extérieur et le seuil de gel. Provoquez une vague de froid et regardez les barres de chaque zone et le JSON push/pull se mettre à jour.",
       },
       {
-        label: "Flux de démo en direct",
-        text: "Pour observer. De vraies sondes de démo se mettent à jour ici via le circuit d’ingestion de production. Idéal pour répondre à « c’est truqué ? » avec des chiffres en direct.",
+        label: "Atelier de démo piloté par la météo",
+        text: "Pour observer. Trois sondes d’atelier simulées, recalculées à partir de la météo locale réelle à chaque actualisation. Idéal pour voir les relevés suivre les conditions extérieures réelles avant de câbler quoi que ce soit.",
       },
       {
         label: "Mise en service du kit par QR",
@@ -49,10 +49,10 @@ const fr: DemoMessages = {
     openFull: "Ouvrir le simulateur complet",
   },
   live: {
-    title: "Flux de démo en direct",
+    title: "Atelier de démo piloté par la météo",
     ledeHtml:
-      'De vrais relevés de sondes de démo et la météo extérieure, pas une maquette. Vous préférez manipuler les variables vous-même ? <a class="text-link" href="/about/probe-demo">Ouvrez le simulateur interactif</a>.',
-    readingsLabel: "Relevés de démo en direct",
+      'Atelier de démonstration simulé, piloté par la météo locale réelle : les relevés des sondes viennent d’un modèle d’atelier, les conditions extérieures sont en direct. Vous préférez manipuler les variables vous-même ? <a class="text-link" href="/about/probe-demo">Ouvrir le simulateur interactif</a>.',
+    readingsLabel: "Relevés de démo simulés",
     historyNote:
       "Les courbes des sondes sont le modèle de l’atelier de démo appliqué à la météo horaire réelle de la semaine écoulée ; la ligne pointillée est la température extérieure.",
   },
@@ -110,7 +110,7 @@ const fr: DemoMessages = {
   },
   explore: {
     title: "Continuer l’exploration",
-    lede: "Vous avez déjà provoqué une vague de froid simulée ? Vérifiez avec le flux en direct, puis lisez une histoire de fuite, cherchez une ville sur la carte ou configurez le QR du kit.",
+    lede: "Vous avez déjà déclenché une vague de froid simulée ? Regardez l’atelier de démo piloté par la météo, puis essayez un scénario d’inondation ou de fuite, consultez la carte d’une ville ou configurez le QR du kit.",
     items: [
       { label: "Simulateur de sondes interactif", hint: "La démo pratique principale : porte, soleil, extérieur, seuil de gel" },
       { label: "Carte communautaire du gel", hint: "Agrégats par ville sur participation volontaire, sans compte" },

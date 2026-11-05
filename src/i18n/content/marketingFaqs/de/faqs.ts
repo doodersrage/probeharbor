@@ -51,12 +51,12 @@ export default {
     {
       question: "Was unterscheidet diese Seite von der Demo auf der Startseite?",
       answer:
-        "Die Startseite führt dich zuerst zum interaktiven Fühler-Simulator, mit einem kurzen Vorgeschmack auf Live-Messwerte. Diese Seite bietet beides: einen prominenten Hinweis auf den Simulator plus den vollständigen Live-Feed (Fühler + Außenwetter), Hintergründe zu Frostalarmen, Schritte für das Kit und QR-Onboarding.",
+        "Die Startseite führt dich zuerst zum interaktiven Fühler-Simulator, mit einem kurzen Vorgeschmack auf die wettergesteuerte Demo-Werkstatt. Diese Seite bietet beides: einen prominenten Hinweis auf den Simulator plus die vollständige Demo-Werkstatt (simulierte Fühler + Live-Außenwetter), Hintergründe zu Frostalarmen, Schritte für das Kit und QR-Onboarding.",
     },
     {
       question: "Live-Feed oder interaktiver Simulator – was soll ich ausprobieren?",
       answer:
-        "Starte mit dem interaktiven Fühler-Simulator (/about/probe-demo), wenn du selbst einen Kälteeinbruch oder Zugluft an der Tür auslösen und zusehen möchtest, wie das Risiko in mehreren Zonen reagiert. Der Live-Feed auf dieser Seite zeigt echte Demo-Fühler über denselben Ingest-Weg, den auch dein ESP/Arduino nutzt: ein Nachweis aus dem Echtbetrieb, keine Sandbox.",
+        "Starte mit dem interaktiven Fühler-Simulator (/about/probe-demo), wenn du selbst einen Kälteeinbruch oder Zugluft an der Tür auslösen und zusehen möchtest, wie das Risiko in mehreren Zonen reagiert. In der Demo-Werkstatt auf dieser Seite siehst du, wie simulierte Fühlerwerte dem echten Außenwetter von heute folgen, ohne dass du etwas einstellen musst.",
     },
     {
       question: "Was ist QR-Onboarding für Kits?",
@@ -64,9 +64,9 @@ export default {
         "Nachdem du ein Push-Gerät angelegt hast, zeigt ProbeHarbor einen QR-Code mit der vollständigen Ingest-URL an (etwa 30 Minuten lang). Scanne ihn mit dem Smartphone oder drucke ihn auf ein Kit-Etikett, damit Firmware oder Home Assistant per POST senden können, ohne den Schlüssel abzutippen. Anleitung: probeharbor.dev/about/kit-qr-onboarding.",
     },
     {
-      question: "Sind die Daten der Live-Demo gefälscht?",
+      question: "Sind die Daten der Live-Demo echte Sensorwerte?",
       answer:
-        "Nein. Die Messwerte stammen aus dem öffentlichen ProbeHarbor-Demo-Feed und laufen über denselben HTTPS-Ingest/Pull-Weg wie echte Geräte. Der interaktive Simulator ist bewusst synthetisch, damit du Außenluft, Sonne und Türzustand verändern kannst: Für das Frostrisiko nutzt er denselben Raumstatus-Helfer wie Overview.",
+        "Nein, und das soll auch nicht so wirken. Die drei Fühler der Demo-Werkstatt sind simuliert: ein Werkstattmodell, angetrieben vom echten Wetter vor Ort (Außentemperatur, Bewölkung, Tageszeit) oder von typischen Ersatzwerten, wenn der Wetterdienst nicht erreichbar ist. Ausgeliefert wird es im selben JSON-Feed-Format, das ProbeHarbor von echten Geräten annimmt. Im interaktiven Simulator stellst du Außenluft, Sonne und Türzustand sogar selbst ein; beide nutzen für das Frostrisiko denselben Raumstatus-Helfer wie Overview. Echte Messwerte gibt es, sobald du deinen eigenen Sensor verbindest.",
     },
     {
       question: "Brauche ich ein Konto, um das auszuprobieren?",

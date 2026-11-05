@@ -8,32 +8,32 @@ import type { DemoMessages } from "./en";
 const es: DemoMessages = {
   title: "Demo de sondas en vivo",
   description:
-    "Prueba ProbeHarbor sin cuenta: simulador interactivo de sondas, sondas de demo reales en vivo y la misma ruta de alertas de helada e inundación que usará tu hardware.",
+    "Prueba ProbeHarbor sin cuenta: un simulador interactivo de sondas, un taller de demostración simulado con el tiempo real de tu zona y la misma configuración de alertas de helada e inundación que usará tu hardware.",
   ogImageAlt: "Curvas de temperatura en vivo de las sondas de ProbeHarbor, sin necesidad de cuenta",
   breadcrumbHome: "Inicio",
   breadcrumbDemo: "Demo en vivo",
   schemaName: "Demo de sondas en vivo de ProbeHarbor",
   schemaDescription:
-    "Demos de ProbeHarbor sin cuenta: simulador interactivo de sondas con varias zonas y sondas de demo en vivo sobre la ruta de ingesta de producción.",
+    "Demos de ProbeHarbor sin cuenta: un simulador interactivo de sondas multizona y un taller de demostración simulado con el tiempo real de la zona.",
   header: {
     kicker: "Pruébalo (sin cuenta)",
-    title: "Demos: simulador + feed en vivo",
-    lede: "Provoca una helada en el simulador interactivo de sondas o mira sondas de demo reales junto al tiempo exterior: la misma ruta de ingesta que usará tu ESP o Arduino para las alertas de helada e inundación.",
+    title: "Demos: simulador + taller según el tiempo real",
+    lede: "Provoca una helada en el simulador interactivo de sondas, o mira cómo un taller de demostración simulado reacciona al tiempo real de hoy, en el mismo formato de lecturas que enviará tu ESP o Arduino para las alertas de helada e inundación.",
     simulator: "Simulador interactivo",
-    liveReadings: "Lecturas en vivo",
+    liveReadings: "Lecturas del taller de demo",
     connect: "Conectar mis sondas",
   },
   paths: {
     title: "Tres formas de probar ProbeHarbor",
-    lede: "Empieza por el simulador si quieres ver cómo reacciona el riesgo de helada a lo que haces y luego confírmalo con el feed en vivo y la ruta de inundación con sensor mojado automático.",
+    lede: "Empieza por el simulador si quieres sentir cómo responde el riesgo de helada, y luego mira el taller de demostración según el tiempo real y la ruta de alerta automática por agua.",
     items: [
       {
         label: "Simulador interactivo de sondas",
         text: "Práctico (la mejor primera parada). Ajusta la puerta abierta o cerrada, el sol, el aire exterior y el umbral de helada. Provoca una ola de frío y mira cómo se actualizan las barras de cada zona y el JSON push/pull.",
       },
       {
-        label: "Feed de demo en vivo",
-        text: "Para observar. Sondas de demo reales que se actualizan aquí por la ruta de ingesta de producción. Ideal si quieres responder a “¿esto es falso?” con números en vivo.",
+        label: "Taller de demo según el tiempo real",
+        text: "Para observar. Tres sondas de taller simuladas, recalculadas con el tiempo real de la zona en cada actualización. Ideal si quieres ver cómo se mueven las lecturas con las condiciones exteriores reales antes de conectar nada.",
       },
       {
         label: "Alta del kit con QR",
@@ -49,10 +49,10 @@ const es: DemoMessages = {
     openFull: "Abrir el simulador completo",
   },
   live: {
-    title: "Feed de demo en vivo",
+    title: "Taller de demo según el tiempo real",
     ledeHtml:
-      'Lecturas reales de sondas de demo y tiempo exterior, no una maqueta. ¿Prefieres mover tú las variables? <a class="text-link" href="/about/probe-demo">Abre el simulador interactivo</a>.',
-    readingsLabel: "Lecturas de la demo en vivo",
+      'Taller de demostración simulado, impulsado por el tiempo real de la zona: las lecturas de las sondas salen de un modelo del taller; las condiciones exteriores son en vivo. ¿Prefieres manipular tú las variables? <a class="text-link" href="/about/probe-demo">Abre el simulador interactivo</a>.',
+    readingsLabel: "Lecturas de demo simuladas",
     historyNote:
       "Las curvas de las sondas son el modelo del taller de demo calculado con el tiempo horario real de la última semana; la línea discontinua es la temperatura exterior.",
   },
@@ -110,7 +110,7 @@ const es: DemoMessages = {
   },
   explore: {
     title: "Sigue explorando",
-    lede: "¿Ya provocaste una ola de frío simulada? Confírmalo con el feed en vivo y luego lee una historia de fuga, mira tu ciudad en el mapa o configura el QR del kit.",
+    lede: "¿Ya provocaste una ola de frío simulada? Mira el taller de demostración según el tiempo real y luego prueba una historia de inundación o fuga, consulta el mapa de una ciudad o configura el QR del kit.",
     items: [
       { label: "Simulador interactivo de sondas", hint: "La demo práctica principal: puerta, sol, exterior, umbral de helada" },
       { label: "Mapa comunitario de heladas", hint: "Datos agregados por ciudad (voluntarios), sin cuenta" },

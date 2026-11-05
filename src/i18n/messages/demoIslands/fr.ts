@@ -3,8 +3,8 @@ import type { DemoIslandMessages } from "./en";
 const fr: DemoIslandMessages = {
   temps: {
     loading: "Chargement des températures des sondes…",
-    title: "Relevés de démo en direct",
-    subtitle: "Températures publiques des sondes. Créez un compte gratuit (sans carte bancaire) pour connecter vos propres capteurs.",
+    title: "Atelier de démonstration simulé",
+    subtitle: "Températures de sondes modélisées à partir de la météo locale réelle. Créez un compte gratuit (sans carte bancaire) pour connecter vos propres capteurs.",
     loadError: "Impossible de charger les températures des sondes",
     rateLimited: "Trop de requêtes. Réessayez dans un instant.",
     retry: "Réessayer",

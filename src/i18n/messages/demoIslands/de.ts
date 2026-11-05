@@ -3,8 +3,8 @@ import type { DemoIslandMessages } from "./en";
 const de: DemoIslandMessages = {
   temps: {
     loading: "Fühlertemperaturen werden geladen…",
-    title: "Live-Messwerte der Demo",
-    subtitle: "Öffentliche Fühlertemperaturen. Mit einem kostenlosen Konto (ohne Karte) verbindest du deine eigenen Sensoren.",
+    title: "Simulierte Demo-Werkstatt",
+    subtitle: "Fühlertemperaturen, berechnet aus dem echten Wetter vor Ort. Mit einem kostenlosen Konto (ohne Karte) verbindest du deine eigenen Sensoren.",
     loadError: "Fühlertemperaturen konnten nicht geladen werden",
     rateLimited: "Zu viele Anfragen. Versuch es gleich noch einmal.",
     retry: "Erneut versuchen",

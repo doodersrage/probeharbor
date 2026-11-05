@@ -58,12 +58,12 @@ export const marketingFaqs = {
     {
       question: "How is this different from the homepage demo?",
       answer:
-        "The homepage points you at the interactive probe simulator first, with a short live-readings teaser. This page keeps both: a prominent simulator promo plus the full live feed (probes + outdoor weather), freeze-alert context, kit steps, and QR onboarding.",
+        "The homepage points you at the interactive probe simulator first, with a short teaser of the weather-driven demo shop. This page keeps both: a prominent simulator promo plus the full demo shop (simulated probes + live outdoor weather), freeze-alert context, kit steps, and QR onboarding.",
     },
     {
       question: "Live feed vs interactive simulator, which should I try?",
       answer:
-        "Start with the interactive probe simulator (/about/probe-demo) when you want to cause a cold snap or door draft and watch multi-zone risk respond. Use the live feed on this page to see real demo probes on the same ingest path your ESP/Arduino will use: observational proof, not a sandbox.",
+        "Start with the interactive probe simulator (/about/probe-demo) when you want to cause a cold snap or door draft and watch multi-zone risk respond. Use the demo shop on this page to watch simulated probe readings follow today’s real outdoor weather without touching any controls.",
     },
     {
       question: "What is kit QR onboarding?",
@@ -71,9 +71,9 @@ export const marketingFaqs = {
         "After you create a push device, ProbeHarbor shows a QR code for the full ingest URL (about 30 minutes). Scan it from a phone or print it on a kit label so firmware or Home Assistant can POST without typing the key. Walkthrough: probeharbor.dev/about/kit-qr-onboarding.",
     },
     {
-      question: "Is the live demo fake data?",
+      question: "Is the live demo real sensor data?",
       answer:
-        "No. Readings come from the public ProbeHarbor demo feed over the same HTTPS ingest/pull path production devices use. The interactive simulator is intentionally synthetic so you can manipulate outdoor air, sun, and door state: it reuses the real Overview space-status helper for freeze risk.",
+        "No, and it isn’t meant to look like it. The demo shop’s three probes are simulated: a shop model driven by real local weather (outdoor temperature, cloud cover, time of day), or a typical-weather fallback if the weather service is unavailable. It is served in the same JSON feed format ProbeHarbor accepts from real devices. The interactive simulator goes further and lets you set outdoor air, sun, and door state yourself; both reuse the real Overview space-status helper for freeze risk. Real readings start when you connect your own sensor.",
     },
     {
       question: "Do I need an account to try this?",
