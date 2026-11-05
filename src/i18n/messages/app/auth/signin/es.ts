@@ -46,6 +46,7 @@ const es: AuthSigninMessages = {
       weak_password: "La contraseña debe tener al menos 8 caracteres.",
       generic: "Algo salió mal al crear tu cuenta. Inténtalo de nuevo.",
       signup_failed: "Algo salió mal al crear tu cuenta. Inténtalo de nuevo.",
+      email_taken: "Puede que este correo ya tenga una cuenta. Inicia sesión o restablece tu contraseña si la olvidaste.",
     },
   },
   oauth: {

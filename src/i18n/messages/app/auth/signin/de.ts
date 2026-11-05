@@ -46,6 +46,7 @@ const de: AuthSigninMessages = {
       weak_password: "Das Passwort muss mindestens 8 Zeichen lang sein.",
       generic: "Beim Erstellen deines Kontos ist etwas schiefgelaufen. Bitte versuche es erneut.",
       signup_failed: "Beim Erstellen deines Kontos ist etwas schiefgelaufen. Bitte versuche es erneut.",
+      email_taken: "Für diese E-Mail gibt es möglicherweise schon ein Konto. Melde dich an oder setze dein Passwort zurück, falls du es vergessen hast.",
     },
   },
   oauth: {

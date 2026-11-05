@@ -4,31 +4,39 @@ import { getTurnstileToken, verifyTurnstileToken } from "../../../lib/turnstile"
 import {
   applyReferralForNewUser,
 } from "../../../lib/referrals";
-import { REGISTER_NEXT_DEVICES, sanitizeRegisterNext } from "../../../lib/registerUrl";
+import {
+  REGISTER_NEXT_DEVICES,
+  buildRegisterErrorHref,
+  sanitizeRegisterNext,
+} from "../../../lib/registerUrl";
 import { requestLocale } from "./_locale";
 
 export const POST: APIRoute = async (context) => {
   const { request, redirect, clientAddress } = context;
   const formData = await request.formData();
+  const email = formData.get("email")?.toString();
+  const password = formData.get("password")?.toString();
+  const refCode = formData.get("ref")?.toString()?.trim().toLowerCase() ?? "";
+  const next = formData.get("next")?.toString() ?? "";
+  // Errors go back to the form with the email, next and referral kept (never the password).
+  const backToForm = (code: string) =>
+    redirect(buildRegisterErrorHref(code, { email, next, ref: refCode }));
+
   const turnstile = await verifyTurnstileToken(
     getTurnstileToken(formData),
     clientAddress,
   );
 
   if (!turnstile.success) {
-    return redirect("/register?error=verification");
+    return backToForm("verification");
   }
 
-  const email = formData.get("email")?.toString();
-  const password = formData.get("password")?.toString();
-  const refCode = formData.get("ref")?.toString()?.trim().toLowerCase() ?? "";
-
   if (!email || !password) {
-    return redirect("/register?error=missing_fields");
+    return backToForm("missing_fields");
   }
 
   if (password.length < 8) {
-    return redirect("/register?error=weak_password");
+    return backToForm("weak_password");
   }
 
   // Fresh client -- never the shared `supabase` singleton, which would
@@ -43,15 +51,21 @@ export const POST: APIRoute = async (context) => {
   });
 
   if (error) {
-    return redirect("/register?error=signup_failed");
+    // Supabase only says "already registered" when email confirmation is off;
+    // with it on, sign-up for a known address succeeds without telling us, so
+    // this reveals nothing Supabase's own response doesn't already.
+    return backToForm(isAlreadyRegistered(error) ? "email_taken" : "signup_failed");
   }
 
   if (data.user && refCode) {
     await applyReferralForNewUser(data.user.id, refCode, data.user.app_metadata);
   }
 
-  const next = formData.get("next")?.toString() ?? "";
   const safeNext = sanitizeRegisterNext(next) ?? REGISTER_NEXT_DEVICES;
   const params = new URLSearchParams({ registered: "1", next: safeNext });
   return redirect(`/signin?${params.toString()}`);
 };
+
+function isAlreadyRegistered(error: { code?: string }): boolean {
+  return error.code === "user_already_exists" || error.code === "email_exists";
+}

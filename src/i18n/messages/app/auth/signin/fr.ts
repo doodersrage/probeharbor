@@ -46,6 +46,7 @@ const fr: AuthSigninMessages = {
       weak_password: "Le mot de passe doit contenir au moins 8 caractères.",
       generic: "Une erreur s’est produite lors de la création de votre compte. Veuillez réessayer.",
       signup_failed: "Une erreur s’est produite lors de la création de votre compte. Veuillez réessayer.",
+      email_taken: "Cette adresse e-mail a peut-être déjà un compte. Connectez-vous, ou réinitialisez votre mot de passe si vous l’avez oublié.",
     },
   },
   oauth: {

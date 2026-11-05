@@ -20,10 +20,15 @@ vi.mock("../../../lib/referrals", () => ({
 }));
 
 const mockSanitizeRegisterNext = vi.fn();
-vi.mock("../../../lib/registerUrl", () => ({
-  REGISTER_NEXT_DEVICES: "/dashboard/devices",
-  sanitizeRegisterNext: (...a: unknown[]) => mockSanitizeRegisterNext(...a),
-}));
+vi.mock("../../../lib/registerUrl", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../../../lib/registerUrl")>();
+  return {
+    // The real error-URL builder (and its own next check); only the success path's check is mocked.
+    buildRegisterErrorHref: actual.buildRegisterErrorHref,
+    REGISTER_NEXT_DEVICES: "/dashboard/devices",
+    sanitizeRegisterNext: (...a: unknown[]) => mockSanitizeRegisterNext(...a),
+  };
+});
 
 function makeContext(form: Record<string, string>): APIContext {
   const formData = new FormData();
@@ -31,6 +36,11 @@ function makeContext(form: Record<string, string>): APIContext {
   const request = { formData: async () => formData } as unknown as Request;
   const redirect = vi.fn((path: string) => new Response(null, { status: 302, headers: { Location: path } }));
   return { request, redirect, clientAddress: "127.0.0.1" } as unknown as APIContext;
+}
+
+function redirectedTo(context: APIContext): URL {
+  const location = (context.redirect as unknown as { mock: { calls: string[][] } }).mock.calls[0][0];
+  return new URL(location, "https://example.com");
 }
 
 beforeEach(() => {
@@ -53,7 +63,9 @@ describe("POST /api/auth/register", () => {
 
     await POST(context);
 
-    expect(context.redirect).toHaveBeenCalledWith("/register?error=verification");
+    const url = redirectedTo(context);
+    expect(url.pathname).toBe("/register");
+    expect(url.searchParams.get("error")).toBe("verification");
     expect(mockSignUp).not.toHaveBeenCalled();
   });
 
@@ -63,7 +75,9 @@ describe("POST /api/auth/register", () => {
 
     await POST(context);
 
-    expect(context.redirect).toHaveBeenCalledWith("/register?error=missing_fields");
+    const url = redirectedTo(context);
+    expect(url.searchParams.get("error")).toBe("missing_fields");
+    expect(url.searchParams.get("email")).toBe("a@example.com");
     expect(mockSignUp).not.toHaveBeenCalled();
   });
 
@@ -73,7 +87,9 @@ describe("POST /api/auth/register", () => {
 
     await POST(context);
 
-    expect(context.redirect).toHaveBeenCalledWith("/register?error=missing_fields");
+    const url = redirectedTo(context);
+    expect(url.searchParams.get("error")).toBe("missing_fields");
+    expect(url.searchParams.has("email")).toBe(false);
   });
 
   it("redirects with weak_password when the password is under 8 characters", async () => {
@@ -82,7 +98,7 @@ describe("POST /api/auth/register", () => {
 
     await POST(context);
 
-    expect(context.redirect).toHaveBeenCalledWith("/register?error=weak_password");
+    expect(redirectedTo(context).searchParams.get("error")).toBe("weak_password");
   });
 
   it("redirects with signup_failed when signUp errors", async () => {
@@ -92,7 +108,53 @@ describe("POST /api/auth/register", () => {
 
     await POST(context);
 
-    expect(context.redirect).toHaveBeenCalledWith("/register?error=signup_failed");
+    expect(redirectedTo(context).searchParams.get("error")).toBe("signup_failed");
+  });
+
+  it("keeps email, next and ref on an error redirect, never the password", async () => {
+    mockSignUp.mockResolvedValue({ data: { user: null }, error: { message: "boom" } });
+    const { POST } = await import("./register");
+    const context = makeContext({
+      email: " a@example.com ",
+      password: "password1",
+      next: "/dashboard/alerts",
+      ref: "REF1",
+    });
+
+    await POST(context);
+
+    const location = (context.redirect as unknown as { mock: { calls: string[][] } }).mock.calls[0][0];
+    expect(location).not.toContain("password1");
+    const url = redirectedTo(context);
+    expect(url.pathname).toBe("/register");
+    expect(url.searchParams.get("error")).toBe("signup_failed");
+    expect(url.searchParams.get("email")).toBe("a@example.com");
+    expect(url.searchParams.get("next")).toBe("/dashboard/alerts");
+    expect(url.searchParams.get("ref")).toBe("ref1");
+    expect(url.searchParams.has("password")).toBe(false);
+  });
+
+  it("drops an off-site next on an error redirect", async () => {
+    mockVerifyTurnstileToken.mockResolvedValue({ success: false });
+    const { POST } = await import("./register");
+    const context = makeContext({ email: "a@example.com", password: "password1", next: "//evil.example" });
+
+    await POST(context);
+
+    expect(redirectedTo(context).searchParams.get("next")).toBe("/dashboard/devices");
+  });
+
+  it("says email_taken when Supabase reports the address is already registered", async () => {
+    mockSignUp.mockResolvedValue({
+      data: { user: null },
+      error: { message: "User already registered", code: "user_already_exists" },
+    });
+    const { POST } = await import("./register");
+    const context = makeContext({ email: "a@example.com", password: "password1" });
+
+    await POST(context);
+
+    expect(redirectedTo(context).searchParams.get("error")).toBe("email_taken");
   });
 
   it("applies a referral when a ref code is present", async () => {

@@ -11,7 +11,9 @@ import {
 
 const nextPath = Astro.url.searchParams.get("next") ?? "";
 const safeNext = sanitizeRegisterNext(nextPath) ?? REGISTER_NEXT_DEVICES;
-const t = authSigninMessages(getLocale(Astro)).register;
+const signinMessages = authSigninMessages(getLocale(Astro));
+const t = signinMessages.register;
+const forgotPasswordLabel = signinMessages.signin.forgotPassword;
 const errorCode = Astro.url.searchParams.get("error");
 // Known codes are translated; anything else (a raw Supabase message) shows as is.
 const rawErrorMessage = getRegisterErrorMessage(errorCode);
@@ -55,6 +57,13 @@ const [referralBefore = "", referralAfter = ""] = t.referral.split("{code}");
       {errorMessage && (
         <div class="alert-warning mb-4" role="alert">
           <p class="m-0">{errorMessage}</p>
+          {errorCode === "email_taken" && (
+            <p class="mt-2 mb-0">
+              <a class="text-link" href={signInHref}>{t.signIn}</a>
+              {" · "}
+              <a class="text-link" href="/forgot-password">{forgotPasswordLabel}</a>
+            </p>
+          )}
         </div>
       )}
 

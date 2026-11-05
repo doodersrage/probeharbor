@@ -46,6 +46,7 @@ const en = {
       weak_password: "Password must be at least 8 characters.",
       generic: "Something went wrong while creating your account. Please try again.",
       signup_failed: "Something went wrong while creating your account. Please try again.",
+      email_taken: "This email may already have an account. Sign in, or reset your password if you forgot it.",
     },
   },
   oauth: {

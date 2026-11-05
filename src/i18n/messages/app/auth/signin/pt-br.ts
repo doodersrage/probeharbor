@@ -46,6 +46,7 @@ const ptBr: AuthSigninMessages = {
       weak_password: "A senha deve ter pelo menos 8 caracteres.",
       generic: "Algo deu errado ao criar sua conta. Tente novamente.",
       signup_failed: "Algo deu errado ao criar sua conta. Tente novamente.",
+      email_taken: "Este e-mail talvez já tenha uma conta. Entre ou redefina sua senha se você a esqueceu.",
     },
   },
   oauth: {
