@@ -3947,11 +3947,13 @@ From a user screenshot of the Overview's Sensor extras column.
       for TS 6 lib.dom.
 - [x] Preact 11: chart lightbox spacer height now has `px` (Preact 11 no
       longer adds it).
-- Not done: Stripe SDK 23. It moves every API call from
-  `2026-06-24.dahlia` to `2026-10-28.endive` (`src/lib/stripe.ts` sets no
-  `apiVersion`). No code changes were needed, but it needs test-mode
-  checks first (checkout, webhooks, portal, upgrade/downgrade/cancel).
-  Ready in a worktree.
+- [x] Stripe SDK 23 (e8b361e, deployed 2026-11-05): outbound API calls
+      move from `2026-06-24.dahlia` to `2026-10-28.endive`
+      (`src/lib/stripe.ts` sets no `apiVersion`). No code changes; endive's
+      breaking changes don't touch our code paths. The live webhook
+      endpoint stays pinned to dahlia (checked read-only), so event
+      payloads are unchanged. Not run in test mode first, at the user's
+      request; after deploy the user checked billing: works.
 - Evidence (Node 24.22.1): typecheck 0 errors; 3347 unit; lint at baseline
   (64); build; e2e 58 passed, 14 skipped (need credentials); wrangler dry
   run: same bindings, gzip 2125 → 2153 KiB; docs build. Firmware build not
