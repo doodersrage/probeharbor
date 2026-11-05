@@ -34,6 +34,7 @@ const es: LiveMessages = {
     debugStale: "Depurar lecturas desactualizadas",
     offlineProbes: "Sondas sin conexión ({count}): sin lecturas en más de 2 horas",
     disabled: "Desactivado",
+    demoData: "Datos de demostración",
     noProbes: "No hay sondas asignadas a este feed.",
     noReadingForKey: "Sin lectura para la clave «{key}»",
     emptyTitle: "Aún no hay sensores",

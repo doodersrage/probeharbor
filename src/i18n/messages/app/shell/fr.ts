@@ -8,6 +8,11 @@ const fr: ShellMessages = {
     body: "Une erreur s’est produite en lisant vos appareils et relevés dans notre base de données ; cette page peut donc être incomplète. Rien n’a été modifié.",
     retry: "Réessayer",
   },
+  demoData: {
+    badge: "Données de démo",
+    body: "Relevés simulés du flux d’exemple, calculés à partir de la météo locale. Aucun capteur ne les mesure, ils ne déclenchent jamais d’alerte et ne comptent pas comme un appareil connecté.",
+    remove: "Retirer le flux de démo",
+  },
   nav: {
     overview: "Vue d’ensemble",
     live: "En direct",

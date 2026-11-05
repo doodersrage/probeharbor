@@ -57,7 +57,7 @@ ProbeHarbor ships in multiple repos. When onboarding UX changes in **this** repo
 
 **Repo:** [github.com/doodersrage/probeharbor-android](https://github.com/doodersrage/probeharbor-android) (sibling checkout)
 
-**Status (2026-09-10):** Consumes live API (`/api/home/readings`, history, alerts, claims, `/api/user/home-insights`). Home shows `time_to_freeze` (hours, `hits_at`, confidence, source) plus heating/condensation insights. Full Overview Status strip and Insights cards remain on the **web** Overview (`/dashboard`); current probe cards on web are at `/dashboard/live`. No API change from the 2026-09 dashboard UX pass.
+**Status (2026-09-10):** Consumes live API (`/api/home/readings`, history, alerts, claims, `/api/user/home-insights`). Home shows `time_to_freeze` (hours, `hits_at`, confidence, source) plus heating/condensation insights. Full Overview Status strip and Insights cards remain on the **web** Overview (`/dashboard`); current probe cards on web are at `/dashboard/live`. No API change from the 2026-09 dashboard UX pass. 2026-11: `/api/home/readings` adds `demo` on feed groups and `deviceDemo` on sensors (additive) for the example feed's simulated readings; the web shows a "Demo data" badge, the app doesn't yet.
 
 **Re-sync when:**
 

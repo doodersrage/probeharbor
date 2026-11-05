@@ -34,6 +34,7 @@ const fr: LiveMessages = {
     debugStale: "Diagnostiquer les mesures figées",
     offlineProbes: "Sondes hors ligne ({count}) : aucune mesure depuis plus de 2 heures",
     disabled: "Désactivé",
+    demoData: "Données de démo",
     noProbes: "Aucune sonde n’est associée à ce flux.",
     noReadingForKey: "Aucune mesure pour la clé « {key} »",
     emptyTitle: "Aucun capteur pour l’instant",

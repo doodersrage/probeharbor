@@ -34,6 +34,7 @@ const de: LiveMessages = {
     debugStale: "Veraltete Messwerte untersuchen",
     offlineProbes: "Offline-Fühler ({count}): seit über 2 Stunden kein Messwert",
     disabled: "Deaktiviert",
+    demoData: "Demodaten",
     noProbes: "Diesem Feed sind keine Fühler zugeordnet.",
     noReadingForKey: "Kein Messwert für den Schlüssel „{key}“",
     emptyTitle: "Noch keine Sensoren",

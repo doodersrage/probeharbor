@@ -2,6 +2,9 @@
 import { getDisplayPreferencesFromMetadata } from "../../lib/userPreferences";
 import { timeZoneFromCookie, zonedDayEndIso, zonedDayStartIso } from "../../lib/zonedDay";
 import DashboardLayout from "../../layouts/DashboardLayout.astro";
+import DemoFeedNotice from "../../components/dashboard/DemoFeedNotice.astro";
+import { isDemoDevice } from "../../lib/demoFeed";
+import { canEditHousehold, type HouseholdRole } from "../../lib/households";
 import GarageTempHistory from "../../components/GarageTempHistory.astro";
 import UpgradeNudge from "../../components/UpgradeNudge.astro";
 import HistorySubscription from "../../components/HistorySubscription.astro";
@@ -303,7 +306,7 @@ const [
   loadChartExtras && !historyEmpty
     ? fetchIndoorOutdoorDelta(chartData.points, null, user)
     : Promise.resolve(null),
-  (loadChartExtras || loadExportsSummary) && !historyEmpty && householdId
+  (loadChartExtras || loadExportsSummary || loadTable) && !historyEmpty && householdId
     ? listHouseholdDevices(householdId)
     : Promise.resolve({ devices: [] as Awaited<ReturnType<typeof listHouseholdDevices>>["devices"] }),
   loadChartExtras && !historyEmpty && householdId
@@ -435,6 +438,11 @@ const houseChartLegend =
             t.overlay.houseReferenceFallback,
         })
       : null;
+// The example feed's history is simulated: say so above the chart and table.
+const demoDevices = householdDevicesResult.devices.filter((device) => isDemoDevice(device));
+const canEdit = canEditHousehold(
+  (shell?.households.find((row) => row.household_id === householdId)?.role ?? null) as HouseholdRole | null,
+);
 const probeToSpace = new Map<string, string>();
 for (const device of householdDevicesResult.devices) {
   if (!device.space) continue;
@@ -575,6 +583,9 @@ function historyRetentionText(days: number): string {
 const freezeTemp = plain(alertSettings.freezeThresholdF);
 ---
 <DashboardLayout title={t.page.title} subtitle={t.page.subtitle}>
+  {demoDevices.length > 0 && (
+    <div class="mb-6"><DemoFeedNotice devices={demoDevices} canEdit={canEdit} /></div>
+  )}
   {historyEmpty && (
     <section class="card mb-6" aria-labelledby="history-empty-title">
       <h2 class="card-title" id="history-empty-title">{t.page.empty.title}</h2>

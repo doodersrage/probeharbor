@@ -8,6 +8,11 @@ const es: ShellMessages = {
     body: "Algo falló al leer tus dispositivos y lecturas de nuestra base de datos, así que esta página puede estar incompleta. No se cambió nada.",
     retry: "Reintentar",
   },
+  demoData: {
+    badge: "Datos de demostración",
+    body: "Lecturas simuladas del feed de ejemplo, generadas a partir del tiempo local. No las mide ningún sensor, nunca envían alertas y no cuentan como dispositivo conectado.",
+    remove: "Quitar feed de demostración",
+  },
   nav: {
     overview: "Resumen",
     live: "En vivo",

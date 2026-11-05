@@ -10,6 +10,7 @@ import type { SensorKind } from "../../../lib/devices";
 import type { DeviceSource } from "../../../lib/devices";
 import { apiCommonMessages, apiLocale } from "../../../i18n/messages/app/api/common";
 import { reportIntervalSeconds } from "../../../lib/reportInterval";
+import { isDemoDevice, isDemoFeedUrl } from "../../../lib/demoFeed";
 
 export type LiveSensorCard = {
   deviceId: string;
@@ -26,6 +27,8 @@ export type LiveSensorCard = {
   recorded_at: string | null;
   /** The device's usual reporting interval (ms), so freshness labels fit slow devices. */
   reportIntervalMs: number | null;
+  /** Simulated readings from the example feed: shown with a "Demo data" badge. */
+  deviceDemo: boolean;
   /** Present for temperature probes when live feed data is available */
   temp?: { f: number | null; c: number | null; h: number | null } | null;
 };
@@ -63,14 +66,17 @@ export const GET: APIRoute = async ({ cookies, url, request, locals }) => {
     userMetadata: user.user_metadata as Record<string, unknown>,
   });
 
+  const displayFeeds = preferences.tempFeeds.length > 0 ? preferences.tempFeeds : deviceConfig.feeds;
+  const demoFeedIds = new Set(displayFeeds.filter((feed) => isDemoFeedUrl(feed.url)).map((feed) => feed.id));
   const groups = buildFeedDisplayGroups(
-    preferences.tempFeeds.length > 0 ? preferences.tempFeeds : deviceConfig.feeds,
+    displayFeeds,
     preferences.tempProbes.length > 0 ? preferences.tempProbes : deviceConfig.probes,
     results,
   ).map((group) => ({
     feedId: group.feedId,
     feedName: group.feedName,
     enabled: group.enabled,
+    demo: demoFeedIds.has(group.feedId),
     error: group.error ? localizeFeedError(group.error, locale) : group.error,
     probes: group.probes.map((probe) => ({
       key: probe.key,
@@ -107,6 +113,7 @@ export const GET: APIRoute = async ({ cookies, url, request, locals }) => {
         deviceName: device.name,
         deviceSource: device.source,
         reportIntervalMs: intervalMs(device.meta),
+        deviceDemo: isDemoDevice(device),
         space: device.space ?? null,
         key: sensor.key,
         label: sensor.label,
@@ -148,6 +155,9 @@ export const GET: APIRoute = async ({ cookies, url, request, locals }) => {
             deviceConfig.devices.find((d) => d.id === row.sensor.device_id)?.source ??
             null,
           reportIntervalMs: intervalMs(deviceConfig.devices.find((d) => d.id === row.sensor.device_id)?.meta),
+          deviceDemo:
+            row.deviceDemo === true ||
+            isDemoDevice(deviceConfig.devices.find((d) => d.id === row.sensor.device_id)),
           space:
             deviceConfig.devices.find((d) => d.id === row.sensor.device_id)?.space ??
             null,

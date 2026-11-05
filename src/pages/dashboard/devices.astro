@@ -1,5 +1,7 @@
 ---
 import DataLoadError from "../../components/dashboard/DataLoadError.astro";
+import DemoFeedNotice from "../../components/dashboard/DemoFeedNotice.astro";
+import { isDemoDevice } from "../../lib/demoFeed";
 import DashboardLayout from "../../layouts/DashboardLayout.astro";
 import DeviceSetupWizard from "../../components/DeviceSetupWizard.astro";
 import IngestFirmwarePanel from "../../components/dashboard/IngestFirmwarePanel.astro";
@@ -355,6 +357,7 @@ const devicesSetupHref =
   activeTab === "push" ? "/dashboard/devices?view=setup" : `/dashboard/devices?view=setup&tab=${activeTab}`;
 const redirectTo =
   devicesView === "ops" ? "/dashboard/devices?view=ops" : devicesSetupHref;
+const demoDevices = devices.filter((d) => isDemoDevice(d));
 ---
 <DashboardLayout
   title={t.title}
@@ -421,6 +424,7 @@ const redirectTo =
 
 
     <DataLoadError show={Boolean(devicesLoadError)} />
+    <DemoFeedNotice devices={demoDevices} canEdit={canEdit} />
 
     {devicesView === "setup" && activeTab === "push" && devices.length === 0 && !devicesLoadError && (
       <DevicesFirstRunCard

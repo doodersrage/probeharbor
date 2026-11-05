@@ -126,6 +126,7 @@ describe("GET /api/home/readings", () => {
         feedId: "feed-1",
         feedName: "Garage",
         enabled: true,
+        demo: false,
         probes: [{ key: "0", label: "North", data: { f: 72, c: 22.2, h: 40 } }],
       },
     ]);
@@ -138,6 +139,7 @@ describe("GET /api/home/readings", () => {
         value_num: 72,
         temp: { f: 72, c: 22.2, h: 40 },
         space: "garage",
+        deviceDemo: false,
       }),
     ]);
     expect(body.spaces).toEqual(["garage"]);

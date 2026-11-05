@@ -8,6 +8,11 @@ const de: ShellMessages = {
     body: "Beim Lesen deiner Geräte und Messwerte aus unserer Datenbank ist ein Fehler aufgetreten, daher ist diese Seite eventuell unvollständig. Es wurde nichts geändert.",
     retry: "Erneut versuchen",
   },
+  demoData: {
+    badge: "Demodaten",
+    body: "Simulierte Messwerte aus dem Beispiel-Feed, berechnet aus dem lokalen Wetter. Sie stammen von keinem Sensor, lösen nie Alarme aus und zählen nicht als verbundenes Gerät.",
+    remove: "Demo-Feed entfernen",
+  },
   nav: {
     overview: "Übersicht",
     live: "Live",

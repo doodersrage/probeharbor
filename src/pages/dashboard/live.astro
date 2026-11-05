@@ -4,6 +4,8 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
 import LiveTempsPanel from "../../components/LiveTempsPanel";
 import WeatherPanel from "../../components/WeatherPanel";
 import DemoPullNudge from "../../components/DemoPullNudge.astro";
+import DemoFeedNotice from "../../components/dashboard/DemoFeedNotice.astro";
+import { isDemoDevice } from "../../lib/demoFeed";
 import { getAuthFromCookies } from "../../lib/auth";
 import { getUserPreferences } from "../../lib/userPreferences";
 import { getUserDevicesAsTempConfig, listHouseholdDevices } from "../../lib/devices";
@@ -64,6 +66,7 @@ const showDemoPullNudge =
 const hasEmailAlerts =
   alertSettings.enabled && hasConfiguredAlertChannel(alertSettings);
 const panelsHidden = !showGarageTemps && !showWeather;
+const demoDevices = devices.filter((d) => isDemoDevice(d));
 ---
 <DashboardLayout
   title={t.title}
@@ -99,6 +102,7 @@ const panelsHidden = !showGarageTemps && !showWeather;
     )}
 
     <DataLoadError show={Boolean(devicesLoadError)} />
+    <DemoFeedNotice devices={demoDevices} canEdit={canEdit} />
 
     {!panelsHidden && !hasLive && !devicesLoadError && (
       <section class="card" aria-labelledby="live-first-run-title" data-live-waiting>

@@ -40,6 +40,19 @@ function reading(s: DeviceSensor, value: number | boolean): LatestSensorRow {
 }
 
 describe("buildDeviceListRows", () => {
+  it("marks the example feed as demo data", () => {
+    const rows = buildDeviceListRows({
+      devices: [
+        device("demo", { source: "pull_url", pull_url: "https://probeharbor.com/api/feeds/example" }),
+        device("real", { source: "pull_url", pull_url: "https://garage.example.org/temps.json" }),
+        device("push"),
+      ],
+      latest: [],
+      now,
+    });
+    expect(Object.fromEntries(rows.map((r) => [r.id, r.demo]))).toEqual({ demo: true, real: false, push: false });
+  });
+
   it("puts trouble first and shows a recognizable reading", () => {
     const pipe = sensor("t", "temperature", "Pipe");
     const door = sensor("d", "door", "Door");

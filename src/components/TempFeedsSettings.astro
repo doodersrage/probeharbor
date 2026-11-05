@@ -4,6 +4,8 @@ import { MAX_TEMP_FEEDS } from "../lib/tempFeedConfig";
 import FeedTestButton from "./FeedTestButton";
 import { fmt, getLocale } from "../i18n";
 import { deviceSetupPullMessages } from "../i18n/messages/app/deviceSetup/pull";
+import { shellMessages } from "../i18n/messages/app/shell";
+import { isDemoFeedUrl } from "../lib/demoFeed";
 
 interface Props {
   feeds: TempFeedConfig[];
@@ -15,6 +17,7 @@ const existingFeeds = feeds.filter((feed) => Boolean(feed.url));
 const canAddMore = existingFeeds.length < MAX_TEMP_FEEDS;
 const pullText = deviceSetupPullMessages(getLocale(Astro));
 const t = pullText.feeds;
+const demoBadge = shellMessages(getLocale(Astro)).demoData.badge;
 ---
 
 <div id="pull-feeds-form" class="space-y-4" data-i18n={JSON.stringify(pullText.client)}>
@@ -66,7 +69,10 @@ const t = pullText.feeds;
           </label>
           )}
           <div class="form-field mb-0">
-            <label class="form-label" for={`feed_${index}_name`}>{t.name}</label>
+            <label class="form-label" for={`feed_${index}_name`}>
+              {t.name}
+              {isDemoFeedUrl(feed.url) && <span class="feed-group-badge ml-2">{demoBadge}</span>}
+            </label>
             <input
               class="form-input"
               type="text"

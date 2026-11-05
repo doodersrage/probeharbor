@@ -89,6 +89,12 @@ const en = {
     body: "Something went wrong reading your devices and readings from our database, so this page may be incomplete. Nothing was changed.",
     retry: "Retry",
   },
+  /** Readings from the example feed: simulated, not measured (see lib/demoFeed). */
+  demoData: {
+    badge: "Demo data",
+    body: "Simulated readings from the example feed, generated from local weather. They aren't measured by a sensor, never send alerts, and don't count as a connected device.",
+    remove: "Remove demo feed",
+  },
   /** Dashboard screen names (sidebar, phone bar, menu button). */
   nav: {
     overview: "Overview",

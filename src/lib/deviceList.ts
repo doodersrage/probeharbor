@@ -7,6 +7,7 @@ import { formatBoolSensorValue } from "./sensorKinds";
 import type { StuckSensor } from "./stuckSensors";
 import type { Locale } from "../i18n/locales";
 import { libFixed } from "../i18n/messages/app/libText";
+import { isDemoDevice } from "./demoFeed";
 
 /** One row in the Devices list: enough to tell probes apart and spot trouble. */
 export type DeviceListRow = {
@@ -23,6 +24,8 @@ export type DeviceListRow = {
   firmwareUpdate: boolean;
   /** Pull feeds only: the last fetch failed. */
   feedIssue: string | null;
+  /** The example feed: simulated readings, shown with a "Demo data" badge. */
+  demo: boolean;
   href: string;
 };
 
@@ -76,6 +79,7 @@ export function buildDeviceListRows(input: {
       sensorCount: device.sensors.length,
       firmwareUpdate: firmwareUpdateAvailable(firmware),
       feedIssue: feed && !feed.ok ? feed.message : null,
+      demo: isDemoDevice(device),
       href: deviceHref(device.id),
     } satisfies DeviceListRow;
   });

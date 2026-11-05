@@ -4,6 +4,7 @@ import DashboardOnboarding from "../components/DashboardOnboarding.astro";
 import DashboardAndroidNudge from "../components/DashboardAndroidNudge.astro";
 import DashboardBayBuddyNudge from "../components/DashboardBayBuddyNudge.astro";
 import DemoPullNudge from "../components/DemoPullNudge.astro";
+import DemoFeedNotice from "../components/dashboard/DemoFeedNotice.astro";
 import ProbeSimulatorNudge from "../components/dashboard/ProbeSimulatorNudge.astro";
 import NestConnectNudge from "../components/dashboard/NestConnectNudge.astro";
 import OverviewPwaNudge from "../components/dashboard/OverviewPwaNudge.astro";
@@ -283,6 +284,7 @@ const hasDevices =
 // Checklist step 1 counts only a real (non-demo) device that has reported.
 const deviceStep = onboardingDeviceStep(devices, latest);
 const realLatest = realReadingRows(latest, devices);
+const demoDevices = devices.filter((d) => isDemoDevice(d));
 const hasAlertsEnabled = alertSettings.enabled;
 // Snooze / vacation: routine alerts are held (display only, see alertSnooze).
 const alertPause = alertSettings.enabled ? getAlertPauseState(alertSettings) : null;
@@ -949,6 +951,7 @@ const onboardingProps = {
     <div id="overview-live-flash" class="dashboard-flash hidden" aria-live="polite"></div>
 
     {!devicesLoadError && <DashboardOnboarding {...onboardingProps} />}
+    {!devicesLoadError && <DemoFeedNotice devices={demoDevices} canEdit={canEdit} />}
 
     {/* One status card: what is happening, then alerts to handle and quick actions. */}
     <GarageRiskStatusCard status={garageRisk} coldestProbe={coldestProbeSummary}>

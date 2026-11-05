@@ -34,6 +34,7 @@ const ptBr: LiveMessages = {
     debugStale: "Investigar leituras desatualizadas",
     offlineProbes: "Sondas offline ({count}): nenhuma leitura há mais de 2 horas",
     disabled: "Desativado",
+    demoData: "Dados de demonstração",
     noProbes: "Nenhuma sonda atribuída a este feed.",
     noReadingForKey: "Nenhuma leitura para a chave “{key}”",
     emptyTitle: "Nenhum sensor ainda",

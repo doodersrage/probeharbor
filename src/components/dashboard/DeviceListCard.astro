@@ -9,6 +9,7 @@ import { buildDeviceListRows, countDevicesWithoutSpace, spaceSuggestions } from 
 import { findWarmBoardSensors } from "../../lib/sensorPlacement";
 import { fmt, getLocale, plural } from "../../i18n";
 import { devicesListMessages } from "../../i18n/messages/app/devices/list";
+import { shellMessages } from "../../i18n/messages/app/shell";
 
 /**
  * Devices tab: every device, push and pull, one row each, worst first. A row
@@ -32,6 +33,7 @@ const pushDevices = devices.filter((d) => d.source === "push");
 const locale = getLocale(Astro);
 const t = devicesListMessages(locale).list;
 const healthLabel = t.health;
+const demoBadge = shellMessages(locale).demoData.badge;
 const healthTone = {
   healthy: "text-[var(--color-success)]",
   watch: "text-[var(--color-warning)]",
@@ -72,6 +74,7 @@ const healthTone = {
           <a class="device-list-row" href={row.href} data-device-row={row.id}>
             <span class="device-list-name">
               <strong>{row.name}</strong>
+              {row.demo && <span class="feed-group-badge self-start">{demoBadge}</span>}
               <span class="device-list-meta">
                 {row.space ?? <span class="device-list-unplaced">{t.noSpace}</span>}
                 {" · "}

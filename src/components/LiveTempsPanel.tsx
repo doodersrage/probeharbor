@@ -17,6 +17,8 @@ type FeedGroup = {
   feedId: string;
   feedName: string;
   enabled: boolean;
+  /** The example feed: simulated readings. */
+  demo?: boolean;
   error?: string;
   probes: ProbeReading[];
 };
@@ -36,6 +38,8 @@ type LiveSensor = {
   recorded_at: string | null;
   /** The device's usual reporting interval, so slow devices aren't called offline early. */
   reportIntervalMs?: number | null;
+  /** Simulated readings from the example feed. */
+  deviceDemo?: boolean;
   temp?: { f: number; c: number; h: number } | null;
 };
 
@@ -62,6 +66,8 @@ export const LIVE_TEMPS_PANEL_TEXT_EN = {
   debugStale: "Debug stale readings",
   offlineProbes: "Offline probes ({count}): no reading in 2+ hours",
   disabled: "Disabled",
+  /** Badge on simulated readings from the example feed. */
+  demoData: "Demo data",
   noProbes: "No probes assigned to this feed.",
   noReadingForKey: 'No reading for key "{key}"',
   emptyTitle: "No sensors yet",
@@ -537,6 +543,7 @@ export default function LiveTempsPanel({
         key={`${sensor.deviceId}:${sensor.key}:${sensor.kind}`}
       >
         <span class="stat-label">{sensor.label}</span>
+        {sensor.deviceDemo && <span class="feed-group-badge inline-block mb-2">{text.demoData}</span>}
         <p class="stat-value">{display.primary}</p>
         <p class="stat-detail">
           {display.detail}
@@ -659,6 +666,7 @@ export default function LiveTempsPanel({
             <section class="feed-group" key={group.feedId}>
               <div class="feed-group-header">
                 <h3 class="feed-group-title">{group.feedName}</h3>
+                {group.demo && <span class="feed-group-badge">{text.demoData}</span>}
                 {!group.enabled && <span class="feed-group-badge">{text.disabled}</span>}
               </div>
 
@@ -729,6 +737,7 @@ export default function LiveTempsPanel({
                   key={`${sensor.deviceId}:${sensor.key}:${sensor.kind}`}
                 >
                   <span class="stat-label">{sensor.label}</span>
+                  {sensor.deviceDemo && <span class="feed-group-badge inline-block mb-2">{text.demoData}</span>}
                   <p class={`stat-value${alert ? " text-[var(--color-danger)]" : ""}`}>
                     {display.primary}
                   </p>

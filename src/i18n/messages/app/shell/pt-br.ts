@@ -8,6 +8,11 @@ const ptBr: ShellMessages = {
     body: "Algo deu errado ao ler seus dispositivos e leituras do nosso banco de dados, então esta página pode estar incompleta. Nada foi alterado.",
     retry: "Tentar de novo",
   },
+  demoData: {
+    badge: "Dados de demonstração",
+    body: "Leituras simuladas do feed de exemplo, geradas a partir do clima local. Não são medidas por um sensor, nunca enviam alertas e não contam como dispositivo conectado.",
+    remove: "Remover feed de demonstração",
+  },
   nav: {
     overview: "Visão geral",
     live: "Ao vivo",
