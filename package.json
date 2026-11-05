@@ -52,7 +52,7 @@
     "@astrojs/cloudflare": "^14.4.4",
     "@astrojs/preact": "^6.1.1",
     "@astrojs/sitemap": "^3.7.4",
-    "@block65/webcrypto-web-push": "^1.0.2",
+    "@block65/webcrypto-web-push": "^2.0.0",
     "@lucide/astro": "~1.68.0",
     "@sentry/astro": "^10.72.0",
     "@sentry/cloudflare": "^10.72.0",
