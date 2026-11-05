@@ -24,14 +24,6 @@ const de: PricingMessages = {
     createAccount: "Kostenloses Konto erstellen",
     signIn: "Anmelden",
   },
-  ladder: {
-    label: "Tarifstufen",
-    free: "Teste, ob ProbeHarbor für dich funktioniert: Live-Kurven, Frost- und Leckalarme, ein Live-Link für die Familie.",
-    member:
-      "Verfolge eine ganze Kältesaison – oder eine nasse Kellersaison: 90 Tage Verlauf, CSV, mehr Geräte und Frostwarnungen aus der Prognose.",
-    pro: "Ernsthafte Alarme und Automatisierung. NWS, SMS, Hauskontext über Nest/Ecobee, Nachweispaket, 14 Tage Testphase. Bis zu {properties} Objekte.",
-    portfolio: "Größere Bestände mit vielen Objekten: bis zu {properties} eigene Objekte, objektübergreifende Ansicht des Frost- und Wasserrisikos, Logins für die Hausverwaltung ohne Zugriff auf die Abrechnung.",
-  },
   billing: {
     label: "Abrechnungszeitraum",
     monthly: "Monatlich",
@@ -61,7 +53,7 @@ const de: PricingMessages = {
     historyPlus: "Mindestens {retention} Verlauf",
     currentPlan: "Aktueller Tarif",
     includedInPlan: "In deinem Tarif enthalten",
-    signInToSubscribe: "Zum Abonnieren anmelden",
+    startFreeThenUpgrade: "Kostenlos starten, dann upgraden",
     free: {
       tagline: "Live-Überwachung für ein Objekt, ohne Kreditkarte",
       freezeLeak: "Frost- und Leckalarme per Schwellenwert",
@@ -88,7 +80,7 @@ const de: PricingMessages = {
       properties: "Bis zu {n} eigene Objekte (Ferienhaus, Mietobjekt, Werkstatt)",
       startTrial: "Pro-Testphase starten",
       onPro: "Du nutzt Pro",
-      signInForTrial: "Für die Pro-Testphase anmelden",
+      createAccountForTrial: "Konto für die Pro-Testphase erstellen",
     },
     portfolio: {
       badge: "Für größere Bestände",

@@ -69,3 +69,14 @@ export function getPortfolioPriceDisplay(): PlanPriceDisplay {
     getRuntimeEnv("STRIPE_DISPLAY_PORTFOLIO_ANNUAL"),
   );
 }
+
+export type BillingInterval = "monthly" | "annual";
+
+/**
+ * Interval /pricing opens on. Monthly by default so it matches the $/mo
+ * figures quoted on the home page; PRICING_DEFAULT_INTERVAL=annual still
+ * opts into yearly totals. Anything else (unset, typos) means monthly.
+ */
+export function resolvePricingDefaultInterval(raw: string | null | undefined): BillingInterval {
+  return raw?.trim().toLowerCase() === "annual" ? "annual" : "monthly";
+}

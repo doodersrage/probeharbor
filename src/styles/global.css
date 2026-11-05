@@ -1172,41 +1172,6 @@
     gap: 0.75rem;
   }
 
-  .pricing-ladder {
-    margin: 0 0 0.25rem;
-  }
-
-  .pricing-ladder-list {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    display: grid;
-    gap: 0.85rem;
-  }
-
-  @media (min-width: 768px) {
-    .pricing-ladder-list {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 1.15rem;
-    }
-  }
-
-  .pricing-ladder-list li {
-    display: grid;
-    gap: 0.3rem;
-  }
-
-  .pricing-ladder-list strong {
-    font-size: 1.05rem;
-    color: var(--color-text);
-  }
-
-  .pricing-ladder-list span {
-    font-size: 0.875rem;
-    line-height: 1.5;
-    color: var(--color-text-muted);
-  }
-
   .product-shot {
     margin: 0;
     overflow: hidden;

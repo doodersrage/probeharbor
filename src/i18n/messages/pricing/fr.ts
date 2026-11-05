@@ -24,14 +24,6 @@ const fr: PricingMessages = {
     createAccount: "Créer un compte gratuit",
     signIn: "Se connecter",
   },
-  ladder: {
-    label: "Gamme des offres",
-    free: "Vérifiez si ProbeHarbor vous convient : courbes en direct, alertes gel et fuite, un lien familial en direct.",
-    member:
-      "Suivez toute une saison froide, ou une saison humide au sous-sol : 90 jours d’historique, CSV, plus d’appareils et avertissements de gel selon les prévisions.",
-    pro: "Alertes sérieuses et automatisation. NWS, SMS, contexte de la maison via Nest/Ecobee, dossier de sinistre, essai de 14 jours. Jusqu’à {properties} propriétés.",
-    portfolio: "Parcs immobiliers plus importants : jusqu’à {properties} propriétés détenues, vue du risque de gel et d’inondation sur l’ensemble du parc, accès gestionnaires sans accès à la facturation.",
-  },
   billing: {
     label: "Période de facturation",
     monthly: "Mensuel",
@@ -61,7 +53,7 @@ const fr: PricingMessages = {
     historyPlus: "{retention} d’historique et plus",
     currentPlan: "Offre actuelle",
     includedInPlan: "Inclus dans votre offre",
-    signInToSubscribe: "Connectez-vous pour vous abonner",
+    startFreeThenUpgrade: "Commencez gratuitement, puis passez à l’offre",
     free: {
       tagline: "Surveillance en direct d’une propriété, sans carte bancaire",
       freezeLeak: "Alertes gel et fuite sur seuil",
@@ -88,7 +80,7 @@ const fr: PricingMessages = {
       properties: "Jusqu’à {n} propriétés détenues (résidence secondaire, location, atelier)",
       startTrial: "Démarrer l’essai Pro",
       onPro: "Vous êtes sur Pro",
-      signInForTrial: "Connectez-vous pour l’essai Pro",
+      createAccountForTrial: "Créez un compte pour l’essai Pro",
     },
     portfolio: {
       badge: "Pour les parcs immobiliers",

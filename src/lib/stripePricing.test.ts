@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { getMemberPriceDisplay, getProPriceDisplay } from "./stripePricing";
+import {
+  getMemberPriceDisplay,
+  getProPriceDisplay,
+  resolvePricingDefaultInterval,
+} from "./stripePricing";
 
 describe("stripePricing", () => {
   it("formats display prices and annual savings", () => {
@@ -28,5 +32,19 @@ describe("stripePricing", () => {
     expect(getProPriceDisplay().monthly).toBeNull();
     env.STRIPE_DISPLAY_PRO_MONTHLY = prevM;
     env.STRIPE_DISPLAY_PRO_ANNUAL = prevA;
+  });
+});
+
+describe("resolvePricingDefaultInterval", () => {
+  it("defaults to monthly", () => {
+    expect(resolvePricingDefaultInterval(undefined)).toBe("monthly");
+    expect(resolvePricingDefaultInterval("")).toBe("monthly");
+    expect(resolvePricingDefaultInterval("monthly")).toBe("monthly");
+    expect(resolvePricingDefaultInterval("yearly")).toBe("monthly");
+  });
+
+  it("keeps an explicit annual override", () => {
+    expect(resolvePricingDefaultInterval("annual")).toBe("annual");
+    expect(resolvePricingDefaultInterval(" Annual ")).toBe("annual");
   });
 });

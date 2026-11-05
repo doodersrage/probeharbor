@@ -22,6 +22,7 @@ import {
   getMemberPriceDisplay,
   getPortfolioPriceDisplay,
   getProPriceDisplay,
+  resolvePricingDefaultInterval,
 } from "../lib/stripePricing";
 import { getUserSubscription } from "../lib/stripeSubscriptions";
 import { isActiveSubscriptionStatus } from "../lib/stripe";
@@ -59,8 +60,9 @@ const proPrices = getProPriceDisplay();
 const portfolioPrices = getPortfolioPriceDisplay();
 const portfolioPricingConfigured =
   portfolioPrices.monthly != null || portfolioPrices.annual != null;
-const defaultInterval =
-  import.meta.env.PRICING_DEFAULT_INTERVAL === "monthly" ? "monthly" : "annual";
+// Monthly unless PRICING_DEFAULT_INTERVAL=annual, so /pricing opens on the
+// same $/mo figures the home page quotes.
+const defaultInterval = resolvePricingDefaultInterval(import.meta.env.PRICING_DEFAULT_INTERVAL);
 
 function priceForInterval(
   prices: ReturnType<typeof getMemberPriceDisplay>,
@@ -177,31 +179,10 @@ const schema = [
       ) : (
         <>
           <a slot="actions" class="btn-primary" href="/register?next=/dashboard/devices">{t.header.createAccount}</a>
-          <a slot="actions" class="btn-secondary" href="/signin">{t.header.signIn}</a>
+          <a slot="actions" class="btn-secondary" href="/signin?next=/pricing">{t.header.signIn}</a>
         </>
       )}
     </PageHeader>
-
-    <section class="pricing-ladder" aria-label={t.ladder.label}>
-      <ul class="pricing-ladder-list">
-        <li>
-          <strong>Free</strong>
-          <span>{t.ladder.free}</span>
-        </li>
-        <li>
-          <strong>Member</strong>
-          <span>{t.ladder.member}</span>
-        </li>
-        <li>
-          <strong>Pro</strong>
-          <span>{fmt(t.ladder.pro, { properties: PRO_MAX_OWNED_HOUSEHOLDS })}</span>
-        </li>
-        <li>
-          <strong>Portfolio</strong>
-          <span>{fmt(t.ladder.portfolio, { properties: PORTFOLIO_MAX_OWNED_HOUSEHOLDS })}</span>
-        </li>
-      </ul>
-    </section>
 
     <section class="plan-tier-section">
       <div class="billing-interval-toggle" role="group" aria-label={tb.label}>
@@ -311,7 +292,7 @@ const schema = [
                 <p>{tc.includedInPlan}</p>
               )
             ) : (
-              <a class="btn-secondary" href="/signin?next=/pricing">{tc.signInToSubscribe}</a>
+              <a class="btn-secondary" href="/register?next=/pricing">{tc.startFreeThenUpgrade}</a>
             )}
           </div>
         </article>
@@ -372,7 +353,7 @@ const schema = [
                 <p>{tc.pro.onPro}</p>
               )
             ) : (
-              <a class="btn-primary" href="/signin?next=/pricing">{tc.pro.signInForTrial}</a>
+              <a class="btn-primary" href="/register?next=/pricing">{tc.pro.createAccountForTrial}</a>
             )}
           </div>
         </article>
@@ -435,7 +416,7 @@ const schema = [
                 <a class="btn-secondary" href="/contact">{tc.portfolio.contact}</a>
               )
             ) : portfolioPricingConfigured ? (
-              <a class="btn-secondary" href="/signin?next=/pricing">{tc.signInToSubscribe}</a>
+              <a class="btn-secondary" href="/register?next=/pricing">{tc.startFreeThenUpgrade}</a>
             ) : (
               <a class="btn-secondary" href="/contact">{tc.portfolio.contact}</a>
             )}
@@ -502,7 +483,7 @@ const schema = [
       } catch {
         /* ignore */
       }
-      return defaultInterval === "monthly" ? "monthly" : "annual";
+      return defaultInterval === "annual" ? "annual" : "monthly";
     }
 
     function applyInterval(interval) {

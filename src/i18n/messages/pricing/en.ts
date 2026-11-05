@@ -23,14 +23,6 @@ const en = {
     createAccount: "Create free account",
     signIn: "Sign in",
   },
-  ladder: {
-    label: "Plan ladder",
-    free: "See if ProbeHarbor works for you: live curves, freeze and leak alerts, one family live share.",
-    member:
-      "Track a whole cold season, or a wet basement season: 90-day history, CSV, more devices, and forecast freeze warnings.",
-    pro: "Serious alerts and automation. NWS, SMS, Nest/Ecobee house context, claims pack, 14-day trial. Up to {properties} properties.",
-    portfolio: "Larger multi-property ops: up to {properties} owned properties, cross-property freeze/flood risk view, property-manager logins without billing access.",
-  },
   billing: {
     label: "Billing interval",
     monthly: "Monthly",
@@ -60,7 +52,7 @@ const en = {
     historyPlus: "{retention}+ of history",
     currentPlan: "Current plan",
     includedInPlan: "Included in your plan",
-    signInToSubscribe: "Sign in to subscribe",
+    startFreeThenUpgrade: "Start free, then upgrade",
     free: {
       tagline: "Live monitoring for one property, no credit card",
       freezeLeak: "Threshold freeze and leak alerts",
@@ -86,7 +78,7 @@ const en = {
       properties: "Up to {n} owned properties (vacation home, rental, workshop)",
       startTrial: "Start Pro trial",
       onPro: "You're on Pro",
-      signInForTrial: "Sign in for Pro trial",
+      createAccountForTrial: "Create account for Pro trial",
     },
     portfolio: {
       badge: "For portfolios",

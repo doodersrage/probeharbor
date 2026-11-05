@@ -24,14 +24,6 @@ const ptBr: PricingMessages = {
     createAccount: "Criar conta grátis",
     signIn: "Entrar",
   },
-  ladder: {
-    label: "Escada de planos",
-    free: "Veja se o ProbeHarbor funciona para você: curvas ao vivo, alertas de congelamento e vazamento, um link familiar ao vivo.",
-    member:
-      "Acompanhe uma temporada de frio inteira, ou uma temporada de porão úmido: 90 dias de histórico, CSV, mais dispositivos e avisos de congelamento pela previsão.",
-    pro: "Alertas sérios e automação. NWS, SMS, contexto da casa via Nest/Ecobee, pacote para sinistros, teste de 14 dias. Até {properties} imóveis.",
-    portfolio: "Operações maiores com vários imóveis: até {properties} imóveis próprios, visão do risco de congelamento e alagamento de todos eles, logins para administradores sem acesso à cobrança.",
-  },
   billing: {
     label: "Período de cobrança",
     monthly: "Mensal",
@@ -61,7 +53,7 @@ const ptBr: PricingMessages = {
     historyPlus: "{retention} ou mais de histórico",
     currentPlan: "Plano atual",
     includedInPlan: "Incluído no seu plano",
-    signInToSubscribe: "Entre para assinar",
+    startFreeThenUpgrade: "Comece grátis e mude de plano depois",
     free: {
       tagline: "Monitoramento ao vivo de um imóvel, sem cartão de crédito",
       freezeLeak: "Alertas de congelamento e vazamento por limite",
@@ -88,7 +80,7 @@ const ptBr: PricingMessages = {
       properties: "Até {n} imóveis próprios (casa de veraneio, aluguel, oficina)",
       startTrial: "Começar o teste do Pro",
       onPro: "Você está no Pro",
-      signInForTrial: "Entre para testar o Pro",
+      createAccountForTrial: "Crie uma conta para testar o Pro",
     },
     portfolio: {
       badge: "Para carteiras de imóveis",

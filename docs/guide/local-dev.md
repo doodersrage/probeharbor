@@ -54,7 +54,7 @@ Configure in `.env` (local) and Cloudflare Worker secrets / vars (production). F
 | `STRIPE_PRICE_ID` / `STRIPE_PRICE_ID_PRO` / `STRIPE_PRICE_ID_PORTFOLIO` | Monthly Member / Pro / Portfolio price IDs |
 | `STRIPE_PRICE_ID_ANNUAL` / `STRIPE_PRICE_ID_PRO_ANNUAL` / `STRIPE_PRICE_ID_PORTFOLIO_ANNUAL` | Annual Member / Pro / Portfolio price IDs |
 | `STRIPE_DISPLAY_MEMBER_*` / `STRIPE_DISPLAY_PRO_*` / `STRIPE_DISPLAY_PORTFOLIO_*` | Display-only USD amounts on `/pricing` (must match Stripe) |
-| `PRICING_DEFAULT_INTERVAL` | `annual` or `monthly` default on `/pricing` |
+| `PRICING_DEFAULT_INTERVAL` | `monthly` (default) or `annual`: interval `/pricing` opens on |
 | `TWILIO_*` | Pro SMS |
 | `VAPID_*` | Pro browser Web Push — `pnpm generate:vapid` |
 | `FCM_*` | Pro Android FCM (HTTP v1 service account) |
