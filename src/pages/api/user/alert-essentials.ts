@@ -80,7 +80,8 @@ export const POST: APIRoute = async ({ request, cookies, redirect, locals }) => 
         user.email,
         settings,
         { title: testText.title, body: testText.body, kind: "generic" },
-        undefined,
+        // An explicit "send now": not held by quiet hours, snooze or vacation.
+        { userInitiatedTest: true },
         locale,
       );
       if (sent.length === 0) {

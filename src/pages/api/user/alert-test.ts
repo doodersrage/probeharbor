@@ -99,7 +99,8 @@ export const POST: APIRoute = async ({ request, cookies, redirect, url, locals }
         body: apiUserMessages(locale).testAlert.body,
         kind: "generic",
       },
-      channel ? { channelFilter: [channel] } : undefined,
+      // An explicit "send now": not held by quiet hours, snooze or vacation.
+      channel ? { channelFilter: [channel], userInitiatedTest: true } : { userInitiatedTest: true },
       locale,
     );
 

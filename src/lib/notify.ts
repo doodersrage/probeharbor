@@ -628,6 +628,12 @@ export async function notifyUser(
     space?: string | null;
     /** When set, only these channels may fire (must also be enabled in settings). */
     channelFilter?: AlertChannelName[];
+    /**
+     * The user pressed "Send test" and wants it now: skip snooze, vacation and
+     * quiet hours, which exist to hold real alerts. Never set this for a real
+     * alert (cron, ingest, rules); cooldowns are not involved either way.
+     */
+    userInitiatedTest?: boolean;
   },
   /**
    * Recipient language for the text notifyUser adds (snooze/ack lines, email
@@ -635,8 +641,10 @@ export async function notifyUser(
    */
   locale: Locale = "en",
 ): Promise<{ sent: string[]; skipped: string[] }> {
+  const isUserTest = options?.userInitiatedTest === true;
   if (
     !options?.smsOnly &&
+    !isUserTest &&
     shouldSuppressForSnoozeOrVacation(settings, payload.kind)
   ) {
     const skipped = ["snooze_or_vacation"];
@@ -653,9 +661,10 @@ export async function notifyUser(
   }
 
   const smsCriticalOnly =
-    options?.smsOnly || quietHoursAllowsSmsCritical(settings, payload.kind);
+    options?.smsOnly || (!isUserTest && quietHoursAllowsSmsCritical(settings, payload.kind));
   if (
     !options?.smsOnly &&
+    !isUserTest &&
     shouldSuppressForQuietHours(settings, payload.kind) &&
     !smsCriticalOnly
   ) {

@@ -109,3 +109,87 @@ describe("outbound alert webhook signatures", () => {
     );
   });
 });
+
+describe("holds: quiet hours, snooze and vacation", () => {
+  // start === end means quiet all day, so this is in quiet hours at any time.
+  const quietAllDay: AlertSettings = {
+    ...discordOnly,
+    quietHoursEnabled: true,
+    quietHoursStart: "00:00",
+    quietHoursEnd: "00:00",
+    quietHoursTimezone: "UTC",
+    quietHoursBypassFreeze: false,
+    quietHoursSmsCritical: false,
+  };
+  const inAnHour = () => new Date(Date.now() + 60 * 60 * 1000).toISOString();
+
+  it("holds a real generic alert in quiet hours", async () => {
+    const { notifyUser } = await import("./notify");
+
+    const result = await notifyUser("user-1", null, quietAllDay, { title: "t", body: "b", kind: "generic" });
+
+    expect(result).toEqual({ sent: [], skipped: ["quiet_hours"] });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("still holds a real freeze alert in quiet hours when bypass is off", async () => {
+    const { notifyUser } = await import("./notify");
+
+    const result = await notifyUser("user-1", null, quietAllDay, { title: "t", body: "b", kind: "threshold" });
+
+    expect(result.skipped).toEqual(["quiet_hours"]);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("sends a user-initiated test during quiet hours", async () => {
+    fetchMock.mockResolvedValue(new Response(null, { status: 204 }));
+    const { notifyUser } = await import("./notify");
+
+    const result = await notifyUser(
+      "user-1",
+      null,
+      quietAllDay,
+      { title: "t", body: "b", kind: "generic" },
+      { userInitiatedTest: true },
+    );
+
+    expect(result.sent).toEqual(["discord"]);
+  });
+
+  it("holds a real generic alert while snoozed, sends a user test", async () => {
+    fetchMock.mockResolvedValue(new Response(null, { status: 204 }));
+    const snoozed: AlertSettings = { ...discordOnly, snoozeUntil: inAnHour() };
+    const { notifyUser } = await import("./notify");
+
+    const held = await notifyUser("user-1", null, snoozed, { title: "t", body: "b", kind: "generic" });
+    expect(held).toEqual({ sent: [], skipped: ["snooze_or_vacation"] });
+    expect(fetchMock).not.toHaveBeenCalled();
+
+    const test = await notifyUser(
+      "user-1",
+      null,
+      snoozed,
+      { title: "t", body: "b", kind: "generic" },
+      { userInitiatedTest: true },
+    );
+    expect(test.sent).toEqual(["discord"]);
+  });
+
+  it("holds a real routine alert on vacation, sends a user test", async () => {
+    fetchMock.mockResolvedValue(new Response(null, { status: 204 }));
+    const away: AlertSettings = { ...discordOnly, vacationUntil: inAnHour() };
+    const { notifyUser } = await import("./notify");
+
+    const held = await notifyUser("user-1", null, away, { title: "t", body: "b", kind: "rate" });
+    expect(held.skipped).toEqual(["snooze_or_vacation"]);
+
+    const test = await notifyUser(
+      "user-1",
+      null,
+      away,
+      { title: "t", body: "b", kind: "generic" },
+      { userInitiatedTest: true },
+    );
+    expect(test.sent).toEqual(["discord"]);
+  });
+});

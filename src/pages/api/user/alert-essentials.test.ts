@@ -145,6 +145,8 @@ describe("POST /api/user/alert-essentials", () => {
     await POST(context);
 
     expect(mockNotifyUser).toHaveBeenCalled();
+    // An explicit test is not held by quiet hours, snooze or vacation.
+    expect(mockNotifyUser.mock.calls[0][4]).toEqual({ userInitiatedTest: true });
     // Test sends must not arm the freeze-alert cooldown.
     expect(mockMarkCooldown).not.toHaveBeenCalled();
     expect(context.redirect).toHaveBeenCalledWith(

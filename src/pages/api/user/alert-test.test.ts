@@ -207,7 +207,10 @@ describe("POST /api/user/alert-test (single channel)", () => {
 
     await POST(makeContext({ body: { channel: "discord" } }));
 
-    expect(mockNotifyUser.mock.calls[0][4]).toEqual({ channelFilter: ["discord"] });
+    expect(mockNotifyUser.mock.calls[0][4]).toEqual({
+      channelFilter: ["discord"],
+      userInitiatedTest: true,
+    });
   });
 
   it("rejects an unknown channel without sending", async () => {
@@ -225,6 +228,18 @@ describe("POST /api/user/alert-test (single channel)", () => {
 
     await POST(makeContext());
 
-    expect(mockNotifyUser.mock.calls[0][4]).toBeUndefined();
+    expect(mockNotifyUser.mock.calls[0][4]).toEqual({ userInitiatedTest: true });
+  });
+
+  it("marks the send as user-initiated so quiet hours, snooze and vacation don't hold it", async () => {
+    const { POST } = await import("./alert-test");
+
+    await POST(makeContext({ body: { channel: "email" } }));
+    await POST(makeContext());
+
+    for (const call of mockNotifyUser.mock.calls) {
+      expect(call[3]).toEqual(expect.objectContaining({ kind: "generic" }));
+      expect(call[4]).toEqual(expect.objectContaining({ userInitiatedTest: true }));
+    }
   });
 });
