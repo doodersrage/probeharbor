@@ -5,22 +5,29 @@ import {
   applyReferralForNewUser,
 } from "../../../lib/referrals";
 import {
+  REGISTER_EMAIL_COOKIE,
+  REGISTER_EMAIL_COOKIE_OPTIONS,
   REGISTER_NEXT_DEVICES,
   buildRegisterErrorHref,
+  registerEmailToKeep,
   sanitizeRegisterNext,
 } from "../../../lib/registerUrl";
 import { requestLocale } from "./_locale";
 
 export const POST: APIRoute = async (context) => {
-  const { request, redirect, clientAddress } = context;
+  const { request, redirect, clientAddress, cookies } = context;
   const formData = await request.formData();
   const email = formData.get("email")?.toString();
   const password = formData.get("password")?.toString();
   const refCode = formData.get("ref")?.toString()?.trim().toLowerCase() ?? "";
   const next = formData.get("next")?.toString() ?? "";
-  // Errors go back to the form with the email, next and referral kept (never the password).
-  const backToForm = (code: string) =>
-    redirect(buildRegisterErrorHref(code, { email, next, ref: refCode }));
+  // Errors go back to the form with next and referral kept; the email rides in a
+  // short-lived cookie so it never appears in a URL (never the password at all).
+  const backToForm = (code: string) => {
+    const keep = registerEmailToKeep(email);
+    if (keep) cookies.set(REGISTER_EMAIL_COOKIE, keep, REGISTER_EMAIL_COOKIE_OPTIONS);
+    return redirect(buildRegisterErrorHref(code, { next, ref: refCode }));
+  };
 
   const turnstile = await verifyTurnstileToken(
     getTurnstileToken(formData),

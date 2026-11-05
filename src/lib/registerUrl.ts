@@ -40,21 +40,33 @@ export function sanitizeRegisterNext(next: string | null | undefined): string | 
 const MAX_EMAIL_LENGTH = 254;
 
 /**
- * Where a failed sign-up goes: back to /register with the error code, keeping
- * what the visitor typed (email, never the password), the safe `next` and the
- * referral code, so a retry doesn't lose them.
+ * Carries the typed email back to /register after a failed sign-up. A cookie,
+ * not the URL: analytics on /register record the page URL and referrer, and an
+ * email address must not reach them. Short-lived, HttpOnly, /register only.
+ */
+export const REGISTER_EMAIL_COOKIE = "ph_register_email";
+export const REGISTER_EMAIL_COOKIE_OPTIONS = {
+  path: "/register",
+  httpOnly: true,
+  secure: true,
+  sameSite: "lax",
+  maxAge: 600,
+} as const;
+
+/** The email worth keeping for the retry, or null (empty or oversized). */
+export function registerEmailToKeep(email: string | null | undefined): string | null {
+  const trimmed = email?.trim();
+  return trimmed && trimmed.length <= MAX_EMAIL_LENGTH ? trimmed : null;
+}
+
+/**
+ * Where a failed sign-up goes: back to /register with the error code, the safe
+ * `next` and the referral code, so a retry doesn't lose them. The email travels
+ * in REGISTER_EMAIL_COOKIE, never in this URL.
  */
 export function buildRegisterErrorHref(
   error: string,
-  form: { email?: string | null; next?: string | null; ref?: string | null } = {},
+  form: { next?: string | null; ref?: string | null } = {},
 ): string {
-  const email = form.email?.trim();
-  return buildRegisterHref({
-    next: form.next,
-    ref: form.ref,
-    params: {
-      error,
-      email: email && email.length <= MAX_EMAIL_LENGTH ? email : undefined,
-    },
-  });
+  return buildRegisterHref({ next: form.next, ref: form.ref, params: { error } });
 }

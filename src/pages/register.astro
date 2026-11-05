@@ -7,6 +7,8 @@ import { authSigninMessages } from "../i18n/messages/app/auth/signin";
 import {
   REGISTER_NEXT_DEVICES,
   sanitizeRegisterNext,
+  REGISTER_EMAIL_COOKIE,
+  REGISTER_EMAIL_COOKIE_OPTIONS,
 } from "../lib/registerUrl";
 
 const nextPath = Astro.url.searchParams.get("next") ?? "";
@@ -23,10 +25,16 @@ const errorMessage =
     : rawErrorMessage === REGISTER_ERROR_MESSAGES.generic
       ? t.errors.generic
       : rawErrorMessage;
-const emailValue = Astro.url.searchParams.get("email") ?? "";
+// After a failed sign-up the typed email comes back in a one-time cookie (kept out of URLs,
+// which analytics record); a ?email= link still prefills as before.
+const emailFromRetry = Astro.cookies.get(REGISTER_EMAIL_COOKIE)?.value ?? "";
+if (emailFromRetry) Astro.cookies.delete(REGISTER_EMAIL_COOKIE, { path: REGISTER_EMAIL_COOKIE_OPTIONS.path });
+const emailValue = emailFromRetry || (Astro.url.searchParams.get("email") ?? "");
 const signInParams = new URLSearchParams();
 signInParams.set("next", safeNext);
-if (emailValue) signInParams.set("email", emailValue);
+// Only pass on an email that was already in the URL: one from the retry cookie stays out of links.
+const emailFromUrl = Astro.url.searchParams.get("email") ?? "";
+if (emailFromUrl) signInParams.set("email", emailFromUrl);
 const refCode = Astro.url.searchParams.get("ref")?.trim().toLowerCase() ?? "";
 const signInHref = `/signin?${signInParams.toString()}`;
 // The referral code is visitor input, so it is rendered as text around the template.

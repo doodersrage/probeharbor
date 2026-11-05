@@ -25,6 +25,9 @@ vi.mock("../../../lib/registerUrl", async (importOriginal) => {
   return {
     // The real error-URL builder (and its own next check); only the success path's check is mocked.
     buildRegisterErrorHref: actual.buildRegisterErrorHref,
+    registerEmailToKeep: actual.registerEmailToKeep,
+    REGISTER_EMAIL_COOKIE: actual.REGISTER_EMAIL_COOKIE,
+    REGISTER_EMAIL_COOKIE_OPTIONS: actual.REGISTER_EMAIL_COOKIE_OPTIONS,
     REGISTER_NEXT_DEVICES: "/dashboard/devices",
     sanitizeRegisterNext: (...a: unknown[]) => mockSanitizeRegisterNext(...a),
   };
@@ -35,7 +38,8 @@ function makeContext(form: Record<string, string>): APIContext {
   for (const [k, v] of Object.entries(form)) formData.set(k, v);
   const request = { formData: async () => formData } as unknown as Request;
   const redirect = vi.fn((path: string) => new Response(null, { status: 302, headers: { Location: path } }));
-  return { request, redirect, clientAddress: "127.0.0.1" } as unknown as APIContext;
+  const cookies = { set: vi.fn() };
+  return { request, redirect, clientAddress: "127.0.0.1", cookies } as unknown as APIContext;
 }
 
 function redirectedTo(context: APIContext): URL {
@@ -77,7 +81,13 @@ describe("POST /api/auth/register", () => {
 
     const url = redirectedTo(context);
     expect(url.searchParams.get("error")).toBe("missing_fields");
-    expect(url.searchParams.get("email")).toBe("a@example.com");
+    // The email comes back in a /register-only cookie, never in the URL.
+    expect(url.search).not.toContain("example.com");
+    expect((context.cookies as unknown as { set: ReturnType<typeof vi.fn> }).set).toHaveBeenCalledWith(
+      "ph_register_email",
+      "a@example.com",
+      expect.objectContaining({ path: "/register", httpOnly: true, secure: true }),
+    );
     expect(mockSignUp).not.toHaveBeenCalled();
   });
 
@@ -111,7 +121,7 @@ describe("POST /api/auth/register", () => {
     expect(redirectedTo(context).searchParams.get("error")).toBe("signup_failed");
   });
 
-  it("keeps email, next and ref on an error redirect, never the password", async () => {
+  it("keeps email (in a cookie), next and ref on an error redirect, never the password", async () => {
     mockSignUp.mockResolvedValue({ data: { user: null }, error: { message: "boom" } });
     const { POST } = await import("./register");
     const context = makeContext({
@@ -128,7 +138,12 @@ describe("POST /api/auth/register", () => {
     const url = redirectedTo(context);
     expect(url.pathname).toBe("/register");
     expect(url.searchParams.get("error")).toBe("signup_failed");
-    expect(url.searchParams.get("email")).toBe("a@example.com");
+    expect(url.searchParams.has("email")).toBe(false);
+    expect((context.cookies as unknown as { set: ReturnType<typeof vi.fn> }).set).toHaveBeenCalledWith(
+      "ph_register_email",
+      "a@example.com",
+      expect.objectContaining({ path: "/register" }),
+    );
     expect(url.searchParams.get("next")).toBe("/dashboard/alerts");
     expect(url.searchParams.get("ref")).toBe("ref1");
     expect(url.searchParams.has("password")).toBe(false);

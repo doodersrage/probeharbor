@@ -45,12 +45,17 @@ test.describe("signup", () => {
       maxRedirects: 0,
     });
     expect([302, 303]).toContain(res.status());
-    // The error redirect keeps the email (never the password) so the form isn't wiped.
+    // The error redirect keeps the email in a /register-only cookie, never in the URL
+    // (analytics record page URLs), and never the password at all.
     const location = new URL(res.headers()["location"] ?? "", "http://127.0.0.1");
     expect(location.pathname).toBe("/register");
     expect(location.searchParams.get("error")).toBe("verification");
-    expect(location.searchParams.get("email")).toBe("e2e-signup@example.com");
+    expect(location.search).not.toContain("e2e-signup");
     expect(location.search).not.toContain("password123");
+    const setCookie = res.headers()["set-cookie"] ?? "";
+    expect(setCookie).toContain("ph_register_email=");
+    expect(setCookie).toContain("Path=/register");
+    expect(setCookie).toContain("HttpOnly");
   });
 
   test("signin page shows post-register flash pointing at Devices", async ({ page }) => {
