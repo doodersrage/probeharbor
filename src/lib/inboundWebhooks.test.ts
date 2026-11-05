@@ -213,7 +213,7 @@ describe("resolveInboundWebhook", () => {
     const seenHashes: string[] = [];
     mockFrom.mockImplementation(() => {
       const builder = mockQuery({ data: null });
-      const originalEq = builder.eq as ReturnType<typeof vi.fn>;
+      const originalEq = builder.eq as (column: string, value: string) => unknown;
       builder.eq = vi.fn((column: string, value: string) => {
         if (column === "token_hash") seenHashes.push(value);
         return originalEq(column, value);
