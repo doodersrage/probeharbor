@@ -45,7 +45,12 @@ test.describe("signup", () => {
       maxRedirects: 0,
     });
     expect([302, 303]).toContain(res.status());
-    expect(res.headers()["location"] ?? "").toMatch(/\/register\?error=verification/);
+    // The error redirect keeps the email (never the password) so the form isn't wiped.
+    const location = new URL(res.headers()["location"] ?? "", "http://127.0.0.1");
+    expect(location.pathname).toBe("/register");
+    expect(location.searchParams.get("error")).toBe("verification");
+    expect(location.searchParams.get("email")).toBe("e2e-signup@example.com");
+    expect(location.search).not.toContain("password123");
   });
 
   test("signin page shows post-register flash pointing at Devices", async ({ page }) => {
