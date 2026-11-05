@@ -31,7 +31,8 @@ const settings = { enabled: true, runwayAlertEnabled: true, freezeThresholdF: 34
 describe("app/overviewCards", () => {
   it("keeps English output unchanged", () => {
     expect(computeGarageRiskStatus(base).detail).toBe("Coldest probe is 31.5°F (threshold 34°F).");
-    expect(computeGarageRiskStatus({ ...base, staleSensorCount: 2 }).detail).toBe(
+    // Fresh probes above freeze: a freezing fresh probe outranks stale ones.
+    expect(computeGarageRiskStatus({ ...base, coldestProbeTempF: 45, staleSensorCount: 2 }).detail).toBe(
       "2 probes look stale: likely unplugged, offline Wi‑Fi, or a dead battery. Check power and Devices before treating it as a freeze.",
     );
     const projection = buildTimeToFreezeProjection({

@@ -96,17 +96,6 @@ export function computeGarageRiskStatus(
     };
   }
 
-  if (input.staleSensorCount > 0) {
-    return {
-      level: "watch",
-      reason: "stale",
-      title: t.stale.title,
-      detail: plural(t.stale.detail, Math.max(1, input.staleSensorCount), locale),
-      actionLabel: t.actions.checkDevices,
-      actionHref: devicesOpsPath(),
-    };
-  }
-
   const belowFreeze =
     input.coldestProbeTempF != null &&
     Number.isFinite(input.coldestProbeTempF) &&
@@ -135,6 +124,24 @@ export function computeGarageRiskStatus(
         actionHref: "#time-to-freeze",
       };
     }
+  }
+
+  // Stale probes are a watch-level problem. They must not hide a freeze that a
+  // fresh probe is reporting right now (or within 4 h), so they come after the
+  // risk-level branches above. The stale row still renders inside the card on
+  // the Overview whenever the headline is about something else.
+  if (input.staleSensorCount > 0) {
+    return {
+      level: "watch",
+      reason: "stale",
+      title: t.stale.title,
+      detail: plural(t.stale.detail, Math.max(1, input.staleSensorCount), locale),
+      actionLabel: t.actions.checkDevices,
+      actionHref: devicesOpsPath(),
+    };
+  }
+
+  if (hoursUntil != null && Number.isFinite(hoursUntil) && hoursUntil > 0) {
     if (hoursUntil <= 12) {
       return {
         level: "watch",

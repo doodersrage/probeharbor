@@ -99,4 +99,72 @@ describe("computeGarageRiskStatus", () => {
     expect(status.actionHref).toContain("alerts");
     expect(status.actionHref).toContain("tab=settings");
   });
+
+  describe("stale probes vs. other conditions", () => {
+    it("shows freeze risk when one probe is stale and a fresh probe is freezing", () => {
+      const status = computeGarageRiskStatus({
+        ...base,
+        staleSensorCount: 1,
+        coldestProbeTempF: 28,
+      });
+      expect(status.level).toBe("risk");
+      expect(status.reason).toBeUndefined();
+      expect(status.title).not.toMatch(/unplugged/i);
+      expect(status.detail).toMatch(/28\.0/);
+      expect(status.actionHref).toBe("/dashboard/alerts");
+    });
+
+    it("shows freeze-soon risk over a stale probe", () => {
+      const status = computeGarageRiskStatus({
+        ...base,
+        staleSensorCount: 2,
+        hoursUntilFreeze: 2,
+        hitsAtLabel: "3:00 AM",
+      });
+      expect(status.level).toBe("risk");
+      expect(status.reason).toBeUndefined();
+      expect(status.actionHref).toBe("#time-to-freeze");
+    });
+
+    it("keeps wet flood contacts ahead of stale probes", () => {
+      const status = computeGarageRiskStatus({
+        ...base,
+        staleSensorCount: 1,
+        wetFloodCount: 1,
+        coldestProbeTempF: 28,
+      });
+      expect(status.level).toBe("risk");
+      expect(status.title).toMatch(/flood|leak|wet/i);
+    });
+
+    it("shows stale when nothing more severe is happening", () => {
+      const status = computeGarageRiskStatus({ ...base, staleSensorCount: 1 });
+      expect(status.level).toBe("watch");
+      expect(status.reason).toBe("stale");
+    });
+
+    it("keeps stale ahead of watch-level freeze-later and near-freeze", () => {
+      const later = computeGarageRiskStatus({
+        ...base,
+        staleSensorCount: 1,
+        hoursUntilFreeze: 8,
+      });
+      expect(later.reason).toBe("stale");
+      const near = computeGarageRiskStatus({
+        ...base,
+        staleSensorCount: 1,
+        coldestProbeTempF: 36,
+      });
+      expect(near.reason).toBe("stale");
+    });
+
+    it("still shows stale when no fresh probe has a temperature", () => {
+      const status = computeGarageRiskStatus({
+        ...base,
+        staleSensorCount: 1,
+        coldestProbeTempF: null,
+      });
+      expect(status.reason).toBe("stale");
+    });
+  });
 });
