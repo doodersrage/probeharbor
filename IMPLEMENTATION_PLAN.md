@@ -3980,7 +3980,8 @@ From a user screenshot of the Overview's Sensor extras column.
 
 ## Demo feed data and onboarding step 1 (2026-11-05)
 
-**Status: Implemented on a branch, not deployed. No migration.**
+**Status: Committed on main, not deployed. No migration.** (Part of the UX
+review batch below.)
 
 The "Try it with a demo feed" quick start saves `/api/feeds/example`
 (weather-simulated probes) as an ordinary pull feed. Nothing marked those
@@ -4010,3 +4011,54 @@ readings as demo, so they could fire freeze/rule/outage alerts, ticked
   temperature (with the notice above it); the Android app doesn't show the
   badge yet (`/api/home/readings` adds `demo`/`deviceDemo`); a push device
   posting `?format=ingest` example payloads can't be recognized as demo.
+
+------------------------------------------------------------------------
+
+## UX review batch: public site, alerts safety, setup, °C, demo data (2026-11-05)
+
+**Status: Committed on main (6745d1c..c9c73ee), not deployed. No migration.**
+
+From three read-only reviews (public pages in Chromium at 390/1280 px,
+dashboard code, first-run journey). Implemented by parallel agents in
+worktrees, one commit per item, merged and re-checked together.
+
+- [x] Safety: a freezing probe outranks a stale one on the status card;
+      snooze/vacation shown on Overview and Alerts Activity (display only;
+      copy says freeze/leak/power/offline still send); Send test bypasses
+      quiet hours/snooze/vacation via `userInitiatedTest` (only the two test
+      endpoints pass it; real alerts still held, tested); Activity filter
+      uses exact kinds; unsaved-changes guard on alert, device and household
+      forms plus "Save and send test"; database errors show "Couldn't load
+      your devices" instead of an empty household; a11y labels.
+- [x] Demo data: see the demo-feed entry above.
+- [x] °C: Overview, History, Live, Alerts and the first-alert card follow
+      `useCelsius`; inputs post `temp_unit` and the server converts
+      (temperatures and differences separately); storage, alerts, emails,
+      exports and APIs stay °F. Follow-ups: portfolio page, heating insights,
+      thermostat card, device pages, per-sensor overrides, rules editor.
+- [x] Setup: one flasher on the first-run Devices screen; "Not seeing
+      anything?" checklist after 2.5 min; plain wording ("Connect your first
+      sensor", "Waiting for the first reading"); registration keeps email
+      (one-time HttpOnly cookie, not the URL: analytics record URLs), next
+      and ref; leak/battery flasher extras labelled not hardware-tested;
+      first-alert save error shown; device-limit notice points to devices
+      that never reported; troubleshooting docs.
+- [x] Public site: phone hero leads with headline and Start free; slim
+      analytics bar that doesn't cover inputs; rename banner only for
+      thermaltrace.dev arrivals (`?ph_from=thermaltrace` on the legacy 301,
+      referrer, or signed-in pages); pricing register-first buttons, monthly
+      default, no duplicate ladder; nav adds Demo and Hardware (Landlords to
+      footer); demo labelled simulated (incl. the FAQ that said it wasn't);
+      home secondary CTA opens the simulator on a cold snap.
+- Evidence (combined main, Node 24): 3457 unit tests, typecheck 0 errors,
+  lint at baseline (64), build, docs build, e2e 58 passed / 14 skipped,
+  wrangler dry run same bindings (gzip 2181 KiB). Public pages checked in
+  Chromium on a local preview. Translations not rendered locally (they come
+  from the i18n worker).
+- Needs a person: signed-in checks (status card ordering, paused row, test
+  during quiet hours, filter, unsaved guard, °C pages and inputs, demo
+  badges, setup screens); set or clear the PRICING_DEFAULT_INTERVAL GitHub
+  secret so production opens /pricing on monthly; the legacy-domain banner
+  after deploy; review new non-English strings.
+- Found, not fixed: the demo shop simulation runs ~7-11°F above outdoor
+  with no sun (84.8°F workbench at 74°F overcast) and needs a model review.
