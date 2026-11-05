@@ -3,7 +3,7 @@ import { buildMonitoringCertificatePdf } from "./monitoringCertificatePdf";
 import type { MonitoringCertificateData } from "./monitoringCertificate";
 
 export type PdfRenderResult = {
-  bytes: Uint8Array;
+  bytes: Uint8Array<ArrayBuffer>;
   source: "browser" | "programmatic";
 };
 

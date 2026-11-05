@@ -42,7 +42,9 @@ function parseRequestOptions(
 }
 
 function credentialToJson(credential: Credential): WebAuthnCredentialResponse {
-  const withJson = credential as PublicKeyCredential & {
+  // Feature-detect toJSON (absent in older browsers) without intersecting the
+  // lib.dom PublicKeyCredential.toJSON signature.
+  const withJson = credential as unknown as {
     toJSON?: () => WebAuthnCredentialResponse;
   };
   if (typeof withJson.toJSON === "function") {

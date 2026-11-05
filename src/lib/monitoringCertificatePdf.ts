@@ -207,7 +207,7 @@ function createWriter(doc: PDFDocument, font: PDFFont, fontBold: PDFFont): PdfWr
 
 export async function buildMonitoringCertificatePdf(
   data: MonitoringCertificateData,
-): Promise<Uint8Array> {
+): Promise<Uint8Array<ArrayBuffer>> {
   const doc = await PDFDocument.create();
   const font = await doc.embedFont(StandardFonts.Helvetica);
   const fontBold = await doc.embedFont(StandardFonts.HelveticaBold);
@@ -265,5 +265,7 @@ export async function buildMonitoringCertificatePdf(
   w.drawLine(CLAIMS_DISCLAIMER, { size: 8, color: MUTED });
   w.drawLine(`Verify: ${data.siteUrl}/system-status`, { size: 8, color: MUTED });
 
-  return doc.save();
+  // pdf-lib types save() as Uint8Array<ArrayBufferLike>; copy into an
+  // ArrayBuffer-backed view so it is a valid Response BodyInit under TS 6 lib types.
+  return new Uint8Array(await doc.save());
 }

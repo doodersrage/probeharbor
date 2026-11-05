@@ -17,7 +17,7 @@ function getBrowserBinding(): BrowserRun | undefined {
 export async function renderHtmlToPdf(
   html: string,
   options: HtmlToPdfOptions = {},
-): Promise<Uint8Array | null> {
+): Promise<Uint8Array<ArrayBuffer> | null> {
   const browser = getBrowserBinding();
   if (!browser) return null;
 
