@@ -121,8 +121,10 @@ export function historyChangeInDisplayUnit(line: string, locale: Locale, useCels
     const t = alertSettingsHistoryMessages(lineLocale);
     for (const [key, kind] of Object.entries(TEMP_HISTORY_KEYS)) {
       const label = t.labels[key];
-      if (!label || !label.includes("°F")) continue;
-      const [head = "", middle = "", tail = ""] = fmt(t.fromTo, { label, from: "\u0000", to: "\u0001" }).split(/\u0000|\u0001/);
+      if (!label?.includes("°F")) continue;
+      // Split the template around two markers that can't occur in it.
+      const [head = "", rest = ""] = fmt(t.fromTo, { label, from: "", to: "" }).split("");
+      const [middle = "", tail = ""] = rest.split("");
       const match = new RegExp(`^${escapeRegExp(head)}(.+?)${escapeRegExp(middle)}(.+?)${escapeRegExp(tail)}$`).exec(line);
       if (!match) continue;
       const convert = (raw: string) => {
