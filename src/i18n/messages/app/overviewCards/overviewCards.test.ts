@@ -50,6 +50,26 @@ describe("app/overviewCards", () => {
     );
   });
 
+  it("words the projection in °C for the dashboard; the runway alert stays °F", () => {
+    const projection = buildTimeToFreezeProjection({
+      currentTempF: 38,
+      freezeThresholdF: 34,
+      indoorSamples: samples,
+      nowMs,
+      timeZone: "UTC",
+      useCelsius: true,
+    });
+    // 1.0 °F/h is a difference: 0.6 °C/h. 34 °F is 1.1 °C.
+    expect(projection.message).toBe(
+      "Cooling ~0.6°C/hr: roughly 4.0 hours until 1.1°C at this rate. Around 4:00 PM if this cooling rate holds.",
+    );
+    expect(projection.reasons).toEqual([
+      "Cooling about 0.6°C/hr over the last 2.0 hours.",
+      "No outdoor forecast for this space yet, so this assumes the current cooling rate holds.",
+    ]);
+    expect(evaluateRunwayAlert(settings, projection)).toContain("hit 34°F around 4:00 PM");
+  });
+
   it("words the risk card, projection and runway alert in German", async () => {
     await ensureLocale("de", ["app"]);
     const status = computeGarageRiskStatus(base, "de", overviewCardsMessages("de").garageRisk);

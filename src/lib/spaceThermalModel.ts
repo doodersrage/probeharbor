@@ -3,6 +3,7 @@ import {
   formatDurationHours,
   type TempSample,
 } from "./timeToFreeze";
+import { displayTempInputValue, tempUnitLabel, toDisplayDelta, toDisplayTemp } from "./temperatureFormat";
 import { fmt, formatNumber, plural } from "../i18n/format";
 import { LOCALE_META, type Locale } from "../i18n/locales";
 import { overviewCardsMessages } from "../i18n/messages/app/overviewCards";
@@ -208,6 +209,16 @@ function rawNumber(value: number, locale: Locale): string {
   return locale === "en" ? String(value) : formatNumber(value, locale);
 }
 
+/** A cooling rate (°F/h, a difference) as a positive number in the display unit, one decimal. */
+function rateText(rateFPerHour: number, locale: Locale, useCelsius: boolean): string {
+  return fixed(Math.abs(toDisplayDelta(rateFPerHour, useCelsius)), 1, locale);
+}
+
+/** A whole-°F band (a difference): as before in °F; ×5/9 to one decimal in °C. */
+function deltaText(deltaF: number, locale: Locale, useCelsius: boolean): string {
+  return useCelsius ? fixed(toDisplayDelta(deltaF, true), 1, locale) : rawNumber(deltaF, locale);
+}
+
 /**
  * "12 minutes" / "3.5 hours" / "2.1 days". English is `formatDurationHours`
  * from lib/timeToFreeze; other languages use their own plural forms.
@@ -344,16 +355,17 @@ export function buildTimeToFreezeProjection(input: {
   const lookAheadHours = input.lookAheadHours ?? 12;
   const timeZone = input.timeZone ?? "UTC";
   const t = overviewCardsMessages(locale).thermal;
-  const thresholdLabel = input.useCelsius
-    ? `${fixed(((input.freezeThresholdF - 32) * 5) / 9, 0, locale)}°C`
-    : `${rawNumber(input.freezeThresholdF, locale)}°F`;
+  const useCelsius = input.useCelsius === true;
+  const unit = tempUnitLabel(useCelsius);
+  // °F as before; °C to at most a tenth (34 °F → 1.1 °C), like the rest of the dashboard.
+  const thresholdLabel = `${rawNumber(displayTempInputValue(input.freezeThresholdF, useCelsius), locale)}${unit}`;
 
   const trend = estimateTimeToFreeze(
     input.currentTempF,
     input.freezeThresholdF,
     input.indoorSamples,
   );
-  const trendMessage = localizedTrendMessage(trend, input, locale);
+  const trendMessage = localizedTrendMessage(trend, input, locale, useCelsius);
 
   if (input.currentTempF <= input.freezeThresholdF) {
     return {
@@ -421,6 +433,7 @@ export function buildTimeToFreezeProjection(input: {
       doorOpenNearby: input.doorOpenNearby === true,
       band,
       locale,
+      useCelsius,
     });
     if (projected.hours != null && projected.hitsAtIso) {
       const hitsAtLabel = formatHitsAtLabel(
@@ -467,7 +480,7 @@ export function buildTimeToFreezeProjection(input: {
       message:
         fmt(t.noFreeze, { hours: rawNumber(lookAheadHours, locale) }) +
         (window
-          ? fmt(t.noFreezeColderNight, { band: rawNumber(band, locale), time: window.earliestLabel })
+          ? fmt(t.noFreezeColderNight, { band: deltaText(band, locale, useCelsius), unit, time: window.earliestLabel })
           : ""),
       window,
       reasons,
@@ -494,10 +507,11 @@ export function buildTimeToFreezeProjection(input: {
       trend.rateFPerHour != null
         ? elapsedHours != null
           ? fmt(t.reasons.trendCoolingOver, {
-              rate: fixed(Math.abs(trend.rateFPerHour), 1, locale),
+              rate: rateText(trend.rateFPerHour, locale, useCelsius),
+              unit,
               duration: formatDurationLabel(elapsedHours, locale),
             })
-          : fmt(t.reasons.trendCooling, { rate: fixed(Math.abs(trend.rateFPerHour), 1, locale) })
+          : fmt(t.reasons.trendCooling, { rate: rateText(trend.rateFPerHour, locale, useCelsius), unit })
         : null,
       t.reasons.noForecast,
     ].filter((r): r is string => r != null);
@@ -547,8 +561,10 @@ export function localizedTrendMessage(
   trend: ReturnType<typeof estimateTimeToFreeze>,
   input: { currentTempF: number; freezeThresholdF: number; indoorSamples: TempSample[] },
   locale: Locale,
+  /** °C wording for the dashboard; alerts keep the °F default. */
+  useCelsius = false,
 ): string {
-  if (locale === "en") return trend.message;
+  if (locale === "en" && !useCelsius) return trend.message;
   const t = overviewCardsMessages(locale).thermal.trend;
   if (input.currentTempF <= input.freezeThresholdF) return t.alreadyBelow;
   const sorted = [...input.indoorSamples]
@@ -562,9 +578,10 @@ export function localizedTrendMessage(
     return trend.rateFPerHour > 0.1 ? t.rising : t.stable;
   }
   return fmt(t.cooling, {
-    rate: fixed(Math.abs(trend.rateFPerHour), 1, locale),
+    rate: rateText(trend.rateFPerHour, locale, useCelsius),
     duration: formatDurationLabel(trend.hours, locale),
-    threshold: rawNumber(input.freezeThresholdF, locale),
+    threshold: rawNumber(displayTempInputValue(input.freezeThresholdF, useCelsius), locale),
+    unit: tempUnitLabel(useCelsius),
   });
 }
 
@@ -584,8 +601,11 @@ function forecastReasons(input: {
   doorOpenNearby: boolean;
   band: number;
   locale: Locale;
+  useCelsius?: boolean;
 }): string[] {
   const { locale } = input;
+  const useCelsius = input.useCelsius === true;
+  const unit = tempUnitLabel(useCelsius);
   const t = overviewCardsMessages(locale).thermal.reasons;
   const reasons: string[] = [];
   const horizonMs = input.nowMs + input.lookAheadHours * 60 * 60 * 1000;
@@ -594,16 +614,18 @@ function forecastReasons(input: {
   if (low) {
     reasons.push(
       fmt(t.forecastLow, {
-        temp: fixed(Math.round(low.tempF) || 0, 0, locale),
+        temp: fixed(Math.round(toDisplayTemp(low.tempF, useCelsius)) || 0, 0, locale),
+        unit,
         time: formatHitsAtLabel(new Date(low.atMs).toISOString(), input.timeZone, new Date(input.nowMs), locale),
       }),
     );
   }
-  const offset = Math.round(input.params.offsetF);
+  // An offset is a difference: ×5/9 in °C, no 32° offset; whole degrees either way.
+  const offset = Math.round(toDisplayDelta(input.params.offsetF, useCelsius));
   reasons.push(
     offset === 0
       ? t.offsetZero
-      : fmt(offset > 0 ? t.offsetWarmer : t.offsetColder, { offset: rawNumber(Math.abs(offset), locale) }),
+      : fmt(offset > 0 ? t.offsetWarmer : t.offsetColder, { offset: rawNumber(Math.abs(offset), locale), unit }),
   );
   // English as before: the raw count, no digit grouping.
   const sampleVars: Record<string, string> = locale === "en" ? { count: String(input.params.sampleCount) } : {};
@@ -616,10 +638,10 @@ function forecastReasons(input: {
     ),
   );
   if (input.rateFPerHour != null && input.rateFPerHour < -0.05) {
-    reasons.push(fmt(t.coolingNow, { rate: fixed(Math.abs(input.rateFPerHour), 1, locale) }));
+    reasons.push(fmt(t.coolingNow, { rate: rateText(input.rateFPerHour, locale, useCelsius), unit }));
   }
   if (input.doorOpenNearby) reasons.push(t.doorOpen);
-  reasons.push(fmt(t.band, { band: rawNumber(input.band, locale) }));
+  reasons.push(fmt(t.band, { band: deltaText(input.band, locale, useCelsius), unit }));
   return reasons;
 }
 

@@ -41,4 +41,14 @@ describe("explainEstimateChange", () => {
       "Newer readings and forecast hours; no single input moved much.",
     ]);
   });
+
+  it("words temperatures, rates and offsets in °C when asked", () => {
+    const next = { ...base, computedAt: hoursAgo(0), hitsAtIso: at(5), forecastLowF: 11, rateFPerHour: -1.8, offsetF: 19 };
+    expect(explainEstimateChange(base, next, "UTC", now, "en", true)?.reasons).toEqual([
+      "Outdoor forecast low moved from -8°C to -12°C.",
+      "The space went from cooling 0.4°C/hr to cooling 1.0°C/hr.",
+      // An offset is a difference: 10 °F → 6 °C, 19 °F → 11 °C (no 32° offset).
+      "Its learned lag behind outdoor air changed from 6°C to 11°C.",
+    ]);
+  });
 });
