@@ -6,12 +6,12 @@ const ptBr: LibTextMessages = {
     warmestTitle: "Leitura mais quente",
     humidityTitle: "Maior umidade",
     averageTitle: "Média de {days} dias",
-    tempOn: "{temp} °F em {time} ({probe})",
+    tempOn: "{temp} {unit} em {time} ({probe})",
     humidityOn: "{humidity}% em {time} ({probe})",
-    averageDetail: { one: "{temp} °F em {count} leitura", other: "{temp} °F em {count} leituras" },
-    warmerThan: "{warmer} fica em média {delta} °F mais quente que {cooler} neste período.",
+    averageDetail: { one: "{temp} {unit} em {count} leitura", other: "{temp} {unit} em {count} leituras" },
+    warmerThan: "{warmer} fica em média {delta} {unit} mais quente que {cooler} neste período.",
     yoyTitle: "Ano a ano",
-    yoyDetail: "Este período tem média de {current} °F contra {prior} °F no ano passado ({delta} °F).",
+    yoyDetail: "Este período tem média de {current} {unit} contra {prior} {unit} no ano passado ({delta} {unit}).",
     outdoorEstimate: "{detail} (estimativa externa).",
     outdoorEstimateAt: "{detail} (estimativa externa em {location}).",
   },
@@ -29,13 +29,13 @@ const ptBr: LibTextMessages = {
   },
   anomaly: {
     drop: {
-      one: "{probe} caiu {drop} °F em {count} minuto ({from} °F → {to} °F).",
-      other: "{probe} caiu {drop} °F em {count} minutos ({from} °F → {to} °F).",
+      one: "{probe} caiu {drop} {unit} em {count} minuto ({from} {unit} → {to} {unit}).",
+      other: "{probe} caiu {drop} {unit} em {count} minutos ({from} {unit} → {to} {unit}).",
     },
     dropDoor: {
-      one: "{probe} caiu {drop} °F em {count} minuto ({from} °F → {to} °F). Um sensor de porta estava aberto nesse horário.",
+      one: "{probe} caiu {drop} {unit} em {count} minuto ({from} {unit} → {to} {unit}). Um sensor de porta estava aberto nesse horário.",
       other:
-        "{probe} caiu {drop} °F em {count} minutos ({from} °F → {to} °F). Um sensor de porta estava aberto nesse horário.",
+        "{probe} caiu {drop} {unit} em {count} minutos ({from} {unit} → {to} {unit}). Um sensor de porta estava aberto nesse horário.",
     },
   },
   health: {

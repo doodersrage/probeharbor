@@ -429,8 +429,9 @@ const anomalies = detectTemperatureAnomalies(
   undefined,
   toDoorStates(doorBandsResult.bands),
   locale,
+  useCelsius,
 );
-const probeCompare = compareProbeAverages(chartData.points, locale);
+const probeCompare = compareProbeAverages(chartData.points, locale, useCelsius);
 
 const houseChartOverlay =
   loadChartExtras && !historyEmpty && householdId
@@ -466,12 +467,12 @@ for (const device of householdDevicesResult.devices) {
     }
   }
 }
-const spaceCompare = compareSpaceAverages(chartData.points, probeToSpace, locale);
+const spaceCompare = compareSpaceAverages(chartData.points, probeToSpace, locale, useCelsius);
 
 const insights = loadExportsSummary
   ? (() => {
-      const rows = summarizeSeasonal(chartData.points, Math.min(30, historyDays), locale);
-      const yoy = compareYearOverYear(chartData.points, priorYearBundle.points, locale);
+      const rows = summarizeSeasonal(chartData.points, Math.min(30, historyDays), locale, useCelsius);
+      const yoy = compareYearOverYear(chartData.points, priorYearBundle.points, locale, useCelsius);
       if (yoy) rows.push(yoy);
       return rows;
     })()

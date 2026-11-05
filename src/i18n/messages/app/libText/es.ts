@@ -6,12 +6,12 @@ const es: LibTextMessages = {
     warmestTitle: "Lectura más cálida",
     humidityTitle: "Humedad más alta",
     averageTitle: "Promedio de {days} días",
-    tempOn: "{temp} °F el {time} ({probe})",
+    tempOn: "{temp} {unit} el {time} ({probe})",
     humidityOn: "{humidity} % el {time} ({probe})",
-    averageDetail: { one: "{temp} °F en {count} lectura", other: "{temp} °F en {count} lecturas" },
-    warmerThan: "{warmer} está de media {delta} °F más cálido que {cooler} en este periodo.",
+    averageDetail: { one: "{temp} {unit} en {count} lectura", other: "{temp} {unit} en {count} lecturas" },
+    warmerThan: "{warmer} está de media {delta} {unit} más cálido que {cooler} en este periodo.",
     yoyTitle: "Interanual",
-    yoyDetail: "Este periodo promedia {current} °F frente a {prior} °F el año pasado ({delta} °F).",
+    yoyDetail: "Este periodo promedia {current} {unit} frente a {prior} {unit} el año pasado ({delta} {unit}).",
     outdoorEstimate: "{detail} (estimación exterior).",
     outdoorEstimateAt: "{detail} (estimación exterior en {location}).",
   },
@@ -29,13 +29,13 @@ const es: LibTextMessages = {
   },
   anomaly: {
     drop: {
-      one: "{probe} bajó {drop} °F en {count} minuto ({from} °F → {to} °F).",
-      other: "{probe} bajó {drop} °F en {count} minutos ({from} °F → {to} °F).",
+      one: "{probe} bajó {drop} {unit} en {count} minuto ({from} {unit} → {to} {unit}).",
+      other: "{probe} bajó {drop} {unit} en {count} minutos ({from} {unit} → {to} {unit}).",
     },
     dropDoor: {
-      one: "{probe} bajó {drop} °F en {count} minuto ({from} °F → {to} °F). Un sensor de puerta estaba abierto en ese momento.",
+      one: "{probe} bajó {drop} {unit} en {count} minuto ({from} {unit} → {to} {unit}). Un sensor de puerta estaba abierto en ese momento.",
       other:
-        "{probe} bajó {drop} °F en {count} minutos ({from} °F → {to} °F). Un sensor de puerta estaba abierto en ese momento.",
+        "{probe} bajó {drop} {unit} en {count} minutos ({from} {unit} → {to} {unit}). Un sensor de puerta estaba abierto en ese momento.",
     },
   },
   health: {

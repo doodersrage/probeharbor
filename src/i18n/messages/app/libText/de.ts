@@ -6,12 +6,12 @@ const de: LibTextMessages = {
     warmestTitle: "Wärmster Messwert",
     humidityTitle: "Höchste Luftfeuchte",
     averageTitle: "{days}-Tage-Durchschnitt",
-    tempOn: "{temp} °F am {time} ({probe})",
+    tempOn: "{temp} {unit} am {time} ({probe})",
     humidityOn: "{humidity} % am {time} ({probe})",
-    averageDetail: { one: "{temp} °F aus {count} Messwert", other: "{temp} °F aus {count} Messwerten" },
-    warmerThan: "{warmer} ist in diesem Zeitraum im Schnitt {delta} °F wärmer als {cooler}.",
+    averageDetail: { one: "{temp} {unit} aus {count} Messwert", other: "{temp} {unit} aus {count} Messwerten" },
+    warmerThan: "{warmer} ist in diesem Zeitraum im Schnitt {delta} {unit} wärmer als {cooler}.",
     yoyTitle: "Vorjahresvergleich",
-    yoyDetail: "Dieser Zeitraum liegt im Schnitt bei {current} °F, im Vorjahr bei {prior} °F ({delta} °F).",
+    yoyDetail: "Dieser Zeitraum liegt im Schnitt bei {current} {unit}, im Vorjahr bei {prior} {unit} ({delta} {unit}).",
     outdoorEstimate: "{detail} (Außenschätzung).",
     outdoorEstimateAt: "{detail} (Außenschätzung für {location}).",
   },
@@ -29,13 +29,13 @@ const de: LibTextMessages = {
   },
   anomaly: {
     drop: {
-      one: "{probe} fiel innerhalb von {count} Minute um {drop} °F ({from} °F → {to} °F).",
-      other: "{probe} fiel innerhalb von {count} Minuten um {drop} °F ({from} °F → {to} °F).",
+      one: "{probe} fiel innerhalb von {count} Minute um {drop} {unit} ({from} {unit} → {to} {unit}).",
+      other: "{probe} fiel innerhalb von {count} Minuten um {drop} {unit} ({from} {unit} → {to} {unit}).",
     },
     dropDoor: {
-      one: "{probe} fiel innerhalb von {count} Minute um {drop} °F ({from} °F → {to} °F). Ein Türsensor war zu dieser Zeit offen.",
+      one: "{probe} fiel innerhalb von {count} Minute um {drop} {unit} ({from} {unit} → {to} {unit}). Ein Türsensor war zu dieser Zeit offen.",
       other:
-        "{probe} fiel innerhalb von {count} Minuten um {drop} °F ({from} °F → {to} °F). Ein Türsensor war zu dieser Zeit offen.",
+        "{probe} fiel innerhalb von {count} Minuten um {drop} {unit} ({from} {unit} → {to} {unit}). Ein Türsensor war zu dieser Zeit offen.",
     },
   },
   health: {

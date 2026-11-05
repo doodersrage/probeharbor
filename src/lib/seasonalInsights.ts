@@ -3,15 +3,26 @@ import type { ChartPoint } from "./garageTempsHistory";
 import { fmt, plural, type Locale } from "../i18n";
 import { libDateTime, libFixed, libNumber, libTextMessages } from "../i18n/messages/app/libText";
 import { wettestPoint } from "./humidityStats";
+import { tempUnitLabel, toDisplayDelta, toDisplayTemp } from "./temperatureFormat";
+
+// `useCelsius` (the dashboard display preference) only changes wording below:
+// temperatures convert with the offset, differences ×5/9. Default °F, as
+// before (computeSeasonalInsights callers outside the dashboard keep °F).
 
 export type SeasonalInsight = {
   title: string;
   detail: string;
 };
 
-export function summarizeSeasonal(points: ChartPoint[], days: number, locale: Locale = "en"): SeasonalInsight[] {
+export function summarizeSeasonal(
+  points: ChartPoint[],
+  days: number,
+  locale: Locale = "en",
+  useCelsius = false,
+): SeasonalInsight[] {
   if (points.length === 0) return [];
   const t = libTextMessages(locale).seasonal;
+  const unit = tempUnitLabel(useCelsius);
 
   const insights: SeasonalInsight[] = [];
   const coldest = points.reduce((a, b) => (a.tempf <= b.tempf ? a : b));
@@ -23,7 +34,8 @@ export function summarizeSeasonal(points: ChartPoint[], days: number, locale: Lo
   insights.push({
     title: t.coldestTitle,
     detail: fmt(t.tempOn, {
-      temp: libFixed(coldest.tempf, 1, locale),
+      temp: libFixed(toDisplayTemp(coldest.tempf, useCelsius), 1, locale),
+      unit,
       time: libDateTime(coldest.timestamp, locale),
       probe: coldest.probeLabel,
     }),
@@ -31,7 +43,8 @@ export function summarizeSeasonal(points: ChartPoint[], days: number, locale: Lo
   insights.push({
     title: t.warmestTitle,
     detail: fmt(t.tempOn, {
-      temp: libFixed(hottest.tempf, 1, locale),
+      temp: libFixed(toDisplayTemp(hottest.tempf, useCelsius), 1, locale),
+      unit,
       time: libDateTime(hottest.timestamp, locale),
       probe: hottest.probeLabel,
     }),
@@ -49,7 +62,8 @@ export function summarizeSeasonal(points: ChartPoint[], days: number, locale: Lo
   insights.push({
     title: fmt(t.averageTitle, { days: libNumber(days, locale) }),
     detail: plural(t.averageDetail, points.length, locale, {
-      temp: libFixed(avgTemp, 1, locale),
+      temp: libFixed(toDisplayTemp(avgTemp, useCelsius), 1, locale),
+      unit,
       count: libNumber(points.length, locale),
     }),
   });
@@ -57,7 +71,7 @@ export function summarizeSeasonal(points: ChartPoint[], days: number, locale: Lo
   return insights;
 }
 
-export function compareProbeAverages(points: ChartPoint[], locale: Locale = "en"): string[] {
+export function compareProbeAverages(points: ChartPoint[], locale: Locale = "en", useCelsius = false): string[] {
   const byProbe = new Map<string, number[]>();
   for (const point of points) {
     const list = byProbe.get(point.probeLabel) ?? [];
@@ -80,8 +94,9 @@ export function compareProbeAverages(points: ChartPoint[], locale: Locale = "en"
   return [
     fmt(libTextMessages(locale).seasonal.warmerThan, {
       warmer: warmest.label,
-      delta: libFixed(delta, 1, locale),
+      delta: libFixed(toDisplayDelta(delta, useCelsius), 1, locale),
       cooler: coolest.label,
+      unit: tempUnitLabel(useCelsius),
     }),
   ];
 }
@@ -91,6 +106,7 @@ export function compareSpaceAverages(
   points: ChartPoint[],
   probeToSpace: Map<string, string>,
   locale: Locale = "en",
+  useCelsius = false,
 ): string[] {
   const bySpace = new Map<string, number[]>();
   for (const point of points) {
@@ -112,8 +128,9 @@ export function compareSpaceAverages(
   return [
     fmt(libTextMessages(locale).seasonal.warmerThan, {
       warmer: warmest.space,
-      delta: libFixed(warmest.avg - coolest.avg, 1, locale),
+      delta: libFixed(toDisplayDelta(warmest.avg - coolest.avg, useCelsius), 1, locale),
       cooler: coolest.space,
+      unit: tempUnitLabel(useCelsius),
     }),
   ];
 }
@@ -122,6 +139,7 @@ export function compareYearOverYear(
   current: ChartPoint[],
   priorYear: ChartPoint[],
   locale: Locale = "en",
+  useCelsius = false,
 ): SeasonalInsight | null {
   if (current.length === 0 || priorYear.length === 0) return null;
   const avg = (pts: ChartPoint[]) =>
@@ -133,9 +151,10 @@ export function compareYearOverYear(
   return {
     title: t.yoyTitle,
     detail: fmt(t.yoyDetail, {
-      current: libFixed(currentAvg, 1, locale),
-      prior: libFixed(priorAvg, 1, locale),
-      delta: `${delta >= 0 ? "+" : ""}${libFixed(delta, 1, locale)}`,
+      current: libFixed(toDisplayTemp(currentAvg, useCelsius), 1, locale),
+      prior: libFixed(toDisplayTemp(priorAvg, useCelsius), 1, locale),
+      delta: `${delta >= 0 ? "+" : ""}${libFixed(toDisplayDelta(delta, useCelsius), 1, locale)}`,
+      unit: tempUnitLabel(useCelsius),
     }),
   };
 }

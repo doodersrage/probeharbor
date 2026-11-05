@@ -1,7 +1,9 @@
 /**
  * Text built by shared `src/lib` helpers (insights, cold-snap replay,
  * anomalies, device health, sensor values, battery trend, house context).
- * Temperatures stay in °F here: the helpers work on raw °F readings.
+ * Temperatures stay in °F here: the helpers work on raw °F readings. Where a
+ * string has `{unit}`, the helper converts the numbers to the dashboard display
+ * unit and passes "°F" or "°C" (seasonal, anomaly, cold-snap).
  */
 const en = {
   seasonal: {
@@ -9,12 +11,12 @@ const en = {
     warmestTitle: "Warmest reading",
     humidityTitle: "Highest humidity",
     averageTitle: "{days}-day average",
-    tempOn: "{temp}°F on {time} ({probe})",
+    tempOn: "{temp}{unit} on {time} ({probe})",
     humidityOn: "{humidity}% on {time} ({probe})",
-    averageDetail: { one: "{temp}°F across {count} readings", other: "{temp}°F across {count} readings" },
-    warmerThan: "{warmer} averages {delta}°F warmer than {cooler} in this window.",
+    averageDetail: { one: "{temp}{unit} across {count} readings", other: "{temp}{unit} across {count} readings" },
+    warmerThan: "{warmer} averages {delta}{unit} warmer than {cooler} in this window.",
     yoyTitle: "Year-over-year",
-    yoyDetail: "This window averages {current}°F vs {prior}°F last year ({delta}°F).",
+    yoyDetail: "This window averages {current}{unit} vs {prior}{unit} last year ({delta}{unit}).",
     outdoorEstimate: "{detail} (outdoor estimate).",
     outdoorEstimateAt: "{detail} (outdoor estimate at {location}).",
   },
@@ -32,13 +34,13 @@ const en = {
   },
   anomaly: {
     drop: {
-      one: "{probe} dropped {drop}°F within {count} minutes ({from}°F → {to}°F).",
-      other: "{probe} dropped {drop}°F within {count} minutes ({from}°F → {to}°F).",
+      one: "{probe} dropped {drop}{unit} within {count} minutes ({from}{unit} → {to}{unit}).",
+      other: "{probe} dropped {drop}{unit} within {count} minutes ({from}{unit} → {to}{unit}).",
     },
     dropDoor: {
-      one: "{probe} dropped {drop}°F within {count} minutes ({from}°F → {to}°F). A door sensor was open around this time.",
+      one: "{probe} dropped {drop}{unit} within {count} minutes ({from}{unit} → {to}{unit}). A door sensor was open around this time.",
       other:
-        "{probe} dropped {drop}°F within {count} minutes ({from}°F → {to}°F). A door sensor was open around this time.",
+        "{probe} dropped {drop}{unit} within {count} minutes ({from}{unit} → {to}{unit}). A door sensor was open around this time.",
     },
   },
   health: {

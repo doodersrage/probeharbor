@@ -152,7 +152,7 @@ describe("portfolio, anomaly and cold-air explanations match the code", async ()
   const portfolio = readFileSync("src/lib/portfolioHealth.ts", "utf8");
   const anomaly = readFileSync("src/lib/anomalyDetection.ts", "utf8");
   const scores = [...portfolio.matchAll(/score: (?:stale \? (\d+) : )?(\d+),/g)].flatMap((m) => [m[1], m[2]]).filter(Boolean) as string[];
-  const dropF = num(/dropThresholdF = (\d+)/, anomaly);
+  const dropF = num(/ANOMALY_DROP_F = (\d+);/, anomaly);
   const windowMin = num(/windowMs = (\d+) \* 60 \* 1000/, anomaly);
   const doorMin = num(/doorWasOpenNear\([\s\S]*?(\d+) \* 60 \* 1000/, anomaly);
   const coldBase = num(/Math\.max\(0, (\d+) - outdoorTempF\)/, overviewExtras);
@@ -181,7 +181,11 @@ describe("portfolio, anomaly and cold-air explanations match the code", async ()
 
   it.each(historyMsgs)("%s anomaly copy states the drop rule", (_l, m) => {
     const text = m.table.anomaliesHow as string;
-    expect(text).toMatch(new RegExp(`\\b${dropF}\\s?°F`));
+    // The drop is {band} so it reads in the display unit (10 °F = 5.6 °C), filled from ANOMALY_DROP_F.
+    expect(dropF).toBe("10");
+    expect(anomaly).toMatch(/dropThresholdF = ANOMALY_DROP_F,/);
+    expect(text).toContain("{band}");
+    expect(text).not.toContain("°F");
     expect(text).toContain(windowMin);
     expect(text).toContain(doorMin);
   });

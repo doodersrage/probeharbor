@@ -137,4 +137,15 @@ describe("detectTemperatureAnomalies", () => {
     ]);
     expect(notices.map((n) => n.probeLabel).sort()).toEqual(["Bay", "Loft"]);
   });
+
+  it("words the drop in °C for °C users (the drop ×5/9, readings offset); the rule stays 10 °F", () => {
+    const points = [point("2026-01-01T10:00:00.000Z", 45), point("2026-01-01T10:30:00.000Z", 30)];
+    const [c] = detectTemperatureAnomalies(points, undefined, undefined, [], "en", true);
+    expect(c?.message).toBe("Bay dropped 8.3°C within 30 minutes (7.2°C → -1.1°C).");
+    const [f] = detectTemperatureAnomalies(points);
+    expect(f?.message).toBe("Bay dropped 15.0°F within 30 minutes (45.0°F → 30.0°F).");
+    // A 9 °F (5 °C) drop is still below the 10 °F rule in either unit.
+    const small = [point("2026-01-01T10:00:00.000Z", 40), point("2026-01-01T10:30:00.000Z", 31)];
+    expect(detectTemperatureAnomalies(small, undefined, undefined, [], "en", true)).toEqual([]);
+  });
 });

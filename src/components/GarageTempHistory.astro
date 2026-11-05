@@ -9,10 +9,12 @@ import {
 import DashboardCard from "./dashboard/DashboardCard.astro";
 import { fmt, formatNumber, getLocale, LOCALE_META, plural } from "../i18n";
 import { appHistoryMessages } from "../i18n/messages/app/history";
+import { ANOMALY_DROP_F } from "../lib/anomalyDetection";
+import { formatTempBand } from "../lib/temperatureFormat";
 import { appHistoryChartsMessages } from "../i18n/messages/app/history/charts";
 
 interface Props {
-  /** The user's °C display preference (charts only; the table and CSV stay in both units). */
+  /** The user's °C display preference (charts and the anomaly rule; the table and CSV stay in both units). */
   useCelsius?: boolean;
   history: PaginatedGarageTemps;
   chartPoints: ChartPoint[];
@@ -205,7 +207,7 @@ function comparePresetHref(preset: "prior_week" | "prior_month"): string {
   {anomalies.length > 0 && (
     <div class="alert-warning mb-4">
       <p class="m-0 font-medium">{t.anomaliesTitle}</p>
-      <p class="m-0 mt-1 text-sm">{t.anomaliesHow}</p>
+      <p class="m-0 mt-1 text-sm">{fmt(t.anomaliesHow, { band: formatTempBand(ANOMALY_DROP_F, locale, useCelsius) })}</p>
       <ul class="mb-0 mt-2 pl-5">
         {anomalies.map((notice) => (
           <li>{notice.message}</li>

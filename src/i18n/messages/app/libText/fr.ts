@@ -6,12 +6,12 @@ const fr: LibTextMessages = {
     warmestTitle: "Mesure la plus chaude",
     humidityTitle: "Humidité la plus élevée",
     averageTitle: "Moyenne sur {days} jours",
-    tempOn: "{temp} °F le {time} ({probe})",
+    tempOn: "{temp} {unit} le {time} ({probe})",
     humidityOn: "{humidity} % le {time} ({probe})",
-    averageDetail: { one: "{temp} °F sur {count} mesure", other: "{temp} °F sur {count} mesures" },
-    warmerThan: "{warmer} est en moyenne {delta} °F plus chaud que {cooler} sur cette période.",
+    averageDetail: { one: "{temp} {unit} sur {count} mesure", other: "{temp} {unit} sur {count} mesures" },
+    warmerThan: "{warmer} est en moyenne {delta} {unit} plus chaud que {cooler} sur cette période.",
     yoyTitle: "D’une année sur l’autre",
-    yoyDetail: "Cette période affiche en moyenne {current} °F contre {prior} °F l’an dernier ({delta} °F).",
+    yoyDetail: "Cette période affiche en moyenne {current} {unit} contre {prior} {unit} l’an dernier ({delta} {unit}).",
     outdoorEstimate: "{detail} (estimation extérieure).",
     outdoorEstimateAt: "{detail} (estimation extérieure à {location}).",
   },
@@ -29,13 +29,13 @@ const fr: LibTextMessages = {
   },
   anomaly: {
     drop: {
-      one: "{probe} a perdu {drop} °F en {count} minute ({from} °F → {to} °F).",
-      other: "{probe} a perdu {drop} °F en {count} minutes ({from} °F → {to} °F).",
+      one: "{probe} a perdu {drop} {unit} en {count} minute ({from} {unit} → {to} {unit}).",
+      other: "{probe} a perdu {drop} {unit} en {count} minutes ({from} {unit} → {to} {unit}).",
     },
     dropDoor: {
-      one: "{probe} a perdu {drop} °F en {count} minute ({from} °F → {to} °F). Un capteur de porte était ouvert à ce moment-là.",
+      one: "{probe} a perdu {drop} {unit} en {count} minute ({from} {unit} → {to} {unit}). Un capteur de porte était ouvert à ce moment-là.",
       other:
-        "{probe} a perdu {drop} °F en {count} minutes ({from} °F → {to} °F). Un capteur de porte était ouvert à ce moment-là.",
+        "{probe} a perdu {drop} {unit} en {count} minutes ({from} {unit} → {to} {unit}). Un capteur de porte était ouvert à ce moment-là.",
     },
   },
   health: {

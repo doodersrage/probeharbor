@@ -1,6 +1,10 @@
 import type { ChartPoint } from "./garageTempsHistory";
 import { plural, type Locale } from "../i18n";
 import { libFixed, libTextMessages } from "../i18n/messages/app/libText";
+import { tempUnitLabel, toDisplayDelta, toDisplayTemp } from "./temperatureFormat";
+
+/** A drop of at least this many °F between two readings is flagged. */
+export const ANOMALY_DROP_F = 10;
 
 export type AnomalyNotice = {
   probeLabel: string;
@@ -23,10 +27,12 @@ export type DoorStateAtTime = {
 /** Flag sudden temperature drops; note if a door was open nearby. */
 export function detectTemperatureAnomalies(
   points: ChartPoint[],
-  dropThresholdF = 10,
+  dropThresholdF = ANOMALY_DROP_F,
   windowMs = 60 * 60 * 1000,
   doorEvents: DoorStateAtTime[] = [],
   locale: Locale = "en",
+  /** Display preference: wording only (the drop is a difference, ×5/9 in °C). */
+  useCelsius = false,
 ): AnomalyNotice[] {
   const t = libTextMessages(locale).anomaly;
   const notices: AnomalyNotice[] = [];
@@ -61,9 +67,10 @@ export function detectTemperatureAnomalies(
           severity: "warning",
           message: plural(doorOpen ? t.dropDoor : t.drop, Math.round(elapsed / 60000), locale, {
             probe: probeLabel,
-            drop: libFixed(drop, 1, locale),
-            from: libFixed(prev.tempf, 1, locale),
-            to: libFixed(current.tempf, 1, locale),
+            drop: libFixed(toDisplayDelta(drop, useCelsius), 1, locale),
+            from: libFixed(toDisplayTemp(prev.tempf, useCelsius), 1, locale),
+            to: libFixed(toDisplayTemp(current.tempf, useCelsius), 1, locale),
+            unit: tempUnitLabel(useCelsius),
           }),
         });
         break;
