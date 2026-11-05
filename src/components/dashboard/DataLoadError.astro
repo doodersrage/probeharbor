@@ -1,0 +1,24 @@
+---
+/**
+ * "Couldn't load your devices · Retry". Shown when the devices or latest
+ * readings query failed, in place of empty-household / onboarding copy that
+ * would wrongly tell the user to add a probe.
+ */
+import { getLocale } from "../../i18n";
+import { shellMessages } from "../../i18n/messages/app/shell";
+
+interface Props {
+  show: boolean;
+}
+
+const { show } = Astro.props;
+const t = shellMessages(getLocale(Astro)).loadError;
+const retryHref = `${Astro.url.pathname}${Astro.url.search}`;
+---
+{show && (
+  <div class="alert-warning mt-0 mb-0" role="alert" data-load-error>
+    <p class="m-0 font-semibold">{t.title}</p>
+    <p class="mt-1 mb-2">{t.body}</p>
+    <a class="btn-secondary btn-sm" href={retryHref}>{t.retry}</a>
+  </div>
+)}

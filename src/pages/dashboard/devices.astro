@@ -1,4 +1,5 @@
 ---
+import DataLoadError from "../../components/dashboard/DataLoadError.astro";
 import DashboardLayout from "../../layouts/DashboardLayout.astro";
 import DeviceSetupWizard from "../../components/DeviceSetupWizard.astro";
 import IngestFirmwarePanel from "../../components/dashboard/IngestFirmwarePanel.astro";
@@ -21,7 +22,7 @@ import { getIndoorReferenceSensorId, listIndoorReferenceOptions } from "../../li
 import { fetchThermostatContextWithStatus } from "../../lib/thermostatCorrelation";
 import { listConfiguredThermostatProviders } from "../../lib/thermostatOAuth";
 import { getUserEntitlements } from "../../lib/entitlements";
-import { fetchLatestSensorValues } from "../../lib/sensorReadings";
+import { fetchLatestSensorValuesResult } from "../../lib/sensorReadings";
 import { findStuckSensors } from "../../lib/stuckSensors";
 import { buildProtectionCoverage } from "../../lib/protectionCoverage";
 import { replacementErrorMessage } from "../../lib/sensorReplacement";
@@ -104,9 +105,10 @@ const thermostatConnectionsWithSnapshots = await Promise.all(
   }),
 );
 
-const devices = household.householdId
-  ? (await listHouseholdDevices(household.householdId)).devices
-  : deviceConfig.devices;
+const devicesResult = household.householdId
+  ? await listHouseholdDevices(household.householdId)
+  : { devices: deviceConfig.devices, error: null };
+const devices = devicesResult.devices;
 
 const indoorReferenceSensorId = household.householdId
   ? await getIndoorReferenceSensorId(household.householdId)
@@ -124,11 +126,15 @@ const indoorRefError =
         : null;
 
 const shellLatest = latestFromShell(shell, household.householdId);
-const latest = shellLatest
-  ? shellLatest
+const latestResult = shellLatest
+  ? { rows: shellLatest, error: null }
   : household.householdId
-    ? await fetchLatestSensorValues(household.householdId)
-    : [];
+    ? await fetchLatestSensorValuesResult(household.householdId)
+    : { rows: [], error: null };
+const latest = latestResult.rows;
+// A failed query must not read as "no devices yet" and open first-run setup.
+const devicesLoadError = devicesResult.error || latestResult.error || null;
+if (devicesLoadError) console.error("Devices page devices/readings load failed:", devicesLoadError);
 // Never let a slow or failed check hold up the Devices page.
 const stuckSensors = await findStuckSensors(devices, Date.now(), locale).catch(() => []);
 
@@ -306,6 +312,7 @@ const hasLiveIngest =
   latest.length > 0 || pushDevices.some((d) => Boolean(d.last_seen_at));
 const showDeviceWizard =
   canEdit &&
+  !devicesLoadError &&
   !showAllDevices &&
   !hasLiveIngest &&
   (devices.length === 0 || pushDevices.length > 0);
@@ -413,7 +420,9 @@ const redirectTo =
     )}
 
 
-    {devicesView === "setup" && activeTab === "push" && devices.length === 0 && (
+    <DataLoadError show={Boolean(devicesLoadError)} />
+
+    {devicesView === "setup" && activeTab === "push" && devices.length === 0 && !devicesLoadError && (
       <DevicesFirstRunCard
         canEdit={canEdit}
         atDeviceLimit={atDeviceLimit}

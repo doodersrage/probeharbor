@@ -3,6 +3,11 @@ import type { ShellMessages } from "./en";
 const fr: ShellMessages = {
   defaultTitle: "Tableau de bord",
   unsavedChanges: "Vous avez des modifications non enregistrées. Quitter cette page sans les enregistrer ?",
+  loadError: {
+    title: "Impossible de charger vos appareils",
+    body: "Une erreur s’est produite en lisant vos appareils et relevés dans notre base de données ; cette page peut donc être incomplète. Rien n’a été modifié.",
+    retry: "Réessayer",
+  },
   nav: {
     overview: "Vue d’ensemble",
     live: "En direct",

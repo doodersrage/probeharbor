@@ -3,6 +3,11 @@ import type { ShellMessages } from "./en";
 const ptBr: ShellMessages = {
   defaultTitle: "Painel",
   unsavedChanges: "Você tem alterações não salvas. Sair desta página sem salvá-las?",
+  loadError: {
+    title: "Não foi possível carregar seus dispositivos",
+    body: "Algo deu errado ao ler seus dispositivos e leituras do nosso banco de dados, então esta página pode estar incompleta. Nada foi alterado.",
+    retry: "Tentar de novo",
+  },
   nav: {
     overview: "Visão geral",
     live: "Ao vivo",

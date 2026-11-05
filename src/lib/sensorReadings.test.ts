@@ -311,6 +311,51 @@ describe("fetchRecentBoolReadings", () => {
   });
 });
 
+describe("fetchLatestSensorValuesResult", () => {
+  it("reports a failed devices query instead of an empty household", async () => {
+    mockFrom.mockReturnValue(mockQuery({ data: null, error: { message: "db down" } }));
+    const { fetchLatestSensorValuesResult, fetchLatestSensorValues } = await import("./sensorReadings");
+
+    expect(await fetchLatestSensorValuesResult("house-1")).toEqual({ rows: [], error: "db down" });
+    // The plain helper keeps its old shape for its many callers.
+    expect(await fetchLatestSensorValues("house-1")).toEqual([]);
+  });
+
+  it("reports a failed sensors query", async () => {
+    mockFrom
+      .mockReturnValueOnce(mockQuery({ data: [{ id: "device-1", name: "Garage", space: null }] }))
+      .mockReturnValueOnce(mockQuery({ data: null, error: { message: "sensors timeout" } }));
+    const { fetchLatestSensorValuesResult } = await import("./sensorReadings");
+
+    expect(await fetchLatestSensorValuesResult("house-1")).toEqual({ rows: [], error: "sensors timeout" });
+  });
+
+  it("reports a failed per-sensor reading query in the fallback path", async () => {
+    mockFrom
+      .mockReturnValueOnce(mockQuery({ data: [{ id: "device-1", name: "Garage", space: null }] }))
+      .mockReturnValueOnce(
+        mockQuery({
+          data: [
+            { id: "sensor-1", device_id: "device-1", key: "avg", label: "Garage", kind: "temperature", unit: "F", visible: true, sort_order: 0, offset_num: 0 },
+          ],
+        }),
+      )
+      .mockReturnValueOnce(mockQuery({ data: null, error: { message: "readings timeout" } }));
+    const { fetchLatestSensorValuesResult } = await import("./sensorReadings");
+
+    const result = await fetchLatestSensorValuesResult("house-1");
+    expect(result.rows).toEqual([]);
+    expect(result.error).toBe("readings timeout");
+  });
+
+  it("has no error for a household with no devices", async () => {
+    mockFrom.mockReturnValue(mockQuery({ data: [] }));
+    const { fetchLatestSensorValuesResult } = await import("./sensorReadings");
+
+    expect(await fetchLatestSensorValuesResult("house-1")).toEqual({ rows: [], error: null });
+  });
+});
+
 describe("fetchLatestSensorValues", () => {
   it("returns an empty array when the household has no devices", async () => {
     mockFrom.mockReturnValue(mockQuery({ data: [] }));

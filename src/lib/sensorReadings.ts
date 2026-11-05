@@ -269,48 +269,57 @@ type LatestReading = {
 async function fetchLatestReadingsBySensor(
   supabase: ReturnType<typeof createServerClient>,
   sensorIds: string[],
-): Promise<Map<string, LatestReading>> {
+): Promise<{ bySensor: Map<string, LatestReading>; error: string | null }> {
   const bySensor = new Map<string, LatestReading>();
   const { data, error } = await supabase.rpc("latest_sensor_readings", {
     p_sensor_ids: sensorIds,
   });
   if (!error && Array.isArray(data)) {
     for (const row of data) bySensor.set(row.sensor_id, row);
-    return bySensor;
+    return { bySensor, error: null };
   }
 
   console.warn("latest_sensor_readings unavailable, using per-sensor queries:", error?.message);
+  let fallbackError: string | null = null;
   const rows = await Promise.all(
     sensorIds.map(async (sensorId) => {
-      const { data: reading } = await supabase
+      const { data: reading, error: readError } = await supabase
         .from("sensor_readings")
         .select("value_num, value_bool, value_text, recorded_at")
         .eq("sensor_id", sensorId)
         .order("recorded_at", { ascending: false })
         .limit(1)
         .maybeSingle();
+      if (readError) fallbackError ??= readError.message;
       return [sensorId, reading] as const;
     }),
   );
   for (const [sensorId, reading] of rows) {
     if (reading) bySensor.set(sensorId, reading);
   }
-  return bySensor;
+  return { bySensor, error: fallbackError };
 }
 
-export async function fetchLatestSensorValues(
+/**
+ * Latest reading per visible sensor, plus whether the lookup failed. `error`
+ * is set when a database query failed, so callers can say "couldn't load"
+ * instead of showing an empty (no devices / waiting for a reading) state.
+ * `rows` holds whatever did load.
+ */
+export async function fetchLatestSensorValuesResult(
   householdId: string,
-): Promise<LatestSensorRow[]> {
+): Promise<{ rows: LatestSensorRow[]; error: string | null }> {
   const supabase = createServerClient();
-  const { data: devices } = await supabase
+  const { data: devices, error: devicesError } = await supabase
     .from("devices")
     .select("id, name, space")
     .eq("household_id", householdId)
     .eq("enabled", true);
 
-  if (!devices || devices.length === 0) return [];
+  if (devicesError) return { rows: [], error: devicesError.message };
+  if (!devices || devices.length === 0) return { rows: [], error: null };
 
-  const { data: sensors } = await supabase
+  const { data: sensors, error: sensorsError } = await supabase
     .from("device_sensors")
     .select("id, device_id, key, label, kind, unit, visible, sort_order, offset_num")
     .in(
@@ -319,14 +328,15 @@ export async function fetchLatestSensorValues(
     )
     .eq("visible", true);
 
-  if (!sensors || sensors.length === 0) return [];
+  if (sensorsError) return { rows: [], error: sensorsError.message };
+  if (!sensors || sensors.length === 0) return { rows: [], error: null };
 
   const deviceName = new Map(devices.map((d) => [d.id, d.name]));
   const deviceSpace = new Map(
     devices.map((d) => [d.id, typeof d.space === "string" ? d.space : null]),
   );
 
-  const readingBySensor = await fetchLatestReadingsBySensor(
+  const { bySensor: readingBySensor, error: readingsError } = await fetchLatestReadingsBySensor(
     supabase,
     sensors.map((s) => s.id),
   );
@@ -360,5 +370,12 @@ export async function fetchLatestSensorValues(
     });
   }
 
-  return results;
+  return { rows: results, error: readingsError };
+}
+
+/** Latest reading per visible sensor; a failed query reads as no rows (see fetchLatestSensorValuesResult). */
+export async function fetchLatestSensorValues(
+  householdId: string,
+): Promise<LatestSensorRow[]> {
+  return (await fetchLatestSensorValuesResult(householdId)).rows;
 }

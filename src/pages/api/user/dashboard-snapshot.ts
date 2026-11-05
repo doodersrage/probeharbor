@@ -3,7 +3,7 @@ import { getAuthFromCookies } from "../../../lib/auth";
 import { getOrCreateHouseholdForUser, getUserHouseholdRole } from "../../../lib/households";
 import { getAlertSettingsForUser } from "../../../lib/notify";
 import { listHouseholdDevices } from "../../../lib/devices";
-import { fetchLatestSensorValues } from "../../../lib/sensorReadings";
+import { fetchLatestSensorValuesResult } from "../../../lib/sensorReadings";
 import { formatRelativeAge, STALE_MS } from "../../../lib/relativeTime";
 import { summarizeStaleSensors } from "../../../lib/sensorFreshness";
 import { computeGarageRiskStatus } from "../../../lib/garageRiskStatus";
@@ -17,6 +17,7 @@ import {
 import { fetchWeatherForUser } from "../../../lib/weatherContext";
 import { overviewCardsMessages } from "../../../i18n/messages/app/overviewCards";
 import { apiCommonMessages, apiLocale } from "../../../i18n/messages/app/api/common";
+import { shellMessages } from "../../../i18n/messages/app/shell";
 
 export const GET: APIRoute = async ({ cookies, locals }) => {
   const locale = apiLocale({ locals });
@@ -31,20 +32,34 @@ export const GET: APIRoute = async ({ cookies, locals }) => {
 
   const household = await getOrCreateHouseholdForUser(user.id, user.email);
   const householdId = household.householdId;
-  const [devicesResult, latest, alertSettings, unacked, role, weather] =
+  const [devicesResult, latestResult, alertSettings, unacked, role, weather] =
     await Promise.all([
       householdId
         ? listHouseholdDevices(householdId)
         : Promise.resolve({
             devices: [] as Awaited<ReturnType<typeof listHouseholdDevices>>["devices"],
+            error: null,
           }),
-      householdId ? fetchLatestSensorValues(householdId) : Promise.resolve([]),
+      householdId
+        ? fetchLatestSensorValuesResult(householdId)
+        : Promise.resolve({ rows: [], error: null }),
       getAlertSettingsForUser(user.id, user.user_metadata as Record<string, unknown>),
       countUnacknowledgedAlerts(user.id),
       householdId ? getUserHouseholdRole(user.id, householdId) : Promise.resolve(null),
       fetchWeatherForUser(user).catch(() => null),
     ]);
 
+  // Don't let a failed query refresh the card into "add your first probe":
+  // the page keeps what it rendered and shows its offline banner.
+  const loadError = devicesResult.error || latestResult.error;
+  if (loadError) {
+    console.error("dashboard-snapshot devices/readings load failed:", loadError);
+    return new Response(JSON.stringify({ error: shellMessages(locale).loadError.title }), {
+      status: 503,
+      headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
+    });
+  }
+  const latest = latestResult.rows;
   const devices = devicesResult.devices;
   const newestReading =
     latest

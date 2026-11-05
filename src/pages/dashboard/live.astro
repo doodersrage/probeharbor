@@ -1,4 +1,5 @@
 ---
+import DataLoadError from "../../components/dashboard/DataLoadError.astro";
 import DashboardLayout from "../../layouts/DashboardLayout.astro";
 import LiveTempsPanel from "../../components/LiveTempsPanel";
 import WeatherPanel from "../../components/WeatherPanel";
@@ -7,7 +8,7 @@ import { getAuthFromCookies } from "../../lib/auth";
 import { getUserPreferences } from "../../lib/userPreferences";
 import { getUserDevicesAsTempConfig, listHouseholdDevices } from "../../lib/devices";
 import { getOrCreateHouseholdForUser, getUserHouseholdRole, canEditHousehold } from "../../lib/households";
-import { fetchLatestSensorValues } from "../../lib/sensorReadings";
+import { fetchLatestSensorValuesResult } from "../../lib/sensorReadings";
 import { latestFromShell } from "../../lib/dashboardShell";
 import { getAlertSettingsForUser } from "../../lib/notify";
 import { hasConfiguredAlertChannel } from "../../lib/freezeReadiness";
@@ -39,22 +40,27 @@ const householdRole = household.householdId
   ? await getUserHouseholdRole(user.id, household.householdId)
   : null;
 const canEdit = canEditHousehold(householdRole);
-const devices = household.householdId
-  ? (await listHouseholdDevices(household.householdId)).devices
-  : [];
+const devicesResult = household.householdId
+  ? await listHouseholdDevices(household.householdId)
+  : { devices: [], error: null };
+const devices = devicesResult.devices;
 const shellLatest = latestFromShell(shell, household.householdId);
-const latest = shellLatest
-  ? shellLatest
+const latestResult = shellLatest
+  ? { rows: shellLatest, error: null }
   : household.householdId
-    ? await fetchLatestSensorValues(household.householdId)
-    : [];
+    ? await fetchLatestSensorValuesResult(household.householdId)
+    : { rows: [], error: null };
+const latest = latestResult.rows;
+// A failed query must not read as "no devices yet" / "waiting for a reading".
+const devicesLoadError = devicesResult.error || latestResult.error || null;
+if (devicesLoadError) console.error("Live devices/readings load failed:", devicesLoadError);
 
 const hasDevices = devices.length > 0 || deviceConfig.devices.length > 0;
 const hasLive = latest.length > 0;
 const onboardingDismissed =
   (user.user_metadata as Record<string, unknown> | undefined)?.onboarding_dismissed === true;
 const showDemoPullNudge =
-  canEdit && !hasLive && deviceConfig.devices.length === 0 && !onboardingDismissed;
+  canEdit && !hasLive && deviceConfig.devices.length === 0 && !onboardingDismissed && !devicesLoadError;
 const hasEmailAlerts =
   alertSettings.enabled && hasConfiguredAlertChannel(alertSettings);
 const panelsHidden = !showGarageTemps && !showWeather;
@@ -92,7 +98,9 @@ const panelsHidden = !showGarageTemps && !showWeather;
       </div>
     )}
 
-    {!panelsHidden && !hasLive && (
+    <DataLoadError show={Boolean(devicesLoadError)} />
+
+    {!panelsHidden && !hasLive && !devicesLoadError && (
       <section class="card" aria-labelledby="live-first-run-title" data-live-waiting>
         <h2 class="card-title" id="live-first-run-title">{t.waitingTitle}</h2>
         <p class="card-subtitle mb-4">

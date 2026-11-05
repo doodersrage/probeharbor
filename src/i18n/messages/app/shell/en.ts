@@ -83,6 +83,12 @@ const en = {
   defaultTitle: "Dashboard",
   /** Confirm when leaving a form with unsaved edits (unsavedChangesGuard). */
   unsavedChanges: "You have unsaved changes. Leave this page without saving them?",
+  /** Devices/readings query failed: shown instead of empty or onboarding states. */
+  loadError: {
+    title: "Couldn't load your devices",
+    body: "Something went wrong reading your devices and readings from our database, so this page may be incomplete. Nothing was changed.",
+    retry: "Retry",
+  },
   /** Dashboard screen names (sidebar, phone bar, menu button). */
   nav: {
     overview: "Overview",

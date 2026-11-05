@@ -3,6 +3,11 @@ import type { ShellMessages } from "./en";
 const es: ShellMessages = {
   defaultTitle: "Panel",
   unsavedChanges: "Tienes cambios sin guardar. ¿Salir de esta página sin guardarlos?",
+  loadError: {
+    title: "No se pudieron cargar tus dispositivos",
+    body: "Algo falló al leer tus dispositivos y lecturas de nuestra base de datos, así que esta página puede estar incompleta. No se cambió nada.",
+    retry: "Reintentar",
+  },
   nav: {
     overview: "Resumen",
     live: "En vivo",

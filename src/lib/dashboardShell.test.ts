@@ -35,9 +35,12 @@ vi.mock("./households", () => ({
     mockGetOrCreateHouseholdForUser(...a),
 }));
 
+let mockLatestError: string | null = null;
 vi.mock("./sensorReadings", () => ({
-  fetchLatestSensorValues: (...a: unknown[]) =>
-    mockFetchLatestSensorValues(...a),
+  fetchLatestSensorValuesResult: async (...a: unknown[]) => ({
+    rows: await mockFetchLatestSensorValues(...a),
+    error: mockLatestError,
+  }),
 }));
 
 function fakeUser(id = "user-1"): User {
@@ -74,6 +77,7 @@ beforeEach(() => {
   mockFetchLatestSensorValues.mockReset().mockResolvedValue([
     { sensor_id: "s1", recorded_at: new Date().toISOString() },
   ]);
+  mockLatestError = null;
 });
 
 describe("loadDashboardShell", () => {
@@ -160,6 +164,21 @@ describe("loadDashboardShell", () => {
     expect(result?.liveLagging).toBe(false);
     expect(result?.activeHouseholdId).toBe("hh-1");
     expect(result?.lastReadingAt).toBe(rows[0]?.recorded_at);
+  });
+
+  it("leaves latest null when the readings lookup fails, so pages refetch and can show the error", async () => {
+    mockGetAuthFromCookies.mockResolvedValue({
+      session: fakeSession(),
+      user: fakeUser(),
+    });
+    mockFetchLatestSensorValues.mockResolvedValue([]);
+    mockLatestError = "db down";
+
+    const { loadDashboardShell } = await import("./dashboardShell");
+    const result = await loadDashboardShell({} as AstroCookies);
+
+    expect(result?.latest).toBeNull();
+    expect(result?.liveLagging).toBe(false);
   });
 });
 

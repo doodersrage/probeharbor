@@ -10,7 +10,7 @@ import {
   type UserHousehold,
 } from "./households";
 import {
-  fetchLatestSensorValues,
+  fetchLatestSensorValuesResult,
   type LatestSensorRow,
 } from "./sensorReadings";
 import { formatRelativeAge } from "./relativeTime";
@@ -79,12 +79,15 @@ export async function loadDashboardShellForUser(
   let latest: LatestSensorRow[] | null = null;
   let lastReadingAt: string | null = null;
   if (includeLiveLag && activeHouseholdId) {
-    latest = await fetchLatestSensorValues(activeHouseholdId);
-    lastReadingAt = newestRecordedAt(latest);
+    const result = await fetchLatestSensorValuesResult(activeHouseholdId);
+    // On a failed lookup leave `latest` null so the page fetches again and can
+    // show "couldn't load" instead of an empty household.
+    latest = result.error ? null : result.rows;
+    lastReadingAt = newestRecordedAt(result.rows);
     // No readings yet isn't "lagging": a brand-new account shouldn't get a warning dot.
     liveLagging =
-      latest.length > 0 &&
-      latest.some((row) => {
+      result.rows.length > 0 &&
+      result.rows.some((row) => {
         if (!row.recorded_at) return true;
         return formatRelativeAge(row.recorded_at).lagging;
       });

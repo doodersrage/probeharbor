@@ -3,6 +3,11 @@ import type { ShellMessages } from "./en";
 const de: ShellMessages = {
   defaultTitle: "Dashboard",
   unsavedChanges: "Du hast ungespeicherte Änderungen. Seite verlassen, ohne sie zu speichern?",
+  loadError: {
+    title: "Geräte konnten nicht geladen werden",
+    body: "Beim Lesen deiner Geräte und Messwerte aus unserer Datenbank ist ein Fehler aufgetreten, daher ist diese Seite eventuell unvollständig. Es wurde nichts geändert.",
+    retry: "Erneut versuchen",
+  },
   nav: {
     overview: "Übersicht",
     live: "Live",

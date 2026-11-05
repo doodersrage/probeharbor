@@ -40,7 +40,7 @@ import {
   fetchWeekCompare,
 } from "../lib/dashboardInsights";
 import { fetchGarageTempChartData } from "../lib/garageTempsHistory";
-import { fetchLatestSensorValues } from "../lib/sensorReadings";
+import { fetchLatestSensorValuesResult } from "../lib/sensorReadings";
 import { formatRelativeAge, STALE_MS } from "../lib/relativeTime";
 import {
   summarizeStaleSensors,
@@ -151,6 +151,7 @@ import I18nJson from "../components/I18nJson.astro";
 import { fmt, formatNumber, getLocale, plural, type Locale } from "../i18n";
 import { overviewMessages } from "../i18n/messages/app/overview";
 import { overviewCardsMessages } from "../i18n/messages/app/overviewCards";
+import { shellMessages } from "../i18n/messages/app/shell";
 
 const locale: Locale = getLocale(Astro);
 const t = overviewMessages(locale);
@@ -233,7 +234,7 @@ const [
   members,
   householdDevicesResult,
   householdRole,
-  latest,
+  latestResult,
 ] = await Promise.all([
   evidencePromise,
   household.householdId && !onboardingDismissed
@@ -248,13 +249,18 @@ const [
       ? getUserHouseholdRole(user.id, activeHouseholdId)
       : Promise.resolve(null),
   shellLatest
-    ? Promise.resolve(shellLatest)
+    ? Promise.resolve({ rows: shellLatest, error: null })
     : household.householdId
-      ? fetchLatestSensorValues(household.householdId)
-      : Promise.resolve([] as Awaited<ReturnType<typeof fetchLatestSensorValues>>),
+      ? fetchLatestSensorValuesResult(household.householdId)
+      : Promise.resolve({ rows: [], error: null } as Awaited<ReturnType<typeof fetchLatestSensorValuesResult>>),
 ]);
 
+const latest = latestResult.rows;
 const devices = householdDevicesResult.devices;
+// A failed devices/readings query must not read as "no devices yet".
+const devicesLoadError =
+  ("error" in householdDevicesResult && householdDevicesResult.error) || latestResult.error || null;
+if (devicesLoadError) console.error("Overview devices/readings load failed:", devicesLoadError);
 const canEdit = canEditHousehold(householdRole);
 // Only owners/editors can buy, and only accounts without SMS have something to gain.
 const alertMoment =
@@ -840,7 +846,7 @@ const alertsMetricDetail = lastAlertAt
     ? tm.testSent
     : tm.sendTest;
 
-const garageRisk = computeGarageRiskStatus({
+const garageRiskComputed = computeGarageRiskStatus({
   hasDevices,
   hasLiveReading: latest.length > 0,
   coldestProbeTempF,
@@ -855,6 +861,16 @@ const garageRisk = computeGarageRiskStatus({
   hitsAtLabel: timeToFreeze.hitsAtLabel,
   wetFloodCount,
 }, locale, overviewCardsMessages(locale).garageRisk);
+const loadErrorText = shellMessages(locale).loadError;
+const garageRisk = devicesLoadError
+  ? {
+      level: "offline" as const,
+      title: loadErrorText.title,
+      detail: loadErrorText.body,
+      actionLabel: loadErrorText.retry,
+      actionHref: `${Astro.url.pathname}${Astro.url.search}`,
+    }
+  : garageRiskComputed;
 
 // Keep growth tips out of the way while something needs attention now.
 const showTipsStrip =
@@ -923,7 +939,7 @@ const onboardingProps = {
     />
     <div id="overview-live-flash" class="dashboard-flash hidden" aria-live="polite"></div>
 
-    <DashboardOnboarding {...onboardingProps} />
+    {!devicesLoadError && <DashboardOnboarding {...onboardingProps} />}
 
     {/* One status card: what is happening, then alerts to handle and quick actions. */}
     <GarageRiskStatusCard status={garageRisk} coldestProbe={coldestProbeSummary}>
@@ -963,7 +979,7 @@ const onboardingProps = {
       {t.offlineBanner}
     </div>
 
-    <DashboardOnboarding {...onboardingProps} placement="below-status" />
+    {!devicesLoadError && <DashboardOnboarding {...onboardingProps} placement="below-status" />}
 
     {alertMoment && (
       <AlertMomentUpgradeCard
@@ -983,8 +999,8 @@ const onboardingProps = {
     )}
 
 
-    <DemoPullNudge show={showDemoPullNudge} />
-    <ProbeSimulatorNudge show={showProbeSimulatorNudge} />
+    <DemoPullNudge show={showDemoPullNudge && !devicesLoadError} />
+    <ProbeSimulatorNudge show={showProbeSimulatorNudge && !devicesLoadError} />
 
     {showInsights && (hasDevices || chartWeek.points.length > 0) && (
       <TimeToFreezeCard
