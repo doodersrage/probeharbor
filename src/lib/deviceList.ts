@@ -9,6 +9,7 @@ import type { Locale } from "../i18n/locales";
 import { libFixed } from "../i18n/messages/app/libText";
 import { isDemoDevice } from "./demoFeed";
 import { reportIntervalMsFromMeta } from "./reportInterval";
+import { fToC } from "./temperatureFormat";
 
 /** One row in the Devices list: enough to tell probes apart and spot trouble. */
 export type DeviceListRow = {
@@ -38,10 +39,29 @@ export function deviceHref(deviceId: string): string {
   return `/dashboard/devices/${encodeURIComponent(deviceId)}`;
 }
 
-export function formatSensorValue(row: LatestSensorRow, locale: Locale = "en"): string | null {
+/** A temperature sensor stored in °F: unit "F"/"°F" (any case), or no unit (temperatures are °F by default). */
+function isStoredFahrenheit(row: LatestSensorRow): boolean {
+  if (row.sensor.kind !== "temperature") return false;
+  const unit = (row.sensor.unit ?? "").trim().toLowerCase();
+  return unit === "" || unit === "f" || unit === "°f";
+}
+
+/**
+ * The latest value as text, e.g. "41.2 °F". With `useCelsius` (the dashboard
+ * display preference) a °F temperature reads in °C ("5.1 °C"); other units
+ * and other kinds are shown as stored. Readings themselves stay °F.
+ */
+export function formatSensorValue(
+  row: LatestSensorRow,
+  locale: Locale = "en",
+  useCelsius = false,
+): string | null {
   if (row.value_bool != null) return formatBoolSensorValue(row.sensor.kind, row.value_bool, locale);
   // fetchLatestSensorValues has already applied the calibration offset.
-  if (row.value_num != null) return `${libFixed(row.value_num, 1, locale)}${row.sensor.unit ? ` ${row.sensor.unit}` : ""}`;
+  if (row.value_num != null) {
+    if (useCelsius && isStoredFahrenheit(row)) return `${libFixed(fToC(row.value_num), 1, locale)} °C`;
+    return `${libFixed(row.value_num, 1, locale)}${row.sensor.unit ? ` ${row.sensor.unit}` : ""}`;
+  }
   return row.value_text ?? null;
 }
 
@@ -61,13 +81,13 @@ export function buildDeviceListRows(input: {
   stuck?: StuckSensor[];
   feedStatuses?: FeedHealthStatus[];
   now?: number;
-}, locale: Locale = "en"): DeviceListRow[] {
+}, locale: Locale = "en", useCelsius = false): DeviceListRow[] {
   const now = input.now ?? Date.now();
   const latestBySensor = new Map(input.latest.map((row) => [row.sensor.id, row]));
   const rows = input.devices.map((device) => {
     const health = scoreDeviceHealth(device, input.latest, now, -80, input.stuck ?? [], locale);
     const headlineRow = headlineSensor(device.sensors, latestBySensor);
-    const value = headlineRow ? formatSensorValue(headlineRow, locale) : null;
+    const value = headlineRow ? formatSensorValue(headlineRow, locale, useCelsius) : null;
     const feed = input.feedStatuses?.find((status) => status.feedId === device.id);
     const firmware = device.meta?.firmware_version;
     return {

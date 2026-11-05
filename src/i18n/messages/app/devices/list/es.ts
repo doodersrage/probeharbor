@@ -6,7 +6,7 @@ const es: DevicesListMessages = {
     subtitle: "Del peor al mejor. Abre un dispositivo para cambiarle el nombre, asignarle un espacio o arreglar sus sensores.",
     addDevice: "Añadir dispositivo",
     warmHint:
-      "marca {gap}°F más que tus otras sondas. Si ese sensor está pegado a su placa, aléjalo unos centímetros con sus cables: las placas ESP32 se calientan y falsean la lectura.",
+      "marca {gap}{unit} más que tus otras sondas. Si ese sensor está pegado a su placa, aléjalo unos centímetros con sus cables: las placas ESP32 se calientan y falsean la lectura.",
     unplaced: {
       one: "{count} dispositivo no tiene espacio asignado, así que la cobertura y las alertas no pueden decir dónde está.",
       other: "{count} dispositivos no tienen espacio asignado, así que la cobertura y las alertas no pueden decir dónde están.",

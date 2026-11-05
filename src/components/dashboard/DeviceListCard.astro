@@ -7,9 +7,10 @@ import type { LatestSensorRow } from "../../lib/sensorReadings";
 import type { StuckSensor } from "../../lib/stuckSensors";
 import { buildDeviceListRows, countDevicesWithoutSpace, spaceSuggestions } from "../../lib/deviceList";
 import { findWarmBoardSensors } from "../../lib/sensorPlacement";
-import { fmt, getLocale, plural } from "../../i18n";
+import { fmt, formatNumber, getLocale, plural } from "../../i18n";
 import { devicesListMessages } from "../../i18n/messages/app/devices/list";
 import { shellMessages } from "../../i18n/messages/app/shell";
+import { tempUnitLabel, toDisplayDelta } from "../../lib/temperatureFormat";
 
 /**
  * Devices tab: every device, push and pull, one row each, worst first. A row
@@ -23,10 +24,12 @@ interface Props {
   canEdit: boolean;
   redirectTo: string;
   addHref: string;
+  /** The °C display preference (headline readings, warm-board gap). */
+  useCelsius?: boolean;
 }
 
-const { devices, latest, stuck, feedStatuses, canEdit, redirectTo, addHref } = Astro.props;
-const rows = buildDeviceListRows({ devices, latest, stuck, feedStatuses }, getLocale(Astro));
+const { devices, latest, stuck, feedStatuses, canEdit, redirectTo, addHref, useCelsius = false } = Astro.props;
+const rows = buildDeviceListRows({ devices, latest, stuck, feedStatuses }, getLocale(Astro), useCelsius);
 const unplaced = countDevicesWithoutSpace(devices);
 const warmSensors = findWarmBoardSensors(latest);
 const pushDevices = devices.filter((d) => d.source === "push");
@@ -52,7 +55,11 @@ const healthTone = {
 
   {warmSensors.map((hint) => (
     <p class="alert-warning mt-4 mb-0 text-sm" role="note">
-      <strong>{hint.label}</strong> {fmt(t.warmHint, { gap: hint.gapF })}
+      <strong>{hint.label}</strong> {fmt(t.warmHint, {
+        // A difference: whole °F as before; ×5/9 (whole degrees) for °C.
+        gap: useCelsius ? formatNumber(Math.round(toDisplayDelta(hint.gapF, true)), locale) : hint.gapF,
+        unit: tempUnitLabel(useCelsius),
+      })}
     </p>
   ))}
 

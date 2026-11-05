@@ -6,7 +6,7 @@ const fr: DevicesListMessages = {
     subtitle: "Les plus critiques d’abord. Ouvrez un appareil pour le renommer, définir son espace ou corriger ses capteurs.",
     addDevice: "Ajouter un appareil",
     warmHint:
-      "affiche {gap}°F de plus que vos autres sondes. Si ce capteur est collé à sa carte, éloignez-le de quelques centimètres au bout de ses fils : les cartes ESP32 chauffent et faussent la mesure.",
+      "affiche {gap}{unit} de plus que vos autres sondes. Si ce capteur est collé à sa carte, éloignez-le de quelques centimètres au bout de ses fils : les cartes ESP32 chauffent et faussent la mesure.",
     unplaced: {
       one: "{count} appareil n’a pas d’espace défini, la couverture et les alertes ne peuvent donc pas dire où il se trouve.",
       other: "{count} appareils n’ont pas d’espace défini, la couverture et les alertes ne peuvent donc pas dire où ils se trouvent.",

@@ -16,6 +16,7 @@ import { fetchLatestSensorValues } from "../../../lib/sensorReadings";
 import { findStuckSensors } from "../../../lib/stuckSensors";
 import { formatBatteryEta, scoreDeviceHealth } from "../../../lib/deviceHealthScore";
 import { formatSensorValue, spaceSuggestions } from "../../../lib/deviceList";
+import { getDisplayPreferencesFromMetadata } from "../../../lib/userPreferences";
 import { firmwareUpdateAvailable, LATEST_FIRMWARE_VERSION } from "../../../lib/firmwareVersion";
 import { listIngestStatsForHousehold } from "../../../lib/ingestStats";
 import { ingestKeyVaultConfigured } from "../../../lib/ingestKeyVault";
@@ -39,6 +40,8 @@ const t = deviceDetailMessages(locale);
 const shell = Astro.locals.dashboardShell ?? null;
 const { session, user } = shell ? { session: shell.session, user: shell.user } : await getAuthFromCookies(Astro.cookies);
 if (!session || !user) return Astro.redirect("/signin");
+// Latest readings follow the °C display preference; stored values stay °F.
+const useCelsius = getDisplayPreferencesFromMetadata(user).useCelsius;
 
 const household = await getOrCreateHouseholdForUser(user.id, user.email);
 const householdId = household.householdId;
@@ -202,7 +205,7 @@ const noticeIsError = Boolean(replaceError || params.get("error"));
           <ul class="device-sensor-list">
             {device.sensors.map((sensor) => {
               const reading = latestBySensor.get(sensor.id);
-              const value = reading ? formatSensorValue(reading, locale) : null;
+              const value = reading ? formatSensorValue(reading, locale, useCelsius) : null;
               const stuckHit = stuckById.get(sensor.id);
               return (
                 <li class="device-sensor-row">

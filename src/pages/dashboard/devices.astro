@@ -418,6 +418,7 @@ const demoDevices = devices.filter((d) => isDemoDevice(d));
         canEdit={canEdit}
         redirectTo={redirectTo}
         addHref="/dashboard/devices?view=setup&tab=push"
+        useCelsius={preferences.useCelsius}
       />
       <ProtectionCoverageCard coverage={buildProtectionCoverage(devices, latest, Date.now(), locale)} />
     )}

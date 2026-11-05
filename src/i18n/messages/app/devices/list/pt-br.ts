@@ -6,7 +6,7 @@ const ptBr: DevicesListMessages = {
     subtitle: "Do pior para o melhor. Abra um dispositivo para renomeá-lo, definir o espaço ou corrigir os sensores.",
     addDevice: "Adicionar dispositivo",
     warmHint:
-      "marca {gap}°F a mais que suas outras sondas. Se esse sensor estiver colado na placa, afaste-o alguns centímetros pelos fios: placas ESP32 esquentam e distorcem a leitura.",
+      "marca {gap}{unit} a mais que suas outras sondas. Se esse sensor estiver colado na placa, afaste-o alguns centímetros pelos fios: placas ESP32 esquentam e distorcem a leitura.",
     unplaced: {
       one: "{count} dispositivo não tem espaço definido, então a cobertura e os alertas não conseguem dizer onde ele está.",
       other: "{count} dispositivos não têm espaço definido, então a cobertura e os alertas não conseguem dizer onde eles estão.",

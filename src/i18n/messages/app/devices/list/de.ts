@@ -6,7 +6,7 @@ const de: DevicesListMessages = {
     subtitle: "Die kritischsten zuerst. Öffne ein Gerät, um es umzubenennen, seinen Bereich festzulegen oder seine Sensoren zu korrigieren.",
     addDevice: "Gerät hinzufügen",
     warmHint:
-      "misst {gap}°F mehr als deine anderen Fühler. Wenn der Sensor direkt neben seiner Platine sitzt, setz ihn an seinen Kabeln ein paar Zentimeter weg: ESP32-Platinen werden warm und verfälschen den Messwert.",
+      "misst {gap}{unit} mehr als deine anderen Fühler. Wenn der Sensor direkt neben seiner Platine sitzt, setz ihn an seinen Kabeln ein paar Zentimeter weg: ESP32-Platinen werden warm und verfälschen den Messwert.",
     unplaced: {
       one: "{count} Gerät hat keinen Bereich, daher können Abdeckung und Alarme nicht sagen, wo es ist.",
       other: "{count} Geräte haben keinen Bereich, daher können Abdeckung und Alarme nicht sagen, wo sie sind.",

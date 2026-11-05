@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildDeviceListRows, countDevicesWithoutSpace, deviceHref, spaceSuggestions } from "./deviceList";
+import { buildDeviceListRows, countDevicesWithoutSpace, deviceHref, formatSensorValue, spaceSuggestions } from "./deviceList";
 import type { DeviceSensor, DeviceWithSensors } from "./devices";
 import type { SensorKind } from "./sensorKinds";
 import type { LatestSensorRow } from "./sensorReadings";
@@ -79,6 +79,22 @@ describe("buildDeviceListRows", () => {
     });
     expect(row?.headline).toBe("Sump Dry");
     expect(row?.feedIssue).toBe("HTTP 500");
+  });
+
+  it("reads °F temperatures in °C for °C users; other units stay as stored", () => {
+    const pipe = sensor("t", "temperature", "Pipe");
+    const [row] = buildDeviceListRows({ devices: [device("d", { sensors: [pipe] })], latest: [reading(pipe, 41.24)], now }, "en", true);
+    expect(row?.headline).toBe("Pipe 5.1 °C");
+    const withUnit = (unit: string | null) => reading({ ...pipe, unit }, 33.8);
+    expect(formatSensorValue(withUnit("F"), "en", true)).toBe("1.0 °C");
+    expect(formatSensorValue(withUnit(null), "en", true)).toBe("1.0 °C");
+    expect(formatSensorValue(withUnit("F"), "en", false)).toBe("33.8 F");
+    expect(formatSensorValue(withUnit(null), "en", false)).toBe("33.8");
+    expect(formatSensorValue(withUnit("°F"), "de", true)).toBe("1,0 °C");
+    // A sensor that already names another unit is shown as stored.
+    expect(formatSensorValue(withUnit("C"), "en", true)).toBe("33.8 C");
+    const rh = sensor("h", "humidity", "RH");
+    expect(formatSensorValue(reading({ ...rh, unit: "%" }, 55), "en", true)).toBe("55.0 %");
   });
 });
 

@@ -10,7 +10,7 @@ const en = {
     addDevice: "Add device",
     /** Follows the sensor's name in bold. */
     warmHint:
-      "reads {gap}°F warmer than your other probes. If that sensor sits right next to its board, move it a few inches away on its wires: ESP32 boards run warm and skew the reading.",
+      "reads {gap}{unit} warmer than your other probes. If that sensor sits right next to its board, move it a few inches away on its wires: ESP32 boards run warm and skew the reading.",
     unplaced: {
       one: "{count} device has no space set, so coverage and alerts can't say where it is.",
       other: "{count} devices have no space set, so coverage and alerts can't say where they are.",
