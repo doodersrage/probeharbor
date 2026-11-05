@@ -4062,3 +4062,40 @@ worktrees, one commit per item, merged and re-checked together.
   after deploy; review new non-English strings.
 - Found, not fixed: the demo shop simulation runs ~7-11°F above outdoor
   with no sun (84.8°F workbench at 74°F overcast) and needs a model review.
+
+------------------------------------------------------------------------
+
+## Dashboard UX follow-ups: undelivered alerts, °C, demo card, freshness, settings (2026-11-05)
+
+**Status: Committed on main, not deployed. No migration.**
+
+- [x] Undelivered safety alerts are visible. Owner decision: held (quiet
+      hours, snooze/vacation) or failed/not-set-up alerts of safety kinds
+      (`threshold`, `freeze`, `flood`, `power`, `outage`) count as unhandled;
+      routine kinds don't. One rule (`UNHANDLED_DELIVERY_FILTER`) used by the
+      count, acknowledge all/latest, the unhandled filter and auto-resolve.
+      Activity rows show Sent / Partly sent / Held / Failed / Not set up
+      from `channels_sent`/`channels_skipped` (never "delivered"). Overview
+      row when a channel's latest attempt failed. Sending unchanged. A failed
+      count query is reported to Sentry instead of showing 0 silently.
+- [x] Claims-pack link only next to an open freeze/leak alert; "(Pro)" tags
+      translated; per-channel Send test asks to save unsaved edits first.
+- [x] °C on the remaining dashboard screens: portfolio, heating insights,
+      overview extras, thermostat card, device list/pages, history anomaly
+      and seasonal text, per-sensor overrides and rules editor (inputs
+      converted on submit; untouched values keep exact °F), settings
+      history, Why lines and raise-threshold buttons.
+- [x] Status card judges real probes only; demo-only households get a
+      neutral "Demo data" state (never freeze urgency).
+- [x] One freshness rule (`readingFreshness`: report-interval-aware, else
+      30 min late / 2 h stale) for every fresh/late/stale judgment.
+- [x] Settings: visible "Data & export" card (retention moved, exports
+      links) and a Notifications links card.
+- Evidence (combined main): 3535 unit tests, typecheck 0 errors, lint 64
+  (baseline), build, docs build, e2e 58 passed / 14 skipped, wrangler dry
+  run same bindings (gzip 2191 KiB). Not checked signed in.
+- Open: decide whether `stuck`, `runway`, `forecast`, `nws` are safety
+  kinds; rule-check panel still reads °F; device calibration offset has no
+  unit; retention save errors aren't shown; the failing-channel row and
+  claims link don't update on soft refresh; portfolio health and public
+  share pages keep the fixed 2 h staleness.
