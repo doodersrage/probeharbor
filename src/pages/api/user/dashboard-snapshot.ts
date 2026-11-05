@@ -7,6 +7,7 @@ import { fetchLatestSensorValuesResult } from "../../../lib/sensorReadings";
 import { formatRelativeAge, STALE_MS } from "../../../lib/relativeTime";
 import { summarizeStaleSensors } from "../../../lib/sensorFreshness";
 import { computeGarageRiskStatus } from "../../../lib/garageRiskStatus";
+import { getDisplayPreferencesFromMetadata } from "../../../lib/userPreferences";
 import { countUnacknowledgedAlerts } from "../../../lib/alertEvents";
 import {
   formatAlertPauseUntil,
@@ -114,6 +115,9 @@ export const GET: APIRoute = async ({ cookies, locals }) => {
     hoursUntilFreeze: null,
     hitsAtLabel: null,
     wetFloodCount,
+    // riskDetail is display text for the Overview, so it follows the °C preference;
+    // the numeric fields below stay °F.
+    useCelsius: getDisplayPreferencesFromMetadata(user).useCelsius,
   }, locale, overviewCardsMessages(locale).garageRisk);
 
   const alertPause = alertSettings.enabled ? getAlertPauseState(alertSettings) : null;

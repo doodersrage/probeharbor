@@ -32,19 +32,19 @@ const es: OverviewCardsMessages = {
     },
     freezeNow: {
       title: "Riesgo de congelación ahora mismo",
-      detail: "La sonda más fría marca {temp} °F (umbral {threshold} °F).",
+      detail: "La sonda más fría marca {temp} {unit} (umbral {threshold} {unit}).",
     },
     freezeSoon: {
       title: "Congelación en pocas horas",
       detail:
-        "Se prevé que este espacio llegue a {threshold} °F. Deja gotear los grifos o enciende la calefacción mientras aún hay tiempo.",
+        "Se prevé que este espacio llegue a {threshold} {unit}. Deja gotear los grifos o enciende la calefacción mientras aún hay tiempo.",
       detailAt:
-        "Se prevé que este espacio llegue a {threshold} °F hacia las {time}. Deja gotear los grifos o enciende la calefacción mientras aún hay tiempo.",
+        "Se prevé que este espacio llegue a {threshold} {unit} hacia las {time}. Deja gotear los grifos o enciende la calefacción mientras aún hay tiempo.",
     },
     freezeLater: {
       title: "Congelación más tarde hoy",
       titleAt: "Congelación hacia las {time}",
-      detail: "Unas {hours} horas hasta {threshold} °F, según el desfase de este espacio respecto al exterior.",
+      detail: "Unas {hours} horas hasta {threshold} {unit}, según el desfase de este espacio respecto al exterior.",
     },
     nightsAtRisk: {
       one: "{count} noche con riesgo de congelación",
@@ -65,7 +65,7 @@ const es: OverviewCardsMessages = {
     },
     nearFreeze: {
       title: "Cerca del umbral de congelación",
-      detail: "La sonda más fría marca {temp} °F, a menos de 5 °F de {threshold} °F.",
+      detail: "La sonda más fría marca {temp} {unit}, a menos de {near} de {threshold} {unit}.",
     },
     ok: {
       title: "Todo en orden",
@@ -268,7 +268,7 @@ const es: OverviewCardsMessages = {
     staleTitle: "La última lectura es antigua; puede que no esté al día.",
     noReading: "Sin lecturas",
     howSummary: "Cómo se elige este estado",
-    how: "Se muestra lo primero que se cumpla, de más a menos urgente: aún no hay dispositivos o lecturas; un sensor de fuga marca mojado (rojo); un sensor dejó de informar (ámbar); la sonda más fría está en tu límite de helada o por debajo (rojo); se prevé que lo alcance en 4 horas (rojo) o 12 horas (ámbar); hay una ola de frío o noches de helada en el pronóstico (ámbar); las alertas de helada o de correo están desactivadas (ámbar); la sonda más fría está a menos de 5 °F del límite (ámbar). Si no, todo está bien.",
+    how: "Se muestra lo primero que se cumpla, de más a menos urgente: aún no hay dispositivos o lecturas; un sensor de fuga marca mojado (rojo); un sensor dejó de informar (ámbar); la sonda más fría está en tu límite de helada o por debajo (rojo); se prevé que lo alcance en 4 horas (rojo) o 12 horas (ámbar); hay una ola de frío o noches de helada en el pronóstico (ámbar); las alertas de helada o de correo están desactivadas (ámbar); la sonda más fría está a menos de {near} del límite (ámbar). Si no, todo está bien.",
   },
   timeToFreezeCard: {
     title: "Tiempo hasta congelación",

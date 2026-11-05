@@ -869,6 +869,7 @@ const garageRiskComputed = computeGarageRiskStatus({
   hoursUntilFreeze: timeToFreeze.hours,
   hitsAtLabel: timeToFreeze.hitsAtLabel,
   wetFloodCount,
+  useCelsius,
 }, locale, overviewCardsMessages(locale).garageRisk);
 const loadErrorText = shellMessages(locale).loadError;
 const garageRisk = devicesLoadError
@@ -954,7 +955,7 @@ const onboardingProps = {
     {!devicesLoadError && <DemoFeedNotice devices={demoDevices} canEdit={canEdit} />}
 
     {/* One status card: what is happening, then alerts to handle and quick actions. */}
-    <GarageRiskStatusCard status={garageRisk} coldestProbe={coldestProbeSummary}>
+    <GarageRiskStatusCard status={garageRisk} coldestProbe={coldestProbeSummary} useCelsius={useCelsius}>
       <UnackedAlertsBanner count={unackedAlertCount} embedded />
       {primaryBannerIds.has("stale") && staleSensorCount > 0 && garageRisk.reason !== "stale" && (
         <div class="garage-risk-row" role="status" data-stale-banner>

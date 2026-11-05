@@ -5,7 +5,9 @@ import type { PluralForms } from "../../../format";
  * TimeToFreezeCard, WeekCompareCard, HeatingInsightsCard) and the libs that
  * word them: garageRiskStatus, freezeReadiness, heatingInsights,
  * freezeEstimateChange, spaceThermalModel.
- * Temperatures in lib sentences are °F (the libs work in °F, as before).
+ * Temperatures in lib sentences are °F (the libs work in °F, as before),
+ * except where a string has a `{unit}` placeholder: there the caller converts
+ * the numbers to the dashboard display unit and passes "°F" or "°C".
  */
 const en = {
   /** lib/garageRiskStatus (reachable from a browser island: passed in as a table). */
@@ -40,19 +42,19 @@ const en = {
     },
     freezeNow: {
       title: "Freeze risk right now",
-      detail: "Coldest probe is {temp}°F (threshold {threshold}°F).",
+      detail: "Coldest probe is {temp}{unit} (threshold {threshold}{unit}).",
     },
     freezeSoon: {
       title: "Freeze in a few hours",
       detail:
-        "This space is projected to hit {threshold}°F. Drip faucets or turn on heat while you still have time.",
+        "This space is projected to hit {threshold}{unit}. Drip faucets or turn on heat while you still have time.",
       detailAt:
-        "This space is projected to hit {threshold}°F around {time}. Drip faucets or turn on heat while you still have time.",
+        "This space is projected to hit {threshold}{unit} around {time}. Drip faucets or turn on heat while you still have time.",
     },
     freezeLater: {
       title: "Freeze later today",
       titleAt: "Freeze around {time}",
-      detail: "About {hours} hours until {threshold}°F at this space's lag vs outdoor.",
+      detail: "About {hours} hours until {threshold}{unit} at this space's lag vs outdoor.",
     },
     nightsAtRisk: {
       one: "{count} night at freeze risk",
@@ -73,7 +75,7 @@ const en = {
     },
     nearFreeze: {
       title: "Close to freeze threshold",
-      detail: "Coldest probe {temp}°F, within 5°F of {threshold}°F.",
+      detail: "Coldest probe {temp}{unit}, within {near} of {threshold}{unit}.",
     },
     ok: {
       title: "Looking good",
@@ -281,7 +283,7 @@ const en = {
     staleTitle: "Last reading is old; this may not be current.",
     noReading: "No reading",
     howSummary: "How this status is chosen",
-    how: "It shows the first of these that applies, most urgent first: no devices or no reading yet; a leak sensor reads wet (red); a sensor stopped reporting (amber); the coldest probe is at or below your freeze line (red); it's projected to get there within 4 hours (red) or 12 hours (amber); a cold snap or freezing nights are forecast (amber); freeze or email alerts are off (amber); the coldest probe is within 5°F of the freeze line (amber). Otherwise it's OK.",
+    how: "It shows the first of these that applies, most urgent first: no devices or no reading yet; a leak sensor reads wet (red); a sensor stopped reporting (amber); the coldest probe is at or below your freeze line (red); it's projected to get there within 4 hours (red) or 12 hours (amber); a cold snap or freezing nights are forecast (amber); freeze or email alerts are off (amber); the coldest probe is within {near} of the freeze line (amber). Otherwise it's OK.",
   },
   timeToFreezeCard: {
     title: "Time to freeze",

@@ -32,19 +32,19 @@ const de: OverviewCardsMessages = {
     },
     freezeNow: {
       title: "Jetzt Frostgefahr",
-      detail: "Der kälteste Fühler misst {temp} °F (Schwellenwert {threshold} °F).",
+      detail: "Der kälteste Fühler misst {temp} {unit} (Schwellenwert {threshold} {unit}).",
     },
     freezeSoon: {
       title: "Frost in wenigen Stunden",
       detail:
-        "Dieser Bereich erreicht voraussichtlich {threshold} °F. Lass die Wasserhähne tropfen oder schalte die Heizung ein, solange noch Zeit ist.",
+        "Dieser Bereich erreicht voraussichtlich {threshold} {unit}. Lass die Wasserhähne tropfen oder schalte die Heizung ein, solange noch Zeit ist.",
       detailAt:
-        "Dieser Bereich erreicht voraussichtlich gegen {time} {threshold} °F. Lass die Wasserhähne tropfen oder schalte die Heizung ein, solange noch Zeit ist.",
+        "Dieser Bereich erreicht voraussichtlich gegen {time} {threshold} {unit}. Lass die Wasserhähne tropfen oder schalte die Heizung ein, solange noch Zeit ist.",
     },
     freezeLater: {
       title: "Frost später heute",
       titleAt: "Frost gegen {time}",
-      detail: "Etwa {hours} Stunden bis {threshold} °F, basierend auf der Verzögerung dieses Bereichs gegenüber der Außentemperatur.",
+      detail: "Etwa {hours} Stunden bis {threshold} {unit}, basierend auf der Verzögerung dieses Bereichs gegenüber der Außentemperatur.",
     },
     nightsAtRisk: {
       one: "{count} Nacht mit Frostgefahr",
@@ -65,7 +65,7 @@ const de: OverviewCardsMessages = {
     },
     nearFreeze: {
       title: "Nahe am Frost-Schwellenwert",
-      detail: "Kältester Fühler {temp} °F, weniger als 5 °F über {threshold} °F.",
+      detail: "Kältester Fühler {temp} {unit}, weniger als {near} über {threshold} {unit}.",
     },
     ok: {
       title: "Alles in Ordnung",
@@ -268,7 +268,7 @@ const de: OverviewCardsMessages = {
     staleTitle: "Der letzte Messwert ist alt; er ist womöglich nicht aktuell.",
     noReading: "Kein Messwert",
     howSummary: "So wird dieser Status gewählt",
-    how: "Es wird das Erste angezeigt, das zutrifft, das Dringendste zuerst: noch keine Geräte oder kein Messwert; ein Wassersensor meldet nass (rot); ein Sensor meldet sich nicht mehr (gelb); der kälteste Fühler liegt auf oder unter deiner Frostgrenze (rot); sie wird voraussichtlich innerhalb von 4 Stunden (rot) oder 12 Stunden (gelb) erreicht; eine Kältewelle oder Frostnächte sind vorhergesagt (gelb); Frost- oder E-Mail-Alarme sind aus (gelb); der kälteste Fühler liegt weniger als 5 °F über der Frostgrenze (gelb). Sonst ist alles OK.",
+    how: "Es wird das Erste angezeigt, das zutrifft, das Dringendste zuerst: noch keine Geräte oder kein Messwert; ein Wassersensor meldet nass (rot); ein Sensor meldet sich nicht mehr (gelb); der kälteste Fühler liegt auf oder unter deiner Frostgrenze (rot); sie wird voraussichtlich innerhalb von 4 Stunden (rot) oder 12 Stunden (gelb) erreicht; eine Kältewelle oder Frostnächte sind vorhergesagt (gelb); Frost- oder E-Mail-Alarme sind aus (gelb); der kälteste Fühler liegt weniger als {near} über der Frostgrenze (gelb). Sonst ist alles OK.",
   },
   timeToFreezeCard: {
     title: "Zeit bis Frost",

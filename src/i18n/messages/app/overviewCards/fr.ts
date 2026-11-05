@@ -32,19 +32,19 @@ const fr: OverviewCardsMessages = {
     },
     freezeNow: {
       title: "Risque de gel en ce moment",
-      detail: "La sonde la plus froide indique {temp} °F (seuil {threshold} °F).",
+      detail: "La sonde la plus froide indique {temp} {unit} (seuil {threshold} {unit}).",
     },
     freezeSoon: {
       title: "Gel dans quelques heures",
       detail:
-        "Cet espace devrait atteindre {threshold} °F. Laissez goutter les robinets ou allumez le chauffage tant qu’il est encore temps.",
+        "Cet espace devrait atteindre {threshold} {unit}. Laissez goutter les robinets ou allumez le chauffage tant qu’il est encore temps.",
       detailAt:
-        "Cet espace devrait atteindre {threshold} °F vers {time}. Laissez goutter les robinets ou allumez le chauffage tant qu’il est encore temps.",
+        "Cet espace devrait atteindre {threshold} {unit} vers {time}. Laissez goutter les robinets ou allumez le chauffage tant qu’il est encore temps.",
     },
     freezeLater: {
       title: "Gel plus tard aujourd’hui",
       titleAt: "Gel vers {time}",
-      detail: "Environ {hours} heures avant {threshold} °F, selon le décalage de cet espace par rapport à l’extérieur.",
+      detail: "Environ {hours} heures avant {threshold} {unit}, selon le décalage de cet espace par rapport à l’extérieur.",
     },
     nightsAtRisk: {
       one: "{count} nuit à risque de gel",
@@ -65,7 +65,7 @@ const fr: OverviewCardsMessages = {
     },
     nearFreeze: {
       title: "Proche du seuil de gel",
-      detail: "Sonde la plus froide à {temp} °F, à moins de 5 °F de {threshold} °F.",
+      detail: "Sonde la plus froide à {temp} {unit}, à moins de {near} de {threshold} {unit}.",
     },
     ok: {
       title: "Tout va bien",
@@ -268,7 +268,7 @@ const fr: OverviewCardsMessages = {
     staleTitle: "La dernière mesure est ancienne ; elle n’est peut-être plus à jour.",
     noReading: "Aucune mesure",
     howSummary: "Comment ce statut est choisi",
-    how: "Il affiche le premier cas qui s’applique, du plus urgent au moins urgent : pas encore d’appareil ni de mesure ; un capteur de fuite est mouillé (rouge) ; un capteur ne remonte plus rien (orange) ; la sonde la plus froide est à votre seuil de gel ou en dessous (rouge) ; elle devrait l’atteindre dans les 4 heures (rouge) ou 12 heures (orange) ; une vague de froid ou des nuits de gel sont prévues (orange) ; les alertes de gel ou par e-mail sont désactivées (orange) ; la sonde la plus froide est à moins de 5 °F du seuil (orange). Sinon, tout va bien.",
+    how: "Il affiche le premier cas qui s’applique, du plus urgent au moins urgent : pas encore d’appareil ni de mesure ; un capteur de fuite est mouillé (rouge) ; un capteur ne remonte plus rien (orange) ; la sonde la plus froide est à votre seuil de gel ou en dessous (rouge) ; elle devrait l’atteindre dans les 4 heures (rouge) ou 12 heures (orange) ; une vague de froid ou des nuits de gel sont prévues (orange) ; les alertes de gel ou par e-mail sont désactivées (orange) ; la sonde la plus froide est à moins de {near} du seuil (orange). Sinon, tout va bien.",
   },
   timeToFreezeCard: {
     title: "Délai avant gel",

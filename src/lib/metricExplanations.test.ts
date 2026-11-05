@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { nearFreezeBandLabel } from "./garageRiskStatus";
 import overviewEn from "../i18n/messages/app/overview/en";
 import overviewDe from "../i18n/messages/app/overview/de";
 import overviewEs from "../i18n/messages/app/overview/es";
@@ -108,7 +109,7 @@ describe("space status explanation matches computeGarageRiskStatus", () => {
   const risk = readFileSync("src/lib/garageRiskStatus.ts", "utf8");
   const soon = num(/hoursUntil <= (\d+)\) \{\s*return \{\s*level: "risk"/, risk);
   const later = num(/hoursUntil <= (\d+)\) \{\s*return \{\s*level: "watch"/, risk);
-  const near = num(/freezeThresholdF \+ (\d+);/, risk);
+  const near = num(/NEAR_FREEZE_BAND_F = (\d+);/, risk);
 
   it.each([
     ["en", cardsEn],
@@ -120,7 +121,16 @@ describe("space status explanation matches computeGarageRiskStatus", () => {
     const text = m.riskCard.how;
     expect(text).toMatch(new RegExp(`\\b${soon}\\s`));
     expect(text).toMatch(new RegExp(`\\b${later}\\s`));
-    expect(text).toMatch(new RegExp(`\\b${near}\\s?°F`));
+    // The band is a placeholder so it reads in the display unit (5 °F = 2.8 °C).
+    expect(text).toContain("{near}");
+    expect(text).not.toContain("°F");
+  });
+
+  it("fills the band in either unit", () => {
+    expect(risk).toMatch(/freezeThresholdF \+ NEAR_FREEZE_BAND_F;/);
+    expect(nearFreezeBandLabel("en", false)).toBe(`${near}°F`);
+    expect(nearFreezeBandLabel("en", true)).toBe("2.8°C");
+    expect(nearFreezeBandLabel("de", true)).toBe("2,8 °C");
   });
 });
 

@@ -167,4 +167,31 @@ describe("computeGarageRiskStatus", () => {
       expect(status.reason).toBe("stale");
     });
   });
+
+  describe("°C display preference", () => {
+    it("words the freeze detail in °C and keeps °F by default", () => {
+      expect(computeGarageRiskStatus({ ...base, coldestProbeTempF: 31.5 }).detail).toBe(
+        "Coldest probe is 31.5°F (threshold 34°F).",
+      );
+      expect(computeGarageRiskStatus({ ...base, coldestProbeTempF: 31.5, useCelsius: true }).detail).toBe(
+        "Coldest probe is -0.3°C (threshold 1.1°C).",
+      );
+    });
+
+    it("converts the near-freeze band as a difference (5 °F = 2.8 °C)", () => {
+      const status = computeGarageRiskStatus({ ...base, coldestProbeTempF: 37, useCelsius: true });
+      expect(status.level).toBe("watch");
+      expect(status.detail).toBe("Coldest probe 2.8°C, within 2.8°C of 1.1°C.");
+      expect(computeGarageRiskStatus({ ...base, coldestProbeTempF: 37 }).detail).toBe(
+        "Coldest probe 37.0°F, within 5°F of 34°F.",
+      );
+    });
+
+    it("puts the threshold in °C in the time-to-freeze lines", () => {
+      const soon = computeGarageRiskStatus({ ...base, hoursUntilFreeze: 3, useCelsius: true });
+      expect(soon.detail).toContain("hit 1.1°C.");
+      const later = computeGarageRiskStatus({ ...base, hoursUntilFreeze: 8, useCelsius: true });
+      expect(later.detail).toBe("About 8.0 hours until 1.1°C at this space's lag vs outdoor.");
+    });
+  });
 });
