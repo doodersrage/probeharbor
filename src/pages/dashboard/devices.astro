@@ -416,7 +416,10 @@ const redirectTo =
       <UpgradeNudge feature="device_limit" tier={entitlements.tier} compact />
     )}
 
-    {(devicesView === "setup" || Boolean(ingestKey)) && ingestKey && (
+    {/* Shown whenever a fresh key is in the flash cookie. It carries the one
+        browser flasher and firmware presets on the page; the waiting card
+        below does not repeat them (two flashers, duplicate ids). */}
+    {ingestKey && (
       <section class="card ingest-key-callout" id="ingest-key-callout">
         <h2 class="card-title">{keyCalloutTitle}</h2>
         <p class="card-subtitle">
@@ -567,16 +570,6 @@ const redirectTo =
           </div>
         </details>
 
-        {ingestUrl && ingestKey && (
-          <IngestFirmwarePanel
-            ingestUrl={ingestUrl}
-            ingestKey={ingestKey}
-            origin={Astro.url.origin}
-            sensors={firmwareSensors}
-            presetsOpen={false}
-          />
-        )}
-
         <div class="flex flex-wrap gap-3 items-center mt-4">
           <a class="btn-secondary" href="/about/kit-qr-onboarding">{t.waiting.kitGuide}</a>
           <button type="button" class="btn-ghost" data-waiting-refresh>
@@ -591,7 +584,8 @@ const redirectTo =
       </section>
     )}
 
-    {devicesView === "setup" && showDeviceWizard && activeTab === "push" && devices.length > 0 && (
+    {/* The waiting card already lists these two steps; don't show both. */}
+    {devicesView === "setup" && showDeviceWizard && !showVerifyIngest && activeTab === "push" && devices.length > 0 && (
       <section class="card" id="device-setup-wizard">
         <h2 class="card-title">{t.wizard.title}</h2>
         <p class="card-subtitle mb-4">
