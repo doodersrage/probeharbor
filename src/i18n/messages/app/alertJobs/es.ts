@@ -54,10 +54,10 @@ const es: AlertJobsMessages = {
     faultReset: "el valor que envía un DS18B20 tras un reinicio (a menudo por alimentación débil o un cable largo)",
     faultDisconnected: "el valor que envía la biblioteca del DS18B20 cuando la sonda está desconectada",
     faultMessage: "{label} marca {value} °F, {why}. Revisa el cableado de la sonda; no es una temperatura real.",
-    faultDetail: "{label} marca {value} °F (fallo del sensor), revisa el cableado",
+    faultDetail: "{label} marca {value} {unit} (fallo del sensor), revisa el cableado",
     stuckMessage:
       "{label} lleva {span} enviando exactamente {value} °F. La sonda puede estar atascada o la placa puede estar reenviando un valor antiguo; una helada aquí podría pasar desapercibida.",
-    stuckDetail: "{label} atascado en {value} °F desde hace {span}",
+    stuckDetail: "{label} atascado en {value} {unit} desde hace {span}",
     spanHours: { one: "{count} hora", other: "{count} horas" },
     spanOverDay: "más de un día",
   },

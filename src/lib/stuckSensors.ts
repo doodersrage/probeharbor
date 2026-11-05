@@ -3,6 +3,7 @@ import { createServerClient } from "./supabase";
 import type { Locale } from "../i18n/locales";
 import { fmt, formatNumber, plural } from "../i18n/format";
 import { alertJobsMessages } from "../i18n/messages/app/alertJobs";
+import { tempUnitLabel, toDisplayTemp } from "./temperatureFormat";
 
 /**
  * A probe that keeps posting the same number looks healthy -- fresh
@@ -44,7 +45,7 @@ export type StuckSensor = {
   label: string;
   /** Full sentence for an alert. */
   message: string;
-  /** A few words for the Devices health table. */
+  /** A few words for the Devices health table (in the dashboard display unit). */
   detail: string;
 };
 
@@ -58,9 +59,13 @@ export function evaluateStuckSensor(
   input: StuckSensorInput,
   nowMs = Date.now(),
   locale: Locale = "en",
+  /** Display preference for `detail` only; `message` (alerts) and detection stay °F. */
+  useCelsius = false,
 ): StuckSensor | null {
   const t = alertJobsMessages(locale).stuck;
   const value = oneDecimal(input.latestValue, locale);
+  const shownValue = oneDecimal(toDisplayTemp(input.latestValue, useCelsius), locale);
+  const unit = tempUnitLabel(useCelsius);
   const latestMs = Date.parse(input.latestAt);
   if (!Number.isFinite(latestMs) || nowMs - latestMs > FRESH_MS) return null;
 
@@ -70,7 +75,7 @@ export function evaluateStuckSensor(
       sensorId: input.sensorId,
       label: input.label,
       message: fmt(t.faultMessage, { label: input.label, value, why: t[fault.why] }),
-      detail: fmt(t.faultDetail, { label: input.label, value }),
+      detail: fmt(t.faultDetail, { label: input.label, value: shownValue, unit }),
     };
   }
 
@@ -84,7 +89,7 @@ export function evaluateStuckSensor(
     sensorId: input.sensorId,
     label: input.label,
     message: fmt(t.stuckMessage, { label: input.label, value, span }),
-    detail: fmt(t.stuckDetail, { label: input.label, value, span }),
+    detail: fmt(t.stuckDetail, { label: input.label, value: shownValue, span, unit }),
   };
 }
 
@@ -93,6 +98,7 @@ export async function findStuckSensors(
   devices: DeviceWithSensors[],
   nowMs = Date.now(),
   locale: Locale = "en",
+  useCelsius = false,
 ): Promise<StuckSensor[]> {
   const supabase = createServerClient();
   const windowStart = new Date(nowMs - STUCK_WINDOW_MS).toISOString();
@@ -151,6 +157,7 @@ export async function findStuckSensors(
           },
           nowMs,
           locale,
+          useCelsius,
         );
       } catch {
         // A failed lookup means "don't know", never "stuck".

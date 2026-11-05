@@ -138,7 +138,7 @@ const latest = latestResult.rows;
 const devicesLoadError = devicesResult.error || latestResult.error || null;
 if (devicesLoadError) console.error("Devices page devices/readings load failed:", devicesLoadError);
 // Never let a slow or failed check hold up the Devices page.
-const stuckSensors = await findStuckSensors(devices, Date.now(), locale).catch(() => []);
+const stuckSensors = await findStuckSensors(devices, Date.now(), locale, preferences.useCelsius).catch(() => []);
 
 const ingestKey = peekSecretFlash(Astro.cookies, FLASH_INGEST_KEY);
 const tabParam = Astro.url.searchParams.get("tab");

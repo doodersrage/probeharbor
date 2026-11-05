@@ -44,6 +44,15 @@ describe("evaluateStuckSensor", () => {
     const gone = evaluateStuckSensor({ ...base, latestValue: -196.6, reportedBeforeWindow: false, samplesInWindow: 1 }, now);
     expect(gone?.message).toContain("disconnected");
   });
+
+  it("words the Devices detail in °C for °C users; the alert message stays °F", () => {
+    const result = evaluateStuckSensor(base, now, "en", true);
+    expect(result?.detail).toBe("Garage pipe stuck at 5.0°C for 30 hours");
+    expect(result?.message).toContain("exactly 41.0°F for 30 hours");
+    const reset = evaluateStuckSensor({ ...base, latestValue: 185, lastDifferentAt: hoursAgo(0.5), samplesInWindow: 1 }, now, "en", true);
+    expect(reset?.detail).toBe("Garage pipe reads 85.0°C (sensor fault), check wiring");
+    expect(reset?.message).toContain("185.0°F");
+  });
 });
 
 describe("evaluateStuckSensor in other languages", () => {

@@ -55,10 +55,10 @@ const de: AlertJobsMessages = {
     faultDisconnected: "der Wert, den die DS18B20-Bibliothek meldet, wenn der Fühler nicht verbunden ist",
     faultMessage:
       "{label} zeigt {value} °F, {why}. Prüfe die Verkabelung des Fühlers; das ist keine echte Temperatur.",
-    faultDetail: "{label} zeigt {value} °F (Sensorfehler), Verkabelung prüfen",
+    faultDetail: "{label} zeigt {value} {unit} (Sensorfehler), Verkabelung prüfen",
     stuckMessage:
       "{label} meldet seit {span} genau {value} °F. Der Fühler hängt möglicherweise oder die Platine sendet einen alten Wert erneut; Frost könnte hier unbemerkt bleiben.",
-    stuckDetail: "{label} hängt seit {span} bei {value} °F",
+    stuckDetail: "{label} hängt seit {span} bei {value} {unit}",
     spanHours: { one: "{count} Stunde", other: "{count} Stunden" },
     spanOverDay: "über einem Tag",
   },

@@ -54,10 +54,10 @@ const fr: AlertJobsMessages = {
     faultReset: "la valeur qu’envoie un DS18B20 après une réinitialisation (souvent une alimentation trop faible ou un câble trop long)",
     faultDisconnected: "la valeur qu’envoie la bibliothèque DS18B20 quand la sonde est déconnectée",
     faultMessage: "{label} indique {value} °F, {why}. Vérifiez le câblage de la sonde : ce n’est pas une vraie température.",
-    faultDetail: "{label} indique {value} °F (défaut du capteur), vérifiez le câblage",
+    faultDetail: "{label} indique {value} {unit} (défaut du capteur), vérifiez le câblage",
     stuckMessage:
       "{label} envoie exactement {value} °F depuis {span}. La sonde est peut-être bloquée ou la carte renvoie une ancienne valeur ; un gel ici pourrait passer inaperçu.",
-    stuckDetail: "{label} bloqué à {value} °F depuis {span}",
+    stuckDetail: "{label} bloqué à {value} {unit} depuis {span}",
     spanHours: { one: "{count} heure", other: "{count} heures" },
     spanOverDay: "plus d’une journée",
   },

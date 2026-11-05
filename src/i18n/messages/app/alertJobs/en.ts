@@ -59,10 +59,10 @@ const en = {
     faultReset: "the value a DS18B20 reports after a reset (often weak power or a long cable)",
     faultDisconnected: "the value a DS18B20 library reports when the probe is disconnected",
     faultMessage: "{label} reads {value}°F, {why}. Check the probe's wiring; this isn't a real temperature.",
-    faultDetail: "{label} reads {value}°F (sensor fault), check wiring",
+    faultDetail: "{label} reads {value}{unit} (sensor fault), check wiring",
     stuckMessage:
       "{label} has reported exactly {value}°F for {span}. The probe may be stuck or the board may be resending an old value; a freeze here could go unnoticed.",
-    stuckDetail: "{label} stuck at {value}°F for {span}",
+    stuckDetail: "{label} stuck at {value}{unit} for {span}",
     spanHours: { one: "{count} hour", other: "{count} hours" },
     spanOverDay: "over a day",
   },

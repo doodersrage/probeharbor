@@ -60,7 +60,7 @@ const isPush = device.source === "push";
 const now = Date.now();
 const [latestAll, stuck, ingestStats] = await Promise.all([
   latestFromShell(shell, householdId) ?? fetchLatestSensorValues(householdId),
-  findStuckSensors([device], now, locale).catch(() => []),
+  findStuckSensors([device], now, locale, useCelsius).catch(() => []),
   isPush ? listIngestStatsForHousehold(householdId, 7).catch(() => []) : Promise.resolve([]),
 ]);
 const latestBySensor = new Map(latestAll.map((row) => [row.sensor.id, row]));
