@@ -3919,7 +3919,7 @@ From a user screenshot of the Overview's Sensor extras column.
 
 ## After Astro 7: cleanups, Node 24, dependency majors (2026-11-05)
 
-**Status: Committed locally (baca166..09986d0), not pushed. No migration.**
+**Status: Deployed 2026-11-05 (baca166..23d0708). No migration.**
 
 - [x] Tests: two chart tests had readings fixed at 2026-10-29 and asked for
       the last 7 days; they began failing on 2026-11-05 (CI too). Clock
@@ -3957,6 +3957,13 @@ From a user screenshot of the Overview's Sensor extras column.
   run: same bindings, gzip 2125 → 2153 KiB; docs build. Firmware build not
   run locally (no PlatformIO). Audit: 2 moderate (glob via Sentry's
   bundler plugin; 11.11.0 should clear them).
+- Production (23d0708): CI green on Node 24.22.2 (442 unit test files,
+  e2e 71 passed / 1 skipped, Lighthouse); Docs and Firmware green; Deploy
+  succeeded and uploaded source maps to Sentry. Live site reports Astro
+  7.4.5; /privacy and the new notice wording (EN and ES) are live.
+- Also shipped: analytics notice dismisses when its link is followed and
+  is hidden on /privacy (dea5deb); privacy page backticks, old app name,
+  export path (23d0708).
 - Still to verify after deploy: Web Push on Chrome, Firefox, Safari/iOS;
   Sentry events and source maps arriving; `pnpm db:pending` against the
   linked project; signed-in dashboard islands and chart Expand views.
