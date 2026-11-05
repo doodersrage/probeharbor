@@ -41,6 +41,11 @@ const es: DevicesMessages = {
     deviceActionFailed: "No se pudo completar esa acción del dispositivo. Revisa el formulario e inténtalo de nuevo.",
     actionFailed: "No se pudo completar esa acción ({code}). Inténtalo de nuevo.",
     viewPlans: "Ver planes",
+    /** At the device limit with push devices that never reported; device links follow. */
+    neverReported: {
+      one: "{count} de tus dispositivos nunca ha enviado una lectura. Elimínalo si no lo necesitas, o reutilízalo para el hardware que estás configurando (Rotar clave en su página te da una clave nueva):",
+      other: "{count} de tus dispositivos nunca han enviado una lectura. Elimina uno que no necesites, o reutiliza uno para el hardware que estás configurando (Rotar clave en su página te da una clave nueva):",
+    },
   },
   tabs: {
     ariaLabel: "Secciones de dispositivos",

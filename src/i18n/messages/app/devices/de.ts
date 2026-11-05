@@ -41,6 +41,11 @@ const de: DevicesMessages = {
     deviceActionFailed: "Diese Geräteaktion konnte nicht abgeschlossen werden. Prüfe das Formular und versuch es noch einmal.",
     actionFailed: "Diese Aktion konnte nicht abgeschlossen werden ({code}). Bitte versuch es noch einmal.",
     viewPlans: "Tarife ansehen",
+    /** At the device limit with push devices that never reported; device links follow. */
+    neverReported: {
+      one: "{count} deiner Geräte hat noch nie einen Messwert gesendet. Lösche es, wenn du es nicht brauchst, oder nutze es für die Hardware, die du gerade einrichtest (Schlüssel erneuern auf seiner Seite gibt dir einen neuen Schlüssel):",
+      other: "{count} deiner Geräte haben noch nie einen Messwert gesendet. Lösche eines, das du nicht brauchst, oder nutze eines für die Hardware, die du gerade einrichtest (Schlüssel erneuern auf seiner Seite gibt dir einen neuen Schlüssel):",
+    },
   },
   tabs: {
     ariaLabel: "Gerätebereiche",

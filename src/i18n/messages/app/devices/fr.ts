@@ -41,6 +41,11 @@ const fr: DevicesMessages = {
     deviceActionFailed: "Impossible de terminer cette action sur l’appareil. Vérifiez le formulaire et réessayez.",
     actionFailed: "Impossible de terminer cette action ({code}). Veuillez réessayer.",
     viewPlans: "Voir les offres",
+    /** At the device limit with push devices that never reported; device links follow. */
+    neverReported: {
+      one: "{count} de vos appareils n’a jamais envoyé de mesure. Supprimez-le si vous n’en avez pas besoin, ou réutilisez-le pour le matériel que vous installez (Renouveler la clé sur sa page vous donne une nouvelle clé) :",
+      other: "{count} de vos appareils n’ont jamais envoyé de mesure. Supprimez-en un dont vous n’avez pas besoin, ou réutilisez-en un pour le matériel que vous installez (Renouveler la clé sur sa page vous donne une nouvelle clé) :",
+    },
   },
   tabs: {
     ariaLabel: "Sections des appareils",

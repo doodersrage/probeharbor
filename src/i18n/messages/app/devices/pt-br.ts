@@ -41,6 +41,11 @@ const ptBr: DevicesMessages = {
     deviceActionFailed: "Não foi possível concluir essa ação no dispositivo. Confira o formulário e tente de novo.",
     actionFailed: "Não foi possível concluir essa ação ({code}). Tente de novo.",
     viewPlans: "Ver planos",
+    /** At the device limit with push devices that never reported; device links follow. */
+    neverReported: {
+      one: "{count} dos seus dispositivos nunca enviou uma leitura. Exclua-o se não precisar dele, ou reutilize-o para o hardware que você está configurando (Trocar chave na página dele gera uma chave nova):",
+      other: "{count} dos seus dispositivos nunca enviaram uma leitura. Exclua um que você não precisa, ou reutilize um para o hardware que você está configurando (Trocar chave na página dele gera uma chave nova):",
+    },
   },
   tabs: {
     ariaLabel: "Seções de dispositivos",

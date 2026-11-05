@@ -39,6 +39,11 @@ const en = {
     deviceActionFailed: "Could not complete that device action. Check the form and try again.",
     actionFailed: "Could not complete that action ({code}). Please try again.",
     viewPlans: "View plans",
+    /** At the device limit with push devices that never reported; device links follow. */
+    neverReported: {
+      one: "{count} of your devices has never sent a reading. Delete it if you don't need it, or reuse it for the hardware you're setting up (Rotate key on its page gives you a fresh key):",
+      other: "{count} of your devices have never sent a reading. Delete one you don't need, or reuse one for the hardware you're setting up (Rotate key on its page gives you a fresh key):",
+    },
   },
   tabs: {
     ariaLabel: "Device sections",
