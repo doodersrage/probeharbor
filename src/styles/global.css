@@ -3996,6 +3996,18 @@
     }
   }
 
+  /* Six primary links + account actions: tighten spacing on narrow desktops
+     so longer locales (fr "Commencer gratuitement") still fit on one row. */
+  @media (min-width: 1024px) and (max-width: 1199px) {
+    .site-nav .nav-link {
+      padding-inline: 0.35rem;
+    }
+
+    .site-nav-primary + .site-nav-actions {
+      padding-left: 0.6rem;
+    }
+  }
+
   .history-chart-wrap {
     margin-bottom: 1.5rem;
     padding: 1.25rem;

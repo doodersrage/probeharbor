@@ -20,7 +20,8 @@ const en = {
   nav: {
     pricing: "Pricing",
     compare: "Compare",
-    landlords: "Landlords",
+    demo: "Demo",
+    hardware: "Hardware",
     guides: "Guides",
     contact: "Contact",
     dashboard: "Dashboard",

@@ -22,7 +22,8 @@ const ptBr: LayoutMessages = {
   nav: {
     pricing: "Preços",
     compare: "Comparar",
-    landlords: "Proprietários",
+    demo: "Demo",
+    hardware: "Hardware",
     guides: "Guias",
     contact: "Contato",
     dashboard: "Painel",

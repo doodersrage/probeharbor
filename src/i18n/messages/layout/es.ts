@@ -22,7 +22,8 @@ const es: LayoutMessages = {
   nav: {
     pricing: "Precios",
     compare: "Comparar",
-    landlords: "Propietarios",
+    demo: "Demo",
+    hardware: "Hardware",
     guides: "Guías",
     contact: "Contacto",
     dashboard: "Panel",

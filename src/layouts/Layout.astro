@@ -136,12 +136,10 @@ const schemas = getSiteSchemas({
 
 const navItems = [
   { href: "/pricing", label: t.nav.pricing, match: (path: string) => path.startsWith("/pricing") },
+  { href: "/demo", label: t.nav.demo, match: (path: string) => path === "/demo" },
+  { href: "/hardware", label: t.nav.hardware, match: (path: string) => path === "/hardware" },
   { href: "/compare", label: t.nav.compare, match: (path: string) => path.startsWith("/compare") },
-  {
-    href: "/property-management",
-    label: t.nav.landlords,
-    match: (path: string) => path.startsWith("/property-management"),
-  },
+  // Property management (landlords) lives in the footer's Product column.
   {
     href: "/guides",
     label: t.nav.guides,
