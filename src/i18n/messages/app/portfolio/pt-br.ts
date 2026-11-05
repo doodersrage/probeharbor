@@ -20,7 +20,7 @@ const ptBr: PortfolioMessages = {
   viewHeatmap: "Mapa de calor",
   healthTitle: "Saúde do portfolio",
   healthHowSummary: "Como a pontuação é calculada",
-  healthHow: "A pontuação de cada imóvel mostra seu problema mais grave: sem dispositivos (20) ou ainda sem leituras (30); um sensor de vazamento molhado (10–20); no limite de congelamento ou abaixo (15–25); leituras com mais de 2 horas (45); alguns dispositivos sem enviar (50); a menos de 5 °F do limite (70); caso contrário, saudável (95). O número menor de uma faixa vale quando as leituras também estão desatualizadas. A média é calculada entre todos os imóveis.",
+  healthHow: "A pontuação de cada imóvel mostra seu problema mais grave: sem dispositivos (20) ou ainda sem leituras (30); um sensor de vazamento molhado (10–20); no limite de congelamento ou abaixo (15–25); leituras com mais de 2 horas (45); alguns dispositivos sem enviar (50); a menos de {band} do limite (70); caso contrário, saudável (95). O número menor de uma faixa vale quando as leituras também estão desatualizadas. A média é calculada entre todos os imóveis.",
   healthSummary:
     "Pontuação média {score}% · {atRisk} com risco de congelamento/alagamento{wet} · os mais frios estão abaixo",
   healthSummaryWet: " · molhados: {count}",
@@ -37,7 +37,7 @@ const ptBr: PortfolioMessages = {
   atRiskHintHtml:
     'Os e-mails de resumo do portfolio são enviados quando imóveis cruzam o limite de congelamento: ative em <a class="text-link" href="/dashboard/alerts?tab=settings#alert-section-essentials">Alertas → Quando alertar</a>. Contatos de alagamento/vazamento molhados alertam automaticamente por imóvel (ignoram as férias).',
   atRiskWet: ": contato de alagamento/vazamento molhado",
-  atRiskCold: ": {temp} °F (limite {threshold} °F)",
+  atRiskCold: ": {temp} {unit} (limite {threshold} {unit})",
   addPropertyTitle: "Adicione outro imóvel",
   addPropertyBody:
     "O Portfolio é mais útil com duas ou mais casas. Crie um segundo imóvel (aluguel, casa de temporada, oficina) em Casa e alterne entre eles aqui.",
@@ -103,14 +103,14 @@ const ptBr: PortfolioMessages = {
     noDevices: "Nenhum dispositivo: adicione uma sonda",
     waitingFirstReading: "Aguardando a primeira leitura",
     floodWet: "Contato de alagamento/vazamento molhado",
-    belowThreshold: "{temp} °F ≤ {threshold} °F",
+    belowThreshold: "{temp} {unit} ≤ {threshold} {unit}",
     atThreshold: "No limite de congelamento",
     stale: "Dados da sonda desatualizados: verifique a energia e o Wi‑Fi",
     silent: {
       one: "{silent} de {count} dispositivo sem sinal: verifique a energia e o Wi‑Fi",
       other: "{silent} de {count} dispositivos sem sinal: verifique a energia e o Wi‑Fi",
     },
-    nearThreshold: "A menos de 5 °F de {threshold} °F",
+    nearThreshold: "A menos de {band} de {threshold} {unit}",
     healthy: "Transmitindo, acima do congelamento, contatos de alagamento secos",
   },
 };

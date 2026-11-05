@@ -19,7 +19,7 @@ const en = {
   viewHeatmap: "Heatmap",
   healthTitle: "Portfolio health",
   healthHowSummary: "How the score works",
-  healthHow: "Each property's score shows its most serious issue: no devices (20) or no readings yet (30); a wet leak sensor (10–20); at or below the freeze line (15–25); readings older than 2 hours (45); some devices silent (50); within 5°F of the freeze line (70); otherwise healthy (95). The lower number in a range applies when readings are also stale. The average is the mean across properties.",
+  healthHow: "Each property's score shows its most serious issue: no devices (20) or no readings yet (30); a wet leak sensor (10–20); at or below the freeze line (15–25); readings older than 2 hours (45); some devices silent (50); within {band} of the freeze line (70); otherwise healthy (95). The lower number in a range applies when readings are also stale. The average is the mean across properties.",
   healthSummary: "Average score {score}% · {atRisk} at freeze/flood risk{wet} · coldest listed below",
   healthSummaryWet: " · {count} wet",
   bulkVacationDays: "Bulk vacation (days)",
@@ -35,7 +35,7 @@ const en = {
   atRiskHintHtml:
     'Portfolio digest emails fire when properties cross freeze: toggle under <a class="text-link" href="/dashboard/alerts?tab=settings#alert-section-essentials">Alerts → When to alert</a>. Flood/leak wet contacts auto-alert per property (bypass vacation).',
   atRiskWet: ": flood/leak wet",
-  atRiskCold: ": {temp}°F (threshold {threshold}°F)",
+  atRiskCold: ": {temp}{unit} (threshold {threshold}{unit})",
   addPropertyTitle: "Add another property",
   addPropertyBody:
     "Portfolio is most useful with two or more households. Create a second property (rental, vacation home, workshop) under Household, then switch between them here.",
@@ -98,19 +98,19 @@ const en = {
   next: "Next",
   pageOf: "Page {page} of {pages}",
   notAvailable: "Portfolio view shows freeze risk across all your properties. Available on Pro.",
-  /** Property health details (src/lib/portfolioHealth.ts). Temperatures are °F, as stored. */
+  /** Property health details (src/lib/portfolioHealth.ts). Temperatures read in the display unit ({unit} is °F or °C; {band} is a 5 °F difference in that unit). */
   health: {
     noDevices: "No devices, add a probe",
     waitingFirstReading: "Waiting for first reading",
     floodWet: "Flood / leak contact wet",
-    belowThreshold: "{temp}°F ≤ {threshold}°F",
+    belowThreshold: "{temp}{unit} ≤ {threshold}{unit}",
     atThreshold: "At freeze threshold",
     stale: "Probe data stale, check power/Wi‑Fi",
     silent: {
       one: "{silent} of {count} device silent, check power/Wi‑Fi",
       other: "{silent} of {count} devices silent, check power/Wi‑Fi",
     },
-    nearThreshold: "Within 5°F of {threshold}°F",
+    nearThreshold: "Within {band} of {threshold}{unit}",
     healthy: "Reporting, above freeze, dry flood contacts",
   },
 };

@@ -20,7 +20,7 @@ const de: PortfolioMessages = {
   viewHeatmap: "Heatmap",
   healthTitle: "Zustand des Portfolios",
   healthHowSummary: "So wird der Wert berechnet",
-  healthHow: "Der Wert jeder Immobilie zeigt ihr schwerwiegendstes Problem: keine Geräte (20) oder noch keine Messwerte (30); ein nasser Wassersensor (10–20); auf oder unter der Frostgrenze (15–25); Messwerte älter als 2 Stunden (45); einige Geräte stumm (50); weniger als 5 °F über der Frostgrenze (70); sonst gesund (95). Der niedrigere Wert eines Bereichs gilt, wenn die Messwerte zusätzlich veraltet sind. Der Durchschnitt ist der Mittelwert über alle Immobilien.",
+  healthHow: "Der Wert jeder Immobilie zeigt ihr schwerwiegendstes Problem: keine Geräte (20) oder noch keine Messwerte (30); ein nasser Wassersensor (10–20); auf oder unter der Frostgrenze (15–25); Messwerte älter als 2 Stunden (45); einige Geräte stumm (50); weniger als {band} über der Frostgrenze (70); sonst gesund (95). Der niedrigere Wert eines Bereichs gilt, wenn die Messwerte zusätzlich veraltet sind. Der Durchschnitt ist der Mittelwert über alle Immobilien.",
   healthSummary:
     "Durchschnittlicher Wert {score} % · {atRisk} mit Frost-/Wasserschadenrisiko{wet} · die kältesten stehen unten",
   healthSummaryWet: " · {count} nass",
@@ -37,7 +37,7 @@ const de: PortfolioMessages = {
   atRiskHintHtml:
     'Portfolio-Übersichtsmails gehen raus, wenn Objekte die Frostschwelle erreichen: einstellbar unter <a class="text-link" href="/dashboard/alerts?tab=settings#alert-section-essentials">Alarme → Wann alarmieren</a>. Nasse Wasser-/Leckkontakte alarmieren automatisch pro Objekt (auch im Urlaub).',
   atRiskWet: ": Wasser-/Leckkontakt nass",
-  atRiskCold: ": {temp} °F (Schwellenwert {threshold} °F)",
+  atRiskCold: ": {temp} {unit} (Schwellenwert {threshold} {unit})",
   addPropertyTitle: "Weiteres Objekt hinzufügen",
   addPropertyBody:
     "Portfolio lohnt sich ab zwei Haushalten. Lege unter Haushalt ein zweites Objekt an (Mietobjekt, Ferienhaus, Werkstatt) und wechsle hier zwischen ihnen.",
@@ -103,14 +103,14 @@ const de: PortfolioMessages = {
     noDevices: "Keine Geräte, füge einen Fühler hinzu",
     waitingFirstReading: "Warte auf ersten Messwert",
     floodWet: "Wasser-/Leckkontakt nass",
-    belowThreshold: "{temp} °F ≤ {threshold} °F",
+    belowThreshold: "{temp} {unit} ≤ {threshold} {unit}",
     atThreshold: "An der Frostschwelle",
     stale: "Fühlerdaten veraltet, Stromversorgung/WLAN prüfen",
     silent: {
       one: "{silent} von {count} Gerät still, Stromversorgung/WLAN prüfen",
       other: "{silent} von {count} Geräten still, Stromversorgung/WLAN prüfen",
     },
-    nearThreshold: "Weniger als 5 °F über {threshold} °F",
+    nearThreshold: "Weniger als {band} über {threshold} {unit}",
     healthy: "Meldet, über dem Gefrierpunkt, Wasserkontakte trocken",
   },
 };

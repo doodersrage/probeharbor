@@ -15,12 +15,12 @@ import {
 } from "../../lib/portfolioList";
 import { fmt, formatDateTime, formatNumber, getLocale, plural } from "../../i18n";
 import { portfolioMessages } from "../../i18n/messages/app/portfolio";
+import { getDisplayPreferencesFromMetadata } from "../../lib/userPreferences";
+import { displayTempInputValue, formatTempBand, tempUnitLabel, toDisplayTemp } from "../../lib/temperatureFormat";
+import { NEAR_THRESHOLD_BAND_F } from "../../lib/portfolioHealth";
 
 const locale = getLocale(Astro);
 const t = portfolioMessages(locale);
-const temp1 = (value: number) =>
-  formatNumber(value, locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
-const temp0 = (value: number) => formatNumber(value, locale, { maximumFractionDigits: 0 });
 const pct = (score: number) => fmt(t.score, { score: formatNumber(score, locale) });
 const roleLabel = (role: string) =>
   (t.roles as Record<string, string>)[role] ?? role.replace("_", " ");
@@ -34,13 +34,23 @@ if (!session || !user) {
   return Astro.redirect("/signin");
 }
 
+// Temperatures follow the °C display preference; snapshots and scoring stay °F.
+const useCelsius = getDisplayPreferencesFromMetadata(user).useCelsius;
+const tempUnit = tempUnitLabel(useCelsius);
+const temp1 = (valueF: number) =>
+  formatNumber(toDisplayTemp(valueF, useCelsius), locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+const temp0 = (valueF: number) =>
+  formatNumber(toDisplayTemp(valueF, useCelsius), locale, { maximumFractionDigits: 0 });
+const thresholdText = (thresholdF: number) =>
+  formatNumber(displayTempInputValue(thresholdF, useCelsius), locale);
+
 const entitlements = shell
   ? shell.entitlements
   : await getUserEntitlements(user.id);
 const { properties, error } = entitlements.canUsePortfolio
   ? await fetchCrossPropertySnapshots(user.id)
   : { properties: [], error: null as string | null };
-const withHealth = attachPropertyHealth(properties, Date.now(), locale);
+const withHealth = attachPropertyHealth(properties, Date.now(), locale, useCelsius);
 const atRisk = withHealth.filter((p) => p.atRisk);
 const floodWet = withHealth.filter((p) => p.floodWet);
 const coldest = [...withHealth]
@@ -170,7 +180,7 @@ const lastReadingFormat: Intl.DateTimeFormatOptions = {
             </p>
             <details class="mt-2 text-sm">
               <summary class="cursor-pointer text-[var(--color-text-muted)]">{t.healthHowSummary}</summary>
-              <p class="mt-1 mb-0 text-[var(--color-text-muted)]">{t.healthHow}</p>
+              <p class="mt-1 mb-0 text-[var(--color-text-muted)]">{fmt(t.healthHow, { band: formatTempBand(NEAR_THRESHOLD_BAND_F, locale, useCelsius) })}</p>
             </details>
           </div>
         </div>
@@ -180,7 +190,7 @@ const lastReadingFormat: Intl.DateTimeFormatOptions = {
               <li>
                 <strong>{p.name}</strong>
                 {locale === "fr" ? " : " : ": "}
-                {p.minTempF != null ? `${temp1(p.minTempF)}°F` : "—"}
+                {p.minTempF != null ? `${temp1(p.minTempF)}${tempUnit}` : "—"}
                 {" · "}
                 <span class="text-[var(--color-text-muted)]">{p.health.detail}</span>
               </li>
@@ -239,7 +249,8 @@ const lastReadingFormat: Intl.DateTimeFormatOptions = {
                 ? t.atRiskWet
                 : fmt(t.atRiskCold, {
                     temp: p.minTempF != null ? temp1(p.minTempF) : String(p.minTempF),
-                    threshold: formatNumber(p.freezeThresholdF, locale),
+                    threshold: thresholdText(p.freezeThresholdF),
+                    unit: tempUnit,
                   })}
             </li>
           ))}
@@ -336,7 +347,7 @@ const lastReadingFormat: Intl.DateTimeFormatOptions = {
                 <span class="portfolio-heatmap-name">{p.name}</span>
                 <span class="portfolio-heatmap-score">{pct(p.health.score)}</span>
                 <span class="portfolio-heatmap-meta">
-                  {p.minTempF != null ? `${temp0(p.minTempF)}°F` : "—"}
+                  {p.minTempF != null ? `${temp0(p.minTempF)}${tempUnit}` : "—"}
                   {p.floodWet ? t.wetSuffix : ""}
                 </span>
               </a>
@@ -389,7 +400,7 @@ const lastReadingFormat: Intl.DateTimeFormatOptions = {
                   <span class="block text-xs text-[var(--color-text-muted)]">{p.health.detail}</span>
                 </td>
                 <td class="py-2">
-                  {p.minTempF != null ? `${temp1(p.minTempF)}°F` : "—"}
+                  {p.minTempF != null ? `${temp1(p.minTempF)}${tempUnit}` : "—"}
                 </td>
                 <td class="py-2">{formatNumber(p.deviceCount, locale)}</td>
                 <td class="py-2">
@@ -429,7 +440,7 @@ const lastReadingFormat: Intl.DateTimeFormatOptions = {
             <p class="m-0 mt-1 text-xs text-[var(--color-text-muted)]">
               {roleLabel(p.role)}
               {" · "}
-              {p.minTempF != null ? `${temp1(p.minTempF)}°F` : t.noTemp}
+              {p.minTempF != null ? `${temp1(p.minTempF)}${tempUnit}` : t.noTemp}
               {" · "}
               {plural(t.deviceCount, p.deviceCount, locale)}
               {p.atRisk ? (p.floodWet ? t.wetSuffix : t.atRiskSuffix) : ""}

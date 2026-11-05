@@ -20,7 +20,7 @@ const es: PortfolioMessages = {
   viewHeatmap: "Mapa de calor",
   healthTitle: "Estado del portfolio",
   healthHowSummary: "Cómo se calcula la puntuación",
-  healthHow: "La puntuación de cada propiedad refleja su problema más grave: sin dispositivos (20) o aún sin lecturas (30); un sensor de fuga mojado (10–20); en el límite de helada o por debajo (15–25); lecturas de más de 2 horas (45); algunos dispositivos sin informar (50); a menos de 5 °F del límite (70); si no, saludable (95). El número más bajo de un rango se aplica cuando además las lecturas están desactualizadas. El promedio es la media de todas las propiedades.",
+  healthHow: "La puntuación de cada propiedad refleja su problema más grave: sin dispositivos (20) o aún sin lecturas (30); un sensor de fuga mojado (10–20); en el límite de helada o por debajo (15–25); lecturas de más de 2 horas (45); algunos dispositivos sin informar (50); a menos de {band} del límite (70); si no, saludable (95). El número más bajo de un rango se aplica cuando además las lecturas están desactualizadas. El promedio es la media de todas las propiedades.",
   healthSummary:
     "Puntuación media {score} % · {atRisk} en riesgo de congelación/inundación{wet} · las más frías, abajo",
   healthSummaryWet: " · {count} con agua",
@@ -37,7 +37,7 @@ const es: PortfolioMessages = {
   atRiskHintHtml:
     'Los correos de resumen del portfolio se envían cuando una propiedad cruza el umbral de congelación: actívalos en <a class="text-link" href="/dashboard/alerts?tab=settings#alert-section-essentials">Alertas → Cuándo alertar</a>. Los contactos de inundación/fuga mojados alertan automáticamente por propiedad (ignoran las vacaciones).',
   atRiskWet: ": inundación/fuga, contacto mojado",
-  atRiskCold: ": {temp} °F (umbral {threshold} °F)",
+  atRiskCold: ": {temp} {unit} (umbral {threshold} {unit})",
   addPropertyTitle: "Añade otra propiedad",
   addPropertyBody:
     "Portfolio es más útil con dos o más hogares. Crea una segunda propiedad (alquiler, casa de vacaciones, taller) en Hogar y cambia entre ellas aquí.",
@@ -103,14 +103,14 @@ const es: PortfolioMessages = {
     noDevices: "Sin dispositivos: añade una sonda",
     waitingFirstReading: "Esperando la primera lectura",
     floodWet: "Contacto de inundación/fuga mojado",
-    belowThreshold: "{temp} °F ≤ {threshold} °F",
+    belowThreshold: "{temp} {unit} ≤ {threshold} {unit}",
     atThreshold: "En el umbral de congelación",
     stale: "Datos de la sonda desactualizados: revisa la alimentación y el wifi",
     silent: {
       one: "{silent} de {count} dispositivo sin señal: revisa la alimentación y el wifi",
       other: "{silent} de {count} dispositivos sin señal: revisa la alimentación y el wifi",
     },
-    nearThreshold: "A menos de 5 °F de {threshold} °F",
+    nearThreshold: "A menos de {band} de {threshold} {unit}",
     healthy: "Transmitiendo, por encima de congelación, contactos de inundación secos",
   },
 };

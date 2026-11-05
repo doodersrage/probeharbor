@@ -20,7 +20,7 @@ const fr: PortfolioMessages = {
   viewHeatmap: "Carte thermique",
   healthTitle: "État du portfolio",
   healthHowSummary: "Comment le score est calculé",
-  healthHow: "Le score de chaque bien reflète son problème le plus grave : aucun appareil (20) ou pas encore de mesure (30) ; un capteur de fuite mouillé (10–20) ; au seuil de gel ou en dessous (15–25) ; mesures de plus de 2 heures (45) ; certains appareils muets (50) ; à moins de 5 °F du seuil (70) ; sinon en bonne santé (95). Le chiffre le plus bas d’une plage s’applique quand les mesures sont aussi anciennes. La moyenne porte sur tous les biens.",
+  healthHow: "Le score de chaque bien reflète son problème le plus grave : aucun appareil (20) ou pas encore de mesure (30) ; un capteur de fuite mouillé (10–20) ; au seuil de gel ou en dessous (15–25) ; mesures de plus de 2 heures (45) ; certains appareils muets (50) ; à moins de {band} du seuil (70) ; sinon en bonne santé (95). Le chiffre le plus bas d’une plage s’applique quand les mesures sont aussi anciennes. La moyenne porte sur tous les biens.",
   healthSummary:
     "Score moyen {score} % · {atRisk} à risque de gel/inondation{wet} · les plus froids ci-dessous",
   healthSummaryWet: " · mouillés : {count}",
@@ -37,7 +37,7 @@ const fr: PortfolioMessages = {
   atRiskHintHtml:
     'Les e-mails de synthèse du portfolio partent quand un bien franchit le seuil de gel : réglage dans <a class="text-link" href="/dashboard/alerts?tab=settings#alert-section-essentials">Alertes → Quand alerter</a>. Les contacts inondation/fuite mouillés déclenchent une alerte automatique par bien (même en vacances).',
   atRiskWet: " : contact inondation/fuite mouillé",
-  atRiskCold: " : {temp} °F (seuil {threshold} °F)",
+  atRiskCold: " : {temp} {unit} (seuil {threshold} {unit})",
   addPropertyTitle: "Ajouter un autre bien",
   addPropertyBody:
     "Portfolio prend tout son sens avec deux foyers ou plus. Créez un deuxième bien (location, résidence secondaire, atelier) dans Foyer, puis passez de l’un à l’autre ici.",
@@ -103,14 +103,14 @@ const fr: PortfolioMessages = {
     noDevices: "Aucun appareil : ajoutez une sonde",
     waitingFirstReading: "En attente de la première mesure",
     floodWet: "Contact inondation/fuite mouillé",
-    belowThreshold: "{temp} °F ≤ {threshold} °F",
+    belowThreshold: "{temp} {unit} ≤ {threshold} {unit}",
     atThreshold: "Au seuil de gel",
     stale: "Données de sonde périmées : vérifiez l’alimentation et le Wi‑Fi",
     silent: {
       one: "Appareils muets : {silent} sur {count}, vérifiez l’alimentation et le Wi‑Fi",
       other: "Appareils muets : {silent} sur {count}, vérifiez l’alimentation et le Wi‑Fi",
     },
-    nearThreshold: "À moins de 5 °F de {threshold} °F",
+    nearThreshold: "À moins de {band} de {threshold} {unit}",
     healthy: "Transmet, au-dessus du gel, contacts inondation secs",
   },
 };

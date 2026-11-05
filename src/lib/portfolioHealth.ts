@@ -3,6 +3,10 @@ import { STALE_MS } from "./relativeTime";
 import { fmt, formatNumber, plural } from "../i18n/format";
 import type { Locale } from "../i18n/locales";
 import { portfolioMessages } from "../i18n/messages/app/portfolio";
+import { displayTempInputValue, formatTempBand, tempUnitLabel, toDisplayTemp } from "./temperatureFormat";
+
+/** "Watch" when the coldest probe is within this many °F of the freeze line. */
+export const NEAR_THRESHOLD_BAND_F = 5;
 
 export type PropertyHealth = {
   score: number;
@@ -10,13 +14,20 @@ export type PropertyHealth = {
   detail: string;
 };
 
-/** Score a portfolio property for the table + coldest-properties digest. */
+/**
+ * Score a portfolio property for the table + coldest-properties digest.
+ * `useCelsius` only changes how temperatures read in `detail` (the dashboard's
+ * display preference); scoring stays on the stored °F values. The API keeps °F.
+ */
 export function scorePropertyHealth(
   property: PropertySnapshot,
   nowMs = Date.now(),
   locale: Locale = "en",
+  useCelsius = false,
 ): PropertyHealth {
   const t = portfolioMessages(locale).health;
+  const unit = tempUnitLabel(useCelsius);
+  const threshold = formatNumber(displayTempInputValue(property.freezeThresholdF, useCelsius), locale);
   if (property.deviceCount <= 0) {
     return {
       score: 20,
@@ -51,11 +62,12 @@ export function scorePropertyHealth(
       detail:
         property.minTempF != null
           ? fmt(t.belowThreshold, {
-              temp: formatNumber(property.minTempF, locale, {
+              temp: formatNumber(toDisplayTemp(property.minTempF, useCelsius), locale, {
                 minimumFractionDigits: 1,
                 maximumFractionDigits: 1,
               }),
-              threshold: formatNumber(property.freezeThresholdF, locale),
+              threshold,
+              unit,
             })
           : t.atThreshold,
     };
@@ -80,13 +92,17 @@ export function scorePropertyHealth(
 
   const near =
     property.minTempF != null &&
-    property.minTempF <= property.freezeThresholdF + 5;
+    property.minTempF <= property.freezeThresholdF + NEAR_THRESHOLD_BAND_F;
 
   if (near) {
     return {
       score: 70,
       label: "watch",
-      detail: fmt(t.nearThreshold, { threshold: formatNumber(property.freezeThresholdF, locale) }),
+      detail: fmt(t.nearThreshold, {
+        threshold,
+        unit,
+        band: formatTempBand(NEAR_THRESHOLD_BAND_F, locale, useCelsius),
+      }),
     };
   }
 
@@ -101,9 +117,10 @@ export function attachPropertyHealth(
   properties: PropertySnapshot[],
   nowMs = Date.now(),
   locale: Locale = "en",
+  useCelsius = false,
 ): Array<PropertySnapshot & { health: PropertyHealth }> {
   return properties.map((property) => ({
     ...property,
-    health: scorePropertyHealth(property, nowMs, locale),
+    health: scorePropertyHealth(property, nowMs, locale, useCelsius),
   }));
 }

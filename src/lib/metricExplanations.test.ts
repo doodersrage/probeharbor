@@ -169,6 +169,14 @@ describe("portfolio, anomaly and cold-air explanations match the code", async ()
 
   it.each(portfolioMsgs)("%s portfolio copy lists every score", (_l, m) => {
     for (const s of scores) expect(m.healthHow as string).toContain(s);
+    // The near-freeze band reads in the display unit (filled from NEAR_THRESHOLD_BAND_F).
+    expect(m.healthHow as string).toContain("{band}");
+    expect(m.healthHow as string).not.toContain("°F");
+  });
+
+  it("the portfolio near-freeze band is the one the score uses", () => {
+    expect(portfolio).toMatch(/freezeThresholdF \+ NEAR_THRESHOLD_BAND_F;/);
+    expect(num(/NEAR_THRESHOLD_BAND_F = (\d+);/, portfolio)).toBe("5");
   });
 
   it.each(historyMsgs)("%s anomaly copy states the drop rule", (_l, m) => {
