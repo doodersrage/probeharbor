@@ -21,10 +21,12 @@ const t = layoutMessages(getLocale(Astro)).analytics;
     aria-label={t.label}
     hidden
   >
-    <p class="analytics-disclosure-text" set:html={t.textHtml} />
-    <button type="button" class="btn-ghost analytics-disclosure-dismiss" id="analytics-disclosure-dismiss">
-      {t.dismiss}
-    </button>
+    <div class="analytics-disclosure-inner">
+      <p class="analytics-disclosure-text" set:html={t.textHtml} />
+      <button type="button" class="btn-primary analytics-disclosure-dismiss" id="analytics-disclosure-dismiss">
+        {t.dismiss}
+      </button>
+    </div>
   </div>
 )}
 
@@ -39,9 +41,34 @@ const t = layoutMessages(getLocale(Astro)).analytics;
     } catch {
       /* ignore */
     }
+    const html = document.documentElement;
+    // Reserve the bar's height at the end of the page (and for focus scrolling)
+    // so it never sits on top of the last form field or footer link.
+    const reserve = () => {
+      html.style.setProperty("--analytics-bar-h", `${root.offsetHeight}px`);
+    };
     root.hidden = false;
+    html.classList.add("has-analytics-bar");
+    reserve();
+    const observer = typeof ResizeObserver === "function" ? new ResizeObserver(reserve) : null;
+    observer?.observe(root);
+    // While someone is typing, tuck the bar away so it can't cover the field
+    // or float above the on-screen keyboard.
+    const fieldSelector =
+      "input:not([type=checkbox]):not([type=radio]):not([type=button]):not([type=submit]), textarea, select, [contenteditable=true]";
+    const onFocusIn = (e) => {
+      if (e.target instanceof Element && e.target.matches(fieldSelector)) root.classList.add("is-tucked");
+    };
+    const onFocusOut = () => root.classList.remove("is-tucked");
+    document.addEventListener("focusin", onFocusIn);
+    document.addEventListener("focusout", onFocusOut);
     const hide = () => {
       root.hidden = true;
+      observer?.disconnect();
+      document.removeEventListener("focusin", onFocusIn);
+      document.removeEventListener("focusout", onFocusOut);
+      html.classList.remove("has-analytics-bar");
+      html.style.removeProperty("--analytics-bar-h");
       try {
         localStorage.setItem(key, "1");
       } catch {
@@ -55,47 +82,55 @@ const t = layoutMessages(getLocale(Astro)).analytics;
 </script>
 
 <style>
+  /* Slim bar on the bottom edge; the page reserves its height while it shows. */
   .analytics-disclosure {
     position: fixed;
     z-index: 40;
-    left: 1rem;
-    right: 1rem;
-    bottom: 1rem;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.75rem 1rem;
-    max-width: 40rem;
-    margin-inline: auto;
-    padding: 0.85rem 1rem;
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--color-border);
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 0.45rem 1rem calc(0.45rem + env(safe-area-inset-bottom, 0px));
+    border-top: 1px solid var(--color-border);
     background: var(--color-surface);
-    box-shadow: var(--shadow-card);
+    box-shadow: 0 -4px 16px rgb(0 0 0 / 0.18);
   }
 
   .analytics-disclosure[hidden] {
     display: none !important;
   }
 
+  .analytics-disclosure.is-tucked {
+    visibility: hidden;
+  }
+
+  .analytics-disclosure-inner {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    max-width: 72rem;
+    margin-inline: auto;
+  }
+
   .analytics-disclosure-text {
     margin: 0;
-    flex: 1 1 14rem;
-    font-size: 0.8125rem;
-    line-height: 1.45;
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: 0.75rem;
+    line-height: 1.35;
     color: var(--color-text-secondary);
   }
 
   .analytics-disclosure-dismiss {
     flex-shrink: 0;
+    padding: 0.35rem 0.85rem;
+    font-size: 0.8125rem;
   }
 
-  @media (min-width: 640px) {
-    .analytics-disclosure {
-      left: 1.5rem;
-      right: auto;
-      bottom: 1.5rem;
-    }
+  :global(html.has-analytics-bar) {
+    scroll-padding-bottom: var(--analytics-bar-h, 0px);
+  }
+
+  :global(html.has-analytics-bar body) {
+    padding-bottom: var(--analytics-bar-h, 0px);
   }
 </style>
