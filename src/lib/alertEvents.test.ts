@@ -15,6 +15,9 @@ function mockQuery(result: { data?: unknown; error?: unknown; count?: number | n
     "lte",
     "limit",
     "filter",
+    "range",
+    "in",
+    "ilike",
   ]) {
     builder[method] = vi.fn(() => builder);
   }
@@ -200,6 +203,31 @@ describe("listRecentAlertEvents", () => {
     const { listRecentAlertEvents } = await import("./alertEvents");
 
     expect(await listRecentAlertEvents("user-1")).toEqual([]);
+  });
+});
+
+describe("listRecentAlertEventsFiltered", () => {
+  it("filters on exact kinds with .in, not a substring match", async () => {
+    const builder = mockQuery({ data: [row({ kind: "threshold" })], error: null });
+    mockFrom.mockReturnValue(builder);
+    const { listRecentAlertEventsFiltered } = await import("./alertEvents");
+
+    const result = await listRecentAlertEventsFiltered("user-1", { kinds: ["threshold", "freeze"] });
+
+    expect(builder.in).toHaveBeenCalledWith("kind", ["threshold", "freeze"]);
+    expect(builder.ilike).not.toHaveBeenCalled();
+    expect(result.events).toHaveLength(1);
+  });
+
+  it("applies no kind filter when kinds is empty", async () => {
+    const builder = mockQuery({ data: [], error: null });
+    mockFrom.mockReturnValue(builder);
+    const { listRecentAlertEventsFiltered } = await import("./alertEvents");
+
+    await listRecentAlertEventsFiltered("user-1", { kinds: [] });
+
+    expect(builder.in).not.toHaveBeenCalled();
+    expect(builder.ilike).not.toHaveBeenCalled();
   });
 });
 

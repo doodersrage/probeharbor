@@ -51,11 +51,7 @@ const fr: AlertsMessages = {
     kindLabel: "Type",
     kinds: {
       all: "Toutes",
-      freeze: "Gel",
-      flood: "Inondation",
-      forecast: "Prévision",
-      threshold: "Seuil",
-      test: "Test",
+      generic: "Tests et messages",
     },
     unhandledOnly: "Non traitées uniquement",
     filter: "Filtrer",

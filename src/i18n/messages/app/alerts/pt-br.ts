@@ -51,11 +51,7 @@ const ptBr: AlertsMessages = {
     kindLabel: "Tipo",
     kinds: {
       all: "Todos",
-      freeze: "Congelamento",
-      flood: "Alagamento",
-      forecast: "Previsão",
-      threshold: "Limite",
-      test: "Teste",
+      generic: "Testes e mensagens",
     },
     unhandledOnly: "Só não resolvidos",
     filter: "Filtrar",

@@ -18,6 +18,7 @@ import {
 import { getRuntimeEnv } from "../../lib/runtimeEnv";
 import { getUserEntitlements } from "../../lib/entitlements";
 import { listRecentAlertEvents, listRecentAlertEventsFiltered } from "../../lib/alertEvents";
+import { alertActivityFilterOptions, resolveAlertActivityFilter } from "../../lib/alertActivityFilter";
 import { summarizeChannelDelivery } from "../../lib/channelDelivery";
 import { formatAlertChannelsCsv } from "../../lib/alertChannelLabels";
 import { formatRelativeAge } from "../../lib/relativeTime";
@@ -48,7 +49,8 @@ if (!session || !user) {
 }
 const unackedAlertCount = shell?.unackedAlerts ?? 0;
 const activityPage = Math.max(1, Number(Astro.url.searchParams.get("activity_page") ?? "1") || 1);
-const activityKind = Astro.url.searchParams.get("activity_kind")?.trim() ?? "";
+const activityFilter = resolveAlertActivityFilter(Astro.url.searchParams.get("activity_kind"));
+const activityKind = activityFilter?.id ?? "";
 const activityUnacked = Astro.url.searchParams.has("activity_unacked")
   ? Astro.url.searchParams.get("activity_unacked") === "1"
   : unackedAlertCount > 0;
@@ -92,7 +94,7 @@ const [
     listRecentAlertEventsFiltered(user.id, {
       limit: activityPageSize,
       offset: activityOffset,
-      kind: activityKind || null,
+      kinds: activityFilter?.kinds ?? null,
       unackedOnly: activityUnacked,
     }),
     household.householdId
@@ -293,11 +295,9 @@ const referralRewardDays = Number(
               <label class="form-label" for="activity_kind">{t.activity.kindLabel}</label>
               <select class="form-input" id="activity_kind" name="activity_kind">
                 <option value="" selected={!activityKind}>{t.activity.kinds.all}</option>
-                <option value="freeze" selected={activityKind === "freeze"}>{t.activity.kinds.freeze}</option>
-                <option value="flood" selected={activityKind === "flood"}>{t.activity.kinds.flood}</option>
-                <option value="forecast" selected={activityKind === "forecast"}>{t.activity.kinds.forecast}</option>
-                <option value="threshold" selected={activityKind === "threshold"}>{t.activity.kinds.threshold}</option>
-                <option value="test" selected={activityKind === "test"}>{t.activity.kinds.test}</option>
+                {alertActivityFilterOptions(locale, t.activity.kinds.generic).map((option) => (
+                  <option value={option.id} selected={activityKind === option.id}>{option.label}</option>
+                ))}
               </select>
             </div>
             <label class="checkbox-row mb-0">

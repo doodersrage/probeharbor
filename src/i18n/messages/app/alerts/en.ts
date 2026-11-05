@@ -52,13 +52,10 @@ const en = {
     heading: "Recent alert activity",
     subtitle: "Audit trail of delivered and skipped channels.",
     kindLabel: "Kind",
+    /** Other options come from alertMessages kindLabels (alertActivityFilter). */
     kinds: {
       all: "All",
-      freeze: "Freeze",
-      flood: "Flood",
-      forecast: "Forecast",
-      threshold: "Threshold",
-      test: "Test",
+      generic: "Tests and messages",
     },
     unhandledOnly: "Unhandled only",
     filter: "Filter",

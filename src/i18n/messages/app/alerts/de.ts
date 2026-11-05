@@ -51,11 +51,7 @@ const de: AlertsMessages = {
     kindLabel: "Art",
     kinds: {
       all: "Alle",
-      freeze: "Frost",
-      flood: "Wasserschaden",
-      forecast: "Vorhersage",
-      threshold: "Schwellenwert",
-      test: "Test",
+      generic: "Tests und Nachrichten",
     },
     unhandledOnly: "Nur unerledigte",
     filter: "Filtern",

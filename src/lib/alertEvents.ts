@@ -243,7 +243,10 @@ export async function listRecentAlertEventsFiltered(
   options: {
     limit?: number;
     offset?: number;
+    /** Substring match on kind (internal callers pass one NotifyKind). */
     kind?: string | null;
+    /** Exact kinds (Activity filter). Applied with `.in`; empty means no filter. */
+    kinds?: readonly string[] | null;
     unackedOnly?: boolean;
   } = {},
 ): Promise<{ events: AlertEventRow[]; hasMore: boolean }> {
@@ -259,6 +262,9 @@ export async function listRecentAlertEventsFiltered(
 
   if (options.kind?.trim()) {
     query = query.ilike("kind", `%${options.kind.trim()}%`);
+  }
+  if (options.kinds?.length) {
+    query = query.in("kind", [...options.kinds]);
   }
   if (options.unackedOnly) {
     query = query.is("acknowledged_at", null).not("kind", "in", INFORMATIONAL_KIND_FILTER);
