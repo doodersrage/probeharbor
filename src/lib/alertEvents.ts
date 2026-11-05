@@ -463,7 +463,7 @@ export async function hasUnhandledAlertOfKinds(userId: string, kinds: readonly s
 
 export async function countUnacknowledgedAlerts(userId: string): Promise<number> {
   const supabase = createServerClient();
-  const { count } = await supabase
+  const { count, error } = await supabase
     .from("alert_events")
     .select("id", { count: "exact", head: true })
     .eq("user_id", userId)
@@ -471,5 +471,16 @@ export async function countUnacknowledgedAlerts(userId: string): Promise<number>
     .not("kind", "in", INFORMATIONAL_KIND_FILTER)
     .or(UNHANDLED_DELIVERY_FILTER);
 
+  // A failed count must not pass silently as "nothing unhandled": report it so a
+  // broken filter or an outage is noticed (Sentry groups repeats).
+  if (error) {
+    console.error("countUnacknowledgedAlerts failed", error.message ?? error);
+    try {
+      const Sentry = await import("@sentry/cloudflare");
+      Sentry.captureException(new Error(`countUnacknowledgedAlerts: ${error.message ?? "query failed"}`));
+    } catch {
+      /* Sentry optional at build/test time */
+    }
+  }
   return count ?? 0;
 }
