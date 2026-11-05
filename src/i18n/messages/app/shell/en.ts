@@ -81,6 +81,8 @@ const nudges: Record<NudgeFeatureId, Nudge> = {
 const en = {
   /** Default page title when a dashboard page passes none. */
   defaultTitle: "Dashboard",
+  /** Confirm when leaving a form with unsaved edits (unsavedChangesGuard). */
+  unsavedChanges: "You have unsaved changes. Leave this page without saving them?",
   /** Dashboard screen names (sidebar, phone bar, menu button). */
   nav: {
     overview: "Overview",

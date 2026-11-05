@@ -155,6 +155,7 @@ const en = {
 
   save: {
     button: "Save alert settings",
+    saveAndTest: "Save and send test",
     incompleteHint: "A checked channel needs its destination filled in, or it will be skipped when alerts fire.",
     notApplied: "Changes are not applied until you save.",
   },
@@ -212,6 +213,7 @@ const en = {
   /** Save / snooze / per-channel test script. */
   clientSubmit: {
     saving: "Saving…",
+    saveBeforeTest: "You have unsaved alert changes. Save them and send the test with the new settings?",
     saveButton: "Save alert settings",
     saveFailed: "Could not save alert settings.",
     pickVacationDate: "Pick a vacation return date.",

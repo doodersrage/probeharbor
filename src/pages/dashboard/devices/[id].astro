@@ -24,6 +24,8 @@ import { escapeHtml } from "../../../lib/htmlEscape";
 import type { SensorKind } from "../../../lib/sensorKinds";
 import { fmt, formatNumber, getLocale, plural } from "../../../i18n";
 import { deviceDetailMessages } from "../../../i18n/messages/app/deviceDetail";
+import { shellMessages } from "../../../i18n/messages/app/shell";
+import UnsavedChangesGuard from "../../../components/UnsavedChangesGuard.astro";
 import { deviceSetupPushMessages } from "../../../i18n/messages/app/deviceSetup/push";
 import { reportIntervalSeconds } from "../../../lib/reportInterval";
 
@@ -32,6 +34,7 @@ import { reportIntervalSeconds } from "../../../lib/reportInterval";
  * connects, maintenance, and (set apart at the bottom) rotate key and delete.
  */
 const locale = getLocale(Astro);
+const unsavedMessage = shellMessages(locale).unsavedChanges;
 const t = deviceDetailMessages(locale);
 const shell = Astro.locals.dashboardShell ?? null;
 const { session, user } = shell ? { session: shell.session, user: shell.user } : await getAuthFromCookies(Astro.cookies);
@@ -191,7 +194,7 @@ const noticeIsError = Boolean(replaceError || params.get("error"));
           {isPush ? t.sensors.noneYetPush : t.sensors.noneYetPull}
         </p>
       ) : (
-        <form action="/api/devices" method="post" class="device-sensors-form">
+        <form action="/api/devices" method="post" class="device-sensors-form" data-unsaved-guard={unsavedMessage}>
           <input type="hidden" name="action" value="update_sensors" />
           <input type="hidden" name="device_id" value={device.id} />
           <input type="hidden" name="redirect" value={`${self}#sensors`} />
@@ -326,7 +329,7 @@ const noticeIsError = Boolean(replaceError || params.get("error"));
     {canEdit && (
       <section class="card" aria-labelledby="device-settings-title" id="settings">
         <h2 class="card-title" id="device-settings-title">{t.settings.title}</h2>
-        <form action="/api/devices" method="post" class="device-settings-form">
+        <form action="/api/devices" method="post" class="device-settings-form" data-unsaved-guard={unsavedMessage}>
           <input type="hidden" name="action" value="update_device" />
           <input type="hidden" name="device_id" value={device.id} />
           <input type="hidden" name="redirect" value={`${self}#settings`} />
@@ -460,6 +463,7 @@ const noticeIsError = Boolean(replaceError || params.get("error"));
       </section>
     )}
   </div>
+  <UnsavedChangesGuard />
 </DashboardLayout>
 
 <script>

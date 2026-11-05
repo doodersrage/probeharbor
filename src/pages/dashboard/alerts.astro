@@ -145,12 +145,29 @@ const skippedChannels = formatAlertChannelsCsv(Astro.url.searchParams.get("skipp
 const testReason = Astro.url.searchParams.get("test_reason");
 
 const notices = t.notices;
-const alertNotice = Astro.url.searchParams.get("alert_saved") === "restored"
-  ? notices.restored
-  : Astro.url.searchParams.get("alert_saved")
+const testNotice = Astro.url.searchParams.get("test_sent")
+  ? skippedChannels
+    ? fmt(notices.testSentSkipped, { sent: sentChannels, skipped: skippedChannels })
+    : fmt(notices.testSentVia, { channels: sentChannels || notices.yourEnabledChannels })
+  : Astro.url.searchParams.get("test_error")
+    ? testReason === "incomplete"
+      ? notices.testIncomplete
+      : testReason === "none"
+        ? notices.testNoChannels
+        : notices.testFailed
+    : null;
+// "Save and send test" lands with both: say it saved, then how the test went.
+const savedNotice = Astro.url.searchParams.get("alert_saved")
   ? Astro.url.searchParams.get("channels_incomplete")
     ? notices.savedIncomplete
     : notices.saved
+  : null;
+const alertNotice = Astro.url.searchParams.get("alert_saved") === "restored"
+  ? notices.restored
+  : savedNotice
+  ? testNotice
+    ? `${savedNotice} ${testNotice}`
+    : savedNotice
   : Astro.url.searchParams.get("alert_error")
     ? Astro.url.searchParams.get("alert_error") === "invalid_webhook_url"
       ? notices.invalidWebhookUrl
@@ -159,25 +176,17 @@ const alertNotice = Astro.url.searchParams.get("alert_saved") === "restored"
         : Astro.url.searchParams.get("alert_error") === "restore_failed"
           ? notices.restoreFailed
           : notices.saveFailed
-    : Astro.url.searchParams.get("test_sent")
-      ? skippedChannels
-        ? fmt(notices.testSentSkipped, { sent: sentChannels, skipped: skippedChannels })
-        : fmt(notices.testSentVia, { channels: sentChannels || notices.yourEnabledChannels })
-      : Astro.url.searchParams.get("test_error")
-        ? testReason === "incomplete"
-          ? notices.testIncomplete
-          : testReason === "none"
-            ? notices.testNoChannels
-            : notices.testFailed
-        : Astro.url.searchParams.get("ack_ok")
-          ? Astro.url.searchParams.get("ack_msg") ?? notices.ackOk
-          : Astro.url.searchParams.get("ack_error")
-            ? Astro.url.searchParams.get("ack_msg") ?? notices.ackError
-            : Astro.url.searchParams.get("snooze_cleared")
-              ? apiUserMessages(locale).snooze.snoozeCleared
-              : Astro.url.searchParams.get("vacation_cleared")
-                ? apiUserMessages(locale).snooze.vacationCleared
-                : null;
+    : testNotice
+      ? testNotice
+      : Astro.url.searchParams.get("ack_ok")
+        ? Astro.url.searchParams.get("ack_msg") ?? notices.ackOk
+        : Astro.url.searchParams.get("ack_error")
+          ? Astro.url.searchParams.get("ack_msg") ?? notices.ackError
+          : Astro.url.searchParams.get("snooze_cleared")
+            ? apiUserMessages(locale).snooze.snoozeCleared
+            : Astro.url.searchParams.get("vacation_cleared")
+              ? apiUserMessages(locale).snooze.vacationCleared
+              : null;
 
 const alertNoticeIsError =
   Boolean(Astro.url.searchParams.get("alert_error")) ||
@@ -412,7 +421,7 @@ const referralRewardDays = Number(
                 ? t.testCard.bodyRepeat
                 : t.testCard.bodyFirst}
             </p>
-            <form action="/api/user/alert-test" method="post">
+            <form action="/api/user/alert-test" method="post" data-alert-test-form>
               <input type="hidden" name="redirect" value="/dashboard/alerts?tab=settings" />
               <button
                 class:list={lastAlertAt || testSent ? "btn-secondary" : "btn-primary"}

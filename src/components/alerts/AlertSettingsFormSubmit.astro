@@ -19,6 +19,7 @@ const channelLabels = Object.fromEntries(
   import alertMessagesEn from "../../i18n/messages/app/alertMessages/en";
   import { fmt, readI18nJson } from "../../i18n/client";
   import en from "../../i18n/messages/app/alertSettings/en";
+  import { isUnsaved, markUnsaved } from "../../lib/unsavedChangesGuard";
 
   const text = readI18nJson("alert-settings-submit-i18n", en.clientSubmit);
   const channelLabels = readI18nJson<Record<string, string>>("alert-settings-channel-labels", alertMessagesEn.channelLabels);
@@ -27,6 +28,34 @@ const channelLabels = Object.fromEntries(
   const statusEl = document.getElementById("alert-action-status");
   const errorEl = document.getElementById("alert-action-error");
   const submitBtn = document.getElementById("alert-settings-submit");
+  const saveAndTestBtn = document.getElementById("alert-settings-submit-test");
+
+  /** Send the test after a save and turn the result into the page's flash params. */
+  async function sendTestAfterSave(params: URLSearchParams) {
+    try {
+      const res = await fetch("/api/user/alert-test", {
+        method: "POST",
+        headers: { Accept: "application/json" },
+        credentials: "same-origin",
+      });
+      const body = (await res.json().catch(() => ({}))) as {
+        ok?: boolean;
+        sent?: string[];
+        skipped?: string[];
+        reason?: string;
+      };
+      if (res.ok && body.ok) {
+        params.set("test_sent", "1");
+        params.set("sent", (body.sent ?? []).join(","));
+        if (body.skipped?.length) params.set("skipped", body.skipped.join(","));
+      } else {
+        params.set("test_error", "1");
+        if (body.reason === "incomplete" || body.reason === "none") params.set("test_reason", body.reason);
+      }
+    } catch {
+      params.set("test_error", "1");
+    }
+  }
 
   function showStatus(message: string) {
     statusEl?.classList.remove("hidden");
@@ -43,6 +72,8 @@ const channelLabels = Object.fromEntries(
   form?.addEventListener("submit", async (event) => {
     event.preventDefault();
     if (!(form instanceof HTMLFormElement)) return;
+    const submitter = (event as SubmitEvent).submitter;
+    const alsoTest = submitter instanceof HTMLElement && submitter.dataset.alsoTest === "1";
 
     const sync = (
       window as Window & { syncAlertSettingsFormFields?: () => void }
@@ -55,6 +86,7 @@ const channelLabels = Object.fromEntries(
       submitBtn.disabled = true;
       submitBtn.textContent = text.saving;
     }
+    if (saveAndTestBtn instanceof HTMLButtonElement) saveAndTestBtn.disabled = true;
 
     const formData = prepareAlertSettingsFormData(new FormData(form));
     const { data, error } = await actions.updateAlertSettings(formData);
@@ -65,6 +97,9 @@ const channelLabels = Object.fromEntries(
     }
 
     if (error) {
+      if (saveAndTestBtn instanceof HTMLButtonElement) saveAndTestBtn.disabled = false;
+      // Nothing was saved: keep the unsaved-changes guard on.
+      markUnsaved(form);
       showError(error.message || text.saveFailed);
       return;
     }
@@ -73,7 +108,22 @@ const channelLabels = Object.fromEntries(
     // delayed reload (SSR flash banner carries the same success copy).
     const params = new URLSearchParams({ tab: "settings", alert_saved: "1" });
     if (data?.channelsIncomplete) params.set("channels_incomplete", "1");
+    if (alsoTest) {
+      if (submitBtn instanceof HTMLButtonElement) submitBtn.disabled = true;
+      showStatus(text.sending);
+      await sendTestAfterSave(params);
+    }
     window.location.assign(`/dashboard/alerts?${params.toString()}`);
+  });
+
+  // "Send test now" sends with saved settings. With unsaved edits, offer to
+  // save them first (and test with them) instead of losing them on navigation.
+  document.querySelector<HTMLFormElement>("[data-alert-test-form]")?.addEventListener("submit", (event) => {
+    if (!form || !isUnsaved(form)) return;
+    event.preventDefault();
+    if (!window.confirm(text.saveBeforeTest)) return;
+    if (saveAndTestBtn instanceof HTMLButtonElement) form.requestSubmit(saveAndTestBtn);
+    else form.requestSubmit();
   });
 
   document.querySelectorAll<HTMLButtonElement>("[data-snooze-action]").forEach((btn) => {

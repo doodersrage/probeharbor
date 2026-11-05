@@ -1,0 +1,11 @@
+---
+/**
+ * Include once on a page with forms marked `data-unsaved-guard={message}`
+ * (message: shellMessages(locale).unsavedChanges). See lib/unsavedChangesGuard.
+ */
+---
+<script>
+  import { installUnsavedChangesGuards } from "../lib/unsavedChangesGuard";
+
+  installUnsavedChangesGuards();
+</script>

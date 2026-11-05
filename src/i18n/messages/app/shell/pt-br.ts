@@ -2,6 +2,7 @@ import type { ShellMessages } from "./en";
 
 const ptBr: ShellMessages = {
   defaultTitle: "Painel",
+  unsavedChanges: "Você tem alterações não salvas. Sair desta página sem salvá-las?",
   nav: {
     overview: "Visão geral",
     live: "Ao vivo",

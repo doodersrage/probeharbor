@@ -156,6 +156,7 @@ const de: AlertSettingsMessages = {
 
   save: {
     button: "Alarmeinstellungen speichern",
+    saveAndTest: "Speichern und Test senden",
     incompleteHint: "Für einen ausgewählten Kanal fehlt das Ziel – sonst wird er beim Alarm übersprungen.",
     notApplied: "Änderungen gelten erst nach dem Speichern.",
   },
@@ -208,6 +209,7 @@ const de: AlertSettingsMessages = {
 
   clientSubmit: {
     saving: "Wird gespeichert…",
+    saveBeforeTest: "Du hast ungespeicherte Alarmänderungen. Speichern und den Test mit den neuen Einstellungen senden?",
     saveButton: "Alarmeinstellungen speichern",
     saveFailed: "Alarmeinstellungen konnten nicht gespeichert werden.",
     pickVacationDate: "Wähle ein Rückkehrdatum für den Urlaub.",

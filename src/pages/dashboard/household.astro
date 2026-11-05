@@ -24,6 +24,8 @@ import UpgradeNudge from "../../components/UpgradeNudge.astro";
 import I18nJson from "../../components/I18nJson.astro";
 import { fmt, formatDateTime, formatNumber, getLocale, plural } from "../../i18n";
 import { householdMessages } from "../../i18n/messages/app/household";
+import { shellMessages } from "../../i18n/messages/app/shell";
+import UnsavedChangesGuard from "../../components/UnsavedChangesGuard.astro";
 
 const locale = getLocale(Astro);
 const t = householdMessages(locale);
@@ -344,7 +346,7 @@ const digestError = Astro.url.searchParams.get("digest_error");
 
     {isOwner && (
       <DashboardCard>
-        <form method="POST" data-rename-household-form>
+        <form method="POST" data-rename-household-form data-unsaved-guard={shellMessages(locale).unsavedChanges}>
           <input type="hidden" name="action" value="rename" />
           <input type="hidden" name="redirect" value="/dashboard/household" />
           <h2 class="card-title">{t.rename.heading}</h2>
@@ -385,7 +387,7 @@ const digestError = Astro.url.searchParams.get("digest_error");
 
     {isOwner && (
       <DashboardCard id="freeze-map">
-      <form method="POST" id="freeze-map-form" data-freeze-map-form>
+      <form method="POST" id="freeze-map-form" data-freeze-map-form data-unsaved-guard={shellMessages(locale).unsavedChanges}>
         <input type="hidden" name="action" value="freeze_map" />
         <input type="hidden" name="redirect" value="/dashboard/household" />
         <p class="alert-success mt-0 mb-3 hidden" data-form-status role="status"></p>
@@ -581,12 +583,14 @@ const digestError = Astro.url.searchParams.get("digest_error");
       </DashboardCard>
     )}
   </div>
+  <UnsavedChangesGuard />
 </DashboardLayout>
 
 <script>
   import { actions } from "astro:actions";
   import { readI18nJson } from "../../i18n/client";
   import en from "../../i18n/messages/app/household/en";
+  import { markUnsaved } from "../../lib/unsavedChangesGuard";
 
   const inviteForm = document.querySelector<HTMLFormElement>("[data-invite-form]");
   const inviteStatus = document.getElementById("invite-status");
@@ -655,6 +659,8 @@ const digestError = Astro.url.searchParams.get("digest_error");
         submitBtn.textContent = idleLabel;
       }
       if (error) {
+        // Not saved: keep warning before leaving.
+        markUnsaved(form);
         if (errorEl) {
           errorEl.textContent = error.message || text.saveFailed;
           errorEl.classList.remove("hidden");

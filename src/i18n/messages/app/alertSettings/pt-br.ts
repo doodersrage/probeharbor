@@ -156,6 +156,7 @@ const ptBr: AlertSettingsMessages = {
 
   save: {
     button: "Salvar configurações de alerta",
+    saveAndTest: "Salvar e enviar teste",
     incompleteHint: "Um canal marcado precisa do destino preenchido, ou será ignorado quando os alertas dispararem.",
     notApplied: "As alterações só valem depois que você salvar.",
   },
@@ -208,6 +209,7 @@ const ptBr: AlertSettingsMessages = {
 
   clientSubmit: {
     saving: "Salvando…",
+    saveBeforeTest: "Você tem alterações de alertas não salvas. Salvá-las e enviar o teste com as novas configurações?",
     saveButton: "Salvar configurações de alerta",
     saveFailed: "Não foi possível salvar as configurações de alerta.",
     pickVacationDate: "Escolha uma data de volta das férias.",

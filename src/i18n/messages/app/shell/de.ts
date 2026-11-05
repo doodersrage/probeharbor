@@ -2,6 +2,7 @@ import type { ShellMessages } from "./en";
 
 const de: ShellMessages = {
   defaultTitle: "Dashboard",
+  unsavedChanges: "Du hast ungespeicherte Änderungen. Seite verlassen, ohne sie zu speichern?",
   nav: {
     overview: "Übersicht",
     live: "Live",

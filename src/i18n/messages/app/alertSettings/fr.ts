@@ -157,6 +157,7 @@ const fr: AlertSettingsMessages = {
 
   save: {
     button: "Enregistrer les paramètres d’alerte",
+    saveAndTest: "Enregistrer et envoyer un test",
     incompleteHint: "Un canal coché doit avoir sa destination renseignée, sinon il sera ignoré lors des alertes.",
     notApplied: "Les modifications ne s’appliquent qu’après l’enregistrement.",
   },
@@ -209,6 +210,7 @@ const fr: AlertSettingsMessages = {
 
   clientSubmit: {
     saving: "Enregistrement…",
+    saveBeforeTest: "Vous avez des modifications d’alertes non enregistrées. Les enregistrer et envoyer le test avec les nouveaux réglages ?",
     saveButton: "Enregistrer les paramètres d’alerte",
     saveFailed: "Impossible d’enregistrer les paramètres d’alerte.",
     pickVacationDate: "Choisissez une date de retour de vacances.",

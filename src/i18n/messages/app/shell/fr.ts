@@ -2,6 +2,7 @@ import type { ShellMessages } from "./en";
 
 const fr: ShellMessages = {
   defaultTitle: "Tableau de bord",
+  unsavedChanges: "Vous avez des modifications non enregistrées. Quitter cette page sans les enregistrer ?",
   nav: {
     overview: "Vue d’ensemble",
     live: "En direct",

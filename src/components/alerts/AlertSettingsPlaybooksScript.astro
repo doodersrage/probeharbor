@@ -53,7 +53,7 @@ const text = alertSettingsMessages(getLocale(Astro)).clientPlaybooks;
               <input class="form-input" type="number" data-field="afterMinutes" min="1" value="${step.afterMinutes ?? 15}" style="max-width:6rem" />
             </div>
             <label class="checkbox-row mb-0"><input type="checkbox" data-field="ifUnacked" ${step.ifUnacked !== false ? "checked" : ""} /> <span>${text.onlyIfUnacked}</span></label>
-            <button type="button" class="btn-secondary text-sm" data-remove-step>${text.delete}</button>
+            <button type="button" class="btn-secondary text-sm" data-remove-step data-unsaved-edit>${text.delete}</button>
           </div>
           <p class="text-sm text-[var(--color-text-muted)] mb-1">${text.channels}</p>
           <div class="flex flex-wrap gap-2 mb-2">${channelChecks}</div>

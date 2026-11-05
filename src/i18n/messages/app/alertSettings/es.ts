@@ -156,6 +156,7 @@ const es: AlertSettingsMessages = {
 
   save: {
     button: "Guardar ajustes de alertas",
+    saveAndTest: "Guardar y enviar prueba",
     incompleteHint: "Un canal marcado necesita su destino; si no, se omitirá cuando salten las alertas.",
     notApplied: "Los cambios no se aplican hasta que guardes.",
   },
@@ -208,6 +209,7 @@ const es: AlertSettingsMessages = {
 
   clientSubmit: {
     saving: "Guardando…",
+    saveBeforeTest: "Tienes cambios de alertas sin guardar. ¿Guardarlos y enviar la prueba con la nueva configuración?",
     saveButton: "Guardar ajustes de alertas",
     saveFailed: "No se pudieron guardar los ajustes de alertas.",
     pickVacationDate: "Elige una fecha de regreso de las vacaciones.",

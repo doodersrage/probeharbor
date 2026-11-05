@@ -2,6 +2,7 @@ import type { ShellMessages } from "./en";
 
 const es: ShellMessages = {
   defaultTitle: "Panel",
+  unsavedChanges: "Tienes cambios sin guardar. ¿Salir de esta página sin guardarlos?",
   nav: {
     overview: "Resumen",
     live: "En vivo",

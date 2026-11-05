@@ -12,6 +12,8 @@ import ChannelDeliveryStatus from "./alerts/ChannelDeliveryStatus.astro";
 import type { ChannelDelivery } from "../lib/channelDelivery";
 import { fmt, getLocale, LOCALE_META } from "../i18n";
 import { alertSettingsMessages } from "../i18n/messages/app/alertSettings";
+import { shellMessages } from "../i18n/messages/app/shell";
+import UnsavedChangesGuard from "./UnsavedChangesGuard.astro";
 
 interface Props {
   userEmail: string;
@@ -151,7 +153,13 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
 )}
 <p class="alert-success mt-0 mb-4 hidden" id="alert-action-status" role="status"></p>
 <p class="alert-warning mt-0 mb-4 hidden" id="alert-action-error" role="alert"></p>
-<form method="POST" id="alert-settings-form" data-alert-settings-form class="alert-settings-form">
+<form
+  method="POST"
+  id="alert-settings-form"
+  data-alert-settings-form
+  class="alert-settings-form"
+  data-unsaved-guard={shellMessages(getLocale(Astro)).unsavedChanges}
+>
   <fieldset disabled={!canEdit} class="border-0 p-0 m-0 min-w-0 space-y-4">
   <input type="hidden" name="redirect" value={redirectTo} />
   <input type="hidden" name="alert_rules_json" id="alert_rules_json" value={rulesJson} />
@@ -667,7 +675,7 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
         </select>
       </div>
     </div>
-    <details class="alert-settings-nested mt-4" id="setting-snooze">
+    <details class="alert-settings-nested mt-4" id="setting-snooze" data-unsaved-ignore>
       <summary>{t.quiet.snoozeSummary}</summary>
       <div class="alert-settings-nested-body">
         <p class="form-hint mb-3">
@@ -763,15 +771,15 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
     <p class="form-hint mb-3">{t.automation.doorDurationHint}</p>
     <div id="alert-rules-list" class="space-y-3 mb-3"></div>
     <div class="flex flex-wrap gap-2 mb-4">
-      <button type="button" class="btn-secondary" id="add-alert-rule">{t.automation.addRule}</button>
-      <button type="button" class="btn-secondary" id="add-heat-rule">{fmt(t.automation.addHeatRule, { threshold: HEAT_THRESHOLD_F })}</button>
+      <button type="button" class="btn-secondary" id="add-alert-rule" data-unsaved-edit>{t.automation.addRule}</button>
+      <button type="button" class="btn-secondary" id="add-heat-rule" data-unsaved-edit>{fmt(t.automation.addHeatRule, { threshold: HEAT_THRESHOLD_F })}</button>
     </div>
     <RuleCheckPanel />
 
     <h3 class="alert-settings-subheading">{t.automation.playbooks}</h3>
     <p class="form-hint mb-3">{t.automation.playbooksHint}</p>
     <div id="alert-playbooks-list" class="space-y-3 mb-3"></div>
-    <button type="button" class="btn-secondary mb-4" id="add-playbook-step">{t.automation.addStep}</button>
+    <button type="button" class="btn-secondary mb-4" id="add-playbook-step" data-unsaved-edit>{t.automation.addStep}</button>
     <textarea
       class="form-textarea font-mono text-xs sr-only"
       id="alert_playbooks_editor"
@@ -955,6 +963,9 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
       <button type="submit" class="btn-primary" id="alert-settings-submit">
         {t.save.button}
       </button>
+      <button type="submit" class="btn-secondary" id="alert-settings-submit-test" data-also-test="1">
+        {t.save.saveAndTest}
+      </button>
       <p class="form-hint mt-0 mb-0" id="channel-incomplete-hint" hidden>
         {t.save.incompleteHint}
       </p>
@@ -988,6 +999,7 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
 </style>
 
 <AlertSettingsFormSubmit />
+<UnsavedChangesGuard />
 <AlertSettingsRulesScript initialRules={settings.alertRules} />
 <AlertSettingsPlaybooksScript
   initialPlaybooks={settings.alertPlaybooks ?? []}
