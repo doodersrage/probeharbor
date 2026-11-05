@@ -44,7 +44,7 @@ Plans and limits: [probeharbor.dev/pricing](https://probeharbor.dev/pricing) · 
 
 ## Stack
 
-Astro 7 + Preact islands + Tailwind v4 · Cloudflare Workers · Supabase (Auth, Postgres, RLS) · Stripe · Cloudflare Email · Twilio SMS (Pro) · Web Push (Pro). **Node.js `>=22.23.4`** and **pnpm**.
+Astro 7 + Preact islands + Tailwind v4 · Cloudflare Workers · Supabase (Auth, Postgres, RLS) · Stripe · Cloudflare Email · Twilio SMS (Pro) · Web Push (Pro). **Node.js 24 (`>=24.11.0`)** and **pnpm**.
 
 ## Quick start
 

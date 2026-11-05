@@ -50,8 +50,8 @@ jobs:
           version: 9
       - uses: actions/setup-node@v5
         with:
-          node-version: 22
-          # Astro 7 needs >=22.23.4; runner caches can hold an older 22.x.
+          node-version: 24
+          # Node 24 LTS; check-latest so a runner cache never serves an old 24.x.
           check-latest: true
           cache: pnpm
       - run: pnpm install --frozen-lockfile
@@ -66,8 +66,8 @@ jobs:
           version: 9
       - uses: actions/setup-node@v5
         with:
-          node-version: 22
-          # Astro 7 needs >=22.23.4; runner caches can hold an older 22.x.
+          node-version: 24
+          # Node 24 LTS; check-latest so a runner cache never serves an old 24.x.
           check-latest: true
           cache: pnpm
       # Blocking: lint errors fail CI. Formatting isn't enforced (most files
@@ -84,8 +84,8 @@ jobs:
           version: 9
       - uses: actions/setup-node@v5
         with:
-          node-version: 22
-          # Astro 7 needs >=22.23.4; runner caches can hold an older 22.x.
+          node-version: 24
+          # Node 24 LTS; check-latest so a runner cache never serves an old 24.x.
           check-latest: true
           cache: pnpm
       - run: pnpm install --frozen-lockfile
@@ -133,8 +133,8 @@ jobs:
           version: 9
       - uses: actions/setup-node@v5
         with:
-          node-version: 22
-          # Astro 7 needs >=22.23.4; runner caches can hold an older 22.x.
+          node-version: 24
+          # Node 24 LTS; check-latest so a runner cache never serves an old 24.x.
           check-latest: true
           cache: pnpm
       - run: pnpm install --frozen-lockfile
@@ -156,8 +156,8 @@ jobs:
           version: 9
       - uses: actions/setup-node@v5
         with:
-          node-version: 22
-          # Astro 7 needs >=22.23.4; runner caches can hold an older 22.x.
+          node-version: 24
+          # Node 24 LTS; check-latest so a runner cache never serves an old 24.x.
           check-latest: true
           cache: pnpm
       - run: pnpm install --frozen-lockfile
