@@ -96,7 +96,9 @@ export const onRequest = defineMiddleware(async (context, next) => {
     }
     pathname = unprefixedPath;
   }
-  const cookieLocale = context.cookies.get(LOCALE_COOKIE)?.value;
+  // Prerendered pages are built without a visitor: no cookies or headers.
+  const visitor = !context.isPrerendered;
+  const cookieLocale = visitor ? context.cookies.get(LOCALE_COOKIE)?.value : undefined;
   // Before auth: URL prefix, cookie or browser language. Signed-in routes
   // switch to the account language below once the user is known.
   let locale = resolveRequestLocale({
@@ -104,7 +106,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
     prefixLocale,
     user: null,
     cookieLocale,
-    acceptLanguage: context.request.headers.get("Accept-Language"),
+    acceptLanguage: visitor ? context.request.headers.get("Accept-Language") : null,
   });
   context.locals.locale = locale;
 
