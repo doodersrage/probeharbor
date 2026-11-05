@@ -137,7 +137,12 @@ const demoDevices = devices.filter((d) => isDemoDevice(d));
         />
       )}
       {showWeather && (
-        <WeatherPanel client:visible cityId={preferences.weatherCityId ?? null} text={t.weather} />
+        <WeatherPanel
+          client:visible
+          cityId={preferences.weatherCityId ?? null}
+          text={t.weather}
+          useCelsius={preferences.useCelsius}
+        />
       )}
     </div>
   </div>

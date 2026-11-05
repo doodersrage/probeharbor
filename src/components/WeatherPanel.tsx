@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "preact/hooks";
+import { fToC } from "../lib/tempUnits";
 import type { WeatherSnapshot } from "../lib/FetchWeather";
 import { LIVE_REFRESH_EVENT } from "../lib/liveDashboardChrome";
 import WeatherMap, { WEATHER_MAP_TEXT_EN } from "./WeatherMap";
@@ -41,6 +42,8 @@ interface Props {
   intervalMs?: number;
   /** Guest marketing home — avoid dashboard-only CTAs */
   guest?: boolean;
+  /** The signed-in °C display preference: temperatures read °C first, °F in parentheses. */
+  useCelsius?: boolean;
 }
 
 export default function WeatherPanel({
@@ -49,6 +52,7 @@ export default function WeatherPanel({
   guest = false,
   text = WEATHER_PANEL_TEXT_EN,
   locale,
+  useCelsius = false,
 }: Props) {
   // Non-English pages read °C and km/h first, with the US units in parentheses.
   const localized = locale != null && !locale.toLowerCase().startsWith("en");
@@ -172,7 +176,12 @@ export default function WeatherPanel({
     localized
       ? new Intl.NumberFormat(locale, { style: "percent", maximumFractionDigits: 0 }).format(Math.round(n) / 100)
       : `${whole(n)}%`;
-  const temp = (f: number) => (localized ? `${whole(((f - 32) * 5) / 9)} °C (${whole(f)} °F)` : `${whole(f)}°F`);
+  const temp = (f: number) =>
+    localized
+      ? `${whole(fToC(f))} °C (${whole(f)} °F)`
+      : useCelsius
+        ? `${whole(fToC(f))}°C (${whole(f)}°F)`
+        : `${whole(f)}°F`;
   const wind = (mph: number) => (localized ? `${whole(mph * 1.609344)} km/h (${whole(mph)} mph)` : `${whole(mph)} mph`);
   const stats: Array<{ key: string; label: string; value: string; detail?: boolean }> = [
     { key: "temperature", label: text.temperature, value: temp(weather.temp) },
