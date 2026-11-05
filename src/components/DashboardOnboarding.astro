@@ -2,9 +2,16 @@
 import DashboardCard from "./dashboard/DashboardCard.astro";
 import { fmt, getLocale } from "../i18n";
 import { overviewMessages } from "../i18n/messages/app/overview";
+import type { OnboardingDeviceStep } from "../lib/demoFeed";
 
 interface Props {
+  /** Any device or demo feed exists (drives the hardware links). */
   hasDevices: boolean;
+  /**
+   * Step 1: "done" only once a real (non-demo) device has reported;
+   * "waiting" while one exists but hasn't yet (see onboardingDeviceStep).
+   */
+  deviceStep: OnboardingDeviceStep;
   hasSensors: boolean;
   hasHistory: boolean;
   hasAlertsEnabled?: boolean;
@@ -26,6 +33,7 @@ interface Props {
 
 const {
   hasDevices,
+  deviceStep,
   hasSensors,
   hasHistory,
   hasAlertsEnabled = false,
@@ -45,14 +53,24 @@ const t = overviewMessages(getLocale(Astro)).onboarding;
 const showFreezeMapCta = hasLiveSensors && hasHousehold;
 const ingestVerified = hasLiveSensors || hasHistory;
 
+type Step = { done: boolean; waiting?: boolean; href: string; title: string; detail: string };
+
 /** Path most users need before winter. */
-const essentialSteps = [
-  {
-    done: hasDevices,
-    href: "/dashboard/devices?view=setup",
-    title: t.essential.device.title,
-    detail: t.essential.device.detail,
-  },
+const essentialSteps: Step[] = [
+  deviceStep === "waiting"
+    ? {
+        done: false,
+        waiting: true,
+        href: "/dashboard/devices",
+        title: t.essential.device.waitingTitle,
+        detail: t.essential.device.waitingDetail,
+      }
+    : {
+        done: deviceStep === "done",
+        href: "/dashboard/devices?view=setup",
+        title: t.essential.device.title,
+        detail: t.essential.device.detail,
+      },
   {
     done: hasAlertsEnabled && hasEmailAlerts,
     href: "/dashboard/alerts?tab=settings#alert-section-essentials",
@@ -67,7 +85,7 @@ const essentialSteps = [
   },
 ];
 
-const kitSteps = [
+const kitSteps: Step[] = [
   {
     done: hasLiveSensors || hasSensors,
     href: "/dashboard/devices?view=setup",
@@ -90,7 +108,7 @@ const kitSteps = [
 
 // Only steps the dashboard can see you finish. Companion apps live under Overview → Tips,
 // and the claim puck under Devices → Other ways to connect.
-const nextSteps = [
+const nextSteps: Array<Step & { required: boolean }> = [
   {
     done: hasHistory,
     required: true,
@@ -150,7 +168,7 @@ if (dismissed || fullyDone || placement !== wantedPlacement) {
         {activeSteps.map((step, index) => (
           <a class="dashboard-onboarding-item" href={step.href}>
             <span class="dashboard-onboarding-step">
-              {step.done ? "✓" : index + 1}
+              {step.done ? "✓" : step.waiting ? "…" : index + 1}
             </span>
             <span>
               <strong>{step.title}</strong>
@@ -210,7 +228,7 @@ if (dismissed || fullyDone || placement !== wantedPlacement) {
     {activeSteps.map((step, index) => (
       <a class="dashboard-onboarding-item" href={step.href}>
         <span class="dashboard-onboarding-step">
-          {step.done ? "✓" : index + 1}
+          {step.done ? "✓" : step.waiting ? "…" : index + 1}
         </span>
         <span>
           <strong>{step.title}</strong>

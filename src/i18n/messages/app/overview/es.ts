@@ -143,7 +143,9 @@ const es: OverviewMessages = {
       device: {
         title: "Conecta tu primer sensor",
         detail:
-          "Paso 1 de 3: añade un dispositivo en la página Dispositivos (flasheador ESP32, Home Assistant o un feed de demostración).",
+          "Paso 1 de 3: añade un dispositivo en la página Dispositivos (flasheador ESP32 o Home Assistant). Un feed de demostración sirve para echar un vistazo y no cuenta.",
+        waitingTitle: "Esperando la primera lectura",
+        waitingDetail: "Paso 1 de 3: tu dispositivo está añadido pero aún no ha enviado datos. Abre Dispositivos para revisar su configuración.",
       },
       alerts: {
         title: "Configura el umbral de congelación + correo",

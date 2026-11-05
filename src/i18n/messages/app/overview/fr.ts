@@ -143,7 +143,9 @@ const fr: OverviewMessages = {
       device: {
         title: "Connecter votre premier capteur",
         detail:
-          "Étape 1 sur 3 : ajoutez un appareil sur la page Appareils (flasheur ESP32, Home Assistant ou flux de démo).",
+          "Étape 1 sur 3 : ajoutez un appareil sur la page Appareils (flasheur ESP32 ou Home Assistant). Un flux de démo sert à découvrir et ne compte pas.",
+        waitingTitle: "En attente du premier relevé",
+        waitingDetail: "Étape 1 sur 3 : votre appareil est ajouté mais n’a encore rien envoyé. Ouvrez Appareils pour vérifier sa configuration.",
       },
       alerts: {
         title: "Régler le seuil de gel + l’e-mail",

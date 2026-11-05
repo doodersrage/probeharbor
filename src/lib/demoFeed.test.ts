@@ -6,6 +6,7 @@ import {
   isDemoDevice,
   isDemoFeedUrl,
   onboardingDeviceStep,
+  realReadingRows,
 } from "./demoFeed";
 import { pullDeviceMeta } from "./devices";
 import { getExampleFeedUrl } from "./exampleFeed";
@@ -84,6 +85,21 @@ describe("excluding demo data", () => {
   it("drops rows flagged demo and keeps rows without the flag", () => {
     const rows = [{ id: 1, deviceDemo: true }, { id: 2, deviceDemo: false }, { id: 3 }];
     expect(excludeDemoRows(rows).map((row) => row.id)).toEqual([2, 3]);
+  });
+});
+
+describe("realReadingRows", () => {
+  it("drops rows flagged demo and rows from demo devices without the flag", () => {
+    const devices = [
+      { id: "demo", source: "pull_url", pull_url: "https://probeharbor.com/api/feeds/example" },
+      { id: "real", source: "push", pull_url: null },
+    ];
+    const rows = [
+      { sensor: { device_id: "demo" } },
+      { sensor: { device_id: "x" }, deviceDemo: true },
+      { sensor: { device_id: "real" }, deviceDemo: false },
+    ];
+    expect(realReadingRows(rows, devices)).toEqual([rows[2]]);
   });
 });
 

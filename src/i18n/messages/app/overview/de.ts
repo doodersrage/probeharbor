@@ -143,7 +143,9 @@ const de: OverviewMessages = {
       device: {
         title: "Ersten Sensor verbinden",
         detail:
-          "Schritt 1 von 3: Füge auf der Seite Geräte ein Gerät hinzu (ESP32-Flasher, Home Assistant oder ein Demo-Feed).",
+          "Schritt 1 von 3: Füge auf der Seite Geräte ein Gerät hinzu (ESP32-Flasher oder Home Assistant). Ein Demo-Feed dient nur zum Ausprobieren und zählt nicht.",
+        waitingTitle: "Warten auf den ersten Messwert",
+        waitingDetail: "Schritt 1 von 3: Dein Gerät ist angelegt, hat aber noch nichts gemeldet. Prüfe die Einrichtung unter Geräte.",
       },
       alerts: {
         title: "Frostschwelle + E-Mail einstellen",

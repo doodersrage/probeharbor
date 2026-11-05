@@ -144,7 +144,10 @@ const en = {
     essential: {
       device: {
         title: "Connect your first sensor",
-        detail: "Step 1 of 3: add a device on the Devices page (ESP32 flasher, Home Assistant, or a demo feed).",
+        detail: "Step 1 of 3: add a device on the Devices page (ESP32 flasher or Home Assistant). A demo feed is for looking around and doesn't count.",
+        /** Shown while a device is added but hasn't sent a reading yet. */
+        waitingTitle: "Waiting for the first reading",
+        waitingDetail: "Step 1 of 3: your device is added but hasn't reported yet. Open Devices to check its setup.",
       },
       alerts: {
         title: "Set freeze °F + email",

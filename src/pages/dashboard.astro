@@ -22,6 +22,7 @@ import {
 import { getUserEntitlements } from "../lib/entitlements";
 import { latestFromShell } from "../lib/dashboardShell";
 import { listHouseholdDevices } from "../lib/devices";
+import { isDemoDevice, onboardingDeviceStep, realReadingRows } from "../lib/demoFeed";
 import { ensureAlertDeliveryEvidence, getAlertSettingsForUser } from "../lib/notify";
 import {
   getOrCreateHouseholdForUser,
@@ -272,10 +273,16 @@ if (forceSimple) {
   overviewMode = "simple";
 }
 
-/** Device + freeze email + at least one alert (test counts). Insights wait until this. */
+/**
+ * Any device or feed, demo included: with freeze email + one alert it ends
+ * first-run focus, so the demo feed can still be explored on Overview.
+ */
 const hasDevices =
   devices.some((d) => d.source === "push" || d.source === "pull_url") ||
   latest.length > 0;
+// Checklist step 1 counts only a real (non-demo) device that has reported.
+const deviceStep = onboardingDeviceStep(devices, latest);
+const realLatest = realReadingRows(latest, devices);
 const hasAlertsEnabled = alertSettings.enabled;
 // Snooze / vacation: routine alerts are held (display only, see alertSnooze).
 const alertPause = alertSettings.enabled ? getAlertPauseState(alertSettings) : null;
@@ -784,12 +791,12 @@ const analyticsEvents: Array<{
   name: import("../lib/productAnalytics").ProductEvent;
   props?: Record<string, string | number | boolean>;
 }> = [];
-if (hasDevices) analyticsEvents.push({ name: "onboarding_step_complete", props: { step: "devices" } });
+if (deviceStep === "done") analyticsEvents.push({ name: "onboarding_step_complete", props: { step: "devices" } });
 if (hasSensors) analyticsEvents.push({ name: "onboarding_step_complete", props: { step: "sensors" } });
 if (hasHistory) analyticsEvents.push({ name: "onboarding_step_complete", props: { step: "history" } });
 if (hasEmailAlerts) analyticsEvents.push({ name: "onboarding_step_complete", props: { step: "alerts" } });
 if (hasTestAlert) analyticsEvents.push({ name: "onboarding_step_complete", props: { step: "alert_test" } });
-if (latest.length > 0) analyticsEvents.push({ name: "first_ingest" });
+if (realLatest.length > 0) analyticsEvents.push({ name: "first_ingest" });
 if (Astro.url.searchParams.get("demo_pull") === "1") {
   analyticsEvents.push({ name: "demo_pull_started" });
 }
@@ -896,13 +903,15 @@ const coldestProbeSummary = (() => {
 })();
 const onboardingProps = {
   hasDevices,
-  hasSensors,
+  deviceStep,
+  // Demo feed sensors and readings don't count as setup progress.
+  hasSensors: devices.some((d) => !isDemoDevice(d) && d.sensors.length > 0),
   hasHistory,
   hasAlertsEnabled,
   hasEmailAlerts,
   hasTestAlert,
   hasHouseholdMembers,
-  hasLiveSensors: latest.length > 0,
+  hasLiveSensors: realLatest.length > 0,
   hasHousehold: Boolean(household.householdId),
   hasFloodSensor: devices.some((d) => d.sensors.some((s) => s.kind === "flood")),
   dismissed: onboardingDismissed,

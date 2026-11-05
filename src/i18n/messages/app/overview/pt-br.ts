@@ -143,7 +143,9 @@ const ptBr: OverviewMessages = {
       device: {
         title: "Conecte seu primeiro sensor",
         detail:
-          "Passo 1 de 3: adicione um dispositivo na página Dispositivos (gravador de ESP32, Home Assistant ou um feed de demonstração).",
+          "Passo 1 de 3: adicione um dispositivo na página Dispositivos (gravador de ESP32 ou Home Assistant). Um feed de demonstração serve para explorar e não conta.",
+        waitingTitle: "Aguardando a primeira leitura",
+        waitingDetail: "Passo 1 de 3: seu dispositivo foi adicionado, mas ainda não enviou dados. Abra Dispositivos para conferir a configuração.",
       },
       alerts: {
         title: "Defina o limite de congelamento + e-mail",

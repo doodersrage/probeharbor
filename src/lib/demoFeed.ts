@@ -74,6 +74,18 @@ export function excludeDemoRows<T extends { deviceDemo?: boolean }>(rows: T[]): 
 }
 
 /**
+ * Latest-reading rows from real devices. Also checks the device list, so rows
+ * without the `deviceDemo` flag (e.g. a cached snapshot) are still caught.
+ */
+export function realReadingRows<T extends { sensor: { device_id: string }; deviceDemo?: boolean }>(
+  rows: T[],
+  devices: Array<DemoCheckDevice & { id: string }>,
+): T[] {
+  const demoIds = new Set(devices.filter((device) => isDemoDevice(device)).map((device) => device.id));
+  return rows.filter((row) => row.deviceDemo !== true && !demoIds.has(row.sensor.device_id));
+}
+
+/**
  * Onboarding step 1 ("Connect your first sensor"):
  * - "done" once a real (non-demo) device has reported at least once;
  * - "waiting" while a real device exists but hasn't reported yet;
@@ -85,11 +97,9 @@ export function onboardingDeviceStep(
   devices: Array<DemoCheckDevice & { id: string; last_seen_at?: string | null }>,
   latest: Array<{ sensor: { device_id: string }; deviceDemo?: boolean }>,
 ): OnboardingDeviceStep {
-  const demoIds = new Set(devices.filter((device) => isDemoDevice(device)).map((device) => device.id));
-  const realDevices = devices.filter((device) => !demoIds.has(device.id));
+  const realDevices = excludeDemoDevices(devices);
   const realReported =
-    realDevices.some((device) => Boolean(device.last_seen_at)) ||
-    latest.some((row) => row.deviceDemo !== true && !demoIds.has(row.sensor.device_id));
+    realDevices.some((device) => Boolean(device.last_seen_at)) || realReadingRows(latest, devices).length > 0;
   if (realReported) return "done";
   return realDevices.length > 0 ? "waiting" : "todo";
 }
