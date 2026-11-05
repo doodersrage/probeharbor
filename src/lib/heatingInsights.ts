@@ -4,6 +4,7 @@ import { isThermostatCooling, isThermostatHeating } from "./thermostatCorrelatio
 import { fmt, formatNumber } from "../i18n/format";
 import type { Locale } from "../i18n/locales";
 import { overviewCardsMessages } from "../i18n/messages/app/overviewCards";
+import { displayTempInputValue, tempUnitLabel, toDisplayDelta, toDisplayTemp } from "./temperatureFormat";
 
 export type HeatingInsight = {
   label: string;
@@ -70,10 +71,19 @@ export function buildHeatingInsights(
     thermostatSnapshot?: ThermostatSnapshot | null;
   },
   locale: Locale = "en",
+  /**
+   * The °C display preference: only the wording changes. Every rule below
+   * still compares stored °F values. Temperatures convert with the offset;
+   * the rate, margins and the house gap are differences (×5/9, no offset).
+   */
+  useCelsius = false,
 ): HeatingInsight[] {
   const t = overviewCardsMessages(locale).heating;
-  const threshold =
-    locale === "en" ? String(options.freezeThresholdF) : formatNumber(options.freezeThresholdF, locale);
+  const unit = tempUnitLabel(useCelsius);
+  const shownThreshold = displayTempInputValue(options.freezeThresholdF, useCelsius);
+  const threshold = locale === "en" ? String(shownThreshold) : formatNumber(shownThreshold, locale);
+  const temp = (valueF: number, digits: number) => fixed(toDisplayTemp(valueF, useCelsius), digits, locale);
+  const delta = (valueF: number, digits: number) => fixed(toDisplayDelta(valueF, useCelsius), digits, locale);
   const insights: HeatingInsight[] = [];
   const latest = options.indoorPoints.filter((p) => Number.isFinite(p.tempf)).at(-1);
   if (!latest) return insights;
@@ -82,7 +92,7 @@ export function buildHeatingInsights(
   if (rate != null && rate <= -2) {
     insights.push({
       label: t.rapidDrop.label,
-      detail: fmt(t.rapidDrop.detail, { rate: fixed(Math.abs(rate), 1, locale) }),
+      detail: fmt(t.rapidDrop.detail, { rate: delta(Math.abs(rate), 1), unit }),
       severity: "warning",
     });
   }
@@ -103,7 +113,7 @@ export function buildHeatingInsights(
   if (latest.tempf <= options.freezeThresholdF + 5) {
     insights.push({
       label: t.nearFreeze.label,
-      detail: fmt(t.nearFreeze.detail, { temp: fixed(latest.tempf, 1, locale), threshold }),
+      detail: fmt(t.nearFreeze.detail, { temp: temp(latest.tempf, 1), threshold, unit }),
       severity: latest.tempf <= options.freezeThresholdF ? "warning" : "info",
     });
   }
@@ -113,8 +123,9 @@ export function buildHeatingInsights(
     insights.push({
       label: t.coldSnap.label,
       detail: fmt(t.coldSnap.detail, {
-        outdoor: fixed(options.outdoorTempF, 0, locale),
-        margin: fixed(margin, 0, locale),
+        outdoor: temp(options.outdoorTempF, 0),
+        margin: delta(margin, 0),
+        unit,
       }),
       severity: margin <= 8 ? "warning" : "info",
     });
@@ -127,8 +138,9 @@ export function buildHeatingInsights(
       insights.push({
         label: t.condensation.label,
         detail: fmt(t.condensation.detail, {
-          dewPoint: fixed(dewPoint, 0, locale),
-          margin: fixed(Math.max(0, margin), 0, locale),
+          dewPoint: temp(dewPoint, 0),
+          margin: delta(Math.max(0, margin), 0),
+          unit,
         }),
         severity: margin <= 2 ? "warning" : "info",
       });
@@ -142,15 +154,16 @@ export function buildHeatingInsights(
   const thermostat = options.thermostatSnapshot;
 
   if (houseTempF != null && Number.isFinite(latest.tempf)) {
-    const house = fixed(houseTempF, 0, locale);
-    const delta = houseTempF - latest.tempf;
-    if (delta >= 12) {
+    const house = temp(houseTempF, 0);
+    const gapF = houseTempF - latest.tempf;
+    if (gapF >= 12) {
       insights.push({
         label: t.houseGap.label,
         detail: fmt(thermostat ? t.houseGap.detailThermostat : t.houseGap.detailReference, {
           house,
-          probe: fixed(latest.tempf, 1, locale),
-          delta: fixed(delta, 0, locale),
+          probe: temp(latest.tempf, 1),
+          delta: delta(gapF, 0),
+          unit,
         }),
         severity: latest.tempf <= options.freezeThresholdF + 5 ? "warning" : "info",
       });
@@ -159,7 +172,7 @@ export function buildHeatingInsights(
     if (latest.tempf <= options.freezeThresholdF && houseTempF > options.freezeThresholdF + 10) {
       insights.push({
         label: t.warmHouse.label,
-        detail: fmt(t.warmHouse.detail, { threshold, house }),
+        detail: fmt(t.warmHouse.detail, { threshold, house, unit }),
         severity: "info",
       });
     }
@@ -167,7 +180,7 @@ export function buildHeatingInsights(
     if (thermostat && isThermostatHeating(thermostat.hvacMode) && latest.tempf < houseTempF - 15) {
       insights.push({
         label: t.hvacHeating.label,
-        detail: fmt(t.hvacHeating.detail, { house }),
+        detail: fmt(t.hvacHeating.detail, { house, unit }),
         severity: "info",
       });
     }
@@ -175,7 +188,7 @@ export function buildHeatingInsights(
     if (thermostat && isThermostatCooling(thermostat.hvacMode) && latest.tempf > houseTempF + 10) {
       insights.push({
         label: t.hvacCooling.label,
-        detail: fmt(t.hvacCooling.detail, { house }),
+        detail: fmt(t.hvacCooling.detail, { house, unit }),
         severity: "info",
       });
     }

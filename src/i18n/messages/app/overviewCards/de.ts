@@ -160,7 +160,7 @@ const de: OverviewCardsMessages = {
   heating: {
     rapidDrop: {
       label: "Schneller Temperaturabfall",
-      detail: "Der Bereich kühlt um etwa {rate} °F/h ab. Prüfe Türen, Heizgeräte und Dämmung.",
+      detail: "Der Bereich kühlt um etwa {rate} {unit}/h ab. Prüfe Türen, Heizgeräte und Dämmung.",
     },
     doorOpen: {
       label: "Eine Tür verursacht womöglich Wärmeverlust",
@@ -168,38 +168,38 @@ const de: OverviewCardsMessages = {
     },
     nearFreeze: {
       label: "Nahe am Frost-Schwellenwert",
-      detail: "Aktuell {temp} °F: Der Schwellenwert liegt bei {threshold} °F.",
+      detail: "Aktuell {temp} {unit}: Der Schwellenwert liegt bei {threshold} {unit}.",
     },
     coldSnap: {
       label: "Kälteeinbruch draußen",
-      detail: "Außen {outdoor} °F: {margin} °F Abstand zu deinem Frostalarm.",
+      detail: "Außen {outdoor} {unit}: {margin} {unit} Abstand zu deinem Frostalarm.",
     },
     condensation: {
       label: "Kondensationsgefahr",
       detail:
-        "Taupunkt ~{dewPoint} °F: Die Luft ist nur {margin} °F von der Sättigung entfernt. Kalte Böden und Werkzeuge können beschlagen, auch wenn der Fühler wärmer ist.",
+        "Taupunkt ~{dewPoint} {unit}: Die Luft ist nur {margin} {unit} von der Sättigung entfernt. Kalte Böden und Werkzeuge können beschlagen, auch wenn der Fühler wärmer ist.",
     },
     houseGap: {
       label: "Abstand Haus–Fühler",
       detailThermostat:
-        "Hausthermostat {house} °F gegenüber Fühler {probe} °F (innen {delta} °F wärmer). Frostalarme gelten weiterhin für den Fühler im unbeheizten Bereich.",
+        "Hausthermostat {house} {unit} gegenüber Fühler {probe} {unit} (innen {delta} {unit} wärmer). Frostalarme gelten weiterhin für den Fühler im unbeheizten Bereich.",
       detailReference:
-        "Innenreferenz {house} °F gegenüber Fühler {probe} °F (innen {delta} °F wärmer). Frostalarme gelten weiterhin für den Fühler im unbeheizten Bereich.",
+        "Innenreferenz {house} {unit} gegenüber Fühler {probe} {unit} (innen {delta} {unit} wärmer). Frostalarme gelten weiterhin für den Fühler im unbeheizten Bereich.",
     },
     warmHouse: {
       label: "Warmes Haus, kalter Fühler",
       detail:
-        "Der Fühler liegt bei {threshold} °F oder darunter, während das Haus {house} °F misst: normal für eine unbeheizte Werkstatt, Garage oder einen Dachboden.",
+        "Der Fühler liegt bei {threshold} {unit} oder darunter, während das Haus {house} {unit} misst: normal für eine unbeheizte Werkstatt, Garage oder einen Dachboden.",
     },
     hvacHeating: {
       label: "Heizung läuft",
       detail:
-        "Die Heizung ist an (Haus {house} °F), aber der überwachte Bereich ist unbeheizt: Er bleibt kälter als die Wohnräume.",
+        "Die Heizung ist an (Haus {house} {unit}), aber der überwachte Bereich ist unbeheizt: Er bleibt kälter als die Wohnräume.",
     },
     hvacCooling: {
       label: "Klimaanlage läuft",
       detail:
-        "Die Klimaanlage läuft (Haus {house} °F). Ein Fühler auf einem heißen Dachboden, in einer Werkstatt oder Garage kann an sonnigen Tagen trotzdem stark ansteigen.",
+        "Die Klimaanlage läuft (Haus {house} {unit}). Ein Fühler auf einem heißen Dachboden, in einer Werkstatt oder Garage kann an sonnigen Tagen trotzdem stark ansteigen.",
     },
   },
 

@@ -758,7 +758,7 @@ const heatingInsights = buildHeatingInsights({
   doorOpenMinutes,
   houseTempF: houseContext?.ambientTempF ?? null,
   thermostatSnapshot: houseContext?.thermostatSnapshot ?? null,
-}, locale);
+}, locale, preferences.useCelsius);
 
 const sensorsValue =
   sensorCount === 0

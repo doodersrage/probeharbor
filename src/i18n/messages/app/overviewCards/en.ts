@@ -169,11 +169,11 @@ const en = {
     } as PluralForms,
   },
 
-  /** lib/heatingInsights */
+  /** lib/heatingInsights ({unit} is the display unit; rate, margins and gaps are differences) */
   heating: {
     rapidDrop: {
       label: "Rapid temperature drop",
-      detail: "Space is falling about {rate}°F/h. Check doors, heaters, and insulation.",
+      detail: "Space is falling about {rate}{unit}/h. Check doors, heaters, and insulation.",
     },
     doorOpen: {
       label: "Door may be driving heat loss",
@@ -181,37 +181,37 @@ const en = {
     },
     nearFreeze: {
       label: "Near freeze threshold",
-      detail: "Current {temp}°F: threshold is {threshold}°F.",
+      detail: "Current {temp}{unit}: threshold is {threshold}{unit}.",
     },
     coldSnap: {
       label: "Cold snap outside",
-      detail: "Outdoor {outdoor}°F: {margin}°F margin above your freeze alert.",
+      detail: "Outdoor {outdoor}{unit}: {margin}{unit} margin above your freeze alert.",
     },
     condensation: {
       label: "Condensation risk",
       detail:
-        "Dew point ~{dewPoint}°F: air is within {margin}°F of saturating. Cold slabs and tools can sweat even if the probe is warmer.",
+        "Dew point ~{dewPoint}{unit}: air is within {margin}{unit} of saturating. Cold slabs and tools can sweat even if the probe is warmer.",
     },
     houseGap: {
       label: "House–probe gap",
       detailThermostat:
-        "House thermostat {house}°F vs probe {probe}°F ({delta}°F warmer inside). Freeze alerts still apply to the unconditioned probe.",
+        "House thermostat {house}{unit} vs probe {probe}{unit} ({delta}{unit} warmer inside). Freeze alerts still apply to the unconditioned probe.",
       detailReference:
-        "Indoor reference {house}°F vs probe {probe}°F ({delta}°F warmer inside). Freeze alerts still apply to the unconditioned probe.",
+        "Indoor reference {house}{unit} vs probe {probe}{unit} ({delta}{unit} warmer inside). Freeze alerts still apply to the unconditioned probe.",
     },
     warmHouse: {
       label: "Warm house, cold probe",
       detail:
-        "Probe is at or below {threshold}°F while the house reads {house}°F: expected for an unheated shop, garage, or attic.",
+        "Probe is at or below {threshold}{unit} while the house reads {house}{unit}: expected for an unheated shop, garage, or attic.",
     },
     hvacHeating: {
       label: "HVAC heating",
       detail:
-        "Furnace is on (house {house}°F) but the monitored space is unconditioned: it will stay colder than living areas.",
+        "Furnace is on (house {house}{unit}) but the monitored space is unconditioned: it will stay colder than living areas.",
     },
     hvacCooling: {
       label: "HVAC cooling",
-      detail: "AC is running (house {house}°F). A hot attic, shop, or garage probe can still spike on sunny days.",
+      detail: "AC is running (house {house}{unit}). A hot attic, shop, or garage probe can still spike on sunny days.",
     },
   },
 

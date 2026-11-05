@@ -81,3 +81,41 @@ describe("heatingInsights", () => {
     expect(insights.some((i) => i.label === "HVAC cooling")).toBe(true);
   });
 });
+
+describe("heatingInsights display unit", () => {
+  // 40 → 35 °F in an hour (−5 °F/h), 20 °F outside, house 72 °F, 90 % RH.
+  const points = [
+    { timestamp: "2026-01-01T10:00:00Z", tempf: 40, humidity: 90, probeLabel: "garage" },
+    { timestamp: "2026-01-01T11:00:00Z", tempf: 35, humidity: 90, probeLabel: "garage" },
+  ];
+  const options = { indoorPoints: points, outdoorTempF: 20, freezeThresholdF: 34, houseTempF: 72 };
+  const detail = (list: ReturnType<typeof buildHeatingInsights>, label: string) =>
+    list.find((i) => i.label === label)?.detail;
+
+  it("keeps the °F wording unchanged", () => {
+    const f = buildHeatingInsights(options);
+    expect(detail(f, "Rapid temperature drop")).toBe(
+      "Space is falling about 5.0°F/h. Check doors, heaters, and insulation.",
+    );
+    expect(detail(f, "Near freeze threshold")).toBe("Current 35.0°F: threshold is 34°F.");
+    expect(detail(f, "Cold snap outside")).toBe("Outdoor 20°F: 1°F margin above your freeze alert.");
+    expect(detail(f, "House–probe gap")).toBe(
+      "Indoor reference 72°F vs probe 35.0°F (37°F warmer inside). Freeze alerts still apply to the unconditioned probe.",
+    );
+  });
+
+  it("reads in °C: temperatures with the offset, rate/margin/gap ×5/9", () => {
+    const c = buildHeatingInsights(options, "en", true);
+    const f = buildHeatingInsights(options);
+    expect(c.map((i) => [i.label, i.severity])).toEqual(f.map((i) => [i.label, i.severity]));
+    expect(detail(c, "Rapid temperature drop")).toBe(
+      "Space is falling about 2.8°C/h. Check doors, heaters, and insulation.",
+    );
+    expect(detail(c, "Near freeze threshold")).toBe("Current 1.7°C: threshold is 1.1°C.");
+    expect(detail(c, "Cold snap outside")).toBe("Outdoor -7°C: 1°C margin above your freeze alert.");
+    expect(detail(c, "House–probe gap")).toBe(
+      "Indoor reference 22°C vs probe 1.7°C (21°C warmer inside). Freeze alerts still apply to the unconditioned probe.",
+    );
+    for (const i of c) expect(i.detail).not.toContain("°F");
+  });
+});

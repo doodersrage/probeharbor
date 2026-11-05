@@ -160,7 +160,7 @@ const fr: OverviewCardsMessages = {
   heating: {
     rapidDrop: {
       label: "Chute rapide de température",
-      detail: "L’espace perd environ {rate} °F/h. Vérifiez les portes, les chauffages et l’isolation.",
+      detail: "L’espace perd environ {rate} {unit}/h. Vérifiez les portes, les chauffages et l’isolation.",
     },
     doorOpen: {
       label: "Une porte cause peut-être des pertes de chaleur",
@@ -168,38 +168,38 @@ const fr: OverviewCardsMessages = {
     },
     nearFreeze: {
       label: "Proche du seuil de gel",
-      detail: "Actuellement {temp} °F : le seuil est de {threshold} °F.",
+      detail: "Actuellement {temp} {unit} : le seuil est de {threshold} {unit}.",
     },
     coldSnap: {
       label: "Vague de froid dehors",
-      detail: "Extérieur {outdoor} °F : {margin} °F de marge au-dessus de votre alerte de gel.",
+      detail: "Extérieur {outdoor} {unit} : {margin} {unit} de marge au-dessus de votre alerte de gel.",
     },
     condensation: {
       label: "Risque de condensation",
       detail:
-        "Point de rosée ~{dewPoint} °F : l’air est à {margin} °F de la saturation. Les dalles et outils froids peuvent suinter même si la sonde est plus chaude.",
+        "Point de rosée ~{dewPoint} {unit} : l’air est à {margin} {unit} de la saturation. Les dalles et outils froids peuvent suinter même si la sonde est plus chaude.",
     },
     houseGap: {
       label: "Écart maison–sonde",
       detailThermostat:
-        "Thermostat de la maison {house} °F contre {probe} °F pour la sonde ({delta} °F de plus à l’intérieur). Les alertes de gel s’appliquent toujours à la sonde non chauffée.",
+        "Thermostat de la maison {house} {unit} contre {probe} {unit} pour la sonde ({delta} {unit} de plus à l’intérieur). Les alertes de gel s’appliquent toujours à la sonde non chauffée.",
       detailReference:
-        "Référence intérieure {house} °F contre {probe} °F pour la sonde ({delta} °F de plus à l’intérieur). Les alertes de gel s’appliquent toujours à la sonde non chauffée.",
+        "Référence intérieure {house} {unit} contre {probe} {unit} pour la sonde ({delta} {unit} de plus à l’intérieur). Les alertes de gel s’appliquent toujours à la sonde non chauffée.",
     },
     warmHouse: {
       label: "Maison chaude, sonde froide",
       detail:
-        "La sonde est à {threshold} °F ou moins alors que la maison indique {house} °F : normal pour un atelier, un garage ou des combles non chauffés.",
+        "La sonde est à {threshold} {unit} ou moins alors que la maison indique {house} {unit} : normal pour un atelier, un garage ou des combles non chauffés.",
     },
     hvacHeating: {
       label: "Chauffage en marche",
       detail:
-        "La chaudière est en marche (maison à {house} °F), mais l’espace surveillé n’est pas chauffé : il restera plus froid que les pièces à vivre.",
+        "La chaudière est en marche (maison à {house} {unit}), mais l’espace surveillé n’est pas chauffé : il restera plus froid que les pièces à vivre.",
     },
     hvacCooling: {
       label: "Climatisation en marche",
       detail:
-        "La climatisation fonctionne (maison à {house} °F). Une sonde dans des combles, un atelier ou un garage chaud peut encore grimper par temps ensoleillé.",
+        "La climatisation fonctionne (maison à {house} {unit}). Une sonde dans des combles, un atelier ou un garage chaud peut encore grimper par temps ensoleillé.",
     },
   },
 

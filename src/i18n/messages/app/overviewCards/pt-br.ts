@@ -160,7 +160,7 @@ const ptBr: OverviewCardsMessages = {
   heating: {
     rapidDrop: {
       label: "Queda rápida de temperatura",
-      detail: "O espaço está esfriando cerca de {rate} °F/h. Verifique portas, aquecedores e isolamento.",
+      detail: "O espaço está esfriando cerca de {rate} {unit}/h. Verifique portas, aquecedores e isolamento.",
     },
     doorOpen: {
       label: "Uma porta pode estar causando perda de calor",
@@ -168,38 +168,38 @@ const ptBr: OverviewCardsMessages = {
     },
     nearFreeze: {
       label: "Perto do limite de congelamento",
-      detail: "Atual {temp} °F: o limite é {threshold} °F.",
+      detail: "Atual {temp} {unit}: o limite é {threshold} {unit}.",
     },
     coldSnap: {
       label: "Frente fria lá fora",
-      detail: "Externo {outdoor} °F: {margin} °F de margem acima do seu alerta de congelamento.",
+      detail: "Externo {outdoor} {unit}: {margin} {unit} de margem acima do seu alerta de congelamento.",
     },
     condensation: {
       label: "Risco de condensação",
       detail:
-        "Ponto de orvalho ~{dewPoint} °F: o ar está a {margin} °F da saturação. Pisos e ferramentas frios podem suar mesmo que a sonda esteja mais quente.",
+        "Ponto de orvalho ~{dewPoint} {unit}: o ar está a {margin} {unit} da saturação. Pisos e ferramentas frios podem suar mesmo que a sonda esteja mais quente.",
     },
     houseGap: {
       label: "Diferença casa–sonda",
       detailThermostat:
-        "Termostato da casa {house} °F contra sonda {probe} °F ({delta} °F mais quente dentro). Os alertas de congelamento continuam valendo para a sonda sem climatização.",
+        "Termostato da casa {house} {unit} contra sonda {probe} {unit} ({delta} {unit} mais quente dentro). Os alertas de congelamento continuam valendo para a sonda sem climatização.",
       detailReference:
-        "Referência interna {house} °F contra sonda {probe} °F ({delta} °F mais quente dentro). Os alertas de congelamento continuam valendo para a sonda sem climatização.",
+        "Referência interna {house} {unit} contra sonda {probe} {unit} ({delta} {unit} mais quente dentro). Os alertas de congelamento continuam valendo para a sonda sem climatização.",
     },
     warmHouse: {
       label: "Casa quente, sonda fria",
       detail:
-        "A sonda está em {threshold} °F ou menos enquanto a casa marca {house} °F: esperado em uma oficina, garagem ou sótão sem aquecimento.",
+        "A sonda está em {threshold} {unit} ou menos enquanto a casa marca {house} {unit}: esperado em uma oficina, garagem ou sótão sem aquecimento.",
     },
     hvacHeating: {
       label: "Aquecimento ligado",
       detail:
-        "O aquecedor está ligado (casa a {house} °F), mas o espaço monitorado não é climatizado: ele vai continuar mais frio que os cômodos.",
+        "O aquecedor está ligado (casa a {house} {unit}), mas o espaço monitorado não é climatizado: ele vai continuar mais frio que os cômodos.",
     },
     hvacCooling: {
       label: "Ar-condicionado ligado",
       detail:
-        "O ar-condicionado está ligado (casa a {house} °F). Uma sonda em sótão, oficina ou garagem quente ainda pode disparar em dias de sol.",
+        "O ar-condicionado está ligado (casa a {house} {unit}). Uma sonda em sótão, oficina ou garagem quente ainda pode disparar em dias de sol.",
     },
   },
 
