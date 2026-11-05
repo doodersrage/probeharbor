@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "preact/hooks";
 import { formatRelativeAge } from "../lib/relativeTime";
+import { fToC } from "../lib/tempUnits";
 import type { PluralForms } from "../i18n/format";
 import {
   LIVE_READINGS_EVENT,
@@ -80,8 +81,8 @@ export const LIVE_TEMPS_PANEL_TEXT_EN = {
   cachedOffline: "Showing cached readings (offline).",
   updated: "Updated {time}. Next refresh in {seconds}s.",
   nextRefresh: "Next refresh in {seconds}s.",
-  /** Second line of a temperature tile. */
-  tempHumidity: "{celsius}°C · {humidity}% humidity",
+  /** Second line of a temperature tile: the other unit (°C, or °F for a °C user) and humidity. */
+  tempHumidity: "{temp}{unit} · {humidity}% humidity",
   noReading: "No reading",
   details: {
     humidity: "Relative humidity",
@@ -132,6 +133,8 @@ interface Props {
   text?: LiveTempsPanelText;
   /** BCP 47 tag for number and time formatting. Omitted or English keeps the current output. */
   locale?: string;
+  /** The °C display preference: °C becomes the tile value and °F the second line. */
+  useCelsius?: boolean;
 }
 
 const PLACEHOLDER = /\{([a-zA-Z_][a-zA-Z0-9_]*)\}/g;
@@ -144,7 +147,7 @@ function fill(template: string, vars: Record<string, string | number>): string {
 }
 
 /** Formatting helpers bound to the panel's copy and locale. */
-export function makeFormat(text: LiveTempsPanelText, locale: string | undefined) {
+export function makeFormat(text: LiveTempsPanelText, locale: string | undefined, useCelsius = false) {
   const localized = locale != null && !locale.toLowerCase().startsWith("en");
   const fixed = (n: number, digits: number) =>
     localized
@@ -189,14 +192,24 @@ export function makeFormat(text: LiveTempsPanelText, locale: string | undefined)
     return fill(flags.stale ? text.freshness.offlineSeen : text.freshness.mayBeOffline, { age });
   };
 
-  /** °F tile value, tenths (finer than typical probe accuracy). */
-  const tempF = (f: number | null) => (f != null && Number.isFinite(f) ? `${fixed(f, 1)}°F` : "—");
-  const tempDetail = (c: number | null, h: number | null) =>
-    fill(text.tempHumidity, {
-      celsius: c != null && Number.isFinite(c) ? fixed(c, 1) : "—",
+  const deg = (value: number | null, unit: "°F" | "°C") =>
+    value != null && Number.isFinite(value) ? `${fixed(value, 1)}${unit}` : "—";
+  /** The tile value in the preferred unit, from the reading as reported (tenths: finer than probe accuracy). */
+  const tempMain = (f: number | null, c: number | null) => (useCelsius ? deg(c, "°C") : deg(f, "°F"));
+  /** The second-line temperature (the unit that isn't the tile value). */
+  const tempOther = (f: number | null, c: number | null) =>
+    useCelsius ? deg(f, "°F") : deg(c, "°C");
+  const tempDetail = (f: number | null, c: number | null, h: number | null) => {
+    const value = useCelsius ? f : c;
+    return fill(text.tempHumidity, {
+      temp: value != null && Number.isFinite(value) ? fixed(value, 1) : "—",
+      unit: useCelsius ? "°F" : "°C",
       // Humidity sensors are ±2–3%, so whole percents.
       humidity: h != null && Number.isFinite(h) ? fixed(h, 0) : "—",
     });
+  };
+  /** A bare stored °F number (no reported °C) in the display unit. */
+  const tempFromF = (f: number) => (useCelsius ? deg(fToC(f), "°C") : deg(f, "°F"));
   const boolValue = (kind: string, value: boolean): string => {
     const v = text.values;
     if (kind === "door") return value ? v.open : v.closed;
@@ -207,7 +220,7 @@ export function makeFormat(text: LiveTempsPanelText, locale: string | undefined)
   const time = (iso: string) =>
     localized ? new Date(iso).toLocaleTimeString(locale) : new Date(iso).toLocaleTimeString();
 
-  return { fixed, count, plural, freshness, tempF, tempDetail, boolValue, time };
+  return { fixed, count, plural, freshness, tempMain, tempOther, tempDetail, tempFromF, boolValue, time };
 }
 
 type PanelFormat = ReturnType<typeof makeFormat>;
@@ -227,16 +240,17 @@ function formatSensorValue(
         const humidity =
           pairedHumidity ?? (sensor.temp.h > 0 ? sensor.temp.h : null);
         return {
-          primary: `${f.tempF(sensor.temp.f)}`,
+          primary: f.tempMain(sensor.temp.f, sensor.temp.c),
           detail:
             humidity != null
-              ? f.tempDetail(sensor.temp.c, humidity)
-              : `${f.fixed(sensor.temp.c, 1)}°C`,
+              ? f.tempDetail(sensor.temp.f, sensor.temp.c, humidity)
+              : f.tempOther(sensor.temp.f, sensor.temp.c),
         };
       }
       if (sensor.value_num != null) {
         return {
-          primary: `${f.fixed(sensor.value_num, 1)}${sensor.unit ? ` ${sensor.unit}` : "°F"}`,
+          // Stored temperatures are °F unless the sensor names its own unit.
+          primary: sensor.unit ? `${f.fixed(sensor.value_num, 1)} ${sensor.unit}` : f.tempFromF(sensor.value_num),
           detail: sensor.deviceName,
         };
       }
@@ -353,8 +367,9 @@ export default function LiveTempsPanel({
   intervalMs = 30000,
   text = LIVE_TEMPS_PANEL_TEXT_EN,
   locale,
+  useCelsius = false,
 }: Props) {
-  const f = useMemo(() => makeFormat(text, locale), [text, locale]);
+  const f = useMemo(() => makeFormat(text, locale, useCelsius), [text, locale, useCelsius]);
   const [groups, setGroups] = useState<FeedGroup[]>([]);
   const [sensors, setSensors] = useState<LiveSensor[]>([]);
   const [spaces, setSpaces] = useState<string[]>([]);
@@ -685,8 +700,8 @@ export default function LiveTempsPanel({
                       <span class="stat-label">{probe.label}</span>
                       {probe.data ? (
                         <>
-                          <p class="stat-value">{f.tempF(probe.data.f)}</p>
-                          <p class="stat-detail">{f.tempDetail(probe.data.c, probe.data.h)}</p>
+                          <p class="stat-value">{f.tempMain(probe.data.f, probe.data.c)}</p>
+                          <p class="stat-detail">{f.tempDetail(probe.data.f, probe.data.c, probe.data.h)}</p>
                         </>
                       ) : (
                         <p class="stat-detail">{fill(text.noReadingForKey, { key: probe.key })}</p>

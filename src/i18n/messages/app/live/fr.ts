@@ -47,7 +47,7 @@ const fr: LiveMessages = {
     cachedOffline: "Affichage des mesures en cache (hors ligne).",
     updated: "Mis à jour à {time}. Prochaine actualisation dans {seconds} s.",
     nextRefresh: "Prochaine actualisation dans {seconds} s.",
-    tempHumidity: "{celsius} °C · {humidity} % d’humidité",
+    tempHumidity: "{temp} {unit} · {humidity} % d’humidité",
     noReading: "Aucune mesure",
     details: {
       humidity: "Humidité relative",

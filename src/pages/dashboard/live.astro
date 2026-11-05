@@ -129,7 +129,12 @@ const demoDevices = devices.filter((d) => isDemoDevice(d));
 
     <div class="grid gap-6">
       {showGarageTemps && (
-        <LiveTempsPanel client:visible text={t.panel} locale={LOCALE_META[locale].intl} />
+        <LiveTempsPanel
+          client:visible
+          text={t.panel}
+          locale={LOCALE_META[locale].intl}
+          useCelsius={preferences.useCelsius}
+        />
       )}
       {showWeather && (
         <WeatherPanel client:visible cityId={preferences.weatherCityId ?? null} text={t.weather} />

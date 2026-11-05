@@ -47,7 +47,7 @@ const es: LiveMessages = {
     cachedOffline: "Mostrando lecturas guardadas (sin conexión).",
     updated: "Actualizado a las {time}. Próxima actualización en {seconds} s.",
     nextRefresh: "Próxima actualización en {seconds} s.",
-    tempHumidity: "{celsius} °C · {humidity} % de humedad",
+    tempHumidity: "{temp} {unit} · {humidity} % de humedad",
     noReading: "Sin lectura",
     details: {
       humidity: "Humedad relativa",

@@ -47,7 +47,7 @@ const ptBr: LiveMessages = {
     cachedOffline: "Mostrando leituras em cache (offline).",
     updated: "Atualizado às {time}. Próxima atualização em {seconds} s.",
     nextRefresh: "Próxima atualização em {seconds} s.",
-    tempHumidity: "{celsius} °C · {humidity}% de umidade",
+    tempHumidity: "{temp} {unit} · {humidity}% de umidade",
     noReading: "Sem leitura",
     details: {
       humidity: "Umidade relativa",

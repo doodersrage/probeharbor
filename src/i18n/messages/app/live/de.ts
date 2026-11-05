@@ -47,7 +47,7 @@ const de: LiveMessages = {
     cachedOffline: "Zwischengespeicherte Messwerte (offline).",
     updated: "Aktualisiert um {time}. Nächste Aktualisierung in {seconds} s.",
     nextRefresh: "Nächste Aktualisierung in {seconds} s.",
-    tempHumidity: "{celsius} °C · {humidity} % Luftfeuchte",
+    tempHumidity: "{temp} {unit} · {humidity} % Luftfeuchte",
     noReading: "Kein Messwert",
     details: {
       humidity: "Relative Luftfeuchte",
