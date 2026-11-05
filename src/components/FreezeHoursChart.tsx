@@ -193,7 +193,7 @@ export default function FreezeHoursChart({
       {expanded && (
         <div
           class="history-chart-lightbox-spacer"
-          style={{ height: slotHeight || undefined }}
+          style={{ height: slotHeight ? `${slotHeight}px` : undefined }}
           aria-hidden="true"
         />
       )}

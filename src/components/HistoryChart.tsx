@@ -1233,7 +1233,7 @@ function HistoryChartView({
       {expanded && (
         <div
           class="history-chart-lightbox-spacer"
-          style={{ height: lightboxSlotHeight || undefined }}
+          style={{ height: lightboxSlotHeight ? `${lightboxSlotHeight}px` : undefined }}
           aria-hidden="true"
         />
       )}

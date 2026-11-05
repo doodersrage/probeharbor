@@ -62,7 +62,7 @@
     "esp-web-tools": "^10.4.0",
     "mimetext": "^3.0.28",
     "pdf-lib": "^1.17.1",
-    "preact": "^10.29.1",
+    "preact": "^11.1.1",
     "stripe": "^22.3.0",
     "tailwind-animations": "^1.0.2",
     "tailwindcss": "^4.3.4",
