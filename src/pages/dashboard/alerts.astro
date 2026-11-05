@@ -30,7 +30,7 @@ import {
 } from "../../lib/households";
 import { listHouseholdDevices } from "../../lib/devices";
 import { getTenantNotifySettings } from "../../lib/tenantRelay";
-import { listAlertSettingsHistory } from "../../lib/alertSettingsHistory";
+import { historyChangeInDisplayUnit, listAlertSettingsHistory } from "../../lib/alertSettingsHistory";
 import { fmt, formatDateTime, getLocale } from "../../i18n";
 import { alertsMessages } from "../../i18n/messages/app/alerts";
 import { apiUserMessages } from "../../i18n/messages/app/api/user";
@@ -138,6 +138,8 @@ const thresholdSensors = (devicesResult.devices ?? []).flatMap((device) =>
     })),
 );
 
+// The °C display preference: settings inputs and past freeze-line / fast-drop changes.
+const useCelsius = getDisplayPreferencesFromMetadata(user).useCelsius;
 const settingsHistory =
   alertsTab === "settings" && canEdit ? await listAlertSettingsHistory(user.id, 8).catch(() => []) : [];
 
@@ -412,7 +414,7 @@ const referralRewardDays = Number(
           essentialsFirst={!hasSentAnyAlert}
           deviceSpaces={deviceSpaces}
           thresholdSensors={thresholdSensors}
-          useCelsius={getDisplayPreferencesFromMetadata(user).useCelsius}
+          useCelsius={useCelsius}
         />
 
         {canEdit && (
@@ -454,7 +456,7 @@ const referralRewardDays = Number(
                         timeZone: alertSettings.quietHoursTimezone || "UTC",
                       })}
                     </p>
-                    <p class="m-0 text-sm text-[var(--color-text-muted)]">{entry.changes.join(" · ")}</p>
+                    <p class="m-0 text-sm text-[var(--color-text-muted)]">{entry.changes.map((line) => historyChangeInDisplayUnit(line, locale, useCelsius)).join(" · ")}</p>
                   </div>
                   <form
                     action="/api/user/alert-settings-restore"

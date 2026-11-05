@@ -8,6 +8,7 @@ import {
   alertSettingsHistoryMessages,
   type AlertSettingsHistoryMessages,
 } from "../i18n/messages/app/alertSettings/history";
+import { displayDeltaInputValue, displayTempInputValue } from "./temperatureFormat";
 
 /**
  * Alert settings history: each save keeps the version it replaced, with a
@@ -90,6 +91,50 @@ export function describeAlertSettingsChanges(
   }
   if (unnamed > 0) named.push(plural(t.otherSettings, unnamed, locale));
   return named;
+}
+
+/** History fields that hold a °F temperature or a °F difference. */
+const TEMP_HISTORY_KEYS = { freezeThresholdF: "temp", rateChangeF: "delta" } as const;
+
+function escapeRegExp(text: string): string {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/** A number as `shown` wrote it ("34.5" in English, "34,5" elsewhere); null if it isn't one. */
+function parseShownNumber(text: string): number | null {
+  const normalized = text.trim().replace(/\u2212/g, "-").replace(",", ".");
+  if (!/^-?\d+(\.\d+)?$/.test(normalized)) return null;
+  return Number(normalized);
+}
+
+/**
+ * History lines are stored as text in °F ("Freeze line (°F) 34 → 36"). For a
+ * °C user, rewrite the freeze-line and fast-drop lines so they read in °C
+ * ("Freeze line (°C) 1.1 → 2.2"; the fast drop is a difference: ×5/9).
+ * Lines are matched against the saved wording in `locale` and English; any
+ * other line, or a value that isn't a number, is returned unchanged.
+ */
+export function historyChangeInDisplayUnit(line: string, locale: Locale, useCelsius: boolean): string {
+  if (!useCelsius) return line;
+  const locales: Locale[] = locale === "en" ? ["en"] : [locale, "en"];
+  for (const lineLocale of locales) {
+    const t = alertSettingsHistoryMessages(lineLocale);
+    for (const [key, kind] of Object.entries(TEMP_HISTORY_KEYS)) {
+      const label = t.labels[key];
+      if (!label || !label.includes("°F")) continue;
+      const [head = "", middle = "", tail = ""] = fmt(t.fromTo, { label, from: "\u0000", to: "\u0001" }).split(/\u0000|\u0001/);
+      const match = new RegExp(`^${escapeRegExp(head)}(.+?)${escapeRegExp(middle)}(.+?)${escapeRegExp(tail)}$`).exec(line);
+      if (!match) continue;
+      const convert = (raw: string) => {
+        const value = parseShownNumber(raw);
+        if (value == null) return raw;
+        const c = kind === "delta" ? displayDeltaInputValue(value, true) : displayTempInputValue(value, true);
+        return shown(c, t, lineLocale);
+      };
+      return fmt(t.fromTo, { label: label.replace("°F", "°C"), from: convert(match[1]!), to: convert(match[2]!) });
+    }
+  }
+  return line;
 }
 
 function configRow(settings: AlertSettings): Record<string, unknown> {
