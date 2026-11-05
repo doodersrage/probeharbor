@@ -1,0 +1,22 @@
+---
+/**
+ * Settings → "Notifications": no settings of its own, just where alert
+ * delivery (Alerts → Settings) and the weekly digest (Household) are set, so
+ * people looking under Settings find them.
+ */
+import DashboardCard from "./DashboardCard.astro";
+import { alertsSettingsPath } from "../../lib/dashboardDeepLinks";
+import { getLocale } from "../../i18n";
+import { settingsMessages } from "../../i18n/messages/app/settings";
+
+const t = settingsMessages(getLocale(Astro)).notifications;
+---
+<DashboardCard id="notifications">
+  <h2 class="card-title">{t.heading}</h2>
+  <p class="card-subtitle mb-3">{t.subtitle}</p>
+  <ul class="m-0 space-y-1 text-sm">
+    <li><a class="text-link" href={alertsSettingsPath("alert-section-channels")}>{t.channels}</a></li>
+    <li><a class="text-link" href={alertsSettingsPath("alert-section-quiet")}>{t.quiet}</a></li>
+    <li><a class="text-link" href="/dashboard/household#weekly-digest">{t.digest}</a></li>
+  </ul>
+</DashboardCard>

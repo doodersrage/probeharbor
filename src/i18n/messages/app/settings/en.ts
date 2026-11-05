@@ -27,7 +27,7 @@ const en = {
   },
   accountSecurity: {
     summary: "Account & security",
-    subtitle: "MFA, data retention, tenant relay, and account deletion: leave these alone unless you need them.",
+    subtitle: "MFA, tenant relay, and account deletion: leave these alone unless you need them.",
     yourAccount: "your account",
   },
   display: {
@@ -176,9 +176,25 @@ const en = {
     verifyCodeLabel: "Verification code",
     verifySubmit: "Verify & activate",
   },
+  /** Settings → "Data & export" card (retention and export links). */
+  dataExport: {
+    heading: "Data & export",
+    subtitle: "How long your readings are kept, and how to take a copy.",
+    retentionHeading: "History retention",
+    exportHeading: "Export",
+    exportsLink: "History → Exports",
+    claimsLink: "Claims pack (PDF)",
+    jsonLink: "Download all account data (JSON)",
+  },
+  /** Settings → "Notifications" card: links to where alert delivery and the digest are set. */
+  notifications: {
+    heading: "Notifications",
+    subtitle: "Alert delivery is set on the Alerts page; the weekly digest on Household.",
+    channels: "Alert channels (email, SMS and more)",
+    quiet: "Quiet hours and vacation mode",
+    digest: "Weekly digest",
+  },
   lifecycle: {
-    heading: "Account & data",
-    exportHtml: 'Export: <a class="text-link" href="/api/user/export">JSON export</a>.',
     planDefault: "Plan default for {tier}:",
     planDefaultEnd: ".",
     retentionDays: { one: "{count} day", other: "{count} days" },

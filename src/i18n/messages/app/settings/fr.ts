@@ -28,7 +28,7 @@ const fr: SettingsMessages = {
   accountSecurity: {
     summary: "Compte et sécurité",
     subtitle:
-      "MFA, conservation des données, relais locataire et suppression du compte : n’y touchez que si vous en avez besoin.",
+      "MFA, relais locataire et suppression du compte : n’y touchez que si vous en avez besoin.",
     yourAccount: "votre compte",
   },
   display: {
@@ -180,9 +180,25 @@ const fr: SettingsMessages = {
     verifyCodeLabel: "Code de vérification",
     verifySubmit: "Vérifier et activer",
   },
+  /** Settings → "Data & export" card (retention and export links). */
+  dataExport: {
+    heading: "Données et export",
+    subtitle: "Combien de temps vos relevés sont conservés, et comment en obtenir une copie.",
+    retentionHeading: "Conservation de l’historique",
+    exportHeading: "Export",
+    exportsLink: "Historique → Exports",
+    claimsLink: "Dossier pour l’assurance (PDF)",
+    jsonLink: "Télécharger toutes les données du compte (JSON)",
+  },
+  /** Settings → "Notifications" card: links to where alert delivery and the digest are set. */
+  notifications: {
+    heading: "Notifications",
+    subtitle: "L’envoi des alertes se règle dans Alertes ; le résumé hebdomadaire dans Foyer.",
+    channels: "Canaux d’alerte (e-mail, SMS et plus)",
+    quiet: "Heures calmes et mode vacances",
+    digest: "Résumé hebdomadaire",
+  },
   lifecycle: {
-    heading: "Compte et données",
-    exportHtml: 'Export : <a class="text-link" href="/api/user/export">export JSON</a>.',
     planDefault: "Par défaut avec l’offre {tier} :",
     planDefaultEnd: ".",
     retentionDays: { one: "{count} jour", other: "{count} jours" },

@@ -28,7 +28,7 @@ const de: SettingsMessages = {
   accountSecurity: {
     summary: "Konto & Sicherheit",
     subtitle:
-      "MFA, Datenaufbewahrung, Mieter-Benachrichtigung und Kontolöschung: nur ändern, wenn du es wirklich brauchst.",
+      "MFA, Mieter-Benachrichtigung und Kontolöschung: nur ändern, wenn du es wirklich brauchst.",
     yourAccount: "dein Konto",
   },
   display: {
@@ -182,9 +182,25 @@ const de: SettingsMessages = {
     verifyCodeLabel: "Bestätigungscode",
     verifySubmit: "Bestätigen & aktivieren",
   },
+  /** Settings → "Data & export" card (retention and export links). */
+  dataExport: {
+    heading: "Daten & Export",
+    subtitle: "Wie lange deine Messwerte aufbewahrt werden und wie du eine Kopie bekommst.",
+    retentionHeading: "Aufbewahrung des Verlaufs",
+    exportHeading: "Export",
+    exportsLink: "Verlauf → Exporte",
+    claimsLink: "Schadensmappe (PDF)",
+    jsonLink: "Alle Kontodaten herunterladen (JSON)",
+  },
+  /** Settings → "Notifications" card: links to where alert delivery and the digest are set. */
+  notifications: {
+    heading: "Benachrichtigungen",
+    subtitle: "Die Alarmzustellung stellst du unter Alarme ein, den Wochenbericht unter Haushalt.",
+    channels: "Alarmkanäle (E-Mail, SMS und mehr)",
+    quiet: "Ruhezeiten und Urlaubsmodus",
+    digest: "Wochenbericht",
+  },
   lifecycle: {
-    heading: "Konto & Daten",
-    exportHtml: 'Export: <a class="text-link" href="/api/user/export">JSON-Export</a>.',
     planDefault: "Standard im Tarif {tier}:",
     planDefaultEnd: ".",
     retentionDays: { one: "{count} Tag", other: "{count} Tage" },

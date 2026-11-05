@@ -1,0 +1,79 @@
+---
+/**
+ * Settings → "Data & export": how long readings are kept (the custom
+ * retention form, POST /api/user/retention) and where to take a copy
+ * (History → Exports, the claims pack, the account JSON export).
+ */
+import DashboardCard from "./DashboardCard.astro";
+import { historyExportsPath } from "../../lib/dashboardDeepLinks";
+import { fmt, formatNumber, getLocale, plural } from "../../i18n";
+import { settingsMessages } from "../../i18n/messages/app/settings";
+
+interface Props {
+  dataRetentionDays: number | null;
+  historyDays: number;
+  tierLabel: string;
+  canCustomizeRetention: boolean;
+  /** `?retention_saved=1` after the form posts back here. */
+  retentionSaved?: boolean;
+}
+
+const { dataRetentionDays, historyDays, tierLabel, canCustomizeRetention, retentionSaved = false } =
+  Astro.props;
+const maxCustomDays = historyDays >= 365 ? 730 : historyDays;
+const locale = getLocale(Astro);
+const messages = settingsMessages(locale);
+const t = messages.dataExport;
+const lt = messages.lifecycle;
+
+/** Same wording as formatHistoryRetention (src/lib/entitlements), in the page language. */
+function retentionLabel(days: number): string {
+  if (days < 365) return plural(lt.retentionDays, days, locale);
+  const years = days / 365;
+  if (years === 1 || Number.isInteger(years)) return plural(lt.retentionYears, years, locale);
+  const count = formatNumber(years, locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  return fmt(lt.retentionYears.other, { count });
+}
+---
+<DashboardCard id="data-export">
+  <h2 class="card-title">{t.heading}</h2>
+  <p class="card-subtitle mb-4">{t.subtitle}</p>
+
+  {retentionSaved && (
+    <p class="alert-success mt-0 mb-3" role="status">{messages.notices.retentionSaved}</p>
+  )}
+
+  <h3 class="text-base font-semibold mb-2">{t.retentionHeading}</h3>
+  <p class="card-subtitle mb-3">
+    {fmt(lt.planDefault, { tier: tierLabel })} <strong>{retentionLabel(historyDays)}</strong>
+    {historyDays >= 365 ? "+" : ""}{lt.planDefaultEnd}
+  </p>
+  {canCustomizeRetention ? (
+    <form action="/api/user/retention" method="post" class="mb-4">
+      <input type="hidden" name="redirect" value="/dashboard/settings" />
+      <div class="form-field mb-3">
+        <label class="form-label" for="data_retention_days">{lt.customRetentionLabel}</label>
+        <input
+          class="form-input"
+          type="number"
+          min="30"
+          max={maxCustomDays}
+          id="data_retention_days"
+          name="data_retention_days"
+          value={dataRetentionDays ?? ""}
+          placeholder={fmt(lt.customRetentionPlaceholder, { days: historyDays })}
+        />
+      </div>
+      <button type="submit" class="btn-secondary">{lt.saveRetention}</button>
+    </form>
+  ) : (
+    <p class="mb-4 text-sm text-[var(--color-text-muted)]" set:html={lt.upgradeHtml} />
+  )}
+
+  <h3 class="text-base font-semibold mb-2">{t.exportHeading}</h3>
+  <ul class="m-0 space-y-1 text-sm">
+    <li><a class="text-link" href="/dashboard/history?tab=exports">{t.exportsLink}</a></li>
+    <li><a class="text-link" href={historyExportsPath("claims-pack")}>{t.claimsLink}</a></li>
+    <li><a class="text-link" href="/api/user/export">{t.jsonLink}</a></li>
+  </ul>
+</DashboardCard>

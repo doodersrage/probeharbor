@@ -6,6 +6,8 @@ import DashboardComfortCard from "../../components/dashboard/DashboardComfortCar
 import TenantRelayCard from "../../components/dashboard/TenantRelayCard.astro";
 import AccountSecurity from "../../components/AccountSecurity.astro";
 import AccountLifecycle from "../../components/AccountLifecycle.astro";
+import DataExportCard from "../../components/dashboard/DataExportCard.astro";
+import NotificationsLinksCard from "../../components/dashboard/NotificationsLinksCard.astro";
 import { getAuthFromCookies } from "../../lib/auth";
 import { getUserPreferences } from "../../lib/userPreferences";
 import { getUserEntitlements } from "../../lib/entitlements";
@@ -149,9 +151,24 @@ const planLabel =
       />
     </div>
 
+    <NotificationsLinksCard />
+
+    <DataExportCard
+      dataRetentionDays={alertSettings.dataRetentionDays}
+      historyDays={entitlements.historyDays}
+      tierLabel={planLabel}
+      canCustomizeRetention={entitlements.historyDays >= 90}
+      retentionSaved={Boolean(retentionSaved)}
+    />
+
     <PwaInstallCard />
 
-    <details class="card" id="account-security" open={signOutAllFailed}>
+    {/* Open when it has a result to show (its own flash or error), so it isn't hidden in a closed section. */}
+    <details
+      class="card"
+      id="account-security"
+      open={signOutAllFailed || Boolean(deleteError) || Boolean(tenantSaved) || Boolean(tenantError)}
+    >
       <summary class="card-title cursor-pointer">{t.accountSecurity.summary}</summary>
       <p class="card-subtitle mb-4">
         {t.accountSecurity.subtitle}
@@ -162,20 +179,12 @@ const planLabel =
 
         <AccountLifecycle
           userEmail={user.email ?? t.accountSecurity.yourAccount}
-          dataRetentionDays={alertSettings.dataRetentionDays}
-          historyDays={entitlements.historyDays}
-          tierLabel={planLabel}
-          canCustomizeRetention={entitlements.historyDays >= 90}
           hasPasswordAuth={
             (user.identities?.some((identity) => identity.provider === "email") ??
               Boolean(user.email))
           }
           deleteError={deleteError}
         />
-
-        {retentionSaved && (
-          <p class="alert-success" role="status">{t.notices.retentionSaved}</p>
-        )}
 
         {tenantSaved && (
           <p class="alert-success" role="status">{t.notices.tenantSaved}</p>

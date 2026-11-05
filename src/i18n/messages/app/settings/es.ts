@@ -28,7 +28,7 @@ const es: SettingsMessages = {
   accountSecurity: {
     summary: "Cuenta y seguridad",
     subtitle:
-      "MFA, conservación de datos, relevo al inquilino y eliminación de la cuenta: no los toques salvo que los necesites.",
+      "MFA, relevo al inquilino y eliminación de la cuenta: no los toques salvo que los necesites.",
     yourAccount: "tu cuenta",
   },
   display: {
@@ -179,9 +179,25 @@ const es: SettingsMessages = {
     verifyCodeLabel: "Código de verificación",
     verifySubmit: "Verificar y activar",
   },
+  /** Settings → "Data & export" card (retention and export links). */
+  dataExport: {
+    heading: "Datos y exportación",
+    subtitle: "Cuánto tiempo se guardan tus lecturas y cómo obtener una copia.",
+    retentionHeading: "Conservación del historial",
+    exportHeading: "Exportar",
+    exportsLink: "Historial → Exportaciones",
+    claimsLink: "Paquete para reclamaciones (PDF)",
+    jsonLink: "Descargar todos los datos de la cuenta (JSON)",
+  },
+  /** Settings → "Notifications" card: links to where alert delivery and the digest are set. */
+  notifications: {
+    heading: "Notificaciones",
+    subtitle: "El envío de alertas se configura en Alertas; el resumen semanal, en Hogar.",
+    channels: "Canales de alerta (correo, SMS y más)",
+    quiet: "Horas de silencio y modo vacaciones",
+    digest: "Resumen semanal",
+  },
   lifecycle: {
-    heading: "Cuenta y datos",
-    exportHtml: 'Exportar: <a class="text-link" href="/api/user/export">exportación JSON</a>.',
     planDefault: "Predeterminado del plan {tier}:",
     planDefaultEnd: ".",
     retentionDays: { one: "{count} día", other: "{count} días" },

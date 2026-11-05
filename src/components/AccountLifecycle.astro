@@ -1,69 +1,23 @@
 ---
+/**
+ * Account deletion (POST /api/user/account/delete). Retention and exports
+ * moved to Settings → "Data & export" (dashboard/DataExportCard.astro).
+ */
 import DashboardCard from "./dashboard/DashboardCard.astro";
-import { fmt, formatNumber, getLocale, plural } from "../i18n";
+import { fmt, getLocale } from "../i18n";
 import { settingsMessages } from "../i18n/messages/app/settings";
 
 interface Props {
   userEmail: string;
-  dataRetentionDays: number | null;
-  historyDays: number;
-  tierLabel: string;
-  canCustomizeRetention: boolean;
   hasPasswordAuth?: boolean;
   deleteError?: string | null;
 }
-const {
-  userEmail,
-  dataRetentionDays,
-  historyDays,
-  tierLabel,
-  canCustomizeRetention,
-  hasPasswordAuth = true,
-  deleteError,
-} = Astro.props;
-const maxCustomDays = historyDays >= 365 ? 730 : historyDays;
+const { userEmail, hasPasswordAuth = true, deleteError } = Astro.props;
 const locale = getLocale(Astro);
 const t = settingsMessages(locale).lifecycle;
-
-/** Same wording as formatHistoryRetention (src/lib/entitlements), in the page language. */
-function retentionLabel(days: number): string {
-  if (days < 365) return plural(t.retentionDays, days, locale);
-  const years = days / 365;
-  if (years === 1 || Number.isInteger(years)) return plural(t.retentionYears, years, locale);
-  const count = formatNumber(years, locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
-  return fmt(t.retentionYears.other, { count });
-}
 ---
-<DashboardCard>
-  <h2 class="card-title">{t.heading}</h2>
-  <p class="card-subtitle mb-3">
-    <Fragment set:html={t.exportHtml} />
-    {fmt(t.planDefault, { tier: tierLabel })} <strong>{retentionLabel(historyDays)}</strong>
-    {historyDays >= 365 ? "+" : ""}{t.planDefaultEnd}
-  </p>
-  {canCustomizeRetention ? (
-    <form action="/api/user/retention" method="post" class="mb-4">
-      <input type="hidden" name="redirect" value="/dashboard/settings" />
-      <div class="form-field mb-3">
-        <label class="form-label" for="data_retention_days">{t.customRetentionLabel}</label>
-        <input
-          class="form-input"
-          type="number"
-          min="30"
-          max={maxCustomDays}
-          id="data_retention_days"
-          name="data_retention_days"
-          value={dataRetentionDays ?? ""}
-          placeholder={fmt(t.customRetentionPlaceholder, { days: historyDays })}
-        />
-      </div>
-      <button type="submit" class="btn-secondary">{t.saveRetention}</button>
-    </form>
-  ) : (
-    <p class="mb-4 text-sm text-[var(--color-text-muted)]" set:html={t.upgradeHtml} />
-  )}
-
-  <h3 class="text-base font-semibold mb-2 text-[var(--color-danger)]">{t.deleteHeading}</h3>
+<DashboardCard id="delete-account">
+  <h2 class="card-title text-[var(--color-danger)]">{t.deleteHeading}</h2>
   <p class="card-subtitle mb-3">
     {fmt(t.deleteBody, { email: userEmail })}
     {hasPasswordAuth ? t.deleteConfirmPassword : t.deleteConfirmEmail}

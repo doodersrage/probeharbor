@@ -28,7 +28,7 @@ const ptBr: SettingsMessages = {
   accountSecurity: {
     summary: "Conta e segurança",
     subtitle:
-      "MFA, retenção de dados, aviso ao inquilino e exclusão da conta: só mexa nisso se precisar.",
+      "MFA, aviso ao inquilino e exclusão da conta: só mexa nisso se precisar.",
     yourAccount: "sua conta",
   },
   display: {
@@ -179,9 +179,25 @@ const ptBr: SettingsMessages = {
     verifyCodeLabel: "Código de verificação",
     verifySubmit: "Verificar e ativar",
   },
+  /** Settings → "Data & export" card (retention and export links). */
+  dataExport: {
+    heading: "Dados e exportação",
+    subtitle: "Por quanto tempo suas leituras ficam guardadas e como obter uma cópia.",
+    retentionHeading: "Retenção do histórico",
+    exportHeading: "Exportar",
+    exportsLink: "Histórico → Exportações",
+    claimsLink: "Pacote para sinistro (PDF)",
+    jsonLink: "Baixar todos os dados da conta (JSON)",
+  },
+  /** Settings → "Notifications" card: links to where alert delivery and the digest are set. */
+  notifications: {
+    heading: "Notificações",
+    subtitle: "O envio de alertas é configurado em Alertas; o resumo semanal, em Casa.",
+    channels: "Canais de alerta (e-mail, SMS e mais)",
+    quiet: "Horário de silêncio e modo férias",
+    digest: "Resumo semanal",
+  },
   lifecycle: {
-    heading: "Conta e dados",
-    exportHtml: 'Exportar: <a class="text-link" href="/api/user/export">exportação em JSON</a>.',
     planDefault: "Padrão do plano {tier}:",
     planDefaultEnd: ".",
     retentionDays: { one: "{count} dia", other: "{count} dias" },
