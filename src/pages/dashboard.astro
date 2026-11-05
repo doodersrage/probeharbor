@@ -531,7 +531,7 @@ const houseContext = buildHouseContext({
   referenceSensorId: indoorReferenceSensorId,
   latest,
   devices,
-}, locale);
+}, locale, preferences.useCelsius);
 
 const hasSensors = devices.some((d) => d.sensors.length > 0);
 const hasHouseholdMembers = members.members.length > 1;
@@ -735,6 +735,7 @@ const doorTempSummary = showInsights
       chartWeek.points,
       weatherSnapshot?.temp ?? null,
       locale,
+      preferences.useCelsius,
     )
   : null;
 const powerTempSummary = showInsights
@@ -743,6 +744,7 @@ const powerTempSummary = showInsights
       chartWeek.points,
       weatherSnapshot?.temp ?? null,
       locale,
+      preferences.useCelsius,
     )
   : null;
 const motionSummary = showInsights ? buildMotionSummary(motionSessions, locale) : null;
@@ -1173,6 +1175,7 @@ const onboardingProps = {
               airQualityOverview={airQualityOverview}
               energyOverview={energyOverview}
               coolingRateFPerHour={coolingRateFPerHour}
+              useCelsius={preferences.useCelsius}
             />
           </aside>
         )}

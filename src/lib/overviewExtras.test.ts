@@ -85,6 +85,41 @@ describe("overviewExtras", () => {
     expect(buildDoorTempSummary([closed(2)], [], 55)).toBeNull();
   });
 
+  it("words door and power callouts in °C for °C users (rate and index ×5/9)", () => {
+    const now = Date.now();
+    const closed = (minutes: number): DoorOpenSession => ({
+      label: "Garage Door",
+      openedAt: new Date(now - 2 * 60 * 60 * 1000).toISOString(),
+      closedAt: new Date(now - 2 * 60 * 60 * 1000 + minutes * 60_000).toISOString(),
+      durationMs: minutes * 60_000,
+      stillOpen: false,
+    });
+    const coldF = buildDoorTempSummary([closed(20)], [], 20);
+    expect(coldF?.detail).toBe("Doors open ~20 min with outdoor 20°F (cold-air index ~240).");
+    const coldC = buildDoorTempSummary([closed(20)], [], 20, "en", true);
+    // 20 °F = −6.7 °C; 20 min × 6.7 °C below 0 °C ≈ 133.
+    expect(coldC?.kind).toBe("coldAir");
+    expect(coldC?.detail).toBe("Doors open ~20 min with outdoor -7°C (cold-air index ~133).");
+
+    // −2 °F/h for 5 h with a heater circuit off now.
+    const points: ChartPoint[] = Array.from({ length: 6 }, (_, i) => ({
+      timestamp: new Date(now - (5 - i) * 60 * 60 * 1000).toISOString(),
+      tempf: 45 - i * 2,
+      humidity: 40,
+      probeLabel: "Probe",
+    }));
+    const off: DoorOpenSession[] = [
+      { label: "Heater", openedAt: new Date(now - 40 * 60_000).toISOString(), closedAt: null, durationMs: null, stillOpen: true },
+    ];
+    expect(buildPowerTempSummary(off, points, 10)?.detail).toBe("Heater Off: space falling ~2.0°F/h.");
+    expect(buildPowerTempSummary(off, points, 10, "en", true)?.detail).toBe("Heater Off: space falling ~1.1°C/h.");
+    const doorOpen = [{ ...off[0]!, label: "Bay door" }];
+    expect(buildDoorTempSummary(doorOpen, points, 10)?.detail).toBe("Bay door: space falling ~2.0°F/h while open.");
+    expect(buildDoorTempSummary(doorOpen, points, 10, "en", true)?.detail).toBe(
+      "Bay door: space falling ~1.1°C/h while open.",
+    );
+  });
+
   it("computes indoor-outdoor delta and probe spread", () => {
     expect(computeIndoorOutdoorDelta(40, 20)).toBe(20);
     expect(computeIndoorOutdoorDelta(null, 20)).toBeNull();

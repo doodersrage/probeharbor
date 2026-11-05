@@ -121,7 +121,7 @@ const fr: OverviewInsightsMessages = {
     subtitle: "{label} : indicateur de chauffage / charge du capteur d’énergie.",
     stats: "Moy. {avg} W · ~{kwh} kWh sur les relevés · {age}",
     coolingLowPower:
-      "L’espace refroidit de ~{rate}°F/h alors que la consommation est faible. Le chauffage est peut-être éteint ou sous-dimensionné.",
+      "L’espace refroidit de ~{rate}{unit}/h alors que la consommation est faible. Le chauffage est peut-être éteint ou sous-dimensionné.",
     loadActive: "Charge active (~{watts} W) pendant que l’espace se réchauffe.",
   },
   claimsPack: {
@@ -137,7 +137,7 @@ const fr: OverviewInsightsMessages = {
     openNow: "ouverte maintenant",
     none: "Aucune ouverture de porte enregistrée pour l’instant.",
     viewAll: "Tout voir dans Historique → Portes",
-    coldAirHelp: "Indice d’air froid = minutes d’ouverture × degrés sous 32 °F à l’extérieur.",
+    coldAirHelp: "Indice d’air froid = minutes d’ouverture × degrés sous {freezing} à l’extérieur.",
   },
   chart: {
     expand: "Agrandir",
@@ -160,22 +160,22 @@ const fr: OverviewInsightsMessages = {
   },
   summaries: {
     doorOpenNow: "Porte ouverte en ce moment",
-    doorOpenFalling: "{labels} : l’espace perd ~{rate}°F/h pendant l’ouverture.",
+    doorOpenFalling: "{labels} : l’espace perd ~{rate}{unit}/h pendant l’ouverture.",
     doorStillOpen: "{labels} toujours ouverte ({duration}).",
     doorVsTemp: "Porte et température",
     doorVsTempDetail:
-      "Portes ouvertes ~{minutes} min en 24 h ; l’espace a refroidi de ~{rate}°F/h récemment.",
+      "Portes ouvertes ~{minutes} min en 24 h ; l’espace a refroidi de ~{rate}{unit}/h récemment.",
     coldAir: "Entrée d’air froid",
     coldAirDetail:
-      "Portes ouvertes ~{minutes} min avec {outdoor}°F dehors (indice d’air froid ~{index}).",
+      "Portes ouvertes ~{minutes} min avec {outdoor}{unit} dehors (indice d’air froid ~{index}).",
     doorActivity: "Activité des portes",
     doorActivityDetail: "Environ {minutes} minutes d’ouverture ces dernières 24 heures.",
     powerOffNow: "Courant coupé en ce moment",
-    powerOffFalling: "{labels} coupé : l’espace perd ~{rate}°F/h.",
+    powerOffFalling: "{labels} coupé : l’espace perd ~{rate}{unit}/h.",
     powerOffCurrently: "{labels} actuellement coupé.",
     powerOffVsTemp: "Coupure de courant et température",
     powerOffVsTempDetail:
-      "Circuits coupés ~{minutes} min en 24 h ; l’espace a refroidi de ~{rate}°F/h (dehors {outdoor}°F).",
+      "Circuits coupés ~{minutes} min en 24 h ; l’espace a refroidi de ~{rate}{unit}/h (dehors {outdoor}{unit}).",
     motionDetected: "Mouvement détecté",
     motionActiveNow: "{labels} actif en ce moment.",
     recentActivity: "Activité récente",
@@ -210,7 +210,7 @@ const fr: OverviewInsightsMessages = {
       auxheatonly: "Chauffage d’appoint seul",
       eco: "Éco",
     },
-    setpoint: "consigne {temp}°F",
+    setpoint: "consigne {temp}{unit}",
     annotation: {
       house: "Thermostat de la maison : {temp}°F",
       setTo: "consigne {temp}°F",

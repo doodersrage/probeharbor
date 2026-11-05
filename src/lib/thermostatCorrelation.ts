@@ -7,6 +7,7 @@
 import { getRuntimeEnv } from "./runtimeEnv";
 import { fmt, formatNumber, type Locale } from "../i18n";
 import { overviewInsightsMessages } from "../i18n/messages/app/overviewInsights";
+import { tempUnitLabel, toDisplayTemp } from "./temperatureFormat";
 
 const thermostatText = (locale: Locale) => overviewInsightsMessages(locale).thermostat;
 
@@ -324,21 +325,33 @@ export function formatThermostatMode(mode: string | null, locale: Locale = "en")
   return modes[mode.toLowerCase()] ?? capitalized;
 }
 
-/** Overview Status metric: whole °F when available. */
-export function formatThermostatMetricValue(snapshot: ThermostatSnapshot, locale: Locale = "en"): string {
-  return snapshot.ambientTempF != null ? `${wholeDegrees(snapshot.ambientTempF, locale)}°F` : "—";
+/** Overview Status metric: whole degrees when available (°F, or °C for the display preference). */
+export function formatThermostatMetricValue(
+  snapshot: ThermostatSnapshot,
+  locale: Locale = "en",
+  useCelsius = false,
+): string {
+  return snapshot.ambientTempF != null
+    ? `${wholeDegrees(toDisplayTemp(snapshot.ambientTempF, useCelsius), locale)}${tempUnitLabel(useCelsius)}`
+    : "—";
 }
 
-/** Subline for Status metric, e.g. "Cool · set 80°F". */
+/** Subline for Status metric, e.g. "Cool · set 80°F" ("set 27°C" for the °C preference). */
 export function formatThermostatMetricDetail(
   snapshot: ThermostatSnapshot,
   locale: Locale = "en",
+  useCelsius = false,
 ): string | null {
   const parts: string[] = [];
   const mode = formatThermostatMode(snapshot.hvacMode, locale);
   if (mode) parts.push(mode);
   if (snapshot.heatSetpointF != null) {
-    parts.push(fmt(thermostatText(locale).setpoint, { temp: wholeDegrees(snapshot.heatSetpointF, locale) }));
+    parts.push(
+      fmt(thermostatText(locale).setpoint, {
+        temp: wholeDegrees(toDisplayTemp(snapshot.heatSetpointF, useCelsius), locale),
+        unit: tempUnitLabel(useCelsius),
+      }),
+    );
   }
   return parts.length > 0 ? parts.join(" · ") : null;
 }

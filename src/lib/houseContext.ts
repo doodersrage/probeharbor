@@ -11,6 +11,7 @@ import { fetchThermostatSnapshotChartPoints } from "./thermostatSnapshots";
 import { fetchNewestFirstPages } from "./pagedRows";
 import { fmt, type Locale } from "../i18n";
 import { libFixed, libTextMessages } from "../i18n/messages/app/libText";
+import { tempUnitLabel, toDisplayTemp } from "./temperatureFormat";
 
 export type HouseContext = {
   source: "thermostat" | "reference_sensor";
@@ -40,14 +41,15 @@ export function buildHouseContext(input: {
   referenceSensorId: string | null;
   latest: LatestSensorRow[];
   devices: DeviceWithSensors[];
-}, locale: Locale = "en"): HouseContext | null {
+}, locale: Locale = "en", useCelsius = false): HouseContext | null {
+  // useCelsius only changes metricValue/metricDetail text; ambientTempF stays °F.
   if (input.thermostatSnapshot?.ambientTempF != null) {
     const ambientTempF = input.thermostatSnapshot.ambientTempF;
     return {
       source: "thermostat",
       ambientTempF,
-      metricValue: formatThermostatMetricValue(input.thermostatSnapshot, locale),
-      metricDetail: formatThermostatMetricDetail(input.thermostatSnapshot, locale),
+      metricValue: formatThermostatMetricValue(input.thermostatSnapshot, locale, useCelsius),
+      metricDetail: formatThermostatMetricDetail(input.thermostatSnapshot, locale, useCelsius),
       referenceLabel: null,
       thermostatSnapshot: input.thermostatSnapshot,
     };
@@ -67,7 +69,7 @@ export function buildHouseContext(input: {
   return {
     source: "reference_sensor",
     ambientTempF: referenceTempF,
-    metricValue: `${libFixed(referenceTempF, 0, locale)}°F`,
+    metricValue: `${libFixed(toDisplayTemp(referenceTempF, useCelsius), 0, locale)}${tempUnitLabel(useCelsius)}`,
     metricDetail: referenceLabel
       ? fmt(libTextMessages(locale).house.fromReference, { label: referenceLabel })
       : libTextMessages(locale).house.indoorReference,

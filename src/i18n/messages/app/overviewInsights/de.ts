@@ -121,7 +121,7 @@ const de: OverviewInsightsMessages = {
     subtitle: "{label}: Heizungs-/Lastindikator vom Energiesensor.",
     stats: "Ø {avg} W · ~{kwh} kWh über die Messwerte · {age}",
     coolingLowPower:
-      "Bereich kühlt um ~{rate}°F/h ab, während der Verbrauch niedrig ist. Die Heizung ist evtl. aus oder zu schwach.",
+      "Bereich kühlt um ~{rate}{unit}/h ab, während der Verbrauch niedrig ist. Die Heizung ist evtl. aus oder zu schwach.",
     loadActive: "Last aktiv (~{watts} W), während sich der Bereich erwärmt.",
   },
   claimsPack: {
@@ -137,7 +137,7 @@ const de: OverviewInsightsMessages = {
     openNow: "jetzt offen",
     none: "Noch keine Türöffnungen erfasst.",
     viewAll: "Alle unter Verlauf → Türen ansehen",
-    coldAirHelp: "Kaltluft-Index = Minuten offen × Grad unter 32 °F draußen.",
+    coldAirHelp: "Kaltluft-Index = Minuten offen × Grad unter {freezing} draußen.",
   },
   chart: {
     expand: "Vergrößern",
@@ -160,22 +160,22 @@ const de: OverviewInsightsMessages = {
   },
   summaries: {
     doorOpenNow: "Tür gerade offen",
-    doorOpenFalling: "{labels}: Bereich kühlt um ~{rate}°F/h ab, solange offen.",
+    doorOpenFalling: "{labels}: Bereich kühlt um ~{rate}{unit}/h ab, solange offen.",
     doorStillOpen: "{labels} noch offen ({duration}).",
     doorVsTemp: "Tür und Temperatur",
     doorVsTempDetail:
-      "Türen ~{minutes} Min. in 24 Std. offen; Bereich zuletzt um ~{rate}°F/h abgekühlt.",
+      "Türen ~{minutes} Min. in 24 Std. offen; Bereich zuletzt um ~{rate}{unit}/h abgekühlt.",
     coldAir: "Kaltluft eingedrungen",
     coldAirDetail:
-      "Türen ~{minutes} Min. offen bei {outdoor}°F draußen (Kaltluftindex ~{index}).",
+      "Türen ~{minutes} Min. offen bei {outdoor}{unit} draußen (Kaltluftindex ~{index}).",
     doorActivity: "Türaktivität",
     doorActivityDetail: "Etwa {minutes} Minuten offen in den letzten 24 Stunden.",
     powerOffNow: "Strom gerade aus",
-    powerOffFalling: "{labels} aus: Bereich kühlt um ~{rate}°F/h ab.",
+    powerOffFalling: "{labels} aus: Bereich kühlt um ~{rate}{unit}/h ab.",
     powerOffCurrently: "{labels} ist derzeit aus.",
     powerOffVsTemp: "Stromausfall und Temperatur",
     powerOffVsTempDetail:
-      "Stromkreise ~{minutes} Min. in 24 Std. aus; Bereich um ~{rate}°F/h abgekühlt (draußen {outdoor}°F).",
+      "Stromkreise ~{minutes} Min. in 24 Std. aus; Bereich um ~{rate}{unit}/h abgekühlt (draußen {outdoor}{unit}).",
     motionDetected: "Bewegung erkannt",
     motionActiveNow: "{labels} gerade aktiv.",
     recentActivity: "Letzte Aktivität",
@@ -210,7 +210,7 @@ const de: OverviewInsightsMessages = {
       auxheatonly: "Nur Zusatzheizung",
       eco: "Eco",
     },
-    setpoint: "Soll {temp}°F",
+    setpoint: "Soll {temp}{unit}",
     annotation: {
       house: "Hausthermostat: {temp}°F",
       setTo: "Soll {temp}°F",

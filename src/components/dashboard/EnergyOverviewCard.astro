@@ -4,13 +4,16 @@ import type { EnergyOverview } from "../../lib/overviewExtras";
 import { localizedAgeLabel } from "../../lib/overviewExtras";
 import { fmt, formatNumber, getLocale } from "../../i18n";
 import { overviewInsightsMessages } from "../../i18n/messages/app/overviewInsights";
+import { tempUnitLabel, toDisplayDelta } from "../../lib/temperatureFormat";
 
 interface Props {
   energy: EnergyOverview;
   coolingRateFPerHour?: number | null;
+  /** The °C display preference; the rate stays °F/h in props (a difference: ×5/9 for °C). */
+  useCelsius?: boolean;
 }
 
-const { energy, coolingRateFPerHour = null } = Astro.props;
+const { energy, coolingRateFPerHour = null, useCelsius = false } = Astro.props;
 const locale = getLocale(Astro);
 const t = overviewInsightsMessages(locale).energy;
 const age = localizedAgeLabel(energy.at, locale);
@@ -29,7 +32,10 @@ const fixed = (value: number, digits: number) =>
   </p>
   {coolingRateFPerHour != null && coolingRateFPerHour < -0.5 && energy.latestW < 50 && (
     <p class="alert-warning mt-3 mb-0 text-sm">
-      {fmt(t.coolingLowPower, { rate: fixed(Math.abs(coolingRateFPerHour), 1) })}
+      {fmt(t.coolingLowPower, {
+        rate: fixed(toDisplayDelta(Math.abs(coolingRateFPerHour), useCelsius), 1),
+        unit: tempUnitLabel(useCelsius),
+      })}
     </p>
   )}
   {coolingRateFPerHour != null && coolingRateFPerHour > 0.3 && energy.latestW > 200 && (

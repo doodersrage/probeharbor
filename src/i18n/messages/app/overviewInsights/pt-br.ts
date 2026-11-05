@@ -121,7 +121,7 @@ const ptBr: OverviewInsightsMessages = {
     subtitle: "{label}: indicador de aquecedor / carga do sensor de energia.",
     stats: "Média {avg} W · ~{kwh} kWh nas amostras · {age}",
     coolingLowPower:
-      "O espaço está esfriando ~{rate}°F/h com consumo baixo. O aquecedor pode estar desligado ou subdimensionado.",
+      "O espaço está esfriando ~{rate}{unit}/h com consumo baixo. O aquecedor pode estar desligado ou subdimensionado.",
     loadActive: "Carga ativa (~{watts} W) enquanto o espaço esquenta.",
   },
   claimsPack: {
@@ -137,7 +137,7 @@ const ptBr: OverviewInsightsMessages = {
     openNow: "aberta agora",
     none: "Nenhuma abertura de porta registrada ainda.",
     viewAll: "Ver todas em Histórico → Portas",
-    coldAirHelp: "Índice de ar frio = minutos aberta × graus abaixo de 32 °F lá fora.",
+    coldAirHelp: "Índice de ar frio = minutos aberta × graus abaixo de {freezing} lá fora.",
   },
   chart: {
     expand: "Ampliar",
@@ -160,22 +160,22 @@ const ptBr: OverviewInsightsMessages = {
   },
   summaries: {
     doorOpenNow: "Porta aberta agora",
-    doorOpenFalling: "{labels}: o espaço está caindo ~{rate}°F/h enquanto aberta.",
+    doorOpenFalling: "{labels}: o espaço está caindo ~{rate}{unit}/h enquanto aberta.",
     doorStillOpen: "{labels} ainda aberta ({duration}).",
     doorVsTemp: "Porta x temperatura",
     doorVsTempDetail:
-      "Portas abertas ~{minutes} min em 24 h; o espaço esfriou ~{rate}°F/h recentemente.",
+      "Portas abertas ~{minutes} min em 24 h; o espaço esfriou ~{rate}{unit}/h recentemente.",
     coldAir: "Entrada de ar frio",
     coldAirDetail:
-      "Portas abertas ~{minutes} min com {outdoor}°F lá fora (índice de ar frio ~{index}).",
+      "Portas abertas ~{minutes} min com {outdoor}{unit} lá fora (índice de ar frio ~{index}).",
     doorActivity: "Atividade das portas",
     doorActivityDetail: "Cerca de {minutes} minutos aberta nas últimas 24 horas.",
     powerOffNow: "Energia desligada agora",
-    powerOffFalling: "{labels} desligado: o espaço está caindo ~{rate}°F/h.",
+    powerOffFalling: "{labels} desligado: o espaço está caindo ~{rate}{unit}/h.",
     powerOffCurrently: "{labels} desligado no momento.",
     powerOffVsTemp: "Falta de energia x temperatura",
     powerOffVsTempDetail:
-      "Circuitos desligados ~{minutes} min em 24 h; o espaço esfriou ~{rate}°F/h (lá fora {outdoor}°F).",
+      "Circuitos desligados ~{minutes} min em 24 h; o espaço esfriou ~{rate}{unit}/h (lá fora {outdoor}{unit}).",
     motionDetected: "Movimento detectado",
     motionActiveNow: "{labels} ativo agora.",
     recentActivity: "Atividade recente",
@@ -210,7 +210,7 @@ const ptBr: OverviewInsightsMessages = {
       auxheatonly: "Só aquecimento auxiliar",
       eco: "Eco",
     },
-    setpoint: "ajustado para {temp}°F",
+    setpoint: "ajustado para {temp}{unit}",
     annotation: {
       house: "Termostato da casa: {temp}°F",
       setTo: "ajustado para {temp}°F",

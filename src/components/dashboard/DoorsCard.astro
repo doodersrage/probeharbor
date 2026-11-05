@@ -3,21 +3,26 @@ import DashboardCard from "./DashboardCard.astro";
 import { listDoorEvents } from "../../lib/doorEvents";
 import { formatDurationMs } from "../../lib/doorDuration";
 import type { DoorTempSummary } from "../../lib/overviewExtras";
-import { getLocale, LOCALE_META } from "../../i18n";
+import { fmt, getLocale, LOCALE_META } from "../../i18n";
+import { tempUnitLabel } from "../../lib/temperatureFormat";
 import { overviewInsightsMessages } from "../../i18n/messages/app/overviewInsights";
 
 interface Props {
   /** Door vs temperature insight for the last 24 h, if any. */
   summary: DoorTempSummary | null;
   householdId: string | null;
+  /** The °C display preference (the cold-air index help reads "0 °C" instead of "32 °F"). */
+  useCelsius?: boolean;
 }
 
 /** How many recent openings to list; the rest are in History → Doors. */
 const RECENT_LIMIT = 5;
 
-const { summary, householdId } = Astro.props;
+const { summary, householdId, useCelsius = false } = Astro.props;
 const locale = getLocale(Astro);
 const t = overviewInsightsMessages(locale).door;
+// Freezing in the display unit: "32°F" / "0°C" in English, "32 °F" / "0 °C" elsewhere.
+const freezing = `${useCelsius ? 0 : 32}${locale === "en" ? "" : " "}${tempUnitLabel(useCelsius)}`;
 const intl = locale === "en" ? undefined : LOCALE_META[locale].intl;
 const events = householdId ? await listDoorEvents(householdId, RECENT_LIMIT) : [];
 
@@ -33,7 +38,7 @@ if (!summary && events.length === 0) {
       <p class="m-0 mb-1"><strong>{summary.title}</strong></p>
       <p class="m-0 text-sm">{summary.detail}</p>
       {summary.kind === "coldAir" && (
-        <p class="m-0 mt-1 text-xs">{t.coldAirHelp}</p>
+        <p class="m-0 mt-1 text-xs">{fmt(t.coldAirHelp, { freezing })}</p>
       )}
     </div>
   )}

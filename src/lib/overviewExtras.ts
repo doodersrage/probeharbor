@@ -25,6 +25,7 @@ import { formatRelativeAge } from "./relativeTime";
 import { SENSOR_KIND_LABELS, type SensorKind } from "./sensorKinds";
 import { fmt, formatNumber, LOCALE_META, plural, type Locale } from "../i18n";
 import { overviewInsightsMessages } from "../i18n/messages/app/overviewInsights";
+import { tempUnitLabel, toDisplayDelta, toDisplayTemp } from "./temperatureFormat";
 
 const msgs = (locale: Locale) => overviewInsightsMessages(locale);
 
@@ -237,13 +238,20 @@ export type DoorTempSummary = {
   tone: "warning" | "info";
 };
 
+/**
+ * `useCelsius` (the dashboard display preference) only changes the wording:
+ * the rules compare °F. The cooling rate and the cold-air index are
+ * differences (×5/9 in °C); the outdoor temperature converts with the offset.
+ */
 export function buildDoorTempSummary(
   sessions: DoorOpenSession[],
   points: ChartPoint[],
   outdoorTempF: number | null,
   locale: Locale = "en",
+  useCelsius = false,
 ): DoorTempSummary | null {
   const t = msgs(locale).summaries;
+  const unit = tempUnitLabel(useCelsius);
   const minutes = doorOpenMinutesFromSessions(sessions);
   const openNow = sessions.filter((s) => s.stillOpen);
   const rate = estimateHeatingLossRate(points, outdoorTempF);
@@ -254,7 +262,7 @@ export function buildDoorTempSummary(
       title: t.doorOpenNow,
       detail:
         rate != null && rate < 0
-          ? fmt(t.doorOpenFalling, { labels, rate: fixed(Math.abs(rate), 1, locale) })
+          ? fmt(t.doorOpenFalling, { labels, rate: fixed(toDisplayDelta(Math.abs(rate), useCelsius), 1, locale), unit })
           : fmt(t.doorStillOpen, {
               labels,
               duration: formatDurationMs(Date.now() - Date.parse(openNow[0]!.openedAt), locale),
@@ -268,7 +276,8 @@ export function buildDoorTempSummary(
       title: t.doorVsTemp,
       detail: fmt(t.doorVsTempDetail, {
         minutes: fixed(Math.round(minutes), 0, locale),
-        rate: fixed(Math.abs(rate), 1, locale),
+        rate: fixed(toDisplayDelta(Math.abs(rate), useCelsius), 1, locale),
+        unit,
       }),
       tone: "warning",
     };
@@ -284,8 +293,10 @@ export function buildDoorTempSummary(
       title: t.coldAir,
       detail: fmt(t.coldAirDetail, {
         minutes: fixed(Math.round(minutes), 0, locale),
-        outdoor: fixed(outdoorTempF, 0, locale),
-        index: fixed(coldAirIndex, 0, locale),
+        outdoor: fixed(toDisplayTemp(outdoorTempF, useCelsius), 0, locale),
+        // Minutes × degrees below freezing, in the display unit's degrees.
+        index: fixed(Math.round(toDisplayDelta(coldAirIndex, useCelsius)), 0, locale),
+        unit,
       }),
       tone: "warning",
     };
@@ -671,13 +682,16 @@ export async function loadMotionSessions24h(
   return loadBoolSessions24h(devices, "motion", false);
 }
 
+/** `useCelsius`: as buildDoorTempSummary (wording only; the rate is a difference). */
 export function buildPowerTempSummary(
   powerOffSessions: DoorOpenSession[],
   points: ChartPoint[],
   outdoorTempF: number | null,
   locale: Locale = "en",
+  useCelsius = false,
 ): InsightCallout | null {
   const t = msgs(locale).summaries;
+  const unit = tempUnitLabel(useCelsius);
   const offNow = powerOffSessions.filter((s) => s.stillOpen);
   const rate = estimateHeatingLossRate(points, outdoorTempF);
   const offMinutes = doorOpenMinutesFromSessions(powerOffSessions);
@@ -688,7 +702,7 @@ export function buildPowerTempSummary(
       title: t.powerOffNow,
       detail:
         rate != null && rate < 0
-          ? fmt(t.powerOffFalling, { labels, rate: fixed(Math.abs(rate), 1, locale) })
+          ? fmt(t.powerOffFalling, { labels, rate: fixed(toDisplayDelta(Math.abs(rate), useCelsius), 1, locale), unit })
           : fmt(t.powerOffCurrently, { labels }),
       tone: "warning",
     };
@@ -704,8 +718,9 @@ export function buildPowerTempSummary(
       title: t.powerOffVsTemp,
       detail: fmt(t.powerOffVsTempDetail, {
         minutes: fixed(Math.round(offMinutes), 0, locale),
-        rate: fixed(Math.abs(rate), 1, locale),
-        outdoor: fixed(outdoorTempF, 0, locale),
+        rate: fixed(toDisplayDelta(Math.abs(rate), useCelsius), 1, locale),
+        outdoor: fixed(toDisplayTemp(outdoorTempF, useCelsius), 0, locale),
+        unit,
       }),
       tone: "warning",
     };

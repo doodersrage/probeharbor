@@ -121,7 +121,7 @@ const es: OverviewInsightsMessages = {
     subtitle: "{label}: indicador de calefactor / carga del sensor de energía.",
     stats: "Media {avg} W · ~{kwh} kWh en las muestras · {age}",
     coolingLowPower:
-      "El espacio se enfría ~{rate}°F/h con poco consumo. El calefactor podría estar apagado o ser insuficiente.",
+      "El espacio se enfría ~{rate}{unit}/h con poco consumo. El calefactor podría estar apagado o ser insuficiente.",
     loadActive: "Carga activa (~{watts} W) mientras el espacio se calienta.",
   },
   claimsPack: {
@@ -137,7 +137,7 @@ const es: OverviewInsightsMessages = {
     openNow: "abierta ahora",
     none: "Aún no hay aperturas de puerta registradas.",
     viewAll: "Ver todas en Historial → Puertas",
-    coldAirHelp: "Índice de aire frío = minutos abierta × grados por debajo de 32 °F fuera.",
+    coldAirHelp: "Índice de aire frío = minutos abierta × grados por debajo de {freezing} fuera.",
   },
   chart: {
     expand: "Ampliar",
@@ -160,22 +160,22 @@ const es: OverviewInsightsMessages = {
   },
   summaries: {
     doorOpenNow: "Puerta abierta ahora",
-    doorOpenFalling: "{labels}: el espacio baja ~{rate}°F/h mientras está abierta.",
+    doorOpenFalling: "{labels}: el espacio baja ~{rate}{unit}/h mientras está abierta.",
     doorStillOpen: "{labels} sigue abierta ({duration}).",
     doorVsTemp: "Puerta frente a temperatura",
     doorVsTempDetail:
-      "Puertas abiertas ~{minutes} min en 24 h; el espacio se enfrió ~{rate}°F/h recientemente.",
+      "Puertas abiertas ~{minutes} min en 24 h; el espacio se enfrió ~{rate}{unit}/h recientemente.",
     coldAir: "Entrada de aire frío",
     coldAirDetail:
-      "Puertas abiertas ~{minutes} min con {outdoor}°F en el exterior (índice de aire frío ~{index}).",
+      "Puertas abiertas ~{minutes} min con {outdoor}{unit} en el exterior (índice de aire frío ~{index}).",
     doorActivity: "Actividad de puertas",
     doorActivityDetail: "Unos {minutes} minutos abiertas en las últimas 24 horas.",
     powerOffNow: "Sin corriente ahora",
-    powerOffFalling: "{labels} apagado: el espacio baja ~{rate}°F/h.",
+    powerOffFalling: "{labels} apagado: el espacio baja ~{rate}{unit}/h.",
     powerOffCurrently: "{labels} apagado en este momento.",
     powerOffVsTemp: "Corte de corriente frente a temperatura",
     powerOffVsTempDetail:
-      "Circuitos apagados ~{minutes} min en 24 h; el espacio se enfrió ~{rate}°F/h (exterior {outdoor}°F).",
+      "Circuitos apagados ~{minutes} min en 24 h; el espacio se enfrió ~{rate}{unit}/h (exterior {outdoor}{unit}).",
     motionDetected: "Movimiento detectado",
     motionActiveNow: "{labels} activo ahora.",
     recentActivity: "Actividad reciente",
@@ -210,7 +210,7 @@ const es: OverviewInsightsMessages = {
       auxheatonly: "Solo calefacción auxiliar",
       eco: "Eco",
     },
-    setpoint: "consigna {temp}°F",
+    setpoint: "consigna {temp}{unit}",
     annotation: {
       house: "Termostato de la casa: {temp}°F",
       setTo: "consigna {temp}°F",

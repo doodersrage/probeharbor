@@ -123,7 +123,7 @@ const en = {
     title: "Power draw",
     subtitle: "{label}: heater / load proxy from energy sensor.",
     stats: "Avg {avg} W · ~{kwh} kWh over samples · {age}",
-    coolingLowPower: "Space cooling ~{rate}°F/h while power is low. heater may be off or undersized.",
+    coolingLowPower: "Space cooling ~{rate}{unit}/h while power is low. heater may be off or undersized.",
     loadActive: "Load active (~{watts} W) while space is warming.",
   },
   claimsPack: {
@@ -139,7 +139,8 @@ const en = {
     openNow: "open now",
     none: "No door openings recorded yet.",
     viewAll: "See all in History → Doors",
-    coldAirHelp: "Cold-air index = minutes open × degrees below 32°F outside.",
+    /** {freezing} is "32°F" or "0°C"; the index is in degrees of the display unit. */
+    coldAirHelp: "Cold-air index = minutes open × degrees below {freezing} outside.",
   },
   chart: {
     expand: "Expand",
@@ -162,23 +163,23 @@ const en = {
     hoursAgo: "{count}h ago",
     daysAgo: "{count}d ago",
   },
-  /** Callouts built in src/lib/overviewExtras.ts */
+  /** Callouts built in src/lib/overviewExtras.ts ({unit}: display unit; rates are differences) */
   summaries: {
     doorOpenNow: "Door open now",
-    doorOpenFalling: "{labels}: space falling ~{rate}°F/h while open.",
+    doorOpenFalling: "{labels}: space falling ~{rate}{unit}/h while open.",
     doorStillOpen: "{labels} still open ({duration}).",
     doorVsTemp: "Door vs temperature",
-    doorVsTempDetail: "Doors open ~{minutes} min in 24h; space cooled ~{rate}°F/h recently.",
+    doorVsTempDetail: "Doors open ~{minutes} min in 24h; space cooled ~{rate}{unit}/h recently.",
     coldAir: "Cold air admitted",
-    coldAirDetail: "Doors open ~{minutes} min with outdoor {outdoor}°F (cold-air index ~{index}).",
+    coldAirDetail: "Doors open ~{minutes} min with outdoor {outdoor}{unit} (cold-air index ~{index}).",
     doorActivity: "Door activity",
     doorActivityDetail: "About {minutes} minutes open in the last 24 hours.",
     powerOffNow: "Power off now",
-    powerOffFalling: "{labels} Off: space falling ~{rate}°F/h.",
+    powerOffFalling: "{labels} Off: space falling ~{rate}{unit}/h.",
     powerOffCurrently: "{labels} currently Off.",
     powerOffVsTemp: "Power off vs temperature",
     powerOffVsTempDetail:
-      "Circuits Off ~{minutes} min in 24h; space cooled ~{rate}°F/h (outdoor {outdoor}°F).",
+      "Circuits Off ~{minutes} min in 24h; space cooled ~{rate}{unit}/h (outdoor {outdoor}{unit}).",
     motionDetected: "Motion detected",
     motionActiveNow: "{labels} active now.",
     recentActivity: "Recent activity",
@@ -213,7 +214,7 @@ const en = {
       auxheatonly: "Auxheatonly",
       eco: "Eco",
     },
-    setpoint: "set {temp}°F",
+    setpoint: "set {temp}{unit}",
     annotation: {
       house: "House thermostat: {temp}°F",
       setTo: "set to {temp}°F",

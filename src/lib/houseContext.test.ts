@@ -71,6 +71,37 @@ describe("houseContext", () => {
     expect(context?.metricDetail).toContain("Hallway");
   });
 
+  it("reads the house temperature in °C for °C users (ambientTempF stays °F)", () => {
+    const thermostat = buildHouseContext(
+      {
+        thermostatSnapshot: { provider: "nest", ambientTempF: 79, heatSetpointF: 80, hvacMode: "COOL" },
+        referenceSensorId: null,
+        latest,
+        devices,
+      },
+      "en",
+      true,
+    );
+    expect(thermostat?.ambientTempF).toBe(79);
+    expect(thermostat?.metricValue).toBe("26°C");
+    expect(thermostat?.metricDetail).toBe("Cool · set 27°C");
+    const fThermostat = buildHouseContext({
+      thermostatSnapshot: { provider: "nest", ambientTempF: 79, heatSetpointF: 80, hvacMode: "COOL" },
+      referenceSensorId: null,
+      latest,
+      devices,
+    });
+    expect(fThermostat?.metricValue).toBe("79°F");
+    expect(fThermostat?.metricDetail).toBe("Cool · set 80°F");
+    const reference = buildHouseContext(
+      { thermostatSnapshot: null, referenceSensorId: "s-hall", latest, devices },
+      "en",
+      true,
+    );
+    expect(reference?.ambientTempF).toBe(72);
+    expect(reference?.metricValue).toBe("22°C");
+  });
+
   it("resolves reference sensor temp from latest readings", () => {
     expect(resolveReferenceSensorTempF("s-hall", latest)).toBe(72);
     expect(resolveReferenceSensorTempF("missing", latest)).toBeNull();

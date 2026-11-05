@@ -31,6 +31,8 @@ interface Props {
   airQualityOverview: AirQualityOverview;
   energyOverview: EnergyOverview | null;
   coolingRateFPerHour: number | null;
+  /** The °C display preference (door help text, energy cooling rate). */
+  useCelsius?: boolean;
 }
 
 const {
@@ -43,6 +45,7 @@ const {
   airQualityOverview,
   energyOverview,
   coolingRateFPerHour,
+  useCelsius = false,
 } = Astro.props;
 
 const t = overviewInsightsMessages(getLocale(Astro)).extras;
@@ -55,7 +58,7 @@ function calloutTone(tone?: string): "warning" | "info" {
 <details class="card">
   <summary class="dashboard-recommendations-summary">{t.summary}</summary>
   <div class="dashboard-recommendations-body space-y-4">
-    <DoorsCard summary={doorTempSummary} householdId={householdId} />
+    <DoorsCard summary={doorTempSummary} householdId={householdId} useCelsius={useCelsius} />
     {powerTempSummary && (
       <InsightCalloutCard
         title={t.powerTitle}
@@ -83,6 +86,7 @@ function calloutTone(tone?: string): "warning" | "info" {
       <EnergyOverviewCard
         energy={energyOverview}
         coolingRateFPerHour={coolingRateFPerHour}
+        useCelsius={useCelsius}
       />
     )}
   </div>
