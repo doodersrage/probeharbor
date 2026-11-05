@@ -8,6 +8,8 @@ Create a **push** device under **[Dashboard → Devices](https://probeharbor.dev
 
 Full UI walkthrough (push **and** pull): [Adding push and pull devices](https://probeharbor.dev/about/adding-devices).
 
+**Plain ESP32, no code?** The [browser flasher](https://probeharbor.dev/flash) installs the ProbeHarbor firmware over USB from Chrome or Edge on a computer, then sends the board your Wi-Fi and device key over the same cable. On a classic ESP32 it has been tested with DS18B20 probes, a DHT22, a BME280, an SHT31 and a door switch; AHT20 sensors, leak and battery inputs, and ESP32-S3/C3 boards are built in but not yet hardware-tested. Right after you create a device, the same flasher appears on the Devices page with the key filled in.
+
 ```http
 POST https://probeharbor.dev/api/ingest/<device-key>
 Content-Type: application/json
@@ -24,7 +26,9 @@ Optional top-level health fields (any payload style):
 
 Sensor keys import automatically from your JSON (flat keys, classic `temp` object, typed `sensors[]`, SenML, or Home Assistant REST). Rename labels on the Devices page afterward. Manual mapping under **Advanced** is optional if you want to pre-map keys before the first POST.
 
-After the first successful POST, open **[Home](https://probeharbor.dev/)** while signed in to confirm live values. History collects from the **15-minute** background poll and successful ingests.
+After the first successful POST, open **[Overview](https://probeharbor.dev/dashboard)** while signed in to confirm live values. History collects from the **15-minute** background poll and successful ingests.
+
+Nothing arriving? See [A device never sent its first reading](/guide/troubleshooting#a-device-never-sent-its-first-reading).
 
 **No hardware yet?** On **Overview**, use **Try without hardware** to save the public example pull feed in one click.
 

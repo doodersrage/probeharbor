@@ -1,8 +1,18 @@
 ---
-description: "Fix common ProbeHarbor problems: ingest 401s, devices online with an empty dashboard, lost ingest keys, and alerts that never arrive."
+description: "Fix common ProbeHarbor problems: a device that never sends its first reading, ingest 401s, devices online with an empty dashboard, lost ingest keys, and alerts that never arrive."
 ---
 
 # Troubleshooting
+
+## A device never sent its first reading
+
+After you create a push device, Devices shows **Waiting for the first reading** and checks every 5 seconds. If nothing arrives within a couple of minutes, the page lists these checks:
+
+1. **2.4 GHz Wi-Fi.** Most boards (ESP32, Pico W) only join 2.4 GHz networks, not 5 GHz. Re-check the network name and password you gave the device. The [browser flasher](https://probeharbor.dev/flash) reports Wi-Fi failures on its status line while the board is still on USB.
+2. **The key, exactly.** If you typed or pasted the key yourself, it must match with no extra spaces. If you lost it, use **Rotate key** on the device page and update the device (the old key stops working).
+3. **Outgoing HTTPS.** The device must reach `https://probeharbor.dev` on port 443. Guest networks and Wi-Fi that needs a sign-in page usually block it.
+4. **The payload.** Paste what your device sends into the [payload checker](https://probeharbor.dev/payload-checker) to see how ProbeHarbor reads it.
+5. **Still nothing?** Work through [Debugging stale or missing readings](https://probeharbor.dev/about/debugging-stale-readings), then the 401 section below and [circuit wiring troubleshooting](https://probeharbor.dev/about/circuit-wiring-troubleshooting).
 
 ## Ingest returns 401
 
@@ -10,10 +20,10 @@ description: "Fix common ProbeHarbor problems: ingest 401s, devices online with 
 - Extra whitespace in firmware URL
 - Posting to the wrong host (`workers.dev` vs `probeharbor.dev`) — prefer the apex
 
-## Device online but Home is empty
+## Device online but Overview is empty
 
 1. Devices → confirm the device has received at least one POST (sensors auto-import; rename labels afterward if needed)  
-2. Hard-refresh Home while signed into the same household  
+2. Hard-refresh [Overview](https://probeharbor.dev/dashboard) while signed into the same household  
 3. Check Ops / system status if you admin the project  
 
 ## Lost ingest key

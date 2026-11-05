@@ -8,6 +8,8 @@ Firmware samples live in the repo:
 
 **[`sketches/`](https://github.com/doodersrage/probeharbor/tree/main/sketches)**
 
+**Plain ESP32, no code?** The [browser flasher](https://probeharbor.dev/flash) installs the ProbeHarbor firmware over USB from Chrome or Edge on a computer, then sends the board your Wi-Fi and device key over the same cable. On a classic ESP32 it has been tested with DS18B20 probes, a DHT22, a BME280, an SHT31 and a door switch; AHT20 sensors, leak and battery inputs, and ESP32-S3/C3 boards are built in but not yet hardware-tested. Right after you create a device, the same flasher appears on the Devices page with the key filled in. The sketches below are for other boards, other sensors, or when you want to change the code.
+
 Each sketch POSTs to your push-device ingest URL. On **Dashboard → Devices**, create a push device and use **Download Arduino .ino** / **MicroPython .py** / **CircuitPython code.py** / **Zephyr main.c** / **CH32V main.c** / **AVR main.S** / **Teensy 4.1 .ino** / **PIC18 main.c** / **Particle Boron .ino** (URL or path pre-filled). Or copy a sketch from this folder and set `INGEST_URL` / `INGEST_PATH` yourself. Always set Wi-Fi credentials (ESP / Pico), `INGEST_HOST` / `INGEST_PATH` (Ethernet), or a Particle Console webhook (cellular) before flashing.
 
 ## Matrix
