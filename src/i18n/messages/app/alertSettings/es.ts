@@ -10,7 +10,7 @@ const es: AlertSettingsMessages = {
     title: "Cuándo avisar",
     subtitle: "Congelación, fugas, sensores en silencio y avisos anticipados.",
     turnOn: "Activar alertas",
-    freezeBelow: "Congelación por debajo de (°F)",
+    freezeBelow: "Congelación por debajo de ({unit})",
     freezeHint: "Avisa cuando una sonda esté a esta temperatura o por debajo.",
     dwellLabel: "Esperar antes de avisar (minutos)",
     dwellHint:
@@ -31,7 +31,7 @@ const es: AlertSettingsMessages = {
     forecastHoursHint: "Lo usan los dos avisos anticipados: el del pronóstico y el del tiempo hasta la congelación.",
     nwsSummary: "Humedad, descensos rápidos y avisos oficiales de helada",
     humidityAbove: "Humedad por encima de (%)",
-    rateDrop: "Descenso rápido (°F / hora)",
+    rateDrop: "Descenso rápido ({unit} / hora)",
     nwsToggle: "Avisos oficiales de helada / frío del NWS (EE. UU.)",
     perSensorSummary: "Umbrales distintos por sensor",
     perSensorHint:

@@ -14,7 +14,7 @@ const en = {
     title: "When to alert",
     subtitle: "Freeze, leaks, silent sensors, and early warnings.",
     turnOn: "Turn on alerts",
-    freezeBelow: "Freeze below (°F)",
+    freezeBelow: "Freeze below ({unit})",
     freezeHint: "Alert when a probe is at or below this temperature.",
     dwellLabel: "Wait before alerting (minutes)",
     dwellHint:
@@ -33,7 +33,7 @@ const en = {
     forecastHoursHint: "Used by both early warnings: the forecast warning and the time-to-freeze warning.",
     nwsSummary: "Humidity, fast drops, and official freeze warnings",
     humidityAbove: "Humidity above (%)",
-    rateDrop: "Rate drop (°F / hour)",
+    rateDrop: "Rate drop ({unit} / hour)",
     nwsToggle: "NWS official freeze / cold alerts",
     perSensorSummary: "Different thresholds per sensor",
     perSensorHint:

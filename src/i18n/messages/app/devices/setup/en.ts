@@ -60,7 +60,7 @@ const en = {
     saveFailed: "Could not save alert settings. Please try again.",
     testFailed:
       "Settings saved, but the test could not be delivered. Confirm the email address or try again from Alerts.",
-    freezeLabel: "Freeze threshold (°F)",
+    freezeLabel: "Freeze threshold ({unit})",
     emailLabel: "Alert email",
     emailPlaceholder: "you@example.com",
     saveAndTest: "Save + send test",

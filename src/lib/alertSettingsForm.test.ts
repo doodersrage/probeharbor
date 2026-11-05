@@ -75,6 +75,30 @@ describe("buildAlertSettingsFromFormData", () => {
     expect(settings.freezeThresholdF).toBe(33);
   });
 
+  it("converts °C threshold and fast-drop inputs back to °F (temp_unit=C)", () => {
+    const existing: AlertSettings = { ...DEFAULT_ALERT_SETTINGS, freezeThresholdF: 34, rateChangeF: 5 };
+    const form = (fields: Record<string, string>) => {
+      const fd = new FormData();
+      for (const [k, v] of Object.entries(fields)) fd.set(k, v);
+      return buildAlertSettingsFromFormData(prepareAlertSettingsFormData(fd), existing, proEntitlements);
+    };
+    // 1 °C is 33.8 °F; a 2 °C/h drop is 3.6 °F/h (a difference: no 32° offset).
+    const c = form({ temp_unit: "C", freeze_threshold_f: "1", rate_change_f: "2" });
+    expect(c.freezeThresholdF).toBe(33.8);
+    expect(c.rateChangeF).toBe(3.6);
+    // Saving an untouched °C form (34 °F shown as 1.1, 5 °F/h as 2.8) keeps the stored values.
+    const same = form({ temp_unit: "C", freeze_threshold_f: "1.1", rate_change_f: "2.8" });
+    expect(same.freezeThresholdF).toBe(34);
+    expect(same.rateChangeF).toBe(5);
+    // °F forms, and older forms without temp_unit, are read as °F as before.
+    expect(form({ temp_unit: "F", freeze_threshold_f: "36" }).freezeThresholdF).toBe(36);
+    expect(form({ freeze_threshold_f: "36", rate_change_f: "4" })).toMatchObject({ freezeThresholdF: 36, rateChangeF: 4 });
+    // Blank or invalid input keeps the stored value instead of saving 0 or NaN.
+    expect(form({ temp_unit: "C", freeze_threshold_f: "" }).freezeThresholdF).toBe(34);
+    expect(form({ temp_unit: "C", freeze_threshold_f: "abc" }).freezeThresholdF).toBe(34);
+    expect(form({ temp_unit: "C" })).toMatchObject({ freezeThresholdF: 34, rateChangeF: 5 });
+  });
+
   it("treats omitted checkboxes as off after prepareAlertSettingsFormData", () => {
     const existing = {
       ...DEFAULT_ALERT_SETTINGS,

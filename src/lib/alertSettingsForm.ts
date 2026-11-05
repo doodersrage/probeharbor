@@ -9,6 +9,7 @@ import { parseThresholdSensorScope } from "./thresholdSensorScope";
 import { parseAlertTemplates } from "./alertTemplates";
 import type { Entitlements } from "./entitlements";
 import { isSafeHttpsUrl } from "./ssrfGuard";
+import { parseDisplayTempInput } from "./temperatureFormat";
 
 /** Checkbox fields use value="true" when checked; omitted when unchecked. */
 function formCheckbox(formData: FormData, key: string): boolean {
@@ -98,11 +99,15 @@ export function buildAlertSettingsFromFormData(
     ...existing,
     enabled: formCheckbox(formData, "alerts_enabled"),
     digestEnabled: formCheckbox(formData, "digest_enabled"),
-    freezeThresholdF: formNumber(
-      formData,
-      "freeze_threshold_f",
-      existing.freezeThresholdF,
-    ),
+    // The form shows these in the user's display unit; temp_unit=C means °C
+    // was typed, so convert back to °F (stored unit). Missing temp_unit = °F.
+    freezeThresholdF: formData.has("freeze_threshold_f")
+      ? parseDisplayTempInput(
+          formData.get("freeze_threshold_f")?.toString(),
+          formData.get("temp_unit")?.toString(),
+          existing.freezeThresholdF,
+        )
+      : existing.freezeThresholdF,
     freezeDwellMinutes: Math.max(
       0,
       Math.min(
@@ -117,7 +122,15 @@ export function buildAlertSettingsFromFormData(
       "humidity_threshold",
       existing.humidityThreshold,
     ),
-    rateChangeF: formNumber(formData, "rate_change_f", existing.rateChangeF),
+    // A rate is a difference per hour: °C/h × 9/5, no 32° offset.
+    rateChangeF: formData.has("rate_change_f")
+      ? parseDisplayTempInput(
+          formData.get("rate_change_f")?.toString(),
+          formData.get("temp_unit")?.toString(),
+          existing.rateChangeF,
+          "delta",
+        )
+      : existing.rateChangeF,
     // Unchecked "sensor not reporting" clears the threshold (0 = disabled).
     // If the checkbox field is absent (older clients / partial forms), keep existing hours.
     outageHours: formData.has("outage_alerts_enabled")

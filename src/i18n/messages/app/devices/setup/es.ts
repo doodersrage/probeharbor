@@ -57,7 +57,7 @@ const es: DevicesSetupMessages = {
     saveFailed: "No se pudieron guardar los ajustes de alertas. Inténtalo de nuevo.",
     testFailed:
       "Ajustes guardados, pero no se pudo entregar la prueba. Confirma la dirección de email o inténtalo de nuevo desde Alertas.",
-    freezeLabel: "Umbral de congelación (°F)",
+    freezeLabel: "Umbral de congelación ({unit})",
     emailLabel: "Email de alertas",
     emailPlaceholder: "tu@ejemplo.com",
     saveAndTest: "Guardar + enviar prueba",

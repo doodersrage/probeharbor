@@ -9,6 +9,7 @@ import AlertActivityList from "../../components/dashboard/AlertActivityList.astr
 import DashboardTabNav from "../../components/dashboard/DashboardTabNav.astro";
 import AlertPauseNotice from "../../components/alerts/AlertPauseNotice.astro";
 import { getAuthFromCookies } from "../../lib/auth";
+import { getDisplayPreferencesFromMetadata } from "../../lib/userPreferences";
 import { resolveSiteUrl } from "../../lib/schemaMarkup";
 import {
   ensureAlertDeliveryEvidence,
@@ -411,6 +412,7 @@ const referralRewardDays = Number(
           essentialsFirst={!hasSentAnyAlert}
           deviceSpaces={deviceSpaces}
           thresholdSensors={thresholdSensors}
+          useCelsius={getDisplayPreferencesFromMetadata(user).useCelsius}
         />
 
         {canEdit && (

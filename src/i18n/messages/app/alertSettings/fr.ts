@@ -10,7 +10,7 @@ const fr: AlertSettingsMessages = {
     title: "Quand alerter",
     subtitle: "Gel, fuites, capteurs muets et alertes anticipées.",
     turnOn: "Activer les alertes",
-    freezeBelow: "Gel en dessous de (°F)",
+    freezeBelow: "Gel en dessous de ({unit})",
     freezeHint: "Alerte quand une sonde est à cette température ou en dessous.",
     dwellLabel: "Attendre avant d’alerter (minutes)",
     dwellHint:
@@ -31,7 +31,7 @@ const fr: AlertSettingsMessages = {
     forecastHoursHint: "Utilisé par les deux alertes anticipées : prévision de gel et délai avant gel.",
     nwsSummary: "Humidité, chutes rapides et alertes officielles de gel",
     humidityAbove: "Humidité au-dessus de (%)",
-    rateDrop: "Chute rapide (°F / heure)",
+    rateDrop: "Chute rapide ({unit} / heure)",
     nwsToggle: "Alertes officielles gel / froid du NWS (États-Unis)",
     perSensorSummary: "Seuils différents par capteur",
     perSensorHint:

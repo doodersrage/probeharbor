@@ -1,7 +1,8 @@
 ---
 /** Inline freeze + email setup on Devices after first ingest. */
-import { getLocale } from "../i18n";
+import { fmt, getLocale } from "../i18n";
 import { devicesSetupMessages } from "../i18n/messages/app/devices/setup";
+import { displayTempInputValue, tempUnitLabel } from "../lib/temperatureFormat";
 
 interface Props {
   show: boolean;
@@ -12,6 +13,8 @@ interface Props {
   testError?: boolean;
   /** /api/user/alert-essentials could not save (?alert_error=1). */
   saveError?: boolean;
+  /** The °C display preference: the threshold is typed in °C and converted to °F on save. */
+  useCelsius?: boolean;
 }
 
 const {
@@ -22,6 +25,7 @@ const {
   testSent = false,
   testError = false,
   saveError = false,
+  useCelsius = false,
 } = Astro.props;
 
 // view=setup: once a device reports, bare /dashboard/devices opens the Devices
@@ -55,16 +59,17 @@ const t = devicesSetupMessages(getLocale(Astro)).firstAlert;
     )}
     <form action="/api/user/alert-essentials" method="post" class="space-y-3">
       <input type="hidden" name="redirect" value={redirectTo} />
+      <input type="hidden" name="temp_unit" value={useCelsius ? "C" : "F"} />
       <div class="flex flex-wrap gap-4">
         <div class="form-field mb-0">
-          <label class="form-label" for="first-alert-freeze">{t.freezeLabel}</label>
+          <label class="form-label" for="first-alert-freeze">{fmt(t.freezeLabel, { unit: tempUnitLabel(useCelsius) })}</label>
           <input
             class="form-input"
             type="number"
-            step="0.5"
+            step={useCelsius ? "0.1" : "0.5"}
             id="first-alert-freeze"
             name="freeze_threshold_f"
-            value={freezeThresholdF}
+            value={displayTempInputValue(freezeThresholdF, useCelsius)}
             required
           />
         </div>

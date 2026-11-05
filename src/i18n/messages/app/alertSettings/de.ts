@@ -10,7 +10,7 @@ const de: AlertSettingsMessages = {
     title: "Wann alarmieren",
     subtitle: "Frost, Lecks, stumme Sensoren und Frühwarnungen.",
     turnOn: "Alarme einschalten",
-    freezeBelow: "Frost unter (°F)",
+    freezeBelow: "Frost unter ({unit})",
     freezeHint: "Alarm, wenn ein Fühler diese Temperatur erreicht oder unterschreitet.",
     dwellLabel: "Wartezeit vor dem Alarm (Minuten)",
     dwellHint:
@@ -31,7 +31,7 @@ const de: AlertSettingsMessages = {
     forecastHoursHint: "Gilt für beide Frühwarnungen: die Vorhersagewarnung und die Warnung „Zeit bis Frost“.",
     nwsSummary: "Luftfeuchte, schnelle Temperaturstürze und amtliche Frostwarnungen",
     humidityAbove: "Luftfeuchte über (%)",
-    rateDrop: "Temperatursturz (°F / Stunde)",
+    rateDrop: "Temperatursturz ({unit} / Stunde)",
     nwsToggle: "Amtliche Frost-/Kältewarnungen des NWS (USA)",
     perSensorSummary: "Eigene Schwellenwerte pro Sensor",
     perSensorHint:

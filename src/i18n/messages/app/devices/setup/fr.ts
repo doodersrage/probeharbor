@@ -57,7 +57,7 @@ const fr: DevicesSetupMessages = {
     saveFailed: "Impossible d’enregistrer les paramètres d’alerte. Veuillez réessayer.",
     testFailed:
       "Paramètres enregistrés, mais le test n’a pas pu être envoyé. Vérifiez l’adresse e-mail ou réessayez depuis Alertes.",
-    freezeLabel: "Seuil de gel (°F)",
+    freezeLabel: "Seuil de gel ({unit})",
     emailLabel: "E-mail d’alerte",
     emailPlaceholder: "vous@exemple.com",
     saveAndTest: "Enregistrer + envoyer un test",

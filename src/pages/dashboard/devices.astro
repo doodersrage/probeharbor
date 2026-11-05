@@ -443,6 +443,7 @@ const demoDevices = devices.filter((d) => isDemoDevice(d));
     <FirstAlertSetupCard
       show={showFirstAlertSetup}
       freezeThresholdF={alertSettings.freezeThresholdF}
+      useCelsius={preferences.useCelsius}
       email={alertSettings.email || user.email}
       alertSaved={alertSaved}
       testSent={testSent}

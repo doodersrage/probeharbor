@@ -57,7 +57,7 @@ const ptBr: DevicesSetupMessages = {
     saveFailed: "Não foi possível salvar as configurações de alerta. Tente novamente.",
     testFailed:
       "Configurações salvas, mas não foi possível entregar o teste. Confirme o endereço de e-mail ou tente de novo em Alertas.",
-    freezeLabel: "Limite de congelamento (°F)",
+    freezeLabel: "Limite de congelamento ({unit})",
     emailLabel: "E-mail de alertas",
     emailPlaceholder: "voce@exemplo.com",
     saveAndTest: "Salvar + enviar teste",

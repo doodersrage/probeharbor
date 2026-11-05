@@ -10,7 +10,7 @@ const ptBr: AlertSettingsMessages = {
     title: "Quando alertar",
     subtitle: "Congelamento, vazamentos, sensores em silêncio e avisos antecipados.",
     turnOn: "Ativar alertas",
-    freezeBelow: "Congelamento abaixo de (°F)",
+    freezeBelow: "Congelamento abaixo de ({unit})",
     freezeHint: "Alerta quando uma sonda estiver nesta temperatura ou abaixo dela.",
     dwellLabel: "Esperar antes de alertar (minutos)",
     dwellHint:
@@ -31,7 +31,7 @@ const ptBr: AlertSettingsMessages = {
     forecastHoursHint: "Usado pelos dois avisos antecipados: o da previsão e o do tempo até o congelamento.",
     nwsSummary: "Umidade, quedas rápidas e avisos oficiais de geada",
     humidityAbove: "Umidade acima de (%)",
-    rateDrop: "Queda rápida (°F / hora)",
+    rateDrop: "Queda rápida ({unit} / hora)",
     nwsToggle: "Avisos oficiais de geada / frio do NWS (EUA)",
     perSensorSummary: "Limites diferentes por sensor",
     perSensorHint:

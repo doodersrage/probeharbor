@@ -14,6 +14,7 @@ import { recordHouseholdActivity } from "../../../lib/householdActivity";
 import { getUserHouseholdId } from "../../../lib/households";
 import { apiLocale } from "../../../i18n/messages/app/api/common";
 import { apiUserMessages } from "../../../i18n/messages/app/api/user";
+import { parseDisplayTempInput } from "../../../lib/temperatureFormat";
 
 /**
  * Minimal first-alert path used from Devices after first ingest.
@@ -38,11 +39,13 @@ export const POST: APIRoute = async ({ request, cookies, redirect, locals }) => 
     user.user_metadata as Record<string, unknown>,
   );
 
-  const freezeRaw = formData.get("freeze_threshold_f")?.toString();
-  const freezeParsed = freezeRaw != null && freezeRaw !== "" ? Number(freezeRaw) : NaN;
-  const freezeThresholdF = Number.isFinite(freezeParsed)
-    ? freezeParsed
-    : existing.freezeThresholdF;
+  // The card shows the threshold in the user's display unit; temp_unit=C
+  // means °C was typed (stored as °F to a tenth). No temp_unit = °F, as before.
+  const freezeThresholdF = parseDisplayTempInput(
+    formData.get("freeze_threshold_f")?.toString(),
+    formData.get("temp_unit")?.toString(),
+    existing.freezeThresholdF,
+  );
 
   const emailRaw = formData.get("alert_email")?.toString().trim();
   const email = emailRaw || existing.email || user.email || null;

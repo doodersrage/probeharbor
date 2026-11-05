@@ -14,6 +14,11 @@ import { fmt, getLocale, LOCALE_META } from "../i18n";
 import { alertSettingsMessages } from "../i18n/messages/app/alertSettings";
 import { shellMessages } from "../i18n/messages/app/shell";
 import UnsavedChangesGuard from "./UnsavedChangesGuard.astro";
+import {
+  displayDeltaInputValue,
+  displayTempInputValue,
+  tempUnitLabel,
+} from "../lib/temperatureFormat";
 
 interface Props {
   userEmail: string;
@@ -34,6 +39,12 @@ interface Props {
     deviceName: string;
     space?: string | null;
   }>;
+  /**
+   * The °C display preference: the freeze threshold and fast-drop inputs
+   * show °C and the form says so (temp_unit=C), so the server converts back
+   * to °F. Per-sensor overrides and rules stay °F (labelled).
+   */
+  useCelsius?: boolean;
 }
 
 const {
@@ -48,7 +59,11 @@ const {
   essentialsFirst = false,
   deviceSpaces = [],
   thresholdSensors = [],
+  useCelsius = false,
 } = Astro.props;
+const tempUnit = tempUnitLabel(useCelsius);
+// °C inputs take tenths (34 °F shows as 1.1); °F keeps its half-degree step.
+const tempStep = useCelsius ? "0.1" : "0.5";
 
 const locale = getLocale(Astro);
 const t = alertSettingsMessages(locale);
@@ -162,6 +177,7 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
 >
   <fieldset disabled={!canEdit} class="border-0 p-0 m-0 min-w-0 space-y-4">
   <input type="hidden" name="redirect" value={redirectTo} />
+  <input type="hidden" name="temp_unit" value={useCelsius ? "C" : "F"} />
   <input type="hidden" name="alert_rules_json" id="alert_rules_json" value={rulesJson} />
   <input type="hidden" name="alert_playbooks_json" id="alert_playbooks_json" value={JSON.stringify(settings.alertPlaybooks ?? [])} />
   <input type="hidden" name="alert_templates_json" id="alert_templates_json" value={JSON.stringify(settings.alertTemplates ?? {})} />
@@ -184,8 +200,15 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
 
     <div class="config-row-grid mb-4">
       <div class="form-field mb-0">
-        <label class="form-label" for="freeze_threshold_f">{t.essentials.freezeBelow}</label>
-        <input class="form-input" type="number" step="0.5" id="freeze_threshold_f" name="freeze_threshold_f" value={settings.freezeThresholdF} />
+        <label class="form-label" for="freeze_threshold_f">{fmt(t.essentials.freezeBelow, { unit: tempUnit })}</label>
+        <input
+          class="form-input"
+          type="number"
+          step={tempStep}
+          id="freeze_threshold_f"
+          name="freeze_threshold_f"
+          value={displayTempInputValue(settings.freezeThresholdF, useCelsius)}
+        />
         <p class="form-hint mb-0">{t.essentials.freezeHint}</p>
       </div>
       <div class="form-field">
@@ -287,8 +310,15 @@ const rulesJson = JSON.stringify(settings.alertRules ?? []);
             <input class="form-input" type="number" step="1" id="humidity_threshold" name="humidity_threshold" value={settings.humidityThreshold} />
           </div>
           <div class="form-field mb-0">
-            <label class="form-label" for="rate_change_f">{t.essentials.rateDrop}</label>
-            <input class="form-input" type="number" step="0.5" id="rate_change_f" name="rate_change_f" value={settings.rateChangeF} />
+            <label class="form-label" for="rate_change_f">{fmt(t.essentials.rateDrop, { unit: tempUnit })}</label>
+            <input
+              class="form-input"
+              type="number"
+              step={tempStep}
+              id="rate_change_f"
+              name="rate_change_f"
+              value={displayDeltaInputValue(settings.rateChangeF, useCelsius)}
+            />
           </div>
         </div>
         <label class="checkbox-row mb-0">

@@ -57,7 +57,7 @@ const de: DevicesSetupMessages = {
     saveFailed: "Alarmeinstellungen konnten nicht gespeichert werden. Bitte versuche es erneut.",
     testFailed:
       "Einstellungen gespeichert, aber der Test konnte nicht zugestellt werden. Prüfe die E-Mail-Adresse oder versuch es unter Alarme noch einmal.",
-    freezeLabel: "Frost-Schwellenwert (°F)",
+    freezeLabel: "Frost-Schwellenwert ({unit})",
     emailLabel: "Alarm-E-Mail",
     emailPlaceholder: "du@beispiel.de",
     saveAndTest: "Speichern + Test senden",
