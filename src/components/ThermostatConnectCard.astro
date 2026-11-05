@@ -7,6 +7,7 @@ import type { ThermostatProvider } from "../lib/thermostatConnections";
 import type { ThermostatSnapshot, ThermostatFetchError } from "../lib/thermostatCorrelation";
 import { fmt, getLocale } from "../i18n";
 import { deviceSetupThermostatMessages } from "../i18n/messages/app/deviceSetup/thermostat";
+import { formatTemperature } from "../lib/temperatureFormat";
 
 interface Props {
   entitled: boolean;
@@ -20,9 +21,11 @@ interface Props {
     fetchError?: ThermostatFetchError;
     fetchHint?: string;
   }>;
+  /** The °C display preference; snapshots stay °F (whole degrees in either unit). */
+  useCelsius?: boolean;
 }
 
-const { entitled, tier, canManage, availableProviders, connections } = Astro.props;
+const { entitled, tier, canManage, availableProviders, connections, useCelsius = false } = Astro.props;
 const t = deviceSetupThermostatMessages(getLocale(Astro)).thermostat;
 const KNOWN_ERRORS = ["state_mismatch", "denied", "not_configured", "exchange_failed", "save_failed"] as const;
 type KnownError = (typeof KNOWN_ERRORS)[number];
@@ -111,9 +114,9 @@ const showCard = entitled
                   snapshot ? (
                     <p class="mb-0 text-sm text-[var(--color-text-muted)]">
                       {snapshot.ambientTempF != null
-                        ? `${snapshot.ambientTempF.toFixed(0)}°F`
+                        ? formatTemperature(snapshot.ambientTempF, useCelsius, 0)
                         : t.readingUnavailable}
-                      {snapshot.heatSetpointF != null && fmt(t.setTo, { temp: `${snapshot.heatSetpointF.toFixed(0)}°F` })}
+                      {snapshot.heatSetpointF != null && fmt(t.setTo, { temp: formatTemperature(snapshot.heatSetpointF, useCelsius, 0) })}
                       {formatMode(snapshot.hvacMode) && `, ${formatMode(snapshot.hvacMode)}`}
                     </p>
                   ) : (
