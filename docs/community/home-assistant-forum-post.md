@@ -64,4 +64,4 @@ Happy to answer setup questions in this thread. If you try it, we'd love feedbac
 
 ---
 
-*Note for maintainers:* default HACS store submission is in progress ([#10550](https://github.com/hacs/default/pull/10550)); until merged, use the custom repository URL above.
+*Note for maintainers:* default HACS store submission is in progress ([#11756](https://github.com/hacs/default/pull/11756)); until merged, use the custom repository URL above.

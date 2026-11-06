@@ -14,7 +14,7 @@ ProbeHarbor ships in multiple repos. When onboarding UX changes in **this** repo
 
 - Push payload shapes or ingest URL path changes
 - New sensor kinds or inbound webhook actions
-- HACS default store PR [#10550](https://github.com/hacs/default/pull/10550) merges → update badge in `src/lib/integrationsHub.ts` here
+- HACS default store PR [#11756](https://github.com/hacs/default/pull/11756) merges → update badge in `src/lib/integrationsHub.ts` here
 
 **Canonical product docs:** [probeharbor.dev/integrations/home-assistant](https://probeharbor.dev/integrations/home-assistant)
 

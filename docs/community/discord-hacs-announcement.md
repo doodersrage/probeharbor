@@ -22,7 +22,7 @@ We shipped an official Home Assistant integration — install via HACS custom re
 
 **Setup guide:** https://probeharbor.dev/integrations/home-assistant
 
-Default HACS store listing is in review ([#10550](https://github.com/hacs/default/pull/10550)) — custom repo works today.
+Default HACS store listing is in review ([#11756](https://github.com/hacs/default/pull/11756)) — custom repo works today.
 
 Questions → this channel or GitHub issues on the integration repo.
 
