@@ -363,6 +363,34 @@ function isSensorAlert(sensor: LiveSensor): boolean {
   return false;
 }
 
+/** Climate kinds lead within a device: temperature, then humidity, then the rest. */
+const KIND_ORDER: Record<string, number> = { temperature: 0, humidity: 1 };
+
+/**
+ * Stable display order for sensor tiles: by space (unassigned last), then
+ * device, then kind, then label. Keeps one device's tiles side by side.
+ */
+export function compareLiveSensors(
+  a: Pick<LiveSensor, "space" | "deviceName" | "kind" | "label">,
+  b: Pick<LiveSensor, "space" | "deviceName" | "kind" | "label">,
+): number {
+  const cmp = (x: string, y: string) => x.localeCompare(y, undefined, { numeric: true, sensitivity: "base" });
+  const spaceA = a.space?.trim() || null;
+  const spaceB = b.space?.trim() || null;
+  if (spaceA !== spaceB) {
+    if (spaceA == null) return 1;
+    if (spaceB == null) return -1;
+    const bySpace = cmp(spaceA, spaceB);
+    if (bySpace) return bySpace;
+  }
+  const byDevice = cmp(a.deviceName ?? "", b.deviceName ?? "");
+  if (byDevice) return byDevice;
+  const kindA = KIND_ORDER[a.kind] ?? 2;
+  const kindB = KIND_ORDER[b.kind] ?? 2;
+  if (kindA !== kindB) return kindA - kindB;
+  return cmp(a.kind, b.kind) || cmp(a.label ?? "", b.label ?? "");
+}
+
 export default function LiveTempsPanel({
   intervalMs = 30000,
   text = LIVE_TEMPS_PANEL_TEXT_EN,
@@ -499,14 +527,18 @@ export default function LiveTempsPanel({
   }, [sensors, groups, updatedAt]);
 
   const nonTempSensors = useMemo(
-    () => sensors.filter((s) => s.kind !== "temperature" && s.kind !== "humidity"),
+    () =>
+      sensors
+        .filter((s) => s.kind !== "temperature" && s.kind !== "humidity")
+        .sort(compareLiveSensors),
     [sensors],
   );
 
   // Prefer kind-aware climate cards when present; fall back to feed groups.
   // Humidity paired with a temperature probe (same device + key) shows on the
-  // temperature tile instead of its own. Fresh tiles lead; probes with no
-  // reading for 2h+ (or ever) collapse into an "Offline probes" group.
+  // temperature tile instead of its own. Tiles are grouped by space and
+  // device; probes with no reading for 2h+ (or ever) collapse into an
+  // "Offline probes" group.
   const pairKey = (s: LiveSensor) => `${s.deviceId}:${s.key}`;
   const pairedHumidity = useMemo(() => {
     const byKey = new Map<string, number>();
@@ -526,7 +558,7 @@ export default function LiveTempsPanel({
         (s) => s.kind === "temperature" || (s.kind === "humidity" && !tempKeys.has(pairKey(s))),
       )
       .map((sensor, index) => ({ sensor, index, rank: rank(sensor) }))
-      .sort((a, b) => a.rank - b.rank || a.index - b.index);
+      .sort((a, b) => compareLiveSensors(a.sensor, b.sensor) || a.index - b.index);
   }, [sensors]);
   const liveClimateCards = temperatureCards.filter((c) => c.rank < 2).map((c) => c.sensor);
   const offlineClimateCards = temperatureCards.filter((c) => c.rank === 2).map((c) => c.sensor);
