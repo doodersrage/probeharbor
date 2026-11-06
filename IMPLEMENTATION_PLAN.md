@@ -4133,3 +4133,24 @@ read from or printed to that port.
 - Open: a DS18B20/DHT on GPIO 4 on the S3, the S3's UART port, and the
   C3 (unchanged, compile-only). The test left a placeholder key and network name
   on the board. Sending real settings replaces them.
+
+## Firmware 1.2.5: ESP32-C3 settings over the native USB port (2026-11-06)
+
+The user tested an ESP32-C3 with only a native USB port (303a:1001). Firmware 1.2.4
+flashed and booted, but printed no `TT` lines and ignored settings. The C3 build
+(`esp32-c3-devkitm-1`) doesn't set `ARDUINO_USB_MODE`, so the dual-port console from
+1.2.4 stayed off.
+
+- [x] `platformio.ini`: `-DARDUINO_USB_MODE=1` for `esp32c3`. `main.cpp` comment and
+      version updated to 1.2.5. `/flash` images rebuilt as 1.2.5, and all three builds
+      succeeded.
+- Evidence (hardware, the user's ESP32-C3 on native USB): with 1.2.4, the settings
+  went unanswered. With 1.2.5, a test `TTCFG` got `TT key saved`, `TT wifi joining`,
+  and `TT wifi failed` (the network name was made up). Real settings sent from the
+  live `/flash` page then gave `TT wifi ok`, `TT sensor: DHT22 on GPIO 4`, and
+  `TT post 200 probes=1`, after the data wire was moved to the pin marked 4.
+- [x] Copy: /flash, /hardware (the ESP32-C3 card is now verified), the FAQs and
+      llms.txt now say all three boards are tested, in all five languages. The
+      claims tests now guard the leak and battery inputs, which are still untested.
+- Open: the C3's UART port (DevKitM-1), DS18B20 and I2C on the C3, and the leak and
+  battery inputs on any board.

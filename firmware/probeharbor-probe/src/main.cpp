@@ -40,12 +40,12 @@
 #include <Wire.h>
 
 #ifndef FIRMWARE_VERSION
-#define FIRMWARE_VERSION "1.2.4"
+#define FIRMWARE_VERSION "1.2.5"
 #endif
 /*
  * The flasher talks to whichever USB port the board is plugged into. On the
- * ESP32-S3 DevKitC that can be the UART bridge (Serial) or the chip's own USB
- * port (USBSerial), so this build listens and answers on both. When no computer
+ * ESP32-S3 and ESP32-C3 that can be a UART bridge (Serial) or the chip's own USB
+ * port (USBSerial), so these builds listen and answer on both. When no computer
  * is listening on the native port, the core skips or times out those writes
  * (about 100 ms), so nothing blocks.
  */

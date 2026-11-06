@@ -1,4 +1,4 @@
-# Hardware tests still open (firmware 1.2.4)
+# Hardware tests still open (firmware 1.2.5)
 
 Verified so far, on a plain ESP32: browser flash → USB settings → Wi-Fi → first
 reading, with a DS18B20 (1.0.1), a DHT22 (1.1.1), a BME280 on I2C (1.2.2:
@@ -6,11 +6,12 @@ temperature, humidity, and pressure), and an SHT31 on I2C (1.2.3 from `/flash`:
 temperature and humidity). The door reed switch (1.2.2) works too, and so does posting
 right away on a door change (1.2.3). On an ESP32-S3 (1.2.4, native USB port): browser
 flash → USB settings → Wi-Fi → first reading with an AHT20 on I2C.
+On an ESP32-C3 (1.2.5, native USB port): the same path with a DHT22 on GPIO 4.
 Everything else below has only been compiled.
 
 Keep the board on USB with the serial console open in `/flash` (or any serial
 monitor at 115200 baud). Lines starting `TT` are the ones to watch. Write the
-result and the firmware line (`TT … 1.2.4`) next to each test.
+result and the firmware line (`TT … 1.2.5`) next to each test.
 
 ## Parts to order
 
@@ -74,6 +75,16 @@ differ by board:
 | Leak contact | 27 | 5 | 5 |
 | Door reed switch | 26 | 6 | 10 |
 | Battery (1:1 divider) | 35 | 7 | 3 |
+
+**ESP32-C3 native USB port: verified (2026-11-06), firmware 1.2.5.** The board had
+only its native USB port (303a:1001). 1.2.4 booted but printed no `TT` lines and
+ignored settings: the C3 build left native USB off. 1.2.5 turns it on
+(`-DARDUINO_USB_MODE=1`), so the dual-port console from 1.2.4 covers the C3 too.
+Flashed with `pio run -t upload`, settings from the live `/flash` page: `TT key saved`,
+`TT wifi ok`, then (once the data wire was moved to the pin marked 4)
+`TT sensor: DHT22 on GPIO 4` and `TT post 200 probes=1`. Still open on the C3: a
+DS18B20, an I2C sensor on SDA 6 / SCL 7, the UART port of a DevKitM-1, the setup
+portal, and the BOOT reset.
 
 ## 5. I2C sensor (AHT20; BME280 and SHT31 verified)
 
