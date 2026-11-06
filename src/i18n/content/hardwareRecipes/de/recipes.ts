@@ -81,7 +81,7 @@ export default {
     hardware: "ESP32-C3-Entwicklerboard",
     path: "Web-Flasher (ohne Code)",
     notes:
-      "Der Flasher hat ein Image für den ESP32-C3, es ist aber noch nicht auf Hardware getestet.",
+      "Auf Hardware getestet mit einem DHT22 an GPIO 4. Die Einstellungen gehen über beide USB-Ports (ab Firmware 1.2.5).",
     links: [flash],
   },
   "home-assistant": {

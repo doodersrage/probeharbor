@@ -2,10 +2,11 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 /**
- * Guard for CLAUDE.md rule 6: a plain ESP32 and the ESP32-S3 have been run on
- * hardware; the ESP32-C3 hasn't (firmware/probeharbor-probe/HARDWARE-TESTS.md).
- * Any user-facing flash or FAQ sentence that mentions C3 boards must also say
- * they're untested. When the C3 is verified on hardware, update the copy and this test.
+ * Guard for CLAUDE.md rule 6: all three boards (ESP32, ESP32-S3, ESP32-C3) have
+ * been run on hardware, but the flasher's leak and battery inputs haven't
+ * (firmware/probeharbor-probe/HARDWARE-TESTS.md). Any user-facing flash or FAQ
+ * sentence that lists those inputs must also say they're untested. When they're
+ * verified on hardware, update the copy and this test.
  */
 const UNTESTED: Record<string, RegExp> = {
   en: /not yet (hardware-)?tested|not yet tested on hardware|haven't been tested/,
@@ -29,12 +30,13 @@ const FILES: Array<[locale: string, path: string]> = [
   ]),
 ];
 
-/** Lines that name the C3 as something to use, not a pin-table header or a product name. */
-const MENTIONS_C3 = /ESP32-C3|C3 board|C3-Board|placas? C3|cartes? C3|S3 ?\/ ?C3|S3-\/C3|ESP32\/S3\/C3/;
+/** Lines that list the leak and battery inputs together. */
+const MENTIONS_LEAK_BATTERY =
+  /leak and battery inputs|Wasser- und Akku-Eingänge|entradas de fuga y batería|entrées fuite et batterie|entradas de vazamento e bateria/;
 
 describe("hardware claims match the verified hardware", () => {
-  it.each(FILES)("%s %s labels C3 boards as not yet hardware-tested", (locale, path) => {
-    const lines = readFileSync(path, "utf8").split("\n").filter((line) => MENTIONS_C3.test(line));
+  it.each(FILES)("%s %s labels the leak and battery inputs as not yet hardware-tested", (locale, path) => {
+    const lines = readFileSync(path, "utf8").split("\n").filter((line) => MENTIONS_LEAK_BATTERY.test(line));
     const unlabeled = lines.filter((line) => !UNTESTED[locale]!.test(line));
     expect(unlabeled).toEqual([]);
   });

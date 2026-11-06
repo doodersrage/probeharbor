@@ -145,9 +145,9 @@ export const HARDWARE_RECIPES: HardwareRecipe[] = [
     hardware: "ESP32-C3 dev board",
     path: "Web flasher (no code)",
     goals: ["freeze", "humidity"],
-    status: "built-in",
+    status: "verified",
     noCode: true,
-    notes: "The flasher has an ESP32-C3 image, but it's not yet tested on hardware.",
+    notes: "Run on hardware with a DHT22 on GPIO 4. Settings go over either USB port (firmware 1.2.5 or later).",
     links: [flash],
   },
   {

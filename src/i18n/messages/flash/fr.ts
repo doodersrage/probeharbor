@@ -14,7 +14,7 @@ const fr: FlashMessages = {
     {
       question: "De quoi ai-je besoin ?",
       answer:
-        "Une carte ESP32 (l’ESP32 d’origine et l’ESP32-S3 sont testés ; l’ESP32-C3 est compilé, mais pas encore testé sur du matériel), une sonde étanche DS18B20 ou un capteur de température et d’humidité DHT22 (le DHT11 est pris en charge, mais pas encore testé sur du matériel) avec une résistance de tirage de 4,7 kΩ sur GPIO 4, un câble USB de données, et Chrome ou Edge sur un ordinateur fixe ou portable.",
+        "Une carte ESP32 (l’ESP32 d’origine, l’ESP32-S3 et l’ESP32-C3 sont testés), une sonde étanche DS18B20 ou un capteur de température et d’humidité DHT22 (le DHT11 est pris en charge, mais pas encore testé sur du matériel) avec une résistance de tirage de 4,7 kΩ sur GPIO 4, un câble USB de données, et Chrome ou Edge sur un ordinateur fixe ou portable.",
     },
     {
       question: "Ai-je besoin de l’Arduino IDE ?",
@@ -49,7 +49,7 @@ const fr: FlashMessages = {
   ],
   buy: {
     board: "Carte (choisissez-en une)",
-    s3c3: "Ou une carte S3 (testée) ou C3 (pas encore testée sur du matériel) ; stock variable",
+    s3c3: "Ou une carte S3 / C3 (testée ; stock variable)",
     sensor: "Capteur sur GPIO 4",
     i2c: "Ou un capteur d’air I²C (sans résistance)",
     extras: "Extras facultatifs",
@@ -85,7 +85,7 @@ const fr: FlashMessages = {
     'Ajoutez un appareil push dans <a class="text-link" href="/dashboard/devices">Dashboard → Devices</a> et copiez sa clé d’appareil. L’offre gratuite inclut deux appareils.',
   buyTitle: "Quoi acheter",
   buyIntro:
-    "Des pièces qui correspondent aux broches ci-dessus. Un ESP32 classique ou un ESP32-S3 est un choix testé. Les liens S3 et C3 renvoient aux cartes de développement d’Espressif, pour lesquelles le firmware est compilé ; en cas de rupture, une autre carte ESP32-S3-DevKitC-1 ou ESP32-C3-DevKitM-1 (ou un clone au brochage identique) devrait aussi fonctionner. Les cartes S3 sont testées ; les cartes C3 ne sont pas encore testées sur du matériel.",
+    "Des pièces qui correspondent aux broches ci-dessus. Un ESP32 classique, un ESP32-S3 ou un ESP32-C3 est un choix testé. Les liens S3 et C3 renvoient aux cartes de développement d’Espressif, pour lesquelles le firmware est compilé ; en cas de rupture, une autre carte ESP32-S3-DevKitC-1 ou ESP32-C3-DevKitM-1 (ou un clone au brochage identique) devrait aussi fonctionner.",
   leakHtml:
     '<strong>Capteur de fuite :</strong> l’option bon marché la plus simple est un module LM393 « capteur de pluie / d’eau » (vendu par de nombreuses boutiques) : VCC sur la broche 3,3 V de la carte (jamais 5 V, pour que sa sortie reste sans danger pour l’ESP32), GND sur GND, DO sur la broche de fuite. Tournez son potentiomètre jusqu’à ce qu’une goutte d’eau donne mouillé, puis vérifiez qu’il repasse à sec. Ses pistes à nu se corrodent si elles restent mouillées : voyez-le comme une pièce pour débuter. Pour une installation plus durable, utilisez deux vis ou pointes en inox espacées d’environ 5&nbsp;mm, l’une sur la broche de fuite, l’autre sur GND. Dans tous les cas, testez avec votre propre eau : une eau très pure ou une fine pellicule peut ne pas le déclencher. Les capteurs dont la sortie passe à l’état haut quand ils sont mouillés, comme le capteur d’eau d’Adafruit, nécessitent une autre entrée et ne fonctionnent pas avec ce firmware.',
   afterTitle: "Une fois en service",

@@ -81,7 +81,7 @@ export default {
     hardware: "Carte de développement ESP32-C3",
     path: "Outil de flashage web (sans code)",
     notes:
-      "L’outil de flashage propose une image ESP32-C3, mais elle n’est pas encore testée sur du matériel.",
+      "Testé sur du matériel avec un DHT22 sur GPIO 4. Les réglages passent par l’un ou l’autre port USB (firmware 1.2.5 ou plus récent).",
     links: [flash],
   },
   "home-assistant": {

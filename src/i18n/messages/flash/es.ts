@@ -14,7 +14,7 @@ const es: FlashMessages = {
     {
       question: "¿Qué necesito?",
       answer:
-        "Una placa ESP32 (el ESP32 original y el ESP32-S3 están probados; el ESP32-C3 está compilado, pero aún no probado en hardware); una sonda impermeable DS18B20 o un sensor de temperatura y humedad DHT22 (el DHT11 es compatible, pero aún no se ha probado en hardware) con una resistencia pull-up de 4,7 kΩ en GPIO 4; un cable USB de datos, y Chrome o Edge en un ordenador de sobremesa o portátil.",
+        "Una placa ESP32 (el ESP32 original, el ESP32-S3 y el ESP32-C3 están probados); una sonda impermeable DS18B20 o un sensor de temperatura y humedad DHT22 (el DHT11 es compatible, pero aún no se ha probado en hardware) con una resistencia pull-up de 4,7 kΩ en GPIO 4; un cable USB de datos, y Chrome o Edge en un ordenador de sobremesa o portátil.",
     },
     {
       question: "¿Necesito el Arduino IDE?",
@@ -49,7 +49,7 @@ const es: FlashMessages = {
   ],
   buy: {
     board: "Placa (elige una)",
-    s3c3: "O una placa S3 (probada) o C3 (aún no probada en hardware); la disponibilidad varía",
+    s3c3: "O una placa S3 / C3 (probada; la disponibilidad varía)",
     sensor: "Sensor en GPIO 4",
     i2c: "O un sensor de aire I²C (sin resistencia)",
     extras: "Extras opcionales",
@@ -85,7 +85,7 @@ const es: FlashMessages = {
     'Añade un dispositivo push en <a class="text-link" href="/dashboard/devices">Dashboard → Devices</a> y copia su clave de dispositivo. El plan gratuito incluye dos dispositivos.',
   buyTitle: "Qué comprar",
   buyIntro:
-    "Piezas que encajan con los pines de arriba. Un ESP32 normal o un ESP32-S3 es una opción probada. Los enlaces S3 y C3 son las placas de desarrollo de la propia Espressif, para las que está compilado el firmware; si están agotadas, debería servir otra placa ESP32-S3-DevKitC-1 o ESP32-C3-DevKitM-1 (o un clon con el mismo pinout). Las placas S3 están probadas; las C3 aún no se han probado en hardware.",
+    "Piezas que encajan con los pines de arriba. Un ESP32 normal, un ESP32-S3 o un ESP32-C3 es una opción probada. Los enlaces S3 y C3 son las placas de desarrollo de la propia Espressif, para las que está compilado el firmware; si están agotadas, debería servir otra placa ESP32-S3-DevKitC-1 o ESP32-C3-DevKitM-1 (o un clon con el mismo pinout).",
   leakHtml:
     '<strong>Sensor de fugas:</strong> la opción barata más sencilla es un módulo LM393 de «sensor de lluvia / agua» (lo venden muchas tiendas): VCC al pin de 3,3 V de la placa (nunca a 5 V, para que su salida sea segura para el ESP32), GND a GND y DO al pin de fuga. Gira su potenciómetro hasta que una gota de agua marque mojado y comprueba que vuelve a marcar seco. Sus pistas expuestas se corroen si quedan mojadas, así que tómalo como una pieza para empezar. Para una instalación más duradera, usa dos tornillos o puntas de acero inoxidable separados unos 5&nbsp;mm, uno al pin de fuga y otro a GND. En cualquier caso, prueba con tu propia agua: el agua muy limpia o una película fina pueden no activarlo. Los sensores cuya salida pasa a nivel alto al mojarse, como el sensor de agua de Adafruit, necesitan otra entrada y no funcionan con este firmware.',
   afterTitle: "Cuando ya esté funcionando",

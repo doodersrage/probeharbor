@@ -81,7 +81,7 @@ export default {
     hardware: "Placa de desarrollo ESP32-C3",
     path: "Instalador web (sin código)",
     notes:
-      "El instalador tiene una imagen para ESP32-C3, pero aún no se ha probado en hardware.",
+      "Probado en hardware con un DHT22 en GPIO 4. Los ajustes se envían por cualquiera de los dos puertos USB (firmware 1.2.5 o posterior).",
     links: [flash],
   },
   "home-assistant": {

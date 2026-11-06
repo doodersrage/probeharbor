@@ -237,7 +237,7 @@ export default {
     {
       question: "¿ProbeHarbor tiene un instalador de firmware integrado en el navegador?",
       answer:
-        "Sí, en beta: probeharbor.dev/flash instala firmware precompilado en un ESP32 desde Chrome o Edge (probado en el ESP32 original y en el ESP32-S3; la imagen para ESP32-C3 está compilada, pero aún no probada en hardware) y luego envía a la placa tu Wi‑Fi y tu clave de dispositivo por USB. Si prefieres editar el código, descarga un .ino/.py ya configurado desde Devices y flashéalo con Arduino IDE, PlatformIO o Thonny. Guía: probeharbor.dev/about/esp32-web-flash.",
+        "Sí, en beta: probeharbor.dev/flash instala firmware precompilado en un ESP32 desde Chrome o Edge (probado en el ESP32 original, el ESP32-S3 y el ESP32-C3) y luego envía a la placa tu Wi‑Fi y tu clave de dispositivo por USB. Si prefieres editar el código, descarga un .ino/.py ya configurado desde Devices y flashéalo con Arduino IDE, PlatformIO o Thonny. Guía: probeharbor.dev/about/esp32-web-flash.",
     },
   ],
   "pico-w-ingest": [

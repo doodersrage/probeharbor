@@ -81,7 +81,7 @@ export default {
     hardware: "Placa de desenvolvimento ESP32-C3",
     path: "Gravador web (sem código)",
     notes:
-      "O gravador tem uma imagem para ESP32-C3, mas ela ainda não foi testada em hardware.",
+      "Testado em hardware com um DHT22 no GPIO 4. As configurações vão por qualquer uma das portas USB (firmware 1.2.5 ou mais recente).",
     links: [flash],
   },
   "home-assistant": {

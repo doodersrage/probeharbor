@@ -25,9 +25,11 @@ describe("hardware recipes", () => {
     }
   });
 
-  it("never mark an ESP32-C3 setup as verified (see firmware/probeharbor-probe/HARDWARE-TESTS.md)", () => {
-    const c3 = HARDWARE_RECIPES.filter((r) => /C3/.test(`${r.title} ${r.hardware}`));
-    expect(c3.length).toBeGreaterThan(0);
-    expect(c3.filter((r) => r.status === "verified").map((r) => r.id)).toEqual([]);
+  it("keep the leak and battery inputs unverified until they run on hardware (HARDWARE-TESTS.md)", () => {
+    const untested = HARDWARE_RECIPES.filter((r) => r.id === "esp32-leak" || r.id === "esp32-battery");
+    expect(untested.map((r) => [r.id, r.status])).toEqual([
+      ["esp32-leak", "built-in"],
+      ["esp32-battery", "built-in"],
+    ]);
   });
 });

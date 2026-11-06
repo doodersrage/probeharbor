@@ -9,7 +9,7 @@ export default {
     {
       question: "Como conecto sensores ESP32, Pico W ou Arduino?",
       answer:
-        "Com um ESP32, o caminho mais rápido é o gravador web em probeharbor.dev/flash: conecte a placa via USB, instale o firmware pelo Chrome ou Edge e envie a ela o seu Wi-Fi e a chave do dispositivo. Em um ESP32 comum, ele foi testado com sondas DS18B20, um DHT22, um BME280, um SHT31 e um interruptor de porta, e em um ESP32-S3 com um AHT20; entradas de vazamento e bateria e placas C3 estão incluídas, mas ainda não foram testadas em hardware. Para outras placas, crie um dispositivo push em Dashboard → Devices e faça POST de JSON para /api/ingest/<key>; os sensores são importados automaticamente no primeiro POST. Exemplos para Pico W e Arduino ficam em probeharbor.dev/about/adding-devices. Sem hardware? Experimente o início rápido de pull da demo no Overview.",
+        "Com um ESP32, o caminho mais rápido é o gravador web em probeharbor.dev/flash: conecte a placa via USB, instale o firmware pelo Chrome ou Edge e envie a ela o seu Wi-Fi e a chave do dispositivo. Em um ESP32 comum, ele foi testado com sondas DS18B20, um DHT22, um BME280, um SHT31 e um interruptor de porta, em um ESP32-S3 com um AHT20 e em um ESP32-C3 com um DHT22; entradas de vazamento e bateria estão incluídas, mas ainda não foram testadas em hardware. Para outras placas, crie um dispositivo push em Dashboard → Devices e faça POST de JSON para /api/ingest/<key>; os sensores são importados automaticamente no primeiro POST. Exemplos para Pico W e Arduino ficam em probeharbor.dev/about/adding-devices. Sem hardware? Experimente o início rápido de pull da demo no Overview.",
     },
     {
       question: "Preciso saber programar?",
