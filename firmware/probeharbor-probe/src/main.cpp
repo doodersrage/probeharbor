@@ -40,8 +40,42 @@
 #include <Wire.h>
 
 #ifndef FIRMWARE_VERSION
-#define FIRMWARE_VERSION "1.2.3"
+#define FIRMWARE_VERSION "1.2.4"
 #endif
+/*
+ * The flasher talks to whichever USB port the board is plugged into. On the
+ * ESP32-S3 DevKitC that can be the UART bridge (Serial) or the chip's own USB
+ * port (USBSerial), so this build listens and answers on both. When no computer
+ * is listening on the native port, the core skips or times out those writes
+ * (about 100 ms), so nothing blocks.
+ */
+#if defined(ARDUINO_USB_MODE) && ARDUINO_USB_MODE && !ARDUINO_USB_CDC_ON_BOOT
+class DualConsole : public Stream {
+ public:
+  void begin(unsigned long baud) {
+    Serial.begin(baud);
+    USBSerial.begin();
+  }
+  int available() override { return Serial.available() + USBSerial.available(); }
+  int read() override { return Serial.available() > 0 ? Serial.read() : USBSerial.read(); }
+  int peek() override { return Serial.available() > 0 ? Serial.peek() : USBSerial.peek(); }
+  void flush() override {
+    Serial.flush();
+    USBSerial.flush();
+  }
+  size_t write(uint8_t c) override { return write(&c, 1); }
+  size_t write(const uint8_t *buffer, size_t size) override {
+    Serial.write(buffer, size);
+    USBSerial.write(buffer, size);
+    return size;
+  }
+  using Print::write;
+};
+static DualConsole Console;
+#else
+#define Console Serial
+#endif
+
 #ifndef INGEST_HOST
 #define INGEST_HOST "probeharbor.dev"
 #endif
@@ -145,7 +179,7 @@ static void detectAir() {
     return;
   }
   const char* names[] = {"", "SHT31", "BME280", "AHT20"};
-  Serial.printf("TT sensor: %s on I2C (SDA %d, SCL %d)\n", names[air], i2cSda, i2cScl);
+  Console.printf("TT sensor: %s on I2C (SDA %d, SCL %d)\n", names[air], i2cSda, i2cScl);
 }
 
 #ifdef FEATHER_I2C_FALLBACK
@@ -273,7 +307,7 @@ void saveKey(const String &raw) {
   if (key.isEmpty()) return;
   deviceKey = key;
   prefs.putString("key", deviceKey);
-  Serial.println("TT key saved");
+  Console.println("TT key saved");
 }
 
 /** "leak,door,battery" (any order, any subset); anything else is ignored. */
@@ -295,7 +329,7 @@ void applyExtras(const String& raw) {
 void saveExtras(const String& raw) {
   applyExtras(raw);
   prefs.putString("extras", extras);
-  Serial.println("TT extras: " + (extras.isEmpty() ? String("none") : extras));
+  Console.println("TT extras: " + (extras.isEmpty() ? String("none") : extras));
 }
 
 void onPortalParamsSaved() {
@@ -309,19 +343,19 @@ void handleConfigLine(const String &line) {
   int b = a < 0 ? -1 : line.indexOf('\t', a + 1);
   int c = b < 0 ? -1 : line.indexOf('\t', b + 1);
   if (a < 0 || b < 0 || c < 0) {
-    Serial.println("TT config error: expected TTCFG<TAB>ssid<TAB>password<TAB>key");
+    Console.println("TT config error: expected TTCFG<TAB>ssid<TAB>password<TAB>key");
     return;
   }
   String ssid = line.substring(a + 1, b);
   String pass = line.substring(b + 1, c);
   String key = line.substring(c + 1);
   if (ssid.isEmpty() || normalizeKey(key).isEmpty()) {
-    Serial.println("TT config error: network name and device key are required");
+    Console.println("TT config error: network name and device key are required");
     return;
   }
   saveKey(key);
 
-  Serial.println("TT wifi joining");
+  Console.println("TT wifi joining");
   wifiManager.stopConfigPortal();
   WiFi.mode(WIFI_STA);
   WiFi.persistent(true);
@@ -331,16 +365,16 @@ void handleConfigLine(const String &line) {
     delay(250);
   }
   if (WiFi.status() == WL_CONNECTED) {
-    Serial.println("TT wifi ok");
+    Console.println("TT wifi ok");
     postNow = true;
   } else {
-    Serial.println("TT wifi failed: check the network name and password (2.4 GHz only)");
+    Console.println("TT wifi failed: check the network name and password (2.4 GHz only)");
   }
 }
 
 void readSerial() {
-  while (Serial.available() > 0) {
-    char ch = (char)Serial.read();
+  while (Console.available() > 0) {
+    char ch = (char)Console.read();
     if (ch == '\r') continue;
     if (ch == '\n') {
       // TTEXTRAS<TAB>leak,door,battery comes just before TTCFG from the flasher page.
@@ -358,7 +392,7 @@ void checkResetButton() {
   if (digitalRead(RESET_PIN) == LOW) {
     if (resetHeldSince == 0) resetHeldSince = millis();
     if (millis() - resetHeldSince >= RESET_HOLD_MS) {
-      Serial.println("TT reset: clearing Wi-Fi and device key");
+      Console.println("TT reset: clearing Wi-Fi and device key");
       prefs.clear();
       wifiManager.resetSettings();
       delay(500);
@@ -417,7 +451,7 @@ void postReadings() {
       body += field;
       sent = 1;
       if (!dhtFound) {
-        Serial.printf("TT sensor: %s on GPIO %d\n", dht.getModel() == DHTesp::DHT11 ? "DHT11" : "DHT22", ONE_WIRE_PIN);
+        Console.printf("TT sensor: %s on GPIO %d\n", dht.getModel() == DHTesp::DHT11 ? "DHT11" : "DHT22", ONE_WIRE_PIN);
       }
       dhtFound = true;
     } else {
@@ -454,7 +488,7 @@ void postReadings() {
   }
 
   if (sent == 0) {
-    Serial.println("TT no probe: check the wiring (DS18B20 or DHT22 data on GPIO " + String(ONE_WIRE_PIN) + ", 4.7k pull-up to 3.3V)");
+    Console.println("TT no probe: check the wiring (DS18B20 or DHT22 data on GPIO " + String(ONE_WIRE_PIN) + ", 4.7k pull-up to 3.3V)");
     return;
   }
   // The dashboard compares this with /flash's current version to offer updates.
@@ -466,21 +500,21 @@ void postReadings() {
   HTTPClient http;
   http.setTimeout(15000);
   if (!http.begin(client, String("https://") + INGEST_HOST + "/api/ingest/" + deviceKey)) {
-    Serial.println("TT post failed: could not open connection");
+    Console.println("TT post failed: could not open connection");
     return;
   }
   http.addHeader("Content-Type", "application/json");
   int code = http.POST(body);
   http.end();
 
-  Serial.printf("TT post %d probes=%u\n", code, (unsigned)sent);
+  Console.printf("TT post %d probes=%u\n", code, (unsigned)sent);
   if (code == 401 || code == 403 || code == 404) {
-    Serial.println("TT key rejected: copy the device key again from Dashboard → Devices");
+    Console.println("TT key rejected: copy the device key again from Dashboard → Devices");
   }
 }
 
 void setup() {
-  Serial.begin(115200);
+  Console.begin(115200);
   pinMode(RESET_PIN, INPUT_PULLUP);
   probes.begin();
   prefs.begin("probeharbor", false);
@@ -490,8 +524,8 @@ void setup() {
   Wire.begin(I2C_SDA_PIN, I2C_SCL_PIN);
   detectAirAtBoot();
 
-  Serial.println();
-  Serial.println("TT firmware " FIRMWARE_VERSION);
+  Console.println();
+  Console.println("TT firmware " FIRMWARE_VERSION);
 
   wifiManager.addParameter(&keyParam);
   wifiManager.addParameter(&extrasParam);
@@ -501,9 +535,9 @@ void setup() {
   wifiManager.setConnectTimeout(30);
   wifiManager.setDebugOutput(false);
   if (wifiManager.autoConnect("ProbeHarbor-Setup")) {
-    Serial.println("TT wifi ok");
+    Console.println("TT wifi ok");
   } else {
-    Serial.println("TT setup: send settings over USB, or join the ProbeHarbor-Setup Wi-Fi network");
+    Console.println("TT setup: send settings over USB, or join the ProbeHarbor-Setup Wi-Fi network");
   }
 }
 
@@ -523,7 +557,7 @@ void loop() {
   } else if (offlineSince == 0) {
     offlineSince = now == 0 ? 1 : now;
   } else if (now - offlineSince >= OFFLINE_RESTART_MS) {
-    Serial.println("TT wifi lost: restarting to retry");
+    Console.println("TT wifi lost: restarting to retry");
     delay(200);
     ESP.restart();
   }
@@ -536,11 +570,11 @@ void loop() {
   lastPost = now == 0 ? 1 : now;
 
   if (WiFi.status() != WL_CONNECTED) {
-    Serial.println("TT waiting for wifi");
+    Console.println("TT waiting for wifi");
     return;
   }
   if (deviceKey.isEmpty()) {
-    Serial.println("TT waiting for device key");
+    Console.println("TT waiting for device key");
     return;
   }
   postReadings();

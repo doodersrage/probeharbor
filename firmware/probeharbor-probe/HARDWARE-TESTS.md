@@ -1,15 +1,16 @@
-# Hardware tests still open (firmware 1.2.3)
+# Hardware tests still open (firmware 1.2.4)
 
 Verified so far, on a plain ESP32: browser flash → USB settings → Wi-Fi → first
 reading, with a DS18B20 (1.0.1), a DHT22 (1.1.1), a BME280 on I2C (1.2.2:
 temperature, humidity, and pressure), and an SHT31 on I2C (1.2.3 from `/flash`:
 temperature and humidity). The door reed switch (1.2.2) works too, and so does posting
-right away on a door change (1.2.3).
+right away on a door change (1.2.3). On an ESP32-S3 (1.2.4, native USB port): browser
+flash → USB settings → Wi-Fi → first reading with an AHT20 on I2C.
 Everything else below has only been compiled.
 
 Keep the board on USB with the serial console open in `/flash` (or any serial
 monitor at 115200 baud). Lines starting `TT` are the ones to watch. Write the
-result and the firmware line (`TT … 1.2.3`) next to each test.
+result and the firmware line (`TT … 1.2.4`) next to each test.
 
 ## Parts to order
 
@@ -50,6 +51,18 @@ Buy links are on [/flash](https://probeharbor.dev/flash#what-to-buy) (source: `s
 
 ## 4. ESP32-S3 and ESP32-C3 boards
 
+**ESP32-S3 native USB port: partly verified (2026-11-05), firmware 1.2.4 flashed
+over the board's native USB port.** Up to 1.2.3 the S3 build only read settings on
+the UART bridge, so a board on its native USB port installed fine and then never
+answered the flasher. 1.2.4 listens and answers on both ports. Seen on the native port: the `TT`
+boot lines, `TT key saved`, `TT wifi joining`, and `TT wifi failed` for a made-up
+network name. Then, from the live `/flash` page with real settings: `TT key saved`,
+`TT wifi joining`, `TT wifi ok` (no sensor wired yet, so `TT no probe`). A second S3 (flashed with
+`pio run -t upload`, settings from the live `/flash` page) with an AHT20 on SDA 8 /
+SCL 9: `TT sensor: AHT20 on I2C (SDA 8, SCL 9)`, `TT wifi ok`, `TT post 200 probes=1`.
+Still open on the S3: a DS18B20 or DHT22 on GPIO 4, the UART
+port (not plugged in), the setup portal, and the BOOT reset.
+
 Flash each from `/flash` and repeat the original path: install → USB settings →
 Wi-Fi → first reading. Sensor data stays on GPIO 4 for both. Pins for the extras
 differ by board:
@@ -63,6 +76,13 @@ differ by board:
 | Battery (1:1 divider) | 35 | 7 | 3 |
 
 ## 5. I2C sensor (AHT20; BME280 and SHT31 verified)
+
+**AHT20: detected and posting on an ESP32-S3 (2026-11-05), firmware 1.2.4.** The board
+printed `TT sensor: AHT20 on I2C (SDA 8, SCL 9)` and `TT post 200 probes=1`. The
+dashboard showed temperature and humidity: 77.3°F / 55%, next to an existing indoor
+probe in the same room reading 74.8°F / 57%. The AHT20 sat next to a computer, which
+explains it reading warmer. This is a rough check against another sensor, not a
+calibrated reference. Not checked yet: an AHT20 on a plain ESP32.
 
 **SHT31: verified on a plain ESP32 (reported 2026-11-04), firmware 1.2.3
 installed from `/flash`.** Temperature and humidity showed on the device page.

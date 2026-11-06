@@ -4101,3 +4101,35 @@ worktrees, one commit per item, merged and re-checked together.
   unit; retention save errors aren't shown; the failing-channel row and
   claims link don't update on soft refresh; portfolio health and public
   share pages keep the fixed 2 h staleness.
+
+## Firmware 1.2.4: ESP32-S3 settings over the native USB port (2026-11-05)
+
+User report: an ESP32-S3 installed from `/flash` but never answered "Send settings".
+Cause: the S3 build (`esp32-s3-devkitc-1`, `ARDUINO_USB_MODE=1`, CDC on boot off)
+sends `Serial` to the UART bridge only. A board plugged into its native USB port
+(303a:1001) flashes through the ROM bootloader, but the running firmware never
+read from or printed to that port.
+
+- [x] `main.cpp`: on builds with the USB Serial/JTAG port and CDC on boot off, a
+      small `Console` stream writes to both `Serial` and `USBSerial` and reads
+      from either. Other builds keep plain `Serial` (`#define Console Serial`).
+      The pinned core skips or times out native-USB writes when no computer is
+      listening (about 100 ms), so the board doesn't block.
+- [x] `/flash` images and manifest rebuilt as 1.2.4 (`node scripts/build-firmware.mjs`
+      via `uvx --from platformio`). All three builds succeeded.
+- Evidence (hardware, the user's ESP32-S3 on its native USB port): 1.2.4 flashed with
+  `pio run -e esp32s3 -t upload`. Boot printed `TT firmware 1.2.4` and the setup
+  line. A test `TTCFG` with a made-up network name got `TT key saved`,
+  `TT wifi joining`, `TT wifi failed`.
+- Evidence (hardware): the user then sent real settings from the live `/flash` page on
+  the same port: `TT key saved`, `TT wifi joining`, `TT wifi ok`. No sensor was
+  wired, so the board reported `TT no probe`.
+- Evidence (hardware): a second ESP32-S3, flashed with 1.2.4 over its native USB
+  port, with an AHT20 on SDA 8 / SCL 9, set up from the live `/flash` page:
+  `TT sensor: AHT20 on I2C (SDA 8, SCL 9)`, `TT wifi ok`, `TT post 200 probes=1`.
+  This is the first AHT20 result on hardware. The dashboard showed 77.3°F / 55%
+  against another indoor probe in the same room at 74.8°F / 57%, with the AHT20
+  next to a warm computer. This is a rough comparison, not a calibration.
+- Open: a DS18B20/DHT on GPIO 4 on the S3, the S3's UART port, and the
+  C3 (unchanged, compile-only). The test left a placeholder key and network name
+  on the board. Sending real settings replaces them.
