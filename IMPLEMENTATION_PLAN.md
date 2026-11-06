@@ -4154,3 +4154,22 @@ flashed and booted, but printed no `TT` lines and ignored settings. The C3 build
       claims tests now guard the leak and battery inputs, which are still untested.
 - Open: the C3's UART port (DevKitM-1), DS18B20 and I2C on the C3, and the leak and
   battery inputs on any board.
+
+## Matter: Google Home works through the Matterbridge plugin (2026-11-06)
+
+User report with a screenshot: `matterbridge-thermaltrace` 0.1.0 running on
+Matterbridge 3.11.1 (Docker), paired to Google Home (one fabric). All 13 devices
+were online: temperature and humidity from the house, garage, and shed sensors
+(including the new ESP32-S3 and ESP32-C3), and the garage door contact.
+
+- [x] `docs/integrations/matter.md`: a "Tested with" table. Google Home works; Apple
+      Home and Alexa haven't been tested.
+- Not checked: leak, power, and motion through a controller; the values and
+  door state against the dashboard inside Google Home itself; the optional
+  snooze call.
+- Plugin follow-ups (separate repo `thermaltrace-matter`, not started):
+  - Names repeat when the device and the sensor share a name, e.g. "House ESP32-S3
+    House ESP32-S3".
+  - Serial numbers get cut at Matter's 32 characters, e.g.
+    `TT-SHED-ESP32-C3-TEMP1-TEMPERATU`, so two long names could end up with the
+    same serial.

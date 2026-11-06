@@ -14,6 +14,16 @@ Product landing page: [probeharbor.dev/integrations/matter](https://probeharbor.
 - **Runs on a LAN host** (Raspberry Pi, NAS, always-on PC). Matter pairing needs mDNS; this does **not** run on Cloudflare Workers.
 - **Not a probe.** ESP/Arduino (or HTTPS feeds) push readings; the plugin only mirrors the share JSON.
 
+## Tested with
+
+| Controller | Status |
+| --- | --- |
+| Google Home | **Works** (2026-11-06): plugin 0.1.0 on Matterbridge 3.11.1 (Docker). 13 sensors paired and online: temperature, humidity, and a door contact, from push devices (ESP32-S3, ESP32-C3) and pull feeds |
+| Apple Home | Not yet tested |
+| Alexa | Not yet tested |
+
+Leak, power, and motion sensors haven't been checked through a controller yet.
+
 ## Install
 
 1. Install [Matterbridge](https://matterbridge.io/)
