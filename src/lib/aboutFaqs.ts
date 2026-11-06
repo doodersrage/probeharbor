@@ -243,7 +243,7 @@ export const aboutFaqsBySlug: Record<string, AboutFaqItem[]> = {
     {
       question: "Is there a browser flasher built into ProbeHarbor?",
       answer:
-        "Yes, in beta: probeharbor.dev/flash installs prebuilt firmware on an ESP32 from Chrome or Edge (tested on the original ESP32; ESP32-S3 and ESP32-C3 images are built but not yet hardware-tested), then sends the board your Wi‑Fi and device key over USB. To edit the code instead, download a pre-filled .ino/.py from Devices and flash with Arduino IDE, PlatformIO, or Thonny. Guide: probeharbor.dev/about/esp32-web-flash.",
+        "Yes, in beta: probeharbor.dev/flash installs prebuilt firmware on an ESP32 from Chrome or Edge (tested on the original ESP32 and the ESP32-S3; the ESP32-C3 image is built but not yet hardware-tested), then sends the board your Wi‑Fi and device key over USB. To edit the code instead, download a pre-filled .ino/.py from Devices and flash with Arduino IDE, PlatformIO, or Thonny. Guide: probeharbor.dev/about/esp32-web-flash.",
     },
   ],
   "pico-w-ingest": [

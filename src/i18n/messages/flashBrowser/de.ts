@@ -8,7 +8,7 @@ import type { BrowserFlasherMessages } from "./en";
 const de: BrowserFlasherMessages = {
   installTitle: "1. Firmware installieren",
   installCopy:
-    "Schließ den ESP32 mit einem USB-Datenkabel an diesen Computer an, klick auf Installieren und wähle den seriellen Port des Boards. Das dauert etwa eine Minute. Getestet auf dem originalen ESP32; die Images für ESP32-S3 und ESP32-C3 sind gebaut, aber noch nicht auf Hardware getestet.",
+    "Schließ den ESP32 mit einem USB-Datenkabel an diesen Computer an, klick auf Installieren und wähle den seriellen Port des Boards. Das dauert etwa eine Minute. Getestet auf dem originalen ESP32 und dem ESP32-S3; das Image für den ESP32-C3 ist gebaut, aber noch nicht auf Hardware getestet.",
   installButton: "Firmware installieren",
   unsupportedHtml:
     'Dieser Browser kann nicht mit seriellen USB-Geräten kommunizieren. Öffne diese Seite in Chrome oder Edge auf einem Desktop-PC oder Laptop oder nutze die <a class="text-link" href="/about/esp32-web-flash">anderen Flash-Optionen</a>.',
