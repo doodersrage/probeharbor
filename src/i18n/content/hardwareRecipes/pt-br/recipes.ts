@@ -41,7 +41,7 @@ export default {
     hardware: "ESP32 + AHT20 via I²C",
     path: "Gravador web (sem código)",
     notes:
-      "Ligado do mesmo jeito que o BME280 e o SHT31 (SDA 21, SCL 22 em um ESP32 clássico) e detectado automaticamente.",
+      "Detectado automaticamente na inicialização. Testado em um ESP32-S3 (SDA 8, SCL 9). Em um ESP32 clássico, é ligado como o BME280 e o SHT31 (SDA 21, SCL 22).",
     links: [flash],
   },
   "esp32-door": {
@@ -68,11 +68,20 @@ export default {
       "Informa a porcentagem da bateria para que Devices avise antes que ela acabe. No Wi-Fi, conte com semanas, não meses.",
     links: [flash],
   },
-  "esp32-s3-c3": {
-    title: "Placas ESP32 mais novas",
-    hardware: "Placa de desenvolvimento ESP32-S3 ou ESP32-C3",
+  "esp32-s3": {
+    title: "Placas ESP32-S3",
+    hardware: "Placa de desenvolvimento ESP32-S3",
     path: "Gravador web (sem código)",
-    notes: "O gravador tem imagens para as duas; até agora só o ESP32 original foi testado em hardware.",
+    notes:
+      "Testado em hardware com um AHT20 em SDA 8, SCL 9. As configurações vão por qualquer uma das portas USB (firmware 1.2.4 ou mais recente). Um DS18B20 ou DHT22 vai no GPIO 4, como em um ESP32 clássico.",
+    links: [flash],
+  },
+  "esp32-c3": {
+    title: "Placas ESP32-C3",
+    hardware: "Placa de desenvolvimento ESP32-C3",
+    path: "Gravador web (sem código)",
+    notes:
+      "O gravador tem uma imagem para ESP32-C3, mas ela ainda não foi testada em hardware.",
     links: [flash],
   },
   "home-assistant": {

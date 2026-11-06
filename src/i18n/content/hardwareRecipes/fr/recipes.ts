@@ -41,7 +41,7 @@ export default {
     hardware: "ESP32 + AHT20 en I²C",
     path: "Outil de flashage web (sans code)",
     notes:
-      "Câblé comme le BME280 et le SHT31 (SDA 21, SCL 22 sur un ESP32 classique) et détecté automatiquement.",
+      "Détecté automatiquement au démarrage. Testé sur un ESP32-S3 (SDA 8, SCL 9). Sur un ESP32 classique, il se câble comme le BME280 et le SHT31 (SDA 21, SCL 22).",
     links: [flash],
   },
   "esp32-door": {
@@ -68,12 +68,20 @@ export default {
       "Remonte le pourcentage de batterie pour que Devices vous prévienne avant qu’elle ne soit vide. En Wi-Fi, comptez des semaines, pas des mois.",
     links: [flash],
   },
-  "esp32-s3-c3": {
-    title: "Cartes ESP32 plus récentes",
-    hardware: "Carte de développement ESP32-S3 ou ESP32-C3",
+  "esp32-s3": {
+    title: "Cartes ESP32-S3",
+    hardware: "Carte de développement ESP32-S3",
     path: "Outil de flashage web (sans code)",
     notes:
-      "L’outil de flashage propose des images pour les deux ; seul l’ESP32 d’origine a été testé sur du matériel pour l’instant.",
+      "Testé sur du matériel avec un AHT20 sur SDA 8, SCL 9. Les réglages passent par l’un ou l’autre port USB (firmware 1.2.4 ou plus récent). Un DS18B20 ou un DHT22 se branche sur GPIO 4, comme sur un ESP32 classique.",
+    links: [flash],
+  },
+  "esp32-c3": {
+    title: "Cartes ESP32-C3",
+    hardware: "Carte de développement ESP32-C3",
+    path: "Outil de flashage web (sans code)",
+    notes:
+      "L’outil de flashage propose une image ESP32-C3, mais elle n’est pas encore testée sur du matériel.",
     links: [flash],
   },
   "home-assistant": {

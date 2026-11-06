@@ -41,7 +41,7 @@ export default {
     hardware: "ESP32 + AHT20 per I²C",
     path: "Web-Flasher (ohne Code)",
     notes:
-      "Genauso verkabelt wie BME280 und SHT31 (SDA 21, SCL 22 auf einem klassischen ESP32) und automatisch erkannt.",
+      "Wird beim Start automatisch erkannt. Getestet auf einem ESP32-S3 (SDA 8, SCL 9). Auf einem klassischen ESP32 wird er wie BME280 und SHT31 verkabelt (SDA 21, SCL 22).",
     links: [flash],
   },
   "esp32-door": {
@@ -68,11 +68,20 @@ export default {
       "Meldet den Akkustand in Prozent, damit Devices dich warnt, bevor er leer ist. Mit WLAN reicht er Wochen, nicht Monate.",
     links: [flash],
   },
-  "esp32-s3-c3": {
-    title: "Neuere ESP32-Boards",
-    hardware: "ESP32-S3- oder ESP32-C3-Entwicklerboard",
+  "esp32-s3": {
+    title: "ESP32-S3-Boards",
+    hardware: "ESP32-S3-Entwicklerboard",
     path: "Web-Flasher (ohne Code)",
-    notes: "Der Flasher hat Images für beide; bisher lief nur der ursprüngliche ESP32 auf echter Hardware.",
+    notes:
+      "Auf Hardware getestet mit einem AHT20 an SDA 8, SCL 9. Die Einstellungen gehen über beide USB-Ports (ab Firmware 1.2.4). Ein DS18B20 oder DHT22 kommt wie beim klassischen ESP32 an GPIO 4.",
+    links: [flash],
+  },
+  "esp32-c3": {
+    title: "ESP32-C3-Boards",
+    hardware: "ESP32-C3-Entwicklerboard",
+    path: "Web-Flasher (ohne Code)",
+    notes:
+      "Der Flasher hat ein Image für den ESP32-C3, es ist aber noch nicht auf Hardware getestet.",
     links: [flash],
   },
   "home-assistant": {

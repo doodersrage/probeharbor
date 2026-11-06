@@ -24,4 +24,10 @@ describe("hardware recipes", () => {
       expect(recipe.links.some((l) => l.href === "/flash")).toBe(true);
     }
   });
+
+  it("never mark an ESP32-C3 setup as verified (see firmware/probeharbor-probe/HARDWARE-TESTS.md)", () => {
+    const c3 = HARDWARE_RECIPES.filter((r) => /C3/.test(`${r.title} ${r.hardware}`));
+    expect(c3.length).toBeGreaterThan(0);
+    expect(c3.filter((r) => r.status === "verified").map((r) => r.id)).toEqual([]);
+  });
 });
