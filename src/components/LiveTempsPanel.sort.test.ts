@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { compareLiveSensors } from "./LiveTempsPanel";
+import { compareLiveSensors, sensorKindOptions } from "./LiveTempsPanel";
 
 type S = Parameters<typeof compareLiveSensors>[0];
 const s = (deviceName: string, kind: string, label: string, space: string | null = null): S => ({
@@ -60,5 +60,12 @@ describe("Live tile order", () => {
       "Probe 2/pressure",
       "Probe 10/temperature",
     ]);
+  });
+});
+
+describe("Type filter options", () => {
+  it("lists each kind once, climate first, then A–Z", () => {
+    const kinds = ["door", "humidity", "pressure", "temperature", "humidity", "co2"].map((kind) => ({ kind }));
+    expect(sensorKindOptions(kinds)).toEqual(["temperature", "humidity", "co2", "door", "pressure"]);
   });
 });

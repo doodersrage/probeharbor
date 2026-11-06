@@ -55,6 +55,26 @@ export const LIVE_TEMPS_PANEL_TEXT_EN = {
   subtitle: "Temperature, humidity, and other probes from pull feeds and push devices.",
   spaceLabel: "Space",
   allSpaces: "All spaces",
+  typeLabel: "Type",
+  allTypes: "All types",
+  /** Shown when the Type filter matches nothing in the chosen space. */
+  noSensorsOfType: "No {type} sensors in this view.",
+  /** Type filter option names, by sensor kind. Unknown kinds show their raw name. */
+  kinds: {
+    temperature: "Temperature",
+    humidity: "Humidity",
+    co2: "CO₂",
+    pressure: "Barometric pressure",
+    pm25: "PM2.5",
+    voc: "VOC",
+    level: "Water / sump level",
+    energy: "Energy",
+    door: "Door",
+    power: "Power",
+    flood: "Flood / leak",
+    motion: "Motion",
+    generic: "Generic",
+  } as Record<string, string>,
   refreshError: "Unable to refresh readings",
   refreshFailed: "Refresh failed",
   retryNow: "Retry now",
@@ -391,6 +411,14 @@ export function compareLiveSensors(
   return cmp(a.kind, b.kind) || cmp(a.label ?? "", b.label ?? "");
 }
 
+/** Distinct sensor kinds for the Type filter, in tile order (temperature, humidity, then A–Z). */
+export function sensorKindOptions(sensors: Pick<LiveSensor, "kind">[]): string[] {
+  const kinds = [...new Set(sensors.map((s) => s.kind))];
+  return kinds.sort(
+    (a, b) => (KIND_ORDER[a] ?? 2) - (KIND_ORDER[b] ?? 2) || a.localeCompare(b),
+  );
+}
+
 export default function LiveTempsPanel({
   intervalMs = 30000,
   text = LIVE_TEMPS_PANEL_TEXT_EN,
@@ -402,6 +430,7 @@ export default function LiveTempsPanel({
   const [sensors, setSensors] = useState<LiveSensor[]>([]);
   const [spaces, setSpaces] = useState<string[]>([]);
   const [spaceFilter, setSpaceFilter] = useState("");
+  const [typeFilter, setTypeFilter] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [countdown, setCountdown] = useState(intervalMs / 1000);
@@ -526,12 +555,25 @@ export default function LiveTempsPanel({
     );
   }, [sensors, groups, updatedAt]);
 
+  const kindOptions = useMemo(() => {
+    const kinds = sensorKindOptions(sensors);
+    // Keep the current choice listed even if this space has none of that type.
+    return typeFilter && !kinds.includes(typeFilter) ? [...kinds, typeFilter] : kinds;
+  }, [sensors, typeFilter]);
+  const kindName = (kind: string) => text.kinds?.[kind] ?? kind;
+  // The Type filter only narrows the tiles; the late/offline banner and the
+  // top-bar freshness badge still cover every sensor.
+  const visibleSensors = useMemo(
+    () => (typeFilter ? sensors.filter((s) => s.kind === typeFilter) : sensors),
+    [sensors, typeFilter],
+  );
+
   const nonTempSensors = useMemo(
     () =>
-      sensors
+      visibleSensors
         .filter((s) => s.kind !== "temperature" && s.kind !== "humidity")
         .sort(compareLiveSensors),
-    [sensors],
+    [visibleSensors],
   );
 
   // Prefer kind-aware climate cards when present; fall back to feed groups.
@@ -548,18 +590,18 @@ export default function LiveTempsPanel({
     return byKey;
   }, [sensors]);
   const temperatureCards = useMemo(() => {
-    const tempKeys = new Set(sensors.filter((s) => s.kind === "temperature").map(pairKey));
+    const tempKeys = new Set(visibleSensors.filter((s) => s.kind === "temperature").map(pairKey));
     const rank = (s: LiveSensor) => {
       const age = formatRelativeAge(s.recorded_at ?? null, undefined, undefined, s.reportIntervalMs);
       return age.stale ? 2 : age.lagging ? 1 : 0;
     };
-    return sensors
+    return visibleSensors
       .filter(
         (s) => s.kind === "temperature" || (s.kind === "humidity" && !tempKeys.has(pairKey(s))),
       )
       .map((sensor, index) => ({ sensor, index, rank: rank(sensor) }))
       .sort((a, b) => compareLiveSensors(a.sensor, b.sensor) || a.index - b.index);
-  }, [sensors]);
+  }, [visibleSensors]);
   const liveClimateCards = temperatureCards.filter((c) => c.rank < 2).map((c) => c.sensor);
   const offlineClimateCards = temperatureCards.filter((c) => c.rank === 2).map((c) => c.sensor);
 
@@ -624,26 +666,50 @@ export default function LiveTempsPanel({
       <h2 class="card-title">{text.title}</h2>
       <p class="card-subtitle">{text.subtitle}</p>
 
-      {spaces.length > 0 && (
-        <div class="mb-4">
-          <label class="form-label" for="space-filter">
-            {text.spaceLabel}
-          </label>
-          <select
-            id="space-filter"
-            class="form-input"
-            value={spaceFilter}
-            onChange={(e) =>
-              setSpaceFilter((e.target as HTMLSelectElement).value)
-            }
-          >
-            <option value="">{text.allSpaces}</option>
-            {spaces.map((space) => (
-              <option value={space} key={space}>
-                {space}
-              </option>
-            ))}
-          </select>
+      {(spaces.length > 0 || kindOptions.length > 1 || typeFilter) && (
+        <div class="grid gap-4 sm:grid-cols-2 mb-4">
+          {spaces.length > 0 && (
+            <div>
+              <label class="form-label" for="space-filter">
+                {text.spaceLabel}
+              </label>
+              <select
+                id="space-filter"
+                class="form-input"
+                value={spaceFilter}
+                onChange={(e) =>
+                  setSpaceFilter((e.target as HTMLSelectElement).value)
+                }
+              >
+                <option value="">{text.allSpaces}</option>
+                {spaces.map((space) => (
+                  <option value={space} key={space}>
+                    {space}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+          {(kindOptions.length > 1 || typeFilter) && (
+            <div>
+              <label class="form-label" for="type-filter">
+                {text.typeLabel}
+              </label>
+              <select
+                id="type-filter"
+                class="form-input"
+                value={typeFilter}
+                onChange={(e) => setTypeFilter((e.target as HTMLSelectElement).value)}
+              >
+                <option value="">{text.allTypes}</option>
+                {kindOptions.map((kind) => (
+                  <option value={kind} key={kind}>
+                    {kindName(kind)}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
         </div>
       )}
 
@@ -708,6 +774,15 @@ export default function LiveTempsPanel({
             </details>
           )}
         </>
+      ) : typeFilter ? (
+        visibleSensors.length === 0 && (
+          <p class="stat-detail mb-6">
+            {fill(text.noSensorsOfType, { type: kindName(typeFilter) })}{" "}
+            <button type="button" class="text-link" onClick={() => setTypeFilter("")}>
+              {text.allTypes}
+            </button>
+          </p>
+        )
       ) : groups.length > 0 ? (
         <div class="feed-groups mb-6">
           {groups.map((group) => (
