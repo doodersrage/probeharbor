@@ -20,17 +20,23 @@ import { localeFromMetadata } from "../i18n/userLocale";
 import { digestEmailMessages } from "../i18n/messages/app/email/digest";
 import { averageHumidity, wettestPoint } from "./humidityStats";
 
+type DigestSendResult = "sent" | "suppressed" | "failed";
+
+/** What happened, so the job counts real sends only (a refused address is not "sent"). */
 async function sendDigestEmail(
   to: string,
   subject: string,
   text: string,
   html: string,
   unsubscribeUrl: string | null = null,
-): Promise<void> {
+): Promise<DigestSendResult> {
   try {
     await sendEmail(to, subject, text, { html, headers: unsubscribeHeaders(unsubscribeUrl) });
+    return "sent";
   } catch (error) {
-    console.error("Failed to send digest email:", error);
+    if (error instanceof Error && /suppressed/i.test(error.message)) return "suppressed";
+    console.error("Failed to send digest email:", error instanceof Error ? error.message : error);
+    return "failed";
   }
 }
 
@@ -529,13 +535,16 @@ export async function sendWeeklyDigestsForAllUsers(): Promise<{
         delivery: weekEventsError ? null : summarizeAlertDelivery(weekEvents ?? []),
       }, ownerLocale);
 
-      await sendDigestEmail(
+      const ownerResult = await sendDigestEmail(
         digestEmail,
         digest.subject,
         digest.text,
         digest.html,
         ownerUnsubscribeUrl,
       );
+      if (ownerResult === "sent") sent += 1;
+      else if (ownerResult === "suppressed") skipped += 1;
+      else errors.push(`${userId}: digest email failed`);
 
       await notifyUser(userId, digestEmail, { ...settings, channelEmail: false }, {
         title: digest.subject,
@@ -589,14 +598,16 @@ export async function sendWeeklyDigestsForAllUsers(): Promise<{
               },
               memberLocale,
             );
-            await sendDigestEmail(
+            const memberResult = await sendDigestEmail(
               memberEmail,
               memberDigest.subject,
               memberDigest.text,
               memberDigest.html,
               memberUnsubscribeUrl,
             );
-            sent += 1;
+            if (memberResult === "sent") sent += 1;
+            else if (memberResult === "suppressed") skipped += 1;
+            else errors.push(`${memberId}: digest email failed`);
           }
         }
       } catch (fanOutError) {
@@ -606,8 +617,6 @@ export async function sendWeeklyDigestsForAllUsers(): Promise<{
           }`,
         );
       }
-
-      sent += 1;
     } catch (e) {
       errors.push(`${userId}: ${e instanceof Error ? e.message : "Unknown error"}`);
     }

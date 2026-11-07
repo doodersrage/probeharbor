@@ -35,11 +35,11 @@ async function sendMonthlyReportEmail(
   attachmentHtml: string,
   headers: Record<string, string> = {},
 ): Promise<void> {
-  const { EmailMessage } = await import("cloudflare:email");
-  const { createMimeMessage } = await import("mimetext");
   const { assertRecipientSendable, requireSmtpMailFrom, sendMailerRaw } = await import("./mailer");
   // Same refusal as every other email: suppressed (bounced, unsubscribed) or implausible addresses.
   await assertRecipientSendable(to);
+  const { EmailMessage } = await import("cloudflare:email");
+  const { createMimeMessage } = await import("mimetext");
   const from = requireSmtpMailFrom();
 
   const msg = createMimeMessage();
