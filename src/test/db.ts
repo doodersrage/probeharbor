@@ -6,14 +6,18 @@
  * 127.0.0.1) where the user may create databases, e.g.
  *   TEST_DATABASE_URL=postgres://postgres@127.0.0.1:5432/postgres pnpm test:db
  * Global setup creates a throwaway database, applies db/migrations, and drops
- * it afterwards. Each test runs inside a transaction that is rolled back.
+ * it afterwards. Every query commits on its own, as in production (Neon
+ * HTTP); after each test all tables are emptied except the seeded `groups`.
+ * (Not one rolled-back transaction per test: inside a transaction now() is
+ * fixed, so rows would share created_at and ordering wouldn't match
+ * production.)
  *
  * The app talks to Neon over HTTP in production; tests use `pg` with the same
  * type conversion, so the SQL and the result shapes are what get tested.
  */
 import path from "node:path";
 import pg from "pg";
-import { afterAll, afterEach, beforeAll, beforeEach } from "vitest";
+import { afterAll, afterEach, beforeAll } from "vitest";
 import { readMigrationFiles } from "../../scripts/db-migrate.mjs";
 import { setQueryRunnerForTests } from "../lib/db/client";
 import { makeGetTypeParser } from "../lib/db/types";
@@ -84,12 +88,10 @@ export function useTestDatabase(): { client: () => pg.Client } {
     setQueryRunnerForTests(async <Row>(text: string, params: readonly unknown[] = []) =>
       (await c.query(text, params as unknown[])).rows as Row[],
     );
-  });
-  beforeEach(async () => {
-    await client?.query("begin");
+    await emptyTables(c);
   });
   afterEach(async () => {
-    await client?.query("rollback");
+    if (client) await emptyTables(client);
   });
   afterAll(async () => {
     setQueryRunnerForTests(null);
@@ -101,6 +103,18 @@ export function useTestDatabase(): { client: () => pg.Client } {
       return client;
     },
   };
+}
+
+/** Remove all rows except the seeded groups and migration bookkeeping. */
+async function emptyTables(c: pg.Client): Promise<void> {
+  await c.query(`do $$
+    declare tables text;
+    begin
+      select string_agg(format('public.%I', tablename), ', ') into tables
+      from pg_tables
+      where schemaname = 'public' and tablename not in ('groups', 'schema_migrations');
+      execute 'truncate ' || tables || ' restart identity cascade';
+    end $$`);
 }
 
 /** Insert a user the way sign-up will (signup triggers create the household). */

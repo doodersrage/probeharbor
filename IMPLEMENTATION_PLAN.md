@@ -4366,8 +4366,25 @@ Cloudflare email binding.
          browser case; breaking the `user_id <> $2` condition makes 2
          fail (checked). The Neon path of the release logs failures; the
          Supabase path still ignores them (unchanged).
-   - [ ] Convert the remaining ~340 queries and 13 Postgres function calls,
-         one area per commit, each with database tests.
+   - [x] Area 1, households and membership (`src/lib/households.ts`, all
+         15 functions that query; Neon SQL in `src/lib/db/households.ts`).
+         New `src/lib/db/userMetadata.ts` reads/merges
+         `user_profiles.metadata` (active household); the merge is one
+         statement, so concurrent changes to different keys can't drop
+         each other. Creating a household + owner is one statement, so a
+         failure can't leave an ownerless household. 16 database tests:
+         creation, active/preferred household, removed-member fallback,
+         cross-household membership/role/member-list/rename, owner can't
+         be removed, leave, cron list. Mutation checks: membership ignoring
+         the household → 5 fail; owner removable → 2 fail; role ignoring
+         the household → 4 fail.
+   - [x] Test setup fix: tests no longer share one rolled-back transaction
+         (now() is fixed inside a transaction, so created_at tied and
+         "oldest first" flapped: 3 of 4 runs failed). Each query commits,
+         tables are emptied after each test; 6 runs in a row pass.
+   - [ ] Convert the remaining ~320 queries and 13 Postgres function calls,
+         one area per commit, each with database tests. Next: sensor
+         ingest and readings, then alerts.
    - [ ] Cross-household tests for every household-scoped read and write.
 4. **Login on Better Auth.** Email + password (accept existing bcrypt
    hashes, so passwords keep working), Google, GitHub, Discord, email
