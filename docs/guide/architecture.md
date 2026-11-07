@@ -1,17 +1,17 @@
 ---
-description: "How ProbeHarbor is built: Astro on Cloudflare Workers, Supabase Postgres with RLS, Stripe billing, and the push and pull data paths."
+description: "How ProbeHarbor is built: Astro on Cloudflare Workers, Neon Postgres, Better Auth sign-in, Stripe billing, and the push and pull data paths."
 ---
 
 # Architecture
 
-ProbeHarbor is an **Astro 7** app with **`output: 'server'`** on **Cloudflare Workers**, **Supabase** (Auth + Postgres + RLS), and **Stripe** for paid plans.
+ProbeHarbor is an **Astro 7** app with **`output: 'server'`** on **Cloudflare Workers**, **Neon** Postgres, **Better Auth** for sign-in (inside the app), and **Stripe** for paid plans.
 
 ```
 Sensors / relays ──push or pull──► Cloudflare Worker (Astro)
                                          │
                     ┌────────────────────┼────────────────────┐
                     ▼                    ▼                    ▼
-               Supabase DB          Stripe webhooks      Email / SMS / push
+               Neon Postgres        Stripe webhooks      Email / SMS / push
                (readings,           (subscriptions)      (alerts, digests)
                 devices,
                 households)
@@ -78,7 +78,7 @@ An **import-guard** Vitest suite (`src/lib/astroImportGuard.test.ts`) fails CI i
 src/pages/api/ingest/   Push ingest
 src/lib/                Devices, alerts, mailer, Stripe, households
 src/worker.ts           fetch + cron
-supabase/migrations/    Schema + RLS
+db/migrations/          Schema (pnpm db:migrate)
 sketches/               Sample firmware
 docs/                   This VitePress site → GitHub Pages
 public/openapi.yaml     HTTP API contract

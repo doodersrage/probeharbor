@@ -1,6 +1,6 @@
 # ProbeHarbor
 
-Open-source dashboard to **track, log, and analyze sensors in garages, workshops, attics, crawlspaces, and shops** — **Astro 7**, **Cloudflare Workers**, **Supabase**, and **Stripe**.
+Open-source dashboard to **track, log, and analyze sensors in garages, workshops, attics, crawlspaces, and shops** — **Astro 7**, **Cloudflare Workers**, **Neon Postgres**, and **Stripe**.
 
 Runs in production at [probeharbor.dev](https://probeharbor.dev) with 15-minute history polling, CI, Playwright smoke, and `pnpm ops:smoke`.
 
@@ -44,7 +44,7 @@ Plans and limits: [probeharbor.dev/pricing](https://probeharbor.dev/pricing) · 
 
 ## Stack
 
-Astro 7 + Preact islands + Tailwind v4 · Cloudflare Workers · Supabase (Auth, Postgres, RLS) · Stripe · Cloudflare Email · Twilio SMS (Pro) · Web Push (Pro). **Node.js 24 (`>=24.11.0`)** and **pnpm**.
+Astro 7 + Preact islands + Tailwind v4 · Cloudflare Workers · Neon Postgres · Better Auth · Stripe · Cloudflare Email · Twilio SMS (Pro) · Web Push (Pro). **Node.js 24 (`>=24.11.0`)** and **pnpm**.
 
 ## Quick start
 
@@ -72,7 +72,7 @@ src/pages/          Routes; API under pages/api/
 src/lib/            Auth, devices, alerts, Stripe, ingest
 src/worker.ts       Cloudflare fetch + scheduled jobs (15-min poll)
 src/actions/        Astro Actions (prefs, alerts, invites)
-supabase/migrations/
+db/migrations/      Schema (pnpm db:migrate)
 sketches/           Arduino / MicroPython / CircuitPython / Zephyr / WCHNET / AVR assembly ingest samples
 docs/               VitePress developer docs (GitHub Pages)
 ```

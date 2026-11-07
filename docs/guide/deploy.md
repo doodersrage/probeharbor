@@ -1,5 +1,5 @@
 ---
-description: "Deploy and operate a ProbeHarbor instance: checks, Supabase migrations, Worker secrets, Cloudflare deploys, and cron jobs."
+description: "Deploy and operate a ProbeHarbor instance: checks, database migrations, Worker secrets, Cloudflare deploys, and cron jobs."
 ---
 
 # Deploy & ops
@@ -9,7 +9,7 @@ Production app: [probeharbor.dev](https://probeharbor.dev).
 ```bash
 pnpm ops:check              # verify .env has core keys
 pnpm test && pnpm typecheck && pnpm build
-pnpm db:push                # apply Supabase migrations
+pnpm db:pending             # migrations not applied yet (then pnpm db:migrate)
 pnpm secrets:push           # sync .env → Worker secrets
 pnpm deploy                 # astro build + wrangler deploy
 ```
@@ -80,16 +80,10 @@ and the OpenAPI spec keep semver, because devices and integrators compare them.
 ## Migrations and deploy order
 
 Pushes to `main` deploy the Workers automatically. **Database migrations do
-not run in CI**: apply them yourself with `pnpm db:push` (Supabase CLI v3,
-`supabase db push --remote`, the linked project). The CLI asks before it
-changes the hosted database and the default answer is **No**: type `y` to
-apply.
-
-Run `pnpm db:pending` first to list migrations not yet applied. CLI v3
-reads `SUPABASE_ACCESS_TOKEN` from the project's `.env` and prefers it over
-`supabase login`. If that token is expired or revoked, every remote command
-fails with "Invalid access token": create a new one under Account → Access
-Tokens in the Supabase dashboard, or remove the line to use your login.
+not run in CI**: apply them yourself with `pnpm db:migrate` (files in
+`db/migrations/`, direct connection `DATABASE_URL_UNPOOLED`). Each file runs
+in its own transaction and is recorded with a checksum; a changed file stops
+the run. Run `pnpm db:pending` first to list what isn't applied yet.
 
 - **Additive migrations** (new nullable column, new table, new index) can
   go first, then push the code. That's the default order.
@@ -98,7 +92,7 @@ Tokens in the Supabase dashboard, or remove the line to use your login.
 - If a migration **removes or tightens** something the old code still uses,
   deploy the code first, then apply the migration.
 - Each recent migration file starts with a comment giving its deploy order
-  and the SQL to undo it. Read it before `pnpm db:push`.
+  and the SQL to undo it. Read it before `pnpm db:migrate`.
 - Before pushing, `pnpm db:pending` lists migrations not yet applied to
   production (exit 1 if any). It's read-only.
 - After applying, run the read-only check from the migration's entry in
@@ -129,12 +123,13 @@ npx wrangler rollback <version-id> --config dist/server/wrangler.json -m "reason
   the migration first, using the SQL in its header comment, after checking
   what data the undo would drop.
 
-### Database backups (Supabase)
+### Database backups (Neon)
 
-**The production project is on the Supabase Free plan, which keeps no
-backups and has no point-in-time recovery** (checked 2026-10-28). The only
-copies are the ones you make. If the database is lost or corrupted, every
-reading, alert, account and device key is gone.
+Neon can restore a branch to an earlier point only within the plan's
+history window (check it in the Neon console; it isn't verified here). For
+anything older, the copies are the ones you make. If the database is lost or
+corrupted beyond that window, every reading, alert, account and device key
+is gone.
 
 Make a backup regularly (at least weekly) and always before a migration
 that changes or removes data:
@@ -143,12 +138,11 @@ that changes or removes data:
 pnpm db:backup
 ```
 
-- It needs `SUPABASE_DB_URL` in `.env`: Supabase → **Connect** → the
-  **Session pooler** string (`postgres.<ref>@…pooler.supabase.com:5432`) with
-  the database password filled in. The "Direct connection" host is IPv6-only
-  on the Free plan, and the transaction pooler (6543) doesn't work with
-  `pg_dump`. It's local only and isn't pushed to the Worker.
-- It needs `pg_dump` 17 or newer (the server runs Postgres 17).
+- It reads `DATABASE_URL_UNPOOLED` from `.env` (Neon → **Connect** with
+  connection pooling off; the pooled `-pooler` host doesn't work with
+  `pg_dump`), or another variable with `--url-env NAME`. It's local only and
+  isn't pushed to the Worker.
+- It needs `pg_dump` 18 or newer (Neon runs Postgres 18).
 - It writes `backups/probeharbor-<UTC time>.dump` (compressed, custom
   format; `backups/` is gitignored). It only reads from the database.
 - A failed run leaves no file behind.
@@ -156,15 +150,14 @@ pnpm db:backup
   shared drives, and delete old ones you don't need.
 - Check a dump with `pg_restore --list <file> | head`.
 
-To restore into a **new, empty** project (never over the live database
-without a fresh dump first):
+To restore into a **new, empty** database, e.g. a new Neon branch (never
+over the live database without a fresh dump first):
 
 ```bash
 pg_restore --no-owner --no-privileges --dbname "<connection string of the new project>" <file>
 ```
 
-Restoring loses everything written after the dump. Moving to a paid plan
-(daily backups, optional PITR) removes most of this manual work.
+Restoring loses everything written after the dump.
 
 ### Other state
 

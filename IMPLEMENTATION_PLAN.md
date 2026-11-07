@@ -5174,16 +5174,38 @@ Cloudflare email binding.
          asked Google/GitHub/Discord-only users for a password to delete
          their account (`7858d0c`); showing a device's ingest key failed on
          Better Auth (`6252770`).
-   - [ ] **7b, scripts, CI and packages.** Still on Supabase: the ops
-         scripts `audit-billing`, `ops-funnel`, `ops-dogfood`,
-         `e2e-reset-password` (supabase-js), `db-backup`, `db-pending`
-         (Supabase CLI), `smoke-oauth`, and the GitHub-secrets setup
-         scripts; `deploy.yml` only deploys when the `SUPABASE_URL` secret
-         is set; CI and `push-worker-secrets.mjs` still pass `SUPABASE_*`.
-         Then remove `@supabase/supabase-js`, the `supabase` CLI and the
-         `db:push` / `generate-types` scripts, and update the docs.
-         Migrations stay in `supabase/migrations/` (the schema source for
-         Neon and the db tests) unless moved deliberately.
+   - [x] **7b, scripts, CI and packages (2026-11-07).**
+         - CI / deploy: no `SUPABASE_*`; deploy's "secrets synced" check
+           uses `TURNSTILE_SITE_KEY` + `STRIPE_SECRET_KEY` (+ `SITE_URL`).
+           Verified: deploy `2580075` shipped (version 2026.11.07.20).
+           The e2e account still comes from the `SUPABASE_E2E_TEST_*`
+           GitHub secrets (name only; renaming needs new secrets).
+         - `secrets:push` requires `DATABASE_URL` + `BETTER_AUTH_SECRET`;
+           `setup:github-secrets`, `ops:check` drop Supabase keys;
+           `setup:e2e-github-secrets` syncs `E2E_DATABASE_URL` /
+           `E2E_BETTER_AUTH_SECRET`.
+         - Ported to Neon + Better Auth (`scripts/lib/scriptDb.mjs`,
+           tested in `src/lib/scriptDb.db.test.ts`): `audit:billing`,
+           `ops:funnel` (also fixed: pull devices were never counted),
+           `ops:dogfood` (signs in with the e2e password, deletes the
+           session), `e2e:reset-password` (production + dev branch; no
+           longer creates the account). `db:backup` reads
+           `DATABASE_URL_UNPOOLED` (pg_dump 18). `db:pending` is
+           `db:migrate --check`. Checked against the Neon dev branch / a
+           local preview on it; not run against production (blocked by
+           the permission check, reasonably).
+         - Removed: `@supabase/supabase-js`, the `supabase` CLI, `db:push`,
+           the Supabase half of `generate-types`, `db-pending.mjs`,
+           `fix-supabase-auth-config.mjs`, `smoke-oauth.mjs`.
+         - Docs: README, architecture, local-dev, deploy, `.env.example`.
+         - Correction to 7a's note: the schema source is `db/migrations/`
+           (`db:migrate`), not `supabase/migrations/`.
+         Left, each its own decision: the `supabase/` folder (old
+         migrations, email templates, CLI config; nothing reads it); the
+         unused `DB_BACKEND` and `SUPABASE_*` Worker secrets and
+         `SUPABASE_*` GitHub secrets (deleting them is a production
+         secrets change); pausing the Supabase project; the generated
+         "about" pages that still mention Supabase in prose.
 
 ### Rollback
 

@@ -1,5 +1,5 @@
 ---
-description: "Run ProbeHarbor locally: clone, install with pnpm, fill .env with Supabase and site keys, and start the Astro dev server."
+description: "Run ProbeHarbor locally: clone, install with pnpm, fill .env with database, sign-in and site keys, and start the Astro dev server."
 ---
 
 # Local development
@@ -8,11 +8,11 @@ description: "Run ProbeHarbor locally: clone, install with pnpm, fill .env with 
 git clone https://github.com/doodersrage/probeharbor.git
 cd probeharbor
 pnpm install
-cp .env.example .env   # fill Supabase, SITE_URL, etc.
+cp .env.example .env   # fill DATABASE_URL, BETTER_AUTH_SECRET, SITE_URL, etc.
 pnpm dev               # http://localhost:4321
 ```
 
-You typically need `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, and `SITE_URL` / `ORIGIN` (e.g. `http://localhost:4321`). Turnstile keys are required for register/sign-in.
+You typically need `DATABASE_URL` (a Neon branch of your own, never production), `BETTER_AUTH_SECRET`, and `SITE_URL` / `ORIGIN` (e.g. `http://localhost:4321`). Turnstile keys are required for register/sign-in.
 
 Useful scripts:
 
@@ -37,10 +37,9 @@ the `E2E_DATABASE_URL` / `E2E_BETTER_AUTH_SECRET` GitHub secrets.
 pnpm test:e2e:auth
 ```
 
-`setup:e2e-github-secrets` and `e2e:reset-password` still use Supabase and
-are being moved (IMPLEMENTATION_PLAN.md step 7b).
-
-Auth E2E signs in through the Supabase API (sets session cookies) so it does not depend on Turnstile.
+`pnpm setup:e2e-github-secrets` copies the four `E2E_*` values to GitHub for
+CI. `pnpm e2e:reset-password` sets a new e2e password in `DATABASE_URL` and
+`E2E_DATABASE_URL` and writes it to `.env`; sync GitHub afterwards.
 
 ## Environment variables
 
@@ -48,9 +47,10 @@ Configure in `.env` (local) and Cloudflare Worker secrets / vars (production). F
 
 | Variable | Purpose |
 |----------|---------|
-| `SUPABASE_URL` | Supabase project URL |
-| `SUPABASE_ANON_KEY` | Browser / auth flows |
-| `SUPABASE_SERVICE_ROLE_KEY` | Server DB / auth (required with RLS) |
+| `DATABASE_URL` | Neon Postgres (pooled) — server only |
+| `DATABASE_URL_UNPOOLED` | Direct connection for `db:migrate` / `db:backup` (local only) |
+| `BETTER_AUTH_SECRET` | Signs sessions (Better Auth) |
+| `GOOGLE_*` / `DISCORD_*` / `GITHUB_*` | OAuth sign-in apps |
 | `GARAGE_TEMP_FEED_URL` | Default public probe JSON feed (guest Home demo) |
 | `OPENWEATHER_API_KEY` / `OPENWEATHER_CITY_ID` | Outdoor weather (server-only; map tiles via `/api/weather/tiles`) |
 | `TURNSTILE_SITE_KEY` / `TURNSTILE_SECRET_TOKEN` | Bot protection on contact and auth forms |
@@ -71,13 +71,17 @@ Configure in `.env` (local) and Cloudflare Worker secrets / vars (production). F
 
 ## Database
 
-Apply SQL in [`supabase/migrations/`](https://github.com/doodersrage/probeharbor/tree/main/supabase/migrations) **in order** (SQL editor or `pnpm db:push`). Enable RLS only after `SUPABASE_SERVICE_ROLE_KEY` is set in production.
-
-Regenerate types after schema changes:
+Migrations live in [`db/migrations/`](https://github.com/doodersrage/probeharbor/tree/main/db/migrations)
+(`NNNN_name.sql`, applied in order and recorded in `public.schema_migrations`):
 
 ```bash
-pnpm generate-types
+pnpm db:pending        # list what isn't applied yet (exit 1 if any); read-only
+pnpm db:migrate        # apply them (DATABASE_URL_UNPOOLED)
 ```
+
+Access is enforced in the server-side queries, each scoped in SQL to the
+signed-in user or household. Database tests (`pnpm test:db`) run the real
+queries against a local Postgres.
 
 ## Deploy (production)
 
@@ -86,7 +90,7 @@ See [Deploy & ops](/guide/deploy). Short path:
 ```bash
 pnpm ops:check
 pnpm test && pnpm typecheck && pnpm build
-pnpm db:push
+pnpm db:pending   # then pnpm db:migrate if anything is listed
 pnpm secrets:push
 pnpm deploy
 ```

@@ -9,9 +9,8 @@
   "scripts": {
     "deploy": "astro build && pnpm docs:build:site && node scripts/gen-i18n-catalog.mjs && wrangler deploy --config workers/i18n/wrangler.jsonc && wrangler deploy --config dist/server/wrangler.json",
     "i18n:catalog": "node scripts/gen-i18n-catalog.mjs",
-    "db:push": "supabase db push --remote",
     "db:backup": "node scripts/db-backup.mjs",
-    "db:pending": "node scripts/db-pending.mjs",
+    "db:pending": "node scripts/db-migrate.mjs --check",
     "db:migrate": "node scripts/db-migrate.mjs",
     "secrets:push": "node scripts/push-worker-secrets.mjs",
     "secrets:push:dry": "node scripts/push-worker-secrets.mjs --dry-run",
@@ -48,7 +47,7 @@
     "docs:dev": "pnpm --dir docs --ignore-workspace dev",
     "docs:build": "pnpm --dir docs --ignore-workspace build",
     "docs:build:site": "node scripts/build-docs-site.mjs",
-    "generate-types": "supabase gen types typescript --remote > src/types/supabase.ts && wrangler types"
+    "generate-types": "wrangler types"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^14.4.4",
@@ -60,7 +59,6 @@
     "@neondatabase/serverless": "1.2.0",
     "@sentry/astro": "^11.10.0",
     "@sentry/cloudflare": "^11.10.0",
-    "@supabase/supabase-js": "^2.119.0",
     "@tailwindcss/vite": "^4.3.4",
     "astro": "^7.4.5",
     "bcryptjs": "3.0.3",
@@ -81,7 +79,6 @@
     "@playwright/test": "^1.64.1",
     "@types/pg": "8.23.1",
     "pg": "8.23.1",
-    "supabase": "^3.0.0",
     "typescript": "~6.0.3",
     "vitest": "^5.1.0"
   },

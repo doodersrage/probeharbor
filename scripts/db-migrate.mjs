@@ -1,8 +1,7 @@
 #!/usr/bin/env node
 /**
- * Apply SQL migrations in db/migrations/ to the Neon database. Part of the
- * move off Supabase (IMPLEMENTATION_PLAN.md, "Move off Supabase", step 2);
- * the Supabase migrations and `pnpm db:push` stay in use until cutover.
+ * Apply SQL migrations in db/migrations/ to the Neon database (production
+ * since the 2026-11-07 move off Supabase). `pnpm db:pending` is `--check`.
  *
  * Usage:
  *   pnpm db:migrate                 apply pending migrations

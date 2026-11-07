@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 /**
- * Back up the production database with pg_dump (read-only on the server).
- * The Supabase Free plan keeps no backups, so this is the only copy: run it
- * regularly and before any risky migration or data fix.
+ * Back up the production database (Neon) with pg_dump (read-only on the
+ * server). Neon keeps only a limited restore window; this is the copy you keep:
+ * run it regularly and before any risky migration or data fix.
  *
- * Usage: pnpm db:backup [--env-file .env] [--out-dir backups]
- * Needs SUPABASE_DB_URL in .env (Dashboard → Connect → "Session pooler" or
- * direct connection string, with the database password filled in) and
- * pg_dump 17+ on PATH.
+ * Usage: pnpm db:backup [--env-file .env] [--out-dir backups] [--url-env NAME]
+ * Reads DATABASE_URL_UNPOOLED from .env by default (Neon → Connect, with
+ * "Connection pooling" off: pg_dump needs a direct session) and needs
+ * pg_dump 18+ on PATH (Neon runs Postgres 18).
  *
  * Writes backups/probeharbor-<UTC time>.dump (pg_dump custom format,
  * compressed; restore with pg_restore). The connection string is passed to
@@ -26,12 +26,13 @@ const argValue = (name, fallback) => {
 
 const envPath = resolve(argValue("--env-file", ".env"));
 const outDir = resolve(argValue("--out-dir", "backups"));
+const urlEnv = argValue("--url-env", "DATABASE_URL_UNPOOLED");
 
 const env = existsSync(envPath) ? parseEnvFile(readFileSync(envPath, "utf8")) : {};
-const raw = (process.env.SUPABASE_DB_URL ?? env.SUPABASE_DB_URL ?? "").trim();
+const raw = (process.env[urlEnv] ?? env[urlEnv] ?? "").trim();
 if (!raw) {
   console.error(
-    `SUPABASE_DB_URL is not set in ${envPath}. Copy the Postgres connection string from Supabase → Connect (with the password) into .env.`,
+    `${urlEnv} is not set in ${envPath}. Copy the direct (unpooled) connection string from Neon → Connect into .env.`,
   );
   process.exit(1);
 }
@@ -40,22 +41,22 @@ let url;
 try {
   url = new URL(raw);
 } catch {
-  console.error("SUPABASE_DB_URL is not a valid postgres:// URL.");
+  console.error(`${urlEnv} is not a valid postgres:// URL.`);
   process.exit(1);
 }
 if (!/^postgres(ql)?:$/.test(url.protocol)) {
-  console.error("SUPABASE_DB_URL must start with postgres:// or postgresql://.");
+  console.error(`${urlEnv} must start with postgres:// or postgresql://.`);
   process.exit(1);
 }
 
 const version = spawnSync("pg_dump", ["--version"], { encoding: "utf8" });
 if (version.status !== 0) {
-  console.error("pg_dump was not found on PATH. Install the PostgreSQL client tools (17 or newer).");
+  console.error("pg_dump was not found on PATH. Install the PostgreSQL client tools (18 or newer).");
   process.exit(1);
 }
 const major = Number(/(\d+)\./.exec(version.stdout)?.[1] ?? 0);
-if (major < 17) {
-  console.error(`${version.stdout.trim()} is older than the server (17). Install pg_dump 17 or newer.`);
+if (major < 18) {
+  console.error(`${version.stdout.trim()} is older than the server (18). Install pg_dump 18 or newer.`);
   process.exit(1);
 }
 
@@ -83,10 +84,8 @@ if (dump.status !== 0) {
   // pg_dump can leave a partial file; remove it so it's never mistaken for a backup.
   rmSync(file, { force: true });
   console.error(`pg_dump failed (exit ${dump.status}). No backup was written.`);
-  if (/^db\.[a-z0-9]+\.supabase\.co$/i.test(url.hostname)) {
-    console.error(
-      'Hint: that is the "Direct connection" host, which is IPv6-only on the Free plan. In Supabase → Connect, choose "Session pooler" (host …pooler.supabase.com, user postgres.<project-ref>, port 5432) and use that string instead.',
-    );
+  if (/-pooler\./i.test(url.hostname)) {
+    console.error('Hint: that is a pooled host (…-pooler…). Use the direct connection string (Neon → Connect, "Connection pooling" off).');
   }
   process.exit(dump.status ?? 1);
 }
