@@ -5060,7 +5060,10 @@ Cloudflare email binding.
          another key or a replayed code doesn't) + a gate unit test.
          Mutations: any key accepted → 1 fails; gate ignoring TOTP → 1
          fails.
-   - [ ] Owner: sign in again on the Neon preview after the fix.
+   - [x] Owner signed in on the Neon preview (2026-11-07) with their own
+         copied account: old password, then YubiKey, onto the dashboard.
+         Step 5's done-when is met (counts, spot checks, a copied account
+         signing in with its old password).
    - Suggested for step 6: take a fresh `pnpm db:backup` after writes
      stop, restore it locally and copy from that, so the script never
      reads production directly.
