@@ -158,6 +158,9 @@ jobs:
       E2E_TEST_PASSWORD: ${{ secrets.SUPABASE_E2E_TEST_PASSWORD }}
       # Inbox the owner controls; household-invites.spec.ts sends real invites there.
       E2E_INVITE_EMAIL: ${{ secrets.E2E_INVITE_EMAIL }}
+      # The preview's database and secret; e2e/helpers/auth.ts signs in with them too.
+      E2E_DATABASE_URL: ${{ secrets.E2E_DATABASE_URL }}
+      E2E_BETTER_AUTH_SECRET: ${{ secrets.E2E_BETTER_AUTH_SECRET }}
     steps:
       - uses: actions/checkout@v5
       - uses: pnpm/action-setup@v6
@@ -176,9 +179,6 @@ jobs:
       # account), never production. The preview reads dist/server/.dev.vars as
       # Worker secrets at runtime, so these aren't baked into the build.
       - name: Database for signed-in specs (Neon dev branch)
-        env:
-          E2E_DATABASE_URL: ${{ secrets.E2E_DATABASE_URL }}
-          E2E_BETTER_AUTH_SECRET: ${{ secrets.E2E_BETTER_AUTH_SECRET }}
         run: |
           mkdir -p dist/server
           printf 'DATABASE_URL="%s"\nBETTER_AUTH_SECRET="%s"\n' "$E2E_DATABASE_URL" "$E2E_BETTER_AUTH_SECRET" >> dist/server/.dev.vars

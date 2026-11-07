@@ -26,14 +26,19 @@ pnpm docs:dev          # this docs site locally (base /probeharbor/)
 pnpm docs:build
 ```
 
-Authenticated alert-settings E2E: set `E2E_TEST_EMAIL` and `E2E_TEST_PASSWORD` in `.env`, then:
+Authenticated E2E: set `E2E_TEST_EMAIL` and `E2E_TEST_PASSWORD`, plus
+`E2E_DATABASE_URL` and `E2E_BETTER_AUTH_SECRET`. The last two must match the
+preview's `DATABASE_URL` / `BETTER_AUTH_SECRET` (in `dist/server/.dev.vars`):
+the helper signs in through Better Auth with them and hands the session cookie
+to the browser. Use the Neon dev branch, not production. CI does the same with
+the `E2E_DATABASE_URL` / `E2E_BETTER_AUTH_SECRET` GitHub secrets.
 
 ```bash
-pnpm setup:e2e-github-secrets   # sync .env → GitHub Actions secrets for CI e2e job
-pnpm e2e:reset-password         # optional: recreate/reset the E2E user via Supabase admin
 pnpm test:e2e:auth
-# against production: PLAYWRIGHT_BASE_URL=https://probeharbor.dev pnpm test:e2e:auth
 ```
+
+`setup:e2e-github-secrets` and `e2e:reset-password` still use Supabase and
+are being moved (IMPLEMENTATION_PLAN.md step 7b).
 
 Auth E2E signs in through the Supabase API (sets session cookies) so it does not depend on Turnstile.
 
