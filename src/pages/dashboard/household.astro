@@ -1,4 +1,6 @@
 ---
+import { dbBackend } from "../../lib/db/client";
+import * as neonRemaining from "../../lib/db/remaining";
 import { getHouseholdFields } from "../../lib/householdRecord";
 import { getUserRecord } from "../../lib/userRecords";
 import DashboardLayout from "../../layouts/DashboardLayout.astro";
@@ -146,12 +148,14 @@ const activityGroups = householdActivity.reduce<Array<{ row: (typeof householdAc
 const myMembership = membersWithEmail.find((m) => m.user_id === user.id);
 const digestOptInRow =
   active.householdId && active.householdId !== manageId
-    ? await createServerClient()
-        .from("household_members")
-        .select("digest_opt_in")
-        .eq("household_id", active.householdId)
-        .eq("user_id", user.id)
-        .maybeSingle()
+    ? dbBackend() === "neon"
+      ? await neonRemaining.getDigestOptIn(active.householdId, user.id).then((v) => ({ data: v == null ? null : { digest_opt_in: v } }))
+      : await createServerClient()
+          .from("household_members")
+          .select("digest_opt_in")
+          .eq("household_id", active.householdId)
+          .eq("user_id", user.id)
+          .maybeSingle()
     : Promise.resolve({ data: myMembership ? { digest_opt_in: myMembership.digest_opt_in } : null });
 const digestOptInResult = await digestOptInRow;
 const digestOptIn = Boolean(digestOptInResult.data?.digest_opt_in);

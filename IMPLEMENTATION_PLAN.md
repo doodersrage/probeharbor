@@ -4711,10 +4711,15 @@ Cloudflare email binding.
          columns read/updated, others untouched, unknown columns refused,
          first owner, tenant relay, API plan fails closed with no owner.
          Mutation: update without the id condition → 2 fail.
-   - [ ] Remaining: ~15 queries in ~10 files (devices API route,
-         household activity, mobile auth exchange, freeze-estimate
-         snapshots, portfolio alerts, Telegram, contact form, digest
-         opt-in, pull setup, household page member list).
+   - [x] Area 9f (`src/lib/db/remaining.ts`): household activity log,
+         mobile sign-in exchange (single-use jti: one `delete ... returning`),
+         freeze-estimate snapshot upsert, portfolio alert owners and stamp,
+         Telegram command secret (exactly one match, as `maybeSingle` did),
+         contact form, digest opt-in (route and household page), pull-setup
+         owner (via `getFirstOwnerId`). 5 database tests. Mutations: jti
+         read without delete → token reusable → 1 fails; opt-in update
+         without the user condition → 1 fails.
+   - [ ] Remaining: `src/pages/api/devices/index.ts` (6 queries).
    - [ ] Cross-household tests for every household-scoped read and write.
 4. **Login on Better Auth.** Email + password (accept existing bcrypt
    hashes, so passwords keep working), Google, GitHub, Discord, email

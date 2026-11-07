@@ -1,3 +1,5 @@
+import { dbBackend } from "../../../lib/db/client";
+import * as neonRemaining from "../../../lib/db/remaining";
 import { getUserRecord } from "../../../lib/userRecords";
 import type { APIRoute } from "astro";
 import { createServerClient } from "../../../lib/supabase";
@@ -42,6 +44,7 @@ async function resolveUserByTelegramSecret(
   secret: string,
 ): Promise<string | null> {
   if (!secret.trim()) return null;
+  if (dbBackend() === "neon") return neonRemaining.userByTelegramSecret(secret.trim());
   const supabase = createServerClient();
   const { data } = await supabase
     .from("alert_settings")

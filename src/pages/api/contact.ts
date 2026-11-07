@@ -1,5 +1,7 @@
 // API route for handling contact form submissions
 export const prerender = false;
+import { dbBackend } from "../../lib/db/client";
+import * as neonRemaining from "../../lib/db/remaining";
 import type { APIRoute } from "astro";
 import { EmailMessage } from "cloudflare:email";
 import { createMimeMessage } from "mimetext";
@@ -99,13 +101,13 @@ export const POST: APIRoute = async (context) => {
   try {
     await sendMailerRaw(mailMessage);
 
-    const supabase = createServerClient();
-    const { error } = await supabase.from("contacts").insert([
-      { name, email, message },
-    ]);
+    const stored =
+      dbBackend() === "neon"
+        ? await neonRemaining.insertContact(name, email, message)
+        : { error: (await createServerClient().from("contacts").insert([{ name, email, message }])).error?.message ?? null };
 
-    if (error) {
-      console.error("Failed to store contact submission:", error.message);
+    if (stored.error) {
+      console.error("Failed to store contact submission:", stored.error);
     }
 
     return new Response(JSON.stringify(SUCCESS_BODY), {

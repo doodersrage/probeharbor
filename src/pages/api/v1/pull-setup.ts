@@ -1,3 +1,5 @@
+import { dbBackend } from "../../../lib/db/client";
+import { getFirstOwnerId } from "../../../lib/householdRecord";
 import type { APIRoute } from "astro";
 import { checkApiPlan } from "../../../lib/apiPlan";
 import { resolveApiKey } from "../../../lib/apiKeys";
@@ -63,6 +65,7 @@ function parseProbes(body: unknown, feedIds: Set<string>): TempProbeConfig[] {
 }
 
 async function householdOwnerUserId(householdId: string): Promise<string | null> {
+  if (dbBackend() === "neon") return getFirstOwnerId(householdId).catch(() => null);
   const supabase = createServerClient();
   const { data } = await supabase
     .from("household_members")

@@ -1,3 +1,5 @@
+import { dbBackend } from "./db/client";
+import * as neonRemaining from "./db/remaining";
 import { formatDurationLabel, formatHitsAtLabel, type TimeToFreezeProjection } from "./spaceThermalModel";
 import { tempUnitLabel, toDisplayDelta, toDisplayTemp } from "./temperatureFormat";
 import { fmt, formatNumber } from "../i18n/format";
@@ -135,19 +137,28 @@ export async function compareAndStoreFreezeEstimate(
   useCelsius = false,
 ): Promise<FreezeEstimateChange | null> {
   try {
-    const supabase = createServerClient();
-    const { data } = await supabase
-      .from("freeze_estimate_snapshots")
-      .select("data, updated_at")
-      .eq("household_id", householdId)
-      .maybeSingle();
+    const neon = dbBackend() === "neon";
+    const supabase = neon ? null : createServerClient();
+    const data = supabase
+      ? (
+          await supabase
+            .from("freeze_estimate_snapshots")
+            .select("data, updated_at")
+            .eq("household_id", householdId)
+            .maybeSingle()
+        ).data
+      : await neonRemaining.getEstimateSnapshot(householdId);
     const previous = (data?.data as unknown as FreezeEstimateSnapshot | undefined) ?? null;
     const change = explainEstimateChange(previous, next, timeZone, nowMs, locale, useCelsius);
     const storedAt = data?.updated_at ? Date.parse(data.updated_at) : NaN;
     if (!Number.isFinite(storedAt) || nowMs - storedAt >= SNAPSHOT_REFRESH_MS) {
-      await supabase
-        .from("freeze_estimate_snapshots")
-        .upsert({ household_id: householdId, data: next as unknown as Json, updated_at: new Date(nowMs).toISOString() });
+      if (supabase) {
+        await supabase
+          .from("freeze_estimate_snapshots")
+          .upsert({ household_id: householdId, data: next as unknown as Json, updated_at: new Date(nowMs).toISOString() });
+      } else {
+        await neonRemaining.saveEstimateSnapshot(householdId, next, new Date(nowMs).toISOString());
+      }
     }
     return change;
   } catch (error) {

@@ -1,3 +1,5 @@
+import { dbBackend } from "../../../lib/db/client";
+import * as neonRemaining from "../../../lib/db/remaining";
 import type { APIRoute } from "astro";
 import { getAuthFromCookies } from "../../../lib/auth";
 import { getOrCreateHouseholdForUser } from "../../../lib/households";
@@ -20,12 +22,14 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     return redirect(withQuery(redirectTo, { digest_error: "1" }));
   }
 
-  const supabase = createServerClient();
-  const { error } = await supabase
-    .from("household_members")
-    .update({ digest_opt_in: optIn })
-    .eq("household_id", household.householdId)
-    .eq("user_id", user.id);
+  const { error } =
+    dbBackend() === "neon"
+      ? await neonRemaining.setDigestOptIn(household.householdId, user.id, optIn)
+      : await createServerClient()
+          .from("household_members")
+          .update({ digest_opt_in: optIn })
+          .eq("household_id", household.householdId)
+          .eq("user_id", user.id);
 
   if (error) {
     return redirect(withQuery(redirectTo, { digest_error: "1" }));
