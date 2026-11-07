@@ -29,7 +29,7 @@ import {
   userHasYubiKeyOtpEnrolled,
   verifyYubiKeyOtpWithYubiCloud,
 } from "../../../lib/yubikeyOtp";
-import { maybeRedirectMobileOAuth } from "../../../lib/mobileAuthRedirect";
+import { hasMobileOAuthCookie, maybeRedirectMobileOAuth } from "../../../lib/mobileAuthRedirect";
 import { dbBackend } from "../../../lib/db/client";
 import { getUserMetadata } from "../../../lib/db/userMetadata";
 import { withBetterAuth } from "../../../lib/betterAuthRuntime";
@@ -83,7 +83,8 @@ async function verifyBetterAuth(
   input: { asJson: boolean; code: string; yubikeyOtp: string; action: string; next?: string },
 ): Promise<Response> {
   const { asJson, code, yubikeyOtp, action } = input;
-  const safeNext = sanitizeNextPath(input.next) ?? "/dashboard";
+  // Signing in for an app: finish by handing it a session (companion/complete).
+  const safeNext = hasMobileOAuthCookie(cookies) ? "/api/auth/companion/complete" : (sanitizeNextPath(input.next) ?? "/dashboard");
   const fail = (error: string, status = 400) =>
     asJson ? jsonResponse({ error }, status) : redirect(buildMfaErrorRedirect(error, safeNext));
 

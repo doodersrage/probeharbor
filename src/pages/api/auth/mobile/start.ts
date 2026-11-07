@@ -14,6 +14,9 @@ import {
   isGitHubOAuthConfigured,
 } from "../../../../lib/githubOAuth";
 import { setMobileOAuthCookie } from "../../../../lib/mobileAuthRedirect";
+import { dbBackend } from "../../../../lib/db/client";
+import { startBetterAuthOAuth } from "../../../../lib/betterAuthAppHandoff";
+import type { OAuthProviderId } from "../../../../lib/betterAuthOAuth";
 
 const VALID = ["google", "github", "discord"] as const;
 
@@ -35,6 +38,11 @@ export const GET: APIRoute = async ({ url, cookies, redirect, request, site }) =
   setMobileOAuthCookie(cookies, url.searchParams.get("app"));
   cookies.delete(OAUTH_NEXT_COOKIE, { path: "/" });
   cookies.delete(OAUTH_REF_COOKIE, { path: "/" });
+
+  // Neon: /api/auth/oauth-done sends the app back via /api/auth/companion/complete.
+  if (dbBackend() === "neon") {
+    return (await startBetterAuthOAuth(request, provider as OAuthProviderId)) ?? redirect(buildSignInRedirectUrl("oauth_failed"));
+  }
 
   const secure = import.meta.env.PROD;
 

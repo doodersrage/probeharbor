@@ -34,6 +34,8 @@ import { dbBackend } from "../../../lib/db/client";
 import { getUserMetadata, mergeUserMetadata } from "../../../lib/db/userMetadata";
 import { betterAuthErrorCode, redirectWithAuthCookies, signInErrorFromBetterAuth } from "../../../lib/betterAuthResponse";
 import { withBetterAuth } from "../../../lib/betterAuthRuntime";
+import { startBetterAuthOAuth } from "../../../lib/betterAuthAppHandoff";
+import type { OAuthProviderId } from "../../../lib/betterAuthOAuth";
 import { DEFAULT_LOCALE } from "../../../i18n/locales";
 
 function oauthProviderOptions(provider: string, redirectTo: string) {
@@ -88,26 +90,10 @@ export const POST: APIRoute = async (context) => {
     }
 
     if (dbBackend() === "neon") {
-      // Better Auth keeps the OAuth state in its own cookie; the provider
-      // comes back to /api/auth/callback/<provider> (or the GitHub callback),
-      // then to /api/auth/oauth-done, which applies next / referral / language.
-      const res = await withBetterAuth(request, (auth) =>
-        auth.api.signInSocial({
-          body: {
-            provider: provider as "google" | "github" | "discord",
-            callbackURL: "/api/auth/oauth-done",
-            newUserCallbackURL: "/api/auth/oauth-done?new=1",
-            errorCallbackURL: "/api/auth/oauth-done",
-          },
-          asResponse: true,
-        }),
-      ).catch((startError: unknown) => {
-        console.error(`OAuth sign-in start failed (${provider}):`, startError instanceof Error ? startError.message : startError);
-        return null;
-      });
-      const started = res?.ok ? ((await res.clone().json()) as { url?: string }) : null;
-      if (!res || !started?.url) return redirect(buildSignInRedirectUrl("oauth_failed"));
-      return redirectWithAuthCookies(started.url, res);
+      // Provider returns to /api/auth/callback/<provider> (or the GitHub
+      // callback), then /api/auth/oauth-done applies next / referral / language.
+      const started = await startBetterAuthOAuth(request, provider as OAuthProviderId);
+      return started ?? redirect(buildSignInRedirectUrl("oauth_failed"));
     }
 
     if (provider === "github" && isGitHubOAuthConfigured()) {

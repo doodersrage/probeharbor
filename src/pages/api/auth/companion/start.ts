@@ -25,6 +25,10 @@ import {
 } from "../../../../lib/companionAuth";
 import { buildMfaChallengeUrl, sessionNeedsMfaStepUp } from "../../../../lib/mfa";
 import { hasValidMfaStepUpProof } from "../../../../lib/mfaStepUpProof";
+import { dbBackend } from "../../../../lib/db/client";
+import { createAppSessionToken, startBetterAuthOAuth } from "../../../../lib/betterAuthAppHandoff";
+import { betterAuthNeedsStepUp } from "../../../../lib/betterAuthMfaGate";
+import type { OAuthProviderId } from "../../../../lib/betterAuthOAuth";
 
 const VALID_PROVIDERS = ["google", "github", "discord"] as const;
 
@@ -60,6 +64,23 @@ export const GET: APIRoute = async ({ url, cookies, redirect, request, site }) =
   setMobileOAuthCookie(cookies);
   cookies.delete(OAUTH_NEXT_COOKIE, { path: "/" });
   cookies.delete(OAUTH_REF_COOKIE, { path: "/" });
+
+  if (dbBackend() === "neon") {
+    // Already signed in here: hand the app a session of its own (after any YubiKey step).
+    const { user: signedIn } = await getAuthFromCookies(cookies);
+    if (signedIn) {
+      if (await betterAuthNeedsStepUp(signedIn, (id) => hasValidMfaStepUpProof(request, cookies, id))) {
+        return redirect(buildMfaChallengeUrl(`${url.pathname}${url.search}`));
+      }
+      const token = await createAppSessionToken(request, signedIn.id);
+      const handoff = await redirectMobileOAuthComplete(token, token, site);
+      if (handoff) return handoff;
+    }
+    if (provider && VALID_PROVIDERS.includes(provider as (typeof VALID_PROVIDERS)[number])) {
+      return (await startBetterAuthOAuth(request, provider as OAuthProviderId)) ?? redirect(buildSignInRedirectUrl("oauth_failed"));
+    }
+    return redirect(`/signin?next=${encodeURIComponent("/api/auth/companion/complete")}`);
+  }
 
   // Already signed in in this browser — hand session back immediately (after MFA).
   const { session, user } = await getAuthFromCookies(cookies);

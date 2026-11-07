@@ -4933,8 +4933,35 @@ Cloudflare email binding.
          also under CI's `SITE_URL`. Mutation: the verified-session rule
          removed → 1 fails. **Not checked in a real browser or with a real
          authenticator yet.**
-   - [ ] 4f: companion and Android token flows (contract change:
-         those apps sign in again after cutover; document it).
+   - [x] 4f (2026-11-07), server side: app sign-in on Better Auth. The
+         browser hand-off is unchanged (companion/mobile start → web
+         sign-in → `companion/complete` → one-time exchange token →
+         `/api/auth/mobile/exchange`). The app now gets a Better Auth
+         session **of its own** (not the browser's), returned as both
+         `access_token` and `refresh_token`; the apps send it as
+         `Authorization: Bearer`. Signing out of the browser leaves the app
+         signed in; "sign out everywhere" ends it. OAuth from the apps runs
+         on Better Auth (`startBetterAuthOAuth`, shared with /signin);
+         `oauth-done` and the MFA challenge finish at `companion/complete`
+         when the app cookie is set; YubiKey users step up first, as
+         before. 6 database tests acting as the apps (desktop email
+         sign-in, exchange works once, already-signed-in shortcut, YubiKey
+         step-up, TOTP then hand-off, Android OAuth). Mutations: app shares
+         the browser session → 1 fails; YubiKey step skipped → 1 fails.
+         **Client apps (read, not changed; repos next to this one):**
+         - `thermaltrace-desktop` and `bay-buddy` only use the hand-off and
+           send the bearer token, never refresh: expected to keep working
+           with no update (not yet tried against a Neon deployment).
+         - `thermaltrace-android` signs in, signs up, resets passwords,
+           checks MFA and **refreshes its session directly against
+           Supabase** with the supabase-kt SDK. That stops working at
+           cutover whatever the server does, and its OAuth path would be
+           signed out on the SDK's first refresh. **An Android release is
+           needed before step 6.** Suggested: drop supabase-kt, sign in only
+           through the browser hand-off (`/api/auth/companion/start?client=android`,
+           already supported) and keep the bearer token. Owner to decide.
+         Session lifetime for apps is Better Auth's default (7 days,
+         extended while used); apps idle longer sign in again.
    - [ ] 4g: `user_metadata` → `user_profiles.metadata`, app_metadata,
          admin user lookups, account deletion also deletes the login.
    - [ ] Follow-up: re-hash a copied bcrypt password to Better Auth's

@@ -7,6 +7,7 @@ import { type SignInErrorCode, buildSignInRedirectUrl } from "../../../lib/signI
 import { OAUTH_NEXT_COOKIE, OAUTH_REF_COOKIE, sanitizeNextPath } from "../../../lib/siteUrl";
 import { DEFAULT_LOCALE } from "../../../i18n/locales";
 import { requestLocale } from "./_locale";
+import { hasMobileOAuthCookie } from "../../../lib/mobileAuthRedirect";
 
 /**
  * Where OAuth sign-in lands after Better Auth's callback (DB_BACKEND=neon).
@@ -53,5 +54,7 @@ export const GET: APIRoute = async (context) => {
 
   const nextCookie = cookies.get(OAUTH_NEXT_COOKIE)?.value;
   cookies.delete(OAUTH_NEXT_COOKIE, { path: "/" });
+  // Started from an app (desktop, Bay Buddy, Android): hand it a session of its own.
+  if (hasMobileOAuthCookie(cookies)) return redirect("/api/auth/companion/complete");
   return redirect(sanitizeNextPath(nextCookie) ?? (isNew ? REGISTER_NEXT_DEVICES : "/dashboard"));
 };
