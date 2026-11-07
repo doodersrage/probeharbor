@@ -4962,6 +4962,27 @@ Cloudflare email binding.
            already supported) and keep the bearer token. Owner to decide.
          Session lifetime for apps is Better Auth's default (7 days,
          extended while used); apps idle longer sign in again.
+   - [x] 4f follow-up (2026-11-07): Android sends its session as cookies
+         and some routes read cookies only, so the app session token is now
+         handed over **signed** (`token.signature`): Better Auth accepts it
+         as `Authorization: Bearer` (desktop apps) and as its session cookie
+         (Android). `/api/auth/mobile/exchange` adds `session_cookie_name` on
+         Neon (additive; older apps ignore it), and `companion/start` passes
+         `app=` through. Database test: the signed value works as Bearer, as
+         the cookie on a cookie-only route, and as the encoded cookie header.
+         **Android 1.3.0 (versionCode 5, `thermaltrace-android`):** drops
+         the Supabase SDK (and Ktor); every way in opens the website (email
+         sign-in via `companion/start?client=android`, OAuth via
+         `mobile/start`, register and forgot password pages) and comes back
+         through the existing app link; the session is stored with its
+         cookie name and sent as that one cookie on Better Auth, or as the
+         `sb-*` cookies while the site is on Supabase, so the same release
+         works before and after the cutover. Sign-out also ends the session
+         on the site. Builds (debug), Android lint 0 errors (no warnings in
+         changed files); the app has no unit tests. **Not tried on a
+         device yet; Play release is the owner's step.** Known gap:
+         YubiKey-only accounts (none today) would be asked for the YubiKey
+         again by the API, since the step-up proof lives in the browser.
    - [x] 4g (2026-11-07): the last Supabase sign-in calls on the Neon
          path. Settings in `user_metadata` (display preferences, dashboard
          quiet / pinned metrics / overview mode / growth tips, onboarding,

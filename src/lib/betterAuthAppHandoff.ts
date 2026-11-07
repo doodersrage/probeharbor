@@ -16,13 +16,32 @@ import { withBetterAuth } from "./betterAuthRuntime";
 import { redirectWithAuthCookies } from "./betterAuthResponse";
 import type { OAuthProviderId } from "./betterAuthOAuth";
 
-/** A new session for this user, for an app; returns its bearer token. */
+/** Better Auth's session cookie name for this deployment (see betterAuthRuntime secureCookies). */
+export function appSessionCookieName(): string {
+  return import.meta.env.PROD ? "__Secure-better-auth.session_token" : "better-auth.session_token";
+}
+
+/** `value.signature` the way Better Auth signs its cookies (HMAC-SHA256, base64). */
+async function signSessionToken(token: string, secret: string): Promise<string> {
+  const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const mac = new Uint8Array(await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(token)));
+  let binary = "";
+  for (const byte of mac) binary += String.fromCharCode(byte);
+  return `${token}.${btoa(binary)}`;
+}
+
+/**
+ * A new session for this user, for an app. Returns it signed (`token.sig`):
+ * Better Auth accepts that both as `Authorization: Bearer` (desktop apps)
+ * and as its session cookie value (Android, whose cookie-only routes need
+ * the cookie).
+ */
 export async function createAppSessionToken(request: Request, userId: string): Promise<string> {
   return withBetterAuth(request, async (auth) => {
     const ctx = await auth.$context;
     const session = await ctx.internalAdapter.createSession(userId);
     if (!session?.token) throw new Error("Could not create an app session");
-    return session.token;
+    return signSessionToken(session.token, ctx.secret);
   });
 }
 

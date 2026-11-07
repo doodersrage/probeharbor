@@ -61,7 +61,8 @@ export const GET: APIRoute = async ({ url, cookies, redirect, request, site }) =
   }
 
   setCompanionClientCookie(cookies, client);
-  setMobileOAuthCookie(cookies);
+  // Android passes its package (app=) so the hand-off opens the right app.
+  setMobileOAuthCookie(cookies, url.searchParams.get("app"));
   cookies.delete(OAUTH_NEXT_COOKIE, { path: "/" });
   cookies.delete(OAUTH_REF_COOKIE, { path: "/" });
 

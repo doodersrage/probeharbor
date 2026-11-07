@@ -106,7 +106,7 @@ async function appExchange(handoff: Response) {
   expect(exchangeToken).toBeTruthy();
   const res = await exchange(ctx(new Map(), "POST", "/api/auth/mobile/exchange", { json: { exchange_token: exchangeToken } }));
   expect(res.status).toBe(200);
-  return (await res.json()) as { access_token: string; refresh_token: string };
+  return (await res.json()) as { access_token: string; refresh_token: string; session_cookie_name?: string };
 }
 
 async function account(email: string) {
@@ -165,6 +165,32 @@ describe("app sign-in on Better Auth (Neon)", () => {
     await emailSignIn(other, "a@example.com");
     await go(other, signoutEverywhere, ctx(other, "POST", "/api/auth/signout-everywhere"));
     expect((await bearer(tokens.access_token)).user).toBeNull();
+  });
+
+  it("Android: the same signed value works as Bearer and as Better Auth's cookie (cookie-only routes too)", async () => {
+    const id = await account("droid-cookie@example.com");
+    const browser: Browser = new Map();
+    await go(browser, companionStart, ctx(browser, "GET", "/api/auth/companion/start?client=android&app=dev.probeharbor.android"));
+    await emailSignIn(browser, "droid-cookie@example.com");
+    const handoff = await go(browser, companionComplete, ctx(browser, "GET", "/api/auth/companion/complete"));
+    expect(new URL(loc(handoff), "http://x").searchParams.get("app")).toBe("dev.probeharbor.android");
+    const tokens = await appExchange(handoff);
+    expect(tokens.session_cookie_name).toBe("better-auth.session_token"); // not a production build here
+    expect(tokens.access_token).toMatch(/^[^.]+\.[^.]+$/); // token.signature
+
+    expect((await bearer(tokens.access_token)).user?.id).toBe(id);
+    const { getAuthFromCookies } = await import("../../../lib/auth");
+    // What Astro hands a cookie-only route: the decoded cookie value.
+    const viaCookie = await getAuthFromCookies({
+      get: (n: string) => (n === tokens.session_cookie_name ? { value: tokens.access_token } : undefined),
+    } as never);
+    expect(viaCookie.user?.id).toBe(id);
+    // And a request carrying the cookie the way OkHttp sends it (encoded).
+    const viaHeader = await getAuthFromRequest(
+      new Request("http://x/", { headers: { cookie: `${tokens.session_cookie_name}=${encodeURIComponent(tokens.access_token)}` } }),
+      { get: () => undefined } as never,
+    );
+    expect(viaHeader.user?.id).toBe(id);
   });
 
   it("an exchange token works once", async () => {
