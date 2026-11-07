@@ -38,10 +38,18 @@ const getTypeParser = makeGetTypeParser(
   neonTypes.getTypeParser as (oid: number, format?: "text" | "binary") => unknown,
 );
 
-function neonRunner(url: string): QueryRunner {
-  const sql = neon(url, { types: { getTypeParser } as never });
+const queryTypes = { types: { getTypeParser } as never };
+
+/**
+ * The parsers go on every query: the HTTP driver ignores `types` given to
+ * neon(url, ...) when queries run through sql.query() (checked against a
+ * Neon branch with @neondatabase/serverless 1.2.0: counts came back as
+ * strings, timestamps and dates as Date objects).
+ */
+export function neonRunner(url: string): QueryRunner {
+  const sql = neon(url, queryTypes);
   return async <Row>(text: string, params: readonly unknown[] = []) =>
-    (await sql.query(text, params as unknown[])) as Row[];
+    (await sql.query(text, params as unknown[], queryTypes)) as Row[];
 }
 
 /** Error thrown for every failed query: says which statement failed, never the URL or the values. */
