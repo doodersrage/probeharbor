@@ -1,5 +1,7 @@
 import type { ChartDoorBand } from "./chartDoorBands";
 import { readDoorSessions } from "./doorEvents";
+import { dbBackend } from "./db/client";
+import { doorBandsOverlapping } from "./db/doors";
 import { createServerClient } from "./supabase";
 
 /** PostgREST returns at most this many rows by default (`max_rows`). */
@@ -20,15 +22,20 @@ export async function fetchChartDoorBands(
   doorSensors: Array<{ id: string; label: string }>,
   now = Date.now(),
 ): Promise<{ bands: ChartDoorBand[]; error: string | null }> {
-  const supabase = createServerClient();
-  const { data, error } = await supabase
-    .from("door_open_events")
-    .select("label, opened_at, closed_at")
-    .eq("household_id", householdId)
-    .lte("opened_at", toIso)
-    .gte("closed_at", fromIso)
-    .order("opened_at", { ascending: false })
-    .limit(DOOR_BAND_LIMIT);
+  const { data, error } =
+    dbBackend() === "neon"
+      ? await doorBandsOverlapping(householdId, fromIso, toIso, DOOR_BAND_LIMIT).then(
+          (rows) => ({ data: rows, error: null }),
+          (e: unknown) => ({ data: null, error: { message: e instanceof Error ? e.message : String(e) } }),
+        )
+      : await createServerClient()
+          .from("door_open_events")
+          .select("label, opened_at, closed_at")
+          .eq("household_id", householdId)
+          .lte("opened_at", toIso)
+          .gte("closed_at", fromIso)
+          .order("opened_at", { ascending: false })
+          .limit(DOOR_BAND_LIMIT);
   if (error) {
     return { bands: [], error: error.message };
   }

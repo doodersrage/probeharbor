@@ -2,6 +2,8 @@ import type { DeviceSensor, DeviceWithSensors } from "./devices";
 import { escapeCsvField } from "./csvEscape";
 import { applySensorOffset } from "./sensorCalibration";
 import { clampIsoToHistoryWindow } from "./retentionSchedule";
+import { dbBackend } from "./db/client";
+import * as neonDoors from "./db/doors";
 import { createServerClient } from "./supabase";
 
 /**
@@ -105,7 +107,6 @@ export async function listDoorEventsForReport(
   /** Only this door (its label); omitted = every door. */
   doorLabel?: string | null,
 ): Promise<{ events: DoorEventRecord[]; truncated: boolean; error: string | null }> {
-  const supabase = createServerClient();
   type Row = {
     id: string;
     sensor_id: string | null;
@@ -117,7 +118,15 @@ export async function listDoorEventsForReport(
   const rows: Row[] = [];
   // One row past the limit tells us there are more.
   const wanted = limit + 1;
-  while (rows.length < wanted) {
+  if (dbBackend() === "neon") {
+    try {
+      rows.push(...(await neonDoors.listClosedDoorSessions(householdId, fromIso, toIso, wanted, doorLabel)));
+    } catch (error) {
+      return { events: [], truncated: false, error: error instanceof Error ? error.message : String(error) };
+    }
+  }
+  const supabase = dbBackend() === "neon" ? null : createServerClient();
+  while (supabase && rows.length < wanted) {
     const start = rows.length;
     const end = Math.min(start + EVENTS_PER_PAGE, wanted) - 1;
     const { data, error } = await supabase
@@ -168,15 +177,26 @@ export async function fetchValuesBefore(
   if (ids.length === 0 || uniqueTimes.length === 0) return { values, error: null };
   if (ids.length > 50) return { values, error: "too many sensors to compare" };
 
-  const supabase = createServerClient();
+  const supabase = dbBackend() === "neon" ? null : createServerClient();
   for (let i = 0; i < uniqueTimes.length; i += TIMES_PER_CALL) {
-    const { data, error } = await supabase.rpc("sensor_values_before", {
-      p_household_id: householdId,
-      p_sensor_ids: ids,
-      p_times: uniqueTimes.slice(i, i + TIMES_PER_CALL),
-      p_max_age_seconds: READING_MAX_AGE_SECONDS,
-    });
-    if (error) return { values, error: error.message };
+    const batch = uniqueTimes.slice(i, i + TIMES_PER_CALL);
+    let data: Array<{ sensor_id: string; at_time: string; value_num: number | null }> | null;
+    if (supabase) {
+      const result = await supabase.rpc("sensor_values_before", {
+        p_household_id: householdId,
+        p_sensor_ids: ids,
+        p_times: batch,
+        p_max_age_seconds: READING_MAX_AGE_SECONDS,
+      });
+      if (result.error) return { values, error: result.error.message };
+      data = result.data;
+    } else {
+      try {
+        data = await neonDoors.sensorValuesBefore(householdId, ids, batch, READING_MAX_AGE_SECONDS);
+      } catch (error) {
+        return { values, error: error instanceof Error ? error.message : String(error) };
+      }
+    }
     for (const row of data ?? []) {
       if (typeof row.value_num !== "number" || !Number.isFinite(row.value_num)) continue;
       // Postgres echoes the time as "+00:00"; key by epoch ms, not text.

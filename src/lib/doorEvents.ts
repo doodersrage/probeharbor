@@ -1,3 +1,5 @@
+import { dbBackend } from "./db/client";
+import * as neonDoors from "./db/doors";
 import { createServerClient } from "./supabase";
 import { computeDoorOpenSessions, type DoorOpenSession } from "./doorDuration";
 import { fetchRecentBoolReadings } from "./sensorReadings";
@@ -52,6 +54,23 @@ export async function persistDoorSessions(
 ): Promise<void> {
   const closed = sessions.filter((s) => !s.stillOpen && s.closedAt && s.durationMs != null);
   if (closed.length === 0) return;
+  if (dbBackend() === "neon") {
+    const since = new Date(Math.min(...closed.map((s) => Date.parse(s.openedAt)))).toISOString();
+    let saved: Array<{ label: string; opened_at: string }>;
+    try {
+      saved = await neonDoors.savedSessionKeysSince(householdId, since);
+    } catch (error) {
+      throw new Error(`door_open_events fetch failed: ${error instanceof Error ? error.message : error}`);
+    }
+    const existing = new Set(saved.map((r) => doorEventKey(r.label, r.opened_at)));
+    const rows = buildDoorEventRows(householdId, sessions, existing, sensorIdByLabel);
+    try {
+      await neonDoors.insertDoorSessions(rows);
+    } catch (error) {
+      throw new Error(`door_open_events insert failed: ${error instanceof Error ? error.message : error}`);
+    }
+    return;
+  }
 
   const supabase = createServerClient();
   // Look up saved sessions from the earliest candidate on, not a fixed 48 h:
@@ -104,6 +123,13 @@ const DOOR_SESSION_LOOKBACK_MS = 24 * 60 * 60 * 1000;
  * kept 90 days).
  */
 export async function findOpenStartBefore(sensorId: string, beforeIso: string): Promise<string | null> {
+  if (dbBackend() === "neon") {
+    try {
+      return await neonDoors.findOpenStartBefore(sensorId, beforeIso);
+    } catch (error) {
+      throw new Error(`door open-start lookup failed: ${error instanceof Error ? error.message : error}`);
+    }
+  }
   const supabase = createServerClient();
   const { data: lastClosed, error: closedError } = await supabase
     .from("sensor_readings")
@@ -173,6 +199,13 @@ export async function recordDoorSessions(
 
 /** The door's last reported state before `beforeIso` (true = open); null when there is none. */
 export async function lastDoorStateBefore(sensorId: string, beforeIso: string): Promise<boolean | null> {
+  if (dbBackend() === "neon") {
+    try {
+      return await neonDoors.lastDoorStateBefore(sensorId, beforeIso);
+    } catch (error) {
+      throw new Error(`last door state lookup failed: ${error instanceof Error ? error.message : error}`);
+    }
+  }
   const supabase = createServerClient();
   const { data, error } = await supabase
     .from("sensor_readings")
@@ -210,6 +243,7 @@ export async function listDoorEvents(
   householdId: string,
   limit = 20,
 ): Promise<DoorEventRow[]> {
+  if (dbBackend() === "neon") return neonDoors.listDoorEvents(householdId, limit);
   const supabase = createServerClient();
   const { data } = await supabase
     .from("door_open_events")

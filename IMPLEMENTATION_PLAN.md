@@ -4494,10 +4494,21 @@ Cloudflare email binding.
          link, 3 concurrent clicks → 1 snooze, expired vs unknown,
          household snooze scope, delivery log host-only and per user.
          Mutation: claim without "unused" → 2 fail.
-   - [ ] Convert the remaining ~230 queries and 3 Postgres function calls
-         (`sensor_bucket_averages`, `sensor_values_before`,
-         `roll_up_and_prune_readings`), one area per commit, each with
-         database tests. Next: door events, push/FCM registrations.
+   - [x] Area 4d, door history (`src/lib/db/doors.ts`): session saves
+         (skip-duplicates on the unique session index), open-start and
+         last-state lookups, door list, door report (one query) with
+         `sensor_values_before`, chart door bands. 5 database tests through
+         `recordDoorSessionsIfJustClosed`, the report and the chart bands:
+         one session per close and retries don't duplicate, long-open
+         start, closed-only/door filter/truncation, values within max age,
+         another household's sensor gives nothing, bands + open-now band.
+         Mutation: report without the household filter → 1 fails. A flaky
+         test (two separately computed "10 minutes ago" values) was fixed;
+         12 runs in a row pass.
+   - [ ] Convert the remaining ~215 queries and 2 Postgres function calls
+         (`sensor_bucket_averages`, `roll_up_and_prune_readings`), one area
+         per commit, each with database tests. Next: push/FCM
+         registrations, then the rest of the alert senders.
    - [ ] Cross-household tests for every household-scoped read and write.
 4. **Login on Better Auth.** Email + password (accept existing bcrypt
    hashes, so passwords keep working), Google, GitHub, Discord, email
