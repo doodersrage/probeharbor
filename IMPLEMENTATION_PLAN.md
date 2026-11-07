@@ -4333,6 +4333,42 @@ Cloudflare email binding.
    app, chosen by env var). Includes the 13 Postgres functions.
    Done when: the full test suite passes against the Neon branch, plus
    tests that one household can't read or change another's data.
+   - [x] Driver trial (2026-11-07): throwaway Worker in local workerd
+         (same compat date and flags) against the Neon dev branch's
+         pooled endpoint, 3 rounds. `pg` over TCP: ~160 ms to connect
+         per request, then ~25 ms/query. Neon HTTP: ~25-30 ms/query, no
+         connect cost (first query ~80 ms cold), 5 parallel queries in
+         ~30 ms, batched transactions work. Neon WebSocket pool: ~100 ms
+         to first query, interactive transactions work. Measured from this
+         machine, not from Cloudflare's network. **Chosen: Neon HTTP**;
+         the WebSocket pool if a path ever needs an interactive
+         transaction (none so far: multi-step writes are Postgres
+         functions). Hyperdrive + `pg` stays an option (Cloudflare config
+         change, needs approval).
+   - [x] Type differences found in the trial: drivers return Date for
+         timestamps/dates and text for bigint/numeric; Supabase returned
+         text timestamps (`+00:00`, microseconds), `YYYY-MM-DD` dates and
+         numbers. `src/lib/db/types.ts` converts to Supabase's shapes.
+   - [x] `src/lib/db/client.ts`: `dbBackend()` (`DB_BACKEND=neon`, else
+         Supabase; unset in production), `query(text, params)` over Neon
+         HTTP with `DATABASE_URL`, `DbQueryError` (names the statement,
+         never values or the URL). New dependency `@neondatabase/serverless`
+         1.2.0; dev `@types/pg`.
+   - [x] Database tests: `pnpm test:db` (`vitest.db.config.ts`,
+         `src/test/db.ts`) builds a throwaway database on a local
+         Postgres from `db/migrations`, one rolled-back transaction per
+         test, session zone set to New York to prove results don't depend
+         on it. Refuses non-local `TEST_DATABASE_URL`. New CI job `db`
+         with a Postgres 18 service (deploys now also wait for it).
+   - [x] First conversion, both paths kept: `countPushSubscriptions`
+         (read) and `releasePushSubscriptionFromOtherUsers` (write) in
+         `src/lib/webPush.ts`. 8 database tests, including the shared-
+         browser case; breaking the `user_id <> $2` condition makes 2
+         fail (checked). The Neon path of the release logs failures; the
+         Supabase path still ignores them (unchanged).
+   - [ ] Convert the remaining ~340 queries and 13 Postgres function calls,
+         one area per commit, each with database tests.
+   - [ ] Cross-household tests for every household-scoped read and write.
 4. **Login on Better Auth.** Email + password (accept existing bcrypt
    hashes, so passwords keep working), Google, GitHub, Discord, email
    confirm and reset through Cloudflare email, TOTP and WebAuthn per

@@ -1,3 +1,4 @@
+import { dbBackend, query } from "./db/client";
 import { createAdminClient } from "./supabase";
 import { getRuntimeEnv, hasRuntimeEnv } from "./runtimeEnv";
 
@@ -34,6 +35,15 @@ export async function releasePushSubscriptionFromOtherUsers(
   userId: string,
   endpoint: string,
 ): Promise<void> {
+  if (dbBackend() === "neon") {
+    try {
+      await query("delete from public.push_subscriptions where endpoint = $1 and user_id <> $2", [endpoint, userId]);
+    } catch (error) {
+      // Same outcome as the Supabase path (subscribing continues), but logged.
+      console.error("Failed to release push subscription from other users:", error instanceof Error ? error.message : error);
+    }
+    return;
+  }
   await supabase.from("push_subscriptions").delete().eq("endpoint", endpoint).neq("user_id", userId);
 }
 
@@ -142,6 +152,18 @@ export async function sendWebPushToUser(
 }
 
 export async function countPushSubscriptions(userId: string): Promise<number> {
+  if (dbBackend() === "neon") {
+    try {
+      const rows = await query<{ n: number }>(
+        "select count(*) as n from public.push_subscriptions where user_id = $1",
+        [userId],
+      );
+      return rows[0]?.n ?? 0;
+    } catch (error) {
+      console.error("Failed to count push subscriptions:", error instanceof Error ? error.message : error);
+      return 0;
+    }
+  }
   const supabase = createAdminClient();
   const { count, error } = await supabase
     .from("push_subscriptions")

@@ -93,6 +93,38 @@ jobs:
       # Catches broken Astro imports (unit tests alone do not run Vite rollup).
       - run: pnpm build || (rm -rf node_modules/.vite && pnpm build)
 
+  # Neon move (IMPLEMENTATION_PLAN.md): SQL and access tests against a real
+  # Postgres 18 with db/migrations applied. Postgres runs only inside this job.
+  db:
+    runs-on: ubuntu-latest
+    needs: typecheck
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_PASSWORD: ci-local-only
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      TEST_DATABASE_URL: postgres://postgres:ci-local-only@127.0.0.1:5432/postgres
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 9
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          check-latest: true
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test:db
+
   e2e:
     runs-on: ubuntu-latest
     needs: build

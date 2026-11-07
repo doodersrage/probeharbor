@@ -1,0 +1,92 @@
+/**
+ * Database access for the move off Supabase (IMPLEMENTATION_PLAN.md, step 3).
+ *
+ * While the move is in progress, code that has been converted keeps both
+ * paths and picks one with `dbBackend()`:
+ *
+ *   if (dbBackend() === "neon") { ...query("select ...", [..]) }
+ *   else { ...existing supabase-js code }
+ *
+ * DB_BACKEND is unset in production, so production stays on Supabase until
+ * the cutover (step 6) sets DB_BACKEND=neon. The Supabase branches are removed
+ * in step 7.
+ *
+ * Queries go to Neon over HTTP (@neondatabase/serverless), one request per
+ * query, no connection to open: measured ~25-30 ms per query from a Worker
+ * vs ~160 ms to open a TCP connection first (2026-11-07 trial). Results are
+ * converted to the shapes Supabase returned (see ./types).
+ *
+ * Always pass values as parameters ($1, $2, ...); never build SQL from input.
+ */
+import { neon, types as neonTypes } from "@neondatabase/serverless";
+import { getRuntimeEnv } from "../runtimeEnv";
+import { makeGetTypeParser } from "./types";
+
+export type DbBackend = "supabase" | "neon";
+
+/** "neon" only when DB_BACKEND says so exactly; anything else keeps Supabase. */
+export function dbBackend(): DbBackend {
+  return getRuntimeEnv("DB_BACKEND")?.trim().toLowerCase() === "neon" ? "neon" : "supabase";
+}
+
+export type QueryRunner = <Row = Record<string, unknown>>(text: string, params?: readonly unknown[]) => Promise<Row[]>;
+
+let testRunner: QueryRunner | null = null;
+let cached: { url: string; run: QueryRunner } | null = null;
+
+const getTypeParser = makeGetTypeParser(
+  neonTypes.getTypeParser as (oid: number, format?: "text" | "binary") => unknown,
+);
+
+function neonRunner(url: string): QueryRunner {
+  const sql = neon(url, { types: { getTypeParser } as never });
+  return async <Row>(text: string, params: readonly unknown[] = []) =>
+    (await sql.query(text, params as unknown[])) as Row[];
+}
+
+/** Error thrown for every failed query: says which statement failed, never the URL or the values. */
+export class DbQueryError extends Error {
+  readonly cause: unknown;
+  constructor(statement: string, cause: unknown) {
+    const reason = cause instanceof Error ? cause.message : String(cause);
+    super(`Database query failed (${statement}): ${reason}`);
+    this.name = "DbQueryError";
+    this.cause = cause;
+  }
+}
+
+/** First words of a statement, for errors and logs ("select ... from push_subscriptions"). */
+export function describeStatement(text: string): string {
+  const flat = text.replace(/\s+/g, " ").trim();
+  const table = /\b(?:from|into|update|join)\s+([a-z_."]+)/i.exec(flat)?.[1];
+  const verb = flat.split(" ")[0]?.toLowerCase() ?? "query";
+  return table ? `${verb} ${table}` : verb;
+}
+
+/**
+ * Run one SQL statement and return its rows. Throws DbQueryError on failure;
+ * callers decide whether that is fatal or logged, as they did with Supabase's
+ * `{ error }` results.
+ */
+export async function query<Row = Record<string, unknown>>(
+  text: string,
+  params: readonly unknown[] = [],
+): Promise<Row[]> {
+  let run = testRunner;
+  if (!run) {
+    const url = getRuntimeEnv("DATABASE_URL")?.trim();
+    if (!url) throw new DbQueryError(describeStatement(text), new Error("DATABASE_URL is not set"));
+    if (cached?.url !== url) cached = { url, run: neonRunner(url) };
+    run = cached.run;
+  }
+  try {
+    return await run<Row>(text, params);
+  } catch (error) {
+    throw new DbQueryError(describeStatement(text), error);
+  }
+}
+
+/** Tests only: send queries to a local Postgres (see src/test/db.ts). */
+export function setQueryRunnerForTests(runner: QueryRunner | null): void {
+  testRunner = runner;
+}

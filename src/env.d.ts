@@ -2,6 +2,10 @@ interface ImportMetaEnv {
   readonly SUPABASE_URL: string;
   readonly SUPABASE_ANON_KEY: string;
   readonly SUPABASE_SERVICE_ROLE_KEY?: string;
+  /** Which database the app reads and writes: "supabase" (default) or "neon". Moving off Supabase, see IMPLEMENTATION_PLAN.md. */
+  readonly DB_BACKEND?: string;
+  /** Neon pooled connection string, used when DB_BACKEND=neon. Server-only. */
+  readonly DATABASE_URL?: string;
   /** Date-based app version (YYYY.MM.DD[.N]) stamped by the deploy workflow; "" in local builds. */
   readonly APP_VERSION?: string;
   /** ProbeHarbor GitHub OAuth app (direct sign-in, bypasses Supabase GitHub provider). */
