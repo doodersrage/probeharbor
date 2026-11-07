@@ -5064,6 +5064,28 @@ Cloudflare email binding.
          copied account: old password, then YubiKey, onto the dashboard.
          Step 5's done-when is met (counts, spot checks, a copied account
          signing in with its old password).
+   - [x] Writes on Neon (2026-11-07), dev branch, local workerd:
+         **ingest + alerts**: a throwaway account and push device (email
+         channel only, to `example.invalid`): reading accepted, 2 sensors
+         discovered, readings stored, device seen, ingest stats counted, one
+         freeze alert recorded, no duplicate within the cooldown, wrong key
+         401; removed afterwards (counts back to the copy's). **Scheduled
+         jobs**, after scrubbing the dev copy (owner's choice: every address
+         suppressed, alert channels and their targets cleared, the
+         thermostat token replaced, push off; preview built without the ops
+         webhook/email): both cron triggers via
+         `/cdn-cgi/handler/scheduled`; collect-history and 10 hourly jobs
+         ran `success` (0 messages sent; thermostat skipped `no_token`; a
+         suppressed alert email refused); the time-gated weekly digest,
+         monthly/quarterly reports and sensor retention run directly
+         through the Neon HTTP driver. Not run: Stripe webhook health (live
+         key) and history archive (needs the R2 binding). The dev branch
+         stays scrubbed.
+         **Two production bugs found and fixed:** monthly/quarterly report
+         emails skipped the suppression list (`assertRecipientSendable`,
+         with a guard test for every raw sender), and the weekly digest
+         counted refused or failed emails as sent (`digestCounts.db.test.ts`;
+         the old code reports sent 3 for 1 delivered).
    - Suggested for step 6: take a fresh `pnpm db:backup` after writes
      stop, restore it locally and copy from that, so the script never
      reads production directly.
