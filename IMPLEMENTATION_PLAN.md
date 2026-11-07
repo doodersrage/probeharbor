@@ -4800,9 +4800,44 @@ Cloudflare email binding.
          because the site URL is https; a session signed with an http URL
          isn't accepted (setup mistake during the check, not an app bug).
          Emails still throw "not wired yet" until 4c.
-   - [ ] 4c: email + password routes (register, sign-in, confirm,
-         resend, forgot/update password, sign-out, sign-out everywhere),
-         emails through the existing Cloudflare email sender.
+   - [x] 4c-1 (2026-11-07): register, confirm, resend, sign-in,
+         sign-out and sign-out everywhere have a Neon branch on Better Auth;
+         Turnstile, the app's sign-in rate limit and redirects are kept.
+         The confirmation email is now sent by the app (`accountEmails.ts`,
+         branded layout, en/es/fr/de/pt-br, same wording as
+         `supabase/templates/confirmation.html`) and links to the existing
+         `/api/auth/confirm?token_hash=...&type=signup`; following it
+         confirms and signs in, as before. Sign-up and resend give the same
+         answer whether or not the address exists (Better Auth's generic
+         duplicate response; profile and referral only touched when the
+         user really exists). Better Auth's logger is set to warnings and
+         up (its info lines carry email addresses). Two-factor users are
+         sent to `/signin/mfa` with Better Auth's two-factor cookie and no
+         session (that page moves over in 4e).
+         **Third MFA factor found:** YubiKey OTP (the app's own, public ids
+         in `user_metadata`, signed step-up proof). Decision 3 didn't cover
+         it. Middleware keeps gating it for Better Auth sessions, failing
+         closed (`betterAuthMfaGate.ts`); the challenge page moves in 4e.
+         **Bugs found and fixed:** (1) the cookie-only session lookup
+         passed Astro's decoded cookie value; signed values with + / =
+         didn't match (now re-encoded; unit test); (2) cookie names were
+         guessed from the site URL, which differs between calls with and
+         without a request, now fixed per deployment (`__Secure-` in
+         production builds); (3) Better Auth's verify-email always returns
+         `user: null`, so success is read from the new session cookie.
+         7 database tests running the real routes and runtime (pool swapped
+         for pg, final email send captured): Spanish confirmation email,
+         no sign-in before confirming, link signs in once then is refused,
+         forged token refused, duplicate sign-up and unknown resend reveal
+         nothing, wrong password refused, two-factor gives no session,
+         sign-out ends this session, sign-out everywhere ends all. Plus
+         unit tests for the cookie header and the MFA gate. Mutations:
+         two-factor step skipped → 1 fails; sign-out keeping the session →
+         1 fails; sign-out everywhere ending one session → 1 fails.
+         Not checked in local workerd: it would send real email.
+   - [ ] 4c-2: password reset (forgot, the emailed link, reset page,
+         update password; `secure_password_change = false` today, so a
+         signed-in user changes it without the current password).
    - [ ] 4d: Google, Discord and GitHub sign-in, linking by email.
          **Must add a second-factor check:** Better Auth only demands the
          second factor on `/sign-in/email` (and username/phone), not on

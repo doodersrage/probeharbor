@@ -29,6 +29,12 @@ import {
   recordSigninFailure,
 } from "../../../lib/signinLimits";
 import { requestLocale, saveLocaleIfMissing } from "./_locale";
+import { buildMfaChallengeUrl } from "../../../lib/mfa";
+import { dbBackend } from "../../../lib/db/client";
+import { getUserMetadata, mergeUserMetadata } from "../../../lib/db/userMetadata";
+import { betterAuthErrorCode, redirectWithAuthCookies, signInErrorFromBetterAuth } from "../../../lib/betterAuthResponse";
+import { withBetterAuth } from "../../../lib/betterAuthRuntime";
+import { DEFAULT_LOCALE } from "../../../i18n/locales";
 
 function oauthProviderOptions(provider: string, redirectTo: string) {
   const options: { redirectTo: string; scopes?: string } = { redirectTo };
@@ -138,6 +144,35 @@ export const POST: APIRoute = async (context) => {
   const rateLimit = checkSigninRateLimit(email);
   if (!rateLimit.ok) {
     return redirect(buildSignInRedirectUrl("rate_limited", email));
+  }
+
+  if (dbBackend() === "neon") {
+    const res = await withBetterAuth(request, (auth) =>
+      auth.api.signInEmail({ body: { email, password }, asResponse: true }),
+    );
+    const code = await betterAuthErrorCode(res);
+    if (code) {
+      recordSigninFailure(email);
+      return redirect(buildSignInRedirectUrl(signInErrorFromBetterAuth(code), email));
+    }
+    const body = (await res.clone().json()) as { twoFactorRedirect?: boolean; user?: { id: string } };
+    if (body.twoFactorRedirect) {
+      // Password was right; Better Auth set its short-lived two-factor cookie
+      // instead of a session. The code is checked on /signin/mfa (step 4e).
+      return redirectWithAuthCookies(buildMfaChallengeUrl(safeNext), res);
+    }
+    clearSigninFailures(email);
+    // First sign-in from a translated page: remember that language on the account.
+    const locale = requestLocale(context);
+    if (body.user && locale !== DEFAULT_LOCALE) {
+      try {
+        const meta = await getUserMetadata(body.user.id);
+        if (!meta.locale) await mergeUserMetadata(body.user.id, { locale });
+      } catch (saveError) {
+        console.error("auth: could not save account language", saveError instanceof Error ? saveError.message : saveError);
+      }
+    }
+    return redirectWithAuthCookies(safeNext ?? "/dashboard", res);
   }
 
   const authClient = createAuthClient();

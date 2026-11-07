@@ -13,6 +13,7 @@ import {
   setMfaRequiredCookie,
 } from "./lib/mfa";
 import { hasValidMfaStepUpProof } from "./lib/mfaStepUpProof";
+import { betterAuthNeedsStepUp } from "./lib/betterAuthMfaGate";
 import { recordServerError } from "./lib/serverErrors";
 import {
   CANONICAL_HOST,
@@ -153,37 +154,40 @@ export const onRequest = defineMiddleware(async (context, next) => {
         );
       }
 
-      // Supabase sessions only. Better Auth withholds the session until the
-      // second factor is passed, but only for email/password sign-in
-      // (betterAuthSession.db.test.ts). OAuth sign-in (step 4d) must add its
-      // own second-factor check before it ships.
-      if (source !== "better-auth" && !isMfaExemptPath(pathname)) {
-        const aal = getAalClaim(session.access_token);
+      if (!isMfaExemptPath(pathname)) {
         let needsMfa = false;
 
-        if (aal === "aal2") {
-          setMfaRequiredCookie(context.cookies, false);
+        if (source === "better-auth") {
+          needsMfa = await betterAuthNeedsStepUp(user, (id) =>
+            hasValidMfaStepUpProof(context.request, context.cookies, id),
+          );
         } else {
-          const hasStepUp =
-            !!userId &&
-            (await hasValidMfaStepUpProof(
-              context.request,
-              context.cookies,
-              userId,
-            ));
+          const aal = getAalClaim(session.access_token);
 
-          if (hasStepUp) {
-            needsMfa = false;
-          } else if (isMfaRequired(context.request, context.cookies)) {
-            needsMfa = true;
-          } else if (aal === "aal1") {
-            // Never trust cookie/header "0" alone for aal1 — always re-check.
-            needsMfa = await sessionNeedsMfaStepUp(
-              session.access_token,
-              session.refresh_token,
-              user,
-            );
-            setMfaRequiredCookie(context.cookies, needsMfa);
+          if (aal === "aal2") {
+            setMfaRequiredCookie(context.cookies, false);
+          } else {
+            const hasStepUp =
+              !!userId &&
+              (await hasValidMfaStepUpProof(
+                context.request,
+                context.cookies,
+                userId,
+              ));
+
+            if (hasStepUp) {
+              needsMfa = false;
+            } else if (isMfaRequired(context.request, context.cookies)) {
+              needsMfa = true;
+            } else if (aal === "aal1") {
+              // Never trust cookie/header "0" alone for aal1 — always re-check.
+              needsMfa = await sessionNeedsMfaStepUp(
+                session.access_token,
+                session.refresh_token,
+                user,
+              );
+              setMfaRequiredCookie(context.cookies, needsMfa);
+            }
           }
         }
 

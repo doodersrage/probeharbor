@@ -47,6 +47,12 @@ export type BetterAuthDeps = {
   rpID: string;
   sendVerificationEmail: (email: AuthEmail) => Promise<void>;
   sendResetPassword: (email: AuthEmail) => Promise<void>;
+  /**
+   * "__Secure-" cookie names and the Secure flag. Fixed per deployment, not
+   * guessed from baseURL: a call without a request falls back to the
+   * configured site URL, which can differ in scheme from the request's.
+   */
+  secureCookies?: boolean;
 };
 
 export function createBetterAuth(deps: BetterAuthDeps) {
@@ -57,11 +63,13 @@ export function createBetterAuth(deps: BetterAuthDeps) {
     basePath: "/api/better-auth",
     appName: "ProbeHarbor",
     telemetry: { enabled: false },
+    // Info lines include email addresses (e.g. sign-up attempts for an existing address).
+    logger: { level: "warn" },
     user: { modelName: "auth_users" },
     session: { modelName: "auth_sessions" },
     account: { modelName: "auth_accounts" },
     verification: { modelName: "auth_verifications" },
-    advanced: { database: { generateId: "uuid" } },
+    advanced: { database: { generateId: "uuid" }, useSecureCookies: deps.secureCookies ?? false },
     emailAndPassword: {
       enabled: true,
       requireEmailVerification: true,
@@ -72,6 +80,8 @@ export function createBetterAuth(deps: BetterAuthDeps) {
     },
     emailVerification: {
       sendOnSignUp: true,
+      // As with Supabase: following the confirmation link signs the user in.
+      autoSignInAfterVerification: true,
       sendVerificationEmail: async ({ user, url, token }) => deps.sendVerificationEmail({ email: user.email, url, token }),
     },
     plugins: [

@@ -42,11 +42,16 @@ export async function authResultFromHeaders(auth: Pick<ProbeHarborAuth, "api">, 
   return { session, user, source: "better-auth" };
 }
 
-/** Cookie header carrying only the Better Auth session cookie(s), for code that has cookies but no request. */
+/**
+ * Cookie header carrying only the Better Auth session cookie(s), for code that
+ * has cookies but no request. Astro's cookies.get() returns the value
+ * decoded; Better Auth reads the header encoded, so a signed value with
+ * "+", "/" or "=" must be encoded again or it doesn't match.
+ */
 export function betterAuthCookieHeader(read: (name: string) => string | undefined): string | null {
   const parts = [BETTER_AUTH_SECURE_COOKIE, BETTER_AUTH_COOKIE]
     .map((name) => [name, read(name)] as const)
     .filter(([, value]) => !!value)
-    .map(([name, value]) => `${name}=${value}`);
+    .map(([name, value]) => `${name}=${encodeURIComponent(value!)}`);
   return parts.length ? parts.join("; ") : null;
 }

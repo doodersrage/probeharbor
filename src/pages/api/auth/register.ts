@@ -13,6 +13,11 @@ import {
   sanitizeRegisterNext,
 } from "../../../lib/registerUrl";
 import { requestLocale } from "./_locale";
+import { dbBackend } from "../../../lib/db/client";
+import { mergeUserMetadata } from "../../../lib/db/userMetadata";
+import { betterAuthErrorCode } from "../../../lib/betterAuthResponse";
+import { withBetterAuth } from "../../../lib/betterAuthRuntime";
+import { getUserRecord } from "../../../lib/userRecords";
 
 export const POST: APIRoute = async (context) => {
   const { request, redirect, clientAddress, cookies } = context;
@@ -46,6 +51,31 @@ export const POST: APIRoute = async (context) => {
     return backToForm("weak_password");
   }
 
+  const safeNext = sanitizeRegisterNext(next) ?? REGISTER_NEXT_DEVICES;
+  const done = () => redirect(`/signin?${new URLSearchParams({ registered: "1", next: safeNext }).toString()}`);
+
+  if (dbBackend() === "neon") {
+    const locale = requestLocale(context);
+    const res = await withBetterAuth(
+      request,
+      (auth) => auth.api.signUpEmail({ body: { email, password, name: email }, asResponse: true }),
+      { emailLocale: locale },
+    );
+    const code = await betterAuthErrorCode(res);
+    if (code) return backToForm(code === "PASSWORD_TOO_SHORT" ? "weak_password" : "signup_failed");
+    // An address that already has an account gets the same generic success
+    // with a made-up user (as Supabase did with confirmations on), so only
+    // touch the profile when the user really exists.
+    const { user } = (await res.json()) as { user: { id: string } };
+    if (await getUserRecord(user.id)) {
+      await mergeUserMetadata(user.id, { locale }).catch((error: unknown) =>
+        console.error("register: could not save account language", error instanceof Error ? error.message : error),
+      );
+      if (refCode) await applyReferralForNewUser(user.id, refCode, {});
+    }
+    return done();
+  }
+
   // Fresh client -- never the shared `supabase` singleton, which would
   // leave this newly-created session sitting as ambient state for any
   // other concurrent request on the same Worker isolate to pick up.
@@ -68,9 +98,7 @@ export const POST: APIRoute = async (context) => {
     await applyReferralForNewUser(data.user.id, refCode, data.user.app_metadata);
   }
 
-  const safeNext = sanitizeRegisterNext(next) ?? REGISTER_NEXT_DEVICES;
-  const params = new URLSearchParams({ registered: "1", next: safeNext });
-  return redirect(`/signin?${params.toString()}`);
+  return done();
 };
 
 function isAlreadyRegistered(error: { code?: string }): boolean {
