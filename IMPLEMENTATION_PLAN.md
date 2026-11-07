@@ -4226,12 +4226,20 @@ Cloudflare email binding.
 
 ### Open decisions (settle before the step that needs them)
 
-1. **How queries reach Neon** (step 3). Neon's Data API is PostgREST-
+1. **How queries reach Neon** (step 3). **Decided 2026-11-07: private
+   database, direct SQL.** Only the Worker connects; no public database API.
+   The ~343 queries are rewritten to SQL file by file in step 3. Original
+   notes: Neon's Data API is PostgREST-
    compatible, so most `.from()` calls could stay, but server code relies on
    a service-role style key that bypasses RLS; confirm Neon has a clean
    equivalent. Otherwise: SQL through a Postgres driver (Neon serverless
    driver or Hyperdrive), moved file by file. Decide by spike, not guess.
-2. **RLS after the move** (step 2). Server code mostly uses the
+2. **RLS after the move** (step 2). **Decided 2026-11-07:** the 33 row
+   rules production has today are dropped; they only guarded Supabase's
+   public API, which goes away with decision 1. RLS stays enabled on every
+   table (any role but the owner sees nothing), and household access stays
+   in app code, backed by the cross-household tests in step 3. Original
+   notes: Server code mostly uses the
    service-role client and checks access in app code. Either keep RLS as a
    second layer using a per-request setting (`app.user_id`) in place of
    `auth.uid()`, or rely on app-code checks plus tests. Must not weaken
@@ -4278,6 +4286,39 @@ Cloudflare email binding.
    Done when: the schema applies cleanly to an empty branch twice, and a
    diff of tables, columns, indexes and functions against Supabase shows
    only the intended auth changes.
+   - [x] `db/migrations/0001_baseline.sql`, built from the production
+         schema in the 2026-11-07 backup by
+         `db/tools/baseline-from-supabase-dump.py`. Better Auth tables from
+         `db/tools/better-auth-schema.mjs` (better-auth 1.7.18, UUID ids,
+         twoFactor + passkey + bearer, tables `auth_users`,
+         `auth_sessions`, `auth_accounts`, `auth_verifications`,
+         `auth_two_factors`, `auth_passkeys`). New `user_profiles` table
+         for what was `user_metadata`. Header lists every change.
+   - [x] `pnpm db:migrate` (`scripts/db-migrate.mjs`, `pg` dev dependency):
+         applies `db/migrations/NNNN_*.sql` in order, one transaction each,
+         recorded with a checksum in `public.schema_migrations`; refuses
+         edited, missing or out-of-order files and Supabase hosts;
+         `--status` / `--check` change nothing. 10 unit tests.
+   - [x] Local Postgres 18.6 (scratch, not committed): baseline applies
+         cleanly to empty databases; second run applies nothing; a failing
+         migration rolls back fully. Schema diff against production (prod
+         schema restored with stub `auth` schema) shows only: 28 foreign
+         keys now on `auth_users`, 3 session helpers removed,
+         `search_path` without `auth` on the two admin functions (bodies
+         otherwise identical), plus the new tables. 56 tables, RLS on all
+         56, 0 policies.
+   - [x] Behaviour checks (local): a new `auth_users` row gets its own
+         household as owner and the `user` group; another role, even with
+         SELECT granted, sees 0 rows and can't call `list_managed_users`;
+         the owner role can, as an admin.
+   - [x] Neon reachable from the runner (`--status`, read-only): 1 pending.
+   - [ ] Apply to a Neon branch (needs a branch URL; the main Neon branch
+         stays empty until step 6).
+   Note for step 5: the baseline seeds the five built-in groups with new
+   ids; the data copy must replace them with production's rows (no members
+   reference them before the copy).
+   Note: `pg` warns that `sslmode=require` will mean something weaker in
+   pg 9; use `sslmode=verify-full` in the Neon URLs.
 3. **Data access.** Spike decision 1 on one read path and one write path,
    then move the rest behind `src/lib/db` (one backend switch for the whole
    app, chosen by env var). Includes the 13 Postgres functions.

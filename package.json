@@ -12,6 +12,7 @@
     "db:push": "supabase db push --remote",
     "db:backup": "node scripts/db-backup.mjs",
     "db:pending": "node scripts/db-pending.mjs",
+    "db:migrate": "node scripts/db-migrate.mjs",
     "secrets:push": "node scripts/push-worker-secrets.mjs",
     "secrets:push:dry": "node scripts/push-worker-secrets.mjs --dry-run",
     "operator:check": "node scripts/check-operator-secrets.mjs",
@@ -73,6 +74,7 @@
     "@astrojs/check": "^0.9.12",
     "@axe-core/playwright": "^4.14.0",
     "@playwright/test": "^1.64.1",
+    "pg": "8.23.1",
     "supabase": "^3.0.0",
     "typescript": "~6.0.3",
     "vitest": "^5.1.0"
