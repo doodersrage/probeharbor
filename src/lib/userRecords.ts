@@ -10,7 +10,10 @@ import type { User } from "@supabase/supabase-js";
 import { dbBackend, query } from "./db/client";
 import { createAdminClient } from "./supabase";
 
-export type UserRecord = Pick<User, "id" | "email" | "created_at" | "email_confirmed_at" | "user_metadata" | "app_metadata">;
+export type UserRecord = Pick<User, "id" | "email" | "created_at" | "email_confirmed_at" | "user_metadata" | "app_metadata"> & {
+  /** Neon only: TOTP is on for this account (a Better Auth session then only exists after the code). */
+  two_factor_enabled?: boolean;
+};
 
 /** null when there is no such user or the lookup failed. */
 export async function getUserRecord(userId: string): Promise<UserRecord | null> {
@@ -21,10 +24,11 @@ export async function getUserRecord(userId: string): Promise<UserRecord | null> 
         email: string;
         created_at: string;
         email_verified: boolean;
+        two_factor_enabled: boolean | null;
         user_metadata: Record<string, unknown> | null;
         app_metadata: Record<string, unknown> | null;
       }>(
-        `select u.id, u.email, u."createdAt" as created_at, u."emailVerified" as email_verified,
+        `select u.id, u.email, u."createdAt" as created_at, u."emailVerified" as email_verified, u."twoFactorEnabled" as two_factor_enabled,
                 p.metadata as user_metadata, p.app_metadata
          from public.auth_users u left join public.user_profiles p on p.user_id = u.id
          where u.id = $1`,
@@ -39,6 +43,7 @@ export async function getUserRecord(userId: string): Promise<UserRecord | null> 
         email_confirmed_at: row.email_verified ? row.created_at : undefined,
         user_metadata: row.user_metadata ?? {},
         app_metadata: row.app_metadata ?? {},
+        two_factor_enabled: row.two_factor_enabled === true,
       };
     } catch (error) {
       console.error("getUserRecord failed:", error instanceof Error ? error.message : error);

@@ -19,6 +19,7 @@ import { betterAuth } from "better-auth";
 import { hashPassword, verifyPassword } from "better-auth/crypto";
 import { bearer, twoFactor } from "better-auth/plugins";
 import { type OAuthProviderId, oauthTwoFactorPlugin, refuseGitHubImplicitLink } from "./betterAuthOAuth";
+import { type YubiKeyVerifier, yubikeyTwoFactorPlugin } from "./betterAuthYubiKey";
 
 /** Same rule as the Supabase sign-up and reset forms today. */
 export const MIN_PASSWORD_LENGTH = 8;
@@ -59,6 +60,8 @@ export type BetterAuthDeps = {
    * existing callback path (see `redirectURI`), not Better Auth's own.
    */
   oauth?: Partial<Record<OAuthProviderId, { clientId: string; clientSecret: string; redirectURI: string }>>;
+  /** YubiKey OTP check for finishing the two-factor challenge (unset when YubiCloud isn't configured). */
+  verifyYubiKey?: YubiKeyVerifier;
 };
 
 /** Where the two-factor challenge lives (also after OAuth). */
@@ -112,6 +115,7 @@ export function createBetterAuth(deps: BetterAuthDeps) {
     },
     plugins: [
       oauthTwoFactorPlugin(MFA_CHALLENGE_PATH),
+      yubikeyTwoFactorPlugin(deps.verifyYubiKey),
       twoFactor({
         issuer: "ProbeHarbor",
         // Accounts without a password (OAuth-only) can turn TOTP on and off;

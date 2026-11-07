@@ -23,6 +23,11 @@ describe("betterAuthNeedsStepUp", () => {
     expect(seen).toEqual(["u1"]);
   });
 
+  it("TOTP on: the session already passed a second factor, no YubiKey prompt", async () => {
+    await expect(betterAuthNeedsStepUp({ ...enrolled, two_factor_enabled: true }, no)).resolves.toBe(false);
+    await expect(betterAuthNeedsStepUp({ ...enrolled, two_factor_enabled: false }, no)).resolves.toBe(true);
+  });
+
   it("fails closed without a user id", async () => {
     await expect(betterAuthNeedsStepUp({ user_metadata: enrolled.user_metadata }, yes)).resolves.toBe(true);
   });

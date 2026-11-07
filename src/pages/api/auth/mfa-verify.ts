@@ -90,6 +90,27 @@ async function verifyBetterAuth(
 
   if (action === "webauthn_challenge" || action === "webauthn_verify") return fail("no_factor");
 
+  // Pending challenge + YubiKey: finish it with the key, as Supabase allowed
+  // for accounts that have both an authenticator app and a YubiKey.
+  if (yubikeyOtp && hasTwoFactorChallenge(cookies)) {
+    const challengeKey = `2fa:${cookies.get("__Secure-better-auth.two_factor")?.value ?? cookies.get("better-auth.two_factor")?.value ?? ""}`;
+    if (!checkMfaVerifyRateLimit(challengeKey).ok) return fail("rate_limited", 429);
+    // The endpoint checks its one field by hand (no schema), so give the call its shape here.
+    type VerifyYubiKey = (args: { body: { otp: string }; headers: Headers; asResponse: true }) => Promise<Response>;
+    const res = await withBetterAuth(request, (auth) =>
+      (auth.api.verifyYubiKeyTwoFactor as unknown as VerifyYubiKey)({ body: { otp: yubikeyOtp }, headers: request.headers, asResponse: true }),
+    );
+    if (!res.ok) {
+      recordMfaVerifyFailure(challengeKey);
+      const reason = (await betterAuthErrorCode(res)) ?? "";
+      if (reason === "YUBIKEY_NOT_CONFIGURED") return fail("generic", 503);
+      return fail(reason === "REPLAYED" ? "replayed_otp" : reason === "NOT_ENROLLED" ? "yubikey_not_enrolled" : "invalid_yubikey");
+    }
+    clearMfaVerifyFailures(challengeKey);
+    setMfaRequiredCookie(cookies, false);
+    return asJson ? jsonWithAuthCookies({ ok: true, aal: "aal2" }, 200, res) : redirectWithAuthCookies(safeNext, res);
+  }
+
   if (!yubikeyOtp && hasTwoFactorChallenge(cookies)) {
     if (!/^\d{6}$/.test(code)) return fail("invalid_code");
     const res = await withBetterAuth(request, (auth) =>

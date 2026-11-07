@@ -13,10 +13,14 @@
 import { userHasYubiKeyOtpEnrolled } from "./yubikeyOtpMetadata";
 
 export async function betterAuthNeedsStepUp(
-  user: { id?: string; user_metadata?: Record<string, unknown> } | null | undefined,
+  user: { id?: string; user_metadata?: Record<string, unknown>; two_factor_enabled?: boolean } | null | undefined,
   hasValidProof: (userId: string) => Promise<boolean>,
 ): Promise<boolean> {
   if (!userHasYubiKeyOtpEnrolled(user)) return false;
+  // TOTP on: this session only exists after the code (or a YubiKey) finished
+  // the challenge, which is what Supabase's aal2 meant. Passing either
+  // factor is enough, as before.
+  if (user?.two_factor_enabled === true) return false;
   if (!user?.id) return true;
   return !(await hasValidProof(user.id));
 }

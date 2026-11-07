@@ -14,6 +14,18 @@ import { createBetterAuth, type ProbeHarborAuth } from "./betterAuthConfig";
 import { getRuntimeEnv } from "./runtimeEnv";
 import { buildGitHubOAuthCallbackUrl, buildSiteUrl } from "./siteUrl";
 import type { OAuthProviderId } from "./betterAuthOAuth";
+import type { YubiKeyVerifier } from "./betterAuthYubiKey";
+import { getYubiKeyPublicIdsFromUser, isYubiKeyOtpConfigured, verifyYubiKeyOtpWithYubiCloud } from "./yubikeyOtp";
+import { getUserMetadata } from "./db/userMetadata";
+
+/** YubiCloud check against the user's enrolled keys (user_profiles.metadata). */
+const verifyYubiKey: YubiKeyVerifier = async (userId, otp) => {
+  const enrolled = getYubiKeyPublicIdsFromUser({ user_metadata: await getUserMetadata(userId) });
+  if (enrolled.length === 0) return "not_enrolled";
+  const verified = await verifyYubiKeyOtpWithYubiCloud(otp);
+  if (!verified.ok) return verified.error.includes("already used") ? "replayed" : "invalid";
+  return enrolled.includes(verified.publicId) ? "ok" : "not_enrolled";
+};
 import { resolveWebAuthnRp } from "./webauthnRp";
 
 export type WithBetterAuthOptions = {
@@ -58,6 +70,7 @@ export async function withBetterAuth<T>(
       rpID: resolveWebAuthnRp(request).rpId,
       secureCookies: import.meta.env.PROD,
       oauth: oauthApps(request, siteUrl),
+      verifyYubiKey: isYubiKeyOtpConfigured() ? verifyYubiKey : undefined,
       sendVerificationEmail: ({ email, token }) =>
         sendConfirmationEmail(email, accountEmailLink(siteUrl, "signup", token), options.emailLocale ?? "en"),
       sendResetPassword: ({ email, token }) =>

@@ -5044,8 +5044,23 @@ Cloudflare email binding.
          sending and the cron jobs (writes), and a real person signing in
          with their own old password (the copied-password path was proven
          locally with test users).
-   - [ ] Owner: sign in on a Neon preview with your own account and old
-         password (and TOTP if you use it) before step 6.
+   - [x] **Bug found by the owner's sign-in on the Neon preview
+         (2026-11-07, fixed):** an account with both an authenticator app
+         and a YubiKey couldn't finish with the YubiKey: the password step
+         leaves Better Auth's TOTP challenge (no session yet) and the
+         YubiKey path expected a session, so it sent them back to sign-in.
+         Also, after passing TOTP they'd have been asked for the YubiKey
+         too. Fixes: `betterAuthYubiKey.ts` plugin endpoint finishes the
+         pending challenge with a YubiKey OTP (YubiCloud check passed in by
+         the runtime; challenge used up before the session is made); the
+         middleware gate treats a Better Auth session of a TOTP account as
+         verified (Supabase's aal2), so either factor is enough, as before
+         (`two_factor_enabled` now on the Neon user record). 2 more database
+         tests (both factors: YubiKey finishes it and no second prompt;
+         another key or a replayed code doesn't) + a gate unit test.
+         Mutations: any key accepted → 1 fails; gate ignoring TOTP → 1
+         fails.
+   - [ ] Owner: sign in again on the Neon preview after the fix.
    - Suggested for step 6: take a fresh `pnpm db:backup` after writes
      stop, restore it locally and copy from that, so the script never
      reads production directly.

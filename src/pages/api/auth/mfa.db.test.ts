@@ -204,6 +204,49 @@ describe("TOTP in settings (Neon)", () => {
   });
 });
 
+describe("account with both an authenticator app and a YubiKey (Neon)", () => {
+  async function bothFactors(email: string) {
+    const id = await signUpConfirmed(email);
+    await sql("insert into public.user_profiles (user_id, metadata) values ($1, $2)", [id, JSON.stringify({ yubikey_otp_public_ids: ["ccccccbcdefg"] })]);
+    const first = await signIn(email);
+    // Adding TOTP needs the YubiKey step first (a second factor).
+    yubiResult = { ok: true, publicId: "ccccccbcdefg" };
+    await call(first.browser, mfaVerify, ctx(first.browser, "POST", "/api/auth/mfa-verify", { form: { yubikey_otp: "x".repeat(44) } }));
+    await setUpTotp(first.browser);
+    await sql("delete from public.auth_sessions");
+    const second = await signIn(email);
+    expect(loc(second.res)).toBe("/signin/mfa");
+    return { id, browser: second.browser };
+  }
+
+  it("the YubiKey finishes the pending challenge; the session then counts as verified", async () => {
+    const { id, browser } = await bothFactors("both@example.com");
+    yubiResult = { ok: true, publicId: "ccccccbcdefg" };
+    const done = await call(browser, mfaVerify, ctx(browser, "POST", "/api/auth/mfa-verify", { form: { yubikey_otp: "y".repeat(44), next: "/dashboard/alerts" } }));
+    expect(loc(done)).toBe("/dashboard/alerts");
+    expect(await sql("select 1 from public.auth_sessions")).toHaveLength(1);
+
+    const { getAuthFromRequest } = await import("../../../lib/auth");
+    const { betterAuthNeedsStepUp } = await import("../../../lib/betterAuthMfaGate");
+    const cookie = [...browser].map(([n, v]) => `${n}=${v}`).join("; ");
+    const { user } = await getAuthFromRequest(new Request("http://x/", { headers: { cookie } }), { get: () => undefined } as never);
+    expect(user?.id).toBe(id);
+    // No second prompt for the YubiKey (or the app) on the next page.
+    await expect(betterAuthNeedsStepUp(user, async () => false)).resolves.toBe(false);
+  });
+
+  it("another key or a replayed code doesn't finish it", async () => {
+    const { browser } = await bothFactors("both@example.com");
+    yubiResult = { ok: true, publicId: "cccccchijklm" };
+    const other = await call(browser, mfaVerify, ctx(browser, "POST", "/api/auth/mfa-verify", { form: { yubikey_otp: "y".repeat(44) } }));
+    expect(loc(other)).toContain("error=yubikey_not_enrolled");
+    yubiResult = { ok: false, error: "OTP already used" };
+    const replay = await call(browser, mfaVerify, ctx(browser, "POST", "/api/auth/mfa-verify", { form: { yubikey_otp: "y".repeat(44) } }));
+    expect(loc(replay)).toContain("error=replayed_otp");
+    expect(await sql("select 1 from public.auth_sessions")).toHaveLength(0);
+  });
+});
+
 describe("sign-in challenge (Neon)", () => {
   it("TOTP: password step, then a wrong code, then the right code signs in to the next page", async () => {
     await signUpConfirmed("a@example.com");
