@@ -4505,10 +4505,22 @@ Cloudflare email binding.
          Mutation: report without the household filter → 1 fails. A flaky
          test (two separately computed "10 minutes ago" values) was fixed;
          12 runs in a row pass.
-   - [ ] Convert the remaining ~215 queries and 2 Postgres function calls
+   - [x] Area 4e, push registrations (`src/lib/db/pushTokens.ts`): Web
+         Push subscriptions and app (FCM) tokens: register, unregister,
+         load for sending, drop stale ones, count, and the hand-off that
+         removes an endpoint/token from other accounts. The
+         `/api/push/subscribe` and `/api/push/fcm` routes don't create a
+         Supabase client on the Neon path (tests fail if they do). 6
+         database tests through both routes: upsert updates keys/platform,
+         unregister can't touch another user's row, browser and phone
+         hand-off, and the hand-off on its own keeps the current user's
+         row. Mutation: token hand-off without "other users" → 1 fails
+         (only once the direct test was added; through the route the
+         re-save hid it).
+   - [ ] Convert the remaining ~205 queries and 2 Postgres function calls
          (`sensor_bucket_averages`, `roll_up_and_prune_readings`), one area
-         per commit, each with database tests. Next: push/FCM
-         registrations, then the rest of the alert senders.
+         per commit, each with database tests. Next: the rest of the alert
+         senders and cron jobs.
    - [ ] Cross-household tests for every household-scoped read and write.
 4. **Login on Better Auth.** Email + password (accept existing bcrypt
    hashes, so passwords keep working), Google, GitHub, Discord, email

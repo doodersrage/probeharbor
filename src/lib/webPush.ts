@@ -1,4 +1,5 @@
 import { dbBackend, query } from "./db/client";
+import * as neonPush from "./db/pushTokens";
 import { createAdminClient } from "./supabase";
 import { getRuntimeEnv, hasRuntimeEnv } from "./runtimeEnv";
 
@@ -31,7 +32,8 @@ export function isVapidConfigured(): boolean {
  * their data to whoever is signed in now.
  */
 export async function releasePushSubscriptionFromOtherUsers(
-  supabase: ReturnType<typeof createAdminClient>,
+  /** Unused (may be null) when DB_BACKEND=neon. */
+  supabase: ReturnType<typeof createAdminClient> | null,
   userId: string,
   endpoint: string,
 ): Promise<void> {
@@ -44,7 +46,7 @@ export async function releasePushSubscriptionFromOtherUsers(
     }
     return;
   }
-  await supabase.from("push_subscriptions").delete().eq("endpoint", endpoint).neq("user_id", userId);
+  await supabase!.from("push_subscriptions").delete().eq("endpoint", endpoint).neq("user_id", userId);
 }
 
 export async function sendWebPushToUser(
@@ -59,15 +61,26 @@ export async function sendWebPushToUser(
     return { delivered: 0, failed: 0, skippedReason: "push_not_configured" };
   }
 
-  const supabase = createAdminClient();
-  const { data: subs, error } = await supabase
-    .from("push_subscriptions")
-    .select("endpoint, p256dh, auth")
-    .eq("user_id", userId);
-
-  if (error) {
-    console.error("Failed to load push subscriptions:", error.message);
-    return { delivered: 0, failed: 0, skippedReason: "push_load_failed" };
+  const neon = dbBackend() === "neon";
+  const supabase = neon ? null : createAdminClient();
+  let subs: Array<{ endpoint: string; p256dh: string; auth: string }> | null;
+  if (supabase) {
+    const result = await supabase
+      .from("push_subscriptions")
+      .select("endpoint, p256dh, auth")
+      .eq("user_id", userId);
+    if (result.error) {
+      console.error("Failed to load push subscriptions:", result.error.message);
+      return { delivered: 0, failed: 0, skippedReason: "push_load_failed" };
+    }
+    subs = result.data;
+  } else {
+    try {
+      subs = await neonPush.listPushSubscriptions(userId);
+    } catch (error) {
+      console.error("Failed to load push subscriptions:", error instanceof Error ? error.message : error);
+      return { delivered: 0, failed: 0, skippedReason: "push_load_failed" };
+    }
   }
 
   if (!subs || subs.length === 0) {
@@ -123,7 +136,9 @@ export async function sendWebPushToUser(
           await response.text().catch(() => ""),
         );
 
-        if (isStalePushStatus(response.status)) {
+        if (isStalePushStatus(response.status) && !supabase) {
+          await neonPush.deletePushSubscription(userId, sub.endpoint);
+        } else if (isStalePushStatus(response.status) && supabase) {
           await supabase
             .from("push_subscriptions")
             .delete()

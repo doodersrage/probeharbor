@@ -1,3 +1,5 @@
+import { dbBackend } from "./db/client";
+import * as neonPush from "./db/pushTokens";
 import { createAdminClient } from "./supabase";
 import { getRuntimeEnv } from "./runtimeEnv";
 
@@ -202,11 +204,13 @@ export function isStaleFcmError(status: number, errorCode?: string): boolean {
  * signed in now.
  */
 export async function releaseFcmTokenFromOtherUsers(
-  supabase: ReturnType<typeof createAdminClient>,
+  /** Unused (may be null) when DB_BACKEND=neon. */
+  supabase: ReturnType<typeof createAdminClient> | null,
   userId: string,
   token: string,
 ): Promise<void> {
-  await supabase.from("fcm_device_tokens").delete().eq("token", token).neq("user_id", userId);
+  if (dbBackend() === "neon") return neonPush.releaseFcmTokenFromOtherUsers(userId, token);
+  await supabase!.from("fcm_device_tokens").delete().eq("token", token).neq("user_id", userId);
 }
 
 /** FCM v1 message for one device: Android channel + iOS APNs category, with event_id for Acknowledge. */
@@ -255,15 +259,22 @@ export async function sendFcmToUser(
     return { delivered: 0, failed: 0, skippedReason: "fcm_not_configured" };
   }
 
-  const supabase = createAdminClient();
-  const { data: tokens, error } = await supabase
-    .from("fcm_device_tokens")
-    .select("token")
-    .eq("user_id", userId);
-
-  if (error) {
-    console.error("Failed to load FCM tokens:", error.message);
-    return { delivered: 0, failed: 0, skippedReason: "fcm_load_failed" };
+  const supabase = dbBackend() === "neon" ? null : createAdminClient();
+  let tokens: Array<{ token: string }> | null;
+  if (supabase) {
+    const result = await supabase.from("fcm_device_tokens").select("token").eq("user_id", userId);
+    if (result.error) {
+      console.error("Failed to load FCM tokens:", result.error.message);
+      return { delivered: 0, failed: 0, skippedReason: "fcm_load_failed" };
+    }
+    tokens = result.data;
+  } else {
+    try {
+      tokens = await neonPush.listFcmTokens(userId);
+    } catch (error) {
+      console.error("Failed to load FCM tokens:", error instanceof Error ? error.message : error);
+      return { delivered: 0, failed: 0, skippedReason: "fcm_load_failed" };
+    }
   }
 
   if (!tokens || tokens.length === 0) {
@@ -311,7 +322,9 @@ export async function sendFcmToUser(
         /* ignore */
       }
 
-      if (isStaleFcmError(response.status, errorCode)) {
+      if (isStaleFcmError(response.status, errorCode) && !supabase) {
+        await neonPush.deleteFcmToken(userId, row.token);
+      } else if (isStaleFcmError(response.status, errorCode) && supabase) {
         await supabase
           .from("fcm_device_tokens")
           .delete()
@@ -336,6 +349,14 @@ export async function sendFcmToUser(
 }
 
 export async function countFcmTokens(userId: string): Promise<number> {
+  if (dbBackend() === "neon") {
+    try {
+      return await neonPush.countFcmTokens(userId);
+    } catch (error) {
+      console.error("Failed to count FCM tokens:", error instanceof Error ? error.message : error);
+      return 0;
+    }
+  }
   const supabase = createAdminClient();
   const { count, error } = await supabase
     .from("fcm_device_tokens")

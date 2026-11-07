@@ -1,5 +1,7 @@
 import type { APIRoute } from "astro";
 import { getAuthFromRequest } from "../../../lib/auth";
+import { dbBackend } from "../../../lib/db/client";
+import * as neonPush from "../../../lib/db/pushTokens";
 import { createAdminClient } from "../../../lib/supabase";
 import { getUserEntitlements } from "../../../lib/entitlements";
 import { releasePushSubscriptionFromOtherUsers } from "../../../lib/webPush";
@@ -42,17 +44,24 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
     });
   }
 
-  const supabase = createAdminClient();
-  await releasePushSubscriptionFromOtherUsers(supabase, user.id, body.endpoint);
-  const { error } = await supabase.from("push_subscriptions").upsert(
-    {
-      user_id: user.id,
-      endpoint: body.endpoint,
-      p256dh: body.keys.p256dh,
-      auth: body.keys.auth,
-    },
-    { onConflict: "user_id,endpoint" },
-  );
+  let error: { message: string } | null;
+  if (dbBackend() === "neon") {
+    await releasePushSubscriptionFromOtherUsers(null, user.id, body.endpoint);
+    const saved = await neonPush.savePushSubscription(user.id, body.endpoint, body.keys.p256dh, body.keys.auth);
+    error = saved.error ? { message: saved.error } : null;
+  } else {
+    const supabase = createAdminClient();
+    await releasePushSubscriptionFromOtherUsers(supabase, user.id, body.endpoint);
+    ({ error } = await supabase.from("push_subscriptions").upsert(
+      {
+        user_id: user.id,
+        endpoint: body.endpoint,
+        p256dh: body.keys.p256dh,
+        auth: body.keys.auth,
+      },
+      { onConflict: "user_id,endpoint" },
+    ));
+  }
 
   if (error) {
     return new Response(JSON.stringify({ error: error.message }), {
@@ -95,12 +104,15 @@ export const DELETE: APIRoute = async ({ request, cookies, locals }) => {
     });
   }
 
-  const supabase = createAdminClient();
-  await supabase
-    .from("push_subscriptions")
-    .delete()
-    .eq("user_id", user.id)
-    .eq("endpoint", body.endpoint);
+  if (dbBackend() === "neon") {
+    await neonPush.deletePushSubscription(user.id, body.endpoint);
+  } else {
+    await createAdminClient()
+      .from("push_subscriptions")
+      .delete()
+      .eq("user_id", user.id)
+      .eq("endpoint", body.endpoint);
+  }
 
   return new Response(JSON.stringify({ ok: true }), {
     status: 200,
