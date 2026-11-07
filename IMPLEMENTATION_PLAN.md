@@ -5025,10 +5025,27 @@ Cloudflare email binding.
          Better Auth config with the old password, the TOTP one also with
          a code from the old secret. Guards checked (missing secret,
          production URL, Supabase target, non-empty target).
-   - [ ] Run against a fresh Neon branch (needs the owner's go-ahead: it
-         puts a copy of production data on that branch), then a manual
-         walk-through there with `DB_BACKEND=neon` (closes step 3's
-         done-when check too).
+   - [x] Neon dev branch (2026-11-07, owner's go-ahead): copied from a
+         clean local restore of the same backup (the rehearsal's test users
+         dropped first) into `DATABASE_URL_DEV_UNPOOLED`, using `.env`'s
+         `BETTER_AUTH_SECRET`. Dry run, then the real copy: all 49 tables
+         match, 11/11 users, 8 password logins, 7 OAuth, 1 TOTP. The
+         production Neon branch is still empty.
+   - [x] Walk-through in local workerd (built Worker, `DB_BACKEND=neon`,
+         dev branch) as a throwaway account made a viewer of a real
+         household (removed afterwards; counts back to 11 users / 12
+         households): `/dashboard`, devices, alerts, history (460 KB of
+         real readings), live, household, settings, portfolio, plans → 200;
+         dashboard snapshot, home insights, door events, referral,
+         household, MFA list and passkey list APIs → 200; admin-only and
+         alias pages redirect as designed; no cookie → `/signin`; no
+         errors in the Worker log. This closes step 3's "runs on a Neon
+         branch" check for **reads**. Not exercised here: ingest, alert
+         sending and the cron jobs (writes), and a real person signing in
+         with their own old password (the copied-password path was proven
+         locally with test users).
+   - [ ] Owner: sign in on a Neon preview with your own account and old
+         password (and TOTP if you use it) before step 6.
    - Suggested for step 6: take a fresh `pnpm db:backup` after writes
      stop, restore it locally and copy from that, so the script never
      reads production directly.
