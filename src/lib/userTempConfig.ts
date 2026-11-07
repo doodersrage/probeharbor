@@ -1,4 +1,6 @@
 import type { User } from "@supabase/supabase-js";
+import { dbBackend } from "./db/client";
+import * as neonLegacy from "./db/legacyTempConfig";
 import { createServerClient, createAdminClient } from "./supabase";
 import type { TempFeedConfig, TempProbeConfig } from "./tempFeedConfig";
 import {
@@ -25,13 +27,19 @@ export async function fetchUserTempConfig(userId: string): Promise<{
   hasCustomConfig: boolean;
   error: string | null;
 }> {
-  const supabase = createServerClient();
+  const neon = dbBackend() === "neon";
+  const supabase = neon ? null : createServerClient();
 
-  const { data: feedRows, error: feedsError } = await supabase
-    .from("user_temp_feeds")
-    .select("feed_id, name, url, enabled, sort_order")
-    .eq("user_id", userId)
-    .order("sort_order", { ascending: true });
+  const { data: feedRows, error: feedsError } = supabase
+    ? await supabase
+        .from("user_temp_feeds")
+        .select("feed_id, name, url, enabled, sort_order")
+        .eq("user_id", userId)
+        .order("sort_order", { ascending: true })
+    : await neonLegacy.legacyFeeds(userId).then(
+        (data) => ({ data, error: null }),
+        (e: unknown) => ({ data: null, error: { message: e instanceof Error ? e.message : String(e) } }),
+      );
 
   if (feedsError) {
     return {
@@ -59,11 +67,16 @@ export async function fetchUserTempConfig(userId: string): Promise<{
     jsonRoot: "temp",
   }));
 
-  const { data: probeRows, error: probesError } = await supabase
-    .from("user_temp_probes")
-    .select("probe_id, feed_id, probe_key, label, visible, sort_order")
-    .eq("user_id", userId)
-    .order("sort_order", { ascending: true });
+  const { data: probeRows, error: probesError } = supabase
+    ? await supabase
+        .from("user_temp_probes")
+        .select("probe_id, feed_id, probe_key, label, visible, sort_order")
+        .eq("user_id", userId)
+        .order("sort_order", { ascending: true })
+    : await neonLegacy.legacyProbes(userId).then(
+        (data) => ({ data, error: null }),
+        (e: unknown) => ({ data: null, error: { message: e instanceof Error ? e.message : String(e) } }),
+      );
 
   if (probesError) {
     return {
@@ -156,6 +169,42 @@ export async function migrateLegacyTempTablesToDevices(
       cleared: false,
       error: existing.error,
     };
+  }
+
+  if (dbBackend() === "neon") {
+    let created = 0;
+    let ensured = 0;
+    try {
+      const byUrl = new Map(
+        existing.devices
+          .filter((d) => d.source === "pull_url" && d.pull_url)
+          .map((d) => [normalizePullFeedUrl(d.pull_url!), d.id]),
+      );
+      for (const [index, feed] of feeds.entries()) {
+        const urlKey = normalizePullFeedUrl(feed.url);
+        let deviceId = byUrl.get(urlKey) ?? null;
+        if (!deviceId) {
+          deviceId = await neonLegacy.insertPullDevice(household.householdId, feed, index, sanitizeJsonRoot(feed.jsonRoot));
+          byUrl.set(urlKey, deviceId);
+          created += 1;
+        } else {
+          await neonLegacy.updatePullDevice(household.householdId, deviceId, feed, index, sanitizeJsonRoot(feed.jsonRoot));
+        }
+        for (const [probeIndex, probe] of probes.filter((p) => p.feedId === feed.id).entries()) {
+          if (await neonLegacy.ensureProbeSensors(deviceId, probe, probeIndex)) ensured += 1;
+        }
+      }
+      await neonLegacy.clearLegacy(userId);
+    } catch (error) {
+      return {
+        migratedFeeds: feeds.length,
+        createdDevices: created,
+        ensuredSensors: ensured,
+        cleared: false,
+        error: error instanceof Error ? error.message : String(error),
+      };
+    }
+    return { migratedFeeds: feeds.length, createdDevices: created, ensuredSensors: ensured, cleared: true, error: null };
   }
 
   const supabase = createServerClient();
@@ -326,10 +375,13 @@ export async function migrateAllLegacyTempTablesToDevices(): Promise<{
   cleared: number;
   errors: string[];
 }> {
-  const admin = createAdminClient();
-  const { data: rows, error } = await admin
-    .from("user_temp_feeds")
-    .select("user_id");
+  const { data: rows, error } =
+    dbBackend() === "neon"
+      ? await neonLegacy.usersWithLegacyFeeds().then(
+          (ids) => ({ data: ids.map((user_id) => ({ user_id })), error: null }),
+          (e: unknown) => ({ data: null, error: { message: e instanceof Error ? e.message : String(e) } }),
+        )
+      : await createAdminClient().from("user_temp_feeds").select("user_id");
 
   if (error) {
     return { users: 0, cleared: 0, errors: [error.message] };
@@ -381,9 +433,13 @@ export async function saveUserTempConfig(
   }
 
   // Drop any leftover legacy rows for this user.
-  const supabase = createServerClient();
-  await supabase.from("user_temp_probes").delete().eq("user_id", userId);
-  await supabase.from("user_temp_feeds").delete().eq("user_id", userId);
+  if (dbBackend() === "neon") {
+    await neonLegacy.clearLegacy(userId).catch(() => {});
+  } else {
+    const supabase = createServerClient();
+    await supabase.from("user_temp_probes").delete().eq("user_id", userId);
+    await supabase.from("user_temp_feeds").delete().eq("user_id", userId);
+  }
 
   return { error: null };
 }

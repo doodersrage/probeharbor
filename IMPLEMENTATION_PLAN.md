@@ -4637,11 +4637,19 @@ Cloudflare email binding.
          opt in; the first version of the test couldn't see it).
          Monthly/quarterly/drill flows aren't run end to end yet: they
          load preferences via `userTempConfig.ts` (next).
-   - [ ] Convert the remaining ~85 queries in ~32 files and 1 Postgres
+   - [x] Area 8c, legacy pull-feed config (`src/lib/db/legacyTempConfig.ts`):
+         read `user_temp_feeds/probes`, the one-time move into pull devices
+         (device created or reused by URL, meta merged, temperature +
+         humidity sensors added if missing; a probe whose humidity sensor
+         alone was missing now gets it), clearing the old rows, and the
+         one-shot job over all users. 3 database tests: rows → device +
+         4 sensors, second run changes nothing, same-URL device reused,
+         one-shot job per household. Mutation: old feed rows not cleared
+         → 1 fails.
+   - [ ] Convert the remaining ~75 queries in ~30 files and 1 Postgres
          function call (`sensor_bucket_averages`), one area per commit,
-         each with database tests. Next: userTempConfig (legacy pull
-         config), then the other 14 `getUserById` callers, thermostats,
-         archives, pucks, dashboard pages.
+         each with database tests. Next: the other `getUserById` callers,
+         thermostats, archives, pucks, dashboard pages.
    - [ ] Cross-household tests for every household-scoped read and write.
 4. **Login on Better Auth.** Email + password (accept existing bcrypt
    hashes, so passwords keep working), Google, GitHub, Discord, email
