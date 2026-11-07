@@ -13,16 +13,16 @@ vi.mock("../../../lib/ingestKeyVault", () => ({
   ingestKeyVaultConfigured: (...a: unknown[]) => mockIngestKeyVaultConfigured(...a),
 }));
 
-const mockCreateAuthClientFromSession = vi.fn();
-const mockUserHasAnyMfaEnrolled = vi.fn();
-vi.mock("../../../lib/mfa", () => ({
-  createAuthClientFromSession: (...a: unknown[]) => mockCreateAuthClientFromSession(...a),
-  userHasAnyMfaEnrolled: (...a: unknown[]) => mockUserHasAnyMfaEnrolled(...a),
+const mockGetTotpState = vi.fn();
+const mockIsElevated = vi.fn();
+vi.mock("../../../lib/betterAuthMfa", () => ({
+  getTotpState: (...a: unknown[]) => mockGetTotpState(...a),
+  isElevated: (...a: unknown[]) => mockIsElevated(...a),
 }));
 
-const mockHasElevatedAuth = vi.fn();
-vi.mock("../../../lib/mfaStepUpProof", () => ({
-  hasElevatedAuth: (...a: unknown[]) => mockHasElevatedAuth(...a),
+const mockGetUserMetadata = vi.fn();
+vi.mock("../../../lib/db/userMetadata", () => ({
+  getUserMetadata: (...a: unknown[]) => mockGetUserMetadata(...a),
 }));
 
 const mockCheckRevealIngestKeyRateLimit = vi.fn();
@@ -59,9 +59,9 @@ beforeEach(() => {
   });
   mockCheckRevealIngestKeyRateLimit.mockReset().mockReturnValue({ ok: true });
   mockIngestKeyVaultConfigured.mockReset().mockReturnValue(true);
-  mockCreateAuthClientFromSession.mockReset().mockResolvedValue({ client: {}, error: null });
-  mockUserHasAnyMfaEnrolled.mockReset().mockResolvedValue(false);
-  mockHasElevatedAuth.mockReset().mockResolvedValue(true);
+  mockGetTotpState.mockReset().mockResolvedValue({ enabled: false, pending: false, hasPassword: true });
+  mockGetUserMetadata.mockReset().mockResolvedValue({});
+  mockIsElevated.mockReset().mockResolvedValue(true);
   mockRequireHouseholdEditor.mockReset().mockResolvedValue({ ok: true });
   mockHouseholdEditorCtx.mockReset().mockReturnValue({ householdId: "house-1" });
   mockListHouseholdDevices.mockReset().mockResolvedValue({
@@ -107,19 +107,9 @@ describe("POST /api/devices/reveal-ingest-key", () => {
     expect(response.status).toBe(503);
   });
 
-  it("returns 401 when the session can't be reconstructed", async () => {
-    mockCreateAuthClientFromSession.mockResolvedValue({ client: null, error: "expired" });
-    const { POST } = await import("./reveal-ingest-key");
-
-    const response = await POST(makeContext());
-
-    expect(response.status).toBe(401);
-    expect(await response.json()).toEqual({ ok: false, error: "Session expired." });
-  });
-
   it("requires a fresh MFA step-up when the user has MFA enrolled", async () => {
-    mockUserHasAnyMfaEnrolled.mockResolvedValue(true);
-    mockHasElevatedAuth.mockResolvedValue(false);
+    mockGetTotpState.mockResolvedValue({ enabled: true, pending: false, hasPassword: true });
+    mockIsElevated.mockResolvedValue(false);
     const { POST } = await import("./reveal-ingest-key");
 
     const response = await POST(makeContext());
@@ -131,9 +121,29 @@ describe("POST /api/devices/reveal-ingest-key", () => {
     });
   });
 
+  it("requires a fresh step-up when only a YubiKey is registered", async () => {
+    mockGetUserMetadata.mockResolvedValue({ yubikey_otp_public_ids: ["cccccccccccc"] });
+    mockIsElevated.mockResolvedValue(false);
+    const { POST } = await import("./reveal-ingest-key");
+
+    const response = await POST(makeContext());
+
+    expect(response.status).toBe(401);
+    expect(mockDecryptStoredIngestKey).not.toHaveBeenCalled();
+  });
+
   it("allows through when MFA is enrolled and the step-up is fresh", async () => {
-    mockUserHasAnyMfaEnrolled.mockResolvedValue(true);
-    mockHasElevatedAuth.mockResolvedValue(true);
+    mockGetTotpState.mockResolvedValue({ enabled: true, pending: false, hasPassword: true });
+    mockIsElevated.mockResolvedValue(true);
+    const { POST } = await import("./reveal-ingest-key");
+
+    const response = await POST(makeContext());
+
+    expect(response.status).toBe(200);
+  });
+
+  it("doesn't ask for a step-up when no second factor is set up", async () => {
+    mockIsElevated.mockResolvedValue(false);
     const { POST } = await import("./reveal-ingest-key");
 
     const response = await POST(makeContext());

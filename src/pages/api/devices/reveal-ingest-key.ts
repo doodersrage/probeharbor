@@ -1,11 +1,9 @@
 import type { APIRoute } from "astro";
 import { getAuthFromCookies } from "../../../lib/auth";
 import { decryptStoredIngestKey, ingestKeyVaultConfigured } from "../../../lib/ingestKeyVault";
-import {
-  createAuthClientFromSession,
-  userHasAnyMfaEnrolled,
-} from "../../../lib/mfa";
-import { hasElevatedAuth } from "../../../lib/mfaStepUpProof";
+import { getTotpState, isElevated } from "../../../lib/betterAuthMfa";
+import { getUserMetadata } from "../../../lib/db/userMetadata";
+import { getYubiKeyPublicIdsFromUser } from "../../../lib/yubikeyOtp";
 import { checkRevealIngestKeyRateLimit } from "../../../lib/revealIngestKeyLimits";
 import { listHouseholdDevices } from "../../../lib/devices";
 import { recordHouseholdActivity } from "../../../lib/householdActivity";
@@ -50,22 +48,10 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
     );
   }
 
-  const { client, error: sessionError } = await createAuthClientFromSession(
-    session.access_token,
-    session.refresh_token,
-  );
-  if (sessionError) {
-    return new Response(JSON.stringify({ ok: false, error: tc.sessionExpired }), {
-      status: 401,
-      headers: { "Content-Type": "application/json" },
-    });
-  }
-
-  const hasMfa = await userHasAnyMfaEnrolled(client, user);
-  if (
-    hasMfa &&
-    !(await hasElevatedAuth(request, cookies, session.access_token, user.id))
-  ) {
+  // Two-factor users (authenticator app or YubiKey) need a verified session.
+  const [state, metadata] = await Promise.all([getTotpState(user.id), getUserMetadata(user.id)]);
+  const hasMfa = state.enabled || getYubiKeyPublicIdsFromUser({ user_metadata: metadata }).length > 0;
+  if (hasMfa && !(await isElevated(state, request, cookies, user.id))) {
     return new Response(
       JSON.stringify({
         ok: false,
