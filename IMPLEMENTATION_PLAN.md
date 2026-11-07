@@ -4677,10 +4677,22 @@ Cloudflare email binding.
          token refresh without the household → 1 fails. (OAuth tokens are
          stored as plain text on both paths, as before; worth a separate
          look.)
-   - [ ] Convert the remaining ~45 queries in ~25 files and 1 Postgres
+   - [x] Area 9c, household tools (`src/lib/db/householdTools.ts`):
+         inbound webhooks (resolve by hash + stamp use in one statement;
+         lists never include the signing secret), claims-pack exports,
+         saved History views, cold-storage archive job (reads up to the
+         5000 rows it asks for, oldest first; on Supabase the request is
+         cut to 1000 in no set order). 4 database tests: webhook token
+         hashed/resolved/revoked, secret never listed, other household
+         can't revoke; claims pack revoke scope; saved views per user;
+         archive writes oldest-first and records the row count.
+         Mutations: claims revoke without household → 1 fails; saved view
+         delete without user → 1 fails.
+   - [ ] Convert the remaining ~30 queries in ~20 files and 1 Postgres
          function call (`sensor_bucket_averages`), one area per commit,
-         each with database tests. Next: archives, freeze map, inbound
-         webhooks, dashboard pages and API routes.
+         each with database tests. Next: freeze map, cross-property,
+         house context, indoor reference, the rest of the API routes and
+         pages.
    - [ ] Cross-household tests for every household-scoped read and write.
 4. **Login on Better Auth.** Email + password (accept existing bcrypt
    hashes, so passwords keep working), Google, GitHub, Discord, email

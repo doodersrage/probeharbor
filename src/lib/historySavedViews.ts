@@ -1,3 +1,5 @@
+import { dbBackend } from "./db/client";
+import * as neonTools from "./db/householdTools";
 import { createServerClient } from "./supabase";
 
 export type HistorySavedViewParams = {
@@ -66,14 +68,19 @@ export function searchParamsFromView(params: HistorySavedViewParams): string {
 export async function listHistorySavedViews(
   userId: string,
 ): Promise<HistorySavedView[]> {
-  const supabase = createServerClient();
-  const { data, error } = await supabase
-    .from("history_saved_views")
-    .select("*")
-    .eq("user_id", userId)
-    .order("created_at", { ascending: false })
-    .limit(30);
-  if (error || !data) return [];
+  let data: Array<Record<string, unknown>> | null;
+  if (dbBackend() === "neon") {
+    data = await neonTools.listSavedViews(userId);
+  } else {
+    const result = await createServerClient()
+      .from("history_saved_views")
+      .select("*")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(30);
+    if (result.error || !result.data) return [];
+    data = result.data;
+  }
   return data.map((row) => ({
     id: row.id as string,
     user_id: row.user_id as string,
@@ -92,6 +99,7 @@ export async function createHistorySavedView(input: {
 }): Promise<{ id: string | null; error: string | null }> {
   const name = input.name.trim().slice(0, 80);
   if (!name) return { id: null, error: "Name required" };
+  if (dbBackend() === "neon") return neonTools.insertSavedView(input.userId, input.householdId, name, input.params);
   const supabase = createServerClient();
   const { data, error } = await supabase
     .from("history_saved_views")
@@ -111,6 +119,7 @@ export async function deleteHistorySavedView(
   userId: string,
   id: string,
 ): Promise<{ ok: boolean; error?: string }> {
+  if (dbBackend() === "neon") return neonTools.deleteSavedView(userId, id);
   const supabase = createServerClient();
   const { error } = await supabase
     .from("history_saved_views")

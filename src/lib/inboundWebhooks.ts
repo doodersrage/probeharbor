@@ -1,3 +1,5 @@
+import { dbBackend } from "./db/client";
+import * as neonTools from "./db/householdTools";
 import { createServerClient } from "./supabase";
 import { type InboundSignatureFormat, randomSigningSecret } from "./inboundSigning";
 
@@ -35,6 +37,21 @@ export async function createInboundWebhook(
   const signingSecret = randomSigningSecret();
   const token_hash = await sha256Hex(token);
   const token_prefix = token.slice(0, 12);
+  if (dbBackend() === "neon") {
+    const created = await neonTools.insertInboundWebhook({
+      household_id: householdId,
+      name: name.trim() || "Inbound webhook",
+      token_prefix,
+      token_hash,
+      created_by: userId,
+      signing_secret: signingSecret,
+    });
+    return {
+      token: created.error ? null : token,
+      signingSecret: created.error ? null : signingSecret,
+      error: created.error,
+    };
+  }
   const supabase = createServerClient();
   const { error } = await supabase.from("inbound_webhooks").insert({
     household_id: householdId,
@@ -54,6 +71,10 @@ export async function createInboundWebhook(
 export async function listInboundWebhooks(
   householdId: string,
 ): Promise<{ webhooks: InboundWebhook[]; error: string | null }> {
+  if (dbBackend() === "neon") {
+    const listed = await neonTools.listInboundWebhooks(householdId);
+    return { webhooks: listed.rows, error: listed.error };
+  }
   const supabase = createServerClient();
   const { data, error } = await supabase
     .from("inbound_webhooks")
@@ -78,6 +99,7 @@ export async function revokeInboundWebhook(
   webhookId: string,
   householdId: string,
 ): Promise<{ error: string | null }> {
+  if (dbBackend() === "neon") return neonTools.deleteInboundWebhook(householdId, webhookId);
   const supabase = createServerClient();
   const { error } = await supabase
     .from("inbound_webhooks")
@@ -91,6 +113,7 @@ export async function resolveInboundWebhook(
   token: string,
 ): Promise<{ householdId: string; webhookId: string; signingSecret: string | null } | null> {
   const token_hash = await sha256Hex(token.trim());
+  if (dbBackend() === "neon") return neonTools.resolveInboundWebhook(token_hash);
   const supabase = createServerClient();
   const { data } = await supabase
     .from("inbound_webhooks")
@@ -119,6 +142,10 @@ export async function recordInboundSignatureFormat(
   format: InboundSignatureFormat,
 ): Promise<void> {
   try {
+    if (dbBackend() === "neon") {
+      await neonTools.setSignatureFormat(webhookId, format);
+      return;
+    }
     const supabase = createServerClient();
     const { error } = await supabase
       .from("inbound_webhooks")

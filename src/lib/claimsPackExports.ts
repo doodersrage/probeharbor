@@ -1,3 +1,5 @@
+import { dbBackend } from "./db/client";
+import * as neonTools from "./db/householdTools";
 import { createServerClient } from "./supabase";
 import type { ClaimsPackData } from "./claimsPack";
 
@@ -39,8 +41,7 @@ export async function createClaimsPackExport(
 ): Promise<{ token: string | null; contentHash: string | null; error: string | null }> {
   const contentHash = await computeClaimsPackHash(pack);
   const token = randomToken();
-  const supabase = createServerClient();
-  const { error } = await supabase.from("claims_pack_exports").insert({
+  const row = {
     household_id: householdId,
     token,
     range_from: pack.rangeFrom,
@@ -49,9 +50,13 @@ export async function createClaimsPackExport(
     pack_data: pack,
     generated_by: generatedBy,
     expires_at: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
-  });
+  };
+  const error =
+    dbBackend() === "neon"
+      ? (await neonTools.insertClaimsPack(row)).error
+      : ((await createServerClient().from("claims_pack_exports").insert(row)).error?.message ?? null);
   if (error) {
-    return { token: null, contentHash: null, error: error.message };
+    return { token: null, contentHash: null, error };
   }
   return { token, contentHash, error: null };
 }
@@ -59,12 +64,16 @@ export async function createClaimsPackExport(
 export async function getClaimsPackExportByToken(
   token: string,
 ): Promise<ClaimsPackData | null> {
-  const supabase = createServerClient();
-  const { data } = await supabase
-    .from("claims_pack_exports")
-    .select("pack_data, expires_at, revoked_at")
-    .eq("token", token)
-    .maybeSingle();
+  const data =
+    dbBackend() === "neon"
+      ? await neonTools.findClaimsPack(token)
+      : (
+          await createServerClient()
+            .from("claims_pack_exports")
+            .select("pack_data, expires_at, revoked_at")
+            .eq("token", token)
+            .maybeSingle()
+        ).data;
   if (!data || data.revoked_at) return null;
   if (data.expires_at && Date.parse(data.expires_at) < Date.now()) return null;
   return data.pack_data as ClaimsPackData;
@@ -74,6 +83,7 @@ export async function revokeClaimsPackExport(
   householdId: string,
   token: string,
 ): Promise<boolean> {
+  if (dbBackend() === "neon") return neonTools.revokeClaimsPack(householdId, token);
   const supabase = createServerClient();
   const { error } = await supabase
     .from("claims_pack_exports")
