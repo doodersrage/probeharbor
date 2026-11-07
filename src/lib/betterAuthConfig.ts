@@ -112,7 +112,13 @@ export function createBetterAuth(deps: BetterAuthDeps) {
     },
     plugins: [
       oauthTwoFactorPlugin(MFA_CHALLENGE_PATH),
-      twoFactor({ issuer: "ProbeHarbor", schema: { twoFactor: { modelName: "auth_two_factors" } } }),
+      twoFactor({
+        issuer: "ProbeHarbor",
+        // Accounts without a password (OAuth-only) can turn TOTP on and off;
+        // Better Auth still asks for the password whenever the account has one.
+        allowPasswordless: true,
+        schema: { twoFactor: { modelName: "auth_two_factors" } },
+      }),
       passkey({ rpID: deps.rpID, rpName: "ProbeHarbor", origin: deps.baseURL, schema: { passkey: { modelName: "auth_passkeys" } } }),
       bearer(),
     ],

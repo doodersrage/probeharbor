@@ -175,6 +175,8 @@ const en = {
     qrAlt: "TOTP QR code",
     verifyCodeLabel: "Verification code",
     verifySubmit: "Verify & activate",
+    passwordLabel: "Account password",
+    passwordHint: "Needed to turn the authenticator app on or off.",
   },
   /** Settings → "Data & export" card (retention and export links). */
   dataExport: {

@@ -4888,8 +4888,32 @@ Cloudflare email binding.
          linked". Not yet: phone (Android) and companion OAuth hand-off
          (4f); not checked against the real providers (needs the setup
          above).
-   - [ ] 4e: TOTP (enroll, verify, remove, the middleware step-up gate)
-         and passkeys.
+   - [x] 4e-1 (2026-11-07): TOTP and YubiKey on Better Auth.
+         Settings (`mfa-manage`): set up (QR from Better Auth's TOTP URI,
+         drawn locally with `uqr`), confirm with a code, remove, list.
+         **Decided 2026-11-07:** turning TOTP on or off asks for the
+         account password when the account has one (Better Auth's rule;
+         Supabase didn't ask); OAuth-only accounts skip it
+         (`allowPasswordless`). New settings field + 5 strings, and 3 API
+         messages (wrong password, already set up, security keys moving to
+         passkeys). One authenticator app per account (Better Auth keeps
+         one TOTP secret; Supabase allowed several). "Elevated" replaces
+         aal2 (`betterAuthMfa.ts`): TOTP on (the session only exists after
+         the code) or a valid YubiKey step-up proof; required, as before,
+         to add a second factor or remove one (a YubiKey can also be
+         removed by tapping that key). YubiKey ids now in
+         `user_profiles.metadata`. Sign-in (`mfa-verify`, `/signin/mfa`):
+         the TOTP step works from Better Auth's two-factor cookie (no
+         session yet; Better Auth counts attempts); YubiKey keeps the
+         YubiCloud check and signed step-up proof. Security-key MFA was
+         already hidden in the UI (`MFA_WEBAUTHN_UI_ENABLED = false`); on
+         Neon its actions return the passkeys message. 7 database tests.
+         Mutations: "elevated" always true → 1 fails; any YubiKey
+         accepted → 1 fails. Not yet: companion/Android JSON callers get
+         tokens in 4f; Better Auth's backup codes are created but not
+         shown (Supabase had none).
+   - [ ] 4e-2: passkeys (add in settings, sign in with one), replacing
+         security keys as decided.
    - [ ] 4f: companion and Android token flows (contract change:
          those apps sign in again after cutover; document it).
    - [ ] 4g: `user_metadata` → `user_profiles.metadata`, app_metadata,

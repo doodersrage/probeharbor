@@ -30,6 +30,13 @@ import {
   verifyYubiKeyOtpWithYubiCloud,
 } from "../../../lib/yubikeyOtp";
 import { maybeRedirectMobileOAuth } from "../../../lib/mobileAuthRedirect";
+import { dbBackend } from "../../../lib/db/client";
+import { getUserMetadata } from "../../../lib/db/userMetadata";
+import { withBetterAuth } from "../../../lib/betterAuthRuntime";
+import { betterAuthErrorCode, redirectWithAuthCookies } from "../../../lib/betterAuthResponse";
+import { betterAuthNeedsStepUp } from "../../../lib/betterAuthMfaGate";
+import { hasTwoFactorChallenge, jsonWithAuthCookies } from "../../../lib/betterAuthMfa";
+import { hasValidMfaStepUpProof } from "../../../lib/mfaStepUpProof";
 
 /** Mint step-up proof after successful MFA (needed for YubiKey aal1 path). */
 async function issueMfaStepUpProof(
@@ -61,7 +68,100 @@ function jsonResponse(body: Record<string, unknown>, status = 200): Response {
   });
 }
 
+/**
+ * Neon. TOTP: the password (or OAuth) step left Better Auth's two-factor
+ * cookie and no session; Better Auth checks the code (and counts attempts)
+ * and issues the session. YubiKey: the user is signed in and the
+ * middleware asks for the step-up; YubiCloud checks the OTP as before and
+ * the signed step-up proof is set. Security keys moved to passkeys.
+ * Companion / Android JSON callers get their tokens in step 4f.
+ */
+async function verifyBetterAuth(
+  request: Request,
+  cookies: AstroCookies,
+  redirect: (path: string) => Response,
+  input: { asJson: boolean; code: string; yubikeyOtp: string; action: string; next?: string },
+): Promise<Response> {
+  const { asJson, code, yubikeyOtp, action } = input;
+  const safeNext = sanitizeNextPath(input.next) ?? "/dashboard";
+  const fail = (error: string, status = 400) =>
+    asJson ? jsonResponse({ error }, status) : redirect(buildMfaErrorRedirect(error, safeNext));
+
+  if (action === "webauthn_challenge" || action === "webauthn_verify") return fail("no_factor");
+
+  if (!yubikeyOtp && hasTwoFactorChallenge(cookies)) {
+    if (!/^\d{6}$/.test(code)) return fail("invalid_code");
+    const res = await withBetterAuth(request, (auth) =>
+      auth.api.verifyTOTP({ body: { code }, headers: request.headers, asResponse: true }),
+    );
+    if (!res.ok) {
+      const reason = (await betterAuthErrorCode(res)) ?? "";
+      return fail(/ATTEMPT/i.test(reason) ? "rate_limited" : "invalid_code", /ATTEMPT/i.test(reason) ? 429 : 400);
+    }
+    setMfaRequiredCookie(cookies, false);
+    return asJson ? jsonWithAuthCookies({ ok: true, aal: "aal2" }, 200, res) : redirectWithAuthCookies(safeNext, res);
+  }
+
+  const { user } = await getAuthFromCookies(cookies);
+  if (!user) return asJson ? jsonResponse({ error: "Unauthorized" }, 401) : redirect("/signin?error=generic");
+  const metadata = await getUserMetadata(user.id).catch(() => user.user_metadata ?? {});
+  const fresh = { id: user.id, user_metadata: metadata };
+  const needsStepUp = await betterAuthNeedsStepUp(fresh, (id) => hasValidMfaStepUpProof(request, cookies, id));
+  if (!needsStepUp) {
+    setMfaRequiredCookie(cookies, false);
+    return asJson ? jsonResponse({ ok: true, aal: "aal2" }) : redirect(safeNext);
+  }
+  if (!yubikeyOtp) return fail("invalid_yubikey");
+
+  const rateLimit = checkMfaVerifyRateLimit(user.id);
+  if (!rateLimit.ok) return fail("rate_limited", 429);
+  if (!isYubiKeyOtpConfigured()) return fail("generic", 503);
+  const enrolled = getYubiKeyPublicIdsFromUser(fresh);
+  const verified = await verifyYubiKeyOtpWithYubiCloud(yubikeyOtp);
+  if (!verified.ok) {
+    recordMfaVerifyFailure(user.id);
+    return fail(verified.error.includes("already used") ? "replayed_otp" : "invalid_yubikey");
+  }
+  if (!enrolled.includes(verified.publicId)) {
+    recordMfaVerifyFailure(user.id);
+    return fail("yubikey_not_enrolled");
+  }
+  clearMfaVerifyFailures(user.id);
+  const mfaStepup = await issueMfaStepUpProof(cookies, user.id);
+  if (!mfaStepup) {
+    console.error("MFA step-up secret not configured (set MFA_STEPUP_SECRET or CRON_SECRET)");
+    return fail("generic", 503);
+  }
+  setMfaRequiredCookie(cookies, false);
+  return asJson ? jsonResponse({ ok: true, aal: "aal2", mfa_stepup: mfaStepup }) : redirect(safeNext);
+}
+
 export const POST: APIRoute = async ({ request, cookies, redirect, url }) => {
+  if (dbBackend() === "neon") {
+    const asJson = wantsJson(request);
+    let fields: { code?: string; yubikey_otp?: string; action?: string; next?: string } = {};
+    if (asJson) {
+      try {
+        fields = (await request.clone().json()) as typeof fields;
+      } catch {
+        return jsonResponse({ error: "Invalid JSON" }, 400);
+      }
+    } else {
+      const form = await request.clone().formData();
+      fields = {
+        code: form.get("code")?.toString(),
+        yubikey_otp: form.get("yubikey_otp")?.toString(),
+        next: form.get("next")?.toString(),
+      };
+    }
+    return verifyBetterAuth(request, cookies, redirect, {
+      asJson,
+      code: fields.code?.trim() ?? "",
+      yubikeyOtp: fields.yubikey_otp?.trim() ?? "",
+      action: fields.action?.trim() ?? "",
+      next: fields.next,
+    });
+  }
   const { session, user } = await getAuthFromCookies(cookies);
   const asJson = wantsJson(request);
 

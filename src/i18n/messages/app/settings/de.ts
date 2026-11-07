@@ -181,6 +181,8 @@ const de: SettingsMessages = {
     qrAlt: "TOTP-QR-Code",
     verifyCodeLabel: "Bestätigungscode",
     verifySubmit: "Bestätigen & aktivieren",
+    passwordLabel: "Kontopasswort",
+    passwordHint: "Wird benötigt, um die Authenticator-App ein- oder auszuschalten.",
   },
   /** Settings → "Data & export" card (retention and export links). */
   dataExport: {

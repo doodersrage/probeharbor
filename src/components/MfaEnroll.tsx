@@ -49,6 +49,9 @@ export default function MfaEnroll({ text: t = en.mfa, locale = "en" }: Props) {
   const yubikeyInputRef = useRef<HTMLInputElement>(null);
   const [yubikeyReady, setYubikeyReady] = useState(false);
   const [verifyCode, setVerifyCode] = useState("");
+  // Better Auth asks for the account password to turn TOTP on or off.
+  const [passwordRequired, setPasswordRequired] = useState(false);
+  const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const webauthnSupported =
     MFA_WEBAUTHN_UI_ENABLED && browserSupportsWebAuthn();
@@ -61,11 +64,13 @@ export default function MfaEnroll({ text: t = en.mfa, locale = "en" }: Props) {
       webauthn?: FactorRow[];
       yubikeyPublicIds?: string[];
       yubikeyOtpConfigured?: boolean;
+      passwordRequired?: boolean;
       error?: string;
     };
     if (!res.ok) {
       throw new Error(payload.error ?? t.loadError);
     }
+    setPasswordRequired(payload.passwordRequired === true);
     const totp = payload.totp ?? payload.factors ?? [];
     const webauthn = payload.webauthn ?? [];
     setFactors(totp);
@@ -138,7 +143,7 @@ export default function MfaEnroll({ text: t = en.mfa, locale = "en" }: Props) {
     try {
       const res = await mfaFetch({
         method: "POST",
-        body: JSON.stringify({ action: "enroll" }),
+        body: JSON.stringify({ action: "enroll", ...(passwordRequired ? { password } : {}) }),
       });
       const payload = (await res.json().catch(() => ({}))) as {
         factorId?: string | null;
@@ -148,6 +153,7 @@ export default function MfaEnroll({ text: t = en.mfa, locale = "en" }: Props) {
       if (!res.ok) throw new Error(payload.error ?? t.enrollFailed);
       setQrCode(payload.qrCode ?? null);
       setFactorId(payload.factorId ?? null);
+      setPassword("");
       setMessage(t.scanQr);
       await refreshFactorList();
     } catch (err) {
@@ -313,11 +319,12 @@ export default function MfaEnroll({ text: t = en.mfa, locale = "en" }: Props) {
     try {
       const res = await mfaFetch({
         method: "POST",
-        body: JSON.stringify({ action: "unenroll", factorId: id }),
+        body: JSON.stringify({ action: "unenroll", factorId: id, ...(passwordRequired ? { password } : {}) }),
       });
       const payload = (await res.json().catch(() => ({}))) as { error?: string };
       if (!res.ok) throw new Error(payload.error ?? t.factorRemoveFailed);
       setMessage(t.totpRemoved);
+      setPassword("");
       if (factorId === id) {
         setFactorId(null);
         setQrCode(null);
@@ -402,6 +409,25 @@ export default function MfaEnroll({ text: t = en.mfa, locale = "en" }: Props) {
       <p class="text-sm text-[var(--color-text-muted)] mb-3">
         {t.totpHint}
       </p>
+      {passwordRequired && (
+        <div class="form-field mb-3">
+          <label class="form-label" for="mfa-account-password">
+            {t.passwordLabel}
+          </label>
+          <input
+            class="form-input"
+            id="mfa-account-password"
+            type="password"
+            autoComplete="current-password"
+            aria-describedby="mfa-account-password-hint"
+            value={password}
+            onInput={(e) => setPassword((e.target as HTMLInputElement).value)}
+          />
+          <p class="text-sm text-[var(--color-text-muted)] mt-1 mb-0" id="mfa-account-password-hint">
+            {t.passwordHint}
+          </p>
+        </div>
+      )}
       <div class="flex flex-wrap gap-2 mb-3">
         <button
           type="button"

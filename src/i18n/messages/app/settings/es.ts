@@ -178,6 +178,8 @@ const es: SettingsMessages = {
     qrAlt: "Código QR de TOTP",
     verifyCodeLabel: "Código de verificación",
     verifySubmit: "Verificar y activar",
+    passwordLabel: "Contraseña de la cuenta",
+    passwordHint: "Necesaria para activar o desactivar la app de autenticación.",
   },
   /** Settings → "Data & export" card (retention and export links). */
   dataExport: {

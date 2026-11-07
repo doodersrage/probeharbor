@@ -179,6 +179,8 @@ const fr: SettingsMessages = {
     qrAlt: "QR code TOTP",
     verifyCodeLabel: "Code de vérification",
     verifySubmit: "Vérifier et activer",
+    passwordLabel: "Mot de passe du compte",
+    passwordHint: "Nécessaire pour activer ou désactiver l’application d’authentification.",
   },
   /** Settings → "Data & export" card (retention and export links). */
   dataExport: {

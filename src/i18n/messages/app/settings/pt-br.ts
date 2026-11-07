@@ -178,6 +178,8 @@ const ptBr: SettingsMessages = {
     qrAlt: "QR code TOTP",
     verifyCodeLabel: "Código de verificação",
     verifySubmit: "Verificar e ativar",
+    passwordLabel: "Senha da conta",
+    passwordHint: "Necessária para ativar ou desativar o app autenticador.",
   },
   /** Settings → "Data & export" card (retention and export links). */
   dataExport: {
