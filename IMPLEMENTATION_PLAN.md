@@ -4244,9 +4244,16 @@ Cloudflare email binding.
    second layer using a per-request setting (`app.user_id`) in place of
    `auth.uid()`, or rely on app-code checks plus tests. Must not weaken
    cross-household protection either way.
-3. **Existing MFA** (step 4). Copy TOTP secrets into Better Auth's format,
-   or ask those users to set MFA up again. WebAuthn: check whether Better
-   Auth's passkey plugin works as a *second* factor the way it's used now.
+3. **Existing MFA** (step 4). **Decided 2026-11-07:** copy TOTP secrets
+   into Better Auth's two-factor table in step 5 (authenticator apps keep
+   working, no user action). Security keys become Better Auth passkeys (a
+   way to sign in, not a second step after the password); people who used
+   one add it again after the move. Also decided: the Worker runs on
+   **Workers Paid**, so in-app password checks (bcrypt for copied
+   passwords, ~50-100 ms CPU) fit the CPU limit. Original notes: Copy TOTP
+   secrets into Better Auth's format, or ask those users to set MFA up
+   again. WebAuthn: check whether Better Auth's passkey plugin works as a
+   *second* factor the way it's used now.
 4. **Readings during the cutover window** (step 6). Check what firmware and
    pull feeds do when ingest returns 503 (retry, buffer, or drop) before
    picking the window length.
@@ -4746,6 +4753,36 @@ Cloudflare email binding.
    moved out of `user_metadata`, companion and Android token flows.
    Done when: every auth route's tests pass, and a manual run-through of
    each sign-in method works on a Neon branch with copied data.
+   - [x] 4a (2026-11-07): `src/lib/betterAuthConfig.ts`, a per-request
+         factory (`createBetterAuth`) on the baseline `auth_*` tables, same
+         model names, uuid ids and plugins (two-factor, passkey, bearer) as
+         `db/tools/better-auth-schema.mjs`. Email + password with confirmed
+         email required, 8-character minimum (as today), bcrypt hashes
+         copied from Supabase accepted, new hashes Better Auth's default.
+         Telemetry off. New dependencies, exact pins: `better-auth`,
+         `@better-auth/passkey` 1.7.18, `bcryptjs` 3.0.3 (pure JS, no
+         dependencies, BSD-3; Web Crypto has no bcrypt). Not used by any
+         route yet. 4 database tests: sign-up runs the household trigger
+         and sends a confirmation, no sign-in before confirming, short
+         password refused, copied bcrypt password signs in and a wrong one
+         doesn't, bearer token resolves. Mutations: bcrypt branch removed
+         → 2 fail; bcrypt check always true → 2 fail.
+   - [ ] 4b: per-request instance on Workers (Neon Pool), mount the
+         Better Auth handler, resolve the session in middleware and
+         `getAuthFromRequest` when `DB_BACKEND=neon` (same `AuthResult`
+         shape), and confirm it bundles and runs in local workerd.
+   - [ ] 4c: email + password routes (register, sign-in, confirm,
+         resend, forgot/update password, sign-out, sign-out everywhere),
+         emails through the existing Cloudflare email sender.
+   - [ ] 4d: Google, Discord and GitHub sign-in, linking by email.
+   - [ ] 4e: TOTP (enroll, verify, remove, the middleware step-up gate)
+         and passkeys.
+   - [ ] 4f: companion and Android token flows (contract change:
+         those apps sign in again after cutover; document it).
+   - [ ] 4g: `user_metadata` → `user_profiles.metadata`, app_metadata,
+         admin user lookups, account deletion also deletes the login.
+   - [ ] Follow-up: re-hash a copied bcrypt password to Better Auth's
+         default after its first successful sign-in.
 5. **Copy rehearsal.** Script that copies all app data plus users
    (`auth.users`, `auth.identities`, MFA factors) into Better Auth's
    tables, keeping IDs. Run against a fresh Neon branch until clean.
