@@ -1,3 +1,5 @@
+import { dbBackend } from "./db/client";
+import * as neonStatus from "./db/statusPages";
 import { createServerClient } from "./supabase";
 import { fetchAppStatusSummary } from "./appStatus";
 import { sendEmail } from "./mailer";
@@ -11,6 +13,14 @@ import {
 } from "./statusSubscriptions";
 
 async function readLastKnownHealthy(): Promise<boolean | null | undefined> {
+  if (dbBackend() === "neon") {
+    try {
+      return await neonStatus.readLastKnownHealthy();
+    } catch (error) {
+      console.error("status-notify: failed to read state:", error instanceof Error ? error.message : error);
+      return undefined; // "couldn't determine", distinct from "no row yet"
+    }
+  }
   const supabase = createServerClient();
   const { data, error } = await supabase
     .from("status_notify_state")
@@ -27,6 +37,7 @@ async function readLastKnownHealthy(): Promise<boolean | null | undefined> {
 }
 
 async function writeLastKnownHealthy(healthy: boolean): Promise<void> {
+  if (dbBackend() === "neon") return neonStatus.writeLastKnownHealthy(healthy);
   const supabase = createServerClient();
   await supabase.from("status_notify_state").upsert({
     id: 1,

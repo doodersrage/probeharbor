@@ -1,3 +1,5 @@
+import { dbBackend } from "./db/client";
+import * as neonStatus from "./db/statusPages";
 import { createServerClient } from "./supabase";
 import { listHouseholdDevices } from "./devices";
 import { fetchLatestSensorValues } from "./sensorReadings";
@@ -36,8 +38,12 @@ export async function createStatusPageToken(
   householdId: string,
   label: string,
 ): Promise<{ token: string | null; error: string | null }> {
-  const supabase = createServerClient();
   const token = randomToken();
+  if (dbBackend() === "neon") {
+    const created = await neonStatus.insertStatusPage(householdId, await sha256Hex(token), label.trim() || "Status page");
+    return { token: created.error ? null : token, error: created.error };
+  }
+  const supabase = createServerClient();
   const { error } = await supabase.from("status_page_tokens").insert({
     household_id: householdId,
     token_hash: await sha256Hex(token),
@@ -54,8 +60,12 @@ export async function regenerateStatusPageToken(
   householdId: string,
   id: string,
 ): Promise<{ token: string | null; error: string | null }> {
-  const supabase = createServerClient();
   const token = randomToken();
+  if (dbBackend() === "neon") {
+    const updated = await neonStatus.regenerateStatusPage(householdId, id, await sha256Hex(token));
+    return updated.error ? { token: null, error: updated.error } : { token, error: null };
+  }
+  const supabase = createServerClient();
   const { data, error } = await supabase
     .from("status_page_tokens")
     .update({ token_hash: await sha256Hex(token), token: null })
@@ -71,6 +81,7 @@ export async function regenerateStatusPageToken(
 export async function listStatusPageTokens(
   householdId: string,
 ): Promise<StatusPageToken[]> {
+  if (dbBackend() === "neon") return neonStatus.listStatusPages(householdId);
   const supabase = createServerClient();
   const { data } = await supabase
     .from("status_page_tokens")
@@ -85,6 +96,7 @@ export async function revokeStatusPageToken(
   householdId: string,
   id: string,
 ): Promise<void> {
+  if (dbBackend() === "neon") return neonStatus.revokeStatusPage(householdId, id);
   const supabase = createServerClient();
   await supabase
     .from("status_page_tokens")
@@ -96,6 +108,9 @@ export async function revokeStatusPageToken(
 export async function resolveStatusPageToken(
   token: string,
 ): Promise<{ householdId: string } | null> {
+  if (dbBackend() === "neon") {
+    return neonStatus.resolveStatusPage(await sha256Hex(token), LEGACY_RAW_TOKEN.test(token) ? token : null);
+  }
   const supabase = createServerClient();
   const { data } = await supabase
     .from("status_page_tokens")

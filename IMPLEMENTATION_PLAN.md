@@ -4558,10 +4558,20 @@ Cloudflare email binding.
          live-link count, the Share API never sends `token_hash`.
          Mutations: no stripping → 1 fails; revoke without household → 1
          fails. Existing route unit tests unchanged and passing.
-   - [ ] Convert the remaining ~165 queries in ~53 files and 1 Postgres
+   - [x] Area 6c, status pages (`src/lib/db/statusPages.ts`): household
+         status-page tokens (create, regenerate, list, revoke, resolve by
+         hash / legacy raw), public status email subscriptions (subscribe
+         with ON CONFLICT (email) keeping a confirmed address's link,
+         confirm, unsubscribe, list confirmed), and the notifier's
+         one-row state. 5 database tests: resolve/regenerate/revoke,
+         another household can't regenerate/revoke/list, subscription
+         flow, re-subscribe rotates only unconfirmed links, two at once →
+         one row, notifier state. Mutation: revoke without household → 1
+         fails.
+   - [ ] Convert the remaining ~145 queries in ~50 files and 1 Postgres
          function call (`sensor_bucket_averages`), one area per commit,
-         each with database tests. Next: status pages, billing, account
-         lifecycle.
+         each with database tests. Next: billing (Stripe subscriptions and
+         webhook events), account lifecycle.
    - [ ] Cross-household tests for every household-scoped read and write.
 4. **Login on Better Auth.** Email + password (accept existing bcrypt
    hashes, so passwords keep working), Google, GitHub, Discord, email
