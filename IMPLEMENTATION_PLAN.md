@@ -4526,11 +4526,20 @@ Cloudflare email binding.
          simultaneous sign-ups → one row, unknown tokens, the job emails
          confirmed subscribers once per night only. Mutation: job includes
          unconfirmed → 1 fails.
-   - [ ] Convert the remaining ~205 queries in ~64 files and 2 Postgres
-         function calls (`sensor_bucket_averages`,
-         `roll_up_and_prune_readings`), one area per commit, each with
-         database tests. Next: cron jobs (`jobRuns.ts`, stuck sensors,
-         feed uptime), then sharing, invites, API keys, billing.
+   - [x] Area 5a, scheduled jobs (`src/lib/db/jobs.ts`): job-run log
+         (start, finish, list, close abandoned runs, last successful
+         collect-history), raw-reading retention via
+         `roll_up_and_prune_readings` (same one-transaction guarantee),
+         stuck-sensor facts (four lookups per sensor in one query, same
+         filters), feed uptime checks and alert stamp. 4 database tests:
+         abandoned vs recent runs, retention rolls up and deletes only
+         old rows (avg 35 from 30 + 40, household kept), stuck vs varying
+         vs too-few-samples, uptime rows per user. Mutation: "different
+         value" ignored → 1 fails.
+   - [ ] Convert the remaining ~190 queries in ~60 files and 1 Postgres
+         function call (`sensor_bucket_averages`), one area per commit,
+         each with database tests. Next: sharing, invites, API keys,
+         billing, account lifecycle.
    - [ ] Cross-household tests for every household-scoped read and write.
 4. **Login on Better Auth.** Email + password (accept existing bcrypt
    hashes, so passwords keep working), Google, GitHub, Discord, email

@@ -1,4 +1,6 @@
 import type { DeviceWithSensors } from "./devices";
+import { dbBackend } from "./db/client";
+import { stuckSensorFacts } from "./db/jobs";
 import { createServerClient } from "./supabase";
 import type { Locale } from "../i18n/locales";
 import { fmt, formatNumber, plural } from "../i18n/format";
@@ -100,7 +102,8 @@ export async function findStuckSensors(
   locale: Locale = "en",
   useCelsius = false,
 ): Promise<StuckSensor[]> {
-  const supabase = createServerClient();
+  const neon = dbBackend() === "neon";
+  const supabase = neon ? null : createServerClient();
   const windowStart = new Date(nowMs - STUCK_WINDOW_MS).toISOString();
   const lookbackStart = new Date(nowMs - 3 * STUCK_WINDOW_MS).toISOString();
   const sensors = devices
@@ -111,6 +114,24 @@ export async function findStuckSensors(
   const results = await Promise.all(
     sensors.map(async (sensor): Promise<StuckSensor | null> => {
       try {
+        if (!supabase) {
+          const facts = await stuckSensorFacts(sensor.id, windowStart, lookbackStart);
+          if (typeof facts?.latest_value !== "number" || typeof facts.latest_at !== "string") return null;
+          return evaluateStuckSensor(
+            {
+              sensorId: sensor.id,
+              label: sensor.label,
+              latestValue: facts.latest_value,
+              latestAt: facts.latest_at,
+              lastDifferentAt: facts.last_different_at,
+              reportedBeforeWindow: facts.reported_before_window,
+              samplesInWindow: facts.samples_in_window,
+            },
+            nowMs,
+            locale,
+            useCelsius,
+          );
+        }
         const { data: latest } = await supabase
           .from("sensor_readings")
           .select("value_num, recorded_at")

@@ -1,3 +1,5 @@
+import { dbBackend } from "./db/client";
+import * as neonJobs from "./db/jobs";
 import { createServerClient } from "./supabase";
 import type { Json } from "../types/supabase";
 import {
@@ -31,6 +33,16 @@ export const ABANDONED_RUN_MS = 30 * 60 * 1000;
  */
 export async function closeAbandonedJobRuns(jobName: string, now = Date.now()): Promise<number> {
   try {
+    if (dbBackend() === "neon") {
+      const closedNeon = await neonJobs.closeAbandonedJobRuns(
+        jobName,
+        new Date(now).toISOString(),
+        new Date(now - ABANDONED_RUN_MS).toISOString(),
+        { abandoned: true, message: "Stopped before it finished (time limit, crash or deploy)." },
+      );
+      if (closedNeon > 0) console.error(`job ${jobName}: ${closedNeon} run(s) never finished; marked as errors`);
+      return closedNeon;
+    }
     const supabase = createServerClient();
     const { data, error } = await supabase
       .from("job_runs")
@@ -61,6 +73,14 @@ export async function startJobRun(
   detail: Record<string, unknown> = {},
 ): Promise<number | null> {
   await closeAbandonedJobRuns(jobName);
+  if (dbBackend() === "neon") {
+    try {
+      return await neonJobs.startJobRun(jobName, detail);
+    } catch (error) {
+      console.error("Failed to start job run:", error instanceof Error ? error.message : error);
+      return null;
+    }
+  }
   const supabase = createServerClient();
   const { data, error } = await supabase
     .from("job_runs")
@@ -86,6 +106,7 @@ export async function finishJobRun(
   detail: Record<string, unknown> = {},
 ): Promise<void> {
   if (id == null) return;
+  if (dbBackend() === "neon") return neonJobs.finishJobRun(id, status, detail);
   const supabase = createServerClient();
   await supabase
     .from("job_runs")
@@ -100,6 +121,13 @@ export async function finishJobRun(
 export async function listRecentJobRuns(
   limit = 50,
 ): Promise<{ runs: JobRun[]; error: string | null }> {
+  if (dbBackend() === "neon") {
+    try {
+      return { runs: await neonJobs.listRecentJobRuns(limit), error: null };
+    } catch (error) {
+      return { runs: [], error: error instanceof Error ? error.message : String(error) };
+    }
+  }
   const supabase = createServerClient();
   const { data, error } = await supabase
     .from("job_runs")
@@ -135,6 +163,15 @@ export async function runSensorReadingRetention(
   deleted: number;
   error: string | null;
 }> {
+  if (dbBackend() === "neon") {
+    try {
+      const neonResult = await neonJobs.rollUpAndPruneReadings(retentionCutoff(retentionDays));
+      return { rolledUp: neonResult.rolled_up ?? 0, deleted: neonResult.deleted ?? 0, error: null };
+    } catch (error) {
+      // As before: if the function fails, nothing was deleted.
+      return { rolledUp: 0, deleted: 0, error: error instanceof Error ? error.message : String(error) };
+    }
+  }
   const supabase = createServerClient();
   const { data, error } = await supabase.rpc("roll_up_and_prune_readings", {
     p_cutoff: retentionCutoff(retentionDays),

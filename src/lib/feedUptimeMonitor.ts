@@ -1,3 +1,5 @@
+import { dbBackend } from "./db/client";
+import * as neonJobs from "./db/jobs";
 import { createServerClient } from "./supabase";
 import { checkFeedHealth, type FeedHealthStatus } from "./collectHistory";
 import { feedHealthMessage } from "./feedErrorText";
@@ -24,7 +26,6 @@ export async function storeFeedUptimeChecks(
   statuses: FeedHealthStatus[],
 ): Promise<void> {
   if (statuses.length === 0) return;
-  const supabase = createServerClient();
   const rows = statuses.map((s) => ({
     user_id: userId,
     feed_id: s.feedId,
@@ -35,7 +36,8 @@ export async function storeFeedUptimeChecks(
     latency_ms: null,
     checked_at: s.checkedAt,
   }));
-  await supabase.from("feed_uptime_checks").insert(rows);
+  if (dbBackend() === "neon") return neonJobs.insertFeedUptimeChecks(rows);
+  await createServerClient().from("feed_uptime_checks").insert(rows);
 }
 
 /**
@@ -52,6 +54,7 @@ export function isNewFeedOutage(lastOkAt: string | null, lastAlertAt: string | n
 }
 
 async function lastOkCheckAt(userId: string, feedId: string): Promise<string | null> {
+  if (dbBackend() === "neon") return neonJobs.lastOkFeedCheckAt(userId, feedId);
   const supabase = createServerClient();
   const { data } = await supabase
     .from("feed_uptime_checks")
@@ -119,14 +122,17 @@ export async function runFeedUptimeForAllUsers(): Promise<{
       if (locale === "en") await notifyUser(userId, settings.email, settings, payload);
       else await notifyUser(userId, settings.email, settings, payload, undefined, locale);
 
-      const supabase = createServerClient();
-      await supabase
-        .from("alert_settings")
-        .update({
-          last_feed_uptime_alert_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-        .eq("user_id", userId);
+      if (dbBackend() === "neon") {
+        await neonJobs.markFeedUptimeAlert(userId);
+      } else {
+        await createServerClient()
+          .from("alert_settings")
+          .update({
+            last_feed_uptime_alert_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          })
+          .eq("user_id", userId);
+      }
 
       alertsSent += 1;
     } catch (err) {
