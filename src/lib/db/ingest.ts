@@ -20,11 +20,12 @@ import { query } from "./client";
 
 const message = (error: unknown) => (error instanceof Error ? error.message : String(error));
 
-const SENSOR_JSON = `json_build_object(
+/** One device_sensors row (alias s) as JSON, same keys as DeviceSensor. */
+export const SENSOR_JSON = `json_build_object(
   'id', s.id, 'device_id', s.device_id, 'key', s.key, 'label', s.label, 'kind', s.kind,
   'unit', s.unit, 'visible', s.visible, 'sort_order', s.sort_order, 'offset_num', s.offset_num)`;
 
-const SENSOR_COLUMNS = "id, device_id, key, label, kind, unit, visible, sort_order, offset_num";
+export const SENSOR_COLUMNS = "id, device_id, key, label, kind, unit, visible, sort_order, offset_num";
 
 /**
  * Enabled device with this ingest-key hash, with its sensors. Null when there

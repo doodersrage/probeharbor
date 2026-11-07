@@ -1,4 +1,5 @@
 import { dbBackend } from "./db/client";
+import * as neonDevices from "./db/devices";
 import * as neonIngest from "./db/ingest";
 import { createServerClient } from "./supabase";
 import type { Json } from "../types/supabase";
@@ -76,6 +77,7 @@ const SENSOR_SELECT =
 export async function listHouseholdDevices(
   householdId: string,
 ): Promise<{ devices: DeviceWithSensors[]; error: string | null }> {
+  if (dbBackend() === "neon") return neonDevices.listHouseholdDevices(householdId);
   const supabase = createServerClient();
   const { data: devices, error } = await supabase
     .from("devices")
@@ -295,6 +297,9 @@ export async function createPushDevice(
   ingestKeyPrefix: string,
   space?: string | null,
 ): Promise<{ device: Device | null; error: string | null }> {
+  if (dbBackend() === "neon") {
+    return neonDevices.createPushDevice(householdId, name, ingestKeyHash, ingestKeyPrefix, space?.trim() || null);
+  }
   const supabase = createServerClient();
   const { data, error } = await supabase
     .from("devices")
@@ -328,6 +333,7 @@ export async function renamePushDevice(
   if (!trimmed) {
     return { error: t.nameRequired };
   }
+  if (dbBackend() === "neon") return neonDevices.renamePushDevice(householdId, deviceId, trimmed, t.renameFailed);
 
   const supabase = createServerClient();
   const { data, error } = await supabase
@@ -353,6 +359,9 @@ export async function updateDeviceSpace(
   locale: Locale = "en",
 ): Promise<{ error: string | null }> {
   const trimmed = space?.trim() || null;
+  if (dbBackend() === "neon") {
+    return neonDevices.updateDeviceSpace(householdId, deviceId, trimmed, apiDevicesMessages(locale).updateSpaceFailed);
+  }
   const supabase = createServerClient();
   const { data, error } = await supabase
     .from("devices")
@@ -379,6 +388,25 @@ export async function updateDeviceDetails(
   locale: Locale = "en",
 ): Promise<{ error: string | null }> {
   const t = apiDevicesMessages(locale);
+  if (dbBackend() === "neon") {
+    let source: string | null;
+    try {
+      source = await neonDevices.getDeviceSource(householdId, deviceId);
+    } catch {
+      source = null; // a failed read was "not found" on the Supabase path too
+    }
+    if (!source) return { error: t.deviceNotFound };
+    const neonName = patch.name?.trim();
+    if (source === "push" && patch.name !== undefined && !neonName) return { error: t.nameRequired };
+    return neonDevices.updateDeviceDetails(
+      householdId,
+      deviceId,
+      source === "push",
+      neonName || undefined,
+      patch.enabled,
+      patch.space?.trim() || null,
+    );
+  }
   const supabase = createServerClient();
   const { data: existing } = await supabase
     .from("devices")
@@ -408,6 +436,7 @@ export async function rotatePushDeviceKey(
   ingestKeyHash: string,
   ingestKeyPrefix: string,
 ): Promise<{ error: string | null }> {
+  if (dbBackend() === "neon") return neonDevices.rotatePushDeviceKey(householdId, deviceId, ingestKeyHash, ingestKeyPrefix);
   const supabase = createServerClient();
   const { data, error } = await supabase
     .from("devices")
@@ -440,6 +469,16 @@ export async function updateDeviceSensor(
     visible?: boolean;
   },
 ): Promise<{ error: string | null }> {
+  if (dbBackend() === "neon") {
+    return neonDevices.updateDeviceSensor(sensorId, deviceId, {
+      key: patch.key,
+      label: patch.label,
+      kind: patch.kind,
+      unit: patch.unit ?? null,
+      offsetNum: clampSensorOffset(patch.offsetNum ?? 0, patch.kind),
+      visible: patch.visible,
+    });
+  }
   const supabase = createServerClient();
   const { error } = await supabase
     .from("device_sensors")
@@ -465,6 +504,7 @@ export async function deleteDeviceSensor(
   sensorId: string,
   deviceId: string,
 ): Promise<{ error: string | null }> {
+  if (dbBackend() === "neon") return neonDevices.deleteDeviceSensor(sensorId, deviceId);
   const supabase = createServerClient();
   const { error } = await supabase
     .from("device_sensors")
@@ -532,6 +572,7 @@ export async function savePullDevicesForHousehold(
   feeds: TempFeedConfig[],
   probes: TempProbeConfig[],
 ): Promise<{ error: string | null }> {
+  if (dbBackend() === "neon") return neonDevices.savePullDevicesForHousehold(householdId, feeds, probes);
   const supabase = createServerClient();
   const existing = await listHouseholdDevices(householdId);
   if (existing.error) {
@@ -706,6 +747,7 @@ export async function replaceDeviceSensor(
   oldSensorId: string,
   newSensorId: string,
 ): Promise<{ movedReadings: number; error: string | null }> {
+  if (dbBackend() === "neon") return neonDevices.replaceDeviceSensor(householdId, oldSensorId, newSensorId);
   const supabase = createServerClient();
   const { data, error } = await supabase.rpc("replace_device_sensor", {
     p_household_id: householdId,
@@ -726,6 +768,9 @@ export async function transferDeviceToHousehold(
   const t = apiDevicesMessages(locale);
   if (fromHouseholdId === toHouseholdId) {
     return { error: t.sameHousehold };
+  }
+  if (dbBackend() === "neon") {
+    return neonDevices.transferDeviceToHousehold(deviceId, fromHouseholdId, toHouseholdId, t.deviceNotFound);
   }
   const supabase = createServerClient();
   const { data, error } = await supabase

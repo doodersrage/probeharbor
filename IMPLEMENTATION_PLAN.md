@@ -4396,11 +4396,27 @@ Cloudflare email binding.
          meta merge; 20 parallel count updates all kept. Mutation: letting
          disabled devices through → 1 fails. Found and fixed: two list
          functions built the Supabase client before checking the switch.
-   - [ ] Convert the remaining ~310 queries and 13 Postgres function calls,
-         one area per commit, each with database tests. Next: the rest of
-         `devices.ts` (device setup and settings), then reading queries
-         (`sensorReadings.ts`, history, `latest_sensor_readings`), then
-         the after-response ingest work and alerts.
+   - [x] Area 2b, the rest of `devices.ts` (`src/lib/db/devices.ts`):
+         device list (devices + sensors in one query; API routes use it to
+         check a device is the caller's before editing sensors), create,
+         rename, space, Save details, key rotation, sensor edit/delete,
+         `replace_device_sensor`, moving a device between households (device
+         and readings in one statement), and the pull-feeds Save sync (same
+         steps as before; a failure part way now returns the error instead
+         of skipping some sensor writes silently). 10 database tests, most
+         aimed at another household's device or another device's sensor.
+         Mutations: rename without the household filter, sensor delete
+         without the device filter, move without the "from" household →
+         1 failure each.
+   - [ ] **Existing bug found (both paths, not fixed here):** moving a
+         device to another household moves its raw readings but not its
+         `sensor_reading_rollups` or `door_open_events`, which are read by
+         household. Older chart history and door openings stay with the
+         old household. Fix separately, with a test, on both paths.
+   - [ ] Convert the remaining ~290 queries and 13 Postgres function calls,
+         one area per commit, each with database tests. Next: reading
+         queries (`sensorReadings.ts`, history, `latest_sensor_readings`),
+         then the after-response ingest work and alerts.
    - [ ] Cross-household tests for every household-scoped read and write.
 4. **Login on Better Auth.** Email + password (accept existing bcrypt
    hashes, so passwords keep working), Google, GitHub, Discord, email
