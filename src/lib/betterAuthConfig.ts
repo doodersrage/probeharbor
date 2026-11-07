@@ -18,6 +18,7 @@ import bcrypt from "bcryptjs";
 import { betterAuth } from "better-auth";
 import { hashPassword, verifyPassword } from "better-auth/crypto";
 import { bearer, twoFactor } from "better-auth/plugins";
+import { type OAuthProviderId, oauthTwoFactorPlugin, refuseGitHubImplicitLink } from "./betterAuthOAuth";
 
 /** Same rule as the Supabase sign-up and reset forms today. */
 export const MIN_PASSWORD_LENGTH = 8;
@@ -53,7 +54,15 @@ export type BetterAuthDeps = {
    * configured site URL, which can differ in scheme from the request's.
    */
   secureCookies?: boolean;
+  /**
+   * OAuth apps with credentials set. Each provider returns to the app's
+   * existing callback path (see `redirectURI`), not Better Auth's own.
+   */
+  oauth?: Partial<Record<OAuthProviderId, { clientId: string; clientSecret: string; redirectURI: string }>>;
 };
+
+/** Where the two-factor challenge lives (also after OAuth). */
+export const MFA_CHALLENGE_PATH = "/signin/mfa";
 
 export function createBetterAuth(deps: BetterAuthDeps) {
   return betterAuth({
@@ -84,7 +93,25 @@ export function createBetterAuth(deps: BetterAuthDeps) {
       autoSignInAfterVerification: true,
       sendVerificationEmail: async ({ user, url, token }) => deps.sendVerificationEmail({ email: user.email, url, token }),
     },
+    socialProviders: {
+      ...(deps.oauth?.google ? { google: { ...deps.oauth.google, prompt: "select_account" as const } } : {}),
+      ...(deps.oauth?.discord ? { discord: deps.oauth.discord } : {}),
+      // Same scopes as before, so accounts with a private email still work.
+      ...(deps.oauth?.github ? { github: { ...deps.oauth.github, scope: ["read:user", "user:email"] } } : {}),
+    },
+    databaseHooks: {
+      account: {
+        create: {
+          before: async (account, ctx) => {
+            if (!ctx) return;
+            const allowed = await refuseGitHubImplicitLink(account, (userId) => ctx.context.internalAdapter.findAccounts(userId));
+            return allowed ? undefined : false;
+          },
+        },
+      },
+    },
     plugins: [
+      oauthTwoFactorPlugin(MFA_CHALLENGE_PATH),
       twoFactor({ issuer: "ProbeHarbor", schema: { twoFactor: { modelName: "auth_two_factors" } } }),
       passkey({ rpID: deps.rpID, rpName: "ProbeHarbor", origin: deps.baseURL, schema: { passkey: { modelName: "auth_passkeys" } } }),
       bearer(),

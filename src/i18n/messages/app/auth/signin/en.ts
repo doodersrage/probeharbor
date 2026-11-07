@@ -69,6 +69,8 @@ const en = {
       "Social sign-in credentials are out of date. Regenerate the client secret in the provider app (Discord, GitHub, or Google) and paste the new value into Supabase → Authentication → Providers.",
     oauth_github_profile:
       "GitHub sign-in could not read your profile or email. Revoke ProbeHarbor under GitHub → Settings → Authorized OAuth Apps, then try again: the authorize screen must show ProbeHarbor and request email access.",
+    oauth_account_exists:
+      "An account with this email already exists and isn't linked to this sign-in method. Sign in with your email and password instead.",
     oauth_exchange_failed: "Something went wrong while completing social sign-in. Please try again.",
     confirm_link:
       "That confirmation link has expired or was already used. If you already confirmed, just sign in.",

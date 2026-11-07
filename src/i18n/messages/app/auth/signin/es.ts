@@ -70,6 +70,8 @@ const es: AuthSigninMessages = {
       "Las credenciales del acceso con redes sociales están desactualizadas. Genera un nuevo client secret en la app del proveedor (Discord, GitHub o Google) y pega el nuevo valor en Supabase → Authentication → Providers.",
     oauth_github_profile:
       "El acceso con GitHub no pudo leer tu perfil ni tu correo. Revoca ProbeHarbor en GitHub → Settings → Authorized OAuth Apps y vuelve a intentarlo: la pantalla de autorización debe mostrar ProbeHarbor y pedir acceso a tu correo.",
+    oauth_account_exists:
+      "Ya existe una cuenta con este correo y no está vinculada a este método de inicio de sesión. Inicia sesión con tu correo y contraseña.",
     oauth_exchange_failed:
       "Algo salió mal al completar el acceso con redes sociales. Inténtalo de nuevo.",
     confirm_link:

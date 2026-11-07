@@ -27,9 +27,14 @@ import {
   setMfaRequiredCookie,
 } from "../../../../lib/mfa";
 import { requestLocale, saveLocaleIfMissing } from "../_locale";
+import { dbBackend } from "../../../../lib/db/client";
+import { forwardOAuthCallback } from "../../../../lib/betterAuthRuntime";
 
 export const GET: APIRoute = async (context) => {
   const { url, cookies, redirect, request, site } = context;
+  // Neon: Better Auth checks the state and code itself (same callback URL, so
+  // the GitHub OAuth app setting doesn't change). See /api/auth/oauth-done.
+  if (dbBackend() === "neon") return forwardOAuthCallback(request, "github");
   const oauthError = url.searchParams.get("error");
   if (oauthError) {
     cookies.delete(GITHUB_OAUTH_STATE_COOKIE, { path: "/" });

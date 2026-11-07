@@ -4857,12 +4857,37 @@ Cloudflare email binding.
          password, unconfirmed account confirmed by a reset. Mutations:
          expiry ignored → 1 fails; reset skipped → 2 fail; not marking the
          email confirmed → 1 fails.
-   - [ ] 4d: Google, Discord and GitHub sign-in, linking by email.
-         **Must add a second-factor check:** Better Auth only demands the
-         second factor on `/sign-in/email` (and username/phone), not on
-         social sign-in, and the middleware skips the Supabase "aal" gate
-         for Better Auth sessions. Without a check, a user with TOTP on
-         could skip it by signing in with Google. Test it before shipping.
+   - [x] 4d (2026-11-07): Google, Discord and GitHub sign-in on Better
+         Auth (`betterAuthOAuth.ts`). Linking, **decided 2026-11-07: keep
+         today's rules**: Google/Discord join an existing account when both
+         sides have a verified email (Better Auth's default, Supabase's rule
+         today); GitHub never joins an account not already linked to GitHub
+         (`databaseHooks.account.create.before`). **Two-factor gap closed:**
+         a small plugin hooks Better Auth's OAuth callback and, for users
+         with two-factor on, swaps the new session for the same challenge
+         email sign-in uses, so `/signin/mfa` finishes it (tested: the TOTP
+         code then gives the session). Providers return to app routes that
+         hand the request to Better Auth's callback handler (its HTTP
+         endpoints stay unmounted): GitHub to the existing
+         `/api/auth/github/callback` (OAuth app setting unchanged), Google
+         and Discord to new `/api/auth/callback/<provider>`; then
+         `/api/auth/oauth-done` applies language, referral and next page.
+         New sign-in error `oauth_account_exists` (5 languages). 11 database
+         tests (5 on the rules through Better Auth's handler with the
+         providers' servers stubbed, 6 through the app's routes). Mutations:
+         two-factor plugin removed → 1 fails; GitHub rule off → 1 fails.
+         **Setup needed before cutover (owner):** add
+         `GOOGLE_CLIENT_ID/SECRET` and `DISCORD_CLIENT_ID/SECRET` (today
+         they live in Supabase → Authentication → Providers); add redirect
+         URIs `https://probeharbor.dev/api/auth/callback/google` (Google
+         Cloud console) and `.../callback/discord` (Discord developer
+         portal). Adding them doesn't break the current Supabase sign-in.
+         **For step 5:** GitHub users created by the old custom flow have
+         no Supabase identity row; create their `auth_accounts` github row
+         from `user_metadata.github_id`, or they'd be refused as "not
+         linked". Not yet: phone (Android) and companion OAuth hand-off
+         (4f); not checked against the real providers (needs the setup
+         above).
    - [ ] 4e: TOTP (enroll, verify, remove, the middleware step-up gate)
          and passkeys.
    - [ ] 4f: companion and Android token flows (contract change:

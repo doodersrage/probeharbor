@@ -87,6 +87,29 @@ export const POST: APIRoute = async (context) => {
       cookies.delete(OAUTH_REF_COOKIE, { path: "/" });
     }
 
+    if (dbBackend() === "neon") {
+      // Better Auth keeps the OAuth state in its own cookie; the provider
+      // comes back to /api/auth/callback/<provider> (or the GitHub callback),
+      // then to /api/auth/oauth-done, which applies next / referral / language.
+      const res = await withBetterAuth(request, (auth) =>
+        auth.api.signInSocial({
+          body: {
+            provider: provider as "google" | "github" | "discord",
+            callbackURL: "/api/auth/oauth-done",
+            newUserCallbackURL: "/api/auth/oauth-done?new=1",
+            errorCallbackURL: "/api/auth/oauth-done",
+          },
+          asResponse: true,
+        }),
+      ).catch((startError: unknown) => {
+        console.error(`OAuth sign-in start failed (${provider}):`, startError instanceof Error ? startError.message : startError);
+        return null;
+      });
+      const started = res?.ok ? ((await res.clone().json()) as { url?: string }) : null;
+      if (!res || !started?.url) return redirect(buildSignInRedirectUrl("oauth_failed"));
+      return redirectWithAuthCookies(started.url, res);
+    }
+
     if (provider === "github" && isGitHubOAuthConfigured()) {
       const state = crypto.randomUUID();
       cookies.set(GITHUB_OAUTH_STATE_COOKIE, state, {

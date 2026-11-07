@@ -71,6 +71,8 @@ const fr: AuthSigninMessages = {
       "Les identifiants de connexion sociale sont obsolètes. Régénérez le client secret dans l’application du fournisseur (Discord, GitHub ou Google) et collez la nouvelle valeur dans Supabase → Authentication → Providers.",
     oauth_github_profile:
       "La connexion GitHub n’a pas pu lire votre profil ni votre e-mail. Révoquez ProbeHarbor dans GitHub → Settings → Authorized OAuth Apps, puis réessayez : l’écran d’autorisation doit afficher ProbeHarbor et demander l’accès à l’e-mail.",
+    oauth_account_exists:
+      "Un compte existe déjà avec cette adresse e-mail et n’est pas lié à ce mode de connexion. Connectez-vous plutôt avec votre e-mail et votre mot de passe.",
     oauth_exchange_failed:
       "Une erreur s’est produite pendant la connexion via un réseau social. Veuillez réessayer.",
     confirm_link:
