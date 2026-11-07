@@ -4568,10 +4568,20 @@ Cloudflare email binding.
          flow, re-subscribe rotates only unconfirmed links, two at once →
          one row, notifier state. Mutation: revoke without household → 1
          fails.
-   - [ ] Convert the remaining ~145 queries in ~50 files and 1 Postgres
+   - [x] Area 7a, billing (`src/lib/db/billing.ts`): Stripe subscription
+         row (get, upsert with the shared "don't overwrite an active
+         subscription" rule, find by subscription id), plan-group sync via
+         `sync_plan_group_membership` (legacy fallback kept), and webhook
+         event dedup (`on conflict do nothing returning`, fails open on
+         errors as before). 5 database tests: duplicate delivery skipped,
+         release allows a retry, 5 simultaneous deliveries → 1 processed,
+         active → group granted, canceled → group removed, a stray
+         inactive subscription can't overwrite the active one, users kept
+         apart. Mutation: plain insert for the claim → 2 fail.
+   - [ ] Convert the remaining ~135 queries in ~48 files and 1 Postgres
          function call (`sensor_bucket_averages`), one area per commit,
-         each with database tests. Next: billing (Stripe subscriptions and
-         webhook events), account lifecycle.
+         each with database tests. Next: account lifecycle (deletion,
+         export), referrals, admin and user manager.
    - [ ] Cross-household tests for every household-scoped read and write.
 4. **Login on Better Auth.** Email + password (accept existing bcrypt
    hashes, so passwords keep working), Google, GitHub, Discord, email

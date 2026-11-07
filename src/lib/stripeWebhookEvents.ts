@@ -1,3 +1,5 @@
+import { dbBackend } from "./db/client";
+import { claimWebhookEvent, releaseWebhookEvent } from "./db/billing";
 import { createServerClient } from "./supabase";
 
 /**
@@ -11,6 +13,7 @@ export async function claimStripeWebhookEvent(
   eventId: string,
   eventType: string,
 ): Promise<{ alreadyProcessed: boolean }> {
+  if (dbBackend() === "neon") return claimWebhookEvent(eventId, eventType);
   const supabase = createServerClient();
   const { error } = await supabase
     .from("stripe_webhook_events")
@@ -37,6 +40,7 @@ export async function claimStripeWebhookEvent(
  * Without this, a 500 after a successful claim would permanently drop the event.
  */
 export async function releaseStripeWebhookEvent(eventId: string): Promise<void> {
+  if (dbBackend() === "neon") return releaseWebhookEvent(eventId);
   const supabase = createServerClient();
   const { error } = await supabase
     .from("stripe_webhook_events")
