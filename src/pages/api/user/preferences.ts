@@ -1,4 +1,3 @@
-import { refreshCookiesAfterMetadataWrite } from "../../../lib/sessionMetadata";
 import type { APIRoute } from "astro";
 import {
   getAuthFromRequest,
@@ -51,7 +50,6 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     maxAge: 60 * 60 * 24 * 365,
   });
 
-  await refreshCookiesAfterMetadataWrite(cookies, refreshToken);
 
   return redirect(`${redirectTo}${redirectTo.includes("?") ? "&" : "?"}prefs_saved=1`);
 };

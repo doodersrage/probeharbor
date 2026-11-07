@@ -1,6 +1,6 @@
 /**
  * Neon versions of household invites (householdInvites.ts) and API keys
- * (apiKeys.ts). Called when `dbBackend() === "neon"`. Both grant access, so
+ * (apiKeys.ts). Both grant access, so
  * every change is scoped to the household it belongs to; tokens and keys are
  * stored only as SHA-256 hashes (callers hash).
  *

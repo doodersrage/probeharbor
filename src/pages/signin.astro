@@ -2,15 +2,12 @@
 import Layout from "../layouts/Layout.astro";
 import OAuthButtons from "../components/OAuthButtons.astro";
 import PasskeySignIn from "../components/PasskeySignIn";
-import { dbBackend } from "../lib/db/client";
 import ProductAnalyticsTracker from "../components/ProductAnalyticsTracker.astro";
 import { getAuthFromCookies } from "../lib/auth";
 import { getSignInErrorMessage } from "../lib/signInErrors";
-import {
-  buildMfaChallengeUrl,
-  sessionNeedsMfaStepUp,
-  setMfaRequiredCookie,
-} from "../lib/mfa";
+import { buildMfaChallengeUrl, setMfaRequiredCookie } from "../lib/mfa";
+import { betterAuthNeedsStepUp } from "../lib/betterAuthMfaGate";
+import { hasValidMfaStepUpProof } from "../lib/mfaStepUpProof";
 import { buildRegisterHref, REGISTER_NEXT_DEVICES } from "../lib/registerUrl";
 import { sanitizeNextPath } from "../lib/siteUrl";
 import { getLocale } from "../i18n";
@@ -22,9 +19,8 @@ const t = authSigninMessages(locale).signin;
 const { session, user } = await getAuthFromCookies(Astro.cookies);
 
 if (session && user) {
-  const needsStepUp = await sessionNeedsMfaStepUp(
-    session.access_token,
-    session.refresh_token,
+  const needsStepUp = await betterAuthNeedsStepUp(user, (id) =>
+    hasValidMfaStepUpProof(Astro.request, Astro.cookies, id),
   );
   if (needsStepUp) {
     setMfaRequiredCookie(Astro.cookies, true);
@@ -95,9 +91,7 @@ const registerHref = buildRegisterHref({ next: safeNext || REGISTER_NEXT_DEVICES
       )}
 
       <OAuthButtons next={safeNext} primary />
-      {dbBackend() === "neon" && (
-        <PasskeySignIn client:load next={safeNext} text={{ passkeySignIn: t.passkeySignIn, passkeyFailed: t.passkeyFailed }} />
-      )}
+      <PasskeySignIn client:load next={safeNext} text={{ passkeySignIn: t.passkeySignIn, passkeyFailed: t.passkeyFailed }} />
 
       <form action="/api/auth/signin" method="post">
         {safeNext && <input type="hidden" name="next" value={safeNext} />}

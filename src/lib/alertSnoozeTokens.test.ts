@@ -1,23 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { AlertSettings } from "./alerts";
 
-function mockQuery(result: { data?: unknown; error?: unknown }) {
-  const builder: Record<string, unknown> = {};
-  for (const method of ["select", "eq", "in", "limit", "is", "order", "insert", "update", "upsert"]) {
-    builder[method] = vi.fn(() => builder);
-  }
-  builder.single = vi.fn(() => Promise.resolve(result));
-  builder.maybeSingle = vi.fn(() => Promise.resolve(result));
-  (builder as { then: unknown }).then = (
-    resolve: (value: unknown) => unknown,
-    reject?: (reason: unknown) => unknown,
-  ) => Promise.resolve(result).then(resolve, reject);
-  return builder;
-}
-
-const mockFrom = vi.fn();
-vi.mock("./supabase", () => ({
-  createServerClient: () => ({ from: (...args: unknown[]) => mockFrom(...args) }),
+const mockFindSnoozeToken = vi.fn();
+const mockInsertSnoozeToken = vi.fn();
+const mockClaimSnoozeToken = vi.fn();
+const mockHouseholdMemberIds = vi.fn();
+vi.mock("./db/alertExtras", () => ({
+  findSnoozeToken: (...a: unknown[]) => mockFindSnoozeToken(...a),
+  insertSnoozeToken: (...a: unknown[]) => mockInsertSnoozeToken(...a),
+  claimSnoozeToken: (...a: unknown[]) => mockClaimSnoozeToken(...a),
+  householdMemberIds: (...a: unknown[]) => mockHouseholdMemberIds(...a),
 }));
 
 const mockSnoozeUntilFromHours = vi.fn();
@@ -37,7 +29,10 @@ vi.mock("./notify", () => ({
 const baseSettings: AlertSettings = {} as AlertSettings;
 
 beforeEach(() => {
-  mockFrom.mockReset();
+  mockFindSnoozeToken.mockReset().mockResolvedValue(null);
+  mockInsertSnoozeToken.mockReset().mockResolvedValue(undefined);
+  mockClaimSnoozeToken.mockReset().mockResolvedValue(null);
+  mockHouseholdMemberIds.mockReset().mockResolvedValue([]);
   mockSnoozeUntilFromHours.mockReset().mockReturnValue("2099-01-01T00:00:00.000Z");
   mockVacationUntilFromDays.mockReset().mockReturnValue("2099-06-01T00:00:00.000Z");
   mockGetAlertSettingsForUser.mockReset().mockResolvedValue({ ...baseSettings });
@@ -59,39 +54,34 @@ describe("sha256Hex", () => {
 });
 
 describe("createSnoozeToken", () => {
-  it("inserts a random token row and returns the token", async () => {
-    const builder = mockQuery({ data: null, error: null });
-    mockFrom.mockReturnValue(builder);
-    const { createSnoozeToken } = await import("./alertSnoozeTokens");
+  it("stores the hash of a random token and returns the token", async () => {
+    const { createSnoozeToken, sha256Hex } = await import("./alertSnoozeTokens");
 
     const token = await createSnoozeToken("user-1", 12);
 
     expect(token).toMatch(/^[0-9a-f]{32}$/);
-    expect(mockFrom).toHaveBeenCalledWith("alert_snooze_tokens");
-    const { sha256Hex } = await import("./alertSnoozeTokens");
-    expect(builder.insert).toHaveBeenCalledWith(
-      expect.objectContaining({ token: await sha256Hex(token), user_id: "user-1", hours: 12 }),
-    );
+    expect(mockInsertSnoozeToken).toHaveBeenCalledWith(await sha256Hex(token), "user-1", 12, expect.any(String));
   });
 
   it("never stores the raw token", async () => {
-    const builder = mockQuery({ data: null, error: null });
-    mockFrom.mockReturnValue(builder);
     const { createSnoozeToken } = await import("./alertSnoozeTokens");
 
     const token = await createSnoozeToken("user-1", 12);
 
-    expect(JSON.stringify((builder.insert as ReturnType<typeof vi.fn>).mock.calls)).not.toContain(token);
+    expect(JSON.stringify(mockInsertSnoozeToken.mock.calls)).not.toContain(token);
   });
 
-  it("defaults hours to 24", async () => {
-    const builder = mockQuery({ data: null, error: null });
-    mockFrom.mockReturnValue(builder);
+  it("defaults hours to 24 and expires in 7 days", async () => {
     const { createSnoozeToken } = await import("./alertSnoozeTokens");
+    const before = Date.now();
 
     await createSnoozeToken("user-1");
 
-    expect(builder.insert).toHaveBeenCalledWith(expect.objectContaining({ hours: 24 }));
+    const [, , hours, expiresAt] = mockInsertSnoozeToken.mock.calls[0]!;
+    expect(hours).toBe(24);
+    const ms = Date.parse(expiresAt as string) - before;
+    expect(ms).toBeGreaterThanOrEqual(7 * 24 * 60 * 60 * 1000 - 1000);
+    expect(ms).toBeLessThanOrEqual(7 * 24 * 60 * 60 * 1000 + 1000);
   });
 });
 
@@ -111,7 +101,6 @@ describe("snoozeTokenLookupKeys", () => {
 
 describe("applySnoozeToken", () => {
   it("rejects an unknown token", async () => {
-    mockFrom.mockReturnValue(mockQuery({ data: null }));
     const { applySnoozeToken } = await import("./alertSnoozeTokens");
 
     const result = await applySnoozeToken("nope");
@@ -121,35 +110,28 @@ describe("applySnoozeToken", () => {
   });
 
   it("rejects an already-used token", async () => {
-    mockFrom.mockReturnValue(
-      mockQuery({
-        data: {
-          user_id: "user-1",
-          hours: 12,
-          expires_at: "2099-01-01T00:00:00.000Z",
-          used_at: "2020-01-01T00:00:00.000Z",
-        },
-      }),
-    );
+    mockFindSnoozeToken.mockResolvedValue({
+      token: "stored-hash",
+      user_id: "user-1",
+      hours: 12,
+      expires_at: "2099-01-01T00:00:00.000Z",
+      used_at: "2020-01-01T00:00:00.000Z",
+    });
     const { applySnoozeToken } = await import("./alertSnoozeTokens");
 
     const result = await applySnoozeToken("used-token");
 
-    expect(result.ok).toBe(false);
-    expect(result.message).toBe("Invalid or already used snooze link.");
+    expect(result).toEqual({ ok: false, message: "Invalid or already used snooze link." });
   });
 
   it("rejects an expired token", async () => {
-    mockFrom.mockReturnValue(
-      mockQuery({
-        data: {
-          user_id: "user-1",
-          hours: 12,
-          expires_at: "2000-01-01T00:00:00.000Z",
-          used_at: null,
-        },
-      }),
-    );
+    mockFindSnoozeToken.mockResolvedValue({
+      token: "stored-hash",
+      user_id: "user-1",
+      hours: 12,
+      expires_at: "2000-01-01T00:00:00.000Z",
+      used_at: null,
+    });
     const { applySnoozeToken } = await import("./alertSnoozeTokens");
 
     const result = await applySnoozeToken("stale-token");
@@ -158,43 +140,35 @@ describe("applySnoozeToken", () => {
     expect(mockGetAlertSettingsForUser).not.toHaveBeenCalled();
   });
 
-  it("applies the snooze, marks the token used, and reports the hours", async () => {
-    const builder = mockQuery({
-      data: {
-        token: "stored-hash",
-        user_id: "user-1",
-        hours: 12,
-        expires_at: "2099-01-01T00:00:00.000Z",
-        used_at: null,
-      },
-    });
-    mockFrom.mockReturnValue(builder);
-    mockGetAlertSettingsForUser.mockResolvedValue({ someFlag: true });
+  it("treats a failed claim as an invalid link", async () => {
+    mockClaimSnoozeToken.mockRejectedValue(new Error("db down"));
     const { applySnoozeToken } = await import("./alertSnoozeTokens");
+
+    expect(await applySnoozeToken("good-token")).toEqual({ ok: false, message: "Invalid or already used snooze link." });
+    expect(mockSaveAlertSettingsForUser).not.toHaveBeenCalled();
+  });
+
+  it("claims the token, applies the snooze, and reports the hours", async () => {
+    mockClaimSnoozeToken.mockResolvedValue({ user_id: "user-1", hours: 12 });
+    mockGetAlertSettingsForUser.mockResolvedValue({ someFlag: true });
+    const { applySnoozeToken, sha256Hex } = await import("./alertSnoozeTokens");
 
     const result = await applySnoozeToken("good-token");
 
-    const { sha256Hex } = await import("./alertSnoozeTokens");
-    expect(builder.in).toHaveBeenCalledWith("token", [await sha256Hex("good-token")]);
+    expect(mockClaimSnoozeToken).toHaveBeenCalledWith([await sha256Hex("good-token")]);
     expect(mockGetAlertSettingsForUser).toHaveBeenCalledWith("user-1");
     expect(mockSnoozeUntilFromHours).toHaveBeenCalledWith(12);
     expect(mockSaveAlertSettingsForUser).toHaveBeenCalledWith("user-1", {
       someFlag: true,
       snoozeUntil: "2099-01-01T00:00:00.000Z",
     });
-    expect(builder.update).toHaveBeenCalledWith(
-      expect.objectContaining({ used_at: expect.any(String) }),
-    );
-    expect(builder.eq).toHaveBeenCalledWith("token", "stored-hash");
     expect(result).toEqual({ ok: true, message: "Alerts snoozed for 12 hours." });
   });
 
   it("reports the result in the owner's language", async () => {
     const { ensureLocale } = await import("../i18n/catalog");
     await ensureLocale("de", ["app"]);
-    mockFrom.mockReturnValue(
-      mockQuery({ data: { user_id: "user-1", hours: 12, expires_at: "2099-01-01T00:00:00.000Z", used_at: null } }),
-    );
+    mockClaimSnoozeToken.mockResolvedValue({ user_id: "user-1", hours: 12 });
     mockGetAlertSettingsForUser.mockResolvedValue({});
     const { applySnoozeToken } = await import("./alertSnoozeTokens");
 
@@ -204,7 +178,6 @@ describe("applySnoozeToken", () => {
 
 describe("buildSnoozeUrl", () => {
   it("builds a snooze URL from a freshly created token, stripping a trailing slash", async () => {
-    mockFrom.mockReturnValue(mockQuery({ data: null, error: null }));
     const { buildSnoozeUrl } = await import("./alertSnoozeTokens");
 
     const url = await buildSnoozeUrl("https://example.com/", "user-1", 6);
@@ -215,9 +188,7 @@ describe("buildSnoozeUrl", () => {
 
 describe("applySnoozeForHouseholdMembers", () => {
   it("snoozes every member and returns the count", async () => {
-    mockFrom.mockReturnValue(
-      mockQuery({ data: [{ user_id: "u1" }, { user_id: "u2" }] }),
-    );
+    mockHouseholdMemberIds.mockResolvedValue(["u1", "u2"]);
     const { applySnoozeForHouseholdMembers } = await import("./alertSnoozeTokens");
 
     const count = await applySnoozeForHouseholdMembers("house-1", 8);
@@ -232,7 +203,6 @@ describe("applySnoozeForHouseholdMembers", () => {
   });
 
   it("returns 0 when the household has no members", async () => {
-    mockFrom.mockReturnValue(mockQuery({ data: null }));
     const { applySnoozeForHouseholdMembers } = await import("./alertSnoozeTokens");
 
     expect(await applySnoozeForHouseholdMembers("house-1", 8)).toBe(0);
@@ -242,7 +212,7 @@ describe("applySnoozeForHouseholdMembers", () => {
 
 describe("applyVacationForHouseholdMembers", () => {
   it("sets vacation mode for every member and returns the count", async () => {
-    mockFrom.mockReturnValue(mockQuery({ data: [{ user_id: "u1" }] }));
+    mockHouseholdMemberIds.mockResolvedValue(["u1"]);
     const { applyVacationForHouseholdMembers } = await import("./alertSnoozeTokens");
 
     const count = await applyVacationForHouseholdMembers("house-1", 14);
@@ -284,7 +254,7 @@ describe("clearSnoozeForUser / clearVacationForUser", () => {
 
 describe("clearSnoozeForHouseholdMembers / clearVacationForHouseholdMembers", () => {
   it("clears snooze for every household member", async () => {
-    mockFrom.mockReturnValue(mockQuery({ data: [{ user_id: "u1" }, { user_id: "u2" }] }));
+    mockHouseholdMemberIds.mockResolvedValue(["u1", "u2"]);
     const { clearSnoozeForHouseholdMembers } = await import("./alertSnoozeTokens");
 
     const count = await clearSnoozeForHouseholdMembers("house-1");
@@ -298,7 +268,7 @@ describe("clearSnoozeForHouseholdMembers / clearVacationForHouseholdMembers", ()
   });
 
   it("clears vacation for every household member", async () => {
-    mockFrom.mockReturnValue(mockQuery({ data: [{ user_id: "u1" }] }));
+    mockHouseholdMemberIds.mockResolvedValue(["u1"]);
     const { clearVacationForHouseholdMembers } = await import("./alertSnoozeTokens");
 
     const count = await clearVacationForHouseholdMembers("house-1");
@@ -311,7 +281,6 @@ describe("clearSnoozeForHouseholdMembers / clearVacationForHouseholdMembers", ()
   });
 
   it("returns 0 for an empty household member list", async () => {
-    mockFrom.mockReturnValue(mockQuery({ data: [] }));
     const { clearSnoozeForHouseholdMembers, clearVacationForHouseholdMembers } = await import(
       "./alertSnoozeTokens"
     );

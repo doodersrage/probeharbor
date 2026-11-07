@@ -2,7 +2,6 @@
  * Neon versions of the admin and ops queries: user manager (the
  * caller-checked Postgres functions), group membership (admin check),
  * server error log, contact submissions, checkout analytics, app status.
- * Called when `dbBackend() === "neon"`.
  *
  * Difference from the Supabase path: contact search text is a bound
  * parameter. The Supabase path pasted it into a PostgREST `or` filter, where

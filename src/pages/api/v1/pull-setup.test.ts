@@ -11,14 +11,9 @@ vi.mock("../../../lib/apiKeys", () => ({
   resolveApiKey: (...a: unknown[]) => mockResolveApiKey(...a),
 }));
 
-const mockMaybeSingle = vi.fn();
-const mockEq2 = vi.fn();
-const mockEq1 = vi.fn();
-const mockSelect = vi.fn();
-const mockFrom = vi.fn();
-const mockCreateServerClient = vi.fn();
-vi.mock("../../../lib/supabase", () => ({
-  createServerClient: () => mockCreateServerClient(),
+const mockGetFirstOwnerId = vi.fn();
+vi.mock("../../../lib/householdRecord", () => ({
+  getFirstOwnerId: (...a: unknown[]) => mockGetFirstOwnerId(...a),
 }));
 
 const mockSanitizeTempFeeds = vi.fn();
@@ -77,12 +72,7 @@ const sampleFeed = {
 beforeEach(() => {
   mockCheckApiPlan.mockReset().mockResolvedValue({ ok: true, entitlements: { canCreateShareLinks: true, maxDevices: 24 } });
   mockResolveApiKey.mockReset().mockResolvedValue({ householdId: "house-1" });
-  mockMaybeSingle.mockReset().mockResolvedValue({ data: { user_id: "owner-1" } });
-  mockEq2.mockReset().mockReturnValue({ maybeSingle: mockMaybeSingle });
-  mockEq1.mockReset().mockReturnValue({ eq: mockEq2 });
-  mockSelect.mockReset().mockReturnValue({ eq: mockEq1 });
-  mockFrom.mockReset().mockReturnValue({ select: mockSelect });
-  mockCreateServerClient.mockReset().mockReturnValue({ from: mockFrom });
+  mockGetFirstOwnerId.mockReset().mockResolvedValue("owner-1");
   mockSanitizeTempFeeds.mockReset().mockImplementation((feeds: unknown) => feeds);
   mockSanitizeTempProbes.mockReset().mockImplementation((probes: unknown) => probes);
   mockSaveUserPullSetup.mockReset().mockResolvedValue({
@@ -137,6 +127,7 @@ describe("POST /api/v1/pull-setup", () => {
 
     const response = await POST(makeContext());
 
+    expect(mockGetFirstOwnerId).toHaveBeenCalledWith("house-1");
     expect(mockSaveUserPullSetup).toHaveBeenCalledWith(
       "owner-1",
       expect.arrayContaining([expect.objectContaining({ url: "https://example.com/temps" })]),
@@ -144,6 +135,17 @@ describe("POST /api/v1/pull-setup", () => {
     );
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({ ok: true, discoveredProbes: 2 });
+  });
+
+  it("returns 404 when the household owner can't be found", async () => {
+    mockGetFirstOwnerId.mockRejectedValue(new Error("db down"));
+    const { POST } = await import("./pull-setup");
+
+    const response = await POST(makeContext());
+
+    expect(response.status).toBe(404);
+    expect(await response.json()).toEqual({ ok: false, error: "Household owner not found." });
+    expect(mockSaveUserPullSetup).not.toHaveBeenCalled();
   });
 });
 

@@ -15,6 +15,11 @@ vi.mock("../../../lib/siteUrl", () => ({
   sanitizeNextPath: (...a: unknown[]) => mockSanitizeNextPath(...a),
 }));
 
+const mockSignOut = vi.fn();
+vi.mock("../../../lib/betterAuthRuntime", () => ({
+  withBetterAuth: (_req: unknown, fn: (auth: unknown) => unknown) => fn({ api: { signOut: mockSignOut } }),
+}));
+
 function makeCookies() {
   return { delete: vi.fn() };
 }
@@ -23,11 +28,13 @@ function makeContext(search: Record<string, string> = {}): APIContext {
   const url = new URL("https://example.com/api/auth/signout");
   for (const [k, v] of Object.entries(search)) url.searchParams.set(k, v);
   const redirect = vi.fn((path: string) => new Response(null, { status: 302, headers: { Location: path } }));
-  return { cookies: makeCookies(), redirect, url } as unknown as APIContext;
+  const request = new Request(url, { headers: { cookie: "better-auth.session_token=abc" } });
+  return { cookies: makeCookies(), redirect, url, request } as unknown as APIContext;
 }
 
 beforeEach(() => {
   mockClearMfaStepUpCookie.mockReset();
+  mockSignOut.mockReset().mockResolvedValue({ success: true });
   mockSanitizeNextPath.mockReset().mockImplementation((v: string | null) => v ?? null);
 });
 
@@ -42,7 +49,22 @@ describe("signout", () => {
     expect(context.cookies.delete).toHaveBeenCalledWith("sb-refresh-token", { path: "/" });
     expect(context.cookies.delete).toHaveBeenCalledWith("mfa_required", { path: "/" });
     expect(mockClearMfaStepUpCookie).toHaveBeenCalled();
+    expect(mockSignOut).toHaveBeenCalledWith({ headers: context.request.headers });
+    expect(response.status).toBe(302);
     expect(response.headers.get("Location")).toBe("/signin");
+    const expired = response.headers.getSetCookie();
+    expect(expired.some((c) => c.startsWith("better-auth.session_token=;") && c.includes("Max-Age=0"))).toBe(true);
+    expect(expired.some((c) => c.startsWith("__Secure-better-auth.session_token=;"))).toBe(true);
+  });
+
+  it("still expires the cookie and redirects when there is no session to end", async () => {
+    mockSignOut.mockRejectedValue(new Error("no session"));
+    const { GET } = await import("./signout");
+
+    const response = await GET(makeContext());
+
+    expect(response.headers.get("Location")).toBe("/signin");
+    expect(response.headers.getSetCookie().length).toBe(2);
   });
 
   it("redirects with next and email query params when present (GET)", async () => {

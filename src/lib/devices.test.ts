@@ -1,27 +1,22 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { devicesToTempConfig, updateDeviceDetails, type DeviceWithSensors } from "./devices";
 
-function mockQuery(result: { data?: unknown; error?: unknown }) {
-  const builder: Record<string, unknown> = {};
-  for (const method of ["select", "eq", "in", "order", "insert", "update", "delete"]) {
-    builder[method] = vi.fn(() => builder);
-  }
-  builder.single = vi.fn(() => Promise.resolve(result));
-  builder.maybeSingle = vi.fn(() => Promise.resolve(result));
-  (builder as { then: unknown }).then = (
-    resolve: (value: unknown) => unknown,
-    reject?: (reason: unknown) => unknown,
-  ) => Promise.resolve(result).then(resolve, reject);
-  return builder;
-}
-
-const mockFrom = vi.fn();
-vi.mock("./supabase", () => ({
-  createServerClient: () => ({ from: (...args: unknown[]) => mockFrom(...args) }),
+const neonDevices = vi.hoisted(() => ({
+  createPushDevice: vi.fn(),
+  renamePushDevice: vi.fn(),
+  updateDeviceSpace: vi.fn(),
+  getDeviceSource: vi.fn(),
+  updateDeviceDetails: vi.fn(),
+  updateDeviceSensor: vi.fn(),
 }));
+const neonIngest = vi.hoisted(() => ({
+  updateDeviceMeta: vi.fn(),
+}));
+vi.mock("./db/devices", () => neonDevices);
+vi.mock("./db/ingest", () => neonIngest);
 
 beforeEach(() => {
-  mockFrom.mockReset();
+  for (const fn of [...Object.values(neonDevices), ...Object.values(neonIngest)]) fn.mockReset();
 });
 
 function device(overrides: Partial<DeviceWithSensors> = {}): DeviceWithSensors {
@@ -101,199 +96,53 @@ describe("devicesToTempConfig", () => {
   });
 });
 
-describe("listHouseholdDevices", () => {
-  it("attaches each device's own sensors and orders both by sort_order", async () => {
-    const devicesBuilder = mockQuery({
-      data: [{ id: "d1", household_id: "house-1", sort_order: 0 }],
-    });
-    const sensorsBuilder = mockQuery({
-      data: [{ id: "s1", device_id: "d1", key: "temp1" }],
-    });
-    mockFrom.mockReturnValueOnce(devicesBuilder).mockReturnValueOnce(sensorsBuilder);
-    const { listHouseholdDevices } = await import("./devices");
-
-    const result = await listHouseholdDevices("house-1");
-
-    expect(result.error).toBeNull();
-    expect(result.devices).toEqual([
-      expect.objectContaining({ id: "d1", sensors: [expect.objectContaining({ id: "s1" })] }),
-    ]);
-  });
-
-  it("short-circuits with no sensor query when the household has no devices", async () => {
-    mockFrom.mockReturnValue(mockQuery({ data: [] }));
-    const { listHouseholdDevices } = await import("./devices");
-
-    const result = await listHouseholdDevices("house-1");
-
-    expect(result).toEqual({ devices: [], error: null });
-    expect(mockFrom).toHaveBeenCalledTimes(1);
-  });
-
-  it("propagates a devices-query error without querying sensors", async () => {
-    mockFrom.mockReturnValue(mockQuery({ data: null, error: { message: "db down" } }));
-    const { listHouseholdDevices } = await import("./devices");
-
-    expect(await listHouseholdDevices("house-1")).toEqual({ devices: [], error: "db down" });
-    expect(mockFrom).toHaveBeenCalledTimes(1);
-  });
-
-  it("propagates a sensors-query error even though devices loaded fine", async () => {
-    mockFrom
-      .mockReturnValueOnce(mockQuery({ data: [{ id: "d1" }] }))
-      .mockReturnValueOnce(mockQuery({ data: null, error: { message: "sensor query failed" } }));
-    const { listHouseholdDevices } = await import("./devices");
-
-    expect(await listHouseholdDevices("house-1")).toEqual({
-      devices: [],
-      error: "sensor query failed",
-    });
-  });
-});
-
-describe("findDeviceByIngestKeyHash", () => {
-  it("only matches an enabled device for the given key hash", async () => {
-    const deviceBuilder = mockQuery({ data: { id: "d1" } });
-    const sensorBuilder = mockQuery({ data: [] });
-    mockFrom.mockReturnValueOnce(deviceBuilder).mockReturnValueOnce(sensorBuilder);
-    const { findDeviceByIngestKeyHash } = await import("./devices");
-
-    const result = await findDeviceByIngestKeyHash("hash-1");
-
-    expect(result).toEqual(expect.objectContaining({ id: "d1", sensors: [] }));
-    expect(deviceBuilder.eq).toHaveBeenCalledWith("ingest_key_hash", "hash-1");
-    expect(deviceBuilder.eq).toHaveBeenCalledWith("enabled", true);
-  });
-
-  it("returns null (never queries sensors) when no device matches", async () => {
-    mockFrom.mockReturnValue(mockQuery({ data: null }));
-    const { findDeviceByIngestKeyHash } = await import("./devices");
-
-    expect(await findDeviceByIngestKeyHash("missing-hash")).toBeNull();
-    expect(mockFrom).toHaveBeenCalledTimes(1);
-  });
-});
-
 describe("createPushDevice", () => {
-  it("stores only the key's hash and prefix, never a raw key field", async () => {
-    const builder = mockQuery({ data: { id: "d1", source: "push" } });
-    mockFrom.mockReturnValue(builder);
+  it("trims the space and stores a blank one as null", async () => {
+    neonDevices.createPushDevice.mockResolvedValue({ device: null, error: null });
     const { createPushDevice } = await import("./devices");
 
-    const result = await createPushDevice("house-1", "New device", "hash-abc", "gtm_abc");
+    await createPushDevice("house-1", "New device", "hash-abc", "gtm_abc", "  Attic  ");
+    await createPushDevice("house-1", "New device", "hash-abc", "gtm_abc", "   ");
 
-    expect(result.error).toBeNull();
-    expect(builder.insert).toHaveBeenCalledWith(
-      expect.objectContaining({
-        household_id: "house-1",
-        source: "push",
-        ingest_key_hash: "hash-abc",
-        ingest_key_prefix: "gtm_abc",
-        enabled: true,
-      }),
-    );
-  });
-
-  it("reports the supabase error on failure", async () => {
-    mockFrom.mockReturnValue(mockQuery({ data: null, error: { message: "insert failed" } }));
-    const { createPushDevice } = await import("./devices");
-
-    expect(await createPushDevice("house-1", "X", "h", "p")).toEqual({
-      device: null,
-      error: "insert failed",
-    });
+    expect(neonDevices.createPushDevice).toHaveBeenNthCalledWith(1, "house-1", "New device", "hash-abc", "gtm_abc", "Attic");
+    expect(neonDevices.createPushDevice).toHaveBeenNthCalledWith(2, "house-1", "New device", "hash-abc", "gtm_abc", null);
   });
 });
 
 describe("renamePushDevice", () => {
-  it("rejects a blank name without querying supabase", async () => {
+  it("rejects a blank name without touching the database", async () => {
     const { renamePushDevice } = await import("./devices");
     expect(await renamePushDevice("house-1", "d1", "   ")).toEqual({
       error: "Name is required",
     });
-    expect(mockFrom).not.toHaveBeenCalled();
+    expect(neonDevices.renamePushDevice).not.toHaveBeenCalled();
   });
 
-  it("scopes the update to household, device id, and push source", async () => {
-    const builder = mockQuery({ data: { id: "d1" } });
-    mockFrom.mockReturnValue(builder);
+  it("saves the trimmed name with the localized failure message", async () => {
+    neonDevices.renamePushDevice.mockResolvedValue({ error: null });
     const { renamePushDevice } = await import("./devices");
 
-    const result = await renamePushDevice("house-1", "d1", "  Garage  ");
-
-    expect(result).toEqual({ error: null });
-    expect(builder.update).toHaveBeenCalledWith({ name: "Garage" });
-    expect(builder.eq).toHaveBeenCalledWith("id", "d1");
-    expect(builder.eq).toHaveBeenCalledWith("household_id", "house-1");
-    expect(builder.eq).toHaveBeenCalledWith("source", "push");
-  });
-
-  it("reports an error when no row matches (wrong household or not a push device)", async () => {
-    mockFrom.mockReturnValue(mockQuery({ data: null }));
-    const { renamePushDevice } = await import("./devices");
-
-    expect(await renamePushDevice("house-1", "d1", "Garage")).toEqual({
-      error: "Failed to rename device",
-    });
+    expect(await renamePushDevice("house-1", "d1", "  Garage  ")).toEqual({ error: null });
+    expect(neonDevices.renamePushDevice).toHaveBeenCalledWith("house-1", "d1", "Garage", "Failed to rename device");
   });
 });
 
 describe("updateDeviceSpace", () => {
-  it("normalizes a blank space to null", async () => {
-    const builder = mockQuery({ data: { id: "d1" } });
-    mockFrom.mockReturnValue(builder);
+  it("normalizes a blank space to null and trims a real value", async () => {
+    neonDevices.updateDeviceSpace.mockResolvedValue({ error: null });
     const { updateDeviceSpace } = await import("./devices");
 
     await updateDeviceSpace("house-1", "d1", "   ");
-
-    expect(builder.update).toHaveBeenCalledWith(
-      expect.objectContaining({ space: null }),
-    );
-  });
-
-  it("trims a real value", async () => {
-    const builder = mockQuery({ data: { id: "d1" } });
-    mockFrom.mockReturnValue(builder);
-    const { updateDeviceSpace } = await import("./devices");
-
     await updateDeviceSpace("house-1", "d1", "  Attic  ");
 
-    expect(builder.update).toHaveBeenCalledWith(
-      expect.objectContaining({ space: "Attic" }),
-    );
-  });
-});
-
-describe("rotatePushDeviceKey", () => {
-  it("only rotates a push device scoped to its household", async () => {
-    const builder = mockQuery({ data: { id: "d1" } });
-    mockFrom.mockReturnValue(builder);
-    const { rotatePushDeviceKey } = await import("./devices");
-
-    const result = await rotatePushDeviceKey("house-1", "d1", "new-hash", "gtm_new");
-
-    expect(result).toEqual({ error: null });
-    expect(builder.update).toHaveBeenCalledWith({
-      ingest_key_hash: "new-hash",
-      ingest_key_prefix: "gtm_new",
-    });
-    expect(builder.eq).toHaveBeenCalledWith("source", "push");
-  });
-
-  it("fails when the device/household/source scope doesn't match", async () => {
-    mockFrom.mockReturnValue(mockQuery({ data: null }));
-    const { rotatePushDeviceKey } = await import("./devices");
-
-    expect(await rotatePushDeviceKey("house-1", "d1", "h", "p")).toEqual({
-      error: "Failed to rotate key",
-    });
+    expect(neonDevices.updateDeviceSpace.mock.calls[0]?.[2]).toBeNull();
+    expect(neonDevices.updateDeviceSpace.mock.calls[1]?.[2]).toBe("Attic");
   });
 });
 
 describe("updateDeviceSensor", () => {
   it("clamps the offset for the sensor's kind before saving", async () => {
-    const builder = mockQuery({ error: null });
-    mockFrom.mockReturnValue(builder);
+    neonDevices.updateDeviceSensor.mockResolvedValue({ error: null });
     const { updateDeviceSensor } = await import("./devices");
 
     await updateDeviceSensor("s1", "d1", {
@@ -304,168 +153,55 @@ describe("updateDeviceSensor", () => {
     });
 
     // TEMP_OFFSET_MAX_F is 10 -- an absurd input offset must be clamped, not stored raw.
-    expect(builder.update).toHaveBeenCalledWith(
-      expect.objectContaining({ offset_num: 10 }),
+    expect(neonDevices.updateDeviceSensor).toHaveBeenCalledWith(
+      "s1",
+      "d1",
+      expect.objectContaining({ offsetNum: 10, unit: null }),
     );
   });
 
-  it("omits the visible field entirely when not provided, rather than forcing it false", async () => {
-    const builder = mockQuery({ error: null });
-    mockFrom.mockReturnValue(builder);
+  it("leaves visible unset when not provided, rather than forcing it false", async () => {
+    neonDevices.updateDeviceSensor.mockResolvedValue({ error: null });
     const { updateDeviceSensor } = await import("./devices");
 
     await updateDeviceSensor("s1", "d1", { key: "temp1", label: "Bay", kind: "temperature" });
 
-    const patch = (builder.update as ReturnType<typeof vi.fn>).mock.calls[0][0];
-    expect(patch).not.toHaveProperty("visible");
-  });
-});
-
-describe("deleteDeviceSensor", () => {
-  it("scopes the delete to both sensor and device id", async () => {
-    const builder = mockQuery({ error: null });
-    mockFrom.mockReturnValue(builder);
-    const { deleteDeviceSensor } = await import("./devices");
-
-    expect(await deleteDeviceSensor("s1", "d1")).toEqual({ error: null });
-    expect(builder.eq).toHaveBeenCalledWith("id", "s1");
-    expect(builder.eq).toHaveBeenCalledWith("device_id", "d1");
-  });
-});
-
-describe("upsertDeviceSensor", () => {
-  it("returns the existing sensor without inserting a duplicate", async () => {
-    const builder = mockQuery({ data: { id: "s1", key: "temp1", kind: "temperature" } });
-    mockFrom.mockReturnValue(builder);
-    const { upsertDeviceSensor } = await import("./devices");
-
-    const result = await upsertDeviceSensor("d1", "temp1", "Bay", "temperature");
-
-    expect(result).toEqual({ sensor: { id: "s1", key: "temp1", kind: "temperature" }, error: null });
-    expect(builder.insert).not.toHaveBeenCalled();
-  });
-
-  it("corrects a temperature sensor created from °C readings to °F", async () => {
-    const lookupBuilder = mockQuery({ data: { id: "s1", key: "garage", kind: "temperature", unit: "°C" } });
-    const updateBuilder = mockQuery({ error: null });
-    mockFrom.mockReturnValueOnce(lookupBuilder).mockReturnValueOnce(updateBuilder);
-    const { upsertDeviceSensor } = await import("./devices");
-
-    const result = await upsertDeviceSensor("d1", "garage", "Garage", "temperature", "F");
-
-    expect(updateBuilder.update).toHaveBeenCalledWith({ unit: "F" });
-    expect(updateBuilder.eq).toHaveBeenCalledWith("id", "s1");
-    expect(result.sensor).toMatchObject({ id: "s1", unit: "F" });
-  });
-
-  it("leaves other units alone (no write when nothing changes)", async () => {
-    const builder = mockQuery({ data: { id: "s1", key: "rh", kind: "humidity", unit: "%" } });
-    mockFrom.mockReturnValue(builder);
-    const { upsertDeviceSensor } = await import("./devices");
-
-    await upsertDeviceSensor("d1", "rh", "RH", "humidity", "% RH");
-
-    expect(builder.update).not.toHaveBeenCalled();
-  });
-
-  it("inserts a new sensor as visible when none exists yet", async () => {
-    const lookupBuilder = mockQuery({ data: null });
-    const insertBuilder = mockQuery({ data: { id: "s2" } });
-    mockFrom.mockReturnValueOnce(lookupBuilder).mockReturnValueOnce(insertBuilder);
-    const { upsertDeviceSensor } = await import("./devices");
-
-    const result = await upsertDeviceSensor("d1", "temp2", "Attic", "temperature");
-
-    expect(result).toEqual({ sensor: { id: "s2" }, error: null });
-    expect(insertBuilder.insert).toHaveBeenCalledWith(
-      expect.objectContaining({ device_id: "d1", key: "temp2", visible: true }),
-    );
-  });
-});
-
-describe("touchDeviceLastSeen / updateDeviceMeta", () => {
-  it("touchDeviceLastSeen stamps last_seen_at and updated_at for the device", async () => {
-    const builder = mockQuery({ error: null });
-    mockFrom.mockReturnValue(builder);
-    const { touchDeviceLastSeen } = await import("./devices");
-
-    await touchDeviceLastSeen("d1");
-
-    expect(builder.update).toHaveBeenCalledWith(
-      expect.objectContaining({ last_seen_at: expect.any(String), updated_at: expect.any(String) }),
-    );
-    expect(builder.eq).toHaveBeenCalledWith("id", "d1");
-  });
-
-  it("updateDeviceMeta merges the patch into existing meta rather than replacing it", async () => {
-    const selectBuilder = mockQuery({ data: { meta: { existingKey: "keepme" } } });
-    const updateBuilder = mockQuery({ error: null });
-    mockFrom.mockReturnValueOnce(selectBuilder).mockReturnValueOnce(updateBuilder);
-    const { updateDeviceMeta } = await import("./devices");
-
-    await updateDeviceMeta("d1", { newKey: "added" });
-
-    expect(updateBuilder.update).toHaveBeenCalledWith(
-      expect.objectContaining({ meta: { existingKey: "keepme", newKey: "added" } }),
-    );
-  });
-
-  it("updateDeviceMeta tolerates a device with no existing meta", async () => {
-    const selectBuilder = mockQuery({ data: { meta: null } });
-    const updateBuilder = mockQuery({ error: null });
-    mockFrom.mockReturnValueOnce(selectBuilder).mockReturnValueOnce(updateBuilder);
-    const { updateDeviceMeta } = await import("./devices");
-
-    await updateDeviceMeta("d1", { newKey: "added" });
-
-    expect(updateBuilder.update).toHaveBeenCalledWith(
-      expect.objectContaining({ meta: { newKey: "added" } }),
-    );
+    expect(neonDevices.updateDeviceSensor.mock.calls[0]?.[2]?.visible).toBeUndefined();
   });
 });
 
 describe("updateDeviceDetails", () => {
-  function setup(source: "push" | "pull_url") {
-    const lookup = mockQuery({ data: { source }, error: null });
-    const update = mockQuery({ data: null, error: null });
-    mockFrom.mockReturnValueOnce(lookup).mockReturnValueOnce(update);
-    return update;
-  }
-
   it("saves name, space, and enabled for a push device", async () => {
-    const update = setup("push");
+    neonDevices.getDeviceSource.mockResolvedValue("push");
+    neonDevices.updateDeviceDetails.mockResolvedValue({ error: null });
     expect(await updateDeviceDetails("house-1", "d1", { name: " Attic ", space: " Attic ", enabled: false })).toEqual({ error: null });
-    expect(update.update).toHaveBeenCalledWith(expect.objectContaining({ name: "Attic", space: "Attic", enabled: false }));
+    expect(neonDevices.updateDeviceDetails).toHaveBeenCalledWith("house-1", "d1", true, "Attic", false, "Attic");
   });
 
-  it("only changes the space of a pull feed, which owns its own name and on/off", async () => {
-    const update = setup("pull_url");
+  it("tells the save it's a pull feed, which owns its own name and on/off", async () => {
+    neonDevices.getDeviceSource.mockResolvedValue("pull_url");
+    neonDevices.updateDeviceDetails.mockResolvedValue({ error: null });
     await updateDeviceDetails("house-1", "d1", { name: "Renamed", space: "", enabled: false });
-    const patch = (update.update as ReturnType<typeof vi.fn>).mock.calls[0]?.[0] as Record<string, unknown>;
-    expect(patch).not.toHaveProperty("name");
-    expect(patch).not.toHaveProperty("enabled");
-    expect(patch.space).toBeNull();
+    expect(neonDevices.updateDeviceDetails).toHaveBeenCalledWith("house-1", "d1", false, "Renamed", false, null);
   });
 
   it("refuses a blank name and devices from other properties", async () => {
-    setup("push");
+    neonDevices.getDeviceSource.mockResolvedValueOnce("push");
     expect((await updateDeviceDetails("house-1", "d1", { name: "  ", space: null })).error).toMatch(/Name/);
-    mockFrom.mockReturnValueOnce(mockQuery({ data: null, error: null }));
+    neonDevices.getDeviceSource.mockResolvedValueOnce(null);
     expect((await updateDeviceDetails("house-1", "x", { space: null })).error).toMatch(/not found/);
+    neonDevices.getDeviceSource.mockRejectedValueOnce(new Error("db down"));
+    expect((await updateDeviceDetails("house-1", "x", { space: null })).error).toMatch(/not found/);
+    expect(neonDevices.updateDeviceDetails).not.toHaveBeenCalled();
   });
 });
 
 describe("updateDeviceMeta", () => {
   it("stamps last_seen_at for readings but not for bookkeeping writes", async () => {
     const { updateDeviceMeta } = await import("./devices");
-    for (const [options, expectSeen] of [[{}, true], [{ touchLastSeen: false }, false]] as const) {
-      const read = mockQuery({ data: { meta: { battery_pct: 80 } }, error: null });
-      const write = mockQuery({ data: null, error: null });
-      mockFrom.mockReturnValueOnce(read).mockReturnValueOnce(write);
-      await updateDeviceMeta("d1", { ingest_key_enc: "x" }, options);
-      const patch = (write.update as ReturnType<typeof vi.fn>).mock.calls[0]?.[0] as Record<string, unknown>;
-      expect(patch.meta).toEqual({ battery_pct: 80, ingest_key_enc: "x" });
-      expect("last_seen_at" in patch).toBe(expectSeen);
-    }
+    await updateDeviceMeta("d1", { ingest_key_enc: "x" });
+    await updateDeviceMeta("d1", { ingest_key_enc: "x" }, { touchLastSeen: false });
+    expect(neonIngest.updateDeviceMeta).toHaveBeenNthCalledWith(1, "d1", { ingest_key_enc: "x" }, true);
+    expect(neonIngest.updateDeviceMeta).toHaveBeenNthCalledWith(2, "d1", { ingest_key_enc: "x" }, false);
   });
 });

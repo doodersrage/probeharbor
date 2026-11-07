@@ -1,7 +1,5 @@
-import { dbBackend } from "./db/client";
 import * as neonEmail from "./db/emailJobs";
 import { getUserRecord } from "./userRecords";
-import { createAdminClient } from "./supabase";
 import { getAlertSettingsForUser, notifyUser } from "./notify";
 import { brandedEmailParts, formatEmailValue } from "./emailLayout";
 import { fmt } from "../i18n/format";
@@ -91,8 +89,6 @@ export async function sendFreezeDrillsForAllUsers(): Promise<{
     return { sent: 0, skipped: 0, errors: [] };
   }
 
-  // Supabase only; on Neon the queries go through db/emailJobs.
-  const admin = dbBackend() === "neon" ? null : createAdminClient();
   const ownerIds = await listAllHouseholdOwnerUserIds();
   let sent = 0;
   let skipped = 0;
@@ -122,17 +118,7 @@ export async function sendFreezeDrillsForAllUsers(): Promise<{
 
       const entitlements = await getUserEntitlements(userId);
       const prefs = await getUserPreferences(user);
-      const householdId = admin
-        ? ((
-            await admin
-              .from("household_members")
-              .select("household_id")
-              .eq("user_id", userId)
-              .eq("role", "owner")
-              .limit(1)
-              .maybeSingle()
-          ).data?.household_id ?? null)
-        : await neonEmail.firstOwnedHouseholdId(userId);
+      const householdId = await neonEmail.firstOwnedHouseholdId(userId);
       const devicesResult = householdId
         ? await listHouseholdDevices(householdId)
         : { devices: [] };
@@ -199,11 +185,7 @@ export async function sendFreezeDrillsForAllUsers(): Promise<{
         locale,
       );
 
-      if (admin) {
-        await admin.from("alert_settings").update({ last_freeze_drill_at: new Date().toISOString() }).eq("user_id", userId);
-      } else {
-        await neonEmail.stampSettings(userId, "last_freeze_drill_at");
-      }
+      await neonEmail.stampSettings(userId, "last_freeze_drill_at");
 
       sent += 1;
     } catch (error) {

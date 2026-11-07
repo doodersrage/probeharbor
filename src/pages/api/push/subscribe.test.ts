@@ -17,14 +17,11 @@ vi.mock("../../../lib/webPush", () => ({
     mockReleasePushSubscriptionFromOtherUsers(...a),
 }));
 
-const mockUpsert = vi.fn();
-const mockDeleteEq2 = vi.fn();
-const mockDeleteEq1 = vi.fn();
-const mockDelete = vi.fn();
-const mockFrom = vi.fn();
-const mockCreateAdminClient = vi.fn();
-vi.mock("../../../lib/supabase", () => ({
-  createAdminClient: () => mockCreateAdminClient(),
+const mockSavePushSubscription = vi.fn();
+const mockDeletePushSubscription = vi.fn();
+vi.mock("../../../lib/db/pushTokens", () => ({
+  savePushSubscription: (...a: unknown[]) => mockSavePushSubscription(...a),
+  deletePushSubscription: (...a: unknown[]) => mockDeletePushSubscription(...a),
 }));
 
 function makeRequest(body: unknown | string): Request {
@@ -43,12 +40,8 @@ beforeEach(() => {
   mockGetAuthFromRequest.mockReset().mockResolvedValue({ user: { id: "user-1" } });
   mockGetUserEntitlements.mockReset().mockResolvedValue({ canUsePush: true });
   mockReleasePushSubscriptionFromOtherUsers.mockReset().mockResolvedValue(undefined);
-  mockUpsert.mockReset().mockResolvedValue({ error: null });
-  mockDeleteEq2.mockReset().mockResolvedValue({ error: null });
-  mockDeleteEq1.mockReset().mockReturnValue({ eq: mockDeleteEq2 });
-  mockDelete.mockReset().mockReturnValue({ eq: mockDeleteEq1 });
-  mockFrom.mockReset().mockReturnValue({ upsert: mockUpsert, delete: mockDelete });
-  mockCreateAdminClient.mockReset().mockReturnValue({ from: mockFrom });
+  mockSavePushSubscription.mockReset().mockResolvedValue({ error: null });
+  mockDeletePushSubscription.mockReset().mockResolvedValue(undefined);
 });
 
 const validSubscription = {
@@ -94,32 +87,28 @@ describe("POST /api/push/subscribe", () => {
     expect(await response.json()).toEqual({ error: "Invalid subscription" });
   });
 
-  it("releases the endpoint from other users and upserts the subscription", async () => {
+  it("releases the endpoint from other users and saves the subscription", async () => {
     const { POST } = await import("./subscribe");
 
     const response = await POST(makeContext(validSubscription));
 
     expect(mockReleasePushSubscriptionFromOtherUsers).toHaveBeenCalledWith(
-      expect.anything(),
+      null,
       "user-1",
       "https://push.example.com/abc",
     );
-    expect(mockFrom).toHaveBeenCalledWith("push_subscriptions");
-    expect(mockUpsert).toHaveBeenCalledWith(
-      {
-        user_id: "user-1",
-        endpoint: "https://push.example.com/abc",
-        p256dh: "p256dh-key",
-        auth: "auth-key",
-      },
-      { onConflict: "user_id,endpoint" },
+    expect(mockSavePushSubscription).toHaveBeenCalledWith(
+      "user-1",
+      "https://push.example.com/abc",
+      "p256dh-key",
+      "auth-key",
     );
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({ ok: true });
   });
 
-  it("returns 500 with the db error message when the upsert fails", async () => {
-    mockUpsert.mockResolvedValue({ error: { message: "db down" } });
+  it("returns 500 with the db error message when saving fails", async () => {
+    mockSavePushSubscription.mockResolvedValue({ error: "db down" });
     const { POST } = await import("./subscribe");
 
     const response = await POST(makeContext(validSubscription));
@@ -161,9 +150,7 @@ describe("DELETE /api/push/subscribe", () => {
 
     const response = await DELETE(makeContext({ endpoint: "https://push.example.com/abc" }));
 
-    expect(mockFrom).toHaveBeenCalledWith("push_subscriptions");
-    expect(mockDeleteEq1).toHaveBeenCalledWith("user_id", "user-1");
-    expect(mockDeleteEq2).toHaveBeenCalledWith("endpoint", "https://push.example.com/abc");
+    expect(mockDeletePushSubscription).toHaveBeenCalledWith("user-1", "https://push.example.com/abc");
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({ ok: true });
   });

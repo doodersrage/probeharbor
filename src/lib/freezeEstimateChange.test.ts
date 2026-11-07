@@ -1,6 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
-
-vi.mock("./supabase", () => ({ createServerClient: vi.fn() }));
+import { describe, expect, it } from "vitest";
 
 import { explainEstimateChange, type FreezeEstimateSnapshot } from "./freezeEstimateChange";
 

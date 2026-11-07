@@ -1,87 +1,70 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-function mockQuery(result: { data?: unknown; error?: unknown; count?: number | null }) {
-  const builder: Record<string, unknown> = {};
-  for (const method of ["select", "eq", "order", "limit", "lt", "not", "insert", "update", "upsert"]) {
-    builder[method] = vi.fn(() => builder);
-  }
-  builder.delete = vi.fn(() => builder);
-  builder.single = vi.fn(() => Promise.resolve(result));
-  builder.maybeSingle = vi.fn(() => Promise.resolve(result));
-  (builder as { then: unknown }).then = (
-    resolve: (value: unknown) => unknown,
-    reject?: (reason: unknown) => unknown,
-  ) => Promise.resolve(result).then(resolve, reject);
-  return builder;
-}
-
-const mockFrom = vi.fn();
-const mockRpc = vi.fn();
-vi.mock("./supabase", () => ({
-  createServerClient: () => ({
-    from: (...args: unknown[]) => mockFrom(...args),
-    rpc: (...args: unknown[]) => mockRpc(...args),
-  }),
+const mockClose = vi.fn();
+const mockStart = vi.fn();
+const mockFinish = vi.fn();
+const mockList = vi.fn();
+const mockRollUp = vi.fn();
+vi.mock("./db/jobs", () => ({
+  closeAbandonedJobRuns: (...args: unknown[]) => mockClose(...args),
+  startJobRun: (...args: unknown[]) => mockStart(...args),
+  finishJobRun: (...args: unknown[]) => mockFinish(...args),
+  listRecentJobRuns: (...args: unknown[]) => mockList(...args),
+  rollUpAndPruneReadings: (...args: unknown[]) => mockRollUp(...args),
 }));
 
 beforeEach(() => {
-  mockFrom.mockReset();
-  mockRpc.mockReset();
+  mockClose.mockReset().mockResolvedValue(0);
+  mockStart.mockReset();
+  mockFinish.mockReset().mockResolvedValue(undefined);
+  mockList.mockReset();
+  mockRollUp.mockReset();
+  vi.spyOn(console, "error").mockImplementation(() => {});
 });
 
 afterEach(() => {
   vi.useRealTimers();
+  vi.restoreAllMocks();
 });
 
 describe("startJobRun", () => {
-  it("inserts a running job row and returns its id", async () => {
-    const builder = mockQuery({ data: { id: 42 }, error: null });
-    mockFrom.mockReturnValue(builder);
+  it("starts a running job row and returns its id", async () => {
+    mockStart.mockResolvedValue(42);
     const { startJobRun } = await import("./jobRuns");
 
     const id = await startJobRun("nightly-retention", { note: "kickoff" });
 
     expect(id).toBe(42);
-    expect(mockFrom).toHaveBeenCalledWith("job_runs");
-    expect(builder.insert).toHaveBeenCalledWith(
-      expect.objectContaining({
-        job_name: "nightly-retention",
-        status: "running",
-        detail: { note: "kickoff" },
-      }),
-    );
+    expect(mockStart).toHaveBeenCalledWith("nightly-retention", { note: "kickoff" });
   });
 
   it("returns null and logs when the insert fails", async () => {
-    mockFrom.mockReturnValue(mockQuery({ data: null, error: { message: "insert failed" } }));
+    mockStart.mockRejectedValue(new Error("insert failed"));
     const { startJobRun } = await import("./jobRuns");
 
     expect(await startJobRun("nightly-retention")).toBeNull();
+    expect(console.error).toHaveBeenCalledWith("Failed to start job run:", "insert failed");
   });
 });
 
 describe("closeAbandonedJobRuns", () => {
   it("marks this job's runs stuck in running for over 30 min as errors", async () => {
-    const builder = mockQuery({ data: [{ id: 7 }, { id: 8 }], error: null });
-    mockFrom.mockReturnValue(builder);
+    mockClose.mockResolvedValue(2);
     const { closeAbandonedJobRuns } = await import("./jobRuns");
     const now = Date.parse("2026-10-28T12:00:00Z");
 
     expect(await closeAbandonedJobRuns("collect-history", now)).toBe(2);
-    expect(builder.update).toHaveBeenCalledWith(
-      expect.objectContaining({
-        status: "error",
-        finished_at: "2026-10-28T12:00:00.000Z",
-        detail: expect.objectContaining({ abandoned: true }),
-      }),
+    expect(mockClose).toHaveBeenCalledWith(
+      "collect-history",
+      "2026-10-28T12:00:00.000Z",
+      "2026-10-28T11:30:00.000Z",
+      expect.objectContaining({ abandoned: true }),
     );
-    expect(builder.eq).toHaveBeenCalledWith("job_name", "collect-history");
-    expect(builder.eq).toHaveBeenCalledWith("status", "running");
-    expect(builder.lt).toHaveBeenCalledWith("started_at", "2026-10-28T11:30:00.000Z");
+    expect(console.error).toHaveBeenCalledWith("job collect-history: 2 run(s) never finished; marked as errors");
   });
 
   it("returns 0 instead of throwing when the update fails", async () => {
-    mockFrom.mockReturnValue(mockQuery({ data: null, error: { message: "db down" } }));
+    mockClose.mockRejectedValue(new Error("db down"));
     const { closeAbandonedJobRuns } = await import("./jobRuns");
 
     expect(await closeAbandonedJobRuns("collect-history")).toBe(0);
@@ -90,20 +73,17 @@ describe("closeAbandonedJobRuns", () => {
 
 describe("startJobRun closes abandoned runs first", () => {
   it("cleans up, then inserts the new run", async () => {
-    const cleanup = mockQuery({ data: [], error: null });
-    const insert = mockQuery({ data: { id: 43 }, error: null });
-    mockFrom.mockReturnValueOnce(cleanup).mockReturnValueOnce(insert);
+    mockStart.mockResolvedValue(43);
     const { startJobRun } = await import("./jobRuns");
 
     expect(await startJobRun("collect-history")).toBe(43);
-    expect(cleanup.update).toHaveBeenCalled();
-    expect(insert.insert).toHaveBeenCalledWith(expect.objectContaining({ job_name: "collect-history", status: "running" }));
+    expect(mockClose).toHaveBeenCalledWith("collect-history", expect.any(String), expect.any(String), expect.any(Object));
+    expect(mockClose.mock.invocationCallOrder[0]).toBeLessThan(mockStart.mock.invocationCallOrder[0]!);
   });
 
   it("still starts the run when the cleanup fails", async () => {
-    const cleanup = mockQuery({ data: null, error: { message: "timeout" } });
-    const insert = mockQuery({ data: { id: 44 }, error: null });
-    mockFrom.mockReturnValueOnce(cleanup).mockReturnValueOnce(insert);
+    mockClose.mockRejectedValue(new Error("timeout"));
+    mockStart.mockResolvedValue(44);
     const { startJobRun } = await import("./jobRuns");
 
     expect(await startJobRun("collect-history")).toBe(44);
@@ -111,17 +91,12 @@ describe("startJobRun closes abandoned runs first", () => {
 });
 
 describe("finishJobRun", () => {
-  it("updates the row with a finished timestamp and status", async () => {
-    const builder = mockQuery({ error: null });
-    mockFrom.mockReturnValue(builder);
+  it("finishes the row with its status and detail", async () => {
     const { finishJobRun } = await import("./jobRuns");
 
     await finishJobRun(42, "success", { rows: 10 });
 
-    expect(builder.update).toHaveBeenCalledWith(
-      expect.objectContaining({ status: "success", detail: { rows: 10 } }),
-    );
-    expect(builder.eq).toHaveBeenCalledWith("id", 42);
+    expect(mockFinish).toHaveBeenCalledWith(42, "success", { rows: 10 });
   });
 
   it("does nothing when id is null", async () => {
@@ -129,34 +104,32 @@ describe("finishJobRun", () => {
 
     await finishJobRun(null, "error");
 
-    expect(mockFrom).not.toHaveBeenCalled();
+    expect(mockFinish).not.toHaveBeenCalled();
   });
 });
 
 describe("listRecentJobRuns", () => {
-  it("returns runs ordered by supabase, defaulting the limit to 50", async () => {
-    const builder = mockQuery({ data: [{ id: 1 }], error: null });
-    mockFrom.mockReturnValue(builder);
+  it("returns runs, defaulting the limit to 50", async () => {
+    mockList.mockResolvedValue([{ id: 1 }]);
     const { listRecentJobRuns } = await import("./jobRuns");
 
     const result = await listRecentJobRuns();
 
     expect(result).toEqual({ runs: [{ id: 1 }], error: null });
-    expect(builder.limit).toHaveBeenCalledWith(50);
+    expect(mockList).toHaveBeenCalledWith(50);
   });
 
   it("passes through a custom limit", async () => {
-    const builder = mockQuery({ data: [], error: null });
-    mockFrom.mockReturnValue(builder);
+    mockList.mockResolvedValue([]);
     const { listRecentJobRuns } = await import("./jobRuns");
 
     await listRecentJobRuns(5);
 
-    expect(builder.limit).toHaveBeenCalledWith(5);
+    expect(mockList).toHaveBeenCalledWith(5);
   });
 
   it("returns an empty array and the message on error", async () => {
-    mockFrom.mockReturnValue(mockQuery({ data: null, error: { message: "boom" } }));
+    mockList.mockRejectedValue(new Error("boom"));
     const { listRecentJobRuns } = await import("./jobRuns");
 
     expect(await listRecentJobRuns()).toEqual({ runs: [], error: "boom" });
@@ -177,36 +150,28 @@ describe("runSensorReadingRetention", () => {
   });
 
   it("rolls up and prunes in one database call with an hour-aligned cutoff", async () => {
-    mockRpc.mockResolvedValue({ data: { rolled_up: 42, deleted: 31000 }, error: null });
+    mockRollUp.mockResolvedValue({ rolled_up: 42, deleted: 31000 });
     const { runSensorReadingRetention } = await import("./jobRuns");
 
     const result = await runSensorReadingRetention(90);
 
-    expect(mockRpc).toHaveBeenCalledWith("roll_up_and_prune_readings", {
-      p_cutoff: "2024-03-17T12:00:00.000Z",
-    });
-    // No row-by-row reads or deletes from the Worker any more.
-    expect(mockFrom).not.toHaveBeenCalled();
+    expect(mockRollUp).toHaveBeenCalledWith("2024-03-17T12:00:00.000Z");
     expect(result).toEqual({ rolledUp: 42, deleted: 31000, error: null });
   });
 
   it("reports the error and deletes nothing when the function fails or is missing", async () => {
-    mockRpc.mockResolvedValue({
-      data: null,
-      error: { message: "Could not find the function public.roll_up_and_prune_readings" },
-    });
+    mockRollUp.mockRejectedValue(new Error("function public.roll_up_and_prune_readings does not exist"));
     const { runSensorReadingRetention } = await import("./jobRuns");
 
     expect(await runSensorReadingRetention(90)).toEqual({
       rolledUp: 0,
       deleted: 0,
-      error: "Could not find the function public.roll_up_and_prune_readings",
+      error: "function public.roll_up_and_prune_readings does not exist",
     });
-    expect(mockFrom).not.toHaveBeenCalled();
   });
 
   it("treats a missing count as zero", async () => {
-    mockRpc.mockResolvedValue({ data: {}, error: null });
+    mockRollUp.mockResolvedValue({});
     const { runSensorReadingRetention } = await import("./jobRuns");
 
     expect(await runSensorReadingRetention(90)).toEqual({ rolledUp: 0, deleted: 0, error: null });

@@ -2,7 +2,7 @@
  * Neon versions of the last small queries: household activity log, the
  * mobile sign-in exchange (single-use jti), freeze-estimate snapshots,
  * portfolio alert bookkeeping, Telegram command lookup, contact form, digest
- * opt-in. Called when `dbBackend() === "neon"`.
+ * opt-in.
  */
 import { query } from "./client";
 

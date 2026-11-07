@@ -9,7 +9,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { insertTestUser, useTestDatabase } from "../test/db";
 
 vi.mock("./runtimeEnv", () => ({
-  getRuntimeEnv: (key: string) => (key === "DB_BACKEND" ? "neon" : undefined),
+  getRuntimeEnv: () => undefined,
   hasRuntimeEnv: () => false,
 }));
 const background = vi.hoisted(() => ({ labels: [] as string[] }));
@@ -20,7 +20,7 @@ vi.mock("./backgroundWork", () => ({
 }));
 
 import { POST } from "../pages/api/ingest/[deviceKey]";
-import { findDeviceByIngestKeyHash, upsertDeviceSensor } from "./devices";
+import { findDeviceByIngestKeyHash, updateDeviceMeta, upsertDeviceSensor } from "./devices";
 import { listIngestStatsForHousehold, listRecentIngestStatsAdmin, recordIngestStat } from "./ingestStats";
 import { insertSensorReadings } from "./sensorReadings";
 
@@ -205,6 +205,24 @@ describe("ingest helpers on Neon", () => {
     expect(result.sensor?.unit).toBe("F");
     const [row] = await sql<{ unit: string }>("select unit from public.device_sensors where device_id = $1", [dev.deviceId]);
     expect(row?.unit).toBe("F");
+  });
+
+  it("a non-temperature sensor keeps the unit it was saved with", async () => {
+    const dev = await pushDevice("a@example.com");
+    await upsertDeviceSensor(dev.deviceId, "h", "H", "humidity", "%");
+    const result = await upsertDeviceSensor(dev.deviceId, "h", "H", "humidity", "F");
+    expect(result.sensor?.unit).toBe("%");
+    const [row] = await sql<{ unit: string }>("select unit from public.device_sensors where device_id = $1", [dev.deviceId]);
+    expect(row?.unit).toBe("%");
+  });
+
+  it("device meta that isn't an object yet (column is not null) is replaced, not merged into", async () => {
+    const dev = await pushDevice("a@example.com");
+    await sql(`update public.devices set meta = '[]'::jsonb, last_seen_at = null where id = $1`, [dev.deviceId]);
+    await updateDeviceMeta(dev.deviceId, { firmware: "1.2.0" }, { touchLastSeen: false });
+    const [row] = await sql<{ meta: unknown; last_seen_at: unknown }>("select meta, last_seen_at from public.devices where id = $1", [dev.deviceId]);
+    expect(row?.meta).toEqual({ firmware: "1.2.0" });
+    expect(row?.last_seen_at).toBeNull();
   });
 
   it("a failing batch stores nothing", async () => {

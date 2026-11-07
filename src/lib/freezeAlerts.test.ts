@@ -11,32 +11,23 @@ vi.mock("./pipeFreezeForecastFetch", () => ({
   pipeFreezeCacheKey: (lat: number, lon: number) => `${lat.toFixed(2)},${lon.toFixed(2)}`,
 }));
 
-// Minimal Supabase query builder: records writes, returns canned rows.
-const db = {
+// In-memory stand-in for db/freezeSubscriptions: records writes, returns canned rows.
+const db = vi.hoisted(() => ({
   rows: [] as Record<string, unknown>[],
   existing: null as Record<string, unknown> | null,
-  updates: [] as Array<{ values: Record<string, unknown>; id: unknown }>,
-  inserts: [] as Record<string, unknown>[],
-};
-function builder() {
-  const chain: Record<string, unknown> = {};
-  chain.select = () => chain;
-  chain.eq = () => chain;
-  chain.not = () => Promise.resolve({ data: db.rows, error: null });
-  chain.maybeSingle = () => Promise.resolve({ data: db.existing, error: null });
-  chain.update = (values: Record<string, unknown>) => ({
-    eq: (_col: string, id: unknown) => {
-      db.updates.push({ values, id });
-      return Promise.resolve({ error: null });
-    },
-  });
-  chain.insert = (values: Record<string, unknown>) => {
-    db.inserts.push(values);
-    return Promise.resolve({ error: null });
-  };
-  return chain;
-}
-vi.mock("./supabase", () => ({ createServerClient: () => ({ from: () => builder() }) }));
+  writes: [] as Array<{ email: string; label: string; lat: number; lon: number; token: string }>,
+  alerted: [] as Array<{ id: string; night: string }>,
+}));
+vi.mock("./db/freezeSubscriptions", () => ({
+  findByEmail: async () => db.existing,
+  writeUnconfirmed: async (email: string, label: string, lat: number, lon: number, token: string) => {
+    db.writes.push({ email, label, lat, lon, token });
+  },
+  listConfirmed: async () => db.rows,
+  markAlerted: async (id: string, night: string) => {
+    db.alerted.push({ id, night });
+  },
+}));
 
 import {
   buildFreezeAlertEmail,
@@ -68,8 +59,8 @@ beforeEach(() => {
   mockFetchForecast.mockReset();
   db.rows = [];
   db.existing = null;
-  db.updates = [];
-  db.inserts = [];
+  db.writes = [];
+  db.alerted = [];
 });
 
 describe("decideFreezeAlert", () => {
@@ -157,21 +148,22 @@ describe("subscribeToFreezeAlerts", () => {
   it("stores a rounded location and sends a confirmation", async () => {
     const result = await subscribeToFreezeAlerts({ email: " Me@Example.com ", lat: 37.54129, lon: -77.43611, label: "Richmond, VA" });
     expect(result.ok).toBe(true);
-    expect(db.inserts[0]).toMatchObject({ email: "me@example.com", lat: 37.54, lon: -77.44, place_label: "Richmond, VA", confirmed_at: null });
+    expect(db.writes[0]).toMatchObject({ email: "me@example.com", lat: 37.54, lon: -77.44, label: "Richmond, VA" });
+    expect(db.writes[0]?.token).toMatch(/^[0-9a-f]{48}$/);
     expect(mockSendEmail).toHaveBeenCalledWith("me@example.com", "Confirm freeze alerts for Richmond, VA", expect.any(String), expect.anything());
   });
 
   it("leaves a confirmed subscriber at the same place alone", async () => {
     db.existing = { id: "s1", confirmed_at: "2026-11-01T00:00:00Z", lat: 37.54, lon: -77.44 };
     expect((await subscribeToFreezeAlerts({ email: "me@example.com", lat: 37.541, lon: -77.439, label: "Richmond" })).ok).toBe(true);
-    expect(db.updates).toHaveLength(0);
+    expect(db.writes).toHaveLength(0);
     expect(mockSendEmail).not.toHaveBeenCalled();
   });
 
   it("requires re-confirmation when the location changes", async () => {
     db.existing = { id: "s1", confirmed_at: "2026-11-01T00:00:00Z", lat: 37.54, lon: -77.44 };
     await subscribeToFreezeAlerts({ email: "me@example.com", lat: 44.98, lon: -93.27, label: "Minneapolis, MN" });
-    expect(db.updates[0]?.values).toMatchObject({ confirmed_at: null, lat: 44.98, lon: -93.27 });
+    expect(db.writes[0]).toMatchObject({ email: "me@example.com", lat: 44.98, lon: -93.27, label: "Minneapolis, MN" });
     expect(mockSendEmail).toHaveBeenCalledTimes(1);
   });
 });
@@ -198,7 +190,7 @@ describe("sendFreezeAlerts", () => {
       expect.any(String),
       expect.objectContaining({ headers: expect.objectContaining({ "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" }) }),
     );
-    expect(db.updates).toEqual([{ values: { last_alert_night: "2026-12-01" }, id: "a" }]);
+    expect(db.alerted).toEqual([{ id: "a", night: "2026-12-01" }]);
   });
 
   it("treats a suppressed address as skipped, not an error", async () => {

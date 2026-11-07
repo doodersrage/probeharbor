@@ -1,13 +1,15 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { DEFAULT_ALERT_SETTINGS, type AlertReading, type AlertSettings } from "./alerts";
 
-// Real alertNotifications + notify + alerts; only I/O is mocked.
-const chain: Record<string, unknown> = {};
-for (const m of ["from", "update", "upsert", "eq", "select", "delete", "neq", "order", "limit"]) {
-  chain[m] = () => chain;
-}
-(chain as { then: unknown }).then = (resolve: (v: unknown) => void) => resolve({ data: [{ user_id: "u1" }], error: null });
-vi.mock("./supabase", () => ({ createServerClient: () => chain, createAdminClient: () => chain }));
+// Real alertNotifications + notify + alerts; only I/O is mocked. The cooldown
+// claim is won (the compare-and-set itself is tested in notify.claimCooldown.test.ts).
+vi.mock("./db/alertSettings", () => ({
+  claimCooldown: vi.fn(async () => ({ claimed: true, claimedAt: new Date().toISOString() })),
+  releaseCooldown: vi.fn(async () => {}),
+  markCooldown: vi.fn(async () => {}),
+  markEscalation: vi.fn(async () => {}),
+  recentAlertReachedAChannel: vi.fn(async () => false),
+}));
 vi.mock("./entitlements", () => ({
   getUserEntitlements: vi.fn().mockResolvedValue({ canUseSms: true, canUsePush: true, canUseOutboundWebhook: false }),
 }));

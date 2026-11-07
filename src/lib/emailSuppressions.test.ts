@@ -1,9 +1,12 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
-const mockFrom = vi.fn();
-vi.mock("./supabase", () => ({
-  createServerClient: () => ({ from: (...a: unknown[]) => mockFrom(...a) }),
+const db = vi.hoisted(() => ({
+  isSuppressed: vi.fn(),
+  upsertSuppression: vi.fn(),
+  listSuppressions: vi.fn(),
+  deleteSuppression: vi.fn(),
 }));
+vi.mock("./db/emailJobs", () => db);
 
 import {
   addEmailSuppression,
@@ -16,19 +19,9 @@ import {
   unsuppressEmail,
 } from "./emailSuppressions";
 
-function chain(result: { data?: unknown; error?: { message: string } | null }) {
-  const api = {
-    select: vi.fn().mockReturnThis(),
-    eq: vi.fn().mockReturnThis(),
-    maybeSingle: vi.fn().mockResolvedValue(result),
-    upsert: vi.fn().mockResolvedValue(result),
-  };
-  return api;
-}
-
 describe("emailSuppressions", () => {
   beforeEach(() => {
-    mockFrom.mockReset();
+    for (const fn of Object.values(db)) fn.mockReset();
   });
 
   it("normalizes and validates addresses", () => {
@@ -53,43 +46,33 @@ describe("emailSuppressions", () => {
   });
 
   it("reports suppressed addresses", async () => {
-    mockFrom.mockReturnValue(chain({ data: { email: "bad@example.com" }, error: null }));
+    db.isSuppressed.mockResolvedValue(true);
     expect(await isEmailSuppressed("Bad@Example.com")).toBe(true);
+    expect(db.isSuppressed).toHaveBeenCalledWith("bad@example.com");
   });
 
   it("fails open when the lookup errors", async () => {
-    mockFrom.mockReturnValue(chain({ data: null, error: { message: "missing table" } }));
+    db.isSuppressed.mockRejectedValue(new Error("missing table"));
     expect(await isEmailSuppressed("user@example.com")).toBe(false);
   });
 
   it("upserts suppressions", async () => {
-    const api = chain({ data: null, error: null });
-    mockFrom.mockReturnValue(api);
+    db.upsertSuppression.mockResolvedValue(undefined);
     await suppressEmail("Bad@Example.com", "bounce", "hard bounce");
-    expect(api.upsert).toHaveBeenCalledWith(
-      expect.objectContaining({
-        email: "bad@example.com",
-        reason: "bounce",
-        last_error: "hard bounce",
-      }),
-      { onConflict: "email" },
-    );
+    expect(db.upsertSuppression).toHaveBeenCalledWith("bad@example.com", "bounce", "hard bounce");
   });
 
   it("adds a manual suppression with a result", async () => {
-    const api = chain({ data: null, error: null });
-    mockFrom.mockReturnValue(api);
+    db.upsertSuppression.mockResolvedValue(undefined);
     expect(
       await addEmailSuppression("Bad@Example.com", "manual", "ops note"),
     ).toEqual({ ok: true, error: null });
-    expect(api.upsert).toHaveBeenCalledWith(
-      expect.objectContaining({
-        email: "bad@example.com",
-        reason: "manual",
-        last_error: "ops note",
-      }),
-      { onConflict: "email" },
-    );
+    expect(db.upsertSuppression).toHaveBeenCalledWith("bad@example.com", "manual", "ops note");
+  });
+
+  it("reports a failed upsert", async () => {
+    db.upsertSuppression.mockRejectedValue(new Error("db down"));
+    expect(await addEmailSuppression("bad@example.com")).toEqual({ ok: false, error: "db down" });
   });
 
   it("rejects blank emails on manual add", async () => {
@@ -97,43 +80,33 @@ describe("emailSuppressions", () => {
       ok: false,
       error: "Enter a valid email address",
     });
-    expect(mockFrom).not.toHaveBeenCalled();
+    expect(db.upsertSuppression).not.toHaveBeenCalled();
   });
 
-  it("lists suppressions newest first", async () => {
-    const api = {
-      select: vi.fn().mockReturnThis(),
-      order: vi.fn().mockReturnThis(),
-      limit: vi.fn().mockResolvedValue({
-        data: [
-          {
-            email: "a@example.com",
-            reason: "bounce",
-            last_error: null,
-            created_at: "2026-01-01T00:00:00Z",
-            updated_at: "2026-01-02T00:00:00Z",
-          },
-        ],
-        error: null,
-      }),
-    };
-    mockFrom.mockReturnValue(api);
+  it("lists suppressions with a clamped limit", async () => {
+    db.listSuppressions.mockResolvedValue([
+      {
+        email: "a@example.com",
+        reason: "bounce",
+        last_error: null,
+        created_at: "2026-01-01T00:00:00Z",
+        updated_at: "2026-01-02T00:00:00Z",
+      },
+    ]);
     const result = await listEmailSuppressions(50);
     expect(result.error).toBeNull();
     expect(result.rows).toHaveLength(1);
-    expect(api.order).toHaveBeenCalledWith("updated_at", { ascending: false });
+    expect(db.listSuppressions).toHaveBeenCalledWith(50);
+    await listEmailSuppressions(5000);
+    expect(db.listSuppressions).toHaveBeenLastCalledWith(500);
   });
 
   it("deletes a suppression", async () => {
-    const api = {
-      delete: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockResolvedValue({ error: null }),
-    };
-    mockFrom.mockReturnValue(api);
+    db.deleteSuppression.mockResolvedValue(undefined);
     expect(await unsuppressEmail("Bad@Example.com")).toEqual({
       ok: true,
       error: null,
     });
-    expect(api.eq).toHaveBeenCalledWith("email", "bad@example.com");
+    expect(db.deleteSuppression).toHaveBeenCalledWith("bad@example.com");
   });
 });

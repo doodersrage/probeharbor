@@ -11,9 +11,9 @@ vi.mock("../../../lib/adminAccess", () => ({
   isUserAdmin: (...a: unknown[]) => mockIsUserAdmin(...a),
 }));
 
-const mockGetUserById = vi.fn();
-vi.mock("../../../lib/supabase", () => ({
-  createAdminClient: () => ({ auth: { admin: { getUserById: (...a: unknown[]) => mockGetUserById(...a) } } }),
+const mockGetUserRecord = vi.fn();
+vi.mock("../../../lib/userRecords", () => ({
+  getUserRecord: (...a: unknown[]) => mockGetUserRecord(...a),
 }));
 
 const mockResolveSiteUrl = vi.fn();
@@ -80,7 +80,7 @@ beforeEach(() => {
     user: { id: "user-1", email: "user@example.com" },
   });
   mockIsUserAdmin.mockReset().mockResolvedValue(true);
-  mockGetUserById.mockReset().mockResolvedValue({ data: { user: { email: "user@example.com" } } });
+  mockGetUserRecord.mockReset().mockResolvedValue({ id: "user-1", email: "user@example.com" });
   mockResolveSiteUrl.mockReset().mockReturnValue("https://probeharbor.dev");
   mockBuildDripEmail.mockReset().mockReturnValue({ subject: "Drip", text: "text", html: "<p>html</p>" });
   mockBuildTrialReminderEmail.mockReset().mockReturnValue({ subject: "Trial", text: "text", html: "<p>html</p>" });
@@ -116,7 +116,7 @@ describe("POST /api/admin/email-test", () => {
   });
 
   it("returns 400 when there's no email on the account", async () => {
-    mockGetUserById.mockResolvedValue({ data: { user: { email: null } } });
+    mockGetUserRecord.mockResolvedValue({ id: "user-1", email: null });
     mockGetAuthFromCookies.mockResolvedValue({
       session: { access_token: "tok" },
       user: { id: "user-1", email: undefined },

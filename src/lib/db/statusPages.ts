@@ -1,7 +1,7 @@
 /**
  * Neon versions of household status pages (statusPage.ts), the public status
  * email subscriptions (statusSubscriptions.ts) and the status-change notifier
- * state (statusNotify.ts). Called when `dbBackend() === "neon"`.
+ * state (statusNotify.ts).
  *
  * Differences from the Supabase path, all deliberate:
  * - Status subscribe writes with ON CONFLICT (email); confirm and unsubscribe

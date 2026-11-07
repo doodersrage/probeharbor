@@ -1,5 +1,5 @@
 /**
- * Email + password routes on Better Auth (DB_BACKEND=neon), end to end
+ * Email + password routes on Better Auth, end to end
  * against a local Postgres: the real route handlers, the real Better Auth
  * runtime (its Neon pool swapped for pg) and the real email builder (only
  * the final send is captured).
@@ -12,7 +12,7 @@ import { testDatabaseUrl, useTestDatabase } from "../../../test/db";
 const SECRET = "test-secret-for-database-tests-only-0123456789";
 vi.mock("../../../lib/runtimeEnv", () => ({
   getRuntimeEnv: (key: string) =>
-    ({ DB_BACKEND: "neon", DATABASE_URL: testDatabaseUrl(process.env.PROBEHARBOR_TEST_DB!), BETTER_AUTH_SECRET: SECRET })[key],
+    ({ DATABASE_URL: testDatabaseUrl(process.env.PROBEHARBOR_TEST_DB!), BETTER_AUTH_SECRET: SECRET })[key],
   hasRuntimeEnv: () => false,
 }));
 vi.mock("@neondatabase/serverless", async (orig) => ({

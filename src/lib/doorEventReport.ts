@@ -2,9 +2,7 @@ import type { DeviceSensor, DeviceWithSensors } from "./devices";
 import { escapeCsvField } from "./csvEscape";
 import { applySensorOffset } from "./sensorCalibration";
 import { clampIsoToHistoryWindow } from "./retentionSchedule";
-import { dbBackend } from "./db/client";
 import * as neonDoors from "./db/doors";
-import { createServerClient } from "./supabase";
 
 /**
  * Door event report: each saved open/close session with the temperature and
@@ -27,8 +25,6 @@ export const READING_MAX_AGE_SECONDS = 30 * 60;
 export const DOOR_REPORT_LIMIT = 500;
 /** Most events in one CSV; more than this and the export asks for fewer days. */
 export const DOOR_CSV_LIMIT = 5000;
-/** PostgREST returns at most 1000 rows per request (`max_rows`), so page through. */
-const EVENTS_PER_PAGE = 1000;
 /** Times sent per database call (the function caps it at 2000). */
 const TIMES_PER_CALL = 1000;
 
@@ -118,33 +114,10 @@ export async function listDoorEventsForReport(
   const rows: Row[] = [];
   // One row past the limit tells us there are more.
   const wanted = limit + 1;
-  if (dbBackend() === "neon") {
-    try {
-      rows.push(...(await neonDoors.listClosedDoorSessions(householdId, fromIso, toIso, wanted, doorLabel)));
-    } catch (error) {
-      return { events: [], truncated: false, error: error instanceof Error ? error.message : String(error) };
-    }
-  }
-  const supabase = dbBackend() === "neon" ? null : createServerClient();
-  while (supabase && rows.length < wanted) {
-    const start = rows.length;
-    const end = Math.min(start + EVENTS_PER_PAGE, wanted) - 1;
-    const { data, error } = await supabase
-      .from("door_open_events")
-      .select("id, sensor_id, label, opened_at, closed_at, duration_ms")
-      .eq("household_id", householdId)
-      .gte("opened_at", fromIso)
-      .lte("opened_at", toIso)
-      .not("closed_at", "is", null)
-      .match(doorLabel ? { label: doorLabel } : {})
-      // id breaks ties so pages never skip or repeat a row.
-      .order("opened_at", { ascending: false })
-      .order("id", { ascending: true })
-      .range(start, end);
-    if (error) return { events: [], truncated: false, error: error.message };
-    const page = (data ?? []) as Row[];
-    rows.push(...page);
-    if (page.length < end - start + 1) break;
+  try {
+    rows.push(...(await neonDoors.listClosedDoorSessions(householdId, fromIso, toIso, wanted, doorLabel)));
+  } catch (error) {
+    return { events: [], truncated: false, error: error instanceof Error ? error.message : String(error) };
   }
   const closedRows = rows.filter((row) => typeof row.closed_at === "string");
   const events = closedRows.slice(0, limit).map((row) => ({
@@ -177,25 +150,13 @@ export async function fetchValuesBefore(
   if (ids.length === 0 || uniqueTimes.length === 0) return { values, error: null };
   if (ids.length > 50) return { values, error: "too many sensors to compare" };
 
-  const supabase = dbBackend() === "neon" ? null : createServerClient();
   for (let i = 0; i < uniqueTimes.length; i += TIMES_PER_CALL) {
     const batch = uniqueTimes.slice(i, i + TIMES_PER_CALL);
     let data: Array<{ sensor_id: string; at_time: string; value_num: number | null }> | null;
-    if (supabase) {
-      const result = await supabase.rpc("sensor_values_before", {
-        p_household_id: householdId,
-        p_sensor_ids: ids,
-        p_times: batch,
-        p_max_age_seconds: READING_MAX_AGE_SECONDS,
-      });
-      if (result.error) return { values, error: result.error.message };
-      data = result.data;
-    } else {
-      try {
-        data = await neonDoors.sensorValuesBefore(householdId, ids, batch, READING_MAX_AGE_SECONDS);
-      } catch (error) {
-        return { values, error: error instanceof Error ? error.message : String(error) };
-      }
+    try {
+      data = await neonDoors.sensorValuesBefore(householdId, ids, batch, READING_MAX_AGE_SECONDS);
+    } catch (error) {
+      return { values, error: error instanceof Error ? error.message : String(error) };
     }
     for (const row of data ?? []) {
       if (typeof row.value_num !== "number" || !Number.isFinite(row.value_num)) continue;

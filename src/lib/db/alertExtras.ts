@@ -1,7 +1,7 @@
 /**
  * Neon versions of the smaller alert tables: settings history
  * (alertSettingsHistory.ts), snooze links (alertSnoozeTokens.ts) and webhook
- * delivery log (webhookDeliveries.ts). Called when `dbBackend() === "neon"`.
+ * delivery log (webhookDeliveries.ts).
  * Everything is scoped to one user, or to one household's members.
  *
  * Differences from the Supabase path, all deliberate:

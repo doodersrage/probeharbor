@@ -1,13 +1,9 @@
-import { dbBackend } from "./db/client";
 import * as neonDevices from "./db/devices";
 import * as neonIngest from "./db/ingest";
-import { createServerClient } from "./supabase";
-import type { Json } from "../types/supabase";
 import { getOrCreateHouseholdForUser, getUserHouseholdId } from "./households";
 import {
   getDefaultTempFeeds,
   getDefaultTempProbes,
-  normalizePullFeedUrl,
   sanitizeJsonRoot,
   type TempFeedConfig,
   type TempProbeConfig,
@@ -69,55 +65,10 @@ export type DeviceSensor = {
 
 export type DeviceWithSensors = Device & { sensors: DeviceSensor[] };
 
-const DEVICE_SELECT =
-  "id, household_id, name, source, pull_url, ingest_key_prefix, enabled, last_seen_at, sort_order, meta, space";
-const SENSOR_SELECT =
-  "id, device_id, key, label, kind, unit, visible, sort_order, offset_num";
-
 export async function listHouseholdDevices(
   householdId: string,
 ): Promise<{ devices: DeviceWithSensors[]; error: string | null }> {
-  if (dbBackend() === "neon") return neonDevices.listHouseholdDevices(householdId);
-  const supabase = createServerClient();
-  const { data: devices, error } = await supabase
-    .from("devices")
-    .select(DEVICE_SELECT)
-    .eq("household_id", householdId)
-    .order("sort_order", { ascending: true });
-
-  if (error) {
-    return { devices: [], error: error.message };
-  }
-
-  if (!devices || devices.length === 0) {
-    return { devices: [], error: null };
-  }
-
-  const ids = devices.map((d) => d.id);
-  const { data: sensors, error: sensorError } = await supabase
-    .from("device_sensors")
-    .select(SENSOR_SELECT)
-    .in("device_id", ids)
-    .order("sort_order", { ascending: true });
-
-  if (sensorError) {
-    return { devices: [], error: sensorError.message };
-  }
-
-  const byDevice = new Map<string, DeviceSensor[]>();
-  for (const sensor of sensors ?? []) {
-    const list = byDevice.get(sensor.device_id) ?? [];
-    list.push(sensor as DeviceSensor);
-    byDevice.set(sensor.device_id, list);
-  }
-
-  return {
-    devices: devices.map((device) => ({
-      ...(device as Device),
-      sensors: byDevice.get(device.id) ?? [],
-    })),
-    error: null,
-  };
+  return neonDevices.listHouseholdDevices(householdId);
 }
 
 export async function ensureDefaultPullDevice(
@@ -224,12 +175,7 @@ export async function getUserDevicesAsTempConfig(userId: string, email?: string 
 }
 
 export async function touchDeviceLastSeen(deviceId: string): Promise<void> {
-  if (dbBackend() === "neon") return neonIngest.touchDeviceLastSeen(deviceId);
-  const supabase = createServerClient();
-  await supabase
-    .from("devices")
-    .update({ last_seen_at: new Date().toISOString(), updated_at: new Date().toISOString() })
-    .eq("id", deviceId);
+  return neonIngest.touchDeviceLastSeen(deviceId);
 }
 
 /**
@@ -243,51 +189,13 @@ export async function updateDeviceMeta(
   patch: Record<string, unknown>,
   options: { touchLastSeen?: boolean } = {},
 ): Promise<void> {
-  if (dbBackend() === "neon") return neonIngest.updateDeviceMeta(deviceId, patch, options.touchLastSeen !== false);
-  const supabase = createServerClient();
-  const { data } = await supabase
-    .from("devices")
-    .select("meta")
-    .eq("id", deviceId)
-    .maybeSingle();
-  const existing =
-    data?.meta && typeof data.meta === "object" && !Array.isArray(data.meta)
-      ? (data.meta as Record<string, unknown>)
-      : {};
-  await supabase
-    .from("devices")
-    .update({
-      meta: { ...existing, ...patch } as Json,
-      ...(options.touchLastSeen === false ? {} : { last_seen_at: new Date().toISOString() }),
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", deviceId);
+  return neonIngest.updateDeviceMeta(deviceId, patch, options.touchLastSeen !== false);
 }
 
 export async function findDeviceByIngestKeyHash(
   keyHash: string,
 ): Promise<DeviceWithSensors | null> {
-  if (dbBackend() === "neon") return neonIngest.findDeviceByIngestKeyHash(keyHash);
-  const supabase = createServerClient();
-  const { data: device } = await supabase
-    .from("devices")
-    .select(DEVICE_SELECT)
-    .eq("ingest_key_hash", keyHash)
-    .eq("enabled", true)
-    .maybeSingle();
-
-  if (!device) return null;
-
-  const { data: sensors } = await supabase
-    .from("device_sensors")
-    .select(SENSOR_SELECT)
-    .eq("device_id", device.id)
-    .order("sort_order", { ascending: true });
-
-  return {
-    ...(device as Device),
-    sensors: (sensors ?? []) as DeviceSensor[],
-  };
+  return neonIngest.findDeviceByIngestKeyHash(keyHash);
 }
 
 export async function createPushDevice(
@@ -297,29 +205,7 @@ export async function createPushDevice(
   ingestKeyPrefix: string,
   space?: string | null,
 ): Promise<{ device: Device | null; error: string | null }> {
-  if (dbBackend() === "neon") {
-    return neonDevices.createPushDevice(householdId, name, ingestKeyHash, ingestKeyPrefix, space?.trim() || null);
-  }
-  const supabase = createServerClient();
-  const { data, error } = await supabase
-    .from("devices")
-    .insert({
-      household_id: householdId,
-      name,
-      source: "push",
-      ingest_key_hash: ingestKeyHash,
-      ingest_key_prefix: ingestKeyPrefix,
-      enabled: true,
-      space: space?.trim() || null,
-    })
-    .select(DEVICE_SELECT)
-    .single();
-
-  if (error || !data) {
-    return { device: null, error: error?.message ?? "Failed to create device" };
-  }
-
-  return { device: data as Device, error: null };
+  return neonDevices.createPushDevice(householdId, name, ingestKeyHash, ingestKeyPrefix, space?.trim() || null);
 }
 
 export async function renamePushDevice(
@@ -333,23 +219,7 @@ export async function renamePushDevice(
   if (!trimmed) {
     return { error: t.nameRequired };
   }
-  if (dbBackend() === "neon") return neonDevices.renamePushDevice(householdId, deviceId, trimmed, t.renameFailed);
-
-  const supabase = createServerClient();
-  const { data, error } = await supabase
-    .from("devices")
-    .update({ name: trimmed })
-    .eq("id", deviceId)
-    .eq("household_id", householdId)
-    .eq("source", "push")
-    .select("id")
-    .maybeSingle();
-
-  if (error || !data) {
-    return { error: error?.message ?? t.renameFailed };
-  }
-
-  return { error: null };
+  return neonDevices.renamePushDevice(householdId, deviceId, trimmed, t.renameFailed);
 }
 
 export async function updateDeviceSpace(
@@ -359,22 +229,7 @@ export async function updateDeviceSpace(
   locale: Locale = "en",
 ): Promise<{ error: string | null }> {
   const trimmed = space?.trim() || null;
-  if (dbBackend() === "neon") {
-    return neonDevices.updateDeviceSpace(householdId, deviceId, trimmed, apiDevicesMessages(locale).updateSpaceFailed);
-  }
-  const supabase = createServerClient();
-  const { data, error } = await supabase
-    .from("devices")
-    .update({ space: trimmed, updated_at: new Date().toISOString() })
-    .eq("id", deviceId)
-    .eq("household_id", householdId)
-    .select("id")
-    .maybeSingle();
-
-  if (error || !data) {
-    return { error: error?.message ?? apiDevicesMessages(locale).updateSpaceFailed };
-  }
-  return { error: null };
+  return neonDevices.updateDeviceSpace(householdId, deviceId, trimmed, apiDevicesMessages(locale).updateSpaceFailed);
 }
 
 /**
@@ -388,46 +243,23 @@ export async function updateDeviceDetails(
   locale: Locale = "en",
 ): Promise<{ error: string | null }> {
   const t = apiDevicesMessages(locale);
-  if (dbBackend() === "neon") {
-    let source: string | null;
-    try {
-      source = await neonDevices.getDeviceSource(householdId, deviceId);
-    } catch {
-      source = null; // a failed read was "not found" on the Supabase path too
-    }
-    if (!source) return { error: t.deviceNotFound };
-    const neonName = patch.name?.trim();
-    if (source === "push" && patch.name !== undefined && !neonName) return { error: t.nameRequired };
-    return neonDevices.updateDeviceDetails(
-      householdId,
-      deviceId,
-      source === "push",
-      neonName || undefined,
-      patch.enabled,
-      patch.space?.trim() || null,
-    );
+  let source: string | null;
+  try {
+    source = await neonDevices.getDeviceSource(householdId, deviceId);
+  } catch {
+    source = null; // a failed read counts as "not found"
   }
-  const supabase = createServerClient();
-  const { data: existing } = await supabase
-    .from("devices")
-    .select("source")
-    .eq("id", deviceId)
-    .eq("household_id", householdId)
-    .maybeSingle();
-  if (!existing) return { error: t.deviceNotFound };
+  if (!source) return { error: t.deviceNotFound };
   const name = patch.name?.trim();
-  if (existing.source === "push" && patch.name !== undefined && !name) return { error: t.nameRequired };
-  const { error } = await supabase
-    .from("devices")
-    .update({
-      // Pull devices are synced from Pull feeds settings, which own their name and on/off.
-      ...(existing.source === "push" ? { enabled: patch.enabled, ...(name ? { name } : {}) } : {}),
-      space: patch.space?.trim() || null,
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", deviceId)
-    .eq("household_id", householdId);
-  return { error: error?.message ?? null };
+  if (source === "push" && patch.name !== undefined && !name) return { error: t.nameRequired };
+  return neonDevices.updateDeviceDetails(
+    householdId,
+    deviceId,
+    source === "push",
+    name || undefined,
+    patch.enabled,
+    patch.space?.trim() || null,
+  );
 }
 
 export async function rotatePushDeviceKey(
@@ -436,25 +268,7 @@ export async function rotatePushDeviceKey(
   ingestKeyHash: string,
   ingestKeyPrefix: string,
 ): Promise<{ error: string | null }> {
-  if (dbBackend() === "neon") return neonDevices.rotatePushDeviceKey(householdId, deviceId, ingestKeyHash, ingestKeyPrefix);
-  const supabase = createServerClient();
-  const { data, error } = await supabase
-    .from("devices")
-    .update({
-      ingest_key_hash: ingestKeyHash,
-      ingest_key_prefix: ingestKeyPrefix,
-    })
-    .eq("id", deviceId)
-    .eq("household_id", householdId)
-    .eq("source", "push")
-    .select("id")
-    .maybeSingle();
-
-  if (error || !data) {
-    return { error: error?.message ?? "Failed to rotate key" };
-  }
-
-  return { error: null };
+  return neonDevices.rotatePushDeviceKey(householdId, deviceId, ingestKeyHash, ingestKeyPrefix);
 }
 
 export async function updateDeviceSensor(
@@ -469,54 +283,21 @@ export async function updateDeviceSensor(
     visible?: boolean;
   },
 ): Promise<{ error: string | null }> {
-  if (dbBackend() === "neon") {
-    return neonDevices.updateDeviceSensor(sensorId, deviceId, {
-      key: patch.key,
-      label: patch.label,
-      kind: patch.kind,
-      unit: patch.unit ?? null,
-      offsetNum: clampSensorOffset(patch.offsetNum ?? 0, patch.kind),
-      visible: patch.visible,
-    });
-  }
-  const supabase = createServerClient();
-  const { error } = await supabase
-    .from("device_sensors")
-    .update({
-      key: patch.key,
-      label: patch.label,
-      kind: patch.kind,
-      unit: patch.unit ?? null,
-      offset_num: clampSensorOffset(patch.offsetNum ?? 0, patch.kind),
-      ...(typeof patch.visible === "boolean" ? { visible: patch.visible } : {}),
-    })
-    .eq("id", sensorId)
-    .eq("device_id", deviceId);
-
-  if (error) {
-    return { error: error.message };
-  }
-
-  return { error: null };
+  return neonDevices.updateDeviceSensor(sensorId, deviceId, {
+    key: patch.key,
+    label: patch.label,
+    kind: patch.kind,
+    unit: patch.unit ?? null,
+    offsetNum: clampSensorOffset(patch.offsetNum ?? 0, patch.kind),
+    visible: patch.visible,
+  });
 }
 
 export async function deleteDeviceSensor(
   sensorId: string,
   deviceId: string,
 ): Promise<{ error: string | null }> {
-  if (dbBackend() === "neon") return neonDevices.deleteDeviceSensor(sensorId, deviceId);
-  const supabase = createServerClient();
-  const { error } = await supabase
-    .from("device_sensors")
-    .delete()
-    .eq("id", sensorId)
-    .eq("device_id", deviceId);
-
-  if (error) {
-    return { error: error.message };
-  }
-
-  return { error: null };
+  return neonDevices.deleteDeviceSensor(sensorId, deviceId);
 }
 
 export async function upsertDeviceSensor(
@@ -526,45 +307,7 @@ export async function upsertDeviceSensor(
   kind: SensorKind,
   unit?: string | null,
 ): Promise<{ sensor: DeviceSensor | null; error: string | null }> {
-  if (dbBackend() === "neon") return neonIngest.upsertDeviceSensor(deviceId, key, label, kind, unit);
-  const supabase = createServerClient();
-  const { data: existing } = await supabase
-    .from("device_sensors")
-    .select(SENSOR_SELECT)
-    .eq("device_id", deviceId)
-    .eq("key", key)
-    .eq("kind", kind)
-    .maybeSingle();
-
-  if (existing) {
-    // Temperatures are stored in °F. A sensor first created from °C readings
-    // still says "C"; correct it so the card doesn't label °F values as °C.
-    const current = existing as DeviceSensor;
-    if (kind === "temperature" && unit === "F" && current.unit != null && current.unit !== "F") {
-      await supabase.from("device_sensors").update({ unit: "F" }).eq("id", current.id);
-      return { sensor: { ...current, unit: "F" }, error: null };
-    }
-    return { sensor: current, error: null };
-  }
-
-  const { data, error } = await supabase
-    .from("device_sensors")
-    .insert({
-      device_id: deviceId,
-      key,
-      label,
-      kind,
-      unit: unit ?? null,
-      visible: true,
-    })
-    .select(SENSOR_SELECT)
-    .single();
-
-  if (error || !data) {
-    return { sensor: null, error: error?.message ?? "Failed to create sensor" };
-  }
-
-  return { sensor: data as DeviceSensor, error: null };
+  return neonIngest.upsertDeviceSensor(deviceId, key, label, kind, unit);
 }
 
 export async function savePullDevicesForHousehold(
@@ -572,170 +315,7 @@ export async function savePullDevicesForHousehold(
   feeds: TempFeedConfig[],
   probes: TempProbeConfig[],
 ): Promise<{ error: string | null }> {
-  if (dbBackend() === "neon") return neonDevices.savePullDevicesForHousehold(householdId, feeds, probes);
-  const supabase = createServerClient();
-  const existing = await listHouseholdDevices(householdId);
-  if (existing.error) {
-    return { error: existing.error };
-  }
-
-  const pullDevices = existing.devices.filter(
-    (d) => d.source === "pull_url" && d.pull_url,
-  );
-  const byUrl = new Map(
-    pullDevices.map((d) => [normalizePullFeedUrl(d.pull_url!), d]),
-  );
-  const keptDeviceIds = new Set<string>();
-  const feedIdToDeviceId = new Map<string, string>();
-
-  for (const [index, feed] of feeds.entries()) {
-    if (!feed.url) continue;
-    const urlKey = normalizePullFeedUrl(feed.url);
-    let device = byUrl.get(urlKey) ?? null;
-
-    if (!device) {
-      const { data: inserted, error } = await supabase
-        .from("devices")
-        .insert({
-          household_id: householdId,
-          name: feed.name,
-          source: "pull_url",
-          pull_url: feed.url,
-          enabled: feed.enabled,
-          sort_order: index,
-          meta: pullDeviceMeta({}, feed) as Json,
-        })
-        .select("id")
-        .single();
-
-      if (error || !inserted) {
-        return { error: error?.message ?? "Failed to save device" };
-      }
-
-      device = {
-        id: inserted.id,
-        household_id: householdId,
-        name: feed.name,
-        source: "pull_url",
-        pull_url: feed.url,
-        enabled: feed.enabled,
-        sort_order: index,
-        meta: pullDeviceMeta({}, feed),
-        space: null,
-        last_seen_at: null,
-        ingest_key_prefix: null,
-        sensors: [],
-      };
-      byUrl.set(urlKey, device);
-    } else {
-      const { error } = await supabase
-        .from("devices")
-        .update({
-          name: feed.name,
-          pull_url: feed.url,
-          enabled: feed.enabled,
-          sort_order: index,
-          meta: pullDeviceMeta(
-            device.meta && typeof device.meta === "object" && !Array.isArray(device.meta)
-              ? (device.meta as Record<string, unknown>)
-              : {},
-            feed,
-          ) as Json,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", device.id);
-
-      if (error) {
-        return { error: error.message };
-      }
-    }
-
-    keptDeviceIds.add(device.id);
-    feedIdToDeviceId.set(feed.id, device.id);
-
-    const feedProbes = probes.filter(
-      (probe) =>
-        probe.feedId === feed.id || feedIdToDeviceId.get(probe.feedId) === device!.id,
-    );
-    const desiredKeys = new Set(feedProbes.map((probe) => probe.key));
-    const existingSensors = device.sensors ?? [];
-
-    for (const sensor of existingSensors) {
-      if (
-        (sensor.kind === "temperature" || sensor.kind === "humidity") &&
-        !desiredKeys.has(sensor.key)
-      ) {
-        await supabase.from("device_sensors").delete().eq("id", sensor.id);
-      }
-    }
-
-    for (const [probeIndex, probe] of feedProbes.entries()) {
-      const tempExisting = existingSensors.find(
-        (s) => s.key === probe.key && s.kind === "temperature",
-      );
-      const humidityExisting = existingSensors.find(
-        (s) => s.key === probe.key && s.kind === "humidity",
-      );
-
-      if (tempExisting) {
-        await supabase
-          .from("device_sensors")
-          .update({
-            label: probe.label,
-            visible: probe.visible,
-            sort_order: probeIndex,
-          })
-          .eq("id", tempExisting.id);
-      } else {
-        const { error: insertError } = await supabase.from("device_sensors").insert({
-          device_id: device.id,
-          key: probe.key,
-          label: probe.label,
-          kind: "temperature",
-          unit: "F",
-          visible: probe.visible,
-          sort_order: probeIndex,
-        });
-        if (insertError && !/duplicate|conflict/i.test(insertError.message)) {
-          return { error: insertError.message };
-        }
-      }
-
-      const humidityLabel = `${probe.label} humidity`;
-      if (humidityExisting) {
-        await supabase
-          .from("device_sensors")
-          .update({
-            label: humidityLabel,
-            visible: probe.visible,
-            sort_order: probeIndex,
-          })
-          .eq("id", humidityExisting.id);
-      } else {
-        const { error: insertError } = await supabase.from("device_sensors").insert({
-          device_id: device.id,
-          key: probe.key,
-          label: humidityLabel,
-          kind: "humidity",
-          unit: "%",
-          visible: probe.visible,
-          sort_order: probeIndex,
-        });
-        if (insertError && !/duplicate|conflict/i.test(insertError.message)) {
-          return { error: insertError.message };
-        }
-      }
-    }
-  }
-
-  const removedDevices = pullDevices.filter((d) => !keptDeviceIds.has(d.id));
-  if (removedDevices.length > 0) {
-    const removedIds = removedDevices.map((d) => d.id);
-    await supabase.from("device_sensors").delete().in("device_id", removedIds);
-    await supabase.from("devices").delete().in("id", removedIds);
-  }
-
-  return { error: null };
+  return neonDevices.savePullDevicesForHousehold(householdId, feeds, probes);
 }
 
 /**
@@ -747,16 +327,7 @@ export async function replaceDeviceSensor(
   oldSensorId: string,
   newSensorId: string,
 ): Promise<{ movedReadings: number; error: string | null }> {
-  if (dbBackend() === "neon") return neonDevices.replaceDeviceSensor(householdId, oldSensorId, newSensorId);
-  const supabase = createServerClient();
-  const { data, error } = await supabase.rpc("replace_device_sensor", {
-    p_household_id: householdId,
-    p_old_sensor_id: oldSensorId,
-    p_new_sensor_id: newSensorId,
-  });
-  if (error) return { movedReadings: 0, error: error.message };
-  const moved = (data as { moved_readings?: unknown } | null)?.moved_readings;
-  return { movedReadings: typeof moved === "number" ? moved : 0, error: null };
+  return neonDevices.replaceDeviceSensor(householdId, oldSensorId, newSensorId);
 }
 
 export async function transferDeviceToHousehold(
@@ -769,40 +340,7 @@ export async function transferDeviceToHousehold(
   if (fromHouseholdId === toHouseholdId) {
     return { error: t.sameHousehold };
   }
-  if (dbBackend() === "neon") {
-    return neonDevices.transferDeviceToHousehold(deviceId, fromHouseholdId, toHouseholdId, t.deviceNotFound);
-  }
-  const supabase = createServerClient();
-  const { data, error } = await supabase
-    .from("devices")
-    .update({
-      household_id: toHouseholdId,
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", deviceId)
-    .eq("household_id", fromHouseholdId)
-    .select("id")
-    .maybeSingle();
-
-  if (error || !data) {
-    return { error: error?.message ?? t.deviceNotFound };
-  }
-
-  await supabase
-    .from("sensor_readings")
-    .update({ household_id: toHouseholdId })
-    .eq("household_id", fromHouseholdId)
-    .in(
-      "sensor_id",
-      (
-        await supabase
-          .from("device_sensors")
-          .select("id")
-          .eq("device_id", deviceId)
-      ).data?.map((s) => s.id) ?? [],
-    );
-
-  return { error: null };
+  return neonDevices.transferDeviceToHousehold(deviceId, fromHouseholdId, toHouseholdId, t.deviceNotFound);
 }
 
 export async function getHouseholdIdForUser(userId: string): Promise<string | null> {

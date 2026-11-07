@@ -1,4 +1,3 @@
-import { refreshCookiesAfterMetadataWrite } from "../../../lib/sessionMetadata";
 import type { APIRoute } from "astro";
 import { getAuthFromCookies } from "../../../lib/auth";
 import {
@@ -144,7 +143,6 @@ export const POST: APIRoute = async ({ request, cookies, redirect, locals }) => 
     return redirect(withQuery(redirectTo, { pinned_error: "1" }));
   }
 
-  await refreshCookiesAfterMetadataWrite(cookies, refreshToken);
 
   if (asJson) {
     return new Response(JSON.stringify({ ok: true, metrics }), {

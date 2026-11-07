@@ -1,7 +1,6 @@
 /**
  * Neon versions of the share-link and chart-share queries (via
- * src/lib/shareLinksStore.ts and src/lib/chartShare.ts). Called when
- * `dbBackend() === "neon"`. Share links give read access to one household,
+ * src/lib/shareLinksStore.ts and src/lib/chartShare.ts). Share links give read access to one household,
  * so every change names that household; lookups by token are by hash.
  */
 import type { ShareLinkRow } from "../shareLinksStore";

@@ -1,5 +1,5 @@
 import { updateSessionUserMetadata } from "./sessionMetadata";
-import type { User } from "@supabase/supabase-js";
+import type { User } from "./appUser";
 
 /** Metric card ids that can be pinned on Overview Status. */
 export const PINNABLE_OVERVIEW_METRICS = [

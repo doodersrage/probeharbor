@@ -1,41 +1,48 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { setQueryRunnerForTests } from "./db/client";
 
-// A fake alert_settings table with one row (or none), enough for the
-// compare-and-set update and the follow-up read.
+// A fake alert_settings row (or none) behind the query runner, enough for the
+// compare-and-set update, the follow-up read and the release. Timestamps
+// compare as instants, like timestamptz.
 let row: Record<string, string | null> | null;
 let failWith: string | null;
 
-function from() {
-  const filters: Array<[string, unknown]> = [];
-  let patch: Record<string, string | null> | null = null;
-  const matches = () =>
-    row != null &&
-    filters.every(([column, value]) => (column === "user_id" ? true : (row![column] ?? null) === value));
-  const builder: Record<string, unknown> = {
-    update(p: Record<string, string | null>) { patch = p; return builder; },
-    select() { return builder; },
-    eq(column: string, value: unknown) { filters.push([column, value]); return builder; },
-    is(column: string, value: unknown) { filters.push([column, value]); return builder; },
-    maybeSingle() {
-      return Promise.resolve(failWith ? { data: null, error: { message: failWith } } : { data: row, error: null });
-    },
-    then(resolve: (v: unknown) => unknown) {
-      if (failWith) return Promise.resolve({ data: null, error: { message: failWith } }).then(resolve);
-      if (patch && matches()) {
-        Object.assign(row!, patch);
-        return Promise.resolve({ data: [{ user_id: "user-1" }], error: null }).then(resolve);
-      }
-      return Promise.resolve({ data: [], error: null }).then(resolve);
-    },
-  };
-  return builder;
+const sameInstant = (a: unknown, b: unknown) =>
+  a == null || b == null ? a == null && b == null : Date.parse(String(a)) === Date.parse(String(b));
+
+async function fakeRunner(text: string, params: readonly unknown[] = []): Promise<never[]> {
+  if (failWith) throw new Error(failWith);
+  const column = /"(last_[a-z_]+_at)"/.exec(text)?.[1];
+  if (!column) throw new Error(`unexpected query: ${text}`);
+  if (/^\s*update/i.test(text) && /returning user_id/.test(text)) {
+    // claim: set column = $3 where column is not distinct from $2
+    const [, previous, now] = params;
+    if (row && sameInstant(row[column] ?? null, previous)) {
+      row[column] = now as string;
+      return [{ user_id: "user-1" }] as never[];
+    }
+    return [];
+  }
+  if (/^\s*update/i.test(text)) {
+    // release: set column = $3 where column = $2
+    const [, claimedAt, previous] = params;
+    if (row && row[column] != null && sameInstant(row[column], claimedAt)) row[column] = previous as string | null;
+    return [];
+  }
+  if (/^\s*select/i.test(text)) return (row ? [{ current: row[column] ?? null }] : []) as never[];
+  throw new Error(`unexpected query: ${text}`);
 }
-vi.mock("./supabase", () => ({ createServerClient: () => ({ from }) }));
 
 beforeEach(() => {
   failWith = null;
   row = { last_flood_alert_at: "2026-01-01T00:00:00+00:00" };
+  setQueryRunnerForTests(fakeRunner as never);
   vi.spyOn(console, "error").mockImplementation(() => {});
+});
+
+afterEach(() => {
+  setQueryRunnerForTests(null);
+  vi.restoreAllMocks();
 });
 
 describe("claimCooldown", () => {
@@ -65,7 +72,7 @@ describe("claimCooldown", () => {
     expect([a.claimed, b.claimed]).toEqual([true, false]);
   });
 
-  it("fails open: sends when the stored value is the same moment in another format", async () => {
+  it("sends when the stored value is the same moment in another format", async () => {
     const { claimCooldown } = await import("./notify");
     expect((await claimCooldown("user-1", "last_flood_alert_at", "2026-01-01T00:00:00.000Z")).claimed).toBe(true);
   });

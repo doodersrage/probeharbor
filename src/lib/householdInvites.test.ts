@@ -1,22 +1,18 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-function mockQuery(result: { data?: unknown; error?: unknown }) {
-  const builder: Record<string, unknown> = {};
-  for (const method of ["select", "eq", "in", "limit", "is", "gt", "order", "insert", "update", "delete", "upsert"]) {
-    builder[method] = vi.fn(() => builder);
-  }
-  builder.single = vi.fn(() => Promise.resolve(result));
-  builder.maybeSingle = vi.fn(() => Promise.resolve(result));
-  (builder as { then: unknown }).then = (
-    resolve: (value: unknown) => unknown,
-    reject?: (reason: unknown) => unknown,
-  ) => Promise.resolve(result).then(resolve, reject);
-  return builder;
-}
-
-const mockFrom = vi.fn();
-vi.mock("./supabase", () => ({
-  createServerClient: () => ({ from: (...args: unknown[]) => mockFrom(...args) }),
+const mockInsertInvite = vi.fn();
+const mockReissueInvite = vi.fn();
+const mockListPendingInvites = vi.fn();
+const mockFindInviteByTokenKeys = vi.fn();
+const mockMarkInviteAccepted = vi.fn();
+const mockRevokeInvite = vi.fn();
+vi.mock("./db/access", () => ({
+  insertInvite: (...a: unknown[]) => mockInsertInvite(...a),
+  reissueInvite: (...a: unknown[]) => mockReissueInvite(...a),
+  listPendingInvites: (...a: unknown[]) => mockListPendingInvites(...a),
+  findInviteByTokenKeys: (...a: unknown[]) => mockFindInviteByTokenKeys(...a),
+  markInviteAccepted: (...a: unknown[]) => mockMarkInviteAccepted(...a),
+  revokeInvite: (...a: unknown[]) => mockRevokeInvite(...a),
 }));
 
 const mockAddHouseholdMemberByUserId = vi.fn();
@@ -36,7 +32,12 @@ vi.mock("./emailLayout", () => ({
 }));
 
 beforeEach(() => {
-  mockFrom.mockReset();
+  mockInsertInvite.mockReset();
+  mockReissueInvite.mockReset();
+  mockListPendingInvites.mockReset();
+  mockFindInviteByTokenKeys.mockReset().mockResolvedValue(null);
+  mockMarkInviteAccepted.mockReset().mockResolvedValue(undefined);
+  mockRevokeInvite.mockReset();
   mockAddHouseholdMemberByUserId.mockReset().mockResolvedValue({ error: null });
   mockSetActiveHouseholdForUser.mockReset().mockResolvedValue({ error: null });
   mockSendEmail.mockReset().mockResolvedValue(undefined);
@@ -70,12 +71,11 @@ describe("parseHouseholdInviteRole", () => {
 });
 
 describe("createHouseholdInvite", () => {
-  it("normalizes the email and stores the invite", async () => {
-    const builder = mockQuery({
-      data: { id: "invite-1", household_id: "house-1", email: "a@b.com" },
+  it("normalizes the email and stores only the token's hash", async () => {
+    mockInsertInvite.mockResolvedValue({
+      invite: { id: "invite-1", household_id: "house-1", email: "a@b.com" },
       error: null,
     });
-    mockFrom.mockReturnValue(builder);
     const { createHouseholdInvite } = await import("./householdInvites");
 
     const result = await createHouseholdInvite(
@@ -89,90 +89,68 @@ describe("createHouseholdInvite", () => {
     expect(result.error).toBeNull();
     expect(result.invite?.id).toBe("invite-1");
     expect(result.token).toMatch(/^[0-9a-f]{48}$/);
-    const stored = (builder.insert as ReturnType<typeof vi.fn>).mock.calls[0][0] as { token: string };
-    expect(stored.token).toMatch(/^[0-9a-f]{64}$/);
-    expect(stored.token).not.toBe(result.token);
-    expect(builder.select).toHaveBeenCalledWith(expect.not.stringContaining("token"));
-    expect(builder.insert).toHaveBeenCalledWith(
+    const stored = mockInsertInvite.mock.calls[0]![0] as { tokenHash: string; expiresAt: string };
+    expect(stored.tokenHash).toMatch(/^[0-9a-f]{64}$/);
+    expect(stored.tokenHash).not.toBe(result.token);
+    expect(Date.parse(stored.expiresAt)).toBeGreaterThan(Date.now() + 2 * 24 * 3600 * 1000);
+    expect(Date.parse(stored.expiresAt)).toBeLessThanOrEqual(Date.now() + 3 * 24 * 3600 * 1000);
+    expect(mockInsertInvite).toHaveBeenCalledWith(
       expect.objectContaining({
-        household_id: "house-1",
+        householdId: "house-1",
         email: "a@b.com",
-        invited_by: "user-1",
+        invitedBy: "user-1",
         role: "viewer",
       }),
     );
   });
 
   it("defaults to a 7-day expiry and member role", async () => {
-    const builder = mockQuery({ data: { id: "invite-2" }, error: null });
-    mockFrom.mockReturnValue(builder);
+    mockInsertInvite.mockResolvedValue({ invite: { id: "invite-2" }, error: null });
     const { createHouseholdInvite } = await import("./householdInvites");
 
     await createHouseholdInvite("house-1", "a@b.com", "user-1");
 
-    expect(builder.insert).toHaveBeenCalledWith(expect.objectContaining({ role: "member" }));
+    const stored = mockInsertInvite.mock.calls[0]![0] as { role: string; expiresAt: string };
+    expect(stored.role).toBe("member");
+    expect(Date.parse(stored.expiresAt)).toBeGreaterThan(Date.now() + 6 * 24 * 3600 * 1000);
   });
 
-  it("surfaces the database error", async () => {
-    mockFrom.mockReturnValue(mockQuery({ data: null, error: { message: "duplicate invite" } }));
+  it("surfaces the database error and no token", async () => {
+    mockInsertInvite.mockResolvedValue({ invite: null, error: "duplicate invite" });
     const { createHouseholdInvite } = await import("./householdInvites");
 
     const result = await createHouseholdInvite("house-1", "a@b.com", "user-1");
 
     expect(result).toEqual({ invite: null, token: null, error: "duplicate invite" });
   });
-
-  it("falls back to a generic error when there is no message", async () => {
-    mockFrom.mockReturnValue(mockQuery({ data: null, error: null }));
-    const { createHouseholdInvite } = await import("./householdInvites");
-
-    const result = await createHouseholdInvite("house-1", "a@b.com", "user-1");
-
-    expect(result).toEqual({ invite: null, token: null, error: "Failed to create invite" });
-  });
 });
 
 describe("listPendingInvites", () => {
-  it("returns invites from supabase", async () => {
-    mockFrom.mockReturnValue(mockQuery({ data: [{ id: "i1" }], error: null }));
+  it("returns the household's pending invites", async () => {
+    mockListPendingInvites.mockResolvedValue({ invites: [{ id: "i1" }], error: null });
     const { listPendingInvites } = await import("./householdInvites");
 
     const result = await listPendingInvites("house-1");
 
     expect(result).toEqual({ invites: [{ id: "i1" }], error: null });
-  });
-
-  it("returns an empty array on error", async () => {
-    mockFrom.mockReturnValue(mockQuery({ data: null, error: { message: "boom" } }));
-    const { listPendingInvites } = await import("./householdInvites");
-
-    expect(await listPendingInvites("house-1")).toEqual({ invites: [], error: "boom" });
-  });
-
-  it("falls back to an empty array when data is null without error", async () => {
-    mockFrom.mockReturnValue(mockQuery({ data: null, error: null }));
-    const { listPendingInvites } = await import("./householdInvites");
-
-    expect(await listPendingInvites("house-1")).toEqual({ invites: [], error: null });
+    expect(mockListPendingInvites).toHaveBeenCalledWith("house-1");
   });
 });
 
 describe("getInviteByToken", () => {
   it("returns the invite when found", async () => {
-    mockFrom.mockReturnValue(mockQuery({ data: { id: "i1", token: "tok" } }));
+    mockFindInviteByTokenKeys.mockResolvedValue({ id: "i1", token: "tok" });
     const { getInviteByToken } = await import("./householdInvites");
 
     expect(await getInviteByToken("tok")).toEqual({ id: "i1", token: "tok" });
   });
 
   it("looks the link token up by its hash", async () => {
-    const builder = mockQuery({ data: null });
-    mockFrom.mockReturnValue(builder);
     const { getInviteByToken, inviteTokenLookupKeys } = await import("./householdInvites");
 
-    await getInviteByToken("some-new-token");
+    await getInviteByToken("  some-new-token ");
 
-    expect(builder.in).toHaveBeenCalledWith("token", await inviteTokenLookupKeys("some-new-token"));
+    expect(mockFindInviteByTokenKeys).toHaveBeenCalledWith(await inviteTokenLookupKeys("some-new-token"));
     expect((await inviteTokenLookupKeys("some-new-token"))[0]).toMatch(/^[0-9a-f]{64}$/);
   });
 
@@ -187,7 +165,6 @@ describe("getInviteByToken", () => {
   });
 
   it("returns null when not found", async () => {
-    mockFrom.mockReturnValue(mockQuery({ data: null }));
     const { getInviteByToken } = await import("./householdInvites");
 
     expect(await getInviteByToken("missing")).toBeNull();
@@ -211,7 +188,6 @@ describe("acceptHouseholdInvite", () => {
   }
 
   it("errors when the token does not resolve to an invite", async () => {
-    mockFrom.mockReturnValue(mockQuery({ data: null }));
     const { acceptHouseholdInvite } = await import("./householdInvites");
 
     const result = await acceptHouseholdInvite("tok", "user-1", "member@example.com");
@@ -220,7 +196,7 @@ describe("acceptHouseholdInvite", () => {
   });
 
   it("short-circuits successfully when the invite was already accepted", async () => {
-    mockFrom.mockReturnValue(mockQuery({ data: invite({ accepted_at: "2020-02-01T00:00:00.000Z" }) }));
+    mockFindInviteByTokenKeys.mockResolvedValue(invite({ accepted_at: "2020-02-01T00:00:00.000Z" }));
     const { acceptHouseholdInvite } = await import("./householdInvites");
 
     const result = await acceptHouseholdInvite("tok", "user-1", "member@example.com");
@@ -230,9 +206,7 @@ describe("acceptHouseholdInvite", () => {
   });
 
   it("rejects an expired invite", async () => {
-    mockFrom.mockReturnValue(
-      mockQuery({ data: invite({ expires_at: "2000-01-01T00:00:00.000Z" }) }),
-    );
+    mockFindInviteByTokenKeys.mockResolvedValue(invite({ expires_at: "2000-01-01T00:00:00.000Z" }));
     const { acceptHouseholdInvite } = await import("./householdInvites");
 
     const result = await acceptHouseholdInvite("tok", "user-1", "member@example.com");
@@ -241,7 +215,7 @@ describe("acceptHouseholdInvite", () => {
   });
 
   it("requires the signed-in email to match the invited email", async () => {
-    mockFrom.mockReturnValue(mockQuery({ data: invite() }));
+    mockFindInviteByTokenKeys.mockResolvedValue(invite());
     const { acceptHouseholdInvite } = await import("./householdInvites");
 
     const result = await acceptHouseholdInvite("tok", "user-1", "someone-else@example.com");
@@ -254,7 +228,7 @@ describe("acceptHouseholdInvite", () => {
   });
 
   it("rejects when there is no signed-in email at all", async () => {
-    mockFrom.mockReturnValue(mockQuery({ data: invite() }));
+    mockFindInviteByTokenKeys.mockResolvedValue(invite());
     const { acceptHouseholdInvite } = await import("./householdInvites");
 
     const result = await acceptHouseholdInvite("tok", "user-1", null);
@@ -263,7 +237,7 @@ describe("acceptHouseholdInvite", () => {
   });
 
   it("matches the invited email case-insensitively", async () => {
-    mockFrom.mockReturnValue(mockQuery({ data: invite() }));
+    mockFindInviteByTokenKeys.mockResolvedValue(invite());
     const { acceptHouseholdInvite } = await import("./householdInvites");
 
     const result = await acceptHouseholdInvite("tok", "user-1", "MEMBER@EXAMPLE.COM");
@@ -274,7 +248,7 @@ describe("acceptHouseholdInvite", () => {
   it.each(["viewer", "alert_only", "property_manager"] as const)(
     "adds the member with the invite's '%s' role",
     async (role) => {
-      mockFrom.mockReturnValue(mockQuery({ data: invite({ role }) }));
+      mockFindInviteByTokenKeys.mockResolvedValue(invite({ role }));
       const { acceptHouseholdInvite } = await import("./householdInvites");
 
       await acceptHouseholdInvite("tok", "user-1", "member@example.com");
@@ -284,7 +258,7 @@ describe("acceptHouseholdInvite", () => {
   );
 
   it("coerces an unrecognized role to member", async () => {
-    mockFrom.mockReturnValue(mockQuery({ data: invite({ role: "owner" }) }));
+    mockFindInviteByTokenKeys.mockResolvedValue(invite({ role: "owner" }));
     const { acceptHouseholdInvite } = await import("./householdInvites");
 
     await acceptHouseholdInvite("tok", "user-1", "member@example.com");
@@ -293,7 +267,7 @@ describe("acceptHouseholdInvite", () => {
   });
 
   it("propagates an error from addHouseholdMemberByUserId without activating the household", async () => {
-    mockFrom.mockReturnValue(mockQuery({ data: invite() }));
+    mockFindInviteByTokenKeys.mockResolvedValue(invite());
     mockAddHouseholdMemberByUserId.mockResolvedValue({ error: "already at device limit" });
     const { acceptHouseholdInvite } = await import("./householdInvites");
 
@@ -301,39 +275,34 @@ describe("acceptHouseholdInvite", () => {
 
     expect(result).toEqual({ householdId: null, error: "already at device limit" });
     expect(mockSetActiveHouseholdForUser).not.toHaveBeenCalled();
+    expect(mockMarkInviteAccepted).not.toHaveBeenCalled();
   });
 
   it("activates the household and marks the invite accepted on success", async () => {
-    const builder = mockQuery({ data: invite() });
-    mockFrom.mockReturnValue(builder);
+    mockFindInviteByTokenKeys.mockResolvedValue(invite());
     const { acceptHouseholdInvite } = await import("./householdInvites");
 
     const result = await acceptHouseholdInvite("tok", "user-1", "member@example.com");
 
     expect(result).toEqual({ householdId: "house-1", error: null });
     expect(mockSetActiveHouseholdForUser).toHaveBeenCalledWith("user-1", "house-1");
-    expect(builder.update).toHaveBeenCalledWith(
-      expect.objectContaining({ accepted_at: expect.any(String) }),
-    );
+    expect(mockMarkInviteAccepted).toHaveBeenCalledWith("invite-1");
   });
 });
 
 describe("revokeHouseholdInvite", () => {
-  it("deletes the invite scoped to household and pending status", async () => {
-    const builder = mockQuery({ error: null });
-    mockFrom.mockReturnValue(builder);
+  it("deletes the invite scoped to its household", async () => {
+    mockRevokeInvite.mockResolvedValue({ error: null });
     const { revokeHouseholdInvite } = await import("./householdInvites");
 
     const result = await revokeHouseholdInvite("house-1", "invite-1");
 
     expect(result).toEqual({ error: null });
-    expect(builder.delete).toHaveBeenCalled();
-    expect(builder.eq).toHaveBeenCalledWith("id", "invite-1");
-    expect(builder.eq).toHaveBeenCalledWith("household_id", "house-1");
+    expect(mockRevokeInvite).toHaveBeenCalledWith("house-1", "invite-1");
   });
 
   it("surfaces a delete error", async () => {
-    mockFrom.mockReturnValue(mockQuery({ error: { message: "not allowed" } }));
+    mockRevokeInvite.mockResolvedValue({ error: "not allowed" });
     const { revokeHouseholdInvite } = await import("./householdInvites");
 
     expect(await revokeHouseholdInvite("house-1", "invite-1")).toEqual({ error: "not allowed" });
@@ -366,25 +335,23 @@ describe("sendInviteEmail", () => {
 
 describe("reissueHouseholdInvite", () => {
   it("stores a new hash, extends expiry, and returns the new raw token", async () => {
-    const builder = mockQuery({ data: { id: "invite-1", email: "a@b.com" }, error: null });
-    mockFrom.mockReturnValue(builder);
+    mockReissueInvite.mockResolvedValue({ invite: { id: "invite-1", email: "a@b.com" }, error: null });
     const { reissueHouseholdInvite } = await import("./householdInvites");
 
     const result = await reissueHouseholdInvite("house-1", "invite-1");
 
     expect(result.token).toMatch(/^[0-9a-f]{48}$/);
-    const update = (builder.update as ReturnType<typeof vi.fn>).mock.calls[0][0] as {
-      token: string;
-      expires_at: string;
-    };
-    expect(update.token).toMatch(/^[0-9a-f]{64}$/);
-    expect(Date.parse(update.expires_at)).toBeGreaterThan(Date.now() + 6 * 24 * 3600 * 1000);
-    expect(builder.eq).toHaveBeenCalledWith("household_id", "house-1");
-    expect(builder.is).toHaveBeenCalledWith("accepted_at", null);
+    expect(result.invite).toEqual({ id: "invite-1", email: "a@b.com" });
+    const [householdId, inviteId, tokenHash, expiresAt] = mockReissueInvite.mock.calls[0]! as string[];
+    expect(householdId).toBe("house-1");
+    expect(inviteId).toBe("invite-1");
+    expect(tokenHash).toMatch(/^[0-9a-f]{64}$/);
+    expect(tokenHash).not.toBe(result.token);
+    expect(Date.parse(expiresAt!)).toBeGreaterThan(Date.now() + 6 * 24 * 3600 * 1000);
   });
 
   it("returns an error when the invite isn't pending in this household", async () => {
-    mockFrom.mockReturnValue(mockQuery({ data: null, error: null }));
+    mockReissueInvite.mockResolvedValue({ invite: null, error: "Invite not found" });
     const { reissueHouseholdInvite } = await import("./householdInvites");
 
     expect(await reissueHouseholdInvite("house-1", "other")).toEqual({

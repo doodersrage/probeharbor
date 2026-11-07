@@ -1,4 +1,3 @@
-import { refreshCookiesAfterMetadataWrite } from "../../../lib/sessionMetadata";
 import type { APIRoute } from "astro";
 import { getAuthFromCookies } from "../../../lib/auth";
 import {
@@ -34,7 +33,6 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     return redirect(withQuery(redirectTo, { quiet_error: "1" }));
   }
 
-  await refreshCookiesAfterMetadataWrite(cookies, refreshToken);
 
   return redirect(
     withQuery(redirectTo, quietUntil ? { quiet_saved: "1" } : { quiet_cleared: "1" }),

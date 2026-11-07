@@ -1,36 +1,14 @@
 import type { APIRoute } from "astro";
-import type { Provider } from "@supabase/supabase-js";
-import {
-  buildSignInRedirectUrl,
-  mapSignInError,
-} from "../../../lib/signInErrors";
-import { applySessionCookiesAfterAuth, createAuthClient } from "../../../lib/mfa";
-import {
-  mapOAuthCallbackError,
-  sanitizeOAuthErrorDetail,
-} from "../../../lib/oauthCallbackErrors";
-import { createOAuthAuthClient } from "../../../lib/oauthAuthClient";
-import {
-  buildGitHubOAuthCallbackUrl,
-  buildOAuthCallbackUrl,
-  GITHUB_OAUTH_STATE_COOKIE,
-  OAUTH_NEXT_COOKIE,
-  OAUTH_REF_COOKIE,
-  sanitizeNextPath,
-} from "../../../lib/siteUrl";
-import {
-  buildGitHubAuthorizeUrl,
-  isGitHubOAuthConfigured,
-} from "../../../lib/githubOAuth";
+import { buildSignInRedirectUrl } from "../../../lib/signInErrors";
+import { OAUTH_NEXT_COOKIE, OAUTH_REF_COOKIE, sanitizeNextPath } from "../../../lib/siteUrl";
 import { getTurnstileToken, verifyTurnstileToken } from "../../../lib/turnstile";
 import {
   checkSigninRateLimit,
   clearSigninFailures,
   recordSigninFailure,
 } from "../../../lib/signinLimits";
-import { requestLocale, saveLocaleIfMissing } from "./_locale";
+import { requestLocale } from "./_locale";
 import { buildMfaChallengeUrl } from "../../../lib/mfa";
-import { dbBackend } from "../../../lib/db/client";
 import { getUserMetadata, mergeUserMetadata } from "../../../lib/db/userMetadata";
 import { betterAuthErrorCode, redirectWithAuthCookies, signInErrorFromBetterAuth } from "../../../lib/betterAuthResponse";
 import { withBetterAuth } from "../../../lib/betterAuthRuntime";
@@ -38,19 +16,8 @@ import { startBetterAuthOAuth } from "../../../lib/betterAuthAppHandoff";
 import type { OAuthProviderId } from "../../../lib/betterAuthOAuth";
 import { DEFAULT_LOCALE } from "../../../i18n/locales";
 
-function oauthProviderOptions(provider: string, redirectTo: string) {
-  const options: { redirectTo: string; scopes?: string } = { redirectTo };
-
-  // GitHub accounts with private email need read:user + user:email for Supabase.
-  if (provider === "github") {
-    options.scopes = "read:user user:email";
-  }
-
-  return options;
-}
-
 export const POST: APIRoute = async (context) => {
-  const { request, cookies, redirect, clientAddress, site } = context;
+  const { request, cookies, redirect, clientAddress } = context;
   const formData = await request.formData();
   const email = formData.get("email")?.toString();
   const password = formData.get("password")?.toString();
@@ -89,52 +56,10 @@ export const POST: APIRoute = async (context) => {
       cookies.delete(OAUTH_REF_COOKIE, { path: "/" });
     }
 
-    if (dbBackend() === "neon") {
-      // Provider returns to /api/auth/callback/<provider> (or the GitHub
-      // callback), then /api/auth/oauth-done applies next / referral / language.
-      const started = await startBetterAuthOAuth(request, provider as OAuthProviderId);
-      return started ?? redirect(buildSignInRedirectUrl("oauth_failed"));
-    }
-
-    if (provider === "github" && isGitHubOAuthConfigured()) {
-      const state = crypto.randomUUID();
-      cookies.set(GITHUB_OAUTH_STATE_COOKIE, state, {
-        path: "/",
-        httpOnly: true,
-        secure,
-        sameSite: "lax",
-        maxAge: 60 * 10,
-      });
-
-      const authorizeUrl = buildGitHubAuthorizeUrl(
-        state,
-        buildGitHubOAuthCallbackUrl(request, site),
-      );
-      if (!authorizeUrl) {
-        console.error("GitHub OAuth sign-in start failed: missing client id");
-        return redirect(buildSignInRedirectUrl("oauth_failed"));
-      }
-
-      return redirect(authorizeUrl);
-    }
-
-    const oauthClient = createOAuthAuthClient(cookies);
-    const { data, error } = await oauthClient.auth.signInWithOAuth({
-      provider: provider as Provider,
-      options: oauthProviderOptions(provider, buildOAuthCallbackUrl(request, site)),
-    });
-
-    if (error) {
-      console.error(`OAuth sign-in start failed (${provider}):`, error.message);
-      return redirect(buildSignInRedirectUrl("oauth_failed"));
-    }
-
-    if (!data.url) {
-      console.error(`OAuth sign-in start failed (${provider}): missing redirect URL`);
-      return redirect(buildSignInRedirectUrl("oauth_failed"));
-    }
-
-    return redirect(data.url);
+    // Provider returns to /api/auth/callback/<provider> (or the GitHub
+    // callback), then /api/auth/oauth-done applies next / referral / language.
+    const started = await startBetterAuthOAuth(request, provider as OAuthProviderId);
+    return started ?? redirect(buildSignInRedirectUrl("oauth_failed"));
   }
 
   const turnstile = await verifyTurnstileToken(
@@ -155,55 +80,30 @@ export const POST: APIRoute = async (context) => {
     return redirect(buildSignInRedirectUrl("rate_limited", email));
   }
 
-  if (dbBackend() === "neon") {
-    const res = await withBetterAuth(request, (auth) =>
-      auth.api.signInEmail({ body: { email, password }, asResponse: true }),
-    );
-    const code = await betterAuthErrorCode(res);
-    if (code) {
-      recordSigninFailure(email);
-      return redirect(buildSignInRedirectUrl(signInErrorFromBetterAuth(code), email));
-    }
-    const body = (await res.clone().json()) as { twoFactorRedirect?: boolean; user?: { id: string } };
-    if (body.twoFactorRedirect) {
-      // Password was right; Better Auth set its short-lived two-factor cookie
-      // instead of a session. The code is checked on /signin/mfa (step 4e).
-      return redirectWithAuthCookies(buildMfaChallengeUrl(safeNext), res);
-    }
-    clearSigninFailures(email);
-    // First sign-in from a translated page: remember that language on the account.
-    const locale = requestLocale(context);
-    if (body.user && locale !== DEFAULT_LOCALE) {
-      try {
-        const meta = await getUserMetadata(body.user.id);
-        if (!meta.locale) await mergeUserMetadata(body.user.id, { locale });
-      } catch (saveError) {
-        console.error("auth: could not save account language", saveError instanceof Error ? saveError.message : saveError);
-      }
-    }
-    return redirectWithAuthCookies(safeNext ?? "/dashboard", res);
-  }
-
-  const authClient = createAuthClient();
-  const { data, error } = await authClient.auth.signInWithPassword({
-    email,
-    password,
-  });
-
-  if (error || !data.session) {
-    recordSigninFailure(email);
-    return redirect(buildSignInRedirectUrl(mapSignInError(error ?? { message: "generic" }), email));
-  }
-
-  clearSigninFailures(email);
-
-  // First sign-in from a translated page: remember that language on the account.
-  const session = await saveLocaleIfMissing(createAuthClient(), data.session, data.user, requestLocale(context));
-
-  const { redirectTo } = await applySessionCookiesAfterAuth(
-    cookies,
-    session,
-    safeNext,
+  const res = await withBetterAuth(request, (auth) =>
+    auth.api.signInEmail({ body: { email, password }, asResponse: true }),
   );
-  return redirect(redirectTo);
+  const code = await betterAuthErrorCode(res);
+  if (code) {
+    recordSigninFailure(email);
+    return redirect(buildSignInRedirectUrl(signInErrorFromBetterAuth(code), email));
+  }
+  const body = (await res.clone().json()) as { twoFactorRedirect?: boolean; user?: { id: string } };
+  if (body.twoFactorRedirect) {
+    // Password was right; Better Auth set its short-lived two-factor cookie
+    // instead of a session. The code is checked on /signin/mfa.
+    return redirectWithAuthCookies(buildMfaChallengeUrl(safeNext), res);
+  }
+  clearSigninFailures(email);
+  // First sign-in from a translated page: remember that language on the account.
+  const locale = requestLocale(context);
+  if (body.user && locale !== DEFAULT_LOCALE) {
+    try {
+      const meta = await getUserMetadata(body.user.id);
+      if (!meta.locale) await mergeUserMetadata(body.user.id, { locale });
+    } catch (saveError) {
+      console.error("auth: could not save account language", saveError instanceof Error ? saveError.message : saveError);
+    }
+  }
+  return redirectWithAuthCookies(safeNext ?? "/dashboard", res);
 };

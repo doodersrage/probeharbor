@@ -1,8 +1,6 @@
 import { readingFreshness } from "./relativeTime";
 import { reportIntervalMsFromMeta } from "./reportInterval";
-import { dbBackend } from "./db/client";
 import * as neonPlaces from "./db/places";
-import { createServerClient } from "./supabase";
 import { listUserHouseholds, type UserHousehold } from "./households";
 import { getAlertSettingsForUser } from "./notify";
 
@@ -27,7 +25,7 @@ export type PropertySnapshot = {
 /**
  * How far back to look when computing each property's current minimum
  * temperature and last-reading time. This used to be "the last 50 raw
- * readings per household," fetched with up to 3 sequential Supabase queries
+ * readings per household," fetched with up to 3 sequential queries
  * *per household* in a loop -- fine at a handful of properties, but with
  * Portfolio's 500-owned-household ceiling that could mean up to ~1,500
  * sequential round-trips loading one dashboard (and the same cost again on
@@ -54,18 +52,11 @@ export async function fetchCrossPropertySnapshots(
   if (listError) return { properties: [], error: listError };
   if (households.length === 0) return { properties: [], error: null };
 
-  const neon = dbBackend() === "neon";
-  const supabase = neon ? null : createServerClient();
   const settings = await getAlertSettingsForUser(userId);
   const threshold = settings.freezeThresholdF;
   const householdIds = households.map((h) => h.household_id);
 
-  const { data: devices } = supabase
-    ? await supabase
-        .from("devices")
-        .select("id, household_id, enabled, last_seen_at, meta")
-        .in("household_id", householdIds)
-    : { data: await neonPlaces.devicesForHouseholds(householdIds).catch(() => null) };
+  const devices = await neonPlaces.devicesForHouseholds(householdIds).catch(() => null);
 
   const deviceCountByHousehold = new Map<string, number>();
   const silentCountByHousehold = new Map<string, number>();
@@ -92,13 +83,7 @@ export async function fetchCrossPropertySnapshots(
   const floodSensorIds: string[] = [];
 
   if (allDeviceIds.length > 0) {
-    const { data: sensors } = supabase
-      ? await supabase
-          .from("device_sensors")
-          .select("id, device_id, kind")
-          .in("device_id", allDeviceIds)
-          .in("kind", ["temperature", "flood"])
-      : { data: await neonPlaces.sensorsOfKinds(allDeviceIds, ["temperature", "flood"]).catch(() => null) };
+    const sensors = await neonPlaces.sensorsOfKinds(allDeviceIds, ["temperature", "flood"]).catch(() => null);
 
     for (const sensor of sensors ?? []) {
       if (sensor.kind === "flood") {
@@ -115,20 +100,9 @@ export async function fetchCrossPropertySnapshots(
   const cutoff = new Date(Date.now() - RECENT_READING_WINDOW_MS).toISOString();
 
   if (temperatureSensorIds.length > 0) {
-    const { data: readings } = supabase
-      ? await supabase
-          .from("sensor_readings")
-          .select("household_id, value_num, recorded_at")
-          .in("household_id", householdIds)
-          .in("sensor_id", temperatureSensorIds)
-          .gte("recorded_at", cutoff)
-          .order("recorded_at", { ascending: false })
-          .limit(RECENT_READING_ROW_CAP)
-      : {
-          data: await neonPlaces
-            .recentReadings(householdIds, temperatureSensorIds, cutoff, RECENT_READING_ROW_CAP, false)
-            .catch(() => null),
-        };
+    const readings = await neonPlaces
+      .recentReadings(householdIds, temperatureSensorIds, cutoff, RECENT_READING_ROW_CAP, false)
+      .catch(() => null);
 
     for (const row of readings ?? []) {
       const val = row.value_num;
@@ -147,19 +121,9 @@ export async function fetchCrossPropertySnapshots(
   }
 
   if (floodSensorIds.length > 0) {
-    const { data: floodReadings } = supabase
-      ? await supabase
-          .from("sensor_readings")
-          .select("household_id, value_bool, recorded_at")
-          .in("household_id", householdIds)
-          .in("sensor_id", floodSensorIds)
-          .eq("value_bool", true)
-          .gte("recorded_at", cutoff)
-          .order("recorded_at", { ascending: false })
-          .limit(RECENT_READING_ROW_CAP)
-      : {
-          data: await neonPlaces.recentReadings(householdIds, floodSensorIds, cutoff, RECENT_READING_ROW_CAP, true).catch(() => null),
-        };
+    const floodReadings = await neonPlaces
+      .recentReadings(householdIds, floodSensorIds, cutoff, RECENT_READING_ROW_CAP, true)
+      .catch(() => null);
 
     for (const row of floodReadings ?? []) {
       wetHouseholdIds.add(row.household_id);

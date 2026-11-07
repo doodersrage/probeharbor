@@ -1,16 +1,9 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
-const mockInsert = vi.fn().mockResolvedValue({ error: null });
+const mockInsert = vi.fn().mockResolvedValue(undefined);
 
-vi.mock("./supabase", () => ({
-  createAdminClient: () => ({
-    from: (table: string) => {
-      if (table === "server_errors") {
-        return { insert: mockInsert };
-      }
-      return { select: vi.fn() };
-    },
-  }),
+vi.mock("./db/admin", () => ({
+  insertServerError: (...a: unknown[]) => mockInsert(...a),
 }));
 
 const notifyOps = vi.fn().mockResolvedValue(undefined);

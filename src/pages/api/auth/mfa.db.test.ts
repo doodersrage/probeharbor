@@ -1,5 +1,5 @@
 /**
- * Two-factor routes on Better Auth (DB_BACKEND=neon) against a local
+ * Two-factor routes on Better Auth against a local
  * Postgres: settings (/api/auth/mfa-manage), the sign-in challenge
  * (/api/auth/mfa-verify) and YubiKey step-up. YubiCloud is mocked; the QR
  * helper is wrapped so the test can read the TOTP secret.
@@ -10,7 +10,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { testDatabaseUrl, useTestDatabase } from "../../../test/db";
 
 const ENV: Record<string, string> = {
-  DB_BACKEND: "neon",
   BETTER_AUTH_SECRET: "test-secret-for-database-tests-only-0123456789",
   CRON_SECRET: "test-step-up-secret-0123456789",
 };

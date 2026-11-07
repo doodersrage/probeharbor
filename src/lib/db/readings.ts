@@ -1,6 +1,5 @@
 /**
  * Neon versions of the reading queries in src/lib/sensorReadings.ts. Called
- * when `dbBackend() === "neon"`.
  *
  * Row cap: Supabase returned at most 1000 rows per request. Series here are
  * read newest first with a cap of MAX_SERIES_ROWS (the same 10 x 1000 the

@@ -1,5 +1,5 @@
 /**
- * MFA gate for Better Auth sessions (DB_BACKEND=neon), used by middleware.
+ * MFA gate for Better Auth sessions, used by middleware.
  *
  * TOTP: Better Auth only issues the session after the code on email/password
  * sign-in, so nothing to check here. OAuth sign-in (step 4d) must add its own

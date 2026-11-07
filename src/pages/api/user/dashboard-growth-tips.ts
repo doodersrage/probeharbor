@@ -1,4 +1,3 @@
-import { refreshCookiesAfterMetadataWrite } from "../../../lib/sessionMetadata";
 import type { APIRoute } from "astro";
 import { getAuthFromCookies } from "../../../lib/auth";
 import { updateDashboardGrowthTipsDismissed } from "../../../lib/dashboardComfort";
@@ -28,7 +27,6 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     return redirect(withQuery(redirectTo, { tips_error: "1" }));
   }
 
-  await refreshCookiesAfterMetadataWrite(cookies, refreshToken);
 
   return redirect(
     `${redirectTo}${redirectTo.includes("?") ? "&" : "?"}${

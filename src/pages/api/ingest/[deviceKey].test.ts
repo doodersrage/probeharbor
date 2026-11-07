@@ -82,9 +82,9 @@ vi.mock("../../../lib/readingWebhook", () => ({
   sendReadingWebhook: (...a: unknown[]) => mockSendReadingWebhook(...a),
 }));
 
-const mockCreateAdminClient = vi.fn();
-vi.mock("../../../lib/supabase", () => ({
-  createAdminClient: () => mockCreateAdminClient(),
+const mockGetUserRecord = vi.fn();
+vi.mock("../../../lib/userRecords", () => ({
+  getUserRecord: (...a: unknown[]) => mockGetUserRecord(...a),
 }));
 
 const mockRecordDoorSessions = vi.fn();
@@ -169,9 +169,7 @@ beforeEach(() => {
   mockSendReadingWebhook.mockReset().mockResolvedValue(undefined);
   mockSendThresholdAlertsIfNeeded.mockReset().mockResolvedValue(undefined);
   mockRecordDoorSessions.mockReset().mockResolvedValue(undefined);
-  mockCreateAdminClient.mockReset().mockReturnValue({
-    auth: { admin: { getUserById: vi.fn().mockResolvedValue({ data: { user: null } }) } },
-  });
+  mockGetUserRecord.mockReset().mockResolvedValue(null);
 });
 
 describe("POST /api/ingest/[deviceKey]", () => {
@@ -390,8 +388,7 @@ describe("POST /api/ingest/[deviceKey]", () => {
   });
 
   it("looks up each household member once for webhooks and alerts together", async () => {
-    const getUserById = vi.fn().mockResolvedValue({ data: { user: { email: "a@example.com" } } });
-    mockCreateAdminClient.mockReturnValue({ auth: { admin: { getUserById } } });
+    mockGetUserRecord.mockImplementation(async (id: string) => ({ id, email: `${id}@example.com`, user_metadata: {} }));
     mockListHouseholdMembers.mockResolvedValue({ members: [{ user_id: "user-a" }, { user_id: "user-b" }] });
     mockGetAlertSettingsForUser.mockResolvedValue({ readingWebhookUrl: "https://hooks.example.com/x" });
     const { POST } = await import("./[deviceKey]");
@@ -399,7 +396,9 @@ describe("POST /api/ingest/[deviceKey]", () => {
     await POST(makeContext({ headerKey: "good-key" }));
 
     expect(mockListHouseholdMembers).toHaveBeenCalledTimes(1);
-    expect(getUserById).toHaveBeenCalledTimes(2);
+    expect(mockGetUserRecord).toHaveBeenCalledTimes(2);
+    expect(mockGetUserRecord).toHaveBeenCalledWith("user-a");
+    expect(mockGetUserRecord).toHaveBeenCalledWith("user-b");
     expect(mockGetAlertSettingsForUser).toHaveBeenCalledTimes(2);
     expect(mockSendReadingWebhook).toHaveBeenCalledTimes(2);
     expect(mockSendThresholdAlertsIfNeeded).toHaveBeenCalledTimes(2);

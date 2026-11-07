@@ -1,25 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { DeviceSensor, DeviceWithSensors } from "./devices";
 
-const mockRpc = vi.fn();
-const mockListResult = vi.fn();
-const listCalls: Array<[string, unknown[]]> = [];
-vi.mock("./supabase", () => ({
-  createServerClient: () => {
-    const builder: Record<string, unknown> = {};
-    for (const method of ["from", "select", "eq", "gte", "lte", "not", "order", "match"]) {
-      builder[method] = (...args: unknown[]) => {
-        listCalls.push([method, args]);
-        return builder;
-      };
-    }
-    builder.range = (...args: unknown[]) => {
-      listCalls.push(["range", args]);
-      return mockListResult(...args);
-    };
-    builder.rpc = (...args: unknown[]) => mockRpc(...args);
-    return builder;
-  },
+const mockValuesBefore = vi.fn();
+const mockListSessions = vi.fn();
+vi.mock("./db/doors", () => ({
+  sensorValuesBefore: (...args: unknown[]) => mockValuesBefore(...args),
+  listClosedDoorSessions: (...args: unknown[]) => mockListSessions(...args),
 }));
 
 import {
@@ -232,96 +218,56 @@ describe("doorReportRange", () => {
 
 describe("database access", () => {
   beforeEach(() => {
-    listCalls.length = 0;
-    mockRpc.mockReset();
-    mockListResult.mockReset();
+    mockValuesBefore.mockReset();
+    mockListSessions.mockReset();
   });
 
   it("keys values by instant, so Postgres' +00:00 echo still matches", async () => {
-    mockRpc.mockResolvedValue({
-      data: [
-        { sensor_id: "t-1", at_time: "2026-10-29T10:00:00+00:00", value_num: 50, recorded_at: "2026-10-29T09:58:00+00:00" },
-      ],
-      error: null,
-    });
+    mockValuesBefore.mockResolvedValue([
+      { sensor_id: "t-1", at_time: "2026-10-29T10:00:00+00:00", value_num: 50 },
+    ]);
     const { values, error } = await fetchValuesBefore("hh-1", ["t-1", "t-1"], ["2026-10-29T10:00:00.000Z"]);
     expect(error).toBeNull();
     expect(values.get(valueKey("t-1", "2026-10-29T10:00:00.000Z"))).toBe(50);
-    expect(mockRpc).toHaveBeenCalledWith("sensor_values_before", {
-      p_household_id: "hh-1",
-      p_sensor_ids: ["t-1"],
-      p_times: ["2026-10-29T10:00:00.000Z"],
-      p_max_age_seconds: 1800,
-    });
+    expect(mockValuesBefore).toHaveBeenCalledWith("hh-1", ["t-1"], ["2026-10-29T10:00:00.000Z"], 1800);
   });
 
   it("splits many times into calls of 1000 and skips the call when there is nothing to ask", async () => {
-    mockRpc.mockResolvedValue({ data: [], error: null });
+    mockValuesBefore.mockResolvedValue([]);
     const times = Array.from({ length: 1500 }, (_, i) => new Date(Date.UTC(2026, 9, 1, 0, i)).toISOString());
     await fetchValuesBefore("hh-1", ["t-1"], times);
-    expect(mockRpc).toHaveBeenCalledTimes(2);
-    expect((mockRpc.mock.calls[1]![1] as { p_times: string[] }).p_times).toHaveLength(500);
+    expect(mockValuesBefore).toHaveBeenCalledTimes(2);
+    expect(mockValuesBefore.mock.calls[1]![2] as string[]).toHaveLength(500);
 
-    mockRpc.mockClear();
+    mockValuesBefore.mockClear();
     await fetchValuesBefore("hh-1", [], times);
-    expect(mockRpc).not.toHaveBeenCalled();
+    expect(mockValuesBefore).not.toHaveBeenCalled();
   });
 
-  it("pages through more than 1000 events, stopping at the limit", async () => {
-    const rows = (start: number, end: number) =>
-      Array.from({ length: end - start + 1 }, (_, i) => ({
-        id: `e${start + i}`,
-        sensor_id: "door-1",
-        label: "Garage door",
-        opened_at: "2026-10-29T10:00:00Z",
-        closed_at: "2026-10-29T10:01:00Z",
-        duration_ms: 60000,
-      }));
-    mockListResult.mockImplementation(async (start: number, end: number) => ({ data: rows(start, end), error: null }));
-
-    const result = await listDoorEventsForReport("hh-1", "a", "b", 2500);
-
-    expect(listCalls.filter(([m]) => m === "range").map(([, a]) => a)).toEqual([
-      [0, 999],
-      [1000, 1999],
-      [2000, 2500],
-    ]);
-    expect(result.events).toHaveLength(2500);
-    expect(result.truncated).toBe(true);
-  });
-
-  it("stops after a short page and reports no truncation", async () => {
-    mockListResult.mockResolvedValue({ data: [], error: null });
+  it("reports no events and no truncation when there are none", async () => {
+    mockListSessions.mockResolvedValue([]);
     const result = await listDoorEventsForReport("hh-1", "a", "b", 5000);
-    expect(listCalls.filter(([m]) => m === "range")).toHaveLength(1);
     expect(result).toEqual({ events: [], truncated: false, error: null });
   });
 
   it("returns the database error", async () => {
-    mockRpc.mockResolvedValue({ data: null, error: { message: "function missing" } });
+    mockValuesBefore.mockRejectedValue(new Error("function missing"));
     const result = await fetchValuesBefore("hh-1", ["t-1"], ["2026-10-29T10:00:00.000Z"]);
     expect(result.error).toBe("function missing");
+
+    mockListSessions.mockRejectedValue(new Error("db down"));
+    expect(await listDoorEventsForReport("hh-1", "a", "b", 500)).toEqual({ events: [], truncated: false, error: "db down" });
   });
 
   it("lists closed events in the window and flags when there are more than the limit", async () => {
-    mockListResult.mockResolvedValue({
-      data: [
-        { id: "a", sensor_id: "door-1", label: "Garage door", opened_at: "2026-10-29T10:00:00Z", closed_at: "2026-10-29T10:20:00Z", duration_ms: 1200000 },
-        { id: "b", sensor_id: null, label: "Garage door", opened_at: "2026-10-28T10:00:00Z", closed_at: "2026-10-28T10:05:00Z", duration_ms: null },
-        { id: "c", sensor_id: null, label: "Garage door", opened_at: "2026-10-27T10:00:00Z", closed_at: "2026-10-27T10:05:00Z", duration_ms: 300000 },
-      ],
-      error: null,
-    });
+    mockListSessions.mockResolvedValue([
+      { id: "a", sensor_id: "door-1", label: "Garage door", opened_at: "2026-10-29T10:00:00Z", closed_at: "2026-10-29T10:20:00Z", duration_ms: 1200000 },
+      { id: "b", sensor_id: null, label: "Garage door", opened_at: "2026-10-28T10:00:00Z", closed_at: "2026-10-28T10:05:00Z", duration_ms: null },
+      { id: "c", sensor_id: null, label: "Garage door", opened_at: "2026-10-27T10:00:00Z", closed_at: "2026-10-27T10:05:00Z", duration_ms: 300000 },
+    ]);
     const result = await listDoorEventsForReport("hh-1", "2026-10-22T00:00:00Z", "2026-10-29T23:59:59Z", 2);
-    expect(listCalls).toEqual(
-      expect.arrayContaining([
-        ["eq", ["household_id", "hh-1"]],
-        ["gte", ["opened_at", "2026-10-22T00:00:00Z"]],
-        ["lte", ["opened_at", "2026-10-29T23:59:59Z"]],
-        ["not", ["closed_at", "is", null]],
-        ["range", [0, 2]],
-      ]),
-    );
+    // One row past the limit tells it there are more.
+    expect(mockListSessions).toHaveBeenCalledWith("hh-1", "2026-10-22T00:00:00Z", "2026-10-29T23:59:59Z", 3, undefined);
     expect(result.truncated).toBe(true);
     expect(result.events.map((e) => e.id)).toEqual(["a", "b"]);
     expect(result.events[1]?.durationMs).toBe(5 * 60 * 1000);
@@ -347,12 +293,10 @@ describe("door filter", () => {
   });
 
   it("asks only for that door's events when filtered", async () => {
-    listCalls.length = 0;
-    mockListResult.mockResolvedValue({ data: [], error: null });
+    mockListSessions.mockReset().mockResolvedValue([]);
     await listDoorEventsForReport("hh-1", "a", "b", 500, "Side door");
-    expect(listCalls).toEqual(expect.arrayContaining([["match", [{ label: "Side door" }]]]));
-    listCalls.length = 0;
+    expect(mockListSessions).toHaveBeenLastCalledWith("hh-1", "a", "b", 501, "Side door");
     await listDoorEventsForReport("hh-1", "a", "b", 500);
-    expect(listCalls).toEqual(expect.arrayContaining([["match", [{}]]]));
+    expect(mockListSessions).toHaveBeenLastCalledWith("hh-1", "a", "b", 501, undefined);
   });
 });

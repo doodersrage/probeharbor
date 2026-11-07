@@ -1,6 +1,6 @@
 /**
  * Neon versions of thermostat connections (thermostatConnections.ts) and
- * snapshots (thermostatSnapshots.ts). Called when `dbBackend() === "neon"`.
+ * snapshots (thermostatSnapshots.ts).
  * One connection per household and provider; every query names the household.
  */
 import type { ThermostatSnapshotRow } from "../thermostatSnapshots";

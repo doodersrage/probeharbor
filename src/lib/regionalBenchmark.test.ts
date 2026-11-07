@@ -1,17 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-function mockQuery(result: { data?: unknown; error?: unknown }) {
-  const builder: Record<string, unknown> = {};
-  for (const method of ["select", "eq", "order", "limit"]) {
-    builder[method] = vi.fn(() => builder);
-  }
-  builder.maybeSingle = vi.fn(() => Promise.resolve(result));
-  return builder;
-}
+const mockHouseholdFields = vi.fn();
+vi.mock("./householdRecord", () => ({
+  getHouseholdFields: (...args: unknown[]) => mockHouseholdFields(...args),
+}));
 
-const mockFrom = vi.fn();
-vi.mock("./supabase", () => ({
-  createServerClient: () => ({ from: (...args: unknown[]) => mockFrom(...args) }),
+const mockSnapshot = vi.fn();
+vi.mock("./db/places", () => ({
+  latestSnapshotForCity: (...args: unknown[]) => mockSnapshot(...args),
 }));
 
 const mockFreezeMapAggregateKey = vi.fn();
@@ -29,15 +25,13 @@ function household(overrides: Partial<Record<string, unknown>> = {}) {
 }
 
 function setupQueries(householdData: unknown, snapshotData: unknown) {
-  mockFrom.mockImplementation((table: string) =>
-    table === "households"
-      ? mockQuery({ data: householdData })
-      : mockQuery({ data: snapshotData }),
-  );
+  mockHouseholdFields.mockResolvedValue({ data: householdData, error: null });
+  mockSnapshot.mockResolvedValue(snapshotData);
 }
 
 beforeEach(() => {
-  mockFrom.mockReset();
+  mockHouseholdFields.mockReset();
+  mockSnapshot.mockReset();
   mockFreezeMapAggregateKey.mockReset().mockReturnValue("123");
 });
 
@@ -48,7 +42,8 @@ describe("fetchRegionalBenchmark", () => {
     expect(
       await fetchRegionalBenchmark({ householdId: "house-1", yourTempF: NaN }),
     ).toBeNull();
-    expect(mockFrom).not.toHaveBeenCalled();
+    expect(mockHouseholdFields).not.toHaveBeenCalled();
+    expect(mockSnapshot).not.toHaveBeenCalled();
   });
 
   it("returns null when the household has not opted in", async () => {
@@ -119,6 +114,7 @@ describe("fetchRegionalBenchmark", () => {
 
     const result = await fetchRegionalBenchmark({ householdId: "house-1", yourTempF: 30.9 });
 
+    expect(mockSnapshot).toHaveBeenCalledWith("123");
     expect(result?.message).toBe("About typical for other ProbeHarbor households in Denver tonight.");
   });
 

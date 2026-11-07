@@ -16,9 +16,11 @@ vi.mock("./runtimeEnv", () => ({
   hasRuntimeEnv: (...keys: string[]) => keys.every((key) => Boolean(env[key])),
 }));
 
-const mockCreateAdminClient = vi.fn();
-vi.mock("./supabase", () => ({
-  createAdminClient: () => mockCreateAdminClient(),
+const mockListPushSubscriptions = vi.fn();
+const mockDeletePushSubscription = vi.fn();
+vi.mock("./db/pushTokens", () => ({
+  listPushSubscriptions: (...args: unknown[]) => mockListPushSubscriptions(...args),
+  deletePushSubscription: (...args: unknown[]) => mockDeletePushSubscription(...args),
 }));
 
 import { sendWebPushToUser } from "./webPush";
@@ -103,28 +105,14 @@ async function decryptAes128gcm(
   return Buffer.from(padded.slice(0, end)).toString("utf8");
 }
 
-function makeSupabase(rows: Array<{ endpoint: string; p256dh: string; auth: string }>) {
-  const deletes: Array<Array<[string, unknown]>> = [];
-  const client = {
-    from: vi.fn(() => ({
-      select: vi.fn(() => ({
-        eq: vi.fn(async () => ({ data: rows, error: null })),
-      })),
-      delete: vi.fn(() => {
-        const filters: Array<[string, unknown]> = [];
-        deletes.push(filters);
-        const chain = {
-          eq: vi.fn((column: string, value: unknown) => {
-            filters.push([column, value]);
-            return chain;
-          }),
-          then: (resolve: (value: unknown) => unknown) => Promise.resolve({ error: null }).then(resolve),
-        };
-        return chain;
-      }),
-    })),
-  };
-  return { client, deletes };
+/** The user's stored subscriptions; records each (userId, endpoint) deleted. */
+function makeDb(rows: Array<{ endpoint: string; p256dh: string; auth: string }>) {
+  const deletes: Array<[string, string]> = [];
+  mockListPushSubscriptions.mockResolvedValue(rows);
+  mockDeletePushSubscription.mockImplementation(async (userId: string, endpoint: string) => {
+    deletes.push([userId, endpoint]);
+  });
+  return { deletes };
 }
 
 const ENDPOINT = "https://push.example.test/send/abc123";
@@ -137,6 +125,8 @@ beforeEach(async () => {
   env.VAPID_PRIVATE_KEY = vapid.privateKey;
   env.VAPID_SUBJECT = "mailto:test@example.test";
   fetchMock.mockReset();
+  mockListPushSubscriptions.mockReset();
+  mockDeletePushSubscription.mockReset();
   vi.stubGlobal("fetch", fetchMock);
   vi.spyOn(console, "error").mockImplementation(() => {});
 });
@@ -149,12 +139,12 @@ afterEach(() => {
 describe("sendWebPushToUser request building", () => {
   it("POSTs an aes128gcm body with VAPID auth, TTL and urgency, decryptable by the browser keys", async () => {
     const browser = await generateBrowserSubscription(ENDPOINT);
-    const { client, deletes } = makeSupabase([browser.row]);
-    mockCreateAdminClient.mockReturnValue(client);
+    const { deletes } = makeDb([browser.row]);
     fetchMock.mockResolvedValue(new Response(null, { status: 201 }));
 
     const result = await sendWebPushToUser("user-1", { title: "Garage freezing", body: "29.5°F at 02:10" });
 
+    expect(mockListPushSubscriptions).toHaveBeenCalledWith("user-1");
     expect(result).toEqual({ delivered: 1, failed: 0, skippedReason: null });
     expect(deletes).toEqual([]);
     expect(fetchMock).toHaveBeenCalledTimes(1);
@@ -195,25 +185,18 @@ describe("sendWebPushToUser request building", () => {
 describe("sendWebPushToUser delivery accounting", () => {
   it.each([404, 410])("counts %i as failed and removes that stale subscription", async (status) => {
     const browser = await generateBrowserSubscription(ENDPOINT);
-    const { client, deletes } = makeSupabase([browser.row]);
-    mockCreateAdminClient.mockReturnValue(client);
+    const { deletes } = makeDb([browser.row]);
     fetchMock.mockResolvedValue(new Response("gone", { status }));
 
     const result = await sendWebPushToUser("user-1", { title: "t", body: "b" });
 
     expect(result).toEqual({ delivered: 0, failed: 1, skippedReason: "push_delivery_failed" });
-    expect(deletes).toEqual([
-      [
-        ["user_id", "user-1"],
-        ["endpoint", ENDPOINT],
-      ],
-    ]);
+    expect(deletes).toEqual([["user-1", ENDPOINT]]);
   });
 
   it("counts a 5xx as failed without deleting the subscription", async () => {
     const browser = await generateBrowserSubscription(ENDPOINT);
-    const { client, deletes } = makeSupabase([browser.row]);
-    mockCreateAdminClient.mockReturnValue(client);
+    const { deletes } = makeDb([browser.row]);
     fetchMock.mockResolvedValue(new Response("busy", { status: 503 }));
 
     const result = await sendWebPushToUser("user-1", { title: "t", body: "b" });
@@ -224,8 +207,7 @@ describe("sendWebPushToUser delivery accounting", () => {
 
   it("counts a network error as failed, not delivered", async () => {
     const browser = await generateBrowserSubscription(ENDPOINT);
-    const { client } = makeSupabase([browser.row]);
-    mockCreateAdminClient.mockReturnValue(client);
+    makeDb([browser.row]);
     fetchMock.mockRejectedValue(new TypeError("fetch failed"));
 
     const result = await sendWebPushToUser("user-1", { title: "t", body: "b" });
@@ -236,8 +218,7 @@ describe("sendWebPushToUser delivery accounting", () => {
   it("still delivers to a good subscription when another one fails", async () => {
     const good = await generateBrowserSubscription(ENDPOINT);
     const gone = await generateBrowserSubscription("https://push.example.test/send/old");
-    const { client, deletes } = makeSupabase([gone.row, good.row]);
-    mockCreateAdminClient.mockReturnValue(client);
+    const { deletes } = makeDb([gone.row, good.row]);
     fetchMock.mockImplementation(async (url: string) =>
       new Response(null, { status: url === ENDPOINT ? 201 : 410 }),
     );
@@ -245,23 +226,35 @@ describe("sendWebPushToUser delivery accounting", () => {
     const result = await sendWebPushToUser("user-1", { title: "t", body: "b" });
 
     expect(result).toEqual({ delivered: 1, failed: 1, skippedReason: null });
-    expect(deletes).toEqual([
-      [
-        ["user_id", "user-1"],
-        ["endpoint", "https://push.example.test/send/old"],
-      ],
-    ]);
+    expect(deletes).toEqual([["user-1", "https://push.example.test/send/old"]]);
   });
 
   it("fails (without sending) when the payload exceeds the 3993-byte aes128gcm limit", async () => {
     const browser = await generateBrowserSubscription(ENDPOINT);
-    const { client, deletes } = makeSupabase([browser.row]);
-    mockCreateAdminClient.mockReturnValue(client);
+    const { deletes } = makeDb([browser.row]);
 
     const result = await sendWebPushToUser("user-1", { title: "t", body: "x".repeat(4000) });
 
     expect(result).toEqual({ delivered: 0, failed: 1, skippedReason: "push_delivery_failed" });
     expect(fetchMock).not.toHaveBeenCalled();
     expect(deletes).toEqual([]);
+  });
+
+  it("reports a failed subscription lookup without sending", async () => {
+    mockListPushSubscriptions.mockRejectedValue(new Error("connection error"));
+
+    const result = await sendWebPushToUser("user-1", { title: "t", body: "b" });
+
+    expect(result).toEqual({ delivered: 0, failed: 0, skippedReason: "push_load_failed" });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("reports no subscription when the user has none", async () => {
+    makeDb([]);
+
+    const result = await sendWebPushToUser("user-1", { title: "t", body: "b" });
+
+    expect(result).toEqual({ delivered: 0, failed: 0, skippedReason: "push_no_subscription" });
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });

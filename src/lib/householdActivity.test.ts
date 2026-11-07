@@ -1,22 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const mockInsert = vi.fn();
-const mockLimit = vi.fn();
-const mockOrder = vi.fn();
-const mockEq = vi.fn();
-const mockSelect = vi.fn();
-const mockFrom = vi.fn();
-vi.mock("./supabase", () => ({
-  createServerClient: () => ({ from: (...a: unknown[]) => mockFrom(...a) }),
+const mockRecordActivity = vi.fn();
+const mockListActivity = vi.fn();
+vi.mock("./db/remaining", () => ({
+  recordActivity: (...a: unknown[]) => mockRecordActivity(...a),
+  listActivity: (...a: unknown[]) => mockListActivity(...a),
 }));
 
 beforeEach(() => {
-  mockInsert.mockReset().mockResolvedValue({ error: null });
-  mockLimit.mockReset().mockResolvedValue({ data: [] });
-  mockOrder.mockReset().mockReturnValue({ limit: mockLimit });
-  mockEq.mockReset().mockReturnValue({ order: mockOrder });
-  mockSelect.mockReset().mockReturnValue({ eq: mockEq });
-  mockFrom.mockReset().mockReturnValue({ insert: mockInsert, select: mockSelect });
+  mockRecordActivity.mockReset().mockResolvedValue(undefined);
+  mockListActivity.mockReset().mockResolvedValue([]);
 });
 
 describe("recordHouseholdActivity", () => {
@@ -30,8 +23,7 @@ describe("recordHouseholdActivity", () => {
       detail: "Garage",
     });
 
-    expect(mockFrom).toHaveBeenCalledWith("household_activity");
-    expect(mockInsert).toHaveBeenCalledWith({
+    expect(mockRecordActivity).toHaveBeenCalledWith({
       household_id: "house-1",
       user_id: "user-1",
       action: "device.created",
@@ -44,7 +36,7 @@ describe("recordHouseholdActivity", () => {
 
     await recordHouseholdActivity({ householdId: "house-1", action: "device.created" });
 
-    expect(mockInsert).toHaveBeenCalledWith({
+    expect(mockRecordActivity).toHaveBeenCalledWith({
       household_id: "house-1",
       user_id: null,
       action: "device.created",
@@ -54,14 +46,12 @@ describe("recordHouseholdActivity", () => {
 });
 
 describe("listHouseholdActivity", () => {
-  it("queries by household id, ordered newest-first, with the default limit", async () => {
+  it("queries by household id with the default limit", async () => {
     const { listHouseholdActivity } = await import("./householdActivity");
 
     await listHouseholdActivity("house-1");
 
-    expect(mockEq).toHaveBeenCalledWith("household_id", "house-1");
-    expect(mockOrder).toHaveBeenCalledWith("created_at", { ascending: false });
-    expect(mockLimit).toHaveBeenCalledWith(40);
+    expect(mockListActivity).toHaveBeenCalledWith("house-1", 40);
   });
 
   it("honors a custom limit", async () => {
@@ -69,21 +59,14 @@ describe("listHouseholdActivity", () => {
 
     await listHouseholdActivity("house-1", 10);
 
-    expect(mockLimit).toHaveBeenCalledWith(10);
+    expect(mockListActivity).toHaveBeenCalledWith("house-1", 10);
   });
 
   it("returns the rows from the query", async () => {
     const rows = [{ id: "a1", household_id: "house-1", user_id: null, action: "x", detail: null, created_at: "t" }];
-    mockLimit.mockResolvedValue({ data: rows });
+    mockListActivity.mockResolvedValue(rows);
     const { listHouseholdActivity } = await import("./householdActivity");
 
     expect(await listHouseholdActivity("house-1")).toEqual(rows);
-  });
-
-  it("returns an empty array when data is null", async () => {
-    mockLimit.mockResolvedValue({ data: null });
-    const { listHouseholdActivity } = await import("./householdActivity");
-
-    expect(await listHouseholdActivity("house-1")).toEqual([]);
   });
 });

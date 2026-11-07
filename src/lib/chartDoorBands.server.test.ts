@@ -5,23 +5,9 @@ vi.mock("./doorEvents", () => ({
   readDoorSessions: (...a: unknown[]) => mockReadDoorSessions(...a),
 }));
 
-const mockQueryResult = vi.fn();
-const queryCalls: Array<[string, unknown[]]> = [];
-vi.mock("./supabase", () => ({
-  createServerClient: () => {
-    const builder: Record<string, unknown> = {};
-    for (const method of ["from", "select", "eq", "lte", "gte", "order"]) {
-      builder[method] = (...args: unknown[]) => {
-        queryCalls.push([method, args]);
-        return builder;
-      };
-    }
-    builder.limit = (...args: unknown[]) => {
-      queryCalls.push(["limit", args]);
-      return mockQueryResult();
-    };
-    return builder;
-  },
+const mockDoorBandsOverlapping = vi.fn();
+vi.mock("./db/doors", () => ({
+  doorBandsOverlapping: (...a: unknown[]) => mockDoorBandsOverlapping(...a),
 }));
 
 import { fetchChartDoorBands } from "./chartDoorBands.server";
@@ -33,19 +19,15 @@ describe("fetchChartDoorBands", () => {
   const sensors = [{ id: "door-1", label: "Garage door" }];
 
   beforeEach(() => {
-    queryCalls.length = 0;
     mockReadDoorSessions.mockReset().mockResolvedValue([]);
-    mockQueryResult.mockReset().mockResolvedValue({ data: [], error: null });
+    mockDoorBandsOverlapping.mockReset().mockResolvedValue([]);
   });
 
   it("asks for saved sessions overlapping the window, oldest first in the result", async () => {
-    mockQueryResult.mockResolvedValue({
-      data: [
-        { label: "Garage door", opened_at: "2026-10-29T09:00:00Z", closed_at: "2026-10-29T09:10:00Z" },
-        { label: "Garage door", opened_at: "2026-10-28T09:00:00Z", closed_at: "2026-10-28T09:10:00Z" },
-      ],
-      error: null,
-    });
+    mockDoorBandsOverlapping.mockResolvedValue([
+      { label: "Garage door", opened_at: "2026-10-29T09:00:00Z", closed_at: "2026-10-29T09:10:00Z" },
+      { label: "Garage door", opened_at: "2026-10-28T09:00:00Z", closed_at: "2026-10-28T09:10:00Z" },
+    ]);
 
     const result = await fetchChartDoorBands(
       "hh-1",
@@ -55,13 +37,11 @@ describe("fetchChartDoorBands", () => {
       NOW,
     );
 
-    expect(queryCalls).toEqual(
-      expect.arrayContaining([
-        ["from", ["door_open_events"]],
-        ["eq", ["household_id", "hh-1"]],
-        ["lte", ["opened_at", "2026-10-29T12:00:00.000Z"]],
-        ["gte", ["closed_at", "2026-10-22T12:00:00.000Z"]],
-      ]),
+    expect(mockDoorBandsOverlapping).toHaveBeenCalledWith(
+      "hh-1",
+      "2026-10-22T12:00:00.000Z",
+      "2026-10-29T12:00:00.000Z",
+      1000,
     );
     expect(result.error).toBeNull();
     expect(result.bands.map((b) => b.openedAt)).toEqual(["2026-10-28T09:00:00Z", "2026-10-29T09:00:00Z"]);
@@ -85,7 +65,7 @@ describe("fetchChartDoorBands", () => {
   });
 
   it("returns the error instead of an empty-looking success when the query fails", async () => {
-    mockQueryResult.mockResolvedValue({ data: null, error: { message: "db down" } });
+    mockDoorBandsOverlapping.mockRejectedValue(new Error("db down"));
 
     const result = await fetchChartDoorBands("hh-1", "2026-10-22T12:00:00Z", "2026-10-29T12:00:00Z", sensors, NOW);
 

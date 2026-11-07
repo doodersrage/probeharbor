@@ -18,9 +18,6 @@ export default defineConfig({
     include: ["src/**/*.test.ts"],
     // Need a real Postgres: run with `pnpm test:db` (vitest.db.config.ts).
     exclude: ["src/**/*.db.test.ts", "**/node_modules/**"],
-    env: {
-      SUPABASE_URL: "https://test.supabase.co",
-      SUPABASE_ANON_KEY: "test-anon-key",
-    },
+    setupFiles: ["src/test/unitSetup.ts"],
   },
 });

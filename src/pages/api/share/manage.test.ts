@@ -48,16 +48,19 @@ vi.mock("../../../lib/secretFlash", () => ({
   setSecretFlash: (...a: unknown[]) => mockSetSecretFlash(...a),
 }));
 
-const mockSelectEq = vi.fn();
-const mockSelectOrder = vi.fn();
-const mockInsert = vi.fn();
-const mockDeleteEq2 = vi.fn();
-const mockDeleteEq1 = vi.fn();
-const mockDelete = vi.fn();
-const mockFrom = vi.fn();
-const mockCreateServerClient = vi.fn();
-vi.mock("../../../lib/supabase", () => ({
-  createServerClient: () => mockCreateServerClient(),
+const mockListShareLinks = vi.fn();
+const mockDeleteShareLink = vi.fn();
+const mockFindShareLink = vi.fn();
+const mockReplaceShareLinkToken = vi.fn();
+const mockCountLiveShareLinks = vi.fn();
+const mockInsertShareLink = vi.fn();
+vi.mock("../../../lib/shareLinksStore", () => ({
+  listShareLinks: (...a: unknown[]) => mockListShareLinks(...a),
+  deleteShareLink: (...a: unknown[]) => mockDeleteShareLink(...a),
+  findShareLink: (...a: unknown[]) => mockFindShareLink(...a),
+  replaceShareLinkToken: (...a: unknown[]) => mockReplaceShareLinkToken(...a),
+  countLiveShareLinks: (...a: unknown[]) => mockCountLiveShareLinks(...a),
+  insertShareLink: (...a: unknown[]) => mockInsertShareLink(...a),
 }));
 
 function fakeRedirect(path: string): Response {
@@ -97,11 +100,13 @@ beforeEach(() => {
   mockRecordHouseholdActivity.mockReset().mockResolvedValue(undefined);
   mockFormRedirectPath.mockReset().mockReturnValue("/dashboard/share");
   mockSetSecretFlash.mockReset();
-  mockSelectOrder.mockReset().mockResolvedValue({
-    data: [
+  mockListShareLinks.mockReset().mockResolvedValue({
+    links: [
       {
         id: "link-1",
         token: "abcd1234tokensecret",
+        token_hash: "stored-hash",
+        token_preview: null,
         scope: "live",
         label: "Live",
         expires_at: null,
@@ -110,17 +115,11 @@ beforeEach(() => {
     ],
     error: null,
   });
-  mockSelectEq.mockReset().mockReturnValue({ order: mockSelectOrder });
-  mockInsert.mockReset().mockResolvedValue({ error: null });
-  mockDeleteEq2.mockReset().mockResolvedValue({ error: null });
-  mockDeleteEq1.mockReset().mockReturnValue({ eq: mockDeleteEq2 });
-  mockDelete.mockReset().mockReturnValue({ eq: mockDeleteEq1 });
-  mockFrom.mockReset().mockImplementation(() => ({
-    select: () => ({ eq: mockSelectEq }),
-    insert: mockInsert,
-    delete: mockDelete,
-  }));
-  mockCreateServerClient.mockReset().mockReturnValue({ from: mockFrom });
+  mockDeleteShareLink.mockReset().mockResolvedValue(undefined);
+  mockFindShareLink.mockReset().mockResolvedValue(null);
+  mockReplaceShareLinkToken.mockReset().mockResolvedValue({ error: null });
+  mockCountLiveShareLinks.mockReset().mockResolvedValue(0);
+  mockInsertShareLink.mockReset().mockResolvedValue({ error: null });
 });
 
 describe("GET /api/share/manage", () => {
@@ -189,6 +188,18 @@ describe("GET /api/share/manage", () => {
   });
 });
 
+describe("GET /api/share/manage — errors", () => {
+  it("returns 500 when the links can't be listed", async () => {
+    mockListShareLinks.mockResolvedValue({ links: [], error: "db down" });
+    const { GET } = await import("./manage");
+
+    const response = await GET(makeGetContext());
+
+    expect(response.status).toBe(500);
+    expect(await response.json()).toEqual({ error: "db down" });
+  });
+});
+
 describe("POST /api/share/manage", () => {
   it("redirects to signin when not authenticated", async () => {
     mockGetAuthFromRequest.mockResolvedValue({ user: null });
@@ -234,7 +245,7 @@ describe("POST /api/share/manage", () => {
       makePostContext({ scope: "live", label: "Family", expires_days: "7" }),
     );
 
-    expect(mockInsert).toHaveBeenCalledWith(
+    expect(mockInsertShareLink).toHaveBeenCalledWith(
       expect.objectContaining({
         household_id: "house-1",
         scope: "live",
@@ -259,7 +270,7 @@ describe("POST /api/share/manage", () => {
     const token = mockSetSecretFlash.mock.calls[0][2] as string;
     const { sha256Hex } = await import("../../../lib/shareLinkTokens");
     expect(token).toMatch(/^[0-9a-f]{48}$/);
-    expect(mockInsert).toHaveBeenCalledWith(
+    expect(mockInsertShareLink).toHaveBeenCalledWith(
       expect.objectContaining({
         token: null,
         token_hash: await sha256Hex(token),
@@ -270,33 +281,23 @@ describe("POST /api/share/manage", () => {
 
   describe("regenerate", () => {
     function withLink(link: { id: string; scope: string } | null) {
-      const update = vi.fn();
-      const updateEq2 = vi.fn().mockResolvedValue({ error: null });
-      const updateEq1 = vi.fn().mockReturnValue({ eq: updateEq2 });
-      update.mockReturnValue({ eq: updateEq1 });
-      const maybeSingle = vi.fn().mockResolvedValue({ data: link });
-      mockFrom.mockImplementation(() => ({
-        select: () => ({ eq: () => ({ eq: () => ({ maybeSingle }) }) }),
-        update,
-      }));
-      return { update, updateEq1, updateEq2 };
+      mockFindShareLink.mockResolvedValue(link);
     }
 
     it("stores a new hash, clears the raw token, flashes the new link once", async () => {
-      const { update, updateEq1, updateEq2 } = withLink({ id: "link-1", scope: "metrics" });
+      withLink({ id: "link-1", scope: "metrics" });
       const { POST } = await import("./manage");
 
       const response = await POST(makePostContext({ action: "regenerate", id: "link-1" }));
 
       const token = mockSetSecretFlash.mock.calls[0][2] as string;
       const { sha256Hex } = await import("../../../lib/shareLinkTokens");
-      expect(update).toHaveBeenCalledWith({
+      expect(mockFindShareLink).toHaveBeenCalledWith("house-1", "link-1");
+      expect(mockReplaceShareLinkToken).toHaveBeenCalledWith("house-1", "link-1", {
         token: null,
         token_hash: await sha256Hex(token),
         token_preview: token.slice(-4),
       });
-      expect(updateEq1).toHaveBeenCalledWith("id", "link-1");
-      expect(updateEq2).toHaveBeenCalledWith("household_id", "house-1");
       expect(mockRecordHouseholdActivity).toHaveBeenCalledWith(
         expect.objectContaining({ action: "share_link_regenerated", detail: "metrics" }),
       );
@@ -314,22 +315,60 @@ describe("POST /api/share/manage", () => {
       const live = await POST(makePostContext({ action: "regenerate", id: "link-1" }));
       expect(live.headers.get("Location")).toBe("/dashboard/share?regenerated=1");
 
-      const { update } = withLink({ id: "link-2", scope: "metrics" });
+      mockReplaceShareLinkToken.mockClear();
+      withLink({ id: "link-2", scope: "metrics" });
       const metrics = await POST(makePostContext({ action: "regenerate", id: "link-2" }));
       expect(metrics.headers.get("Location")).toBe("/dashboard/share?error=pro_required");
-      expect(update).not.toHaveBeenCalled();
+      expect(mockReplaceShareLinkToken).not.toHaveBeenCalled();
     });
 
     it("errors without touching anything for a link outside the household", async () => {
-      const { update } = withLink(null);
+      withLink(null);
       const { POST } = await import("./manage");
 
       const response = await POST(makePostContext({ action: "regenerate", id: "other" }));
 
-      expect(update).not.toHaveBeenCalled();
+      expect(mockReplaceShareLinkToken).not.toHaveBeenCalled();
       expect(mockSetSecretFlash).not.toHaveBeenCalled();
       expect(response.headers.get("Location")).toBe("/dashboard/share?error=1");
     });
+
+    it("errors without flashing a token when the new hash can't be stored", async () => {
+      withLink({ id: "link-1", scope: "live" });
+      mockReplaceShareLinkToken.mockResolvedValue({ error: "db down" });
+      const { POST } = await import("./manage");
+
+      const response = await POST(makePostContext({ action: "regenerate", id: "link-1" }));
+
+      expect(mockSetSecretFlash).not.toHaveBeenCalled();
+      expect(mockRecordHouseholdActivity).not.toHaveBeenCalled();
+      expect(response.headers.get("Location")).toBe("/dashboard/share?error=1");
+    });
+  });
+
+  it("caps a free family plan at one live link", async () => {
+    mockGetUserEntitlements.mockResolvedValue({
+      canCreateShareLinks: false,
+      canCreateFamilyShareLink: true,
+    });
+    mockCountLiveShareLinks.mockResolvedValue(1);
+    const { POST } = await import("./manage");
+
+    const response = await POST(makePostContext({ scope: "metrics" }));
+
+    expect(mockCountLiveShareLinks).toHaveBeenCalledWith("house-1");
+    expect(mockInsertShareLink).not.toHaveBeenCalled();
+    expect(response.headers.get("Location")).toBe("/dashboard/share?error=family_limit");
+  });
+
+  it("errors without flashing a token when the link can't be stored", async () => {
+    mockInsertShareLink.mockResolvedValue({ error: "db down" });
+    const { POST } = await import("./manage");
+
+    const response = await POST(makePostContext({ scope: "live" }));
+
+    expect(mockSetSecretFlash).not.toHaveBeenCalled();
+    expect(response.headers.get("Location")).toBe("/dashboard/share?error=1");
   });
 
   it("revokes a share link and redirects", async () => {
@@ -337,9 +376,7 @@ describe("POST /api/share/manage", () => {
 
     const response = await POST(makePostContext({ action: "revoke", id: "link-1" }));
 
-    expect(mockFrom).toHaveBeenCalledWith("share_links");
-    expect(mockDeleteEq1).toHaveBeenCalledWith("id", "link-1");
-    expect(mockDeleteEq2).toHaveBeenCalledWith("household_id", "house-1");
+    expect(mockDeleteShareLink).toHaveBeenCalledWith("house-1", "link-1");
     expect(response.headers.get("Location")).toBe("/dashboard/share?revoked=1");
   });
 
@@ -352,7 +389,7 @@ describe("POST /api/share/manage", () => {
 
     const response = await POST(makePostContext({ action: "revoke", id: "link-1" }));
 
-    expect(mockDeleteEq1).toHaveBeenCalledWith("id", "link-1");
+    expect(mockDeleteShareLink).toHaveBeenCalledWith("house-1", "link-1");
     expect(response.headers.get("Location")).toBe("/dashboard/share?revoked=1");
   });
 });

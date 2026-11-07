@@ -1,7 +1,7 @@
 /**
  * Neon versions of the email-job queries: drip, trial reminders, weekly
  * digest, monthly / quarterly reports, freeze drills, email suppressions and
- * unsubscribe. Called when `dbBackend() === "neon"`.
+ * unsubscribe.
  *
  * Settings columns a job may stamp are allow-listed (they go into SQL by name).
  */

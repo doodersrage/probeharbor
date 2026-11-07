@@ -12,25 +12,13 @@ const rows = Array.from({ length: 20 }, (_, i) => {
   ];
 }).flat();
 
-const calls: Array<[string, unknown[]]> = [];
-
-vi.mock("./supabase", () => ({
-  createServerClient: () => {
-    const builder: Record<string, unknown> = new Proxy(
-      {},
-      {
-        get: (_t, prop) => {
-          if (prop === "range") return async (from: number, to: number) => ({ data: rows.slice(from, to + 1), error: null });
-          if (prop === "then") return undefined;
-          return (...args: unknown[]) => {
-            calls.push([String(prop), args]);
-            return builder;
-          };
-        },
-      },
-    );
-    return { from: () => builder };
-  },
+const mockFetchAllRawSensorRows = vi.fn(async () => ({ rows, error: null }));
+vi.mock("./db/history", () => ({
+  // No sampled readings: the chart reads raw rows.
+  listChartSensors: async () => null,
+  fetchAllRawSensorRows: (...a: unknown[]) => mockFetchAllRawSensorRows(...(a as [])),
+  countChartSensors: async () => 0,
+  rollupBucketAverages: async () => [],
 }));
 
 import { fetchGarageTempChartData } from "./garageTempsHistory";
@@ -58,9 +46,9 @@ describe("fetchGarageTempChartData", () => {
   });
 
   it("asks the database for temperature and humidity only (not door, leak or battery readings)", async () => {
-    calls.length = 0;
+    mockFetchAllRawSensorRows.mockClear();
     await fetchGarageTempChartData("user-1", 30);
-    expect(calls).toEqual(expect.arrayContaining([["in", ["device_sensors.kind", ["temperature", "humidity"]]]]));
+    expect(mockFetchAllRawSensorRows).toHaveBeenCalledWith("hh-1", expect.any(Object), ["temperature", "humidity"], true);
   });
 });
 

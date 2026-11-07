@@ -17,38 +17,22 @@ vi.mock("./opsNotify", () => ({
   notifyOps: mockNotifyOps,
 }));
 
-function mockQuery(result: { data?: unknown; count?: number; error?: unknown }) {
-  const calls: Array<{ method: string; args: unknown[] }> = [];
-  const builder: Record<string, unknown> = {};
-  for (const method of ["select", "eq", "neq", "order", "insert", "update", "delete"]) {
-    builder[method] = vi.fn((...args: unknown[]) => {
-      calls.push({ method, args });
-      return builder;
-    });
-  }
-  (builder as { then: unknown }).then = (
-    resolve: (value: unknown) => unknown,
-    reject?: (reason: unknown) => unknown,
-  ) => Promise.resolve(result).then(resolve, reject);
-  (builder as { calls: Array<{ method: string; args: unknown[] }> }).calls = calls;
-  return builder as unknown as Record<string, unknown> & {
-    calls: Array<{ method: string; args: unknown[] }>;
-  };
-}
-
-const mockFrom = vi.fn();
-const mockDeleteUser = vi.fn().mockResolvedValue({ error: null });
-vi.mock("./supabase", () => ({
-  createServerClient: () => ({ from: (...args: unknown[]) => mockFrom(...args) }),
-  createAdminClient: () => ({ auth: { admin: { deleteUser: mockDeleteUser } } }),
+const mockReleaseOwnedHouseholds = vi.fn();
+const mockChartShareKeys = vi.fn();
+const mockDeleteUserRow = vi.fn();
+vi.mock("./db/accounts", () => ({
+  releaseOwnedHouseholds: (...args: unknown[]) => mockReleaseOwnedHouseholds(...args),
+  chartShareKeys: (...args: unknown[]) => mockChartShareKeys(...args),
+  deleteUserRow: (...args: unknown[]) => mockDeleteUserRow(...args),
 }));
 
 beforeEach(() => {
   mockGetUserSubscription.mockReset();
   mockCancel.mockClear();
   mockNotifyOps.mockClear();
-  mockFrom.mockReset();
-  mockDeleteUser.mockClear().mockResolvedValue({ error: null });
+  mockReleaseOwnedHouseholds.mockReset().mockResolvedValue([]);
+  mockChartShareKeys.mockReset().mockResolvedValue([]);
+  mockDeleteUserRow.mockReset().mockResolvedValue(undefined);
 });
 
 afterEach(() => {
@@ -127,105 +111,46 @@ describe("deleteUserAccount", () => {
     mockGetUserSubscription.mockResolvedValue(null);
   });
 
-  it("deletes the household outright when the departing owner is its only member", async () => {
-    const ownedQuery = mockQuery({ data: [{ household_id: "h1" }] });
-    const countQuery = mockQuery({ count: 1 });
-    const householdsDeleteQuery = mockQuery({ error: null });
-    const alertSettingsQuery = mockQuery({ error: null });
-    mockFrom
-      .mockReturnValueOnce(ownedQuery) // select owned households
-      .mockReturnValueOnce(countQuery) // count members in h1
-      .mockReturnValueOnce(householdsDeleteQuery) // households.delete
-      .mockReturnValueOnce(alertSettingsQuery); // alert_settings.delete
-
+  it("releases owned households, then deletes the user row", async () => {
+    mockReleaseOwnedHouseholds.mockResolvedValue(["h1"]);
     const { deleteUserAccount } = await import("./accountLifecycle");
-    const result = await deleteUserAccount("user-1");
 
-    expect(result.error).toBeNull();
-    expect(mockFrom.mock.calls.map((c) => c[0])).toEqual([
-      "household_members",
-      "household_members",
-      "households",
-      "alert_settings",
-    ]);
-    expect(householdsDeleteQuery.calls).toContainEqual({ method: "eq", args: ["id", "h1"] });
-    expect(mockDeleteUser).toHaveBeenCalledWith("user-1");
+    await expect(deleteUserAccount("user-1")).resolves.toEqual({ error: null });
+
+    expect(mockReleaseOwnedHouseholds).toHaveBeenCalledWith("user-1");
+    expect(mockDeleteUserRow).toHaveBeenCalledWith("user-1");
+    expect(mockReleaseOwnedHouseholds.mock.invocationCallOrder[0]).toBeLessThan(
+      mockDeleteUserRow.mock.invocationCallOrder[0],
+    );
   });
 
-  it("promotes an existing member to owner before removing the sole owner from a shared household", async () => {
-    const ownedQuery = mockQuery({ data: [{ household_id: "h1" }] });
-    const countQuery = mockQuery({ count: 3 });
-    const candidatesQuery = mockQuery({
-      data: [
-        { id: "m-viewer", role: "viewer", created_at: "2026-01-01" },
-        { id: "m-member", role: "member", created_at: "2026-01-02" },
-      ],
+  it("cancels the subscription before touching the database", async () => {
+    mockGetUserSubscription.mockResolvedValue({
+      stripe_subscription_id: "sub_active",
+      status: "active",
     });
-    const updateQuery = mockQuery({ error: null });
-    const removeOwnerQuery = mockQuery({ error: null });
-    const alertSettingsQuery = mockQuery({ error: null });
-    mockFrom
-      .mockReturnValueOnce(ownedQuery)
-      .mockReturnValueOnce(countQuery)
-      .mockReturnValueOnce(candidatesQuery)
-      .mockReturnValueOnce(updateQuery)
-      .mockReturnValueOnce(removeOwnerQuery)
-      .mockReturnValueOnce(alertSettingsQuery);
-
     const { deleteUserAccount } = await import("./accountLifecycle");
+
     await deleteUserAccount("user-1");
 
-    // Prefers the "member" role even though the viewer was added first.
-    expect(updateQuery.calls[0]).toEqual({ method: "update", args: [{ role: "owner" }] });
-    expect(updateQuery.calls).toContainEqual({ method: "eq", args: ["id", "m-member"] });
-    expect(removeOwnerQuery.calls).toContainEqual({
-      method: "eq",
-      args: ["household_id", "h1"],
-    });
-    expect(removeOwnerQuery.calls).toContainEqual({ method: "eq", args: ["user_id", "user-1"] });
+    expect(mockCancel).toHaveBeenCalledWith("sub_active");
+    expect(mockCancel.mock.invocationCallOrder[0]).toBeLessThan(
+      mockReleaseOwnedHouseholds.mock.invocationCallOrder[0],
+    );
   });
 
-  it("falls back to the longest-tenured remaining member when nobody has the member role", async () => {
-    const ownedQuery = mockQuery({ data: [{ household_id: "h1" }] });
-    const countQuery = mockQuery({ count: 2 });
-    const candidatesQuery = mockQuery({
-      data: [{ id: "m-viewer", role: "viewer", created_at: "2026-01-01" }],
-    });
-    const updateQuery = mockQuery({ error: null });
-    const removeOwnerQuery = mockQuery({ error: null });
-    const alertSettingsQuery = mockQuery({ error: null });
-    mockFrom
-      .mockReturnValueOnce(ownedQuery)
-      .mockReturnValueOnce(countQuery)
-      .mockReturnValueOnce(candidatesQuery)
-      .mockReturnValueOnce(updateQuery)
-      .mockReturnValueOnce(removeOwnerQuery)
-      .mockReturnValueOnce(alertSettingsQuery);
-
+  it("returns the error and keeps the user when releasing households fails", async () => {
+    mockReleaseOwnedHouseholds.mockRejectedValue(new Error("db down"));
     const { deleteUserAccount } = await import("./accountLifecycle");
-    await deleteUserAccount("user-1");
 
-    expect(updateQuery.calls).toContainEqual({ method: "eq", args: ["id", "m-viewer"] });
+    await expect(deleteUserAccount("user-1")).resolves.toEqual({ error: "db down" });
+    expect(mockDeleteUserRow).not.toHaveBeenCalled();
   });
 
-  it("skips promotion cleanly when no other member is found", async () => {
-    const ownedQuery = mockQuery({ data: [{ household_id: "h1" }] });
-    const countQuery = mockQuery({ count: 2 });
-    const candidatesQuery = mockQuery({ data: [] });
-    const removeOwnerQuery = mockQuery({ error: null });
-    const alertSettingsQuery = mockQuery({ error: null });
-    mockFrom
-      .mockReturnValueOnce(ownedQuery)
-      .mockReturnValueOnce(countQuery)
-      .mockReturnValueOnce(candidatesQuery)
-      .mockReturnValueOnce(removeOwnerQuery)
-      .mockReturnValueOnce(alertSettingsQuery);
-
+  it("returns the error when deleting the user row fails", async () => {
+    mockDeleteUserRow.mockRejectedValue(new Error("constraint"));
     const { deleteUserAccount } = await import("./accountLifecycle");
-    const result = await deleteUserAccount("user-1");
 
-    expect(result.error).toBeNull();
-    // No update() call happened -- only 5 .from() calls total, not 6.
-    expect(mockFrom).toHaveBeenCalledTimes(5);
+    await expect(deleteUserAccount("user-1")).resolves.toEqual({ error: "constraint" });
   });
 });

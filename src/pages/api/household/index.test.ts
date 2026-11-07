@@ -88,22 +88,9 @@ vi.mock("../../../lib/siteUrl", async (importOriginal) => ({
   formRedirectPath: (...a: unknown[]) => mockFormRedirectPath(...a),
 }));
 
-function mockQuery(result: { data?: unknown; error?: unknown } = { data: null, error: null }) {
-  const builder: Record<string, unknown> = {};
-  for (const method of ["eq", "maybeSingle", "select"]) {
-    builder[method] = vi.fn(() => builder);
-  }
-  (builder as { then: unknown }).then = (
-    resolve: (v: unknown) => unknown,
-    reject: (v: unknown) => unknown,
-  ) => Promise.resolve(result).then(resolve, reject);
-  return builder;
-}
-
-const mockFrom = vi.fn();
-const mockCreateServerClient = vi.fn(() => ({ from: mockFrom }));
-vi.mock("../../../lib/supabase", () => ({
-  createServerClient: () => mockCreateServerClient(),
+const mockGetHouseholdFields = vi.fn();
+vi.mock("../../../lib/householdRecord", () => ({
+  getHouseholdFields: (...a: unknown[]) => mockGetHouseholdFields(...a),
 }));
 
 function makeGetContext(): APIContext {
@@ -188,10 +175,7 @@ beforeEach(() => {
   mockSendInviteEmail.mockReset().mockResolvedValue(undefined);
   mockBuildSiteUrl.mockReset().mockReturnValue("https://example.com/invite/new-invite-tok");
   mockFormRedirectPath.mockReset().mockReturnValue("/dashboard/household");
-  mockFrom.mockReset().mockImplementation(() =>
-    mockQuery({ data: { name: "Home" }, error: null }),
-  );
-  mockCreateServerClient.mockClear();
+  mockGetHouseholdFields.mockReset().mockResolvedValue({ data: { name: "Home" }, error: null });
 });
 
 describe("GET /api/household", () => {
@@ -469,12 +453,27 @@ describe("POST /api/household", () => {
       "Home",
       "user@example.com",
     );
+    expect(mockGetHouseholdFields).toHaveBeenCalledWith("house-1", ["name"]);
     expect(context.redirect).toHaveBeenCalledWith("/dashboard/household?invited=1");
     expect(mockBuildSiteUrl).toHaveBeenCalledWith(expect.anything(), "/invite/new-invite-tok");
     expect(context.cookies.set).toHaveBeenCalledWith(
       "tt_flash_invite_link",
       "https://example.com/invite/new-invite-tok",
       expect.objectContaining({ httpOnly: true }),
+    );
+  });
+
+  it("names the household generically in the email when its name can't be read", async () => {
+    mockGetHouseholdFields.mockResolvedValue({ data: null, error: "down" });
+    const { POST } = await import("./index");
+
+    await POST(makePostContext({ action: "invite", email: "a@b.com", role: "member" }));
+
+    expect(mockSendInviteEmail).toHaveBeenCalledWith(
+      "a@b.com",
+      expect.any(String),
+      "a household",
+      "user@example.com",
     );
   });
 

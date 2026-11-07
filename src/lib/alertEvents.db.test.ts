@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { insertTestUser, useTestDatabase } from "../test/db";
 
 vi.mock("./runtimeEnv", () => ({
-  getRuntimeEnv: (key: string) => (key === "DB_BACKEND" ? "neon" : undefined),
+  getRuntimeEnv: () => undefined,
   hasRuntimeEnv: () => false,
 }));
 
@@ -213,5 +213,19 @@ describe("recording and listing (Neon)", () => {
     const range = await listAlertEventsInRange(userId, new Date(Date.now() - 3600_000).toISOString(), new Date().toISOString());
     expect(range.map((e) => e.created_at)).toEqual([...range.map((e) => e.created_at)].sort());
     expect(range).toHaveLength(5);
+  });
+});
+
+describe("has the user ever been alerted (Neon)", () => {
+  it("false with no alerts, or with only alerts that went nowhere; true once one went out", async () => {
+    const userId = await insertTestUser(db.client(), "a@example.com");
+    await expect(hasDeliveredAnyAlert(userId)).resolves.toBe(false);
+    await event(userId, "rule", []);
+    await expect(hasDeliveredAnyAlert(userId)).resolves.toBe(false);
+    const other = await insertTestUser(db.client(), "b@example.com");
+    await event(other, "rule", ["email"]);
+    await expect(hasDeliveredAnyAlert(userId)).resolves.toBe(false);
+    await event(userId, "rule", ["push"]);
+    await expect(hasDeliveredAnyAlert(userId)).resolves.toBe(true);
   });
 });

@@ -1,6 +1,4 @@
-import { dbBackend } from "./db/client";
 import * as neonEvents from "./db/alertEvents";
-import { createServerClient } from "./supabase";
 import { escapeCsvField } from "./csvEscape";
 import type { Locale } from "../i18n/locales";
 import { alertJobsMessages } from "../i18n/messages/app/alertJobs";
@@ -41,11 +39,6 @@ export type AlertEventRow = {
   meta?: AlertEventMeta;
 };
 
-function parseAlertEventMeta(raw: unknown): AlertEventMeta {
-  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return {};
-  return raw as AlertEventMeta;
-}
-
 export async function recordAlertEvent(input: {
   userId: string;
   kind: string;
@@ -55,28 +48,7 @@ export async function recordAlertEvent(input: {
   channelsSkipped: string[];
   meta?: AlertEventMeta;
 }): Promise<number | null> {
-  if (dbBackend() === "neon") return neonEvents.recordAlertEvent(input);
-  const supabase = createServerClient();
-  const { data, error } = await supabase
-    .from("alert_events")
-    .insert({
-      user_id: input.userId,
-      kind: input.kind,
-      title: input.title,
-      body: input.body,
-      channels_sent: input.channelsSent,
-      channels_skipped: input.channelsSkipped,
-      meta: (input.meta ?? {}) as import("../types/supabase").Json,
-    })
-    .select("id")
-    .single();
-
-  if (error) {
-    console.error("Failed to record alert event:", error.message);
-    return null;
-  }
-
-  return data?.id ?? null;
+  return neonEvents.recordAlertEvent(input);
 }
 
 export async function updateAlertEventMeta(
@@ -85,21 +57,7 @@ export async function updateAlertEventMeta(
   patch: AlertEventMeta,
   locale: Locale = "en",
 ): Promise<{ ok: boolean; error?: string }> {
-  if (dbBackend() === "neon") {
-    return neonEvents.updateAlertEventMeta(userId, eventId, patch, alertJobsMessages(locale).events.notFound);
-  }
-  const supabase = createServerClient();
-  const existing = await getAlertEventForUser(userId, eventId);
-  if (!existing) return { ok: false, error: alertJobsMessages(locale).events.notFound };
-
-  const { error } = await supabase
-    .from("alert_events")
-    .update({ meta: { ...existing.meta, ...patch } as import("../types/supabase").Json })
-    .eq("id", eventId)
-    .eq("user_id", userId);
-
-  if (error) return { ok: false, error: error.message };
-  return { ok: true };
+  return neonEvents.updateAlertEventMeta(userId, eventId, patch, alertJobsMessages(locale).events.notFound);
 }
 
 export async function updateAlertEventChannels(
@@ -108,37 +66,14 @@ export async function updateAlertEventChannels(
   channelsSent: string[],
   channelsSkipped: string[],
 ): Promise<void> {
-  if (dbBackend() === "neon") return neonEvents.updateAlertEventChannels(eventId, userId, channelsSent, channelsSkipped);
-  const supabase = createServerClient();
-  const { error } = await supabase
-    .from("alert_events")
-    .update({
-      channels_sent: channelsSent,
-      channels_skipped: channelsSkipped,
-    })
-    .eq("id", eventId)
-    .eq("user_id", userId);
-
-  if (error) {
-    console.error("Failed to update alert event channels:", error.message);
-  }
+  return neonEvents.updateAlertEventChannels(eventId, userId, channelsSent, channelsSkipped);
 }
 
 export async function acknowledgeAlertEvent(
   userId: string,
   eventId: number,
 ): Promise<{ ok: boolean; error?: string }> {
-  if (dbBackend() === "neon") return neonEvents.acknowledgeAlertEvent(userId, eventId);
-  const supabase = createServerClient();
-  const { error } = await supabase
-    .from("alert_events")
-    .update({ acknowledged_at: new Date().toISOString() })
-    .eq("id", eventId)
-    .eq("user_id", userId)
-    .is("acknowledged_at", null);
-
-  if (error) return { ok: false, error: error.message };
-  return { ok: true };
+  return neonEvents.acknowledgeAlertEvent(userId, eventId);
 }
 
 /** Acknowledge the most recent alert that is still unhandled (see isUnhandledAlertEvent). */
@@ -146,32 +81,12 @@ export async function acknowledgeLatestUnackedAlert(
   userId: string,
   locale: Locale = "en",
 ): Promise<{ ok: boolean; eventId?: number; error?: string }> {
-  if (dbBackend() === "neon") {
-    return neonEvents.acknowledgeLatestUnackedAlert(
-      userId,
-      INFORMATIONAL_ALERT_KINDS,
-      SAFETY_ALERT_KINDS,
-      alertJobsMessages(locale).events.noUnhandled,
-    );
-  }
-  const supabase = createServerClient();
-  const { data, error: fetchError } = await supabase
-    .from("alert_events")
-    .select("id")
-    .eq("user_id", userId)
-    .is("acknowledged_at", null)
-    .not("kind", "in", INFORMATIONAL_KIND_FILTER)
-    .or(UNHANDLED_DELIVERY_FILTER)
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  if (fetchError) return { ok: false, error: fetchError.message };
-  if (!data) return { ok: false, error: alertJobsMessages(locale).events.noUnhandled };
-
-  const result = await acknowledgeAlertEvent(userId, data.id);
-  if (!result.ok) return result;
-  return { ok: true, eventId: data.id };
+  return neonEvents.acknowledgeLatestUnackedAlert(
+    userId,
+    INFORMATIONAL_ALERT_KINDS,
+    SAFETY_ALERT_KINDS,
+    alertJobsMessages(locale).events.noUnhandled,
+  );
 }
 
 /** Acknowledge every alert that is still unhandled, held safety alerts included (capped). */
@@ -180,40 +95,13 @@ export async function acknowledgeAllUnackedAlerts(
   limit = 50,
   locale: Locale = "en",
 ): Promise<{ ok: boolean; count: number; error?: string }> {
-  if (dbBackend() === "neon") {
-    return neonEvents.acknowledgeAllUnackedAlerts(
-      userId,
-      limit,
-      INFORMATIONAL_ALERT_KINDS,
-      SAFETY_ALERT_KINDS,
-      alertJobsMessages(locale).events.noUnhandled,
-    );
-  }
-  const supabase = createServerClient();
-  const { data, error: fetchError } = await supabase
-    .from("alert_events")
-    .select("id")
-    .eq("user_id", userId)
-    .is("acknowledged_at", null)
-    .not("kind", "in", INFORMATIONAL_KIND_FILTER)
-    .or(UNHANDLED_DELIVERY_FILTER)
-    .order("created_at", { ascending: false })
-    .limit(limit);
-
-  if (fetchError) return { ok: false, count: 0, error: fetchError.message };
-  const ids = (data ?? []).map((row) => row.id as number);
-  if (ids.length === 0) return { ok: false, count: 0, error: alertJobsMessages(locale).events.noUnhandled };
-
-  const acknowledgedAt = new Date().toISOString();
-  const { error } = await supabase
-    .from("alert_events")
-    .update({ acknowledged_at: acknowledgedAt })
-    .eq("user_id", userId)
-    .in("id", ids)
-    .is("acknowledged_at", null);
-
-  if (error) return { ok: false, count: 0, error: error.message };
-  return { ok: true, count: ids.length };
+  return neonEvents.acknowledgeAllUnackedAlerts(
+    userId,
+    limit,
+    INFORMATIONAL_ALERT_KINDS,
+    SAFETY_ALERT_KINDS,
+    alertJobsMessages(locale).events.noUnhandled,
+  );
 }
 
 /**
@@ -233,44 +121,11 @@ export async function autoResolveAlerts(
   userId: string,
   options: { kinds?: string[]; olderThanMs?: number; reason?: "recovered" | "expired" } = {},
 ): Promise<AutoResolveResult> {
-  if (dbBackend() === "neon") {
-    return neonEvents.autoResolveAlerts(userId, INFORMATIONAL_ALERT_KINDS, SAFETY_ALERT_KINDS, {
-      kinds: options.kinds,
-      olderThanIso: options.olderThanMs ? new Date(Date.now() - options.olderThanMs).toISOString() : undefined,
-      reason: options.reason ?? "recovered",
-    });
-  }
-  const supabase = createServerClient();
-  let query = supabase
-    .from("alert_events")
-    .select("id, meta, channels_sent")
-    .eq("user_id", userId)
-    .is("acknowledged_at", null)
-    .not("kind", "in", INFORMATIONAL_KIND_FILTER)
-    .or(UNHANDLED_DELIVERY_FILTER)
-    .limit(200);
-  if (options.kinds?.length) query = query.in("kind", options.kinds);
-  if (options.olderThanMs) {
-    query = query.lt("created_at", new Date(Date.now() - options.olderThanMs).toISOString());
-  }
-  const { data, error } = await query;
-  if (error || !data?.length) return { resolved: 0, channels: [] };
-
-  const resolvedAt = new Date().toISOString();
-  let resolved = 0;
-  const channels = new Set<string>();
-  for (const row of data as Array<{ id: number; meta: unknown; channels_sent?: string[] | null }>) {
-    const meta = parseAlertEventMeta(row.meta);
-    const { error: updateError } = await supabase
-      .from("alert_events")
-      .update({ acknowledged_at: resolvedAt, meta: { ...meta, autoResolved: options.reason ?? "recovered" } })
-      .eq("id", row.id)
-      .is("acknowledged_at", null);
-    if (updateError) continue;
-    resolved += 1;
-    for (const channel of row.channels_sent ?? []) channels.add(channel);
-  }
-  return { resolved, channels: [...channels] };
+  return neonEvents.autoResolveAlerts(userId, INFORMATIONAL_ALERT_KINDS, SAFETY_ALERT_KINDS, {
+    kinds: options.kinds,
+    olderThanIso: options.olderThanMs ? new Date(Date.now() - options.olderThanMs).toISOString() : undefined,
+    reason: options.reason ?? "recovered",
+  });
 }
 
 export async function listRecentAlertEventsFiltered(
@@ -280,92 +135,34 @@ export async function listRecentAlertEventsFiltered(
     offset?: number;
     /** Substring match on kind (internal callers pass one NotifyKind). */
     kind?: string | null;
-    /** Exact kinds (Activity filter). Applied with `.in`; empty means no filter. */
+    /** Exact kinds (Activity filter); empty means no filter. */
     kinds?: readonly string[] | null;
     unackedOnly?: boolean;
   } = {},
 ): Promise<{ events: AlertEventRow[]; hasMore: boolean }> {
   const limit = Math.min(Math.max(options.limit ?? 20, 1), 50);
   const offset = Math.max(options.offset ?? 0, 0);
-  if (dbBackend() === "neon") {
-    return neonEvents.listRecentAlertEventsFiltered(userId, INFORMATIONAL_ALERT_KINDS, SAFETY_ALERT_KINDS, {
-      limit,
-      offset,
-      kind: options.kind,
-      kinds: options.kinds,
-      unackedOnly: options.unackedOnly,
-    });
-  }
-  const supabase = createServerClient();
-  let query = supabase
-    .from("alert_events")
-    .select("*")
-    .eq("user_id", userId)
-    .order("created_at", { ascending: false })
-    .range(offset, offset + limit);
-
-  if (options.kind?.trim()) {
-    query = query.ilike("kind", `%${options.kind.trim()}%`);
-  }
-  if (options.kinds?.length) {
-    query = query.in("kind", [...options.kinds]);
-  }
-  if (options.unackedOnly) {
-    // Same rows the unhandled count counts.
-    query = query
-      .is("acknowledged_at", null)
-      .not("kind", "in", INFORMATIONAL_KIND_FILTER)
-      .or(UNHANDLED_DELIVERY_FILTER);
-  }
-
-  const { data, error } = await query;
-  if (error || !data) return { events: [], hasMore: false };
-  const rows = data.map((row) => ({
-    ...(row as AlertEventRow),
-    meta: parseAlertEventMeta((row as { meta?: unknown }).meta),
-  }));
-  const hasMore = rows.length > limit;
-  return { events: rows.slice(0, limit), hasMore };
+  return neonEvents.listRecentAlertEventsFiltered(userId, INFORMATIONAL_ALERT_KINDS, SAFETY_ALERT_KINDS, {
+    limit,
+    offset,
+    kind: options.kind,
+    kinds: options.kinds,
+    unackedOnly: options.unackedOnly,
+  });
 }
 
 export async function getAlertEventForUser(
   userId: string,
   eventId: number,
 ): Promise<AlertEventRow | null> {
-  if (dbBackend() === "neon") return neonEvents.getAlertEventForUser(userId, eventId);
-  const supabase = createServerClient();
-  const { data, error } = await supabase
-    .from("alert_events")
-    .select("*")
-    .eq("user_id", userId)
-    .eq("id", eventId)
-    .maybeSingle();
-
-  if (error || !data) return null;
-  return {
-    ...(data as AlertEventRow),
-    meta: parseAlertEventMeta((data as { meta?: unknown }).meta),
-  };
+  return neonEvents.getAlertEventForUser(userId, eventId);
 }
 
 export async function listRecentAlertEvents(
   userId: string,
   limit = 20,
 ): Promise<AlertEventRow[]> {
-  if (dbBackend() === "neon") return neonEvents.listRecentAlertEvents(userId, limit);
-  const supabase = createServerClient();
-  const { data, error } = await supabase
-    .from("alert_events")
-    .select("*")
-    .eq("user_id", userId)
-    .order("created_at", { ascending: false })
-    .limit(limit);
-
-  if (error || !data) return [];
-  return data.map((row) => ({
-    ...(row as AlertEventRow),
-    meta: parseAlertEventMeta((row as { meta?: unknown }).meta),
-  }));
+  return neonEvents.listRecentAlertEvents(userId, limit);
 }
 
 /** Recent send attempts, only the columns per-channel delivery status needs. */
@@ -373,16 +170,7 @@ export async function listRecentDeliveryAttempts(
   userId: string,
   limit = 100,
 ): Promise<Array<Pick<AlertEventRow, "created_at" | "channels_sent" | "channels_skipped">>> {
-  if (dbBackend() === "neon") return neonEvents.listRecentDeliveryAttempts(userId, limit);
-  const supabase = createServerClient();
-  const { data, error } = await supabase
-    .from("alert_events")
-    .select("created_at, channels_sent, channels_skipped")
-    .eq("user_id", userId)
-    .order("created_at", { ascending: false })
-    .limit(limit);
-  if (error || !data) return [];
-  return data as Array<Pick<AlertEventRow, "created_at" | "channels_sent" | "channels_skipped">>;
+  return neonEvents.listRecentDeliveryAttempts(userId, limit);
 }
 
 export const ALERT_EVENTS_EXPORT_MAX = 5000;
@@ -394,19 +182,7 @@ export async function listAlertEventsInRange(
   toIso: string,
   limit = ALERT_EVENTS_EXPORT_MAX,
 ): Promise<AlertEventRow[]> {
-  if (dbBackend() === "neon") return neonEvents.listAlertEventsInRange(userId, fromIso, toIso, limit);
-  const supabase = createServerClient();
-  const { data, error } = await supabase
-    .from("alert_events")
-    .select("*")
-    .eq("user_id", userId)
-    .gte("created_at", fromIso)
-    .lte("created_at", toIso)
-    .order("created_at", { ascending: true })
-    .limit(limit);
-
-  if (error || !data) return [];
-  return data as AlertEventRow[];
+  return neonEvents.listAlertEventsInRange(userId, fromIso, toIso, limit);
 }
 
 export function buildAlertEventsCsv(events: AlertEventRow[]): string {
@@ -443,16 +219,7 @@ export function buildAlertEventsCsv(events: AlertEventRow[]): string {
  * fallback "has a test gone out?" signal.
  */
 export async function hasDeliveredAnyAlert(userId: string): Promise<boolean> {
-  if (dbBackend() === "neon") return neonEvents.hasDeliveredAnyAlert(userId);
-  const supabase = createServerClient();
-  const { data, error } = await supabase
-    .from("alert_events")
-    .select("id")
-    .eq("user_id", userId)
-    .filter("channels_sent", "neq", "{}")
-    .limit(1);
-  if (error || !data) return false;
-  return data.length > 0;
+  return neonEvents.hasDeliveredAnyAlert(userId);
 }
 
 /**
@@ -461,17 +228,10 @@ export async function hasDeliveredAnyAlert(userId: string): Promise<boolean> {
  * the one to acknowledge), and "back to normal" recovery notices. They never count as "unhandled".
  */
 export const INFORMATIONAL_ALERT_KINDS = ["generic", "digest", "recovery"] as const;
-const INFORMATIONAL_KIND_FILTER = `(${INFORMATIONAL_ALERT_KINDS.join(",")})`;
 
 export function isActionableAlertKind(kind: string): boolean {
   return !(INFORMATIONAL_ALERT_KINDS as readonly string[]).includes(kind);
 }
-
-/**
- * PostgREST `or` for the delivery side of "unhandled": it reached someone, or
- * it's a safety kind (held, failed or not set up still needs attention).
- */
-const UNHANDLED_DELIVERY_FILTER = `channels_sent.neq.{},kind.in.(${SAFETY_ALERT_KINDS.join(",")})`;
 
 /**
  * Needs attention until someone acknowledges it (or it auto-resolves):
@@ -493,45 +253,18 @@ export const CLAIMS_PACK_ALERT_KINDS = ["threshold", "freeze", "flood"] as const
 
 /** Any unhandled alert of these kinds (same rule as the count). */
 export async function hasUnhandledAlertOfKinds(userId: string, kinds: readonly string[]): Promise<boolean> {
-  if (dbBackend() === "neon") {
-    return neonEvents.hasUnhandledAlertOfKinds(userId, kinds, INFORMATIONAL_ALERT_KINDS, SAFETY_ALERT_KINDS);
-  }
-  const supabase = createServerClient();
-  const { data, error } = await supabase
-    .from("alert_events")
-    .select("id")
-    .eq("user_id", userId)
-    .is("acknowledged_at", null)
-    .not("kind", "in", INFORMATIONAL_KIND_FILTER)
-    .or(UNHANDLED_DELIVERY_FILTER)
-    .in("kind", [...kinds])
-    .limit(1);
-  if (error || !data) return false;
-  return data.length > 0;
+  return neonEvents.hasUnhandledAlertOfKinds(userId, kinds, INFORMATIONAL_ALERT_KINDS, SAFETY_ALERT_KINDS);
 }
 
 export async function countUnacknowledgedAlerts(userId: string): Promise<number> {
-  if (dbBackend() === "neon") {
-    try {
-      return await neonEvents.countUnacknowledgedAlerts(userId, INFORMATIONAL_ALERT_KINDS, SAFETY_ALERT_KINDS);
-    } catch (error) {
-      await reportCountFailure(error instanceof Error ? error.message : String(error));
-      return 0;
-    }
+  try {
+    return await neonEvents.countUnacknowledgedAlerts(userId, INFORMATIONAL_ALERT_KINDS, SAFETY_ALERT_KINDS);
+  } catch (error) {
+    // A failed count must not pass silently as "nothing unhandled": report it so a
+    // broken filter or an outage is noticed (Sentry groups repeats).
+    await reportCountFailure(error instanceof Error ? error.message : String(error));
+    return 0;
   }
-  const supabase = createServerClient();
-  const { count, error } = await supabase
-    .from("alert_events")
-    .select("id", { count: "exact", head: true })
-    .eq("user_id", userId)
-    .is("acknowledged_at", null)
-    .not("kind", "in", INFORMATIONAL_KIND_FILTER)
-    .or(UNHANDLED_DELIVERY_FILTER);
-
-  // A failed count must not pass silently as "nothing unhandled": report it so a
-  // broken filter or an outage is noticed (Sentry groups repeats).
-  if (error) await reportCountFailure(error.message ?? "query failed");
-  return count ?? 0;
 }
 
 async function reportCountFailure(reason: string): Promise<void> {

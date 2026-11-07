@@ -1,6 +1,5 @@
 /**
- * Neon version of account deletion (accountLifecycle.ts). Called when
- * `dbBackend() === "neon"`.
+ * Neon version of account deletion (accountLifecycle.ts).
  *
  * Same rules as the Supabase path, done in fewer, atomic steps:
  * 1. One statement: delete households the user solely belongs to; in shared

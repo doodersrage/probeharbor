@@ -3,7 +3,6 @@ import { getAuthFromCookies } from "../../../lib/auth";
 import { withBetterAuth } from "../../../lib/betterAuthRuntime";
 import { betterAuthErrorCode } from "../../../lib/betterAuthResponse";
 import { getTotpState, isElevated, jsonWithAuthCookies } from "../../../lib/betterAuthMfa";
-import { dbBackend } from "../../../lib/db/client";
 import { getUserMetadata } from "../../../lib/db/userMetadata";
 import { sanitizeNextPath } from "../../../lib/siteUrl";
 import { getYubiKeyPublicIdsFromUser } from "../../../lib/yubikeyOtp";
@@ -11,7 +10,7 @@ import { authApiMessages } from "../../../i18n/messages/app/auth/api";
 import { requestLocale } from "./_locale";
 
 /**
- * Passkeys on Better Auth (DB_BACKEND=neon; step 4e-2). They replace
+ * Passkeys on Better Auth. They replace
  * security keys as a second factor (decided 2026-11-07): a passkey is a way
  * to sign in on its own, without the TOTP step.
  *
@@ -24,14 +23,13 @@ import { requestLocale } from "./_locale";
  * - "signin_options" / "signin_verify": sign in with one (no session yet).
  *
  * Better Auth keeps each challenge in a signed cookie, which these responses
- * pass on. Off Neon this route doesn't exist.
+ * pass on.
  */
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
 }
 
 export const GET: APIRoute = async ({ request, cookies }) => {
-  if (dbBackend() !== "neon") return json({ error: "Not found" }, 404);
   const { user } = await getAuthFromCookies(cookies);
   if (!user) return json({ error: "Unauthorized" }, 401);
   const passkeys = await withBetterAuth(request, (auth) => auth.api.listPasskeys({ headers: request.headers }));
@@ -42,7 +40,6 @@ export const GET: APIRoute = async ({ request, cookies }) => {
 
 export const POST: APIRoute = async (context) => {
   const { request, cookies } = context;
-  if (dbBackend() !== "neon") return json({ error: "Not found" }, 404);
   const t = authApiMessages(requestLocale(context)).mfa;
   let body: { action?: string; response?: Record<string, unknown>; id?: string; name?: string; next?: string };
   try {

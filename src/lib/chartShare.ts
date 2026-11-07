@@ -1,8 +1,6 @@
 import { env as cloudflareEnv } from "cloudflare:workers";
 import { chartShareKey, isChartShareKey } from "./chartShareKeys";
-import { dbBackend } from "./db/client";
 import { findChartShare, insertChartShare } from "./db/shareLinks";
-import { createServerClient } from "./supabase";
 
 function randomToken(): string {
   const bytes = crypto.getRandomValues(new Uint8Array(18));
@@ -48,10 +46,7 @@ export async function createChartShare(input: {
     title: input.title?.slice(0, 120) ?? null,
     expires_at: expiresAt,
   };
-  const { error } =
-    dbBackend() === "neon"
-      ? await insertChartShare(row).then((r) => ({ error: r.error ? { message: r.error } : null }))
-      : await createServerClient().from("chart_share_tokens").insert(row);
+  const { error } = await insertChartShare(row);
 
   if (error) {
     try {
@@ -59,7 +54,7 @@ export async function createChartShare(input: {
     } catch {
       /* ignore */
     }
-    return { token: null, error: error.message };
+    return { token: null, error };
   }
 
   return { token, error: null };
@@ -70,30 +65,21 @@ export async function getChartShareByToken(token: string): Promise<{
   png: ArrayBuffer | null;
   expiresAt: string;
 } | null> {
-  const data =
-    dbBackend() === "neon"
-      ? await findChartShare(token)
-      : (
-          await createServerClient()
-            .from("chart_share_tokens")
-            .select("r2_key, title, expires_at")
-            .eq("token", token)
-            .maybeSingle()
-        ).data;
+  const data = await findChartShare(token);
 
   if (!data) return null;
-  if (Date.parse(data.expires_at as string) < Date.now()) return null;
+  if (Date.parse(data.expires_at) < Date.now()) return null;
   // Never serve anything but a chart image from the shared bucket.
   if (!isChartShareKey(data.r2_key)) return null;
 
   const bucket = getHistoryArchiveBucket();
   if (!bucket) return null;
-  const object = await bucket.get(data.r2_key as string);
+  const object = await bucket.get(data.r2_key);
   if (!object) return null;
   const png = await object.arrayBuffer();
   return {
-    title: (data.title as string | null) ?? null,
+    title: data.title ?? null,
     png,
-    expiresAt: data.expires_at as string,
+    expiresAt: data.expires_at,
   };
 }

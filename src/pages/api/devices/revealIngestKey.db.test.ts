@@ -8,7 +8,6 @@ import { describe, expect, it, vi } from "vitest";
 import { testDatabaseUrl, useTestDatabase } from "../../../test/db";
 
 const ENV: Record<string, string> = {
-  DB_BACKEND: "neon",
   BETTER_AUTH_SECRET: "test-secret-for-database-tests-only-0123456789",
   CRON_SECRET: "test-step-up-secret-0123456789",
   INGEST_KEY_ENCRYPTION_SECRET: "test-vault-secret-0123456789",

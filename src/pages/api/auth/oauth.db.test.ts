@@ -1,5 +1,5 @@
 /**
- * OAuth sign-in through the app's routes on Better Auth (DB_BACKEND=neon):
+ * OAuth sign-in through the app's routes on Better Auth:
  * /api/auth/signin (start) → provider (stubbed) → the app's callback route
  * → /api/auth/oauth-done. Local Postgres; the runtime's Neon pool is pg.
  */
@@ -9,7 +9,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { testDatabaseUrl, useTestDatabase } from "../../../test/db";
 
 const ENV: Record<string, string> = {
-  DB_BACKEND: "neon",
   BETTER_AUTH_SECRET: "test-secret-for-database-tests-only-0123456789",
   GITHUB_CLIENT_ID: "gh-id",
   GITHUB_CLIENT_SECRET: "gh-secret",

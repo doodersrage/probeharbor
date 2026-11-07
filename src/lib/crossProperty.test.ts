@@ -1,20 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-function mockQuery(result: { data?: unknown; error?: unknown }) {
-  const builder: Record<string, unknown> = {};
-  for (const method of ["select", "eq", "in", "gte", "order", "limit"]) {
-    builder[method] = vi.fn(() => builder);
-  }
-  (builder as { then: unknown }).then = (
-    resolve: (value: unknown) => unknown,
-    reject?: (reason: unknown) => unknown,
-  ) => Promise.resolve(result).then(resolve, reject);
-  return builder;
-}
-
-const mockFrom = vi.fn();
-vi.mock("./supabase", () => ({
-  createServerClient: () => ({ from: (...args: unknown[]) => mockFrom(...args) }),
+const mockDevices = vi.fn();
+const mockSensors = vi.fn();
+const mockReadings = vi.fn();
+vi.mock("./db/places", () => ({
+  devicesForHouseholds: (...args: unknown[]) => mockDevices(...args),
+  sensorsOfKinds: (...args: unknown[]) => mockSensors(...args),
+  recentReadings: (...args: unknown[]) => mockReadings(...args),
 }));
 
 const mockListUserHouseholds = vi.fn();
@@ -28,23 +20,25 @@ vi.mock("./notify", () => ({
 }));
 
 beforeEach(() => {
-  mockFrom.mockReset();
+  mockDevices.mockReset().mockResolvedValue([]);
+  mockSensors.mockReset().mockResolvedValue([]);
+  mockReadings.mockReset().mockResolvedValue([]);
   mockListUserHouseholds.mockReset();
   mockGetAlertSettingsForUser.mockReset();
   mockGetAlertSettingsForUser.mockResolvedValue({ freezeThresholdF: 34 });
 });
 
-function tableRouter(byTable: Record<string, { data?: unknown; error?: unknown }>) {
-  return (table: string) => mockQuery(byTable[table] ?? { data: [], error: null });
+function dbCallCount() {
+  return mockDevices.mock.calls.length + mockSensors.mock.calls.length + mockReadings.mock.calls.length;
 }
 
 describe("fetchCrossPropertySnapshots", () => {
-  it("returns an empty list without querying supabase when the user owns no households", async () => {
+  it("returns an empty list without querying when the user owns no households", async () => {
     mockListUserHouseholds.mockResolvedValue({ households: [], error: null });
     const { fetchCrossPropertySnapshots } = await import("./crossProperty");
     const result = await fetchCrossPropertySnapshots("user-1");
     expect(result).toEqual({ properties: [], error: null });
-    expect(mockFrom).not.toHaveBeenCalled();
+    expect(dbCallCount()).toBe(0);
   });
 
   it("propagates a household-listing error without querying further", async () => {
@@ -52,7 +46,7 @@ describe("fetchCrossPropertySnapshots", () => {
     const { fetchCrossPropertySnapshots } = await import("./crossProperty");
     const result = await fetchCrossPropertySnapshots("user-1");
     expect(result).toEqual({ properties: [], error: "boom" });
-    expect(mockFrom).not.toHaveBeenCalled();
+    expect(dbCallCount()).toBe(0);
   });
 
   it("batches devices/sensors/readings across households in a fixed number of queries", async () => {
@@ -65,45 +59,38 @@ describe("fetchCrossPropertySnapshots", () => {
       error: null,
     });
 
-    mockFrom.mockImplementation(
-      tableRouter({
-        devices: {
-          data: [
-            { id: "dev-1", household_id: "house-1" },
-            { id: "dev-2", household_id: "house-2" },
-            // house-3 has no devices at all.
-          ],
-          error: null,
-        },
-        device_sensors: {
-          data: [
-            { id: "sensor-1", device_id: "dev-1" },
-            { id: "sensor-2", device_id: "dev-2" },
-          ],
-          error: null,
-        },
-        sensor_readings: {
-          // Pre-sorted by recorded_at desc, as the real query would return.
-          data: [
-            { household_id: "house-2", value_num: 40, recorded_at: "2026-08-31T12:00:00.000Z" },
-            { household_id: "house-1", value_num: 30, recorded_at: "2026-08-31T11:55:00.000Z" },
-            { household_id: "house-1", value_num: 25, recorded_at: "2026-08-31T11:50:00.000Z" },
-            { household_id: "house-2", value_num: 38, recorded_at: "2026-08-31T11:45:00.000Z" },
-          ],
-          error: null,
-        },
-      }),
-    );
+    mockDevices.mockResolvedValue([
+      { id: "dev-1", household_id: "house-1" },
+      { id: "dev-2", household_id: "house-2" },
+      // house-3 has no devices at all.
+    ]);
+    mockSensors.mockResolvedValue([
+      { id: "sensor-1", device_id: "dev-1", kind: "temperature" },
+      { id: "sensor-2", device_id: "dev-2", kind: "temperature" },
+    ]);
+    // Pre-sorted by recorded_at desc, as the real query would return.
+    mockReadings.mockResolvedValue([
+      { household_id: "house-2", value_num: 40, recorded_at: "2026-08-31T12:00:00.000Z" },
+      { household_id: "house-1", value_num: 30, recorded_at: "2026-08-31T11:55:00.000Z" },
+      { household_id: "house-1", value_num: 25, recorded_at: "2026-08-31T11:50:00.000Z" },
+      { household_id: "house-2", value_num: 38, recorded_at: "2026-08-31T11:45:00.000Z" },
+    ]);
 
     const { fetchCrossPropertySnapshots } = await import("./crossProperty");
     const result = await fetchCrossPropertySnapshots("user-1");
 
     // Exactly 3 bulk queries regardless of household count -- devices,
-    // device_sensors, sensor_readings -- not up to 3 per household.
-    expect(mockFrom).toHaveBeenCalledTimes(3);
-    expect(mockFrom).toHaveBeenCalledWith("devices");
-    expect(mockFrom).toHaveBeenCalledWith("device_sensors");
-    expect(mockFrom).toHaveBeenCalledWith("sensor_readings");
+    // sensors, readings -- not up to 3 per household.
+    expect(dbCallCount()).toBe(3);
+    expect(mockDevices).toHaveBeenCalledWith(["house-1", "house-2", "house-3"]);
+    expect(mockSensors).toHaveBeenCalledWith(["dev-1", "dev-2"], ["temperature", "flood"]);
+    expect(mockReadings).toHaveBeenCalledWith(
+      ["house-1", "house-2", "house-3"],
+      ["sensor-1", "sensor-2"],
+      expect.any(String),
+      expect.any(Number),
+      false,
+    );
 
     expect(result.error).toBeNull();
     const byId = new Map(result.properties.map((p) => [p.householdId, p]));
@@ -134,16 +121,11 @@ describe("fetchCrossPropertySnapshots", () => {
       households: [{ household_id: "house-1", role: "owner", name: "Cabin" }],
       error: null,
     });
-    mockFrom.mockImplementation(
-      tableRouter({
-        devices: { data: [{ id: "dev-1", household_id: "house-1" }], error: null },
-        device_sensors: { data: [{ id: "sensor-1", device_id: "dev-1" }], error: null },
-        sensor_readings: {
-          data: [{ household_id: "house-1", value_num: 31, recorded_at: "2026-08-31T12:00:00.000Z" }],
-          error: null,
-        },
-      }),
-    );
+    mockDevices.mockResolvedValue([{ id: "dev-1", household_id: "house-1" }]);
+    mockSensors.mockResolvedValue([{ id: "sensor-1", device_id: "dev-1", kind: "temperature" }]);
+    mockReadings.mockResolvedValue([
+      { household_id: "house-1", value_num: 31, recorded_at: "2026-08-31T12:00:00.000Z" },
+    ]);
 
     const { fetchCrossPropertySnapshots } = await import("./crossProperty");
     const result = await fetchCrossPropertySnapshots("user-1");
@@ -157,19 +139,12 @@ describe("fetchCrossPropertySnapshots", () => {
       error: null,
     });
     const hoursAgo = (h: number) => new Date(Date.now() - h * 3_600_000).toISOString();
-    mockFrom.mockImplementation(
-      tableRouter({
-        devices: {
-          data: [
-            { id: "live", household_id: "house-1", enabled: true, last_seen_at: hoursAgo(0.1) },
-            { id: "dead", household_id: "house-1", enabled: true, last_seen_at: hoursAgo(72) },
-            { id: "never", household_id: "house-1", enabled: true, last_seen_at: null },
-            { id: "off", household_id: "house-1", enabled: false, last_seen_at: hoursAgo(72) },
-          ],
-          error: null,
-        },
-      }),
-    );
+    mockDevices.mockResolvedValue([
+      { id: "live", household_id: "house-1", enabled: true, last_seen_at: hoursAgo(0.1) },
+      { id: "dead", household_id: "house-1", enabled: true, last_seen_at: hoursAgo(72) },
+      { id: "never", household_id: "house-1", enabled: true, last_seen_at: null },
+      { id: "off", household_id: "house-1", enabled: false, last_seen_at: hoursAgo(72) },
+    ]);
 
     const { fetchCrossPropertySnapshots } = await import("./crossProperty");
     const result = await fetchCrossPropertySnapshots("user-1");
@@ -182,13 +157,13 @@ describe("fetchCrossPropertySnapshots", () => {
       households: [{ household_id: "house-1", role: "owner", name: "Cabin" }],
       error: null,
     });
-    mockFrom.mockImplementation(tableRouter({ devices: { data: [], error: null } }));
+    mockDevices.mockResolvedValue([]);
 
     const { fetchCrossPropertySnapshots } = await import("./crossProperty");
     const result = await fetchCrossPropertySnapshots("user-1");
 
-    expect(mockFrom).toHaveBeenCalledTimes(1);
-    expect(mockFrom).toHaveBeenCalledWith("devices");
+    expect(dbCallCount()).toBe(1);
+    expect(mockDevices).toHaveBeenCalledTimes(1);
     expect(result.properties[0]).toMatchObject({
       deviceCount: 0,
       minTempF: null,

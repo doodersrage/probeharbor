@@ -1,6 +1,6 @@
 /**
  * Neon versions of the device setup / settings queries in src/lib/devices.ts
- * (the ingest-path ones are in ./ingest). Called when `dbBackend() === "neon"`.
+ * (the ingest-path ones are in ./ingest).
  * The caller-facing checks (name required, same household, messages) stay in
  * devices.ts; these run the SQL.
  *
@@ -14,7 +14,6 @@
  *   statement (Supabase: two requests, the second's error ignored).
  * - Ties in sort_order are ordered by created_at, id.
  */
-import type { Json } from "../../types/supabase";
 import { type Device, type DeviceSensor, type DeviceWithSensors, pullDeviceMeta } from "../devices";
 import type { SensorKind } from "../sensorKinds";
 import type { TempFeedConfig, TempProbeConfig } from "../tempFeedConfig";
@@ -246,7 +245,7 @@ export async function savePullDevicesForHousehold(
         const [inserted] = await query<{ id: string }>(
           `insert into public.devices (household_id, name, source, pull_url, enabled, sort_order, meta)
            values ($1, $2, 'pull_url', $3, $4, $5, $6::jsonb) returning id`,
-          [householdId, feed.name, feed.url, feed.enabled, index, JSON.stringify(meta as Json)],
+          [householdId, feed.name, feed.url, feed.enabled, index, JSON.stringify(meta)],
         );
         if (!inserted) return { error: "Failed to save device" };
         device = {

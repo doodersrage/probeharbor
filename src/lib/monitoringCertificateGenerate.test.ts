@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { AlertSettings } from "./alerts";
-import type { User } from "@supabase/supabase-js";
+import type { User } from "./appUser";
 
 const mockGetUserHouseholdId = vi.fn();
 vi.mock("./households", () => ({
@@ -22,10 +22,9 @@ vi.mock("./entitlements", () => ({
   getUserEntitlements: (...a: unknown[]) => mockGetUserEntitlements(...a),
 }));
 
-const mockMaybeSingle = vi.fn();
-const mockFrom = vi.fn();
-vi.mock("./supabase", () => ({
-  createServerClient: () => ({ from: (...a: unknown[]) => mockFrom(...a) }),
+const mockGetHouseholdFields = vi.fn();
+vi.mock("./householdRecord", () => ({
+  getHouseholdFields: (...a: unknown[]) => mockGetHouseholdFields(...a),
 }));
 
 const mockBuildMonitoringCertificateHtml = vi.fn();
@@ -85,10 +84,7 @@ beforeEach(() => {
   mockGetAlertSettingsForUser.mockReset().mockResolvedValue(alertSettings());
   mockListHouseholdDevices.mockReset().mockResolvedValue({ devices: [], error: null });
   mockGetUserEntitlements.mockReset().mockResolvedValue({ tier: "free", historyDays: 7 });
-  mockMaybeSingle.mockReset().mockResolvedValue({ data: { name: "The Smiths" } });
-  mockFrom.mockReset().mockReturnValue({
-    select: () => ({ eq: () => ({ maybeSingle: mockMaybeSingle }) }),
-  });
+  mockGetHouseholdFields.mockReset().mockResolvedValue({ data: { name: "The Smiths" }, error: null });
   mockBuildMonitoringCertificateHtml.mockReset().mockReturnValue("<html>cert</html>");
   mockFormatCertificateDate.mockReset().mockReturnValue("June 15, 2024");
   mockFormatPlanLabel.mockReset().mockReturnValue("Free");
@@ -148,12 +144,13 @@ describe("generateMonitoringCertificateForUser", () => {
 
     const withName = await generateMonitoringCertificateForUser(user(), "https://example.com");
     expect(withName.data?.householdLabel).toBe("The Smiths");
+    expect(mockGetHouseholdFields).toHaveBeenCalledWith("house-1", ["name"]);
 
-    mockMaybeSingle.mockResolvedValue({ data: { name: "   " } });
+    mockGetHouseholdFields.mockResolvedValue({ data: { name: "   " }, error: null });
     const withEmail = await generateMonitoringCertificateForUser(user(), "https://example.com");
     expect(withEmail.data?.householdLabel).toBe("owner@example.com");
 
-    mockMaybeSingle.mockResolvedValue({ data: null });
+    mockGetHouseholdFields.mockResolvedValue({ data: null, error: null });
     const withNeither = await generateMonitoringCertificateForUser(
       user({ email: undefined }),
       "https://example.com",
@@ -162,14 +159,14 @@ describe("generateMonitoringCertificateForUser", () => {
   });
 
   it("slugifies the household label for the filename, falling back to 'certificate'", async () => {
-    mockMaybeSingle.mockResolvedValue({ data: { name: "The Smiths' Garage!!" } });
+    mockGetHouseholdFields.mockResolvedValue({ data: { name: "The Smiths' Garage!!" }, error: null });
     const { generateMonitoringCertificateForUser } = await import("./monitoringCertificateGenerate");
 
     const result = await generateMonitoringCertificateForUser(user(), "https://example.com");
 
     expect(result.filenameBase).toBe("probeharbor-monitoring-the-smiths-garage");
 
-    mockMaybeSingle.mockResolvedValue({ data: { name: "!!!" } });
+    mockGetHouseholdFields.mockResolvedValue({ data: { name: "!!!" }, error: null });
     const fallback = await generateMonitoringCertificateForUser(
       user({ email: undefined }),
       "https://example.com",

@@ -1,12 +1,10 @@
 /**
  * Small reads and writes of one household's own columns (name, freeze-map
  * and tenant-relay fields), and its first owner. Used by many pages and jobs
- * that only need a field or two. Supabase: the same queries those callers
- * ran; Neon: one parameterized query. Column names are allow-listed.
+ * that only need a field or two, each with one parameterized query. Column
+ * names are allow-listed.
  */
-import { dbBackend, query } from "./db/client";
-import { createServerClient } from "./supabase";
-import type { Database } from "../types/supabase";
+import { query } from "./db/client";
 
 const HOUSEHOLD_COLUMNS = [
   "name",
@@ -31,23 +29,15 @@ export async function getHouseholdFields<C extends HouseholdColumn>(
   columns: readonly C[],
 ): Promise<{ data: Record<C, unknown> | null; error: string | null }> {
   checkColumns(columns);
-  if (dbBackend() === "neon") {
-    try {
-      const [row] = await query<Record<C, unknown>>(
-        `select ${columns.map((c) => `"${c}"`).join(", ")} from public.households where id = $1`,
-        [householdId],
-      );
-      return { data: row ?? null, error: null };
-    } catch (error) {
-      return { data: null, error: error instanceof Error ? error.message : String(error) };
-    }
+  try {
+    const [row] = await query<Record<C, unknown>>(
+      `select ${columns.map((c) => `"${c}"`).join(", ")} from public.households where id = $1`,
+      [householdId],
+    );
+    return { data: row ?? null, error: null };
+  } catch (error) {
+    return { data: null, error: error instanceof Error ? error.message : String(error) };
   }
-  const { data, error } = await createServerClient()
-    .from("households")
-    .select(columns.join(", "))
-    .eq("id", householdId)
-    .maybeSingle();
-  return { data: (data as Record<C, unknown> | null) ?? null, error: error?.message ?? null };
 }
 
 export async function updateHouseholdFields(
@@ -57,41 +47,24 @@ export async function updateHouseholdFields(
   const columns = Object.keys(patch) as HouseholdColumn[];
   checkColumns(columns);
   if (columns.length === 0) return { error: null };
-  if (dbBackend() === "neon") {
-    try {
-      await query(
-        `update public.households set ${columns.map((c, i) => `"${c}" = $${i + 2}`).join(", ")} where id = $1`,
-        [householdId, ...columns.map((c) => patch[c] ?? null)],
-      );
-      return { error: null };
-    } catch (error) {
-      return { error: error instanceof Error ? error.message : String(error) };
-    }
-  }
   // Columns are allow-listed above; values come from the caller's typed settings.
-  const { error } = await createServerClient()
-    .from("households")
-    .update(patch as Database["public"]["Tables"]["households"]["Update"])
-    .eq("id", householdId);
-  return { error: error?.message ?? null };
+  try {
+    await query(
+      `update public.households set ${columns.map((c, i) => `"${c}" = $${i + 2}`).join(", ")} where id = $1`,
+      [householdId, ...columns.map((c) => patch[c] ?? null)],
+    );
+    return { error: null };
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : String(error) };
+  }
 }
 
 /** The household's earliest owner, or null. Throws when the lookup fails (callers decide). */
 export async function getFirstOwnerId(householdId: string): Promise<string | null> {
-  if (dbBackend() === "neon") {
-    const [row] = await query<{ user_id: string }>(
-      `select user_id from public.household_members where household_id = $1 and role = 'owner'
-       order by created_at, id limit 1`,
-      [householdId],
-    );
-    return row?.user_id ?? null;
-  }
-  const { data, error } = await createServerClient()
-    .from("household_members")
-    .select("user_id")
-    .eq("household_id", householdId)
-    .eq("role", "owner")
-    .limit(1);
-  if (error) throw new Error(error.message);
-  return data?.[0]?.user_id ?? null;
+  const [row] = await query<{ user_id: string }>(
+    `select user_id from public.household_members where household_id = $1 and role = 'owner'
+     order by created_at, id limit 1`,
+    [householdId],
+  );
+  return row?.user_id ?? null;
 }

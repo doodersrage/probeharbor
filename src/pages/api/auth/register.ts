@@ -1,5 +1,4 @@
 import type { APIRoute } from "astro";
-import { createAuthClient } from "../../../lib/supabase";
 import { getTurnstileToken, verifyTurnstileToken } from "../../../lib/turnstile";
 import {
   applyReferralForNewUser,
@@ -13,7 +12,6 @@ import {
   sanitizeRegisterNext,
 } from "../../../lib/registerUrl";
 import { requestLocale } from "./_locale";
-import { dbBackend } from "../../../lib/db/client";
 import { mergeUserMetadata } from "../../../lib/db/userMetadata";
 import { betterAuthErrorCode } from "../../../lib/betterAuthResponse";
 import { withBetterAuth } from "../../../lib/betterAuthRuntime";
@@ -54,53 +52,24 @@ export const POST: APIRoute = async (context) => {
   const safeNext = sanitizeRegisterNext(next) ?? REGISTER_NEXT_DEVICES;
   const done = () => redirect(`/signin?${new URLSearchParams({ registered: "1", next: safeNext }).toString()}`);
 
-  if (dbBackend() === "neon") {
-    const locale = requestLocale(context);
-    const res = await withBetterAuth(
-      request,
-      (auth) => auth.api.signUpEmail({ body: { email, password, name: email }, asResponse: true }),
-      { emailLocale: locale },
+  const locale = requestLocale(context);
+  const res = await withBetterAuth(
+    request,
+    (auth) => auth.api.signUpEmail({ body: { email, password, name: email }, asResponse: true }),
+    { emailLocale: locale },
+  );
+  const code = await betterAuthErrorCode(res);
+  if (code) return backToForm(code === "PASSWORD_TOO_SHORT" ? "weak_password" : "signup_failed");
+  // An address that already has an account gets the same generic success
+  // with a made-up user (so sign-up never reveals which addresses exist), so
+  // only touch the profile when the user really exists. The language the form
+  // was viewed in becomes the account language for emails and alerts.
+  const { user } = (await res.json()) as { user: { id: string } };
+  if (await getUserRecord(user.id)) {
+    await mergeUserMetadata(user.id, { locale }).catch((error: unknown) =>
+      console.error("register: could not save account language", error instanceof Error ? error.message : error),
     );
-    const code = await betterAuthErrorCode(res);
-    if (code) return backToForm(code === "PASSWORD_TOO_SHORT" ? "weak_password" : "signup_failed");
-    // An address that already has an account gets the same generic success
-    // with a made-up user (as Supabase did with confirmations on), so only
-    // touch the profile when the user really exists.
-    const { user } = (await res.json()) as { user: { id: string } };
-    if (await getUserRecord(user.id)) {
-      await mergeUserMetadata(user.id, { locale }).catch((error: unknown) =>
-        console.error("register: could not save account language", error instanceof Error ? error.message : error),
-      );
-      if (refCode) await applyReferralForNewUser(user.id, refCode, {});
-    }
-    return done();
+    if (refCode) await applyReferralForNewUser(user.id, refCode, {});
   }
-
-  // Fresh client -- never the shared `supabase` singleton, which would
-  // leave this newly-created session sitting as ambient state for any
-  // other concurrent request on the same Worker isolate to pick up.
-  // The language the form was viewed in (ph_locale cookie, set by /es/register
-  // etc.) becomes the account language for emails, alerts and the dashboard.
-  const { data, error } = await createAuthClient().auth.signUp({
-    email,
-    password,
-    options: { data: { locale: requestLocale(context) } },
-  });
-
-  if (error) {
-    // Supabase only says "already registered" when email confirmation is off;
-    // with it on, sign-up for a known address succeeds without telling us, so
-    // this reveals nothing Supabase's own response doesn't already.
-    return backToForm(isAlreadyRegistered(error) ? "email_taken" : "signup_failed");
-  }
-
-  if (data.user && refCode) {
-    await applyReferralForNewUser(data.user.id, refCode, data.user.app_metadata);
-  }
-
   return done();
 };
-
-function isAlreadyRegistered(error: { code?: string }): boolean {
-  return error.code === "user_already_exists" || error.code === "email_exists";
-}

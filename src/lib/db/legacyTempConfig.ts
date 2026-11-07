@@ -1,8 +1,7 @@
 /**
  * Neon versions of the legacy pull-feed tables (user_temp_feeds /
  * user_temp_probes) used by userTempConfig.ts: read them, move them into pull
- * devices (once per user), and clear them. Called when
- * `dbBackend() === "neon"`. All writes are scoped to the user, or to the
+ * devices (once per user), and clear them. All writes are scoped to the user, or to the
  * user's own household for devices.
  */
 import { query } from "./client";

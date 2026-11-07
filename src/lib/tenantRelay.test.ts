@@ -1,22 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-function mockQuery(result: { data?: unknown; error?: unknown }) {
-  const builder: Record<string, unknown> = {};
-  for (const method of ["select", "eq", "update"]) {
-    builder[method] = vi.fn(() => builder);
-  }
-  builder.maybeSingle = vi.fn(() => Promise.resolve(result));
-  (builder as { then: unknown }).then = (
-    resolve: (value: unknown) => unknown,
-    reject?: (reason: unknown) => unknown,
-  ) => Promise.resolve(result).then(resolve, reject);
-  return builder;
-}
-
-const mockFrom = vi.fn();
-vi.mock("./supabase", () => ({
-  createServerClient: () => ({ from: (...args: unknown[]) => mockFrom(...args) }),
+const mockGetHouseholdFields = vi.fn();
+const mockUpdateHouseholdFields = vi.fn();
+vi.mock("./householdRecord", () => ({
+  getHouseholdFields: (...a: unknown[]) => mockGetHouseholdFields(...a),
+  updateHouseholdFields: (...a: unknown[]) => mockUpdateHouseholdFields(...a),
 }));
+
+/** The household row's tenant fields, as getHouseholdFields returns them. */
+function householdRow(data: unknown) {
+  mockGetHouseholdFields.mockResolvedValue({ data, error: null });
+}
 
 const mockSendEmail = vi.fn();
 vi.mock("./mailer", () => ({
@@ -41,7 +35,8 @@ vi.mock("./households", () => ({
 }));
 
 beforeEach(() => {
-  mockFrom.mockReset();
+  mockGetHouseholdFields.mockReset();
+  mockUpdateHouseholdFields.mockReset().mockResolvedValue({ error: null });
   mockSendEmail.mockReset().mockResolvedValue(undefined);
   mockBrandedEmailParts.mockReset().mockReturnValue({ text: "plain", html: "<p>html</p>" });
   mockResolveSiteUrl.mockReset().mockReturnValue("https://default.example");
@@ -51,25 +46,22 @@ beforeEach(() => {
 
 describe("getTenantNotifySettings", () => {
   it("returns trimmed email and name", async () => {
-    mockFrom.mockReturnValue(
-      mockQuery({ data: { tenant_notify_email: "  a@b.com  ", tenant_notify_name: "  Bo  " } }),
-    );
+    householdRow({ tenant_notify_email: "  a@b.com  ", tenant_notify_name: "  Bo  " });
     const { getTenantNotifySettings } = await import("./tenantRelay");
 
     expect(await getTenantNotifySettings("house-1")).toEqual({ email: "a@b.com", name: "Bo" });
+    expect(mockGetHouseholdFields).toHaveBeenCalledWith("house-1", ["tenant_notify_email", "tenant_notify_name"]);
   });
 
   it("returns nulls when there is no row or fields are blank", async () => {
-    mockFrom.mockReturnValue(mockQuery({ data: null }));
+    householdRow(null);
     const { getTenantNotifySettings } = await import("./tenantRelay");
 
     expect(await getTenantNotifySettings("house-1")).toEqual({ email: null, name: null });
   });
 
   it("treats a whitespace-only value as absent", async () => {
-    mockFrom.mockReturnValue(
-      mockQuery({ data: { tenant_notify_email: "   ", tenant_notify_name: null } }),
-    );
+    householdRow({ tenant_notify_email: "   ", tenant_notify_name: null });
     const { getTenantNotifySettings } = await import("./tenantRelay");
 
     expect(await getTenantNotifySettings("house-1")).toEqual({ email: null, name: null });
@@ -83,12 +75,10 @@ describe("updateTenantNotifySettings", () => {
     const result = await updateTenantNotifySettings("house-1", { email: "not-an-email", name: null });
 
     expect(result).toEqual({ error: "Invalid email address." });
-    expect(mockFrom).not.toHaveBeenCalled();
+    expect(mockUpdateHouseholdFields).not.toHaveBeenCalled();
   });
 
   it("saves a trimmed valid email and name", async () => {
-    const builder = mockQuery({ error: null });
-    mockFrom.mockReturnValue(builder);
     const { updateTenantNotifySettings } = await import("./tenantRelay");
 
     const result = await updateTenantNotifySettings("house-1", {
@@ -97,27 +87,25 @@ describe("updateTenantNotifySettings", () => {
     });
 
     expect(result).toEqual({ error: null });
-    expect(builder.update).toHaveBeenCalledWith({
+    expect(mockUpdateHouseholdFields).toHaveBeenCalledWith("house-1", {
       tenant_notify_email: "tenant@example.com",
       tenant_notify_name: "Alex",
     });
   });
 
   it("clears both fields when given empty strings", async () => {
-    const builder = mockQuery({ error: null });
-    mockFrom.mockReturnValue(builder);
     const { updateTenantNotifySettings } = await import("./tenantRelay");
 
     await updateTenantNotifySettings("house-1", { email: "", name: "" });
 
-    expect(builder.update).toHaveBeenCalledWith({
+    expect(mockUpdateHouseholdFields).toHaveBeenCalledWith("house-1", {
       tenant_notify_email: null,
       tenant_notify_name: null,
     });
   });
 
   it("surfaces a database error", async () => {
-    mockFrom.mockReturnValue(mockQuery({ error: { message: "not allowed" } }));
+    mockUpdateHouseholdFields.mockResolvedValue({ error: "not allowed" });
     const { updateTenantNotifySettings } = await import("./tenantRelay");
 
     expect(
@@ -146,7 +134,7 @@ describe("sendTenantFreezeRelay", () => {
   });
 
   it("fails when there is no tenant contact configured", async () => {
-    mockFrom.mockReturnValue(mockQuery({ data: null }));
+    householdRow(null);
     const { sendTenantFreezeRelay } = await import("./tenantRelay");
 
     const result = await sendTenantFreezeRelay(baseInput);
@@ -156,9 +144,7 @@ describe("sendTenantFreezeRelay", () => {
   });
 
   it("greets the tenant by name when one is on file", async () => {
-    mockFrom.mockReturnValue(
-      mockQuery({ data: { tenant_notify_email: "tenant@example.com", tenant_notify_name: "Alex" } }),
-    );
+    householdRow({ tenant_notify_email: "tenant@example.com", tenant_notify_name: "Alex" });
     const { sendTenantFreezeRelay } = await import("./tenantRelay");
 
     await sendTenantFreezeRelay(baseInput);
@@ -171,9 +157,7 @@ describe("sendTenantFreezeRelay", () => {
   });
 
   it("falls back to a generic greeting without a tenant name", async () => {
-    mockFrom.mockReturnValue(
-      mockQuery({ data: { tenant_notify_email: "tenant@example.com", tenant_notify_name: null } }),
-    );
+    householdRow({ tenant_notify_email: "tenant@example.com", tenant_notify_name: null });
     const { sendTenantFreezeRelay } = await import("./tenantRelay");
 
     await sendTenantFreezeRelay(baseInput);
@@ -184,9 +168,7 @@ describe("sendTenantFreezeRelay", () => {
   });
 
   it("uses resolveSiteUrl when no siteUrl is provided, and the given one otherwise", async () => {
-    mockFrom.mockReturnValue(
-      mockQuery({ data: { tenant_notify_email: "tenant@example.com", tenant_notify_name: null } }),
-    );
+    householdRow({ tenant_notify_email: "tenant@example.com", tenant_notify_name: null });
     const { sendTenantFreezeRelay } = await import("./tenantRelay");
 
     await sendTenantFreezeRelay(baseInput);
@@ -202,9 +184,7 @@ describe("sendTenantFreezeRelay", () => {
   });
 
   it("sends the email with a bracketed household subject and returns ok", async () => {
-    mockFrom.mockReturnValue(
-      mockQuery({ data: { tenant_notify_email: "tenant@example.com", tenant_notify_name: null } }),
-    );
+    householdRow({ tenant_notify_email: "tenant@example.com", tenant_notify_name: null });
     const { sendTenantFreezeRelay } = await import("./tenantRelay");
 
     const result = await sendTenantFreezeRelay(baseInput);
@@ -219,9 +199,7 @@ describe("sendTenantFreezeRelay", () => {
   });
 
   it("returns a delivery-failed error when sendEmail throws", async () => {
-    mockFrom.mockReturnValue(
-      mockQuery({ data: { tenant_notify_email: "tenant@example.com", tenant_notify_name: null } }),
-    );
+    householdRow({ tenant_notify_email: "tenant@example.com", tenant_notify_name: null });
     mockSendEmail.mockRejectedValue(new Error("smtp down"));
     const { sendTenantFreezeRelay } = await import("./tenantRelay");
 

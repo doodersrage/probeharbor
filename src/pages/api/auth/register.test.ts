@@ -2,9 +2,19 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { APIContext } from "astro";
 
 const mockSignUp = vi.fn();
-const mockCreateAuthClient = vi.fn();
-vi.mock("../../../lib/supabase", () => ({
-  createAuthClient: () => mockCreateAuthClient(),
+const mockWithBetterAuth = vi.fn();
+vi.mock("../../../lib/betterAuthRuntime", () => ({
+  withBetterAuth: (...a: unknown[]) => mockWithBetterAuth(...a),
+}));
+
+const mockGetUserRecord = vi.fn();
+vi.mock("../../../lib/userRecords", () => ({
+  getUserRecord: (...a: unknown[]) => mockGetUserRecord(...a),
+}));
+
+const mockMergeUserMetadata = vi.fn();
+vi.mock("../../../lib/db/userMetadata", () => ({
+  mergeUserMetadata: (...a: unknown[]) => mockMergeUserMetadata(...a),
 }));
 
 const mockGetTurnstileToken = vi.fn();
@@ -50,11 +60,14 @@ function redirectedTo(context: APIContext): URL {
 beforeEach(() => {
   mockGetTurnstileToken.mockReset().mockReturnValue("token");
   mockVerifyTurnstileToken.mockReset().mockResolvedValue({ success: true });
-  mockSignUp.mockReset().mockResolvedValue({
-    data: { user: { id: "user-1", app_metadata: {} } },
-    error: null,
-  });
-  mockCreateAuthClient.mockReset().mockReturnValue({ auth: { signUp: (...a: unknown[]) => mockSignUp(...a) } });
+  mockSignUp.mockReset().mockImplementation(async () => Response.json({ user: { id: "user-1" } }));
+  mockWithBetterAuth
+    .mockReset()
+    .mockImplementation((_req: unknown, fn: (auth: unknown) => unknown) =>
+      fn({ api: { signUpEmail: (...a: unknown[]) => mockSignUp(...a) } }),
+    );
+  mockGetUserRecord.mockReset().mockResolvedValue({ id: "user-1", email: "a@example.com" });
+  mockMergeUserMetadata.mockReset().mockResolvedValue(undefined);
   mockApplyReferralForNewUser.mockReset().mockResolvedValue(undefined);
   mockSanitizeRegisterNext.mockReset().mockReturnValue(null);
 });
@@ -111,8 +124,8 @@ describe("POST /api/auth/register", () => {
     expect(redirectedTo(context).searchParams.get("error")).toBe("weak_password");
   });
 
-  it("redirects with signup_failed when signUp errors", async () => {
-    mockSignUp.mockResolvedValue({ data: { user: null }, error: { message: "exists" } });
+  it("redirects with signup_failed when sign-up fails", async () => {
+    mockSignUp.mockResolvedValue(Response.json({ code: "FAILED_TO_CREATE_USER" }, { status: 422 }));
     const { POST } = await import("./register");
     const context = makeContext({ email: "a@example.com", password: "password1" });
 
@@ -121,8 +134,18 @@ describe("POST /api/auth/register", () => {
     expect(redirectedTo(context).searchParams.get("error")).toBe("signup_failed");
   });
 
+  it("redirects with weak_password when Better Auth says the password is too short", async () => {
+    mockSignUp.mockResolvedValue(Response.json({ code: "PASSWORD_TOO_SHORT" }, { status: 400 }));
+    const { POST } = await import("./register");
+    const context = makeContext({ email: "a@example.com", password: "password1" });
+
+    await POST(context);
+
+    expect(redirectedTo(context).searchParams.get("error")).toBe("weak_password");
+  });
+
   it("keeps email (in a cookie), next and ref on an error redirect, never the password", async () => {
-    mockSignUp.mockResolvedValue({ data: { user: null }, error: { message: "boom" } });
+    mockSignUp.mockResolvedValue(Response.json({ code: "UNKNOWN" }, { status: 500 }));
     const { POST } = await import("./register");
     const context = makeContext({
       email: " a@example.com ",
@@ -159,19 +182,6 @@ describe("POST /api/auth/register", () => {
     expect(redirectedTo(context).searchParams.get("next")).toBe("/dashboard/devices");
   });
 
-  it("says email_taken when Supabase reports the address is already registered", async () => {
-    mockSignUp.mockResolvedValue({
-      data: { user: null },
-      error: { message: "User already registered", code: "user_already_exists" },
-    });
-    const { POST } = await import("./register");
-    const context = makeContext({ email: "a@example.com", password: "password1" });
-
-    await POST(context);
-
-    expect(redirectedTo(context).searchParams.get("error")).toBe("email_taken");
-  });
-
   it("applies a referral when a ref code is present", async () => {
     const { POST } = await import("./register");
     const context = makeContext({ email: "a@example.com", password: "password1", ref: "REF1" });
@@ -179,6 +189,18 @@ describe("POST /api/auth/register", () => {
     await POST(context);
 
     expect(mockApplyReferralForNewUser).toHaveBeenCalledWith("user-1", "ref1", {});
+  });
+
+  it("touches no profile for an address that already has an account (made-up user)", async () => {
+    mockGetUserRecord.mockResolvedValue(null);
+    const { POST } = await import("./register");
+    const context = makeContext({ email: "a@example.com", password: "password1", ref: "REF1" });
+
+    await POST(context);
+
+    expect(mockMergeUserMetadata).not.toHaveBeenCalled();
+    expect(mockApplyReferralForNewUser).not.toHaveBeenCalled();
+    expect(redirectedTo(context).pathname).toBe("/signin");
   });
 
   it("does not apply a referral without a ref code", async () => {
@@ -216,7 +238,7 @@ describe("POST /api/auth/register", () => {
     expect(url.searchParams.get("next")).toBe("/dashboard/devices");
   });
 
-  it("saves the request language on the new account", async () => {
+  it("saves the request language on the new account and sends the email in it", async () => {
     const { POST } = await import("./register");
     const context = makeContext({ email: "a@example.com", password: "password1" });
     (context as unknown as { locals: App.Locals }).locals = { locale: "es" } as App.Locals;
@@ -224,16 +246,28 @@ describe("POST /api/auth/register", () => {
     await POST(context);
 
     expect(mockSignUp).toHaveBeenCalledWith({
-      email: "a@example.com",
-      password: "password1",
-      options: { data: { locale: "es" } },
+      body: { email: "a@example.com", password: "password1", name: "a@example.com" },
+      asResponse: true,
     });
+    expect(mockWithBetterAuth).toHaveBeenCalledWith(expect.anything(), expect.any(Function), { emailLocale: "es" });
+    expect(mockMergeUserMetadata).toHaveBeenCalledWith("user-1", { locale: "es" });
   });
 
   it("saves English when the request has no locale", async () => {
     const { POST } = await import("./register");
     await POST(makeContext({ email: "a@example.com", password: "password1" }));
 
-    expect(mockSignUp.mock.calls[0][0].options).toEqual({ data: { locale: "en" } });
+    expect(mockMergeUserMetadata).toHaveBeenCalledWith("user-1", { locale: "en" });
+  });
+
+  it("still finishes sign-up when saving the language fails", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    mockMergeUserMetadata.mockRejectedValue(new Error("down"));
+    const { POST } = await import("./register");
+    const context = makeContext({ email: "a@example.com", password: "password1" });
+
+    await POST(context);
+
+    expect(redirectedTo(context).searchParams.get("registered")).toBe("1");
   });
 });

@@ -1,7 +1,7 @@
 /**
  * Neon versions of the public freeze-alert email subscriptions
  * (src/lib/freezeAlerts.ts): no account, one row per email, a token in each
- * confirm / unsubscribe link. Called when `dbBackend() === "neon"`.
+ * confirm / unsubscribe link.
  *
  * Differences from the Supabase path, all deliberate:
  * - Subscribe writes with ON CONFLICT (email), so two sign-ups for the same

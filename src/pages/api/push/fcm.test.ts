@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { APIContext } from "astro";
 
 const mockGetAuthFromRequest = vi.fn();
@@ -16,14 +16,11 @@ vi.mock("../../../lib/fcm", () => ({
   releaseFcmTokenFromOtherUsers: (...a: unknown[]) => mockReleaseFcmTokenFromOtherUsers(...a),
 }));
 
-const mockUpsert = vi.fn();
-const mockDeleteEq2 = vi.fn();
-const mockDeleteEq1 = vi.fn();
-const mockDelete = vi.fn();
-const mockFrom = vi.fn();
-const mockCreateAdminClient = vi.fn();
-vi.mock("../../../lib/supabase", () => ({
-  createAdminClient: () => mockCreateAdminClient(),
+const mockSaveFcmToken = vi.fn();
+const mockDeleteFcmToken = vi.fn();
+vi.mock("../../../lib/db/pushTokens", () => ({
+  saveFcmToken: (...a: unknown[]) => mockSaveFcmToken(...a),
+  deleteFcmToken: (...a: unknown[]) => mockDeleteFcmToken(...a),
 }));
 
 function makeRequest(body: unknown | string): Request {
@@ -41,18 +38,8 @@ beforeEach(() => {
   mockGetAuthFromRequest.mockReset().mockResolvedValue({ user: { id: "user-1" } });
   mockGetUserEntitlements.mockReset().mockResolvedValue({ canUsePush: true });
   mockReleaseFcmTokenFromOtherUsers.mockReset().mockResolvedValue(undefined);
-  mockUpsert.mockReset().mockResolvedValue({ error: null });
-  mockDeleteEq2.mockReset().mockResolvedValue({ error: null });
-  mockDeleteEq1.mockReset().mockReturnValue({ eq: mockDeleteEq2 });
-  mockDelete.mockReset().mockReturnValue({ eq: mockDeleteEq1 });
-  mockFrom.mockReset().mockReturnValue({ upsert: mockUpsert, delete: mockDelete });
-  mockCreateAdminClient.mockReset().mockReturnValue({ from: mockFrom });
-  vi.useFakeTimers();
-  vi.setSystemTime("2024-06-15T12:00:00.000Z");
-});
-
-afterEach(() => {
-  vi.useRealTimers();
+  mockSaveFcmToken.mockReset().mockResolvedValue({ error: null });
+  mockDeleteFcmToken.mockReset().mockResolvedValue(undefined);
 });
 
 describe("POST /api/push/fcm", () => {
@@ -103,39 +90,23 @@ describe("POST /api/push/fcm", () => {
     const { POST } = await import("./fcm");
 
     await POST(makeContext({ token: "a".repeat(30) }));
-    expect(mockUpsert).toHaveBeenCalledWith(
-      expect.objectContaining({ platform: "android" }),
-      expect.anything(),
-    );
+    expect(mockSaveFcmToken).toHaveBeenCalledWith("user-1", "a".repeat(30), "android", null);
 
     await POST(makeContext({ token: "a".repeat(30), platform: "IOS" }));
-    expect(mockUpsert).toHaveBeenLastCalledWith(
-      expect.objectContaining({ platform: "ios" }),
-      expect.anything(),
-    );
+    expect(mockSaveFcmToken).toHaveBeenLastCalledWith("user-1", "a".repeat(30), "ios", null);
   });
 
-  it("releases the token from other users and upserts it with a null appId when omitted", async () => {
+  it("releases the token from other users and saves it with a null appId when omitted", async () => {
     const { POST } = await import("./fcm");
 
     const response = await POST(makeContext({ token: "a".repeat(30), platform: "web" }));
 
     expect(mockReleaseFcmTokenFromOtherUsers).toHaveBeenCalledWith(
-      expect.anything(),
+      null,
       "user-1",
       "a".repeat(30),
     );
-    expect(mockFrom).toHaveBeenCalledWith("fcm_device_tokens");
-    expect(mockUpsert).toHaveBeenCalledWith(
-      {
-        user_id: "user-1",
-        token: "a".repeat(30),
-        platform: "web",
-        app_id: null,
-        updated_at: "2024-06-15T12:00:00.000Z",
-      },
-      { onConflict: "user_id,token" },
-    );
+    expect(mockSaveFcmToken).toHaveBeenCalledWith("user-1", "a".repeat(30), "web", null);
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({ ok: true });
   });
@@ -145,14 +116,11 @@ describe("POST /api/push/fcm", () => {
 
     await POST(makeContext({ token: "a".repeat(30), appId: "  com.example.app  " }));
 
-    expect(mockUpsert).toHaveBeenCalledWith(
-      expect.objectContaining({ app_id: "com.example.app" }),
-      expect.anything(),
-    );
+    expect(mockSaveFcmToken).toHaveBeenCalledWith("user-1", "a".repeat(30), "android", "com.example.app");
   });
 
-  it("returns 500 with the db error message when the upsert fails", async () => {
-    mockUpsert.mockResolvedValue({ error: { message: "db down" } });
+  it("returns 500 with the db error message when saving fails", async () => {
+    mockSaveFcmToken.mockResolvedValue({ error: "db down" });
     const { POST } = await import("./fcm");
 
     const response = await POST(makeContext(validToken));
@@ -177,6 +145,7 @@ describe("DELETE /api/push/fcm", () => {
 
     expect((await DELETE(makeContext({}))).status).toBe(400);
     expect((await DELETE(makeContext({ token: "   " }))).status).toBe(400);
+    expect(mockDeleteFcmToken).not.toHaveBeenCalled();
   });
 
   it("deletes the token scoped to the user, trimming it first", async () => {
@@ -184,9 +153,7 @@ describe("DELETE /api/push/fcm", () => {
 
     const response = await DELETE(makeContext({ token: `  ${"a".repeat(30)}  ` }));
 
-    expect(mockFrom).toHaveBeenCalledWith("fcm_device_tokens");
-    expect(mockDeleteEq1).toHaveBeenCalledWith("user_id", "user-1");
-    expect(mockDeleteEq2).toHaveBeenCalledWith("token", "a".repeat(30));
+    expect(mockDeleteFcmToken).toHaveBeenCalledWith("user-1", "a".repeat(30));
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({ ok: true });
   });

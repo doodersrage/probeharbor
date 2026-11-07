@@ -1,20 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-function mockQuery(result: { data?: unknown; error?: unknown }) {
-  const builder: Record<string, unknown> = {};
-  for (const method of ["select", "eq", "lt", "limit", "insert"]) {
-    builder[method] = vi.fn(() => builder);
-  }
-  (builder as { then: unknown }).then = (
-    resolve: (value: unknown) => unknown,
-    reject?: (reason: unknown) => unknown,
-  ) => Promise.resolve(result).then(resolve, reject);
-  return builder;
-}
-
-const mockFrom = vi.fn();
-vi.mock("./supabase", () => ({
-  createServerClient: () => ({ from: (...a: unknown[]) => mockFrom(...a) }),
+const mockHouseholdIds = vi.fn();
+const mockOldReadings = vi.fn();
+const mockInsertArchive = vi.fn();
+vi.mock("./db/householdTools", () => ({
+  householdIds: (...a: unknown[]) => mockHouseholdIds(...a),
+  oldReadings: (...a: unknown[]) => mockOldReadings(...a),
+  insertArchive: (...a: unknown[]) => mockInsertArchive(...a),
 }));
 
 function r2Bucket() {
@@ -24,7 +16,9 @@ function r2Bucket() {
 beforeEach(() => {
   vi.useFakeTimers();
   vi.setSystemTime(new Date("2024-06-15T12:00:00.000Z"));
-  mockFrom.mockReset();
+  mockHouseholdIds.mockReset().mockResolvedValue([]);
+  mockOldReadings.mockReset().mockResolvedValue([]);
+  mockInsertArchive.mockReset().mockResolvedValue(undefined);
 });
 
 afterEach(() => {
@@ -33,31 +27,35 @@ afterEach(() => {
 
 describe("archiveOldReadings", () => {
   it("returns the error immediately when the households query fails", async () => {
-    mockFrom.mockReturnValue(mockQuery({ data: null, error: { message: "db down" } }));
+    mockHouseholdIds.mockRejectedValue(new Error("db down"));
     const { archiveOldReadings } = await import("./archiveHistory");
 
     const result = await archiveOldReadings({ r2: r2Bucket() as never });
 
     expect(result).toEqual({ archived: 0, skipped: false, error: "db down" });
+    expect(mockOldReadings).not.toHaveBeenCalled();
+  });
+
+  it("reads at most 500 households", async () => {
+    const { archiveOldReadings } = await import("./archiveHistory");
+
+    await archiveOldReadings({ r2: r2Bucket() as never });
+
+    expect(mockHouseholdIds).toHaveBeenCalledWith(500);
   });
 
   it("skips archiving (without querying readings) when no r2 binding is given", async () => {
-    const householdsBuilder = mockQuery({ data: [{ id: "house-1" }], error: null });
-    mockFrom.mockReturnValue(householdsBuilder);
+    mockHouseholdIds.mockResolvedValue(["house-1"]);
     const { archiveOldReadings } = await import("./archiveHistory");
 
     const result = await archiveOldReadings();
 
     expect(result).toEqual({ archived: 0, skipped: true, error: null });
-    expect(mockFrom).toHaveBeenCalledTimes(1);
+    expect(mockOldReadings).not.toHaveBeenCalled();
   });
 
   it("skips a household with no aged readings", async () => {
-    const householdsBuilder = mockQuery({ data: [{ id: "house-1" }], error: null });
-    const readingsBuilder = mockQuery({ data: [] });
-    mockFrom.mockImplementation((table: string) =>
-      table === "households" ? householdsBuilder : readingsBuilder,
-    );
+    mockHouseholdIds.mockResolvedValue(["house-1"]);
     const r2 = r2Bucket();
     const { archiveOldReadings } = await import("./archiveHistory");
 
@@ -65,30 +63,26 @@ describe("archiveOldReadings", () => {
 
     expect(result).toEqual({ archived: 0, skipped: false, error: null });
     expect(r2.put).not.toHaveBeenCalled();
+    expect(mockInsertArchive).not.toHaveBeenCalled();
   });
 
   it("archives readings for a household, uploading to r2 and recording the archive row", async () => {
-    const householdsBuilder = mockQuery({ data: [{ id: "house-1" }], error: null });
-    const readings = [{ id: "r1", value_num: 30, recorded_at: "2024-01-01", sensor_id: "s1" }];
-    const readingsBuilder = mockQuery({ data: readings });
-    const archivesBuilder = mockQuery({ error: null });
-    mockFrom.mockImplementation((table: string) => {
-      if (table === "households") return householdsBuilder;
-      if (table === "sensor_readings") return readingsBuilder;
-      return archivesBuilder;
-    });
+    mockHouseholdIds.mockResolvedValue(["house-1"]);
+    const readings = [{ id: 1, value_num: 30, recorded_at: "2024-01-01", sensor_id: "s1" }];
+    mockOldReadings.mockResolvedValue(readings);
     const r2 = r2Bucket();
     const { archiveOldReadings } = await import("./archiveHistory");
 
     const result = await archiveOldReadings({ r2: r2 as never, retentionDays: 90 });
 
     // cutoff = now (2024-06-15T12:00) - 90 days = 2024-03-17T12:00:00.000Z
+    expect(mockOldReadings).toHaveBeenCalledWith("house-1", "2024-03-17T12:00:00.000Z", 5000);
     expect(r2.put).toHaveBeenCalledWith(
       "archives/house-1/2024-03-17.json",
       JSON.stringify(readings),
       { httpMetadata: { contentType: "application/json" } },
     );
-    expect(archivesBuilder.insert).toHaveBeenCalledWith({
+    expect(mockInsertArchive).toHaveBeenCalledWith({
       household_id: "house-1",
       period_start: "2024-03-17",
       period_end: "2024-06-15",
@@ -99,77 +93,28 @@ describe("archiveOldReadings", () => {
   });
 
   it("uses a custom retentionDays for the cutoff instead of the default", async () => {
-    const householdsBuilder = mockQuery({ data: [{ id: "house-1" }], error: null });
-    const readingsBuilder = mockQuery({ data: [] });
-    mockFrom.mockImplementation((table: string) =>
-      table === "households" ? householdsBuilder : readingsBuilder,
-    );
+    mockHouseholdIds.mockResolvedValue(["house-1"]);
     const { archiveOldReadings } = await import("./archiveHistory");
 
     await archiveOldReadings({ r2: r2Bucket() as never, retentionDays: 30 });
 
     // cutoff = now - 30 days = 2024-05-16T12:00:00.000Z
-    expect(readingsBuilder.lt).toHaveBeenCalledWith("recorded_at", "2024-05-16T12:00:00.000Z");
+    expect(mockOldReadings).toHaveBeenCalledWith("house-1", "2024-05-16T12:00:00.000Z", 5000);
   });
 
-  it("sums archived counts across multiple households", async () => {
-    const householdsBuilder = mockQuery({
-      data: [{ id: "house-1" }, { id: "house-2" }],
-      error: null,
-    });
-    const readingsBuilder1 = mockQuery({ data: [{ id: "r1" }, { id: "r2" }] });
-    const readingsBuilder2 = mockQuery({ data: [{ id: "r3" }] });
-    const archivesBuilder = mockQuery({ error: null });
-    let readingsCall = 0;
-    mockFrom.mockImplementation((table: string) => {
-      if (table === "households") return householdsBuilder;
-      if (table === "sensor_readings") {
-        readingsCall += 1;
-        return readingsCall === 1 ? readingsBuilder1 : readingsBuilder2;
-      }
-      return archivesBuilder;
-    });
-    const { archiveOldReadings } = await import("./archiveHistory");
-
-    const result = await archiveOldReadings({ r2: r2Bucket() as never });
-
-    expect(result).toEqual({ archived: 3, skipped: false, error: null });
-  });
-
-  it("only archives each household's own readings", async () => {
-    const householdsBuilder = mockQuery({
-      data: [{ id: "house-1" }, { id: "house-2" }],
-      error: null,
-    });
+  it("archives each household's own readings and sums the counts", async () => {
+    mockHouseholdIds.mockResolvedValue(["house-1", "house-2"]);
     const rowsByHousehold: Record<string, unknown[]> = {
-      "house-1": [{ id: "r1", sensor_id: "s1" }],
-      "house-2": [{ id: "r2", sensor_id: "s2" }, { id: "r3", sensor_id: "s2" }],
+      "house-1": [{ id: 1, sensor_id: "s1" }],
+      "house-2": [{ id: 2, sensor_id: "s2" }, { id: 3, sensor_id: "s2" }],
     };
-    const readingFilters: string[] = [];
-    mockFrom.mockImplementation((table: string) => {
-      if (table === "households") return householdsBuilder;
-      if (table === "sensor_readings") {
-        let household = "";
-        const builder = mockQuery({});
-        builder.eq = vi.fn((column: string, value: string) => {
-          if (column === "household_id") {
-            household = value;
-            readingFilters.push(value);
-          }
-          return builder;
-        });
-        (builder as { then: unknown }).then = (resolve: (value: unknown) => unknown) =>
-          Promise.resolve({ data: household ? rowsByHousehold[household] : [] }).then(resolve);
-        return builder;
-      }
-      return mockQuery({ error: null });
-    });
+    mockOldReadings.mockImplementation(async (householdId: string) => rowsByHousehold[householdId] ?? []);
     const r2 = r2Bucket();
     const { archiveOldReadings } = await import("./archiveHistory");
 
     const result = await archiveOldReadings({ r2: r2 as never, retentionDays: 90 });
 
-    expect(readingFilters).toEqual(["house-1", "house-2"]);
+    expect(mockOldReadings.mock.calls.map((call) => call[0])).toEqual(["house-1", "house-2"]);
     expect(r2.put).toHaveBeenCalledWith(
       "archives/house-1/2024-03-17.json",
       JSON.stringify(rowsByHousehold["house-1"]),
@@ -180,11 +125,10 @@ describe("archiveOldReadings", () => {
       JSON.stringify(rowsByHousehold["house-2"]),
       expect.anything(),
     );
-    expect(result.archived).toBe(3);
+    expect(result).toEqual({ archived: 3, skipped: false, error: null });
   });
 
-  it("handles a null households result as an empty list", async () => {
-    mockFrom.mockReturnValue(mockQuery({ data: null, error: null }));
+  it("handles no households as nothing to archive", async () => {
     const { archiveOldReadings } = await import("./archiveHistory");
 
     const result = await archiveOldReadings({ r2: r2Bucket() as never });

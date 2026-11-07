@@ -1,8 +1,7 @@
 /**
  * Neon versions of the freeze map (freezeMap.ts), the indoor reference sensor
  * (indoorReference.ts), cross-property snapshots (crossProperty.ts) and the
- * house reference line (houseContext.ts). Called when
- * `dbBackend() === "neon"`.
+ * house reference line (houseContext.ts).
  *
  * Difference from the Supabase path: the house reference line's sensor-label
  * lookup is also scoped to the household (the readings already were).

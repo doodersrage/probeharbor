@@ -1,9 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { APIContext } from "astro";
 
-const mockResetPasswordForEmail = vi.fn();
-vi.mock("../../../lib/supabase", () => ({
-  supabase: { auth: { resetPasswordForEmail: (...a: unknown[]) => mockResetPasswordForEmail(...a) } },
+const mockRequestPasswordReset = vi.fn();
+const mockWithBetterAuth = vi.fn();
+vi.mock("../../../lib/betterAuthRuntime", () => ({
+  withBetterAuth: (...a: unknown[]) => mockWithBetterAuth(...a),
 }));
 
 const mockGetTurnstileToken = vi.fn();
@@ -11,11 +12,6 @@ const mockVerifyTurnstileToken = vi.fn();
 vi.mock("../../../lib/turnstile", () => ({
   getTurnstileToken: (...a: unknown[]) => mockGetTurnstileToken(...a),
   verifyTurnstileToken: (...a: unknown[]) => mockVerifyTurnstileToken(...a),
-}));
-
-const mockResolveSiteUrl = vi.fn();
-vi.mock("../../../lib/schemaMarkup", () => ({
-  resolveSiteUrl: (...a: unknown[]) => mockResolveSiteUrl(...a),
 }));
 
 function makeContext(form: Record<string, string>): APIContext {
@@ -27,15 +23,19 @@ function makeContext(form: Record<string, string>): APIContext {
     request,
     redirect,
     clientAddress: "127.0.0.1",
-    site: new URL("https://probeharbor.dev"),
+    locals: { locale: "es" },
   } as unknown as APIContext;
 }
 
 beforeEach(() => {
-  mockResetPasswordForEmail.mockReset().mockResolvedValue({ data: {}, error: null });
+  mockRequestPasswordReset.mockReset().mockResolvedValue({ status: true });
+  mockWithBetterAuth
+    .mockReset()
+    .mockImplementation((_req: unknown, fn: (auth: unknown) => unknown) =>
+      fn({ api: { requestPasswordReset: (...a: unknown[]) => mockRequestPasswordReset(...a) } }),
+    );
   mockGetTurnstileToken.mockReset().mockReturnValue("token");
   mockVerifyTurnstileToken.mockReset().mockResolvedValue({ success: true });
-  mockResolveSiteUrl.mockReset().mockReturnValue("https://probeharbor.dev");
 });
 
 describe("POST /api/auth/forgot-password", () => {
@@ -47,7 +47,7 @@ describe("POST /api/auth/forgot-password", () => {
     await POST(context);
 
     expect(context.redirect).toHaveBeenCalledWith("/forgot-password?error=verification");
-    expect(mockResetPasswordForEmail).not.toHaveBeenCalled();
+    expect(mockWithBetterAuth).not.toHaveBeenCalled();
   });
 
   it("redirects with missing_email when the email is absent", async () => {
@@ -57,17 +57,28 @@ describe("POST /api/auth/forgot-password", () => {
     await POST(context);
 
     expect(context.redirect).toHaveBeenCalledWith("/forgot-password?error=missing_email");
+    expect(mockWithBetterAuth).not.toHaveBeenCalled();
   });
 
-  it("sends the reset email with a site-scoped redirect and redirects with sent=1", async () => {
+  it("requests the reset in the page's language and redirects with sent=1", async () => {
     const { POST } = await import("./forgot-password");
     const context = makeContext({ email: " user@example.com " });
 
     await POST(context);
 
-    expect(mockResetPasswordForEmail).toHaveBeenCalledWith("user@example.com", {
-      redirectTo: "https://probeharbor.dev/reset-password",
-    });
+    expect(mockRequestPasswordReset).toHaveBeenCalledWith({ body: { email: "user@example.com" } });
+    expect(mockWithBetterAuth).toHaveBeenCalledWith(expect.anything(), expect.any(Function), { emailLocale: "es" });
+    expect(context.redirect).toHaveBeenCalledWith("/forgot-password?sent=1");
+  });
+
+  it("gives the same answer when the request fails (no account enumeration)", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    mockRequestPasswordReset.mockRejectedValue(new Error("down"));
+    const { POST } = await import("./forgot-password");
+    const context = makeContext({ email: "user@example.com" });
+
+    await POST(context);
+
     expect(context.redirect).toHaveBeenCalledWith("/forgot-password?sent=1");
   });
 });

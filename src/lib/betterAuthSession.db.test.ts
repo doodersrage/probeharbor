@@ -5,7 +5,7 @@ import { testDatabaseUrl, useTestDatabase } from "../test/db";
 import { type AuthEmail, createBetterAuth, type ProbeHarborAuth } from "./betterAuthConfig";
 
 vi.mock("./runtimeEnv", () => ({
-  getRuntimeEnv: (key: string) => (key === "DB_BACKEND" ? "neon" : undefined),
+  getRuntimeEnv: () => undefined,
   hasRuntimeEnv: () => false,
 }));
 

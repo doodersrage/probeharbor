@@ -1,40 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { AlertEventRow } from "./alertEvents";
+import { SAFETY_ALERT_KINDS } from "./alertDeliveryState";
 
-function mockQuery(result: { data?: unknown; error?: unknown; count?: number | null }) {
-  const builder: Record<string, unknown> = {};
-  for (const method of [
-    "select",
-    "eq",
-    "order",
-    "insert",
-    "update",
-    "is",
-    "not",
-    "gte",
-    "lte",
-    "limit",
-    "filter",
-    "range",
-    "in",
-    "ilike",
-    "or",
-  ]) {
-    builder[method] = vi.fn(() => builder);
-  }
-  builder.single = vi.fn(() => Promise.resolve(result));
-  builder.maybeSingle = vi.fn(() => Promise.resolve(result));
-  (builder as { then: unknown }).then = (
-    resolve: (value: unknown) => unknown,
-    reject?: (reason: unknown) => unknown,
-  ) => Promise.resolve(result).then(resolve, reject);
-  return builder;
-}
-
-const mockFrom = vi.fn();
-vi.mock("./supabase", () => ({
-  createServerClient: () => ({ from: (...args: unknown[]) => mockFrom(...args) }),
+const neon = vi.hoisted(() => ({
+  acknowledgeLatestUnackedAlert: vi.fn(),
+  autoResolveAlerts: vi.fn(),
+  listRecentAlertEventsFiltered: vi.fn(),
+  countUnacknowledgedAlerts: vi.fn(),
 }));
+vi.mock("./db/alertEvents", () => neon);
 
 function row(overrides: Partial<AlertEventRow> = {}): AlertEventRow {
   return {
@@ -53,242 +27,86 @@ function row(overrides: Partial<AlertEventRow> = {}): AlertEventRow {
 }
 
 beforeEach(() => {
-  mockFrom.mockReset();
-});
-
-describe("recordAlertEvent", () => {
-  it("inserts the event and returns the new id", async () => {
-    mockFrom.mockReturnValue(mockQuery({ data: { id: 42 }, error: null }));
-    const { recordAlertEvent } = await import("./alertEvents");
-
-    const id = await recordAlertEvent({
-      userId: "user-1",
-      kind: "freeze",
-      title: "t",
-      body: "b",
-      channelsSent: ["email"],
-      channelsSkipped: ["sms"],
-    });
-
-    expect(id).toBe(42);
-    expect(mockFrom).toHaveBeenCalledWith("alert_events");
-  });
-
-  it("returns null and logs when the insert errors", async () => {
-    mockFrom.mockReturnValue(mockQuery({ data: null, error: { message: "boom" } }));
-    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-    const { recordAlertEvent } = await import("./alertEvents");
-
-    const id = await recordAlertEvent({
-      userId: "user-1",
-      kind: "freeze",
-      title: "t",
-      body: "b",
-      channelsSent: [],
-      channelsSkipped: [],
-    });
-
-    expect(id).toBeNull();
-    expect(errorSpy).toHaveBeenCalled();
-  });
-
-  it("returns null when there is no error but also no id", async () => {
-    mockFrom.mockReturnValue(mockQuery({ data: null, error: null }));
-    const { recordAlertEvent } = await import("./alertEvents");
-
-    const id = await recordAlertEvent({
-      userId: "user-1",
-      kind: "freeze",
-      title: "t",
-      body: "b",
-      channelsSent: [],
-      channelsSkipped: [],
-    });
-
-    expect(id).toBeNull();
-  });
-});
-
-describe("acknowledgeAlertEvent", () => {
-  it("returns ok on a successful update", async () => {
-    mockFrom.mockReturnValue(mockQuery({ error: null }));
-    const { acknowledgeAlertEvent } = await import("./alertEvents");
-
-    const result = await acknowledgeAlertEvent("user-1", 5);
-
-    expect(result).toEqual({ ok: true });
-  });
-
-  it("surfaces the error message on failure", async () => {
-    mockFrom.mockReturnValue(mockQuery({ error: { message: "not found" } }));
-    const { acknowledgeAlertEvent } = await import("./alertEvents");
-
-    const result = await acknowledgeAlertEvent("user-1", 5);
-
-    expect(result).toEqual({ ok: false, error: "not found" });
-  });
+  for (const fn of Object.values(neon)) fn.mockReset();
 });
 
 describe("acknowledgeLatestUnackedAlert", () => {
-  it("returns an error when the fetch itself fails", async () => {
-    mockFrom.mockReturnValue(mockQuery({ data: null, error: { message: "db down" } }));
-    const { acknowledgeLatestUnackedAlert } = await import("./alertEvents");
-
-    const result = await acknowledgeLatestUnackedAlert("user-1");
-
-    expect(result).toEqual({ ok: false, error: "db down" });
-  });
-
-  it("reports no unhandled alerts when none are found", async () => {
-    mockFrom.mockReturnValue(mockQuery({ data: null, error: null }));
-    const { acknowledgeLatestUnackedAlert } = await import("./alertEvents");
+  it("passes the unhandled rule's kinds and the localized 'none' message", async () => {
+    neon.acknowledgeLatestUnackedAlert.mockResolvedValue({ ok: false, error: "No unhandled alerts." });
+    const { acknowledgeLatestUnackedAlert, INFORMATIONAL_ALERT_KINDS } = await import("./alertEvents");
 
     const result = await acknowledgeLatestUnackedAlert("user-1");
 
     expect(result).toEqual({ ok: false, error: "No unhandled alerts." });
-  });
-
-  it("acknowledges the found event and returns its id", async () => {
-    const fetchResult = mockQuery({ data: { id: 7 }, error: null });
-    const updateResult = mockQuery({ error: null });
-    mockFrom.mockReturnValueOnce(fetchResult).mockReturnValueOnce(updateResult);
-    const { acknowledgeLatestUnackedAlert } = await import("./alertEvents");
-
-    const result = await acknowledgeLatestUnackedAlert("user-1");
-
-    expect(result).toEqual({ ok: true, eventId: 7 });
-  });
-
-  it("propagates a failure from the acknowledge step", async () => {
-    const fetchResult = mockQuery({ data: { id: 7 }, error: null });
-    const updateResult = mockQuery({ error: { message: "conflict" } });
-    mockFrom.mockReturnValueOnce(fetchResult).mockReturnValueOnce(updateResult);
-    const { acknowledgeLatestUnackedAlert } = await import("./alertEvents");
-
-    const result = await acknowledgeLatestUnackedAlert("user-1");
-
-    expect(result).toEqual({ ok: false, error: "conflict" });
+    expect(neon.acknowledgeLatestUnackedAlert).toHaveBeenCalledWith(
+      "user-1",
+      INFORMATIONAL_ALERT_KINDS,
+      SAFETY_ALERT_KINDS,
+      "No unhandled alerts.",
+    );
   });
 });
 
-describe("getAlertEventForUser", () => {
-  it("returns the row when found", async () => {
-    mockFrom.mockReturnValue(mockQuery({ data: row(), error: null }));
-    const { getAlertEventForUser } = await import("./alertEvents");
+describe("autoResolveAlerts", () => {
+  it("turns olderThanMs into a cutoff time and defaults the reason to recovered", async () => {
+    neon.autoResolveAlerts.mockResolvedValue({ resolved: 0, channels: [] });
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2024-01-02T00:00:00.000Z"));
+    try {
+      const { autoResolveAlerts } = await import("./alertEvents");
+      await autoResolveAlerts("user-1", { kinds: ["freeze"], olderThanMs: 3_600_000 });
+      await autoResolveAlerts("user-1");
+    } finally {
+      vi.useRealTimers();
+    }
 
-    const result = await getAlertEventForUser("user-1", 1);
-
-    expect(result).toEqual(row());
-  });
-
-  it("returns null on error or missing data", async () => {
-    mockFrom.mockReturnValue(mockQuery({ data: null, error: null }));
-    const { getAlertEventForUser } = await import("./alertEvents");
-
-    expect(await getAlertEventForUser("user-1", 1)).toBeNull();
-  });
-});
-
-describe("listRecentAlertEvents", () => {
-  it("returns the rows on success", async () => {
-    mockFrom.mockReturnValue(mockQuery({ data: [row(), row({ id: 2 })], error: null }));
-    const { listRecentAlertEvents } = await import("./alertEvents");
-
-    const result = await listRecentAlertEvents("user-1");
-
-    expect(result).toHaveLength(2);
-  });
-
-  it("returns an empty array on error", async () => {
-    mockFrom.mockReturnValue(mockQuery({ data: null, error: { message: "boom" } }));
-    const { listRecentAlertEvents } = await import("./alertEvents");
-
-    expect(await listRecentAlertEvents("user-1")).toEqual([]);
+    expect(neon.autoResolveAlerts.mock.calls[0]?.[3]).toEqual({
+      kinds: ["freeze"],
+      olderThanIso: "2024-01-01T23:00:00.000Z",
+      reason: "recovered",
+    });
+    expect(neon.autoResolveAlerts.mock.calls[1]?.[3]).toEqual({
+      kinds: undefined,
+      olderThanIso: undefined,
+      reason: "recovered",
+    });
   });
 });
 
 describe("listRecentAlertEventsFiltered", () => {
-  it("filters on exact kinds with .in, not a substring match", async () => {
-    const builder = mockQuery({ data: [row({ kind: "threshold" })], error: null });
-    mockFrom.mockReturnValue(builder);
+  it("clamps limit and offset and passes exact kinds through", async () => {
+    neon.listRecentAlertEventsFiltered.mockResolvedValue({ events: [row({ kind: "threshold" })], hasMore: false });
     const { listRecentAlertEventsFiltered } = await import("./alertEvents");
 
-    const result = await listRecentAlertEventsFiltered("user-1", { kinds: ["threshold", "freeze"] });
+    const result = await listRecentAlertEventsFiltered("user-1", { limit: 500, offset: -3, kinds: ["threshold", "freeze"] });
+    await listRecentAlertEventsFiltered("user-1", { limit: 0 });
 
-    expect(builder.in).toHaveBeenCalledWith("kind", ["threshold", "freeze"]);
-    expect(builder.ilike).not.toHaveBeenCalled();
     expect(result.events).toHaveLength(1);
-  });
-
-  it("applies no kind filter when kinds is empty", async () => {
-    const builder = mockQuery({ data: [], error: null });
-    mockFrom.mockReturnValue(builder);
-    const { listRecentAlertEventsFiltered } = await import("./alertEvents");
-
-    await listRecentAlertEventsFiltered("user-1", { kinds: [] });
-
-    expect(builder.in).not.toHaveBeenCalled();
-    expect(builder.ilike).not.toHaveBeenCalled();
-  });
-});
-
-describe("listAlertEventsInRange", () => {
-  it("returns the matching rows on success", async () => {
-    mockFrom.mockReturnValue(mockQuery({ data: [row()], error: null }));
-    const { listAlertEventsInRange } = await import("./alertEvents");
-
-    const result = await listAlertEventsInRange(
-      "user-1",
-      "2024-01-01T00:00:00.000Z",
-      "2024-01-31T23:59:59.000Z",
-    );
-
-    expect(result).toEqual([row()]);
-  });
-
-  it("returns an empty array when the query errors", async () => {
-    mockFrom.mockReturnValue(mockQuery({ data: null, error: { message: "boom" } }));
-    const { listAlertEventsInRange } = await import("./alertEvents");
-
-    expect(
-      await listAlertEventsInRange("user-1", "2024-01-01", "2024-01-31"),
-    ).toEqual([]);
+    expect(neon.listRecentAlertEventsFiltered.mock.calls[0]?.[3]).toMatchObject({
+      limit: 50,
+      offset: 0,
+      kinds: ["threshold", "freeze"],
+    });
+    expect(neon.listRecentAlertEventsFiltered.mock.calls[1]?.[3]).toMatchObject({ limit: 1, offset: 0 });
   });
 });
 
 describe("countUnacknowledgedAlerts", () => {
   it("returns the count on success", async () => {
-    mockFrom.mockReturnValue(mockQuery({ count: 3 }));
+    neon.countUnacknowledgedAlerts.mockResolvedValue(3);
     const { countUnacknowledgedAlerts } = await import("./alertEvents");
 
     expect(await countUnacknowledgedAlerts("user-1")).toBe(3);
   });
 
-  it("defaults to 0 when count is null", async () => {
-    mockFrom.mockReturnValue(mockQuery({ count: null }));
+  it("reports a failed count and falls back to 0", async () => {
+    neon.countUnacknowledgedAlerts.mockRejectedValue(new Error("db down"));
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     const { countUnacknowledgedAlerts } = await import("./alertEvents");
 
     expect(await countUnacknowledgedAlerts("user-1")).toBe(0);
-  });
-});
-
-describe("hasDeliveredAnyAlert", () => {
-  it("is true when an event reached at least one channel", async () => {
-    const query = mockQuery({ data: [{ id: 1 }] });
-    mockFrom.mockReturnValue(query);
-    const { hasDeliveredAnyAlert } = await import("./alertEvents");
-
-    expect(await hasDeliveredAnyAlert("user-1")).toBe(true);
-    expect(query.filter).toHaveBeenCalledWith("channels_sent", "neq", "{}");
-  });
-
-  it("is false when nothing was delivered or the query fails", async () => {
-    mockFrom.mockReturnValueOnce(mockQuery({ data: [] }));
-    mockFrom.mockReturnValueOnce(mockQuery({ data: null, error: { message: "boom" } }));
-    const { hasDeliveredAnyAlert } = await import("./alertEvents");
-
-    expect(await hasDeliveredAnyAlert("user-1")).toBe(false);
-    expect(await hasDeliveredAnyAlert("user-1")).toBe(false);
+    expect(errorSpy).toHaveBeenCalledWith("countUnacknowledgedAlerts failed", "db down");
+    errorSpy.mockRestore();
   });
 });
 

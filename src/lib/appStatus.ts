@@ -1,6 +1,4 @@
-import { dbBackend } from "./db/client";
 import * as neonAdmin from "./db/admin";
-import { createAdminClient } from "./supabase";
 import { listRecentIngestStatsAdmin } from "./ingestStats";
 import { flagIngestAbuse } from "./ingestAbuse";
 import { listRecentJobRuns, type JobRun } from "./jobRuns";
@@ -27,21 +25,13 @@ export type AppStatus = {
 export async function fetchAppStatus(): Promise<AppStatus> {
   const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
-  const [{ data: jobs }, lastHistoryPollAt] = await Promise.all([
-    dbBackend() === "neon"
-      ? neonAdmin.jobRunsSince(since).then((data) => ({ data }))
-      : createAdminClient()
-          .from("job_runs")
-          .select("job_name, status, started_at")
-          .gte("started_at", since)
-          .order("started_at", { ascending: false })
-          .limit(50),
+  const [jobs, lastHistoryPollAt] = await Promise.all([
+    neonAdmin.jobRunsSince(since),
     fetchLastSuccessfulCollectHistory(),
   ]);
 
-  const latest = jobs?.[0] ?? null;
-  const recentJobErrors =
-    jobs?.filter((job) => job.status === "error").length ?? 0;
+  const latest = jobs[0] ?? null;
+  const recentJobErrors = jobs.filter((job) => job.status === "error").length;
   const ingestStats = await listRecentIngestStatsAdmin(1);
   const ingestAbuseCount = flagIngestAbuse(ingestStats).length;
   const { runs: recentJobRuns } = await listRecentJobRuns(14);

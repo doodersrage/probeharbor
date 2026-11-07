@@ -2,59 +2,37 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("./households", () => ({ getUserHouseholdId: async () => "hh-1" }));
 
-type Row = { bucket_start: string; avg_num: number | null; device_sensors: unknown };
-let table: Row[] = [];
-const calls: Array<[string, unknown[]]> = [];
-// rollup_bucket_averages: missing by default, so these tests cover the paging fallback.
-const mockRpc = vi.fn();
-
-vi.mock("./supabase", () => ({
-  createServerClient: () => {
-    const builder: Record<string, unknown> = new Proxy(
-      {},
-      {
-        get: (_t, prop: string) => {
-          if (prop === "then") return undefined;
-          if (prop === "range")
-            return async (from: number, to: number) => {
-              calls.push(["range", [from, to]]);
-              return { data: table.slice(from, to + 1), error: null };
-            };
-          return (...args: unknown[]) => {
-            calls.push([prop, args]);
-            return builder;
-          };
-        },
-      },
-    );
-    return { from: () => builder, rpc: (...a: unknown[]) => mockRpc(...a) };
-  },
+const mockCountChartSensors = vi.fn();
+const mockRollupBucketAverages = vi.fn();
+vi.mock("./db/history", () => ({
+  countChartSensors: (...a: unknown[]) => mockCountChartSensors(...a),
+  rollupBucketAverages: (...a: unknown[]) => mockRollupBucketAverages(...a),
 }));
 
 import { fetchRollupChartPointsForHousehold, rollupBucketSeconds, thinChartPoints } from "./garageTempsHistory";
 
-const sensor = (key: string, kind: string, label: string, offset = 0) => ({
+const bucket = (key: string, kind: string, label: string, bucket_start: string, avg_num: number | null, offset_num = 0) => ({
+  bucket_start,
+  avg_num,
   key,
   label,
   kind,
-  offset_num: offset,
-  devices: { name: "Shop ESP" },
+  offset_num,
+  device_name: "Shop ESP",
 });
 
 beforeEach(() => {
-  calls.length = 0;
-  mockRpc.mockReset().mockResolvedValue({ data: null, error: { code: "PGRST202", message: "function not found" } });
-  vi.spyOn(console, "warn").mockImplementation(() => {});
+  mockCountChartSensors.mockReset().mockResolvedValue(0);
+  mockRollupBucketAverages.mockReset().mockResolvedValue([]);
 });
 
 describe("fetchRollupChartPointsForHousehold", () => {
-  it("pairs each hour's humidity with its temperature (newest-first pages, end date honoured)", async () => {
-    // Newest first, as the query asks for.
-    table = [
-      { bucket_start: "2026-06-01T01:00:00+00:00", avg_num: 70, device_sensors: sensor("temp1", "temperature", "Shop", -1) },
-      { bucket_start: "2026-06-01T01:00:00+00:00", avg_num: 55, device_sensors: sensor("humidity1", "humidity", "Shop humidity", 2) },
-      { bucket_start: "2026-06-01T00:00:00+00:00", avg_num: 69, device_sensors: sensor("temp1", "temperature", "Shop") },
-    ];
+  it("pairs each bucket's humidity with its temperature, applying sensor offsets", async () => {
+    mockRollupBucketAverages.mockResolvedValue([
+      bucket("temp1", "temperature", "Shop", "2026-06-01T00:00:00+00:00", 69),
+      bucket("temp1", "temperature", "Shop", "2026-06-01T01:00:00+00:00", 70, -1),
+      bucket("humidity1", "humidity", "Shop humidity", "2026-06-01T01:00:00+00:00", 55, 2),
+    ]);
 
     const points = await fetchRollupChartPointsForHousehold("hh-1", "2026-05-01T00:00:00Z", { to: "2026-06-30T23:59:59Z" });
 
@@ -62,50 +40,53 @@ describe("fetchRollupChartPointsForHousehold", () => {
       { timestamp: "2026-06-01T00:00:00+00:00", tempf: 69, humidity: null, probeLabel: "Shop", device: "Shop ESP" },
       { timestamp: "2026-06-01T01:00:00+00:00", tempf: 69, humidity: 57, probeLabel: "Shop", device: "Shop ESP" },
     ]);
-    expect(calls).toEqual(
-      expect.arrayContaining([
-        ["in", ["device_sensors.kind", ["temperature", "humidity"]]],
-        ["lte", ["bucket_start", "2026-06-30T23:59:59Z"]],
-        ["order", ["bucket_start", { ascending: false }]],
-        ["order", ["sensor_id", { ascending: true }]],
-      ]),
-    );
+    // The end date is honoured.
+    expect(mockRollupBucketAverages).toHaveBeenCalledWith("hh-1", "2026-05-01T00:00:00Z", "2026-06-30T23:59:59Z", expect.any(Number));
   });
 
-  it("reads past 1000 rows instead of stopping at the oldest page", async () => {
-    table = Array.from({ length: 2500 }, (_, i) => ({
-      bucket_start: new Date(Date.parse("2026-06-01T00:00:00Z") + (2499 - i) * 3600000).toISOString(),
-      avg_num: 60,
-      device_sensors: sensor("temp1", "temperature", "Shop"),
-    }));
-
-    const points = await fetchRollupChartPointsForHousehold("hh-1", "2026-05-01T00:00:00Z");
-
-    expect(calls.filter(([m]) => m === "range")).toHaveLength(3);
-    // 2500 hourly points are thinned to about the cap, still spanning newest to oldest.
-    expect(points.length).toBeLessThanOrEqual(1500);
-    expect(points[0]?.timestamp).toBe("2026-06-01T00:00:00.000Z");
-    expect(Date.parse(points.at(-1)!.timestamp)).toBeGreaterThan(Date.parse("2026-09-13T00:00:00Z"));
-  });
-});
-
-describe("fetchRollupChartPointsForHousehold with rollup_bucket_averages", () => {
-  it("gets wide buckets in one call and pairs humidity, without paging", async () => {
-    mockRpc.mockResolvedValue({
-      data: [
-        { sensor_id: "t", key: "garage_temp", label: "Garage", kind: "temperature", offset_num: 0, device_name: "Shop ESP", bucket_start: "2025-01-01T00:00:00+00:00", avg_num: 40 },
-        { sensor_id: "h", key: "garage_rh", label: "Garage humidity", kind: "humidity", offset_num: 0, device_name: "Shop ESP", bucket_start: "2025-01-01T00:00:00+00:00", avg_num: 65 },
-      ],
-      error: null,
-    });
+  it("gets wide buckets in one call sized for the sensor count", async () => {
+    mockRollupBucketAverages.mockResolvedValue([
+      bucket("garage_temp", "temperature", "Garage", "2025-01-01T00:00:00+00:00", 40),
+      bucket("garage_rh", "humidity", "Garage humidity", "2025-01-01T00:00:00+00:00", 65),
+    ]);
 
     const points = await fetchRollupChartPointsForHousehold("hh-1", "2025-01-01T00:00:00Z", { to: "2026-01-01T00:00:00Z" });
 
     expect(points).toEqual([{ timestamp: "2025-01-01T00:00:00+00:00", tempf: 40, humidity: 65, probeLabel: "Garage", device: "Shop ESP" }]);
-    expect(calls.filter(([m]) => m === "range")).toHaveLength(0);
-    const args = mockRpc.mock.calls[0]![1] as { p_bucket_seconds: number };
-    // A year for one sensor (the mocked count is unknown → 1) → ~900 buckets of ~9.7 h.
-    expect(args.p_bucket_seconds).toBe(Math.ceil((365 * 24 * 3600) / 900));
+    expect(mockRollupBucketAverages).toHaveBeenCalledTimes(1);
+    // A year with no counted sensors (treated as 1) → ~900 buckets of ~9.7 h.
+    expect(mockRollupBucketAverages.mock.calls[0]![3]).toBe(Math.ceil((365 * 24 * 3600) / 900));
+  });
+
+  it("widens buckets for more sensors", async () => {
+    mockCountChartSensors.mockResolvedValue(6);
+
+    await fetchRollupChartPointsForHousehold("hh-1", "2025-01-01T00:00:00Z", { to: "2026-01-01T00:00:00Z" });
+
+    expect(mockRollupBucketAverages.mock.calls[0]![3]).toBe(Math.ceil((365 * 24 * 3600 * 6) / 900));
+  });
+
+  it("thins long series to about the cap, still spanning newest to oldest", async () => {
+    mockRollupBucketAverages.mockResolvedValue(
+      Array.from({ length: 2500 }, (_, i) =>
+        bucket("temp1", "temperature", "Shop", new Date(Date.parse("2026-06-01T00:00:00Z") + i * 3600000).toISOString(), 60),
+      ),
+    );
+
+    const points = await fetchRollupChartPointsForHousehold("hh-1", "2026-05-01T00:00:00Z");
+
+    expect(points.length).toBeLessThanOrEqual(1500);
+    expect(points[0]?.timestamp).toBe("2026-06-01T00:00:00.000Z");
+    expect(Date.parse(points.at(-1)!.timestamp)).toBeGreaterThan(Date.parse("2026-09-13T00:00:00Z"));
+  });
+
+  it("returns no points and logs when the query fails", async () => {
+    mockRollupBucketAverages.mockRejectedValue(new Error("db down"));
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    expect(await fetchRollupChartPointsForHousehold("hh-1", "2026-05-01T00:00:00Z")).toEqual([]);
+    expect(errorSpy).toHaveBeenCalledWith("fetchRollupChartPointsForHousehold failed:", "db down");
+    errorSpy.mockRestore();
   });
 });
 

@@ -13,7 +13,6 @@ vi.mock("./mailer", () => ({
   isMailerRecipientNotAllowed: () => false,
   partitionMailErrors: () => ({ hardErrors: [], restrictedErrors: [] }),
 }));
-vi.mock("./supabase", () => ({ createServerClient: vi.fn(), createAdminClient: vi.fn() }));
 
 const points: ChartPoint[] = [
   { timestamp: "2026-01-05T08:00:00Z", tempf: 40.5, humidity: 50, probeLabel: "Garage" },

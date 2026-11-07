@@ -1,4 +1,5 @@
-import type { WebAuthnCredentialResponse } from "./webauthnMfaApi";
+/** A WebAuthn credential serialized for JSON (sent to the passkey routes). */
+export type WebAuthnCredentialResponse = Record<string, unknown>;
 
 export function browserSupportsWebAuthn(): boolean {
   return (

@@ -1,6 +1,4 @@
-import { dbBackend } from "./db/client";
 import * as neonPush from "./db/pushTokens";
-import { createAdminClient } from "./supabase";
 import { getRuntimeEnv } from "./runtimeEnv";
 
 export type FcmPayload = {
@@ -195,7 +193,7 @@ export function isStaleFcmError(status: number, errorCode?: string): boolean {
 }
 
 /**
- * A single physical FCM token can only belong to one Supabase account at a
+ * A single physical FCM token can only belong to one account at a
  * time. If a different user previously registered this exact token (e.g. a
  * shared tablet or garage display where a different household member was
  * signed in before), drop their registration for it first -- otherwise that
@@ -204,13 +202,12 @@ export function isStaleFcmError(status: number, errorCode?: string): boolean {
  * signed in now.
  */
 export async function releaseFcmTokenFromOtherUsers(
-  /** Unused (may be null) when DB_BACKEND=neon. */
-  supabase: ReturnType<typeof createAdminClient> | null,
+  /** Ignored; kept so existing callers don't change. */
+  _client: unknown,
   userId: string,
   token: string,
 ): Promise<void> {
-  if (dbBackend() === "neon") return neonPush.releaseFcmTokenFromOtherUsers(userId, token);
-  await supabase!.from("fcm_device_tokens").delete().eq("token", token).neq("user_id", userId);
+  return neonPush.releaseFcmTokenFromOtherUsers(userId, token);
 }
 
 /** FCM v1 message for one device: Android channel + iOS APNs category, with event_id for Acknowledge. */
@@ -259,25 +256,15 @@ export async function sendFcmToUser(
     return { delivered: 0, failed: 0, skippedReason: "fcm_not_configured" };
   }
 
-  const supabase = dbBackend() === "neon" ? null : createAdminClient();
-  let tokens: Array<{ token: string }> | null;
-  if (supabase) {
-    const result = await supabase.from("fcm_device_tokens").select("token").eq("user_id", userId);
-    if (result.error) {
-      console.error("Failed to load FCM tokens:", result.error.message);
-      return { delivered: 0, failed: 0, skippedReason: "fcm_load_failed" };
-    }
-    tokens = result.data;
-  } else {
-    try {
-      tokens = await neonPush.listFcmTokens(userId);
-    } catch (error) {
-      console.error("Failed to load FCM tokens:", error instanceof Error ? error.message : error);
-      return { delivered: 0, failed: 0, skippedReason: "fcm_load_failed" };
-    }
+  let tokens: Array<{ token: string }>;
+  try {
+    tokens = await neonPush.listFcmTokens(userId);
+  } catch (error) {
+    console.error("Failed to load FCM tokens:", error instanceof Error ? error.message : error);
+    return { delivered: 0, failed: 0, skippedReason: "fcm_load_failed" };
   }
 
-  if (!tokens || tokens.length === 0) {
+  if (tokens.length === 0) {
     return { delivered: 0, failed: 0, skippedReason: "fcm_no_token" };
   }
 
@@ -322,14 +309,8 @@ export async function sendFcmToUser(
         /* ignore */
       }
 
-      if (isStaleFcmError(response.status, errorCode) && !supabase) {
+      if (isStaleFcmError(response.status, errorCode)) {
         await neonPush.deleteFcmToken(userId, row.token);
-      } else if (isStaleFcmError(response.status, errorCode) && supabase) {
-        await supabase
-          .from("fcm_device_tokens")
-          .delete()
-          .eq("user_id", userId)
-          .eq("token", row.token);
       }
     } catch (err) {
       failed += 1;
@@ -349,23 +330,10 @@ export async function sendFcmToUser(
 }
 
 export async function countFcmTokens(userId: string): Promise<number> {
-  if (dbBackend() === "neon") {
-    try {
-      return await neonPush.countFcmTokens(userId);
-    } catch (error) {
-      console.error("Failed to count FCM tokens:", error instanceof Error ? error.message : error);
-      return 0;
-    }
-  }
-  const supabase = createAdminClient();
-  const { count, error } = await supabase
-    .from("fcm_device_tokens")
-    .select("id", { count: "exact", head: true })
-    .eq("user_id", userId);
-
-  if (error) {
-    console.error("Failed to count FCM tokens:", error.message);
+  try {
+    return await neonPush.countFcmTokens(userId);
+  } catch (error) {
+    console.error("Failed to count FCM tokens:", error instanceof Error ? error.message : error);
     return 0;
   }
-  return count ?? 0;
 }

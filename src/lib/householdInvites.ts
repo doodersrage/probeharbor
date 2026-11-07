@@ -1,6 +1,4 @@
-import { dbBackend } from "./db/client";
 import * as neonAccess from "./db/access";
-import { createServerClient } from "./supabase";
 import { addHouseholdMemberByUserId, setActiveHouseholdForUser } from "./households";
 import { ensureLocale } from "../i18n/catalog";
 import { fmt } from "../i18n/format";
@@ -71,8 +69,6 @@ export async function inviteTokenLookupKeys(token: string): Promise<string[]> {
 
 /** Pending-invite fields safe to render; never includes the token. */
 export type PendingInvite = Omit<HouseholdInvite, "token">;
-const PENDING_INVITE_COLUMNS =
-  "id, household_id, email, invited_by, expires_at, accepted_at, created_at, role";
 
 export async function createHouseholdInvite(
   householdId: string,
@@ -86,37 +82,15 @@ export async function createHouseholdInvite(
   const expires_at = new Date(
     Date.now() + expiresInDays * 24 * 60 * 60 * 1000,
   ).toISOString();
-  if (dbBackend() === "neon") {
-    const created = await neonAccess.insertInvite({
-      householdId,
-      email: normalized,
-      tokenHash: await sha256Hex(token),
-      invitedBy,
-      expiresAt: expires_at,
-      role,
-    });
-    return created.invite ? { invite: created.invite, token, error: null } : { invite: null, token: null, error: created.error };
-  }
-  const supabase = createServerClient();
-
-  const { data, error } = await supabase
-    .from("household_invites")
-    .insert({
-      household_id: householdId,
-      email: normalized,
-      token: await sha256Hex(token),
-      invited_by: invitedBy,
-      expires_at,
-      role,
-    })
-    .select(PENDING_INVITE_COLUMNS)
-    .single();
-
-  if (error || !data) {
-    return { invite: null, token: null, error: error?.message ?? "Failed to create invite" };
-  }
-
-  return { invite: data as PendingInvite, token, error: null };
+  const created = await neonAccess.insertInvite({
+    householdId,
+    email: normalized,
+    tokenHash: await sha256Hex(token),
+    invitedBy,
+    expiresAt: expires_at,
+    role,
+  });
+  return created.invite ? { invite: created.invite, token, error: null } : { invite: null, token: null, error: created.error };
 }
 
 /**
@@ -130,59 +104,20 @@ export async function reissueHouseholdInvite(
 ): Promise<{ invite: PendingInvite | null; token: string | null; error: string | null }> {
   const token = randomToken();
   const expires_at = new Date(Date.now() + expiresInDays * 24 * 60 * 60 * 1000).toISOString();
-  if (dbBackend() === "neon") {
-    const reissued = await neonAccess.reissueInvite(householdId, inviteId, await sha256Hex(token), expires_at);
-    return reissued.invite ? { invite: reissued.invite, token, error: null } : { invite: null, token: null, error: reissued.error };
-  }
-  const supabase = createServerClient();
-  const { data, error } = await supabase
-    .from("household_invites")
-    .update({ token: await sha256Hex(token), expires_at })
-    .eq("id", inviteId)
-    .eq("household_id", householdId)
-    .is("accepted_at", null)
-    .select(PENDING_INVITE_COLUMNS)
-    .maybeSingle();
-
-  if (error || !data) {
-    return { invite: null, token: null, error: error?.message ?? "Invite not found" };
-  }
-  return { invite: data as PendingInvite, token, error: null };
+  const reissued = await neonAccess.reissueInvite(householdId, inviteId, await sha256Hex(token), expires_at);
+  return reissued.invite ? { invite: reissued.invite, token, error: null } : { invite: null, token: null, error: reissued.error };
 }
 
 export async function listPendingInvites(
   householdId: string,
 ): Promise<{ invites: PendingInvite[]; error: string | null }> {
-  if (dbBackend() === "neon") return neonAccess.listPendingInvites(householdId);
-  const supabase = createServerClient();
-  const { data, error } = await supabase
-    .from("household_invites")
-    .select(PENDING_INVITE_COLUMNS)
-    .eq("household_id", householdId)
-    .is("accepted_at", null)
-    .gt("expires_at", new Date().toISOString())
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    return { invites: [], error: error.message };
-  }
-
-  return { invites: (data ?? []) as PendingInvite[], error: null };
+  return neonAccess.listPendingInvites(householdId);
 }
 
 export async function getInviteByToken(
   token: string,
 ): Promise<HouseholdInvite | null> {
-  if (dbBackend() === "neon") return neonAccess.findInviteByTokenKeys(await inviteTokenLookupKeys(token.trim()));
-  const supabase = createServerClient();
-  const { data } = await supabase
-    .from("household_invites")
-    .select("*")
-    .in("token", await inviteTokenLookupKeys(token.trim()))
-    .limit(1)
-    .maybeSingle();
-
-  return (data as HouseholdInvite | null) ?? null;
+  return neonAccess.findInviteByTokenKeys(await inviteTokenLookupKeys(token.trim()));
 }
 
 export async function acceptHouseholdInvite(
@@ -230,16 +165,7 @@ export async function acceptHouseholdInvite(
 
   await setActiveHouseholdForUser(userId, invite.household_id);
 
-  if (dbBackend() === "neon") {
-    await neonAccess.markInviteAccepted(invite.id);
-    return { householdId: invite.household_id, error: null };
-  }
-  const supabase = createServerClient();
-  await supabase
-    .from("household_invites")
-    .update({ accepted_at: new Date().toISOString() })
-    .eq("id", invite.id);
-
+  await neonAccess.markInviteAccepted(invite.id);
   return { householdId: invite.household_id, error: null };
 }
 
@@ -247,20 +173,7 @@ export async function revokeHouseholdInvite(
   householdId: string,
   inviteId: string,
 ): Promise<{ error: string | null }> {
-  if (dbBackend() === "neon") return neonAccess.revokeInvite(householdId, inviteId);
-  const supabase = createServerClient();
-  const { error } = await supabase
-    .from("household_invites")
-    .delete()
-    .eq("id", inviteId)
-    .eq("household_id", householdId)
-    .is("accepted_at", null);
-
-  if (error) {
-    return { error: error.message };
-  }
-
-  return { error: null };
+  return neonAccess.revokeInvite(householdId, inviteId);
 }
 
 /** Invite email, written in the inviter's language (`locale`). */

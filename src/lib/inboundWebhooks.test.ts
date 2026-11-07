@@ -1,21 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-function mockQuery(result: { data?: unknown; error?: unknown }) {
-  const builder: Record<string, unknown> = {};
-  for (const method of ["select", "eq", "order", "insert", "update", "delete"]) {
-    builder[method] = vi.fn(() => builder);
-  }
-  builder.maybeSingle = vi.fn(() => Promise.resolve(result));
-  (builder as { then: unknown }).then = (
-    resolve: (value: unknown) => unknown,
-    reject?: (reason: unknown) => unknown,
-  ) => Promise.resolve(result).then(resolve, reject);
-  return builder;
-}
-
-const mockFrom = vi.fn();
-vi.mock("./supabase", () => ({
-  createServerClient: () => ({ from: (...args: unknown[]) => mockFrom(...args) }),
+const mockInsert = vi.fn();
+const mockList = vi.fn();
+const mockDelete = vi.fn();
+const mockResolve = vi.fn();
+const mockSetSignatureFormat = vi.fn();
+vi.mock("./db/householdTools", () => ({
+  insertInboundWebhook: (...args: unknown[]) => mockInsert(...args),
+  listInboundWebhooks: (...args: unknown[]) => mockList(...args),
+  deleteInboundWebhook: (...args: unknown[]) => mockDelete(...args),
+  resolveInboundWebhook: (...args: unknown[]) => mockResolve(...args),
+  setSignatureFormat: (...args: unknown[]) => mockSetSignatureFormat(...args),
 }));
 
 vi.mock("./inboundSigning", () => ({
@@ -23,20 +18,15 @@ vi.mock("./inboundSigning", () => ({
 }));
 
 beforeEach(() => {
-  mockFrom.mockReset();
+  mockInsert.mockReset().mockResolvedValue({ error: null });
+  mockList.mockReset();
+  mockDelete.mockReset();
+  mockResolve.mockReset().mockResolvedValue(null);
+  mockSetSignatureFormat.mockReset().mockResolvedValue(undefined);
 });
 
 describe("createInboundWebhook", () => {
   it("generates a gtw_-prefixed token and stores only its hash and prefix", async () => {
-    let insertedRow: Record<string, unknown> | undefined;
-    const builder = mockQuery({ error: null });
-    (builder.insert as ReturnType<typeof vi.fn>).mockImplementation(
-      (row: Record<string, unknown>) => {
-        insertedRow = row;
-        return builder;
-      },
-    );
-    mockFrom.mockReturnValue(builder);
     const { createInboundWebhook } = await import("./inboundWebhooks");
 
     const result = await createInboundWebhook("house-1", "user-1", "  My hook  ");
@@ -44,6 +34,7 @@ describe("createInboundWebhook", () => {
     expect(result.error).toBeNull();
     expect(result.token).toMatch(/^gtw_[0-9a-f]{48}$/);
     expect(result.signingSecret).toBe("gts_fixedsigningsecret");
+    const insertedRow = mockInsert.mock.calls[0]![0] as Record<string, unknown>;
     expect(insertedRow).toMatchObject({
       household_id: "house-1",
       name: "My hook",
@@ -51,24 +42,20 @@ describe("createInboundWebhook", () => {
       signing_secret: "gts_fixedsigningsecret",
       token_prefix: result.token!.slice(0, 12),
     });
-    expect(insertedRow!.token_hash).not.toBe(result.token);
-    expect(insertedRow!.token_hash).toMatch(/^[0-9a-f]{64}$/);
+    expect(insertedRow.token_hash).not.toBe(result.token);
+    expect(insertedRow.token_hash).toMatch(/^[0-9a-f]{64}$/);
   });
 
   it("defaults an empty name to 'Inbound webhook'", async () => {
-    const builder = mockQuery({ error: null });
-    mockFrom.mockReturnValue(builder);
     const { createInboundWebhook } = await import("./inboundWebhooks");
 
     await createInboundWebhook("house-1", "user-1", "   ");
 
-    expect(builder.insert).toHaveBeenCalledWith(
-      expect.objectContaining({ name: "Inbound webhook" }),
-    );
+    expect(mockInsert).toHaveBeenCalledWith(expect.objectContaining({ name: "Inbound webhook" }));
   });
 
   it("returns null token/secret and the error message when the insert fails", async () => {
-    mockFrom.mockReturnValue(mockQuery({ error: { message: "duplicate" } }));
+    mockInsert.mockResolvedValue({ error: "duplicate" });
     const { createInboundWebhook } = await import("./inboundWebhooks");
 
     const result = await createInboundWebhook("house-1", "user-1", "Hook");
@@ -78,38 +65,8 @@ describe("createInboundWebhook", () => {
 });
 
 describe("listInboundWebhooks", () => {
-  it("maps rows and derives has_signing_secret from presence of a secret", async () => {
-    mockFrom.mockReturnValue(
-      mockQuery({
-        data: [
-          {
-            id: "w1",
-            household_id: "house-1",
-            name: "Hook A",
-            token_prefix: "gtw_abc123",
-            created_at: "t1",
-            last_used_at: null,
-            signing_secret: "gts_secret",
-          },
-          {
-            id: "w2",
-            household_id: "house-1",
-            name: "Hook B",
-            token_prefix: "gtw_def456",
-            created_at: "t2",
-            last_used_at: "t3",
-            signing_secret: null,
-          },
-        ],
-        error: null,
-      }),
-    );
-    const { listInboundWebhooks } = await import("./inboundWebhooks");
-
-    const result = await listInboundWebhooks("house-1");
-
-    expect(result.error).toBeNull();
-    expect(result.webhooks).toEqual([
+  it("returns the household's webhooks and the error", async () => {
+    const rows = [
       {
         id: "w1",
         household_id: "house-1",
@@ -119,51 +76,35 @@ describe("listInboundWebhooks", () => {
         last_used_at: null,
         has_signing_secret: true,
       },
-      {
-        id: "w2",
-        household_id: "house-1",
-        name: "Hook B",
-        token_prefix: "gtw_def456",
-        created_at: "t2",
-        last_used_at: "t3",
-        has_signing_secret: false,
-      },
-    ]);
-    // The raw signing secret must never leak out of listInboundWebhooks.
-    expect(JSON.stringify(result.webhooks)).not.toContain("gts_secret");
-  });
-
-  it("falls back to an empty array when there is no data", async () => {
-    mockFrom.mockReturnValue(mockQuery({ data: null, error: null }));
+    ];
+    mockList.mockResolvedValue({ rows, error: null });
     const { listInboundWebhooks } = await import("./inboundWebhooks");
 
-    expect(await listInboundWebhooks("house-1")).toEqual({ webhooks: [], error: null });
+    expect(await listInboundWebhooks("house-1")).toEqual({ webhooks: rows, error: null });
+    expect(mockList).toHaveBeenCalledWith("house-1");
   });
 
   it("surfaces an error message", async () => {
-    mockFrom.mockReturnValue(mockQuery({ data: null, error: { message: "boom" } }));
+    mockList.mockResolvedValue({ rows: [], error: "boom" });
     const { listInboundWebhooks } = await import("./inboundWebhooks");
 
-    expect((await listInboundWebhooks("house-1")).error).toBe("boom");
+    expect(await listInboundWebhooks("house-1")).toEqual({ webhooks: [], error: "boom" });
   });
 });
 
 describe("revokeInboundWebhook", () => {
   it("deletes the webhook scoped to its household", async () => {
-    const builder = mockQuery({ error: null });
-    mockFrom.mockReturnValue(builder);
+    mockDelete.mockResolvedValue({ error: null });
     const { revokeInboundWebhook } = await import("./inboundWebhooks");
 
     const result = await revokeInboundWebhook("w1", "house-1");
 
     expect(result).toEqual({ error: null });
-    expect(builder.delete).toHaveBeenCalled();
-    expect(builder.eq).toHaveBeenCalledWith("id", "w1");
-    expect(builder.eq).toHaveBeenCalledWith("household_id", "house-1");
+    expect(mockDelete).toHaveBeenCalledWith("house-1", "w1");
   });
 
   it("surfaces a delete error", async () => {
-    mockFrom.mockReturnValue(mockQuery({ error: { message: "not allowed" } }));
+    mockDelete.mockResolvedValue({ error: "not allowed" });
     const { revokeInboundWebhook } = await import("./inboundWebhooks");
 
     expect(await revokeInboundWebhook("w1", "house-1")).toEqual({ error: "not allowed" });
@@ -172,60 +113,49 @@ describe("revokeInboundWebhook", () => {
 
 describe("resolveInboundWebhook", () => {
   it("returns null when no webhook matches the token's hash", async () => {
-    mockFrom.mockReturnValue(mockQuery({ data: null }));
     const { resolveInboundWebhook } = await import("./inboundWebhooks");
 
     expect(await resolveInboundWebhook("gtw_unknown")).toBeNull();
   });
 
-  it("resolves a matching token and touches last_used_at", async () => {
-    const builder = mockQuery({
-      data: { id: "w1", household_id: "house-1", signing_secret: "gts_secret" },
-    });
-    mockFrom.mockReturnValue(builder);
+  it("resolves a matching token by its hash", async () => {
+    const resolved = { householdId: "house-1", webhookId: "w1", signingSecret: "gts_secret" };
+    mockResolve.mockResolvedValue(resolved);
     const { resolveInboundWebhook } = await import("./inboundWebhooks");
 
-    const result = await resolveInboundWebhook("  gtw_realtoken  ");
-
-    expect(result).toEqual({
-      householdId: "house-1",
-      webhookId: "w1",
-      signingSecret: "gts_secret",
-    });
-    expect(builder.update).toHaveBeenCalledWith(
-      expect.objectContaining({ last_used_at: expect.any(String) }),
-    );
-    expect(builder.eq).toHaveBeenCalledWith("id", "w1");
-  });
-
-  it("returns a null signingSecret when the webhook has none", async () => {
-    mockFrom.mockReturnValue(
-      mockQuery({ data: { id: "w1", household_id: "house-1", signing_secret: null } }),
-    );
-    const { resolveInboundWebhook } = await import("./inboundWebhooks");
-
-    const result = await resolveInboundWebhook("gtw_realtoken");
-
-    expect(result?.signingSecret).toBeNull();
+    expect(await resolveInboundWebhook("  gtw_realtoken  ")).toEqual(resolved);
+    const hash = mockResolve.mock.calls[0]![0] as string;
+    expect(hash).toMatch(/^[0-9a-f]{64}$/);
+    expect(hash).not.toContain("gtw_realtoken");
   });
 
   it("hashes the same token to the same value regardless of surrounding whitespace", async () => {
-    const seenHashes: string[] = [];
-    mockFrom.mockImplementation(() => {
-      const builder = mockQuery({ data: null });
-      const originalEq = builder.eq as (column: string, value: string) => unknown;
-      builder.eq = vi.fn((column: string, value: string) => {
-        if (column === "token_hash") seenHashes.push(value);
-        return originalEq(column, value);
-      });
-      return builder;
-    });
     const { resolveInboundWebhook } = await import("./inboundWebhooks");
 
     await resolveInboundWebhook("gtw_sametoken");
     await resolveInboundWebhook("  gtw_sametoken  ");
 
-    expect(seenHashes).toHaveLength(2);
-    expect(seenHashes[0]).toBe(seenHashes[1]);
+    expect(mockResolve).toHaveBeenCalledTimes(2);
+    expect(mockResolve.mock.calls[0]![0]).toBe(mockResolve.mock.calls[1]![0]);
+  });
+});
+
+describe("recordInboundSignatureFormat", () => {
+  it("records the format", async () => {
+    const { recordInboundSignatureFormat } = await import("./inboundWebhooks");
+
+    await recordInboundSignatureFormat("w1", "v2");
+
+    expect(mockSetSignatureFormat).toHaveBeenCalledWith("w1", "v2");
+  });
+
+  it("logs a failure instead of throwing", async () => {
+    mockSetSignatureFormat.mockRejectedValue(new Error("db down"));
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const { recordInboundSignatureFormat } = await import("./inboundWebhooks");
+
+    await expect(recordInboundSignatureFormat("w1", "v2")).resolves.toBeUndefined();
+    expect(warn).toHaveBeenCalledWith("inbound webhook: could not record signature format", expect.any(Error));
+    warn.mockRestore();
   });
 });

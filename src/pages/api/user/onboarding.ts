@@ -1,4 +1,4 @@
-import { refreshCookiesAfterMetadataWrite, updateSessionUserMetadata } from "../../../lib/sessionMetadata";
+import { updateSessionUserMetadata } from "../../../lib/sessionMetadata";
 import type { APIRoute } from "astro";
 import { getAuthFromCookies } from "../../../lib/auth";
 import { formRedirectPath, withQuery } from "../../../lib/siteUrl";
@@ -28,7 +28,6 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     return redirect(withQuery(redirectTo, { onboarding_error: "1" }));
   }
 
-  await refreshCookiesAfterMetadataWrite(cookies, refreshToken);
 
   return redirect(
     `${redirectTo}${redirectTo.includes("?") ? "&" : "?"}${

@@ -1,6 +1,4 @@
-import { dbBackend } from "./db/client";
 import * as neonDoors from "./db/doors";
-import { createServerClient } from "./supabase";
 import { computeDoorOpenSessions, type DoorOpenSession } from "./doorDuration";
 import { fetchRecentBoolReadings } from "./sensorReadings";
 
@@ -54,61 +52,22 @@ export async function persistDoorSessions(
 ): Promise<void> {
   const closed = sessions.filter((s) => !s.stillOpen && s.closedAt && s.durationMs != null);
   if (closed.length === 0) return;
-  if (dbBackend() === "neon") {
-    const since = new Date(Math.min(...closed.map((s) => Date.parse(s.openedAt)))).toISOString();
-    let saved: Array<{ label: string; opened_at: string }>;
-    try {
-      saved = await neonDoors.savedSessionKeysSince(householdId, since);
-    } catch (error) {
-      throw new Error(`door_open_events fetch failed: ${error instanceof Error ? error.message : error}`);
-    }
-    const existing = new Set(saved.map((r) => doorEventKey(r.label, r.opened_at)));
-    const rows = buildDoorEventRows(householdId, sessions, existing, sensorIdByLabel);
-    try {
-      await neonDoors.insertDoorSessions(rows);
-    } catch (error) {
-      throw new Error(`door_open_events insert failed: ${error instanceof Error ? error.message : error}`);
-    }
-    return;
-  }
-
-  const supabase = createServerClient();
   // Look up saved sessions from the earliest candidate on, not a fixed 48 h:
   // a door open for days opened earlier than that, and saving runs on every
   // "closed" report, so a fixed window would re-save it each time.
   const since = new Date(Math.min(...closed.map((s) => Date.parse(s.openedAt)))).toISOString();
-
-  const { data: recent, error: fetchError } = await supabase
-    .from("door_open_events")
-    .select("label, opened_at")
-    .eq("household_id", householdId)
-    .gte("opened_at", since);
-
-  if (fetchError) {
-    throw new Error(`door_open_events fetch failed: ${fetchError.message}`);
+  let saved: Array<{ label: string; opened_at: string }>;
+  try {
+    saved = await neonDoors.savedSessionKeysSince(householdId, since);
+  } catch (error) {
+    throw new Error(`door_open_events fetch failed: ${error instanceof Error ? error.message : error}`);
   }
-
-  const existing = new Set(
-    (recent ?? []).map((r) => doorEventKey(r.label, r.opened_at)),
-  );
-
+  const existing = new Set(saved.map((r) => doorEventKey(r.label, r.opened_at)));
   const rows = buildDoorEventRows(householdId, sessions, existing, sensorIdByLabel);
-  if (rows.length === 0) return;
-
-  // The unique index door_open_events_session_key (migration
-  // 20261029160000) makes two saves at the same moment safe: the second is
-  // ignored. Deploys don't apply migrations, so until it exists Postgres
-  // answers 42P10 (no matching unique index); fall back to a plain insert.
-  const { error: upsertError } = await supabase
-    .from("door_open_events")
-    .upsert(rows, { onConflict: "household_id,label,opened_at", ignoreDuplicates: true });
-  if (!upsertError) return;
-  if (upsertError.code !== "42P10") {
-    throw new Error(`door_open_events insert failed: ${upsertError.message}`);
-  }
-  const { error: insertError } = await supabase.from("door_open_events").insert(rows);
-  if (insertError) {
-    throw new Error(`door_open_events insert failed: ${insertError.message}`);
+  try {
+    await neonDoors.insertDoorSessions(rows);
+  } catch (error) {
+    throw new Error(`door_open_events insert failed: ${error instanceof Error ? error.message : error}`);
   }
 }
 
@@ -123,34 +82,11 @@ const DOOR_SESSION_LOOKBACK_MS = 24 * 60 * 60 * 1000;
  * kept 90 days).
  */
 export async function findOpenStartBefore(sensorId: string, beforeIso: string): Promise<string | null> {
-  if (dbBackend() === "neon") {
-    try {
-      return await neonDoors.findOpenStartBefore(sensorId, beforeIso);
-    } catch (error) {
-      throw new Error(`door open-start lookup failed: ${error instanceof Error ? error.message : error}`);
-    }
+  try {
+    return await neonDoors.findOpenStartBefore(sensorId, beforeIso);
+  } catch (error) {
+    throw new Error(`door open-start lookup failed: ${error instanceof Error ? error.message : error}`);
   }
-  const supabase = createServerClient();
-  const { data: lastClosed, error: closedError } = await supabase
-    .from("sensor_readings")
-    .select("recorded_at")
-    .eq("sensor_id", sensorId)
-    .eq("value_bool", false)
-    .lt("recorded_at", beforeIso)
-    .order("recorded_at", { ascending: false })
-    .limit(1);
-  if (closedError) throw new Error(`door open-start lookup failed: ${closedError.message}`);
-  let query = supabase
-    .from("sensor_readings")
-    .select("recorded_at")
-    .eq("sensor_id", sensorId)
-    .eq("value_bool", true)
-    .lt("recorded_at", beforeIso);
-  const after = lastClosed?.[0]?.recorded_at;
-  if (after) query = query.gt("recorded_at", after);
-  const { data: firstOpen, error: openError } = await query.order("recorded_at", { ascending: true }).limit(1);
-  if (openError) throw new Error(`door open-start lookup failed: ${openError.message}`);
-  return (firstOpen?.[0]?.recorded_at as string | undefined) ?? null;
 }
 
 /**
@@ -199,25 +135,11 @@ export async function recordDoorSessions(
 
 /** The door's last reported state before `beforeIso` (true = open); null when there is none. */
 export async function lastDoorStateBefore(sensorId: string, beforeIso: string): Promise<boolean | null> {
-  if (dbBackend() === "neon") {
-    try {
-      return await neonDoors.lastDoorStateBefore(sensorId, beforeIso);
-    } catch (error) {
-      throw new Error(`last door state lookup failed: ${error instanceof Error ? error.message : error}`);
-    }
+  try {
+    return await neonDoors.lastDoorStateBefore(sensorId, beforeIso);
+  } catch (error) {
+    throw new Error(`last door state lookup failed: ${error instanceof Error ? error.message : error}`);
   }
-  const supabase = createServerClient();
-  const { data, error } = await supabase
-    .from("sensor_readings")
-    .select("value_bool")
-    .eq("sensor_id", sensorId)
-    .not("value_bool", "is", null)
-    .lt("recorded_at", beforeIso)
-    .order("recorded_at", { ascending: false })
-    .limit(1);
-  if (error) throw new Error(`last door state lookup failed: ${error.message}`);
-  const value = data?.[0]?.value_bool;
-  return typeof value === "boolean" ? value : null;
 }
 
 /**
@@ -243,14 +165,5 @@ export async function listDoorEvents(
   householdId: string,
   limit = 20,
 ): Promise<DoorEventRow[]> {
-  if (dbBackend() === "neon") return neonDoors.listDoorEvents(householdId, limit);
-  const supabase = createServerClient();
-  const { data } = await supabase
-    .from("door_open_events")
-    .select("id, household_id, label, opened_at, closed_at, duration_ms")
-    .eq("household_id", householdId)
-    .order("opened_at", { ascending: false })
-    .limit(limit);
-
-  return (data ?? []) as DoorEventRow[];
+  return neonDoors.listDoorEvents(householdId, limit);
 }

@@ -1,9 +1,7 @@
-import { dbBackend } from "../../../lib/db/client";
 import { getFirstOwnerId } from "../../../lib/householdRecord";
 import type { APIRoute } from "astro";
 import { checkApiPlan } from "../../../lib/apiPlan";
 import { resolveApiKey } from "../../../lib/apiKeys";
-import { createServerClient } from "../../../lib/supabase";
 import type { TempFeedConfig, TempProbeConfig } from "../../../lib/tempFeedConfig";
 import { sanitizeTempFeeds, sanitizeTempProbes } from "../../../lib/tempFeedConfig";
 import { saveUserPullSetup } from "../../../lib/userTempConfig";
@@ -65,15 +63,7 @@ function parseProbes(body: unknown, feedIds: Set<string>): TempProbeConfig[] {
 }
 
 async function householdOwnerUserId(householdId: string): Promise<string | null> {
-  if (dbBackend() === "neon") return getFirstOwnerId(householdId).catch(() => null);
-  const supabase = createServerClient();
-  const { data } = await supabase
-    .from("household_members")
-    .select("user_id")
-    .eq("household_id", householdId)
-    .eq("role", "owner")
-    .maybeSingle();
-  return data?.user_id ?? null;
+  return getFirstOwnerId(householdId).catch(() => null);
 }
 
 export const POST: APIRoute = async ({ request }) => {

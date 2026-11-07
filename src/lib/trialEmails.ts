@@ -1,7 +1,5 @@
-import { dbBackend } from "./db/client";
 import * as neonEmail from "./db/emailJobs";
 import { getUserRecord } from "./userRecords";
-import { createAdminClient } from "./supabase";
 import { resolveSiteUrl } from "./schemaMarkup";
 import { brandedEmailParts, formatEmailValue } from "./emailLayout";
 import { fmt } from "../i18n/format";
@@ -64,16 +62,7 @@ export async function sendTrialRemindersForAllUsers(): Promise<{
   errors: string[];
   restricted: number;
 }> {
-  const neon = dbBackend() === "neon";
-  const supabase = neon ? null : createAdminClient();
-  const subs = supabase
-    ? (
-        await supabase
-          .from("stripe_subscriptions")
-          .select("user_id, status, current_period_end, plan_tier")
-          .eq("status", "trialing")
-      ).data
-    : await neonEmail.trialingSubscriptions();
+  const subs = await neonEmail.trialingSubscriptions();
 
   let sent = 0;
   let skipped = 0;
@@ -81,7 +70,7 @@ export async function sendTrialRemindersForAllUsers(): Promise<{
   const errors: string[] = [];
   const siteUrl = resolveSiteUrl(null);
 
-  for (const sub of subs ?? []) {
+  for (const sub of subs) {
     try {
       const remaining = daysUntil(sub.current_period_end);
       if (remaining == null || !REMINDER_DAYS.includes(remaining as 3 | 1)) {
@@ -89,15 +78,7 @@ export async function sendTrialRemindersForAllUsers(): Promise<{
         continue;
       }
 
-      const lastReminder = supabase
-        ? (
-            await supabase
-              .from("alert_settings")
-              .select("last_trial_reminder_at")
-              .eq("user_id", sub.user_id)
-              .maybeSingle()
-          ).data?.last_trial_reminder_at
-        : await neonEmail.lastTrialReminderAt(sub.user_id);
+      const lastReminder = await neonEmail.lastTrialReminderAt(sub.user_id);
 
       const last = lastReminder ? Date.parse(lastReminder) : 0;
       if (Date.now() - last < 20 * 60 * 60 * 1000) {
@@ -120,17 +101,7 @@ export async function sendTrialRemindersForAllUsers(): Promise<{
             : "Member";
       const mail = buildTrialReminderEmail({ plan, remaining, siteUrl }, getUserLocale(userData.user));
       await sendEmail(email, mail.subject, mail.text, { html: mail.html });
-      if (supabase) {
-        await supabase
-          .from("alert_settings")
-          .update({
-            last_trial_reminder_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          })
-          .eq("user_id", sub.user_id);
-      } else {
-        await neonEmail.stampSettings(sub.user_id, "last_trial_reminder_at", { touchUpdatedAt: true });
-      }
+      await neonEmail.stampSettings(sub.user_id, "last_trial_reminder_at", { touchUpdatedAt: true });
       sent += 1;
     } catch (error) {
       if (isMailerRecipientNotAllowed(error)) {

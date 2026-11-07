@@ -1,4 +1,4 @@
-import type { User } from "@supabase/supabase-js";
+import type { User } from "../lib/appUser";
 import { DEFAULT_LOCALE, isLocale, LOCALES, type Locale } from "./locales";
 
 /** Cookie remembering the last language a visitor chose or browsed in. */

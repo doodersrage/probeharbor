@@ -1,6 +1,4 @@
-import { dbBackend } from "./db/client";
 import * as neonTools from "./db/householdTools";
-import { createServerClient } from "./supabase";
 import type { ClaimsPackData } from "./claimsPack";
 
 function randomToken(): string {
@@ -51,10 +49,7 @@ export async function createClaimsPackExport(
     generated_by: generatedBy,
     expires_at: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
   };
-  const error =
-    dbBackend() === "neon"
-      ? (await neonTools.insertClaimsPack(row)).error
-      : ((await createServerClient().from("claims_pack_exports").insert(row)).error?.message ?? null);
+  const { error } = await neonTools.insertClaimsPack(row);
   if (error) {
     return { token: null, contentHash: null, error };
   }
@@ -64,16 +59,7 @@ export async function createClaimsPackExport(
 export async function getClaimsPackExportByToken(
   token: string,
 ): Promise<ClaimsPackData | null> {
-  const data =
-    dbBackend() === "neon"
-      ? await neonTools.findClaimsPack(token)
-      : (
-          await createServerClient()
-            .from("claims_pack_exports")
-            .select("pack_data, expires_at, revoked_at")
-            .eq("token", token)
-            .maybeSingle()
-        ).data;
+  const data = await neonTools.findClaimsPack(token);
   if (!data || data.revoked_at) return null;
   if (data.expires_at && Date.parse(data.expires_at) < Date.now()) return null;
   return data.pack_data as ClaimsPackData;
@@ -83,13 +69,5 @@ export async function revokeClaimsPackExport(
   householdId: string,
   token: string,
 ): Promise<boolean> {
-  if (dbBackend() === "neon") return neonTools.revokeClaimsPack(householdId, token);
-  const supabase = createServerClient();
-  const { error } = await supabase
-    .from("claims_pack_exports")
-    .update({ revoked_at: new Date().toISOString() })
-    .eq("household_id", householdId)
-    .eq("token", token)
-    .is("revoked_at", null);
-  return !error;
+  return neonTools.revokeClaimsPack(householdId, token);
 }

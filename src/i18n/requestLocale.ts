@@ -1,4 +1,4 @@
-import type { User } from "@supabase/supabase-js";
+import type { User } from "../lib/appUser";
 import type { CatalogGroup } from "./catalogPaths";
 import { DEFAULT_LOCALE, isLocale, type Locale } from "./locales";
 import { isEnglishOnlyPath, isLocalizablePath, isMarketingPath } from "./routes";

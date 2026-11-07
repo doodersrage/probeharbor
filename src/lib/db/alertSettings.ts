@@ -2,7 +2,6 @@
  * Neon versions of the alert-settings queries in src/lib/notify.ts: load /
  * save settings, cooldown stamps (including the compare-and-set claim that
  * keeps one alert from going out twice), escalation stamp, delivery evidence.
- * Called when `dbBackend() === "neon"`.
  *
  * Settings rows are written through jsonb_populate_record, so each value is
  * converted to its column's type by Postgres (timestamps, numbers, jsonb,

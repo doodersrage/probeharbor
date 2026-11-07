@@ -1,5 +1,5 @@
 import { updateSessionUserMetadata } from "./sessionMetadata";
-import type { User } from "@supabase/supabase-js";
+import type { User } from "./appUser";
 
 export type DashboardOverviewMode = "simple" | "insights";
 

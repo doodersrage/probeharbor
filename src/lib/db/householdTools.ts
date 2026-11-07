@@ -2,7 +2,7 @@
  * Neon versions of smaller household tools: inbound webhooks
  * (inboundWebhooks.ts), claims-pack exports (claimsPackExports.ts), saved
  * History views (historySavedViews.ts) and cold-storage archives
- * (archiveHistory.ts). Called when `dbBackend() === "neon"`. Changes name the
+ * (archiveHistory.ts). Changes name the
  * household (or user, for saved views); webhook tokens are looked up by hash.
  *
  * Differences from the Supabase path, all deliberate:

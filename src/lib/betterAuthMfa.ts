@@ -1,5 +1,5 @@
 /**
- * Two-factor state and rules on Better Auth (DB_BACKEND=neon), used by
+ * Two-factor state and rules on Better Auth, used by
  * /api/auth/mfa-manage, /api/auth/mfa-verify and /signin/mfa.
  *
  * "Elevated" replaces Supabase's aal2: a Better Auth session for a user with

@@ -1,10 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { DEFAULT_ALERT_SETTINGS, type AlertSettings } from "./alerts";
 import { getUserEntitlements } from "./entitlements";
-import { createServerClient } from "./supabase";
 import { hmacSha256Hex } from "./webhookSigning";
 
-vi.mock("./supabase", () => ({ createServerClient: vi.fn() }));
+// deliverWebhookPost logs each attempt to webhook_deliveries.
+const recordWebhookDelivery = vi.fn().mockResolvedValue(undefined);
+vi.mock("./db/alertExtras", () => ({ recordWebhookDelivery: (...a: unknown[]) => recordWebhookDelivery(...a) }));
 vi.mock("./entitlements", () => ({
   getUserEntitlements: vi.fn().mockResolvedValue({
     canUseSms: false,
@@ -88,16 +89,15 @@ describe("outbound alert webhook signatures", () => {
       canUsePush: false,
       canUseOutboundWebhook: true,
     } as Awaited<ReturnType<typeof getUserEntitlements>>);
-    // deliverWebhookPost logs each attempt to webhook_deliveries.
-    vi.mocked(createServerClient).mockReturnValue({
-      from: () => ({ insert: async () => ({ error: null }) }),
-    } as unknown as ReturnType<typeof createServerClient>);
     fetchMock.mockResolvedValue(new Response(null, { status: 200 }));
     const { notifyUser } = await import("./notify");
 
     const result = await notifyUser("user-1", null, webhookOnly, { title: "t", body: "b" });
 
     expect(result.sent).toEqual(["webhook"]);
+    expect(recordWebhookDelivery).toHaveBeenCalledWith(
+      expect.objectContaining({ user_id: "user-1", success: true, status_code: 200 }),
+    );
     const init = fetchMock.mock.calls[0][1] as RequestInit;
     const headers = init.headers as Record<string, string>;
     const body = init.body as string;

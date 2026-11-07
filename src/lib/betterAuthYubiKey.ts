@@ -1,6 +1,6 @@
 /**
- * YubiKey OTP as a way to finish Better Auth's two-factor challenge
- * (DB_BACKEND=neon). With Supabase, a user with both an authenticator app
+ * YubiKey OTP as a way to finish Better Auth's two-factor challenge.
+ * With Supabase, a user with both an authenticator app
  * and a YubiKey could pass the second step with either; Better Auth only
  * knows TOTP. This plugin adds `auth.api.verifyYubiKeyTwoFactor`, which does
  * what Better Auth's own TOTP check does with a pending challenge (the

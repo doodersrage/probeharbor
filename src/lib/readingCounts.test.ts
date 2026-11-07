@@ -1,33 +1,27 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const mockRpc = vi.fn();
-vi.mock("./supabase", () => ({ createServerClient: () => ({ rpc: (...a: unknown[]) => mockRpc(...a) }) }));
+const mockCounts = vi.fn();
+vi.mock("./db/history", () => ({ temperatureReadingCounts: (...a: unknown[]) => mockCounts(...a) }));
 
 import { fetchTemperatureReadingCounts, temperatureSensorIdsForFilter } from "./readingCounts";
 import { buildClaimsPackData, buildClaimsPackHtml } from "./claimsPack";
 
 beforeEach(() => {
-  mockRpc.mockReset();
+  mockCounts.mockReset();
 });
 
 describe("fetchTemperatureReadingCounts", () => {
   it("returns recorded totals from the database", async () => {
-    mockRpc.mockResolvedValue({ data: [{ total_count: 43200, below_count: 7, from_rollups: false }], error: null });
+    mockCounts.mockResolvedValue({ total_count: 43200, below_count: 7, from_rollups: false });
     expect(await fetchTemperatureReadingCounts("hh-1", "a", "b", 34, ["t"])).toEqual({ total: 43200, below: 7, approximate: false });
-    expect(mockRpc).toHaveBeenCalledWith("temperature_reading_counts", {
-      p_household_id: "hh-1",
-      p_from: "a",
-      p_to: "b",
-      p_threshold_f: 34,
-      p_sensor_ids: ["t"],
-    });
+    expect(mockCounts).toHaveBeenCalledWith("hh-1", "a", "b", 34, ["t"]);
   });
 
-  it("returns null (caller keeps its old figure) when the function is missing or the call throws", async () => {
+  it("returns null (caller keeps its old figure) when there is no row or the call throws", async () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
-    mockRpc.mockResolvedValueOnce({ data: null, error: { message: "function not found" } });
+    mockCounts.mockResolvedValueOnce(null);
     expect(await fetchTemperatureReadingCounts("hh-1", "a", "b", 34)).toBeNull();
-    mockRpc.mockRejectedValueOnce(new Error("network"));
+    mockCounts.mockRejectedValueOnce(new Error("network"));
     expect(await fetchTemperatureReadingCounts("hh-1", "a", "b", 34)).toBeNull();
     warn.mockRestore();
   });

@@ -26,10 +26,9 @@ vi.mock("./alertEvents", () => ({
   listAlertEventsInRange: (...a: unknown[]) => mockListAlertEventsInRange(...a),
 }));
 
-const mockMaybeSingle = vi.fn();
-const mockFrom = vi.fn();
-vi.mock("./supabase", () => ({
-  createServerClient: () => ({ from: (...a: unknown[]) => mockFrom(...a) }),
+const mockGetHouseholdFields = vi.fn();
+vi.mock("./householdRecord", () => ({
+  getHouseholdFields: (...a: unknown[]) => mockGetHouseholdFields(...a),
 }));
 
 const mockBuildClaimsPackData = vi.fn();
@@ -55,10 +54,7 @@ beforeEach(() => {
   mockGetUserHouseholdId.mockReset().mockResolvedValue("house-1");
   mockListHouseholdDevices.mockReset().mockResolvedValue({ devices: [], error: null });
   mockListAlertEventsInRange.mockReset().mockResolvedValue([]);
-  mockMaybeSingle.mockReset().mockResolvedValue({ data: { name: "The Smiths" } });
-  mockFrom.mockReset().mockReturnValue({
-    select: () => ({ eq: () => ({ maybeSingle: mockMaybeSingle }) }),
-  });
+  mockGetHouseholdFields.mockReset().mockResolvedValue({ data: { name: "The Smiths" }, error: null });
   mockBuildClaimsPackData.mockReset().mockReturnValue({ exportedAt: "stub" });
   mockReadingCounts.mockReset().mockResolvedValue({ total: 4321, below: 12, approximate: false });
 });
@@ -151,7 +147,7 @@ describe("generateClaimsPackForUser", () => {
     const result = await generateClaimsPackForUser(baseUser, entitlements(), {}, "https://example.com");
 
     expect(mockListHouseholdDevices).not.toHaveBeenCalled();
-    expect(mockFrom).not.toHaveBeenCalled();
+    expect(mockGetHouseholdFields).not.toHaveBeenCalled();
     expect(result.householdId).toBeNull();
     expect(mockBuildClaimsPackData).toHaveBeenCalledWith(
       expect.objectContaining({ householdLabel: "owner@example.com", devices: [] }),
@@ -189,17 +185,18 @@ describe("generateClaimsPackForUser", () => {
     const { generateClaimsPackForUser } = await import("./claimsPackGenerate");
 
     await generateClaimsPackForUser(baseUser, entitlements(), {}, "https://example.com");
+    expect(mockGetHouseholdFields).toHaveBeenCalledWith("house-1", ["name"]);
     expect(mockBuildClaimsPackData).toHaveBeenCalledWith(
       expect.objectContaining({ householdLabel: "The Smiths" }),
     );
 
-    mockMaybeSingle.mockResolvedValue({ data: { name: "  " } });
+    mockGetHouseholdFields.mockResolvedValue({ data: { name: "  " }, error: null });
     await generateClaimsPackForUser(baseUser, entitlements(), {}, "https://example.com");
     expect(mockBuildClaimsPackData).toHaveBeenCalledWith(
       expect.objectContaining({ householdLabel: "owner@example.com" }),
     );
 
-    mockMaybeSingle.mockResolvedValue({ data: null });
+    mockGetHouseholdFields.mockResolvedValue({ data: null, error: null });
     await generateClaimsPackForUser(
       { ...baseUser, email: null },
       entitlements(),

@@ -1,7 +1,4 @@
-import { dbBackend } from "./db/client";
 import * as neonJobs from "./db/jobs";
-import { createServerClient } from "./supabase";
-import type { Json } from "../types/supabase";
 import {
   RAW_READING_RETENTION_DAYS,
   shouldRunDailyRetention,
@@ -33,33 +30,12 @@ export const ABANDONED_RUN_MS = 30 * 60 * 1000;
  */
 export async function closeAbandonedJobRuns(jobName: string, now = Date.now()): Promise<number> {
   try {
-    if (dbBackend() === "neon") {
-      const closedNeon = await neonJobs.closeAbandonedJobRuns(
-        jobName,
-        new Date(now).toISOString(),
-        new Date(now - ABANDONED_RUN_MS).toISOString(),
-        { abandoned: true, message: "Stopped before it finished (time limit, crash or deploy)." },
-      );
-      if (closedNeon > 0) console.error(`job ${jobName}: ${closedNeon} run(s) never finished; marked as errors`);
-      return closedNeon;
-    }
-    const supabase = createServerClient();
-    const { data, error } = await supabase
-      .from("job_runs")
-      .update({
-        status: "error",
-        finished_at: new Date(now).toISOString(),
-        detail: { abandoned: true, message: "Stopped before it finished (time limit, crash or deploy)." } as Json,
-      })
-      .eq("job_name", jobName)
-      .eq("status", "running")
-      .lt("started_at", new Date(now - ABANDONED_RUN_MS).toISOString())
-      .select("id");
-    if (error) {
-      console.error("Failed to close abandoned job runs:", error.message);
-      return 0;
-    }
-    const closed = data?.length ?? 0;
+    const closed = await neonJobs.closeAbandonedJobRuns(
+      jobName,
+      new Date(now).toISOString(),
+      new Date(now - ABANDONED_RUN_MS).toISOString(),
+      { abandoned: true, message: "Stopped before it finished (time limit, crash or deploy)." },
+    );
     if (closed > 0) console.error(`job ${jobName}: ${closed} run(s) never finished; marked as errors`);
     return closed;
   } catch (error) {
@@ -73,31 +49,12 @@ export async function startJobRun(
   detail: Record<string, unknown> = {},
 ): Promise<number | null> {
   await closeAbandonedJobRuns(jobName);
-  if (dbBackend() === "neon") {
-    try {
-      return await neonJobs.startJobRun(jobName, detail);
-    } catch (error) {
-      console.error("Failed to start job run:", error instanceof Error ? error.message : error);
-      return null;
-    }
-  }
-  const supabase = createServerClient();
-  const { data, error } = await supabase
-    .from("job_runs")
-    .insert({
-      job_name: jobName,
-      status: "running",
-      detail: detail as Json,
-    })
-    .select("id")
-    .single();
-
-  if (error || !data) {
-    console.error("Failed to start job run:", error?.message);
+  try {
+    return await neonJobs.startJobRun(jobName, detail);
+  } catch (error) {
+    console.error("Failed to start job run:", error instanceof Error ? error.message : error);
     return null;
   }
-
-  return data.id as number;
 }
 
 export async function finishJobRun(
@@ -106,40 +63,17 @@ export async function finishJobRun(
   detail: Record<string, unknown> = {},
 ): Promise<void> {
   if (id == null) return;
-  if (dbBackend() === "neon") return neonJobs.finishJobRun(id, status, detail);
-  const supabase = createServerClient();
-  await supabase
-    .from("job_runs")
-    .update({
-      status,
-      finished_at: new Date().toISOString(),
-      detail: detail as Json,
-    })
-    .eq("id", id);
+  return neonJobs.finishJobRun(id, status, detail);
 }
 
 export async function listRecentJobRuns(
   limit = 50,
 ): Promise<{ runs: JobRun[]; error: string | null }> {
-  if (dbBackend() === "neon") {
-    try {
-      return { runs: await neonJobs.listRecentJobRuns(limit), error: null };
-    } catch (error) {
-      return { runs: [], error: error instanceof Error ? error.message : String(error) };
-    }
+  try {
+    return { runs: await neonJobs.listRecentJobRuns(limit), error: null };
+  } catch (error) {
+    return { runs: [], error: error instanceof Error ? error.message : String(error) };
   }
-  const supabase = createServerClient();
-  const { data, error } = await supabase
-    .from("job_runs")
-    .select("id, job_name, status, started_at, finished_at, detail")
-    .order("started_at", { ascending: false })
-    .limit(limit);
-
-  if (error) {
-    return { runs: [], error: error.message };
-  }
-
-  return { runs: (data ?? []) as JobRun[], error: null };
 }
 
 /** Start of the UTC hour `retentionDays` before `now`, so an hour is never split across runs. */
@@ -163,24 +97,11 @@ export async function runSensorReadingRetention(
   deleted: number;
   error: string | null;
 }> {
-  if (dbBackend() === "neon") {
-    try {
-      const neonResult = await neonJobs.rollUpAndPruneReadings(retentionCutoff(retentionDays));
-      return { rolledUp: neonResult.rolled_up ?? 0, deleted: neonResult.deleted ?? 0, error: null };
-    } catch (error) {
-      // As before: if the function fails, nothing was deleted.
-      return { rolledUp: 0, deleted: 0, error: error instanceof Error ? error.message : String(error) };
-    }
+  try {
+    const result = await neonJobs.rollUpAndPruneReadings(retentionCutoff(retentionDays));
+    return { rolledUp: result.rolled_up ?? 0, deleted: result.deleted ?? 0, error: null };
+  } catch (error) {
+    // The function runs as one transaction: if it fails, nothing was deleted.
+    return { rolledUp: 0, deleted: 0, error: error instanceof Error ? error.message : String(error) };
   }
-  const supabase = createServerClient();
-  const { data, error } = await supabase.rpc("roll_up_and_prune_readings", {
-    p_cutoff: retentionCutoff(retentionDays),
-  });
-
-  if (error) {
-    return { rolledUp: 0, deleted: 0, error: error.message };
-  }
-
-  const result = (data ?? {}) as { rolled_up?: number; deleted?: number };
-  return { rolledUp: result.rolled_up ?? 0, deleted: result.deleted ?? 0, error: null };
 }

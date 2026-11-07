@@ -1,10 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const mockLimit = vi.fn();
-vi.mock("./supabase", () => ({
-  createServerClient: () => ({
-    from: () => ({ select: () => ({ eq: () => ({ eq: () => ({ limit: (...a: unknown[]) => mockLimit(...a) }) }) }) }),
-  }),
+const mockGetFirstOwnerId = vi.fn();
+vi.mock("./householdRecord", () => ({
+  getFirstOwnerId: (...a: unknown[]) => mockGetFirstOwnerId(...a),
 }));
 const mockGetUserEntitlements = vi.fn();
 vi.mock("./entitlements", () => ({
@@ -12,7 +10,7 @@ vi.mock("./entitlements", () => ({
 }));
 
 beforeEach(() => {
-  mockLimit.mockReset().mockResolvedValue({ data: [{ user_id: "owner-1" }], error: null });
+  mockGetFirstOwnerId.mockReset().mockResolvedValue("owner-1");
   mockGetUserEntitlements.mockReset();
 });
 
@@ -22,6 +20,7 @@ describe("checkApiPlan", () => {
     const { checkApiPlan } = await import("./apiPlan");
 
     expect(await checkApiPlan("house-1")).toEqual({ ok: true, entitlements: { canCreateShareLinks: true, maxDevices: 24 } });
+    expect(mockGetFirstOwnerId).toHaveBeenCalledWith("house-1");
     expect(mockGetUserEntitlements).toHaveBeenCalledWith("owner-1");
   });
 
@@ -33,7 +32,7 @@ describe("checkApiPlan", () => {
   });
 
   it("blocks with 403 when the household has no owner", async () => {
-    mockLimit.mockResolvedValue({ data: [], error: null });
+    mockGetFirstOwnerId.mockResolvedValue(null);
     const { checkApiPlan } = await import("./apiPlan");
 
     expect(await checkApiPlan("house-1")).toMatchObject({ ok: false, status: 403 });
@@ -43,7 +42,8 @@ describe("checkApiPlan", () => {
   it("fails with 503, not a guess, when the owner or plan can't be read", async () => {
     const { checkApiPlan } = await import("./apiPlan");
 
-    mockLimit.mockResolvedValueOnce({ data: null, error: { message: "timeout" } });
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    mockGetFirstOwnerId.mockRejectedValueOnce(new Error("timeout"));
     expect(await checkApiPlan("house-1")).toMatchObject({ ok: false, status: 503 });
 
     mockGetUserEntitlements.mockRejectedValueOnce(new Error("auth down"));

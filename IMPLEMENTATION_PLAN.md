@@ -5136,6 +5136,45 @@ Cloudflare email binding.
 7. **Cleanup** after 30 calm days: remove `@supabase/*`, Supabase env
    vars and scripts, update docs. Pause the Supabase project; deleting it
    is a separate decision with its own approval.
+   - [ ] **7a, app code (committed locally 2026-11-07, not pushed: it ends
+         the one-switch rollback, see below).** Every `dbBackend()` branch
+         and Supabase call is gone from `src/`; `dbBackend()` and
+         `DB_BACKEND` are removed; `src/lib/supabase.ts`, `oauthAuthClient`,
+         `githubOAuth`, `webauthnMfaApi`, `src/types/supabase.ts` and the
+         unit-test Supabase fake are deleted; the app's own `User`/`Session`
+         types are in `src/lib/appUser.ts`. The old Supabase-only routes
+         answer as gone (`/api/auth/set-session` 404, `/api/auth/callback`
+         → sign-in error). Unit tests that only covered Supabase code were
+         deleted where a db test covers the behaviour, otherwise rewritten.
+         New: unit tests fail on any database query nobody mocked
+         (`src/test/unitSetup.ts`; it found 19 tests passing only because
+         the query failed and the code carried on), and db tests for
+         delivered-alert checks, new push devices, a non-temperature unit,
+         non-object device meta, pull feeds matched by URL with a trailing
+         slash, and pre-hash status links.
+         Checks: astro check 0 errors / 0 warnings; lint 55 warnings in
+         `src` (61 before, none new); unit 454 files / 3437 tests; db 41
+         files / 249 tests, also with `SITE_URL=https://example.com`;
+         build OK; local preview against the Neon dev branch: public pages
+         200, dashboard → sign-in, set-session 404, reveal-ingest-key 401
+         without a session, GitHub app sign-in reaches GitHub, unknown
+         ingest key 401. Not checked: a signed-in session on the preview.
+         Rollback once deployed: revert the commit and redeploy (Supabase
+         also lacks every row written since the cutover).
+         Found on the way, fixed and pushed separately: the settings page
+         asked Google/GitHub/Discord-only users for a password to delete
+         their account (`7858d0c`); showing a device's ingest key failed on
+         Better Auth (`6252770`).
+   - [ ] **7b, scripts, CI and packages.** Still on Supabase: the ops
+         scripts `audit-billing`, `ops-funnel`, `ops-dogfood`,
+         `e2e-reset-password` (supabase-js), `db-backup`, `db-pending`
+         (Supabase CLI), `smoke-oauth`, and the GitHub-secrets setup
+         scripts; `deploy.yml` only deploys when the `SUPABASE_URL` secret
+         is set; CI and `push-worker-secrets.mjs` still pass `SUPABASE_*`.
+         Then remove `@supabase/supabase-js`, the `supabase` CLI and the
+         `db:push` / `generate-types` scripts, and update the docs.
+         Migrations stay in `supabase/migrations/` (the schema source for
+         Neon and the db tests) unless moved deliberately.
 
 ### Rollback
 

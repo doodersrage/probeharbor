@@ -1,7 +1,5 @@
 import type { APIRoute } from "astro";
 import { getAuthFromCookies } from "../../../lib/auth";
-import { createAuthClient } from "../../../lib/supabase";
-import { dbBackend } from "../../../lib/db/client";
 import { withBetterAuth } from "../../../lib/betterAuthRuntime";
 import { redirectWithAuthCookies } from "../../../lib/betterAuthResponse";
 import {
@@ -17,10 +15,9 @@ import { getUserRecord } from "../../../lib/userRecords";
 const UPDATED = "/dashboard?password=updated";
 
 /**
- * Neon. With a reset token (from the emailed link): set the password, then
- * sign in with it, ending on the dashboard as Supabase's recovery did. Other
- * sessions are ended by the reset. Signed in without a token: change it
- * without the current password, as before.
+ * With a reset token (from the emailed link): set the password, then sign in
+ * with it, ending on the dashboard. Other sessions are ended by the reset.
+ * Signed in without a token: change it without the current password.
  */
 async function updatePasswordBetterAuth(
   request: Request,
@@ -55,14 +52,7 @@ async function updatePasswordBetterAuth(
 }
 
 export const POST: APIRoute = async ({ request, cookies, redirect }) => {
-  const neon = dbBackend() === "neon";
-  // Neon checks the reset token or session itself, after the form checks.
-  const { session } = neon ? { session: null } : await getAuthFromCookies(cookies);
-
-  if (!neon && !session) {
-    return redirect("/signin?error=generic");
-  }
-
+  // The form is checked first; the reset token or session is checked after.
   const formData = await request.formData();
   const password = formData.get("password")?.toString();
   const confirm = formData.get("confirm")?.toString();
@@ -75,36 +65,6 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     return redirect("/reset-password?error=mismatch");
   }
 
-  if (neon) {
-    const result = await updatePasswordBetterAuth(request, cookies, password);
-    return typeof result === "string" ? redirect(result) : result;
-  }
-
-  if (!session) {
-    return redirect("/signin?error=generic");
-  }
-
-  // Fresh client per request -- never the shared `supabase` singleton for
-  // this. Cloudflare Workers can interleave concurrent requests within one
-  // isolate's shared global scope, so a shared client's setSession() call
-  // here would race against any other in-flight request's auth calls, and
-  // this updateUser({ password }) call (no explicit token) would silently
-  // apply to whichever session most recently "won" the shared client.
-  const client = createAuthClient();
-  const { error: sessionError } = await client.auth.setSession({
-    access_token: session.access_token,
-    refresh_token: session.refresh_token,
-  });
-
-  if (sessionError) {
-    return redirect("/reset-password?error=session");
-  }
-
-  const { error } = await client.auth.updateUser({ password });
-
-  if (error) {
-    return redirect("/reset-password?error=update");
-  }
-
-  return redirect("/dashboard?password=updated");
+  const result = await updatePasswordBetterAuth(request, cookies, password);
+  return typeof result === "string" ? redirect(result) : result;
 };

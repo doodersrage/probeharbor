@@ -1,17 +1,8 @@
 import { defineMiddleware } from "astro:middleware";
-import {
-  companionMfaHeaderValue,
-  getAuthFromRequest,
-} from "./lib/auth";
+import { getAuthFromRequest } from "./lib/auth";
 import { prefersJsonAuthError } from "./lib/authResponse";
 import { pathRequiresAuth } from "./lib/routeAuth";
-import {
-  buildMfaChallengeUrl,
-  getAalClaim,
-  isMfaRequiredCookieSet,
-  sessionNeedsMfaStepUp,
-  setMfaRequiredCookie,
-} from "./lib/mfa";
+import { buildMfaChallengeUrl } from "./lib/mfa";
 import { hasValidMfaStepUpProof } from "./lib/mfaStepUpProof";
 import { betterAuthNeedsStepUp } from "./lib/betterAuthMfaGate";
 import { recordServerError } from "./lib/serverErrors";
@@ -28,7 +19,6 @@ import {
   HA_ENTITIES_YAML,
 } from "./lib/homeAssistantIntegration";
 import { THERMALTRACE_STATIC_REDIRECTS } from "./lib/rebrand";
-import type { AstroCookies } from "astro";
 import { DEFAULT_LOCALE, LOCALE_META, localizePath, splitLocalePath } from "./i18n/locales";
 import { ensureLocale } from "./i18n/catalog";
 import { resolveRequestLocale, translationGroupsForPath } from "./i18n/requestLocale";
@@ -47,17 +37,10 @@ function isMfaExemptPath(pathname: string): boolean {
     pathname === "/api/auth/mfa-verify" ||
     pathname === "/api/auth/mfa-manage" ||
     pathname === "/api/auth/signout" ||
-    pathname === "/api/auth/set-session" ||
     // Password recovery session is typically aal1; allow completing reset.
     pathname === "/api/auth/update-password" ||
     pathname === "/reset-password"
   );
-}
-
-/** Header "1" or cookie "1" force MFA. Never treat client header "0" as clearance. */
-function isMfaRequired(request: Request, cookies: AstroCookies): boolean {
-  if (companionMfaHeaderValue(request) === "1") return true;
-  return isMfaRequiredCookieSet(cookies);
 }
 
 export const onRequest = defineMiddleware(async (context, next) => {
@@ -113,7 +96,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   try {
     if (pathRequiresAuth(pathname)) {
-      const { session, user, source } = await getAuthFromRequest(
+      const { session, user } = await getAuthFromRequest(
         context.request,
         context.cookies,
       );
@@ -155,41 +138,11 @@ export const onRequest = defineMiddleware(async (context, next) => {
       }
 
       if (!isMfaExemptPath(pathname)) {
-        let needsMfa = false;
-
-        if (source === "better-auth") {
-          needsMfa = await betterAuthNeedsStepUp(user, (id) =>
-            hasValidMfaStepUpProof(context.request, context.cookies, id),
-          );
-        } else {
-          const aal = getAalClaim(session.access_token);
-
-          if (aal === "aal2") {
-            setMfaRequiredCookie(context.cookies, false);
-          } else {
-            const hasStepUp =
-              !!userId &&
-              (await hasValidMfaStepUpProof(
-                context.request,
-                context.cookies,
-                userId,
-              ));
-
-            if (hasStepUp) {
-              needsMfa = false;
-            } else if (isMfaRequired(context.request, context.cookies)) {
-              needsMfa = true;
-            } else if (aal === "aal1") {
-              // Never trust cookie/header "0" alone for aal1 — always re-check.
-              needsMfa = await sessionNeedsMfaStepUp(
-                session.access_token,
-                session.refresh_token,
-                user,
-              );
-              setMfaRequiredCookie(context.cookies, needsMfa);
-            }
-          }
-        }
+        // TOTP is checked before a Better Auth session exists; YubiKey OTP
+        // (the app's own factor) steps up here, failing closed.
+        const needsMfa = await betterAuthNeedsStepUp(user, (id) =>
+          hasValidMfaStepUpProof(context.request, context.cookies, id),
+        );
 
         if (needsMfa) {
           if (pathname.startsWith("/api/") && prefersJsonAuthError(context.request)) {

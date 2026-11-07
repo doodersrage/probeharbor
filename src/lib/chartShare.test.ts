@@ -3,21 +3,17 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const bucket = { get: vi.fn() };
 vi.mock("cloudflare:workers", () => ({ env: { HISTORY_ARCHIVE: bucket } }));
 
-let tokenRow: Record<string, unknown> | null = null;
-vi.mock("./supabase", () => ({
-  createServerClient: () => ({
-    from: () => {
-      const builder: Record<string, unknown> = {};
-      for (const method of ["select", "eq"]) builder[method] = () => builder;
-      builder.maybeSingle = () => Promise.resolve({ data: tokenRow });
-      return builder;
-    },
-  }),
+let tokenRow: { r2_key: string; title: string | null; expires_at: string } | null = null;
+const mockFindChartShare = vi.fn();
+vi.mock("./db/shareLinks", () => ({
+  findChartShare: (...a: unknown[]) => mockFindChartShare(...a),
+  insertChartShare: vi.fn(),
 }));
 
 const future = new Date(Date.now() + 86_400_000).toISOString();
 
 beforeEach(() => {
+  mockFindChartShare.mockReset().mockImplementation(async () => tokenRow);
   bucket.get.mockReset();
   bucket.get.mockResolvedValue({ arrayBuffer: () => Promise.resolve(new ArrayBuffer(4)) });
 });
@@ -29,6 +25,7 @@ describe("getChartShareByToken", () => {
 
     const share = await getChartShareByToken("abc");
 
+    expect(mockFindChartShare).toHaveBeenCalledWith("abc");
     expect(bucket.get).toHaveBeenCalledWith("chart-shares/abc.png");
     expect(share?.title).toBe("Garage");
     expect(share?.png?.byteLength).toBe(4);

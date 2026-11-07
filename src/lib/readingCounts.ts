@@ -1,6 +1,4 @@
-import { dbBackend } from "./db/client";
 import { temperatureReadingCounts } from "./db/history";
-import { createServerClient } from "./supabase";
 
 /**
  * How many temperature readings were recorded in a window, and how many at
@@ -18,39 +16,15 @@ export async function fetchTemperatureReadingCounts(
   thresholdF: number,
   sensorIds: string[] | null = null,
 ): Promise<ReadingCounts | null> {
-  if (dbBackend() === "neon") {
-    try {
-      const row = await temperatureReadingCounts(householdId, fromIso, toIso, thresholdF, sensorIds);
-      if (!row) return null;
-      return { total: Number(row.total_count), below: Number(row.below_count), approximate: row.from_rollups === true };
-    } catch (err) {
-      // A report (e.g. the claims pack) must not fail over a count.
-      console.warn("temperature_reading_counts failed:", err instanceof Error ? err.message : err);
-      return null;
-    }
-  }
-  let result: Awaited<ReturnType<ReturnType<typeof createServerClient>["rpc"]>>;
   try {
-    result = await createServerClient().rpc("temperature_reading_counts", {
-      p_household_id: householdId,
-      p_from: fromIso,
-      p_to: toIso,
-      p_threshold_f: thresholdF,
-      p_sensor_ids: sensorIds,
-    });
+    const row = await temperatureReadingCounts(householdId, fromIso, toIso, thresholdF, sensorIds);
+    if (!row) return null;
+    return { total: Number(row.total_count), below: Number(row.below_count), approximate: row.from_rollups === true };
   } catch (err) {
     // A report (e.g. the claims pack) must not fail over a count.
-    console.warn("temperature_reading_counts failed:", err);
+    console.warn("temperature_reading_counts failed:", err instanceof Error ? err.message : err);
     return null;
   }
-  const { data, error } = result as { data: Array<{ total_count: number; below_count: number; from_rollups: boolean }> | null; error: { message: string } | null };
-  if (error) {
-    console.warn("temperature_reading_counts unavailable:", error.message);
-    return null;
-  }
-  const row = data?.[0];
-  if (!row) return null;
-  return { total: Number(row.total_count), below: Number(row.below_count), approximate: row.from_rollups === true };
 }
 
 /** Temperature sensor ids matching History's device/probe filter; null = no filter (all). */

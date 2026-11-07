@@ -1,6 +1,4 @@
-import { dbBackend } from "./db/client";
 import * as neonPucks from "./db/pucks";
-import { createServerClient } from "./supabase";
 import { timingSafeEqualHex } from "./timingSafeEqual";
 import {
   isBayMood,
@@ -9,7 +7,7 @@ import {
   type BayMood,
 } from "./bayMood";
 import { fetchLatestSensorValues } from "./sensorReadings";
-import { DEFAULT_ALERT_SETTINGS, rowToAlertSettings } from "./alerts";
+import { rowToAlertSettings } from "./alerts";
 
 const DEVICE_ID_RE = /^[0-9a-f]{32}$/;
 const SECRET_RE = /^[0-9a-f]{64}$/;
@@ -71,57 +69,16 @@ export async function registerPuck(input: {
     return { ok: false, error: "bad_register", status: 400 };
   }
 
-  if (dbBackend() === "neon") {
-    const result = await neonPucks.registerPuck(deviceId, secretHex, input.householdId, input.createdBy);
-    if (result === "ok") return { ok: true };
-    if (result === "owned") return { ok: false, error: "device_owned", status: 409 };
-    return { ok: false, error: result.error, status: 500 };
-  }
-
-  const supabase = createServerClient();
-  const { data: existing } = await supabase
-    .from("pucks")
-    .select("device_id, household_id")
-    .eq("device_id", deviceId)
-    .maybeSingle();
-
-  if (existing && existing.household_id !== input.householdId) {
-    return { ok: false, error: "device_owned", status: 409 };
-  }
-
-  const { error } = await supabase.from("pucks").upsert(
-    {
-      device_id: deviceId,
-      household_id: input.householdId,
-      secret_hex: secretHex,
-      created_by: input.createdBy,
-      updated_at: new Date().toISOString(),
-      ...(existing
-        ? {}
-        : { bay_id: null, space_name: null, mood_override: null }),
-    },
-    { onConflict: "device_id" },
-  );
-
-  if (error) {
-    return { ok: false, error: error.message, status: 500 };
-  }
-  return { ok: true };
+  const result = await neonPucks.registerPuck(deviceId, secretHex, input.householdId, input.createdBy);
+  if (result === "ok") return { ok: true };
+  if (result === "owned") return { ok: false, error: "device_owned", status: 409 };
+  return { ok: false, error: result.error, status: 500 };
 }
 
 export async function getPuck(deviceId: string): Promise<PuckRow | null> {
   const id = normalizeDeviceId(deviceId);
   if (!id) return null;
-  if (dbBackend() === "neon") return neonPucks.getPuck(id);
-  const supabase = createServerClient();
-  const { data } = await supabase
-    .from("pucks")
-    .select(
-      "device_id, household_id, secret_hex, bay_id, space_name, mood_override, mood_override_at",
-    )
-    .eq("device_id", id)
-    .maybeSingle();
-  return (data as PuckRow | null) ?? null;
+  return neonPucks.getPuck(id);
 }
 
 export async function startPuckClaim(input: {
@@ -148,24 +105,8 @@ export async function startPuckClaim(input: {
     .join("");
   const expiresAt = new Date(Date.now() + 60_000).toISOString();
 
-  if (dbBackend() === "neon") {
-    const saved = await neonPucks.savePendingClaim(deviceId, input.bayId, nonceHex, expiresAt);
-    return saved.error ? { ok: false, error: saved.error, status: 500 } : { ok: true, nonceHex, expiresIn: 60 };
-  }
-
-  const supabase = createServerClient();
-  const { error } = await supabase.from("puck_claim_pending").upsert({
-    device_id: deviceId,
-    bay_id: input.bayId,
-    nonce_hex: nonceHex,
-    expires_at: expiresAt,
-  });
-
-  if (error) {
-    return { ok: false, error: error.message, status: 500 };
-  }
-
-  return { ok: true, nonceHex, expiresIn: 60 };
+  const saved = await neonPucks.savePendingClaim(deviceId, input.bayId, nonceHex, expiresAt);
+  return saved.error ? { ok: false, error: saved.error, status: 500 } : { ok: true, nonceHex, expiresIn: 60 };
 }
 
 export async function finishPuckClaim(input: {
@@ -196,17 +137,7 @@ export async function finishPuckClaim(input: {
     return { ok: false, error: "unknown_device", status: 404 };
   }
 
-  const neon = dbBackend() === "neon";
-  const supabase = neon ? null : createServerClient();
-  const pending = supabase
-    ? (
-        await supabase
-          .from("puck_claim_pending")
-          .select("bay_id, nonce_hex, expires_at")
-          .eq("device_id", deviceId)
-          .maybeSingle()
-      ).data
-    : await neonPucks.getPendingClaim(deviceId);
+  const pending = await neonPucks.getPendingClaim(deviceId);
 
   if (!pending) {
     return { ok: false, error: "no_pending", status: 400 };
@@ -224,34 +155,10 @@ export async function finishPuckClaim(input: {
   }
 
   const spaceName = input.spaceName.trim().slice(0, 64) || input.bayId;
-  const now = new Date().toISOString();
-
-  if (!supabase) {
-    const bound = await neonPucks.bindClaimedBay(deviceId, input.householdId, input.bayId, nonceHex, spaceName);
-    if (bound === "ok") return { ok: true, bayId: input.bayId, spaceName };
-    if (bound === "gone") return { ok: false, error: "no_pending", status: 400 };
-    return { ok: false, error: bound.error, status: 500 };
-  }
-
-  const { error: bindError } = await supabase
-    .from("pucks")
-    .update({
-      bay_id: input.bayId,
-      space_name: spaceName,
-      updated_at: now,
-      mood_override: null,
-      mood_override_at: null,
-    })
-    .eq("device_id", deviceId)
-    .eq("household_id", input.householdId);
-
-  if (bindError) {
-    return { ok: false, error: bindError.message, status: 500 };
-  }
-
-  await supabase.from("puck_claim_pending").delete().eq("device_id", deviceId);
-
-  return { ok: true, bayId: input.bayId, spaceName };
+  const bound = await neonPucks.bindClaimedBay(deviceId, input.householdId, input.bayId, nonceHex, spaceName);
+  if (bound === "ok") return { ok: true, bayId: input.bayId, spaceName };
+  if (bound === "gone") return { ok: false, error: "no_pending", status: 400 };
+  return { ok: false, error: bound.error, status: 500 };
 }
 
 export async function setBayMoodOverride(input: {
@@ -262,30 +169,9 @@ export async function setBayMoodOverride(input: {
   if (!isValidBayId(input.bayId) || !isBayMood(input.mood)) {
     return { ok: false, error: "bad_mood", status: 400 };
   }
-  if (dbBackend() === "neon") {
-    const set = await neonPucks.setMoodOverride(input.householdId, input.bayId, input.mood);
-    if (typeof set === "object") return { ok: false, error: set.error, status: 500 };
-    return set ? { ok: true } : { ok: false, error: "bay_not_claimed", status: 404 };
-  }
-  const supabase = createServerClient();
-  const { data, error } = await supabase
-    .from("pucks")
-    .update({
-      mood_override: input.mood,
-      mood_override_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    })
-    .eq("household_id", input.householdId)
-    .eq("bay_id", input.bayId)
-    .select("device_id");
-
-  if (error) {
-    return { ok: false, error: error.message, status: 500 };
-  }
-  if (!data || data.length === 0) {
-    return { ok: false, error: "bay_not_claimed", status: 404 };
-  }
-  return { ok: true };
+  const set = await neonPucks.setMoodOverride(input.householdId, input.bayId, input.mood);
+  if (typeof set === "object") return { ok: false, error: set.error, status: 500 };
+  return set ? { ok: true } : { ok: false, error: "bay_not_claimed", status: 404 };
 }
 
 export async function resolveBayMoodForHousehold(input: {
@@ -306,18 +192,7 @@ export async function resolveBayMoodForHousehold(input: {
     return { ok: false, error: "bad_bay", status: 400 };
   }
 
-  const neonMood = dbBackend() === "neon";
-  const supabase = neonMood ? null : createServerClient();
-  const puck = supabase
-    ? (
-        await supabase
-          .from("pucks")
-          .select("space_name, mood_override, mood_override_at")
-          .eq("household_id", input.householdId)
-          .eq("bay_id", input.bayId)
-          .maybeSingle()
-      ).data
-    : await neonPucks.bayPuck(input.householdId, input.bayId);
+  const puck = await neonPucks.bayPuck(input.householdId, input.bayId);
 
   if (!puck) {
     return { ok: false, error: "bay_not_claimed", status: 404 };
@@ -340,29 +215,7 @@ export async function resolveBayMoodForHousehold(input: {
     };
   }
 
-  let alertSettings = DEFAULT_ALERT_SETTINGS;
-  if (!supabase) {
-    alertSettings = rowToAlertSettings(await neonPucks.firstOwnerAlertSettings(input.householdId));
-  } else {
-    const { data: owner } = await supabase
-      .from("household_members")
-      .select("user_id")
-      .eq("household_id", input.householdId)
-      .eq("role", "owner")
-      .order("created_at", { ascending: true })
-      .limit(1)
-      .maybeSingle();
-    if (owner?.user_id) {
-      const { data: alertRow } = await supabase
-        .from("alert_settings")
-        .select("*")
-        .eq("user_id", owner.user_id)
-        .maybeSingle();
-      alertSettings = rowToAlertSettings(
-        (alertRow as Record<string, unknown> | null) ?? null,
-      );
-    }
-  }
+  const alertSettings = rowToAlertSettings(await neonPucks.firstOwnerAlertSettings(input.householdId));
   const freezeThreshold = alertSettings.freezeThresholdF;
   const staleMs = Math.max(1, alertSettings.outageHours) * 3600_000;
 

@@ -14,10 +14,20 @@ vi.mock("../../../../lib/mobileAuthRedirect", () => ({
 }));
 
 const mockBuildMfaChallengeUrl = vi.fn();
-const mockSessionNeedsMfaStepUp = vi.fn();
 vi.mock("../../../../lib/mfa", () => ({
   buildMfaChallengeUrl: (...a: unknown[]) => mockBuildMfaChallengeUrl(...a),
-  sessionNeedsMfaStepUp: (...a: unknown[]) => mockSessionNeedsMfaStepUp(...a),
+}));
+
+const mockNeedsStepUp = vi.fn();
+vi.mock("../../../../lib/betterAuthMfaGate", () => ({
+  // The real gate asks the proof check only when a YubiKey is enrolled.
+  betterAuthNeedsStepUp: async (user: { id: string }, hasProof: (id: string) => Promise<boolean>) =>
+    (await mockNeedsStepUp(user)) && !(await hasProof(user.id)),
+}));
+
+const mockCreateAppSessionToken = vi.fn();
+vi.mock("../../../../lib/betterAuthAppHandoff", () => ({
+  createAppSessionToken: (...a: unknown[]) => mockCreateAppSessionToken(...a),
 }));
 
 const mockHasValidMfaStepUpProof = vi.fn();
@@ -41,7 +51,8 @@ beforeEach(() => {
     user: { id: "user-1" },
   });
   mockHasMobileOAuthCookie.mockReset().mockReturnValue(true);
-  mockSessionNeedsMfaStepUp.mockReset().mockResolvedValue(false);
+  mockNeedsStepUp.mockReset().mockResolvedValue(false);
+  mockCreateAppSessionToken.mockReset().mockResolvedValue("app-token");
   mockHasValidMfaStepUpProof.mockReset().mockResolvedValue(true);
   mockBuildMfaChallengeUrl.mockReset().mockReturnValue("/signin/mfa?next=%2Fapi%2Fauth%2Fcompanion%2Fcomplete");
   mockMaybeRedirectMobileOAuth.mockReset().mockResolvedValue(null);
@@ -71,7 +82,7 @@ describe("GET /api/auth/companion/complete", () => {
   });
 
   it("redirects to the MFA challenge when step-up is needed and there's no valid proof", async () => {
-    mockSessionNeedsMfaStepUp.mockResolvedValue(true);
+    mockNeedsStepUp.mockResolvedValue(true);
     mockHasValidMfaStepUpProof.mockResolvedValue(false);
     const { GET } = await import("./complete");
     const context = makeContext();
@@ -79,20 +90,32 @@ describe("GET /api/auth/companion/complete", () => {
     await GET(context);
 
     expect(mockBuildMfaChallengeUrl).toHaveBeenCalledWith("/api/auth/companion/complete");
+    expect(mockCreateAppSessionToken).not.toHaveBeenCalled();
     expect(context.redirect).toHaveBeenCalledWith(
       "/signin/mfa?next=%2Fapi%2Fauth%2Fcompanion%2Fcomplete",
     );
   });
 
   it("proceeds past MFA when a valid step-up proof exists", async () => {
-    mockSessionNeedsMfaStepUp.mockResolvedValue(true);
+    mockNeedsStepUp.mockResolvedValue(true);
     mockHasValidMfaStepUpProof.mockResolvedValue(true);
     const { GET } = await import("./complete");
     const context = makeContext();
 
     await GET(context);
 
+    expect(mockHasValidMfaStepUpProof).toHaveBeenCalledWith(context.request, context.cookies, "user-1");
     expect(mockMaybeRedirectMobileOAuth).toHaveBeenCalled();
+  });
+
+  it("hands the app its own session token", async () => {
+    const { GET } = await import("./complete");
+    const context = makeContext();
+
+    await GET(context);
+
+    expect(mockCreateAppSessionToken).toHaveBeenCalledWith(context.request, "user-1");
+    expect(mockMaybeRedirectMobileOAuth).toHaveBeenCalledWith(context.cookies, "app-token", "app-token", context.site);
   });
 
   it("returns the mobile handoff response when one is produced", async () => {

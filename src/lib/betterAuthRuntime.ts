@@ -1,5 +1,5 @@
 /**
- * Better Auth on Workers, for DB_BACKEND=neon. A database pool can't be
+ * Better Auth on Workers. A database pool can't be
  * shared between requests on Workers, so each call opens a Neon pool
  * (WebSocket, pg-compatible), builds the auth instance, runs, and closes the
  * pool before returning.

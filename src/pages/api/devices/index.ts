@@ -20,9 +20,7 @@ import {
   updateDeviceSpace,
 } from "../../../lib/devices";
 import { getUserEntitlements } from "../../../lib/entitlements";
-import { dbBackend } from "../../../lib/db/client";
 import * as neonDeviceActions from "../../../lib/db/deviceActions";
-import { createServerClient } from "../../../lib/supabase";
 import {
   householdEditorCtx,
   redirectUnlessEditor,
@@ -101,11 +99,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   if (action === "delete") {
     const deviceId = formData.get("device_id")?.toString();
     if (deviceId) {
-      if (dbBackend() === "neon") {
-        await neonDeviceActions.deleteDevices(householdId, [deviceId]);
-      } else {
-        await createServerClient().from("devices").delete().eq("id", deviceId).eq("household_id", householdId);
-      }
+      await neonDeviceActions.deleteDevices(householdId, [deviceId]);
     }
     return redirect(withQuery(redirectTo, { device_deleted: "1" }));
   }
@@ -127,14 +121,8 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
       return redirect(withQuery(redirectTo, { error: "1" }));
     }
 
-    const supabase = dbBackend() === "neon" ? null : createServerClient();
-
     if (bulkOp === "delete") {
-      if (supabase) {
-        await supabase.from("devices").delete().in("id", targetIds).eq("household_id", householdId);
-      } else {
-        await neonDeviceActions.deleteDevices(householdId, targetIds);
-      }
+      await neonDeviceActions.deleteDevices(householdId, targetIds);
       await recordHouseholdActivity({
         householdId,
         userId: user.id,
@@ -145,15 +133,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     }
 
     if (bulkOp === "enable" || bulkOp === "disable") {
-      if (supabase) {
-        await supabase
-          .from("devices")
-          .update({ enabled: bulkOp === "enable" })
-          .in("id", targetIds)
-          .eq("household_id", householdId);
-      } else {
-        await neonDeviceActions.setDevicesEnabled(householdId, targetIds, bulkOp === "enable");
-      }
+      await neonDeviceActions.setDevicesEnabled(householdId, targetIds, bulkOp === "enable");
       await recordHouseholdActivity({
         householdId,
         userId: user.id,
@@ -165,15 +145,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
 
     if (bulkOp === "set_space") {
       const space = (formData.get("space")?.toString() ?? "").trim();
-      if (supabase) {
-        await supabase
-          .from("devices")
-          .update({ space: space || null })
-          .in("id", targetIds)
-          .eq("household_id", householdId);
-      } else {
-        await neonDeviceActions.setDevicesSpace(householdId, targetIds, space || null);
-      }
+      await neonDeviceActions.setDevicesSpace(householdId, targetIds, space || null);
       await recordHouseholdActivity({
         householdId,
         userId: user.id,
@@ -258,18 +230,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
       return redirect(withQuery(redirectTo, { error: "1" }));
     }
 
-    if (dbBackend() === "neon") {
-      await neonDeviceActions.addSensors(householdId, deviceId, [{ key, label, kind, unit }]);
-    } else {
-      await createServerClient().from("device_sensors").insert({
-        device_id: deviceId,
-        key,
-        label,
-        kind,
-        unit,
-        visible: true,
-      });
-    }
+    await neonDeviceActions.addSensors(householdId, deviceId, [{ key, label, kind, unit }]);
 
     return redirect(withQuery(redirectTo, { sensor_added: "1" }));
   }
@@ -292,12 +253,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
       { key, label, kind: "temperature", unit: defaultUnitForKind("temperature") },
       { key, label: `${label} humidity`, kind: "humidity", unit: defaultUnitForKind("humidity") },
     ];
-    const { error } =
-      dbBackend() === "neon"
-        ? await neonDeviceActions.addSensors(householdId, deviceId, pair)
-        : await createServerClient()
-            .from("device_sensors")
-            .insert(pair.map((sensor) => ({ device_id: deviceId, ...sensor, visible: true })));
+    const { error } = await neonDeviceActions.addSensors(householdId, deviceId, pair);
 
     if (error) {
       return redirect(withQuery(redirectTo, { error: "1" }));

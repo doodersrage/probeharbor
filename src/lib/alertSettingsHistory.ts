@@ -1,9 +1,6 @@
 import { alertSettingsToRow, rowToAlertSettings, type AlertSettings } from "./alerts";
 import { getAlertSettingsForUser, saveAlertSettingsForUser } from "./notify";
-import { dbBackend } from "./db/client";
 import * as neonExtras from "./db/alertExtras";
-import { createServerClient } from "./supabase";
-import type { Json } from "../types/supabase";
 import { fmt, formatNumber, plural } from "../i18n/format";
 import type { Locale } from "../i18n/locales";
 import {
@@ -159,20 +156,7 @@ export async function recordAlertSettingsChange(
   const changes = describeAlertSettingsChanges(before, after, locale);
   if (changes.length === 0) return;
   try {
-    if (dbBackend() === "neon") {
-      await neonExtras.recordSettingsHistory(userId, configRow(before), changes, HISTORY_KEEP);
-      return;
-    }
-    const supabase = createServerClient();
-    await supabase.from("alert_settings_history").insert({ user_id: userId, settings: configRow(before) as Json, changes });
-    const { data } = await supabase
-      .from("alert_settings_history")
-      .select("id")
-      .eq("user_id", userId)
-      .order("saved_at", { ascending: false })
-      .range(HISTORY_KEEP, HISTORY_KEEP + 50);
-    const stale = (data ?? []).map((row) => row.id);
-    if (stale.length > 0) await supabase.from("alert_settings_history").delete().in("id", stale);
+    await neonExtras.recordSettingsHistory(userId, configRow(before), changes, HISTORY_KEEP);
   } catch (error) {
     console.error("recordAlertSettingsChange failed:", error);
   }
@@ -181,16 +165,7 @@ export async function recordAlertSettingsChange(
 export type AlertSettingsHistoryEntry = { id: number; savedAt: string; changes: string[] };
 
 export async function listAlertSettingsHistory(userId: string, limit = 10): Promise<AlertSettingsHistoryEntry[]> {
-  if (dbBackend() === "neon") return neonExtras.listSettingsHistory(userId, limit);
-  const supabase = createServerClient();
-  const { data, error } = await supabase
-    .from("alert_settings_history")
-    .select("id, saved_at, changes")
-    .eq("user_id", userId)
-    .order("saved_at", { ascending: false })
-    .limit(limit);
-  if (error || !data) return [];
-  return data.map((row) => ({ id: row.id, savedAt: row.saved_at, changes: row.changes ?? [] }));
+  return neonExtras.listSettingsHistory(userId, limit);
 }
 
 /** Snapshot config over current state: cooldowns and snooze stay as they are now. */
@@ -212,18 +187,7 @@ export async function restoreAlertSettings(
   id: number,
   locale: Locale = "en",
 ): Promise<{ error: string | null }> {
-  let snapshot: Record<string, unknown> | null;
-  if (dbBackend() === "neon") {
-    snapshot = await neonExtras.getSettingsHistorySnapshot(userId, id);
-  } else {
-    const { data, error } = await createServerClient()
-      .from("alert_settings_history")
-      .select("settings")
-      .eq("user_id", userId)
-      .eq("id", id)
-      .maybeSingle();
-    snapshot = error || !data ? null : (data.settings as Record<string, unknown>);
-  }
+  const snapshot = await neonExtras.getSettingsHistorySnapshot(userId, id);
   if (!snapshot) return { error: "not_found" };
   const current = await getAlertSettingsForUser(userId);
   const restored = mergeSnapshotOntoCurrent(snapshot, current);

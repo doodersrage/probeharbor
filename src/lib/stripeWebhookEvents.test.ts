@@ -1,80 +1,66 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { setQueryRunnerForTests, type QueryRunner } from "./db/client";
+import { claimStripeWebhookEvent, releaseStripeWebhookEvent } from "./stripeWebhookEvents";
 
-const mockInsert = vi.fn();
-const mockDeleteEq = vi.fn();
+// Stand-in for the database: each test decides what the statement returns.
+const run = vi.fn<(text: string, params?: readonly unknown[]) => Promise<unknown[]>>();
 
-vi.mock("./supabase", () => ({
-  createServerClient: () => ({
-    from: (table: string) => {
-      if (table === "stripe_webhook_events") {
-        return {
-          insert: mockInsert,
-          delete: () => ({ eq: mockDeleteEq }),
-        };
-      }
-      return { insert: mockInsert, delete: () => ({ eq: mockDeleteEq }) };
-    },
-  }),
-}));
+beforeEach(() => {
+  run.mockReset();
+  setQueryRunnerForTests(run as unknown as QueryRunner);
+});
+
+afterEach(() => {
+  setQueryRunnerForTests(null);
+  vi.restoreAllMocks();
+});
 
 describe("claimStripeWebhookEvent", () => {
-  beforeEach(() => {
-    mockInsert.mockReset();
-    mockDeleteEq.mockReset();
-  });
-
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
-
   it("claims a new event id", async () => {
-    mockInsert.mockResolvedValue({ error: null });
-    const { claimStripeWebhookEvent } = await import("./stripeWebhookEvents");
+    run.mockResolvedValue([{ id: "evt_1" }]);
 
     const result = await claimStripeWebhookEvent("evt_1", "checkout.session.completed");
 
     expect(result.alreadyProcessed).toBe(false);
-    expect(mockInsert).toHaveBeenCalledWith({
-      id: "evt_1",
-      type: "checkout.session.completed",
-    });
+    expect(run).toHaveBeenCalledWith(expect.stringContaining("insert into public.stripe_webhook_events"), [
+      "evt_1",
+      "checkout.session.completed",
+    ]);
   });
 
-  it("recognizes a duplicate delivery via unique_violation", async () => {
-    mockInsert.mockResolvedValue({ error: { code: "23505", message: "duplicate key" } });
-    const { claimStripeWebhookEvent } = await import("./stripeWebhookEvents");
+  it("recognizes a duplicate delivery (the id was already recorded)", async () => {
+    run.mockResolvedValue([]);
 
     const result = await claimStripeWebhookEvent("evt_1", "checkout.session.completed");
 
     expect(result.alreadyProcessed).toBe(true);
   });
 
-  it("fails open (processes the event) on an unrelated DB error", async () => {
-    mockInsert.mockResolvedValue({ error: { code: "08000", message: "connection error" } });
-    const { claimStripeWebhookEvent } = await import("./stripeWebhookEvents");
+  it("fails open (processes the event) on a database error", async () => {
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    run.mockRejectedValue(new Error("connection error"));
 
     const result = await claimStripeWebhookEvent("evt_1", "checkout.session.completed");
 
     expect(result.alreadyProcessed).toBe(false);
+    expect(error).toHaveBeenCalled();
   });
 });
 
 describe("releaseStripeWebhookEvent", () => {
-  beforeEach(() => {
-    mockInsert.mockReset();
-    mockDeleteEq.mockReset();
-  });
-
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
-
   it("deletes the claimed event row", async () => {
-    mockDeleteEq.mockResolvedValue({ error: null });
-    const { releaseStripeWebhookEvent } = await import("./stripeWebhookEvents");
+    run.mockResolvedValue([]);
 
     await releaseStripeWebhookEvent("evt_retry");
 
-    expect(mockDeleteEq).toHaveBeenCalledWith("id", "evt_retry");
+    expect(run).toHaveBeenCalledWith(expect.stringContaining("delete from public.stripe_webhook_events"), ["evt_retry"]);
+  });
+
+  it("logs, rather than throws, when the delete fails", async () => {
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    run.mockRejectedValue(new Error("connection error"));
+
+    await expect(releaseStripeWebhookEvent("evt_retry")).resolves.toBeUndefined();
+    expect(error).toHaveBeenCalled();
   });
 });

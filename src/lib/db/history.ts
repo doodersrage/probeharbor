@@ -2,7 +2,7 @@
  * Neon versions of the query helpers in src/lib/garageTempsHistory.ts and
  * src/lib/readingCounts.ts. They return the same row shapes as the Supabase
  * queries (sensor + device nested as `device_sensors.devices`), so pairing,
- * filtering and thinning stay shared. Called when `dbBackend() === "neon"`.
+ * filtering and thinning stay shared.
  *
  * Every query is scoped to one household: readings by their household_id,
  * sensors through their device's household.

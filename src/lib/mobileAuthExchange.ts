@@ -1,8 +1,6 @@
-import { dbBackend } from "./db/client";
 import * as neonRemaining from "./db/remaining";
 import { timingSafeEqual } from "./timingSafeEqual";
 import { getRuntimeEnv } from "./runtimeEnv";
-import { createServerClient } from "./supabase";
 
 type ExchangePayload = {
   a: string;
@@ -67,14 +65,9 @@ export async function createMobileExchangeToken(
   const expiresAt = new Date(expMs).toISOString();
 
   let recordError: string | null = null;
-  if (dbBackend() === "neon") {
-    await neonRemaining.recordExchange(jti, expiresAt).catch((e: unknown) => {
-      recordError = e instanceof Error ? e.message : String(e);
-    });
-  } else {
-    const { error } = await createServerClient().from("mobile_oauth_exchanges").insert({ jti, expires_at: expiresAt });
-    recordError = error?.message ?? null;
-  }
+  await neonRemaining.recordExchange(jti, expiresAt).catch((e: unknown) => {
+    recordError = e instanceof Error ? e.message : String(e);
+  });
   if (recordError) {
     console.error("Failed to record mobile OAuth exchange jti:", recordError);
     return null;
@@ -126,20 +119,7 @@ export async function verifyMobileExchangeToken(
   }
 
   // Consume jti (single-use). Missing row or delete failure → reject even if HMAC valid.
-  if (dbBackend() === "neon") {
-    if (!(await neonRemaining.consumeExchange(payload.jti))) return null;
-  } else {
-    const { data, error } = await createServerClient()
-      .from("mobile_oauth_exchanges")
-      .delete()
-      .eq("jti", payload.jti)
-      .gt("expires_at", new Date().toISOString())
-      .select("jti")
-      .maybeSingle();
-    if (error || !data?.jti) {
-      return null;
-    }
-  }
+  if (!(await neonRemaining.consumeExchange(payload.jti))) return null;
 
   return { access_token: payload.a, refresh_token: payload.r };
 }

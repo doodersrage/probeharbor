@@ -1,6 +1,4 @@
-import { dbBackend } from "./db/client";
 import * as neonAdmin from "./db/admin";
-import { createServerClient } from "./supabase";
 
 export type ManagedUser = {
   user_id: string;
@@ -105,68 +103,24 @@ export async function fetchManagedUsers(
   const sort = MANAGED_USER_SORTS[filters.sort] ?? MANAGED_USER_SORTS.created_desc;
   const searchText = filters.search.trim() || null;
   const groupFilter = filters.group.trim() || null;
-  if (dbBackend() === "neon") {
-    const listed = await neonAdmin.listManagedUsers({
-      callerId,
-      page: safePage,
-      pageSize,
-      search: searchText,
-      group: groupFilter,
-      sortBy: sort.sortBy,
-      sortDir: sort.sortDir,
-    });
-    if (listed.error) {
-      return { users: [], page: safePage, pageSize, totalCount: 0, totalPages: 0, error: listed.error };
-    }
-    return {
-      users: listed.users,
-      page: safePage,
-      pageSize,
-      totalCount: listed.total,
-      totalPages: listed.total === 0 ? 0 : Math.ceil(listed.total / pageSize),
-      error: null,
-    };
-  }
-  const supabase = createServerClient();
-
-  const [{ data: users, error: listError }, { data: totalCount, error: countError }] =
-    await Promise.all([
-      supabase.rpc("list_managed_users", {
-        caller_id: callerId,
-        page_num: safePage,
-        page_size: pageSize,
-        search_text: searchText,
-        group_filter: groupFilter,
-        sort_by: sort.sortBy,
-        sort_dir: sort.sortDir,
-      }),
-      supabase.rpc("count_managed_users", {
-        caller_id: callerId,
-        search_text: searchText,
-        group_filter: groupFilter,
-      }),
-    ]);
-
-  if (listError || countError) {
-    return {
-      users: [],
-      page: safePage,
-      pageSize,
-      totalCount: 0,
-      totalPages: 0,
-      error: listError?.message ?? countError?.message ?? "Unable to load users",
-    };
-  }
-
-  const total = Number(totalCount ?? 0);
-  const totalPages = total === 0 ? 0 : Math.ceil(total / pageSize);
-
-  return {
-    users: (users ?? []) as ManagedUser[],
+  const listed = await neonAdmin.listManagedUsers({
+    callerId,
     page: safePage,
     pageSize,
-    totalCount: total,
-    totalPages,
+    search: searchText,
+    group: groupFilter,
+    sortBy: sort.sortBy,
+    sortDir: sort.sortDir,
+  });
+  if (listed.error) {
+    return { users: [], page: safePage, pageSize, totalCount: 0, totalPages: 0, error: listed.error };
+  }
+  return {
+    users: listed.users,
+    page: safePage,
+    pageSize,
+    totalCount: listed.total,
+    totalPages: listed.total === 0 ? 0 : Math.ceil(listed.total / pageSize),
     error: null,
   };
 }
@@ -176,17 +130,5 @@ export async function setUserAdminMembership(
   targetUserId: string,
   makeAdmin: boolean,
 ): Promise<{ error: string | null }> {
-  if (dbBackend() === "neon") return neonAdmin.setUserAdminMembership(callerId, targetUserId, makeAdmin);
-  const supabase = createServerClient();
-  const { error } = await supabase.rpc("set_user_admin_membership", {
-    caller_id: callerId,
-    target_user_id: targetUserId,
-    make_admin: makeAdmin,
-  });
-
-  if (error) {
-    return { error: error.message };
-  }
-
-  return { error: null };
+  return neonAdmin.setUserAdminMembership(callerId, targetUserId, makeAdmin);
 }

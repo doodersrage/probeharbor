@@ -1,6 +1,4 @@
-import { dbBackend } from "./db/client";
 import * as neonTools from "./db/householdTools";
-import { createServerClient } from "./supabase";
 
 export type HistorySavedViewParams = {
   feed?: string;
@@ -68,19 +66,7 @@ export function searchParamsFromView(params: HistorySavedViewParams): string {
 export async function listHistorySavedViews(
   userId: string,
 ): Promise<HistorySavedView[]> {
-  let data: Array<Record<string, unknown>> | null;
-  if (dbBackend() === "neon") {
-    data = await neonTools.listSavedViews(userId);
-  } else {
-    const result = await createServerClient()
-      .from("history_saved_views")
-      .select("*")
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false })
-      .limit(30);
-    if (result.error || !result.data) return [];
-    data = result.data;
-  }
+  const data = await neonTools.listSavedViews(userId);
   return data.map((row) => ({
     id: row.id as string,
     user_id: row.user_id as string,
@@ -99,33 +85,12 @@ export async function createHistorySavedView(input: {
 }): Promise<{ id: string | null; error: string | null }> {
   const name = input.name.trim().slice(0, 80);
   if (!name) return { id: null, error: "Name required" };
-  if (dbBackend() === "neon") return neonTools.insertSavedView(input.userId, input.householdId, name, input.params);
-  const supabase = createServerClient();
-  const { data, error } = await supabase
-    .from("history_saved_views")
-    .insert({
-      user_id: input.userId,
-      household_id: input.householdId,
-      name,
-      params: input.params as import("../types/supabase").Json,
-    })
-    .select("id")
-    .single();
-  if (error) return { id: null, error: error.message };
-  return { id: data?.id ?? null, error: null };
+  return neonTools.insertSavedView(input.userId, input.householdId, name, input.params);
 }
 
 export async function deleteHistorySavedView(
   userId: string,
   id: string,
 ): Promise<{ ok: boolean; error?: string }> {
-  if (dbBackend() === "neon") return neonTools.deleteSavedView(userId, id);
-  const supabase = createServerClient();
-  const { error } = await supabase
-    .from("history_saved_views")
-    .delete()
-    .eq("id", id)
-    .eq("user_id", userId);
-  if (error) return { ok: false, error: error.message };
-  return { ok: true };
+  return neonTools.deleteSavedView(userId, id);
 }

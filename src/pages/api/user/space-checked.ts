@@ -1,4 +1,4 @@
-import { refreshCookiesAfterMetadataWrite, updateSessionUserMetadata } from "../../../lib/sessionMetadata";
+import { updateSessionUserMetadata } from "../../../lib/sessionMetadata";
 import type { APIRoute } from "astro";
 import { getAuthFromCookies } from "../../../lib/auth";
 import { formRedirectPath, withQuery } from "../../../lib/siteUrl";
@@ -116,7 +116,6 @@ export const POST: APIRoute = async ({ request, cookies, redirect, locals }) => 
     return redirect(withQuery(redirectTo, { checked_error: "1" }));
   }
 
-  await refreshCookiesAfterMetadataWrite(cookies, refreshToken);
 
   if (wantsJson) {
     return new Response(

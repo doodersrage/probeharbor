@@ -3,10 +3,6 @@
  * locale, °C, dashboard preferences, ...). On Neon they live in
  * `public.user_profiles.metadata` as the same JSON object, copied from
  * Supabase in step 5.
- *
- * Neon only. Callers keep their Supabase path behind `dbBackend()` until
- * step 7. (Code that reads `user.user_metadata` from the signed-in session is
- * moved in step 4, with login.)
  */
 import { query } from "./client";
 

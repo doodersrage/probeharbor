@@ -1,6 +1,4 @@
-import { dbBackend } from "./db/client";
 import * as neonThermostats from "./db/thermostats";
-import { createServerClient } from "./supabase";
 
 export type ThermostatProvider = "nest" | "ecobee";
 
@@ -49,35 +47,15 @@ function fromRow(row: ConnectionRow): ThermostatConnection {
 export async function listConnectionsForHousehold(
   householdId: string,
 ): Promise<ThermostatConnection[]> {
-  if (dbBackend() === "neon") return (await neonThermostats.listConnections(householdId)).map(fromRow);
-  const supabase = createServerClient();
-  const { data } = await supabase
-    .from("household_thermostat_connections")
-    .select(
-      "id, household_id, provider, refresh_token, access_token, access_token_expires_at, external_device_id, connected_by, created_at, updated_at",
-    )
-    .eq("household_id", householdId);
-  return ((data ?? []) as ConnectionRow[]).map(fromRow);
+  return (await neonThermostats.listConnections(householdId)).map(fromRow);
 }
 
 export async function getConnectionForHousehold(
   householdId: string,
   provider: ThermostatProvider,
 ): Promise<ThermostatConnection | null> {
-  if (dbBackend() === "neon") {
-    const row = await neonThermostats.getConnection(householdId, provider);
-    return row ? fromRow(row) : null;
-  }
-  const supabase = createServerClient();
-  const { data } = await supabase
-    .from("household_thermostat_connections")
-    .select(
-      "id, household_id, provider, refresh_token, access_token, access_token_expires_at, external_device_id, connected_by, created_at, updated_at",
-    )
-    .eq("household_id", householdId)
-    .eq("provider", provider)
-    .maybeSingle();
-  return data ? fromRow(data as ConnectionRow) : null;
+  const row = await neonThermostats.getConnection(householdId, provider);
+  return row ? fromRow(row) : null;
 }
 
 /** Create or replace a household's connection for a provider (one per provider). */
@@ -90,34 +68,15 @@ export async function saveConnection(input: {
   externalDeviceId?: string | null;
   connectedBy?: string | null;
 }): Promise<{ error: string | null }> {
-  if (dbBackend() === "neon") {
-    return neonThermostats.saveConnection({
-      householdId: input.householdId,
-      provider: input.provider,
-      refreshToken: input.refreshToken,
-      accessToken: input.accessToken ?? null,
-      accessTokenExpiresAt: input.accessTokenExpiresAt ?? null,
-      externalDeviceId: input.externalDeviceId ?? null,
-      connectedBy: input.connectedBy ?? null,
-    });
-  }
-  const supabase = createServerClient();
-  const { error } = await supabase
-    .from("household_thermostat_connections")
-    .upsert(
-      {
-        household_id: input.householdId,
-        provider: input.provider,
-        refresh_token: input.refreshToken,
-        access_token: input.accessToken ?? null,
-        access_token_expires_at: input.accessTokenExpiresAt ?? null,
-        external_device_id: input.externalDeviceId ?? null,
-        connected_by: input.connectedBy ?? null,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: "household_id,provider" },
-    );
-  return { error: error?.message ?? null };
+  return neonThermostats.saveConnection({
+    householdId: input.householdId,
+    provider: input.provider,
+    refreshToken: input.refreshToken,
+    accessToken: input.accessToken ?? null,
+    accessTokenExpiresAt: input.accessTokenExpiresAt ?? null,
+    externalDeviceId: input.externalDeviceId ?? null,
+    connectedBy: input.connectedBy ?? null,
+  });
 }
 
 /** Update just the access token after a lazy refresh (keeps refresh_token as-is unless the provider rotated it). */
@@ -126,39 +85,18 @@ export async function updateTokensAfterRefresh(
   provider: ThermostatProvider,
   tokens: { accessToken: string; refreshToken?: string; expiresAtMs: number },
 ): Promise<{ error: string | null }> {
-  if (dbBackend() === "neon") {
-    return neonThermostats.updateTokens(
-      householdId,
-      provider,
-      tokens.accessToken,
-      new Date(tokens.expiresAtMs).toISOString(),
-      tokens.refreshToken || null,
-    );
-  }
-  const supabase = createServerClient();
-  const { error } = await supabase
-    .from("household_thermostat_connections")
-    .update({
-      access_token: tokens.accessToken,
-      access_token_expires_at: new Date(tokens.expiresAtMs).toISOString(),
-      updated_at: new Date().toISOString(),
-      ...(tokens.refreshToken ? { refresh_token: tokens.refreshToken } : {}),
-    })
-    .eq("household_id", householdId)
-    .eq("provider", provider);
-  return { error: error?.message ?? null };
+  return neonThermostats.updateTokens(
+    householdId,
+    provider,
+    tokens.accessToken,
+    new Date(tokens.expiresAtMs).toISOString(),
+    tokens.refreshToken || null,
+  );
 }
 
 export async function deleteConnection(
   householdId: string,
   provider: ThermostatProvider,
 ): Promise<{ error: string | null }> {
-  if (dbBackend() === "neon") return neonThermostats.deleteConnection(householdId, provider);
-  const supabase = createServerClient();
-  const { error } = await supabase
-    .from("household_thermostat_connections")
-    .delete()
-    .eq("household_id", householdId)
-    .eq("provider", provider);
-  return { error: error?.message ?? null };
+  return neonThermostats.deleteConnection(householdId, provider);
 }

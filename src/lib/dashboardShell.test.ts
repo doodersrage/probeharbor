@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { AstroCookies } from "astro";
-import type { Session, User } from "@supabase/supabase-js";
+import type { Session, User } from "./appUser";
 import type { DashboardShell } from "./dashboardShell";
 import type { Entitlements } from "./entitlements";
 

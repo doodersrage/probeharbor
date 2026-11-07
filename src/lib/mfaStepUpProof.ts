@@ -1,5 +1,4 @@
 import type { AstroCookies } from "astro";
-import { getAalClaim } from "./mfa";
 import { timingSafeEqual } from "./timingSafeEqual";
 
 /** HttpOnly cookie proving YubiKey (or other aal1) MFA step-up completed. */
@@ -152,15 +151,4 @@ export async function hasValidMfaStepUpProof(
   const fromHeader = request?.headers.get(MFA_STEPUP_HEADER)?.trim() || null;
   const token = fromHeader || readMfaStepUpCookie(cookies);
   return verifyMfaStepUpProof(token, userId);
-}
-
-/** Supabase aal2 JWT claim or a valid MFA step-up proof cookie/header. */
-export async function hasElevatedAuth(
-  request: Request | null | undefined,
-  cookies: AstroCookies,
-  accessToken: string,
-  userId: string,
-): Promise<boolean> {
-  if (getAalClaim(accessToken) === "aal2") return true;
-  return hasValidMfaStepUpProof(request, cookies, userId);
 }

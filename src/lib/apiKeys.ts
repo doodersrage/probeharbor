@@ -1,6 +1,4 @@
-import { dbBackend } from "./db/client";
 import * as neonAccess from "./db/access";
-import { createServerClient } from "./supabase";
 
 async function sha256Hex(value: string): Promise<string> {
   const digest = await crypto.subtle.digest(
@@ -30,15 +28,7 @@ export type ApiKeyRow = {
 export async function listHouseholdApiKeys(
   householdId: string,
 ): Promise<ApiKeyRow[]> {
-  if (dbBackend() === "neon") return neonAccess.listApiKeys(householdId);
-  const supabase = createServerClient();
-  const { data } = await supabase
-    .from("api_keys")
-    .select("id, household_id, name, key_prefix, created_at, last_used_at, revoked_at")
-    .eq("household_id", householdId)
-    .is("revoked_at", null)
-    .order("created_at", { ascending: false });
-  return (data ?? []) as ApiKeyRow[];
+  return neonAccess.listApiKeys(householdId);
 }
 
 export async function createHouseholdApiKey(input: {
@@ -49,47 +39,21 @@ export async function createHouseholdApiKey(input: {
   const plaintext = randomApiKey();
   const key_hash = await sha256Hex(plaintext);
   const key_prefix = plaintext.slice(0, 10);
-  if (dbBackend() === "neon") {
-    const created = await neonAccess.insertApiKey({
-      householdId: input.householdId,
-      name: input.name.trim() || "Metrics key",
-      keyPrefix: key_prefix,
-      keyHash: key_hash,
-      createdBy: input.createdBy,
-    });
-    return created.key ? { plaintext, key: created.key, error: null } : { plaintext: null, key: null, error: created.error };
-  }
-  const supabase = createServerClient();
-  const { data, error } = await supabase
-    .from("api_keys")
-    .insert({
-      household_id: input.householdId,
-      name: input.name.trim() || "Metrics key",
-      key_prefix,
-      key_hash,
-      created_by: input.createdBy,
-    })
-    .select("id, household_id, name, key_prefix, created_at, last_used_at, revoked_at")
-    .single();
-
-  if (error || !data) {
-    return { plaintext: null, key: null, error: error?.message ?? "Failed to create key" };
-  }
-  return { plaintext, key: data as ApiKeyRow, error: null };
+  const created = await neonAccess.insertApiKey({
+    householdId: input.householdId,
+    name: input.name.trim() || "Metrics key",
+    keyPrefix: key_prefix,
+    keyHash: key_hash,
+    createdBy: input.createdBy,
+  });
+  return created.key ? { plaintext, key: created.key, error: null } : { plaintext: null, key: null, error: created.error };
 }
 
 export async function revokeHouseholdApiKey(
   householdId: string,
   keyId: string,
 ): Promise<{ error: string | null }> {
-  if (dbBackend() === "neon") return neonAccess.revokeApiKey(householdId, keyId);
-  const supabase = createServerClient();
-  const { error } = await supabase
-    .from("api_keys")
-    .update({ revoked_at: new Date().toISOString() })
-    .eq("id", keyId)
-    .eq("household_id", householdId);
-  return { error: error?.message ?? null };
+  return neonAccess.revokeApiKey(householdId, keyId);
 }
 
 export async function resolveApiKey(
@@ -98,18 +62,5 @@ export async function resolveApiKey(
   const token = bearer.trim();
   if (!token.startsWith("gtm_")) return null;
   const key_hash = await sha256Hex(token);
-  if (dbBackend() === "neon") return neonAccess.resolveApiKey(key_hash);
-  const supabase = createServerClient();
-  const { data } = await supabase
-    .from("api_keys")
-    .select("id, household_id")
-    .eq("key_hash", key_hash)
-    .is("revoked_at", null)
-    .maybeSingle();
-  if (!data) return null;
-  await supabase
-    .from("api_keys")
-    .update({ last_used_at: new Date().toISOString() })
-    .eq("id", data.id);
-  return { householdId: data.household_id, keyId: data.id };
+  return neonAccess.resolveApiKey(key_hash);
 }

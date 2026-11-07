@@ -2,35 +2,20 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vites
 
 vi.mock("./households", () => ({ getUserHouseholdId: async () => "hh-1" }));
 
-const mockRpc = vi.fn();
-const rawRange = vi.fn();
 const sensors = [
-  { id: "t", key: "temp1", label: "Bay", kind: "temperature", offset_num: 0, devices: { name: "Garage ESP", household_id: "hh-1" } },
-  { id: "h", key: "humidity1", label: "Bay humidity", kind: "humidity", offset_num: 0, devices: { name: "Garage ESP", household_id: "hh-1" } },
+  { id: "t", key: "temp1", label: "Bay", kind: "temperature", offset_num: 0, devices: { name: "Garage ESP" } },
+  { id: "h", key: "humidity1", label: "Bay humidity", kind: "humidity", offset_num: 0, devices: { name: "Garage ESP" } },
 ];
-
-vi.mock("./supabase", () => ({
-  createServerClient: () => ({
-    rpc: (...a: unknown[]) => mockRpc(...a),
-    from: (table: string) => {
-      const builder: Record<string, unknown> = new Proxy(
-        {},
-        {
-          get: (_t, prop: string) => {
-            if (prop === "then") {
-              // Awaiting the device_sensors query resolves to the sensor list.
-              return table === "device_sensors"
-                ? (resolve: (v: unknown) => void) => resolve({ data: sensors, error: null })
-                : undefined;
-            }
-            if (prop === "range") return (...a: unknown[]) => rawRange(...a);
-            return () => builder;
-          },
-        },
-      );
-      return builder;
-    },
-  }),
+const mockListChartSensors = vi.fn();
+const mockSensorBucketSamples = vi.fn();
+const mockFetchAllRawSensorRows = vi.fn();
+vi.mock("./db/history", () => ({
+  listChartSensors: (...a: unknown[]) => mockListChartSensors(...a),
+  sensorBucketSamples: (...a: unknown[]) => mockSensorBucketSamples(...a),
+  fetchAllRawSensorRows: (...a: unknown[]) => mockFetchAllRawSensorRows(...a),
+  // Fewer than 10 points also asks for rollups: answer with no rows.
+  countChartSensors: async () => 0,
+  rollupBucketAverages: async () => [],
 }));
 
 import { fetchGarageTempChartData, groupSensorsForSampling, sampleBucketCount } from "./garageTempsHistory";
@@ -46,60 +31,64 @@ afterAll(() => {
 });
 
 beforeEach(() => {
-  mockRpc.mockReset();
-  rawRange.mockReset().mockResolvedValue({ data: [], error: null });
+  mockListChartSensors.mockReset().mockResolvedValue(sensors);
+  mockSensorBucketSamples.mockReset();
+  mockFetchAllRawSensorRows.mockReset().mockResolvedValue({ rows: [], error: null });
 });
 
-describe("fetchGarageTempChartData with sensor_bucket_samples", () => {
+describe("fetchGarageTempChartData with bucket samples", () => {
   it("charts real sampled readings, keeps a short dip, and pairs same-post humidity", async () => {
     const samples = [
-        { sensor_id: "t", recorded_at: "2026-10-29T00:00:00+00:00", value_num: 45 },
-        { sensor_id: "h", recorded_at: "2026-10-29T00:00:00+00:00", value_num: 60 },
-        // The bucket's lowest reading: a 2-minute dip to 33 °F.
-        { sensor_id: "t", recorded_at: "2026-10-29T01:12:00+00:00", value_num: 33 },
-        { sensor_id: "t", recorded_at: "2026-10-29T02:00:00+00:00", value_num: 44 },
-        { sensor_id: "h", recorded_at: "2026-10-29T02:00:00+00:00", value_num: 62 },
+      { sensor_id: "t", recorded_at: "2026-10-29T00:00:00+00:00", value_num: 45 },
+      { sensor_id: "h", recorded_at: "2026-10-29T00:00:00+00:00", value_num: 60 },
+      // The bucket's lowest reading: a 2-minute dip to 33 °F.
+      { sensor_id: "t", recorded_at: "2026-10-29T01:12:00+00:00", value_num: 33 },
+      { sensor_id: "t", recorded_at: "2026-10-29T02:00:00+00:00", value_num: 44 },
+      { sensor_id: "h", recorded_at: "2026-10-29T02:00:00+00:00", value_num: 62 },
     ];
     // Each call returns only the sensors it asked for.
-    // (Fewer than 10 points also asks for rollups: answer that with no rows.)
-    mockRpc.mockImplementation(async (fn: string, args: { p_sensor_ids: string[] }) =>
-      fn === "sensor_bucket_samples"
-        ? { data: samples.filter((row) => args.p_sensor_ids.includes(row.sensor_id)), error: null }
-        : { data: [], error: null },
+    mockSensorBucketSamples.mockImplementation(async (_household: string, sensorIds: string[]) =>
+      samples.filter((row) => sensorIds.includes(row.sensor_id)),
     );
 
     const { points, error, sampleIntervalMs } = await fetchGarageTempChartData("user-1", 7);
 
     expect(error).toBeNull();
     // The bucket width goes to the chart's gap rule (seconds → ms).
-    expect(sampleIntervalMs).toBe((mockRpc.mock.calls.find((c) => c[0] === "sensor_bucket_samples")![1] as { p_bucket_seconds: number }).p_bucket_seconds * 1000);
+    const bucketSeconds = mockSensorBucketSamples.mock.calls[0]![5] as number;
+    expect(sampleIntervalMs).toBe(bucketSeconds * 1000);
     expect(points.map((p) => [p.tempf, p.humidity])).toEqual([
       [45, 60],
       [33, null],
       [44, 62],
     ]);
-    expect(rawRange).not.toHaveBeenCalled();
+    expect(mockFetchAllRawSensorRows).not.toHaveBeenCalled();
     // 300 buckets: temperature (first/min/max, up to 900 rows) fills one call; humidity gets its own.
-    const sampleCalls = mockRpc.mock.calls.filter((c) => c[0] === "sensor_bucket_samples");
-    expect(sampleCalls.map((c) => (c[1] as { p_sensor_ids: string[] }).p_sensor_ids)).toEqual([["t"], ["h"]]);
-    const args = mockRpc.mock.calls[0]![1] as Record<string, unknown>;
-    expect(mockRpc.mock.calls[0]![0]).toBe("sensor_bucket_samples");
-    expect(args.p_extreme_sensor_ids).toEqual(["t"]);
-    expect((mockRpc.mock.calls[1]![1] as Record<string, unknown>).p_extreme_sensor_ids).toEqual([]);
+    expect(mockSensorBucketSamples.mock.calls.map((c) => c[1])).toEqual([["t"], ["h"]]);
+    expect(mockSensorBucketSamples.mock.calls[0]![0]).toBe("hh-1");
+    expect(mockSensorBucketSamples.mock.calls[0]![2]).toEqual(["t"]);
+    expect(mockSensorBucketSamples.mock.calls[1]![2]).toEqual([]);
     // 7 days over 300 buckets (one temperature sensor) → ~34 min.
     // ("now" is read twice, so the window can be a few ms over 7 days.)
-    expect(args.p_bucket_seconds).toBeGreaterThanOrEqual(Math.ceil((7 * 24 * 3600) / 300));
-    expect(args.p_bucket_seconds).toBeLessThanOrEqual(Math.ceil((7 * 24 * 3600) / 300) + 1);
+    expect(bucketSeconds).toBeGreaterThanOrEqual(Math.ceil((7 * 24 * 3600) / 300));
+    expect(bucketSeconds).toBeLessThanOrEqual(Math.ceil((7 * 24 * 3600) / 300) + 1);
   });
 
-  it("falls back to reading raw rows when the function isn't there yet", async () => {
-    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
-    mockRpc.mockResolvedValue({ data: null, error: { code: "PGRST202", message: "function not found" } });
+  it("falls back to reading raw rows when a sample call fails", async () => {
+    mockSensorBucketSamples.mockResolvedValue(null);
 
     await fetchGarageTempChartData("user-1", 7);
 
-    expect(rawRange).toHaveBeenCalled();
-    warn.mockRestore();
+    expect(mockFetchAllRawSensorRows).toHaveBeenCalled();
+  });
+
+  it("falls back to reading raw rows when the sensor lookup fails", async () => {
+    mockListChartSensors.mockResolvedValue(null);
+
+    await fetchGarageTempChartData("user-1", 7);
+
+    expect(mockSensorBucketSamples).not.toHaveBeenCalled();
+    expect(mockFetchAllRawSensorRows).toHaveBeenCalled();
   });
 });
 

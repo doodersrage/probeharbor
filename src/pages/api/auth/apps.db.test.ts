@@ -1,5 +1,5 @@
 /**
- * Native-app sign-in on Better Auth (DB_BACKEND=neon), the way the desktop
+ * Native-app sign-in on Better Auth, the way the desktop
  * app, Bay Buddy and Android drive it: companion/mobile start → web sign-in
  * → companion/complete → one-time exchange token → /api/auth/mobile/exchange
  * → bearer token. Local Postgres; GitHub's servers stubbed for OAuth.
@@ -10,7 +10,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { testDatabaseUrl, useTestDatabase } from "../../../test/db";
 
 const ENV: Record<string, string> = {
-  DB_BACKEND: "neon",
   BETTER_AUTH_SECRET: "test-secret-for-database-tests-only-0123456789",
   CRON_SECRET: "test-step-up-and-exchange-secret-0123456789",
   GITHUB_CLIENT_ID: "gh-id",

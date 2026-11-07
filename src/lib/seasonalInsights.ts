@@ -1,4 +1,4 @@
-import type { User } from "@supabase/supabase-js";
+import type { User } from "./appUser";
 import type { ChartPoint } from "./garageTempsHistory";
 import { fmt, plural, type Locale } from "../i18n";
 import { libDateTime, libFixed, libNumber, libTextMessages } from "../i18n/messages/app/libText";

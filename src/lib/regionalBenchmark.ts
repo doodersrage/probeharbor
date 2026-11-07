@@ -1,7 +1,5 @@
-import { dbBackend } from "./db/client";
 import { latestSnapshotForCity } from "./db/places";
 import { getHouseholdFields } from "./householdRecord";
-import { createServerClient } from "./supabase";
 import { freezeMapAggregateKey } from "./weatherCities";
 import { FREEZE_MAP_SAMPLE_FLOOR } from "./freezeMapSeed";
 import { fmt, type Locale } from "../i18n";
@@ -39,18 +37,7 @@ export async function fetchRegionalBenchmark(input: {
   });
   if (!cityId) return null;
 
-  const snapshot =
-    dbBackend() === "neon"
-      ? await latestSnapshotForCity(cityId)
-      : (
-          await createServerClient()
-            .from("freeze_map_snapshots")
-            .select("city_label, avg_temp_f, min_temp_f, sample_count")
-            .eq("city_id", cityId)
-            .order("captured_at", { ascending: false })
-            .limit(1)
-            .maybeSingle()
-        ).data;
+  const snapshot = await latestSnapshotForCity(cityId);
 
   if (!snapshot?.avg_temp_f && snapshot?.min_temp_f == null) {
     return null;

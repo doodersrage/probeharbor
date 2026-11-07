@@ -1,6 +1,6 @@
 /**
  * Sign-in for the native apps (desktop, Bay Buddy, Android) on Better Auth
- * (DB_BACKEND=neon; step 4f). The browser part is unchanged: the app opens
+ * (step 4f). The browser part is unchanged: the app opens
  * /api/auth/companion/start or /api/auth/mobile/start, the user signs in on
  * the web, and the app gets a one-time exchange token it swaps at
  * /api/auth/mobile/exchange for { access_token, refresh_token }.

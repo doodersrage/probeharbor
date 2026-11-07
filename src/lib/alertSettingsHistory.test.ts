@@ -1,6 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
 
-vi.mock("./supabase", () => ({ createServerClient: vi.fn() }));
 vi.mock("./notify", () => ({ getAlertSettingsForUser: vi.fn(), saveAlertSettingsForUser: vi.fn() }));
 
 import { alertSettingsToRow, DEFAULT_ALERT_SETTINGS } from "./alerts";

@@ -1,5 +1,5 @@
 /**
- * Passkeys through /api/auth/passkey on Better Auth (DB_BACKEND=neon),
+ * Passkeys through /api/auth/passkey on Better Auth,
  * against a local Postgres, with a small software authenticator (P-256 key,
  * "none" attestation) so Better Auth's WebAuthn checks run for real.
  */
@@ -9,7 +9,6 @@ import { describe, expect, it, vi } from "vitest";
 import { testDatabaseUrl, useTestDatabase } from "../../../test/db";
 
 const ENV: Record<string, string> = {
-  DB_BACKEND: "neon",
   BETTER_AUTH_SECRET: "test-secret-for-database-tests-only-0123456789",
   CRON_SECRET: "test-step-up-secret-0123456789",
 };

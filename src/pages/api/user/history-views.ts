@@ -1,7 +1,6 @@
 import { updateSessionUserMetadata } from "../../../lib/sessionMetadata";
 import type { APIRoute } from "astro";
-import { createAuthClient } from "../../../lib/supabase";
-import { getAuthFromCookies, setAuthCookies } from "../../../lib/auth";
+import { getAuthFromCookies } from "../../../lib/auth";
 import { getOrCreateHouseholdForUser } from "../../../lib/households";
 import {
   createHistorySavedView,
@@ -16,19 +15,9 @@ async function updateDefaultHistoryViewId(
   accessToken: string,
   refreshToken: string,
   viewId: string | null,
-): Promise<{ error: Error | null; accessToken?: string; refreshToken?: string }> {
+): Promise<{ error: Error | null }> {
   const { error } = await updateSessionUserMetadata(accessToken, refreshToken, { default_history_view_id: viewId });
-  if (error) return { error };
-  // Better Auth sessions (no refresh token) read metadata from the database: nothing to refresh.
-  if (!refreshToken) return { error: null };
-  const { data: refreshed } = await createAuthClient().auth.refreshSession({
-    refresh_token: refreshToken,
-  });
-  return {
-    error: null,
-    accessToken: refreshed.session?.access_token,
-    refreshToken: refreshed.session?.refresh_token,
-  };
+  return { error: error ?? null };
 }
 
 export const GET: APIRoute = async ({ cookies, locals }) => {
@@ -72,10 +61,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect, locals }) => 
         ? user.user_metadata.default_history_view_id
         : null;
     if (currentDefault === id) {
-      const updated = await updateDefaultHistoryViewId(accessToken, refreshToken, null);
-      if (updated.accessToken && updated.refreshToken) {
-        setAuthCookies(cookies, updated.accessToken, updated.refreshToken);
-      }
+      await updateDefaultHistoryViewId(accessToken, refreshToken, null);
     }
     return redirect(withQuery(redirectTo, { view_deleted: "1" }));
   }
@@ -94,9 +80,6 @@ export const POST: APIRoute = async ({ request, cookies, redirect, locals }) => 
     }
     const updated = await updateDefaultHistoryViewId(accessToken, refreshToken, nextId);
     if (updated.error) return redirect(withQuery(redirectTo, { view_error: "1" }));
-    if (updated.accessToken && updated.refreshToken) {
-      setAuthCookies(cookies, updated.accessToken, updated.refreshToken);
-    }
     return redirect(withQuery(redirectTo, { view_default: "1" }));
   }
 

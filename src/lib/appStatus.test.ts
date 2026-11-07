@@ -1,20 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-function mockQuery(result: { data?: unknown; error?: unknown }) {
-  const builder: Record<string, unknown> = {};
-  for (const method of ["select", "gte", "order", "limit"]) {
-    builder[method] = vi.fn(() => builder);
-  }
-  (builder as { then: unknown }).then = (
-    resolve: (value: unknown) => unknown,
-    reject?: (reason: unknown) => unknown,
-  ) => Promise.resolve(result).then(resolve, reject);
-  return builder;
-}
-
-const mockFrom = vi.fn();
-vi.mock("./supabase", () => ({
-  createAdminClient: () => ({ from: (...args: unknown[]) => mockFrom(...args) }),
+const mockJobRunsSince = vi.fn();
+vi.mock("./db/admin", () => ({
+  jobRunsSince: (...args: unknown[]) => mockJobRunsSince(...args),
 }));
 
 const mockListRecentIngestStatsAdmin = vi.fn();
@@ -40,7 +28,7 @@ vi.mock("./cronHealth", () => ({
 }));
 
 beforeEach(() => {
-  mockFrom.mockReset();
+  mockJobRunsSince.mockReset().mockResolvedValue([]);
   mockListRecentIngestStatsAdmin.mockReset().mockResolvedValue([]);
   mockFlagIngestAbuse.mockReset().mockReturnValue([]);
   mockListRecentJobRuns.mockReset().mockResolvedValue({ runs: [] });
@@ -48,14 +36,14 @@ beforeEach(() => {
   mockIsCollectHistoryStale.mockReset().mockReturnValue(false);
 });
 
-function jobsQuery(jobs: Array<{ job_name: string; status: string; started_at: string }>) {
-  return mockQuery({ data: jobs });
+function recentJobs(jobs: Array<{ job_name: string; status: string; started_at: string }>) {
+  return jobs;
 }
 
 describe("fetchAppStatus", () => {
   it("is healthy when the latest job succeeded, there are no errors, and history isn't stale", async () => {
-    mockFrom.mockReturnValue(
-      jobsQuery([{ job_name: "collect-history", status: "success", started_at: "2024-06-15T11:00:00.000Z" }]),
+    mockJobRunsSince.mockResolvedValue(
+      recentJobs([{ job_name: "collect-history", status: "success", started_at: "2024-06-15T11:00:00.000Z" }]),
     );
     const { fetchAppStatus } = await import("./appStatus");
 
@@ -67,9 +55,20 @@ describe("fetchAppStatus", () => {
     expect(status.lastCronStatus).toBe("success");
   });
 
+  it("reads the job runs of the last 24 hours", async () => {
+    const { fetchAppStatus } = await import("./appStatus");
+    const before = Date.now();
+
+    await fetchAppStatus();
+
+    const since = Date.parse(mockJobRunsSince.mock.calls[0]![0] as string);
+    expect(before - since).toBeGreaterThanOrEqual(24 * 60 * 60 * 1000 - 1000);
+    expect(before - since).toBeLessThanOrEqual(24 * 60 * 60 * 1000 + 1000);
+  });
+
   it("is unhealthy when there are any job errors in the window", async () => {
-    mockFrom.mockReturnValue(
-      jobsQuery([
+    mockJobRunsSince.mockResolvedValue(
+      recentJobs([
         { job_name: "collect-history", status: "success", started_at: "2024-06-15T11:00:00.000Z" },
         { job_name: "retention", status: "error", started_at: "2024-06-15T03:00:00.000Z" },
       ]),
@@ -83,7 +82,7 @@ describe("fetchAppStatus", () => {
   });
 
   it("is unhealthy and reports nulls when there are no jobs at all", async () => {
-    mockFrom.mockReturnValue(jobsQuery([]));
+    mockJobRunsSince.mockResolvedValue(recentJobs([]));
     const { fetchAppStatus } = await import("./appStatus");
 
     const status = await fetchAppStatus();
@@ -95,8 +94,8 @@ describe("fetchAppStatus", () => {
   });
 
   it("is unhealthy when the most recent job did not succeed", async () => {
-    mockFrom.mockReturnValue(
-      jobsQuery([{ job_name: "collect-history", status: "running", started_at: "2024-06-15T11:00:00.000Z" }]),
+    mockJobRunsSince.mockResolvedValue(
+      recentJobs([{ job_name: "collect-history", status: "running", started_at: "2024-06-15T11:00:00.000Z" }]),
     );
     const { fetchAppStatus } = await import("./appStatus");
 
@@ -104,8 +103,8 @@ describe("fetchAppStatus", () => {
   });
 
   it("is unhealthy when the history poll is stale, even with a successful latest job", async () => {
-    mockFrom.mockReturnValue(
-      jobsQuery([{ job_name: "collect-history", status: "success", started_at: "2024-06-15T11:00:00.000Z" }]),
+    mockJobRunsSince.mockResolvedValue(
+      recentJobs([{ job_name: "collect-history", status: "success", started_at: "2024-06-15T11:00:00.000Z" }]),
     );
     mockIsCollectHistoryStale.mockReturnValue(true);
     const { fetchAppStatus } = await import("./appStatus");
@@ -117,7 +116,7 @@ describe("fetchAppStatus", () => {
   });
 
   it("derives ingestAbuseCount and ingestRateLimitElevated from flagIngestAbuse", async () => {
-    mockFrom.mockReturnValue(jobsQuery([]));
+    mockJobRunsSince.mockResolvedValue(recentJobs([]));
     mockFlagIngestAbuse.mockReturnValue([{ device_id: "d1" }, { device_id: "d2" }]);
     const { fetchAppStatus } = await import("./appStatus");
 
@@ -128,7 +127,7 @@ describe("fetchAppStatus", () => {
   });
 
   it("reports no rate-limit elevation when nothing is flagged", async () => {
-    mockFrom.mockReturnValue(jobsQuery([]));
+    mockJobRunsSince.mockResolvedValue(recentJobs([]));
     mockFlagIngestAbuse.mockReturnValue([]);
     const { fetchAppStatus } = await import("./appStatus");
 
@@ -136,7 +135,7 @@ describe("fetchAppStatus", () => {
   });
 
   it("passes through the recent job runs and a valid checkedAt timestamp", async () => {
-    mockFrom.mockReturnValue(jobsQuery([]));
+    mockJobRunsSince.mockResolvedValue(recentJobs([]));
     mockListRecentJobRuns.mockResolvedValue({ runs: [{ id: 1 }] });
     const { fetchAppStatus } = await import("./appStatus");
 

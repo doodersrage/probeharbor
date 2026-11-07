@@ -1,15 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { APIContext } from "astro";
 
-const mockMaybeSingle = vi.fn();
-const mockEq = vi.fn();
-const mockSelect = vi.fn();
-const mockFrom = vi.fn();
-const mockCreateServerClient = vi.fn();
-const mockGetUserById = vi.fn();
-vi.mock("../../../lib/supabase", () => ({
-  createServerClient: () => mockCreateServerClient(),
-  createAdminClient: () => ({ auth: { admin: { getUserById: (...a: unknown[]) => mockGetUserById(...a) } } }),
+const mockUserByTelegramSecret = vi.fn();
+vi.mock("../../../lib/db/remaining", () => ({
+  userByTelegramSecret: (...a: unknown[]) => mockUserByTelegramSecret(...a),
+}));
+
+const mockGetUserRecord = vi.fn();
+vi.mock("../../../lib/userRecords", () => ({
+  getUserRecord: (...a: unknown[]) => mockGetUserRecord(...a),
 }));
 
 const mockGetAlertSettingsForUser = vi.fn();
@@ -90,11 +89,7 @@ function makeContext(options: {
 }
 
 beforeEach(() => {
-  mockMaybeSingle.mockReset().mockResolvedValue({ data: { user_id: "user-1" } });
-  mockEq.mockReset().mockReturnValue({ maybeSingle: mockMaybeSingle });
-  mockSelect.mockReset().mockReturnValue({ eq: mockEq });
-  mockFrom.mockReset().mockReturnValue({ select: mockSelect });
-  mockCreateServerClient.mockReset().mockReturnValue({ from: mockFrom });
+  mockUserByTelegramSecret.mockReset().mockResolvedValue("user-1");
   mockCheckTelegramWebhookRateLimit.mockReset().mockReturnValue({ ok: true });
   mockGetAlertSettingsForUser.mockReset().mockResolvedValue({
     telegramBotToken: "bot-token",
@@ -111,7 +106,7 @@ beforeEach(() => {
   mockFilterRowsByLabel.mockReset().mockReturnValue([]);
   mockTimingSafeEqual.mockReset().mockReturnValue(true);
   mockFetch.mockReset().mockResolvedValue(new Response("ok"));
-  mockGetUserById.mockReset().mockResolvedValue({ data: { user: { user_metadata: {} } } });
+  mockGetUserRecord.mockReset().mockResolvedValue({ id: "user-1", user_metadata: {} });
 });
 
 describe("POST /api/telegram/webhook", () => {
@@ -129,7 +124,7 @@ describe("POST /api/telegram/webhook", () => {
   });
 
   it("returns 401 when the telegram secret is unknown", async () => {
-    mockMaybeSingle.mockResolvedValue({ data: null });
+    mockUserByTelegramSecret.mockResolvedValue(null);
     const { POST } = await import("./webhook");
 
     const response = await POST(makeContext());
@@ -153,6 +148,7 @@ describe("POST /api/telegram/webhook", () => {
       makeContext({ body: { message: { text: "/snooze 4", chat: { id: 42 } } } }),
     );
 
+    expect(mockUserByTelegramSecret).toHaveBeenCalledWith("telegram-secret");
     expect(mockSaveAlertSettingsForUser).toHaveBeenCalledWith(
       "user-1",
       expect.objectContaining({ snoozeUntil: "2024-01-01T04:00:00Z" }),
@@ -171,13 +167,13 @@ describe("POST /api/telegram/webhook", () => {
   it("replies in the linked account's language", async () => {
     const { ensureLocale } = await import("../../../i18n/catalog");
     await ensureLocale("de", ["app"]);
-    mockGetUserById.mockResolvedValue({ data: { user: { user_metadata: { locale: "de" } } } });
+    mockGetUserRecord.mockResolvedValue({ id: "user-1", user_metadata: { locale: "de" } });
     const { POST } = await import("./webhook");
 
     await POST(makeContext({ body: { message: { text: "/snooze 4", chat: { id: 42 } } } }));
 
     const body = JSON.parse(String(mockFetch.mock.calls[0]?.[1]?.body)) as { text: string };
     expect(body.text).toBe("Alarme für 4 Stunden pausiert. Frost- und Leckalarme kommen trotzdem.");
-    expect(mockGetUserById).toHaveBeenCalledWith("user-1");
+    expect(mockGetUserRecord).toHaveBeenCalledWith("user-1");
   });
 });

@@ -1,7 +1,5 @@
-import type { User } from "@supabase/supabase-js";
-import { dbBackend } from "./db/client";
+import type { User } from "./appUser";
 import * as neonLegacy from "./db/legacyTempConfig";
-import { createServerClient, createAdminClient } from "./supabase";
 import type { TempFeedConfig, TempProbeConfig } from "./tempFeedConfig";
 import {
   getDefaultTempFeeds,
@@ -16,6 +14,8 @@ import { discoverAndMergeFeedProbes } from "./feedDiscovery";
 
 export { normalizePullFeedUrl };
 
+const errorMessage = (error: unknown) => (error instanceof Error ? error.message : String(error));
+
 type TempConfigRow = {
   feeds: TempFeedConfig[];
   probes: TempProbeConfig[];
@@ -27,30 +27,19 @@ export async function fetchUserTempConfig(userId: string): Promise<{
   hasCustomConfig: boolean;
   error: string | null;
 }> {
-  const neon = dbBackend() === "neon";
-  const supabase = neon ? null : createServerClient();
-
-  const { data: feedRows, error: feedsError } = supabase
-    ? await supabase
-        .from("user_temp_feeds")
-        .select("feed_id, name, url, enabled, sort_order")
-        .eq("user_id", userId)
-        .order("sort_order", { ascending: true })
-    : await neonLegacy.legacyFeeds(userId).then(
-        (data) => ({ data, error: null }),
-        (e: unknown) => ({ data: null, error: { message: e instanceof Error ? e.message : String(e) } }),
-      );
-
-  if (feedsError) {
+  let feedRows: Awaited<ReturnType<typeof neonLegacy.legacyFeeds>>;
+  try {
+    feedRows = await neonLegacy.legacyFeeds(userId);
+  } catch (error) {
     return {
       feeds: getDefaultTempFeeds(),
       probes: getDefaultTempProbes(),
       hasCustomConfig: false,
-      error: feedsError.message,
+      error: errorMessage(error),
     };
   }
 
-  if (!feedRows || feedRows.length === 0) {
+  if (feedRows.length === 0) {
     return {
       feeds: getDefaultTempFeeds(),
       probes: getDefaultTempProbes(),
@@ -67,29 +56,21 @@ export async function fetchUserTempConfig(userId: string): Promise<{
     jsonRoot: "temp",
   }));
 
-  const { data: probeRows, error: probesError } = supabase
-    ? await supabase
-        .from("user_temp_probes")
-        .select("probe_id, feed_id, probe_key, label, visible, sort_order")
-        .eq("user_id", userId)
-        .order("sort_order", { ascending: true })
-    : await neonLegacy.legacyProbes(userId).then(
-        (data) => ({ data, error: null }),
-        (e: unknown) => ({ data: null, error: { message: e instanceof Error ? e.message : String(e) } }),
-      );
-
-  if (probesError) {
+  let probeRows: Awaited<ReturnType<typeof neonLegacy.legacyProbes>>;
+  try {
+    probeRows = await neonLegacy.legacyProbes(userId);
+  } catch (error) {
     return {
       feeds,
       probes: getDefaultTempProbes().filter((probe) =>
         feeds.some((feed) => feed.id === probe.feedId),
       ),
       hasCustomConfig: true,
-      error: probesError.message,
+      error: errorMessage(error),
     };
   }
 
-  const probes: TempProbeConfig[] = (probeRows ?? []).map((row) => ({
+  const probes: TempProbeConfig[] = probeRows.map((row) => ({
     id: row.probe_id,
     feedId: row.feed_id,
     key: row.probe_key,
@@ -171,202 +152,39 @@ export async function migrateLegacyTempTablesToDevices(
     };
   }
 
-  if (dbBackend() === "neon") {
-    let created = 0;
-    let ensured = 0;
-    try {
-      const byUrl = new Map(
-        existing.devices
-          .filter((d) => d.source === "pull_url" && d.pull_url)
-          .map((d) => [normalizePullFeedUrl(d.pull_url!), d.id]),
-      );
-      for (const [index, feed] of feeds.entries()) {
-        const urlKey = normalizePullFeedUrl(feed.url);
-        let deviceId = byUrl.get(urlKey) ?? null;
-        if (!deviceId) {
-          deviceId = await neonLegacy.insertPullDevice(household.householdId, feed, index, sanitizeJsonRoot(feed.jsonRoot));
-          byUrl.set(urlKey, deviceId);
-          created += 1;
-        } else {
-          await neonLegacy.updatePullDevice(household.householdId, deviceId, feed, index, sanitizeJsonRoot(feed.jsonRoot));
-        }
-        for (const [probeIndex, probe] of probes.filter((p) => p.feedId === feed.id).entries()) {
-          if (await neonLegacy.ensureProbeSensors(deviceId, probe, probeIndex)) ensured += 1;
-        }
-      }
-      await neonLegacy.clearLegacy(userId);
-    } catch (error) {
-      return {
-        migratedFeeds: feeds.length,
-        createdDevices: created,
-        ensuredSensors: ensured,
-        cleared: false,
-        error: error instanceof Error ? error.message : String(error),
-      };
-    }
-    return { migratedFeeds: feeds.length, createdDevices: created, ensuredSensors: ensured, cleared: true, error: null };
-  }
-
-  const supabase = createServerClient();
-  let createdDevices = 0;
-  let ensuredSensors = 0;
-
-  const pullByUrl = new Map(
-    existing.devices
-      .filter((d) => d.source === "pull_url" && d.pull_url)
-      .map((d) => [normalizePullFeedUrl(d.pull_url!), d]),
-  );
-
-  for (const [index, feed] of feeds.entries()) {
-    const urlKey = normalizePullFeedUrl(feed.url);
-    let device = pullByUrl.get(urlKey) ?? null;
-
-    if (!device) {
-      const { data: inserted, error } = await supabase
-        .from("devices")
-        .insert({
-          household_id: household.householdId,
-          name: feed.name,
-          source: "pull_url",
-          pull_url: feed.url,
-          enabled: feed.enabled,
-          sort_order: index,
-          meta: {
-            pull_json_root: sanitizeJsonRoot(feed.jsonRoot),
-          },
-        })
-        .select("id")
-        .single();
-
-      if (error || !inserted) {
-        return {
-          migratedFeeds: feeds.length,
-          createdDevices,
-          ensuredSensors,
-          cleared: false,
-          error: error?.message ?? "Failed to create pull device",
-        };
-      }
-
-      device = {
-        id: inserted.id,
-        household_id: household.householdId,
-        name: feed.name,
-        source: "pull_url",
-        pull_url: feed.url,
-        enabled: feed.enabled,
-        sort_order: index,
-        meta: {},
-        space: null,
-        last_seen_at: null,
-        ingest_key_prefix: null,
-        sensors: [],
-      } as (typeof existing.devices)[number];
-      pullByUrl.set(urlKey, device);
-      createdDevices += 1;
-    } else {
-      await supabase
-        .from("devices")
-        .update({
-          name: feed.name,
-          enabled: feed.enabled,
-          sort_order: index,
-          meta: {
-            ...(device.meta && typeof device.meta === "object" && !Array.isArray(device.meta)
-              ? (device.meta as Record<string, unknown>)
-              : {}),
-            pull_json_root: sanitizeJsonRoot(feed.jsonRoot),
-          },
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", device.id);
-    }
-
-    const feedProbes = probes.filter((probe) => probe.feedId === feed.id);
-    const existingKeys = new Set(
-      (device.sensors ?? [])
-        .filter((s) => s.kind === "temperature")
-        .map((s) => s.key),
+  let created = 0;
+  let ensured = 0;
+  try {
+    const byUrl = new Map(
+      existing.devices
+        .filter((d) => d.source === "pull_url" && d.pull_url)
+        .map((d) => [normalizePullFeedUrl(d.pull_url!), d.id]),
     );
-
-    for (const [probeIndex, probe] of feedProbes.entries()) {
-      if (existingKeys.has(probe.key)) continue;
-
-      const rows = [
-        {
-          device_id: device.id,
-          key: probe.key,
-          label: probe.label,
-          kind: "temperature" as const,
-          unit: "F",
-          visible: probe.visible,
-          sort_order: probeIndex,
-        },
-        {
-          device_id: device.id,
-          key: probe.key,
-          label: `${probe.label} humidity`,
-          kind: "humidity" as const,
-          unit: "%",
-          visible: probe.visible,
-          sort_order: probeIndex,
-        },
-      ];
-
-      const { error: sensorError } = await supabase.from("device_sensors").insert(rows);
-      if (sensorError) {
-        // Conflict = already present; ignore unique violations
-        if (!/duplicate|conflict/i.test(sensorError.message)) {
-          return {
-            migratedFeeds: feeds.length,
-            createdDevices,
-            ensuredSensors,
-            cleared: false,
-            error: sensorError.message,
-          };
-        }
+    for (const [index, feed] of feeds.entries()) {
+      const urlKey = normalizePullFeedUrl(feed.url);
+      let deviceId = byUrl.get(urlKey) ?? null;
+      if (!deviceId) {
+        deviceId = await neonLegacy.insertPullDevice(household.householdId, feed, index, sanitizeJsonRoot(feed.jsonRoot));
+        byUrl.set(urlKey, deviceId);
+        created += 1;
       } else {
-        ensuredSensors += 1;
-        existingKeys.add(probe.key);
+        await neonLegacy.updatePullDevice(household.householdId, deviceId, feed, index, sanitizeJsonRoot(feed.jsonRoot));
+      }
+      for (const [probeIndex, probe] of probes.filter((p) => p.feedId === feed.id).entries()) {
+        if (await neonLegacy.ensureProbeSensors(deviceId, probe, probeIndex)) ensured += 1;
       }
     }
-  }
-
-  const { error: deleteProbesError } = await supabase
-    .from("user_temp_probes")
-    .delete()
-    .eq("user_id", userId);
-  if (deleteProbesError) {
+    await neonLegacy.clearLegacy(userId);
+  } catch (error) {
     return {
       migratedFeeds: feeds.length,
-      createdDevices,
-      ensuredSensors,
+      createdDevices: created,
+      ensuredSensors: ensured,
       cleared: false,
-      error: deleteProbesError.message,
+      error: error instanceof Error ? error.message : String(error),
     };
   }
-
-  const { error: deleteFeedsError } = await supabase
-    .from("user_temp_feeds")
-    .delete()
-    .eq("user_id", userId);
-  if (deleteFeedsError) {
-    return {
-      migratedFeeds: feeds.length,
-      createdDevices,
-      ensuredSensors,
-      cleared: false,
-      error: deleteFeedsError.message,
-    };
-  }
-
-  return {
-    migratedFeeds: feeds.length,
-    createdDevices,
-    ensuredSensors,
-    cleared: true,
-    error: null,
-  };
+  return { migratedFeeds: feeds.length, createdDevices: created, ensuredSensors: ensured, cleared: true, error: null };
 }
 
 /** Migrate every user that still has legacy feed rows (admin / one-shot). */
@@ -375,19 +193,12 @@ export async function migrateAllLegacyTempTablesToDevices(): Promise<{
   cleared: number;
   errors: string[];
 }> {
-  const { data: rows, error } =
-    dbBackend() === "neon"
-      ? await neonLegacy.usersWithLegacyFeeds().then(
-          (ids) => ({ data: ids.map((user_id) => ({ user_id })), error: null }),
-          (e: unknown) => ({ data: null, error: { message: e instanceof Error ? e.message : String(e) } }),
-        )
-      : await createAdminClient().from("user_temp_feeds").select("user_id");
-
-  if (error) {
-    return { users: 0, cleared: 0, errors: [error.message] };
+  let userIds: string[];
+  try {
+    userIds = await neonLegacy.usersWithLegacyFeeds();
+  } catch (error) {
+    return { users: 0, cleared: 0, errors: [errorMessage(error)] };
   }
-
-  const userIds = [...new Set((rows ?? []).map((r) => r.user_id))];
   let cleared = 0;
   const errors: string[] = [];
 
@@ -433,13 +244,7 @@ export async function saveUserTempConfig(
   }
 
   // Drop any leftover legacy rows for this user.
-  if (dbBackend() === "neon") {
-    await neonLegacy.clearLegacy(userId).catch(() => {});
-  } else {
-    const supabase = createServerClient();
-    await supabase.from("user_temp_probes").delete().eq("user_id", userId);
-    await supabase.from("user_temp_feeds").delete().eq("user_id", userId);
-  }
+  await neonLegacy.clearLegacy(userId).catch(() => {});
 
   return { error: null };
 }

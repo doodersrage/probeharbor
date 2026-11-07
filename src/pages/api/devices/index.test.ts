@@ -47,20 +47,15 @@ vi.mock("../../../lib/entitlements", () => ({
   getUserEntitlements: (...a: unknown[]) => mockGetUserEntitlements(...a),
 }));
 
-function mockQuery(result: { data?: unknown; error?: unknown } = { data: null, error: null }) {
-  const builder: Record<string, unknown> = {};
-  for (const method of ["delete", "eq", "insert", "select"]) {
-    builder[method] = vi.fn(() => builder);
-  }
-  (builder as { then: unknown }).then = (resolve: (v: unknown) => unknown, reject: (v: unknown) => unknown) =>
-    Promise.resolve(result).then(resolve, reject);
-  return builder;
-}
-
-const mockFrom = vi.fn();
-const mockCreateServerClient = vi.fn(() => ({ from: mockFrom }));
-vi.mock("../../../lib/supabase", () => ({
-  createServerClient: () => mockCreateServerClient(),
+const mockDeleteDevices = vi.fn();
+const mockSetDevicesEnabled = vi.fn();
+const mockSetDevicesSpace = vi.fn();
+const mockAddSensors = vi.fn();
+vi.mock("../../../lib/db/deviceActions", () => ({
+  deleteDevices: (...a: unknown[]) => mockDeleteDevices(...a),
+  setDevicesEnabled: (...a: unknown[]) => mockSetDevicesEnabled(...a),
+  setDevicesSpace: (...a: unknown[]) => mockSetDevicesSpace(...a),
+  addSensors: (...a: unknown[]) => mockAddSensors(...a),
 }));
 
 const mockRequireHouseholdEditor = vi.fn();
@@ -130,8 +125,10 @@ beforeEach(() => {
   mockUpdateDeviceSpace.mockReset().mockResolvedValue({ error: null });
   mockUpdateDeviceDetails.mockReset().mockResolvedValue({ error: null });
   mockGetUserEntitlements.mockReset().mockResolvedValue({ maxDevices: 5 });
-  mockFrom.mockReset().mockImplementation(() => mockQuery());
-  mockCreateServerClient.mockClear();
+  mockDeleteDevices.mockReset().mockResolvedValue({ error: null });
+  mockSetDevicesEnabled.mockReset().mockResolvedValue({ error: null });
+  mockSetDevicesSpace.mockReset().mockResolvedValue({ error: null });
+  mockAddSensors.mockReset().mockResolvedValue({ error: null });
   mockRequireHouseholdEditor.mockReset().mockResolvedValue({ ok: true });
   mockRedirectUnlessEditor.mockReset().mockReturnValue(null);
   mockHouseholdEditorCtx.mockReset().mockReturnValue({ householdId: "house-1" });
@@ -253,7 +250,7 @@ describe("POST /api/devices", () => {
 
     await POST(context);
 
-    expect(mockFrom).toHaveBeenCalledWith("devices");
+    expect(mockDeleteDevices).toHaveBeenCalledWith("house-1", ["d1"]);
     expect(context.redirect).toHaveBeenCalledWith("/dashboard/devices?device_deleted=1");
   });
 
@@ -321,7 +318,7 @@ describe("POST /api/devices", () => {
 
     await POST(context);
 
-    expect(mockFrom).not.toHaveBeenCalledWith("device_sensors");
+    expect(mockAddSensors).not.toHaveBeenCalled();
     expect(context.redirect).toHaveBeenCalledWith("/dashboard/devices?error=1");
   });
 
@@ -337,7 +334,9 @@ describe("POST /api/devices", () => {
 
     await POST(context);
 
-    expect(mockFrom).toHaveBeenCalledWith("device_sensors");
+    expect(mockAddSensors).toHaveBeenCalledWith("house-1", "d1", [
+      { key: "temp", label: "Garage", kind: "temperature", unit: "F" },
+    ]);
     expect(context.redirect).toHaveBeenCalledWith("/dashboard/devices?sensor_added=1");
   });
 
@@ -353,6 +352,7 @@ describe("POST /api/devices", () => {
 
     await POST(context);
 
+    expect(mockAddSensors).not.toHaveBeenCalled();
     expect(context.redirect).toHaveBeenCalledWith("/dashboard/devices?error=1");
   });
 
@@ -362,12 +362,15 @@ describe("POST /api/devices", () => {
 
     await POST(context);
 
-    expect(mockFrom).toHaveBeenCalledWith("device_sensors");
+    expect(mockAddSensors).toHaveBeenCalledWith("house-1", "d1", [
+      { key: "temp", label: "Probe", kind: "temperature", unit: "F" },
+      { key: "temp", label: "Probe humidity", kind: "humidity", unit: "F" },
+    ]);
     expect(context.redirect).toHaveBeenCalledWith("/dashboard/devices?sensor_added=1");
   });
 
   it("returns an error when adding a sensor pair fails", async () => {
-    mockFrom.mockImplementation(() => mockQuery({ error: "db error" }));
+    mockAddSensors.mockResolvedValue({ error: "db error" });
     const { POST } = await import("./index");
     const context = makeContext({ action: "add_sensor_pair", device_id: "d1", key: "temp" });
 

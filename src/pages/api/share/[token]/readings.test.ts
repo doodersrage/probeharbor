@@ -6,13 +6,9 @@ vi.mock("../../../../lib/edgeRateLimit", () => ({
   checkEdgeRateLimit: (...a: unknown[]) => mockCheckEdgeRateLimit(...a),
 }));
 
-const mockMaybeSingle = vi.fn();
-const mockEq = vi.fn();
-const mockSelect = vi.fn();
-const mockFrom = vi.fn();
-const mockCreateServerClient = vi.fn();
-vi.mock("../../../../lib/supabase", () => ({
-  createServerClient: () => mockCreateServerClient(),
+const mockResolveShareToken = vi.fn();
+vi.mock("../../../../lib/shareLinksStore", () => ({
+  resolveShareToken: (...a: unknown[]) => mockResolveShareToken(...a),
 }));
 
 const mockFetchLatestSensorValues = vi.fn();
@@ -70,21 +66,13 @@ function makeContext(options: {
 beforeEach(() => {
   mockCheckEdgeRateLimit.mockReset().mockResolvedValue(null);
   mockCheckShareReadingsRateLimit.mockReset().mockReturnValue({ ok: true });
-  mockMaybeSingle.mockReset().mockResolvedValue({
-    data: {
-      id: "link-1",
-      token: "share-token-abc",
-      household_id: "house-1",
-      scope: "live",
-      label: "Live view",
-      expires_at: null,
-    },
-    error: null,
+  mockResolveShareToken.mockReset().mockResolvedValue({
+    id: "link-1",
+    household_id: "house-1",
+    scope: "live",
+    label: "Live view",
+    expires_at: null,
   });
-  mockEq.mockReset().mockReturnValue({ maybeSingle: mockMaybeSingle });
-  mockSelect.mockReset().mockReturnValue({ eq: mockEq });
-  mockFrom.mockReset().mockReturnValue({ select: mockSelect });
-  mockCreateServerClient.mockReset().mockReturnValue({ from: mockFrom });
   mockFetchLatestSensorValues.mockReset().mockResolvedValue([
     {
       deviceName: "Garage",
@@ -144,14 +132,31 @@ describe("GET /api/share/[token]/readings", () => {
     expect(await response.json()).toEqual({ error: "Too many requests" });
   });
 
-  it("returns 404 for an invalid or expired share link", async () => {
-    mockMaybeSingle.mockResolvedValue({ data: null, error: null });
+  it("returns 404 for an unknown share link", async () => {
+    mockResolveShareToken.mockResolvedValue(null);
     const { GET } = await import("./readings");
 
     const response = await GET(makeContext());
 
     expect(response.status).toBe(404);
     expect(await response.json()).toEqual({ error: "Invalid or expired link" });
+  });
+
+  it("returns 404 for an expired share link", async () => {
+    mockResolveShareToken.mockResolvedValue({
+      id: "link-1",
+      household_id: "house-1",
+      scope: "live",
+      label: null,
+      expires_at: "2020-01-01T00:00:00Z",
+    });
+    const { GET } = await import("./readings");
+
+    const response = await GET(makeContext());
+
+    expect(response.status).toBe(404);
+    expect(await response.json()).toEqual({ error: "Invalid or expired link" });
+    expect(mockFetchLatestSensorValues).not.toHaveBeenCalled();
   });
 
   it("returns the format error when metrics formats are not allowed", async () => {
@@ -217,37 +222,29 @@ describe("GET /api/share/[token]/readings", () => {
       const response = await GET(makeContext({ token: "some-token" }));
 
       expect(response.status).toBe(200);
-      expect(mockEq).toHaveBeenCalledTimes(1);
-      expect(mockEq).toHaveBeenCalledWith("token_hash", await hash("some-token"));
+      expect(mockResolveShareToken).toHaveBeenCalledTimes(1);
+      expect(mockResolveShareToken).toHaveBeenCalledWith(await hash("some-token"), null);
     });
 
-    it("falls back to a raw match on unhashed rows only for the old 48-hex shape", async () => {
+    it("also asks for a raw match only for the old 48-hex shape", async () => {
       const legacy = "ab".repeat(24);
-      const mockIs = vi.fn().mockReturnValue({ maybeSingle: mockMaybeSingle });
-      mockEq.mockReturnValue({ maybeSingle: mockMaybeSingle, is: mockIs });
-      mockMaybeSingle
-        .mockResolvedValueOnce({ data: null, error: null })
-        .mockResolvedValueOnce({
-          data: { id: "l", household_id: "house-1", scope: "live", label: null, expires_at: null },
-          error: null,
-        });
       const { GET } = await import("./readings");
 
       const response = await GET(makeContext({ token: legacy }));
 
       expect(response.status).toBe(200);
-      expect(mockEq).toHaveBeenNthCalledWith(2, "token", legacy);
-      expect(mockIs).toHaveBeenCalledWith("token_hash", null);
+      expect(mockResolveShareToken).toHaveBeenCalledWith(await hash(legacy), legacy);
     });
 
     it("returns 404 without a raw lookup for other shapes (e.g. a stored hash)", async () => {
-      mockMaybeSingle.mockResolvedValue({ data: null, error: null });
+      mockResolveShareToken.mockResolvedValue(null);
+      const stored = "cd".repeat(32);
       const { GET } = await import("./readings");
 
-      const response = await GET(makeContext({ token: "cd".repeat(32) }));
+      const response = await GET(makeContext({ token: stored }));
 
       expect(response.status).toBe(404);
-      expect(mockEq).toHaveBeenCalledTimes(1);
+      expect(mockResolveShareToken).toHaveBeenCalledWith(await hash(stored), null);
     });
   });
 

@@ -1,26 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { FeedHealthStatus } from "./collectHistory";
 
-/** `lastOk` is what the last-successful-check lookup (maybeSingle) returns. */
-function mockQuery(result: { data?: unknown; error?: unknown }, lastOk: string | null = null) {
-  const builder: Record<string, unknown> = {};
-  for (const method of ["select", "eq", "insert", "update", "order", "limit"]) {
-    builder[method] = vi.fn(() => builder);
-  }
-  builder.maybeSingle = vi.fn(() =>
-    Promise.resolve({ data: lastOk ? { checked_at: lastOk } : null, error: null }),
-  );
-  (builder as { then: unknown }).then = (
-    resolve: (value: unknown) => unknown,
-    reject?: (reason: unknown) => unknown,
-  ) => Promise.resolve(result).then(resolve, reject);
-  return builder;
-}
-
-const mockFrom = vi.fn();
-vi.mock("./supabase", () => ({
-  createServerClient: () => ({ from: (...args: unknown[]) => mockFrom(...args) }),
+const jobs = vi.hoisted(() => ({
+  insertFeedUptimeChecks: vi.fn(),
+  /** Last successful check for a feed (null when never reachable). */
+  lastOkFeedCheckAt: vi.fn(),
+  markFeedUptimeAlert: vi.fn(),
 }));
+vi.mock("./db/jobs", () => jobs);
+
+vi.mock("./userRecords", () => ({ getUserRecord: async () => null }));
 
 const mockCheckFeedHealth = vi.fn();
 vi.mock("./collectHistory", () => ({
@@ -53,7 +42,9 @@ function status(overrides: Partial<FeedHealthStatus> = {}): FeedHealthStatus {
 }
 
 beforeEach(() => {
-  mockFrom.mockReset();
+  jobs.insertFeedUptimeChecks.mockReset().mockResolvedValue(undefined);
+  jobs.lastOkFeedCheckAt.mockReset().mockResolvedValue(null);
+  jobs.markFeedUptimeAlert.mockReset().mockResolvedValue(undefined);
   mockCheckFeedHealth.mockReset().mockResolvedValue({ statuses: [], error: null });
   mockGetAlertSettingsForUser.mockReset().mockResolvedValue({
     feedUptimeAlertsEnabled: true,
@@ -70,20 +61,17 @@ describe("storeFeedUptimeChecks", () => {
 
     await storeFeedUptimeChecks("user-1", []);
 
-    expect(mockFrom).not.toHaveBeenCalled();
+    expect(jobs.insertFeedUptimeChecks).not.toHaveBeenCalled();
   });
 
   it("maps statuses into insertable rows", async () => {
-    const builder = mockQuery({ error: null });
-    mockFrom.mockReturnValue(builder);
     const { storeFeedUptimeChecks } = await import("./feedUptimeMonitor");
 
     await storeFeedUptimeChecks("user-1", [
       status({ feedId: "f1", feedName: "Garage", ok: false, message: "timeout" }),
     ]);
 
-    expect(mockFrom).toHaveBeenCalledWith("feed_uptime_checks");
-    expect(builder.insert).toHaveBeenCalledWith([
+    expect(jobs.insertFeedUptimeChecks).toHaveBeenCalledWith([
       {
         user_id: "user-1",
         feed_id: "f1",
@@ -107,7 +95,7 @@ describe("runFeedUptimeForAllUsers", () => {
     const result = await runFeedUptimeForAllUsers();
 
     expect(result).toEqual({ checked: 0, failed: 0, alertsSent: 0, errors: ["u1: no devices"] });
-    expect(mockFrom).not.toHaveBeenCalled();
+    expect(jobs.insertFeedUptimeChecks).not.toHaveBeenCalled();
   });
 
   it("counts checked/failed and skips notifying when everything is healthy", async () => {
@@ -116,7 +104,6 @@ describe("runFeedUptimeForAllUsers", () => {
       statuses: [status({ ok: true }), status({ feedId: "f2", ok: true })],
       error: null,
     });
-    mockFrom.mockReturnValue(mockQuery({ error: null }));
     const { runFeedUptimeForAllUsers } = await import("./feedUptimeMonitor");
 
     const result = await runFeedUptimeForAllUsers();
@@ -131,7 +118,6 @@ describe("runFeedUptimeForAllUsers", () => {
       statuses: [status({ ok: false, message: "timeout" })],
       error: null,
     });
-    mockFrom.mockReturnValue(mockQuery({ error: null }));
     mockGetAlertSettingsForUser.mockResolvedValue({ feedUptimeAlertsEnabled: false });
     const { runFeedUptimeForAllUsers } = await import("./feedUptimeMonitor");
 
@@ -147,7 +133,6 @@ describe("runFeedUptimeForAllUsers", () => {
       statuses: [status({ ok: false })],
       error: null,
     });
-    mockFrom.mockReturnValue(mockQuery({ error: null }));
     mockGetAlertSettingsForUser.mockResolvedValue({
       feedUptimeAlertsEnabled: true,
       lastFeedUptimeAlertAt: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
@@ -170,11 +155,7 @@ describe("runFeedUptimeForAllUsers", () => {
       error: null,
     });
     // Both feeds were reachable an hour ago, after the previous alert: new outages.
-    const updateBuilder = mockQuery(
-      { error: null },
-      new Date(Date.now() - 60 * 60 * 1000).toISOString(),
-    );
-    mockFrom.mockReturnValue(updateBuilder);
+    jobs.lastOkFeedCheckAt.mockResolvedValue(new Date(Date.now() - 60 * 60 * 1000).toISOString());
     mockGetAlertSettingsForUser.mockResolvedValue({
       feedUptimeAlertsEnabled: true,
       lastFeedUptimeAlertAt: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
@@ -194,9 +175,9 @@ describe("runFeedUptimeForAllUsers", () => {
         kind: "outage",
       },
     );
-    expect(updateBuilder.update).toHaveBeenCalledWith(
-      expect.objectContaining({ last_feed_uptime_alert_at: expect.any(String) }),
-    );
+    expect(jobs.lastOkFeedCheckAt).toHaveBeenCalledWith("u1", "feed-1");
+    expect(jobs.lastOkFeedCheckAt).toHaveBeenCalledWith("u1", "f2");
+    expect(jobs.markFeedUptimeAlert).toHaveBeenCalledWith("u1");
     expect(result).toEqual({ checked: 3, failed: 2, alertsSent: 1, errors: [] });
   });
 
@@ -206,7 +187,6 @@ describe("runFeedUptimeForAllUsers", () => {
       statuses: [status({ ok: false })],
       error: null,
     });
-    mockFrom.mockReturnValue(mockQuery({ error: null }));
     mockGetAlertSettingsForUser.mockResolvedValue({
       feedUptimeAlertsEnabled: true,
       lastFeedUptimeAlertAt: null,
@@ -225,7 +205,6 @@ describe("runFeedUptimeForAllUsers", () => {
       statuses: [status({ ok: false, url: "https://probeharbor.com/api/feeds/example", feedName: "Demo" })],
       error: null,
     });
-    mockFrom.mockReturnValue(mockQuery({ error: null }));
     const { runFeedUptimeForAllUsers } = await import("./feedUptimeMonitor");
 
     const result = await runFeedUptimeForAllUsers();
@@ -241,9 +220,7 @@ describe("runFeedUptimeForAllUsers", () => {
       error: null,
     });
     // Last reachable 3 days ago; already reported by the alert 5 hours ago.
-    mockFrom.mockReturnValue(
-      mockQuery({ error: null }, new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString()),
-    );
+    jobs.lastOkFeedCheckAt.mockResolvedValue(new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString());
     mockGetAlertSettingsForUser.mockResolvedValue({
       feedUptimeAlertsEnabled: true,
       lastFeedUptimeAlertAt: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
@@ -254,6 +231,7 @@ describe("runFeedUptimeForAllUsers", () => {
     const result = await runFeedUptimeForAllUsers();
 
     expect(mockNotifyUser).not.toHaveBeenCalled();
+    expect(jobs.markFeedUptimeAlert).not.toHaveBeenCalled();
     expect(result.alertsSent).toBe(0);
   });
 
@@ -264,7 +242,6 @@ describe("runFeedUptimeForAllUsers", () => {
       statuses: [status({ ok: false, message: longMessage })],
       error: null,
     });
-    mockFrom.mockReturnValue(mockQuery({ error: null }));
     const { runFeedUptimeForAllUsers } = await import("./feedUptimeMonitor");
 
     await runFeedUptimeForAllUsers();

@@ -1,7 +1,7 @@
 /**
  * Turn a Better Auth session into the `AuthResult` shape the app already
  * uses (a Supabase-style session and user), so pages and routes keep
- * working unchanged when DB_BACKEND=neon.
+ * working unchanged.
  *
  * - user: id, email, created_at, email_confirmed_at, user_metadata and
  *   app_metadata, via getUserRecord (auth_users + user_profiles).
@@ -10,7 +10,7 @@
  *   refresh_token is "". Code that still hands these tokens to Supabase
  *   (profile updates, MFA) moves over in later parts of step 4.
  */
-import type { Session, User } from "@supabase/supabase-js";
+import type { Session, User } from "./appUser";
 import type { AuthResult } from "./auth";
 import type { ProbeHarborAuth } from "./betterAuthConfig";
 import { getUserRecord } from "./userRecords";

@@ -11,25 +11,9 @@ vi.mock("../../../../lib/signInErrors", () => ({
   buildSignInRedirectUrl: (...a: unknown[]) => mockBuildSignInRedirectUrl(...a),
 }));
 
-const mockSignInWithOAuth = vi.fn();
-const mockCreateOAuthAuthClient = vi.fn();
-vi.mock("../../../../lib/oauthAuthClient", () => ({
-  createOAuthAuthClient: (...a: unknown[]) => mockCreateOAuthAuthClient(...a),
-}));
-
 vi.mock("../../../../lib/siteUrl", () => ({
-  buildGitHubOAuthCallbackUrl: () => "https://example.com/api/auth/github/callback",
-  buildOAuthCallbackUrl: () => "https://example.com/api/auth/callback",
-  GITHUB_OAUTH_STATE_COOKIE: "github_oauth_state",
   OAUTH_NEXT_COOKIE: "oauth_next",
   OAUTH_REF_COOKIE: "oauth_ref",
-}));
-
-const mockBuildGitHubAuthorizeUrl = vi.fn();
-const mockIsGitHubOAuthConfigured = vi.fn();
-vi.mock("../../../../lib/githubOAuth", () => ({
-  buildGitHubAuthorizeUrl: (...a: unknown[]) => mockBuildGitHubAuthorizeUrl(...a),
-  isGitHubOAuthConfigured: () => mockIsGitHubOAuthConfigured(),
 }));
 
 const mockRedirectMobileOAuthComplete = vi.fn();
@@ -49,15 +33,27 @@ vi.mock("../../../../lib/companionAuth", () => ({
 }));
 
 const mockBuildMfaChallengeUrl = vi.fn();
-const mockSessionNeedsMfaStepUp = vi.fn();
 vi.mock("../../../../lib/mfa", () => ({
   buildMfaChallengeUrl: (...a: unknown[]) => mockBuildMfaChallengeUrl(...a),
-  sessionNeedsMfaStepUp: (...a: unknown[]) => mockSessionNeedsMfaStepUp(...a),
 }));
 
 const mockHasValidMfaStepUpProof = vi.fn();
 vi.mock("../../../../lib/mfaStepUpProof", () => ({
   hasValidMfaStepUpProof: (...a: unknown[]) => mockHasValidMfaStepUpProof(...a),
+}));
+
+const mockNeedsStepUp = vi.fn();
+vi.mock("../../../../lib/betterAuthMfaGate", () => ({
+  // The real gate asks the proof check only when a YubiKey is enrolled.
+  betterAuthNeedsStepUp: async (user: { id: string }, hasProof: (id: string) => Promise<boolean>) =>
+    (await mockNeedsStepUp(user)) && !(await hasProof(user.id)),
+}));
+
+const mockCreateAppSessionToken = vi.fn();
+const mockStartBetterAuthOAuth = vi.fn();
+vi.mock("../../../../lib/betterAuthAppHandoff", () => ({
+  createAppSessionToken: (...a: unknown[]) => mockCreateAppSessionToken(...a),
+  startBetterAuthOAuth: (...a: unknown[]) => mockStartBetterAuthOAuth(...a),
 }));
 
 function makeCookies() {
@@ -85,20 +81,18 @@ function makeContext(search: Record<string, string> = {}): APIContext {
 beforeEach(() => {
   mockGetAuthFromCookies.mockReset().mockResolvedValue({ session: null, user: null });
   mockBuildSignInRedirectUrl.mockReset().mockImplementation((code: string) => `/signin?error=${code}`);
-  mockSignInWithOAuth.mockReset().mockResolvedValue({ data: { url: "https://provider.example.com/authorize" }, error: null });
-  mockCreateOAuthAuthClient.mockReset().mockReturnValue({
-    auth: { signInWithOAuth: (...a: unknown[]) => mockSignInWithOAuth(...a) },
-  });
-  mockBuildGitHubAuthorizeUrl.mockReset().mockReturnValue("https://github.com/login/oauth/authorize?state=abc");
-  mockIsGitHubOAuthConfigured.mockReset().mockReturnValue(false);
   mockRedirectMobileOAuthComplete.mockReset().mockResolvedValue(null);
   mockSetMobileOAuthCookie.mockReset();
   mockParseCompanionClient.mockReset().mockReturnValue("baybuddy");
   mockSetCompanionClientCookie.mockReset();
   mockSetCompanionLoopbackCookie.mockReset().mockReturnValue(true);
   mockBuildMfaChallengeUrl.mockReset().mockReturnValue("/signin/mfa?next=%2Fapi%2Fauth%2Fcompanion%2Fstart");
-  mockSessionNeedsMfaStepUp.mockReset().mockResolvedValue(false);
   mockHasValidMfaStepUpProof.mockReset().mockResolvedValue(true);
+  mockNeedsStepUp.mockReset().mockResolvedValue(false);
+  mockCreateAppSessionToken.mockReset().mockResolvedValue("app-token");
+  mockStartBetterAuthOAuth
+    .mockReset()
+    .mockResolvedValue(new Response(null, { status: 302, headers: { Location: "https://provider.example.com/authorize" } }));
 });
 
 describe("GET /api/auth/companion/start", () => {
@@ -124,11 +118,8 @@ describe("GET /api/auth/companion/start", () => {
   });
 
   it("redirects to the MFA challenge when the existing session needs step-up and has no proof", async () => {
-    mockGetAuthFromCookies.mockResolvedValue({
-      session: { access_token: "at", refresh_token: "rt" },
-      user: { id: "user-1" },
-    });
-    mockSessionNeedsMfaStepUp.mockResolvedValue(true);
+    mockGetAuthFromCookies.mockResolvedValue({ session: { token: "s" }, user: { id: "user-1" } });
+    mockNeedsStepUp.mockResolvedValue(true);
     mockHasValidMfaStepUpProof.mockResolvedValue(false);
     const { GET } = await import("./start");
     const context = makeContext({ client: "desktop" });
@@ -139,60 +130,37 @@ describe("GET /api/auth/companion/start", () => {
     expect(context.redirect).toHaveBeenCalledWith(
       "/signin/mfa?next=%2Fapi%2Fauth%2Fcompanion%2Fstart",
     );
+    expect(mockCreateAppSessionToken).not.toHaveBeenCalled();
   });
 
-  it("hands off immediately when already signed in and no MFA is needed", async () => {
-    mockGetAuthFromCookies.mockResolvedValue({
-      session: { access_token: "at", refresh_token: "rt" },
-      user: { id: "user-1" },
-    });
+  it("hands off immediately with an app session when already signed in and no step-up is needed", async () => {
+    mockGetAuthFromCookies.mockResolvedValue({ session: { token: "s" }, user: { id: "user-1" } });
     const handoff = new Response(null, { status: 302, headers: { Location: "myapp://done" } });
     mockRedirectMobileOAuthComplete.mockResolvedValue(handoff);
     const { GET } = await import("./start");
+    const context = makeContext();
 
-    const response = await GET(makeContext());
+    const response = await GET(context);
 
+    expect(mockCreateAppSessionToken).toHaveBeenCalledWith(context.request, "user-1");
+    expect(mockRedirectMobileOAuthComplete).toHaveBeenCalledWith("app-token", "app-token", context.site);
     expect(response).toBe(handoff);
   });
 
-  it("starts a google OAuth flow and redirects to the provider URL", async () => {
+  it("starts the provider's OAuth flow", async () => {
     const { GET } = await import("./start");
     const context = makeContext({ provider: "google" });
 
     const response = await GET(context);
 
-    expect(mockSignInWithOAuth).toHaveBeenCalled();
+    expect(mockStartBetterAuthOAuth).toHaveBeenCalledWith(context.request, "google");
     expect(response.headers.get("Location")).toBe("https://provider.example.com/authorize");
   });
 
-  it("redirects to oauth_failed when signInWithOAuth errors", async () => {
-    mockSignInWithOAuth.mockResolvedValue({ data: { url: null }, error: { message: "boom" } });
+  it("redirects to oauth_failed when the provider can't be started", async () => {
+    mockStartBetterAuthOAuth.mockResolvedValue(null);
     const { GET } = await import("./start");
     const context = makeContext({ provider: "discord" });
-
-    await GET(context);
-
-    expect(context.redirect).toHaveBeenCalledWith("/signin?error=oauth_failed");
-  });
-
-  it("uses the GitHub authorize flow directly when GitHub OAuth is configured", async () => {
-    mockIsGitHubOAuthConfigured.mockReturnValue(true);
-    const { GET } = await import("./start");
-    const context = makeContext({ provider: "github" });
-
-    const response = await GET(context);
-
-    expect(mockBuildGitHubAuthorizeUrl).toHaveBeenCalled();
-    expect(response.headers.get("Location")).toBe(
-      "https://github.com/login/oauth/authorize?state=abc",
-    );
-  });
-
-  it("redirects to oauth_failed when the GitHub authorize URL can't be built", async () => {
-    mockIsGitHubOAuthConfigured.mockReturnValue(true);
-    mockBuildGitHubAuthorizeUrl.mockReturnValue(null);
-    const { GET } = await import("./start");
-    const context = makeContext({ provider: "github" });
 
     await GET(context);
 
@@ -205,6 +173,7 @@ describe("GET /api/auth/companion/start", () => {
 
     await GET(context);
 
+    expect(mockStartBetterAuthOAuth).not.toHaveBeenCalled();
     expect(context.redirect).toHaveBeenCalledWith(
       "/signin?next=%2Fapi%2Fauth%2Fcompanion%2Fcomplete",
     );

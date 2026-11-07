@@ -1,9 +1,17 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { DEFAULT_ALERT_SETTINGS } from "./alerts";
 
+const mockRecentAlert = vi.fn();
+const mockMarkCooldown = vi.fn();
+const mockClaimCooldown = vi.fn();
+vi.mock("./db/alertSettings", () => ({
+  recentAlertReachedAChannel: (...a: unknown[]) => mockRecentAlert(...a),
+  markCooldown: (...a: unknown[]) => mockMarkCooldown(...a),
+  claimCooldown: (...a: unknown[]) => mockClaimCooldown(...a),
+}));
+
 afterEach(() => {
   vi.unstubAllGlobals();
-  vi.resetModules();
   vi.clearAllMocks();
 });
 
@@ -31,82 +39,21 @@ describe("alertSettingsHaveDeliveryTimestamp", () => {
 });
 
 describe("ensureAlertDeliveryEvidence", () => {
-  it("reports a delivered alert_events row without arming the cooldown", async () => {
-    const updateEq = vi.fn().mockReturnValue({
-      select: vi.fn().mockResolvedValue({ data: [{ user_id: "user-1" }], error: null }),
-    });
-    const fromMock = vi.fn((table: string) => {
-      if (table === "alert_events") {
-        return {
-          select: vi.fn().mockReturnValue({
-            eq: vi.fn().mockReturnValue({
-              order: vi.fn().mockReturnValue({
-                limit: vi.fn().mockResolvedValue({
-                  data: [{ channels_sent: ["email"] }],
-                  error: null,
-                }),
-              }),
-            }),
-          }),
-        };
-      }
-      if (table === "alert_settings") {
-        return {
-          update: vi.fn().mockReturnValue({
-            eq: updateEq,
-          }),
-          select: vi.fn().mockReturnValue({
-            eq: vi.fn().mockReturnValue({
-              maybeSingle: vi.fn().mockResolvedValue({
-                data: {
-                  user_id: "user-1",
-                  enabled: true,
-                  last_alert_sent_at: "2026-09-04T16:00:00.000Z",
-                },
-                error: null,
-              }),
-            }),
-          }),
-          upsert: vi.fn().mockResolvedValue({ error: null }),
-        };
-      }
-      return {};
-    });
-
-    vi.doMock("./supabase", () => ({
-      createServerClient: () => ({ from: fromMock }),
-    }));
+  it("reports a delivered alert event without arming the cooldown", async () => {
+    mockRecentAlert.mockResolvedValue(true);
 
     const { ensureAlertDeliveryEvidence } = await import("./notify");
     const result = await ensureAlertDeliveryEvidence("user-1", DEFAULT_ALERT_SETTINGS);
     expect(result.hasDelivery).toBe(true);
+    expect(mockRecentAlert).toHaveBeenCalledWith("user-1");
     // Writing last_alert_sent_at here would suppress real freeze alerts.
-    expect(updateEq).not.toHaveBeenCalled();
+    expect(mockMarkCooldown).not.toHaveBeenCalled();
+    expect(mockClaimCooldown).not.toHaveBeenCalled();
     expect(result.settings.lastAlertSentAt).toBeNull();
   });
 
   it("stays false when events were only skipped", async () => {
-    const fromMock = vi.fn((table: string) => {
-      if (table === "alert_events") {
-        return {
-          select: vi.fn().mockReturnValue({
-            eq: vi.fn().mockReturnValue({
-              order: vi.fn().mockReturnValue({
-                limit: vi.fn().mockResolvedValue({
-                  data: [{ channels_sent: [] }],
-                  error: null,
-                }),
-              }),
-            }),
-          }),
-        };
-      }
-      return {};
-    });
-
-    vi.doMock("./supabase", () => ({
-      createServerClient: () => ({ from: fromMock }),
-    }));
+    mockRecentAlert.mockResolvedValue(false);
 
     const { ensureAlertDeliveryEvidence } = await import("./notify");
     const result = await ensureAlertDeliveryEvidence("user-1", DEFAULT_ALERT_SETTINGS);

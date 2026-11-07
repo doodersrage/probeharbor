@@ -11,10 +11,9 @@ vi.mock("cloudflare:email", () => ({
   },
 }));
 
-const mockCreateServerClient = vi.fn();
-const mockInsert = vi.fn();
-vi.mock("../../lib/supabase", () => ({
-  createServerClient: () => mockCreateServerClient(),
+const mockInsertContact = vi.fn();
+vi.mock("../../lib/db/remaining", () => ({
+  insertContact: (...a: unknown[]) => mockInsertContact(...a),
 }));
 
 const mockGetTurnstileToken = vi.fn();
@@ -77,10 +76,7 @@ beforeEach(() => {
   mockVerifyTurnstileToken.mockReset().mockResolvedValue({ success: true });
   mockRequireSmtpMailFrom.mockReset().mockReturnValue("noreply@probeharbor.dev");
   mockSendMailerRaw.mockReset().mockResolvedValue(undefined);
-  mockInsert.mockReset().mockResolvedValue({ error: null });
-  mockCreateServerClient.mockReset().mockReturnValue({
-    from: () => ({ insert: mockInsert }),
-  });
+  mockInsertContact.mockReset().mockResolvedValue({ error: null });
   stubEnv("SMTP_MAIL_TO", "support@probeharbor.dev");
 });
 
@@ -178,9 +174,7 @@ describe("POST /api/contact", () => {
 
     expect(response.status).toBe(200);
     expect(mockSendMailerRaw).toHaveBeenCalledTimes(1);
-    expect(mockInsert).toHaveBeenCalledWith([
-      { name: "Jane Doe", email: "jane@example.com", message: "Hello there" },
-    ]);
+    expect(mockInsertContact).toHaveBeenCalledWith("Jane Doe", "jane@example.com", "Hello there");
     expect(await response.json()).toEqual({
       success: true,
       message: "Thanks, we got your message. We usually reply within 1–2 business days.",
@@ -188,7 +182,7 @@ describe("POST /api/contact", () => {
   });
 
   it("still returns success even when storing the submission fails", async () => {
-    mockInsert.mockResolvedValue({ error: { message: "db down" } });
+    mockInsertContact.mockResolvedValue({ error: "db down" });
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     const { POST } = await import("./contact");
 

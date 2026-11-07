@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { insertTestUser, useTestDatabase } from "../test/db";
 
 vi.mock("./runtimeEnv", () => ({
-  getRuntimeEnv: (key: string) => (key === "DB_BACKEND" ? "neon" : undefined),
+  getRuntimeEnv: () => undefined,
   hasRuntimeEnv: () => false,
 }));
 vi.mock("./mailer", () => ({ sendEmail: async () => {} }));
@@ -98,5 +98,17 @@ describe("status notifier state (Neon)", () => {
     await expect(readLastKnownHealthy()).resolves.toBe(false);
     await writeLastKnownHealthy(true);
     await expect(readLastKnownHealthy()).resolves.toBe(true);
+  });
+});
+
+describe("status links from before hashing (Neon)", () => {
+  it("an old 36-character link still opens its page until revoked; other shapes don't fall back", async () => {
+    const a = await home("a@example.com");
+    const raw = "0123456789abcdef0123456789abcdef0123";
+    await sql("insert into public.status_page_tokens (household_id, token, token_hash) values ($1, $2, null)", [a, raw]);
+    await expect(resolveStatusPageToken(raw)).resolves.toEqual({ householdId: a });
+    await expect(resolveStatusPageToken(raw.toUpperCase())).resolves.toBeNull();
+    await sql("update public.status_page_tokens set revoked_at = now() where token = $1", [raw]);
+    await expect(resolveStatusPageToken(raw)).resolves.toBeNull();
   });
 });

@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const mockGetUserById = vi.fn();
-vi.mock("./supabase", () => ({
-  createAdminClient: () => ({ auth: { admin: { getUserById: (...a: unknown[]) => mockGetUserById(...a) } } }),
+const mockGetUserRecord = vi.fn();
+vi.mock("./userRecords", () => ({
+  getUserRecord: (...a: unknown[]) => mockGetUserRecord(...a),
 }));
 
 const mockFetchTemps = vi.fn();
@@ -47,7 +47,7 @@ vi.mock("./thermostatSnapshots", () => ({
 }));
 
 beforeEach(() => {
-  mockGetUserById.mockReset().mockResolvedValue({ data: { user: { email: "owner@example.com" } } });
+  mockGetUserRecord.mockReset().mockResolvedValue({ id: "owner", email: "owner@example.com" });
   mockFetchTemps.mockReset();
   mockGetUserDevicesAsTempConfig.mockReset();
   mockListAllHouseholdOwnerUserIds.mockReset();

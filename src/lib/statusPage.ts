@@ -1,6 +1,4 @@
-import { dbBackend } from "./db/client";
 import * as neonStatus from "./db/statusPages";
-import { createServerClient } from "./supabase";
 import { listHouseholdDevices } from "./devices";
 import { fetchLatestSensorValues } from "./sensorReadings";
 import { formatRelativeAge } from "./relativeTime";
@@ -39,17 +37,8 @@ export async function createStatusPageToken(
   label: string,
 ): Promise<{ token: string | null; error: string | null }> {
   const token = randomToken();
-  if (dbBackend() === "neon") {
-    const created = await neonStatus.insertStatusPage(householdId, await sha256Hex(token), label.trim() || "Status page");
-    return { token: created.error ? null : token, error: created.error };
-  }
-  const supabase = createServerClient();
-  const { error } = await supabase.from("status_page_tokens").insert({
-    household_id: householdId,
-    token_hash: await sha256Hex(token),
-    label: label.trim() || "Status page",
-  });
-  return { token: error ? null : token, error: error?.message ?? null };
+  const created = await neonStatus.insertStatusPage(householdId, await sha256Hex(token), label.trim() || "Status page");
+  return { token: created.error ? null : token, error: created.error };
 }
 
 /**
@@ -61,76 +50,29 @@ export async function regenerateStatusPageToken(
   id: string,
 ): Promise<{ token: string | null; error: string | null }> {
   const token = randomToken();
-  if (dbBackend() === "neon") {
-    const updated = await neonStatus.regenerateStatusPage(householdId, id, await sha256Hex(token));
-    return updated.error ? { token: null, error: updated.error } : { token, error: null };
-  }
-  const supabase = createServerClient();
-  const { data, error } = await supabase
-    .from("status_page_tokens")
-    .update({ token_hash: await sha256Hex(token), token: null })
-    .eq("id", id)
-    .eq("household_id", householdId)
-    .is("revoked_at", null)
-    .select("id")
-    .maybeSingle();
-  if (error || !data) return { token: null, error: error?.message ?? "Status page not found" };
-  return { token, error: null };
+  const updated = await neonStatus.regenerateStatusPage(householdId, id, await sha256Hex(token));
+  return updated.error ? { token: null, error: updated.error } : { token, error: null };
 }
 
 export async function listStatusPageTokens(
   householdId: string,
 ): Promise<StatusPageToken[]> {
-  if (dbBackend() === "neon") return neonStatus.listStatusPages(householdId);
-  const supabase = createServerClient();
-  const { data } = await supabase
-    .from("status_page_tokens")
-    .select("id, household_id, token, label, created_at, revoked_at")
-    .eq("household_id", householdId)
-    .is("revoked_at", null)
-    .order("created_at", { ascending: false });
-  return (data ?? []) as StatusPageToken[];
+  return neonStatus.listStatusPages(householdId);
 }
 
 export async function revokeStatusPageToken(
   householdId: string,
   id: string,
 ): Promise<void> {
-  if (dbBackend() === "neon") return neonStatus.revokeStatusPage(householdId, id);
-  const supabase = createServerClient();
-  await supabase
-    .from("status_page_tokens")
-    .update({ revoked_at: new Date().toISOString() })
-    .eq("id", id)
-    .eq("household_id", householdId);
+  return neonStatus.revokeStatusPage(householdId, id);
 }
 
 export async function resolveStatusPageToken(
   token: string,
 ): Promise<{ householdId: string } | null> {
-  if (dbBackend() === "neon") {
-    return neonStatus.resolveStatusPage(await sha256Hex(token), LEGACY_RAW_TOKEN.test(token) ? token : null);
-  }
-  const supabase = createServerClient();
-  const { data } = await supabase
-    .from("status_page_tokens")
-    .select("household_id")
-    .eq("token_hash", await sha256Hex(token))
-    .is("revoked_at", null)
-    .maybeSingle();
-  if (data) return { householdId: data.household_id };
-
-  // Rows created by the previous code after the migration ran but before this
-  // deploy have no token_hash yet. Only the old 36-hex shape is tried raw.
-  if (!LEGACY_RAW_TOKEN.test(token)) return null;
-  const { data: legacy } = await supabase
-    .from("status_page_tokens")
-    .select("household_id")
-    .eq("token", token)
-    .is("token_hash", null)
-    .is("revoked_at", null)
-    .maybeSingle();
-  return legacy ? { householdId: legacy.household_id } : null;
+  // Pages created before hashing have no token_hash; only the old 36-hex
+  // shape is tried as a raw token.
+  return neonStatus.resolveStatusPage(await sha256Hex(token), LEGACY_RAW_TOKEN.test(token) ? token : null);
 }
 
 export async function buildStatusPageSnapshot(householdId: string) {

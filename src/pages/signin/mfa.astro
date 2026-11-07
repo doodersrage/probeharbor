@@ -2,35 +2,28 @@
 import Layout from "../../layouts/Layout.astro";
 import MfaSignInChallenge from "../../components/MfaSignInChallenge";
 import { getAuthFromCookies } from "../../lib/auth";
-import {
-  sessionNeedsMfaStepUp,
-  setMfaRequiredCookie,
-} from "../../lib/mfa";
+import { setMfaRequiredCookie } from "../../lib/mfa";
 import { sanitizeNextPath } from "../../lib/siteUrl";
 import { getLocale } from "../../i18n";
 import { authSigninMessages } from "../../i18n/messages/app/auth/signin";
-import { dbBackend } from "../../lib/db/client";
 import { hasTwoFactorChallenge } from "../../lib/betterAuthMfa";
 import { betterAuthNeedsStepUp } from "../../lib/betterAuthMfaGate";
 import { hasValidMfaStepUpProof } from "../../lib/mfaStepUpProof";
 
 const t = authSigninMessages(getLocale(Astro)).mfa;
 
-const neon = dbBackend() === "neon";
-// Neon: after the password or OAuth step there is only Better Auth's
-// two-factor cookie, no session yet; the code is checked by /api/auth/mfa-verify.
-const pendingTotp = neon && hasTwoFactorChallenge(Astro.cookies);
+// After the password or OAuth step there is only Better Auth's two-factor
+// cookie, no session yet; the code is checked by /api/auth/mfa-verify.
+const pendingTotp = hasTwoFactorChallenge(Astro.cookies);
 const { session, user } = pendingTotp ? { session: null, user: null } : await getAuthFromCookies(Astro.cookies);
 
 if (!pendingTotp && (!session || !user)) {
   return Astro.redirect("/signin");
 }
 
-const needsStepUp = pendingTotp
-  ? true
-  : neon
-    ? await betterAuthNeedsStepUp(user, (id) => hasValidMfaStepUpProof(Astro.request, Astro.cookies, id))
-    : await sessionNeedsMfaStepUp(session!.access_token, session!.refresh_token, user);
+const needsStepUp =
+  pendingTotp ||
+  (await betterAuthNeedsStepUp(user, (id) => hasValidMfaStepUpProof(Astro.request, Astro.cookies, id)));
 
 if (!needsStepUp) {
   setMfaRequiredCookie(Astro.cookies, false);

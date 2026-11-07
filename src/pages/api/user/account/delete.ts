@@ -1,32 +1,13 @@
 import type { APIRoute } from "astro";
-import type { User } from "@supabase/supabase-js";
-import { getAuthFromCookies, clearAuthCookies } from "../../../../lib/auth";
+import { getAuthFromCookies } from "../../../../lib/auth";
 import { deleteUserAccount } from "../../../../lib/accountLifecycle";
-import {
-  createAuthClient,
-  createAuthClientFromSession,
-  userHasAnyMfaEnrolled,
-} from "../../../../lib/mfa";
-import {
-  clearMfaStepUpCookie,
-  hasElevatedAuth,
-} from "../../../../lib/mfaStepUpProof";
+import { clearMfaStepUpCookie } from "../../../../lib/mfaStepUpProof";
 import { formRedirectPath, withQuery } from "../../../../lib/siteUrl";
-import { dbBackend } from "../../../../lib/db/client";
 import { getUserMetadata } from "../../../../lib/db/userMetadata";
 import { withBetterAuth } from "../../../../lib/betterAuthRuntime";
 import { expiredBetterAuthCookies } from "../../../../lib/betterAuthResponse";
 import { getTotpState, isElevated } from "../../../../lib/betterAuthMfa";
 import { getYubiKeyPublicIdsFromUser } from "../../../../lib/yubikeyOtp";
-
-function userHasPasswordIdentity(user: User): boolean {
-  const identities = user.identities ?? [];
-  if (identities.length === 0) {
-    // Older sessions may omit identities; if email exists, require password.
-    return Boolean(user.email);
-  }
-  return identities.some((identity) => identity.provider === "email");
-}
 
 export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const { session, user } = await getAuthFromCookies(cookies);
@@ -44,82 +25,34 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     return redirect("/dashboard/settings?delete_error=confirm");
   }
 
-  if (dbBackend() === "neon") {
-    // Same checks as below, on Better Auth: the password when the account has
-    // one (else the typed email), and a verified session when two-factor is on.
-    const state = await getTotpState(user.id);
-    if (state.hasPassword) {
-      if (!password) return redirect("/dashboard/settings?delete_error=password");
-      const ok = await withBetterAuth(request, (auth) =>
-        auth.api.verifyPassword({ body: { password }, headers: request.headers }),
-      ).then(
-        () => true,
-        () => false,
-      );
-      if (!ok) return redirect("/dashboard/settings?delete_error=password");
-    } else {
-      const email = user.email?.trim()?.toLowerCase() ?? "";
-      if (!email || confirmEmail.toLowerCase() !== email) {
-        return redirect("/dashboard/settings?delete_error=email");
-      }
-    }
-    const yubikeys = getYubiKeyPublicIdsFromUser({ user_metadata: await getUserMetadata(user.id) });
-    if ((state.enabled || yubikeys.length > 0) && !(await isElevated(state, request, cookies, user.id))) {
-      return redirect("/dashboard/settings?delete_error=mfa");
-    }
-    // Deleting the user row also deletes its Better Auth sessions, logins,
-    // TOTP secret and passkeys (foreign keys cascade).
-    const { error } = await deleteUserAccount(user.id);
-    if (error) return redirect("/dashboard/settings?delete_error=1");
-    clearMfaStepUpCookie(cookies);
-    const headers = new Headers({ Location: withQuery(redirectTo, { account_deleted: "1" }) });
-    for (const cookie of expiredBetterAuthCookies()) headers.append("Set-Cookie", cookie);
-    return new Response(null, { status: 302, headers });
-  }
-
-  if (userHasPasswordIdentity(user)) {
-    const email = user.email?.trim();
-    if (!email || !password) {
-      return redirect("/dashboard/settings?delete_error=password");
-    }
-    const authClient = createAuthClient();
-    const { error: passwordError } = await authClient.auth.signInWithPassword({
-      email,
-      password,
-    });
-    if (passwordError) {
-      return redirect("/dashboard/settings?delete_error=password");
-    }
+  // The password when the account has one (else the typed email), and a
+  // verified session when two-factor is on.
+  const state = await getTotpState(user.id);
+  if (state.hasPassword) {
+    if (!password) return redirect("/dashboard/settings?delete_error=password");
+    const ok = await withBetterAuth(request, (auth) =>
+      auth.api.verifyPassword({ body: { password }, headers: request.headers }),
+    ).then(
+      () => true,
+      () => false,
+    );
+    if (!ok) return redirect("/dashboard/settings?delete_error=password");
   } else {
     const email = user.email?.trim()?.toLowerCase() ?? "";
     if (!email || confirmEmail.toLowerCase() !== email) {
       return redirect("/dashboard/settings?delete_error=email");
     }
   }
-
-  const { client, error: sessionError } = await createAuthClientFromSession(
-    session.access_token,
-    session.refresh_token,
-  );
-  if (sessionError) {
-    return redirect("/dashboard/settings?delete_error=1");
-  }
-
-  const hasMfa = await userHasAnyMfaEnrolled(client, user);
-  if (
-    hasMfa &&
-    !(await hasElevatedAuth(request, cookies, session.access_token, user.id))
-  ) {
+  const yubikeys = getYubiKeyPublicIdsFromUser({ user_metadata: await getUserMetadata(user.id) });
+  if ((state.enabled || yubikeys.length > 0) && !(await isElevated(state, request, cookies, user.id))) {
     return redirect("/dashboard/settings?delete_error=mfa");
   }
-
+  // Deleting the user row also deletes its Better Auth sessions, logins,
+  // TOTP secret and passkeys (foreign keys cascade).
   const { error } = await deleteUserAccount(user.id);
-  if (error) {
-    return redirect("/dashboard/settings?delete_error=1");
-  }
-
-  clearAuthCookies(cookies);
+  if (error) return redirect("/dashboard/settings?delete_error=1");
   clearMfaStepUpCookie(cookies);
-
-  return redirect(withQuery(redirectTo, { account_deleted: "1" }));
+  const headers = new Headers({ Location: withQuery(redirectTo, { account_deleted: "1" }) });
+  for (const cookie of expiredBetterAuthCookies()) headers.append("Set-Cookie", cookie);
+  return new Response(null, { status: 302, headers });
 };

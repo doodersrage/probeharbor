@@ -1,8 +1,7 @@
 /**
  * Neon versions of the scheduled-job queries: the job-run log (jobRuns.ts,
  * cronHealth.ts), raw-reading retention, stuck-sensor facts
- * (stuckSensors.ts) and feed uptime checks (feedUptimeMonitor.ts). Called when
- * `dbBackend() === "neon"`.
+ * (stuckSensors.ts) and feed uptime checks (feedUptimeMonitor.ts).
  *
  * Differences from the Supabase path, all deliberate:
  * - The four stuck-sensor lookups per sensor are one query (same filters).

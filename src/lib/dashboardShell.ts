@@ -1,4 +1,4 @@
-import type { User, Session } from "@supabase/supabase-js";
+import type { User, Session } from "./appUser";
 import type { AstroCookies } from "astro";
 import { getAuthFromCookies } from "./auth";
 import { isUserAdmin } from "./adminAccess";

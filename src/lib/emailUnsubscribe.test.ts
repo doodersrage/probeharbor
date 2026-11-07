@@ -8,20 +8,16 @@ vi.mock("./notify", () => ({
   saveAlertSettingsForUser: (...a: unknown[]) => mockSaveAlertSettingsForUser(...a),
 }));
 
-const mockMemberUpdateEq = vi.fn();
-const mockFrom = vi.fn(() => ({
-  update: vi.fn(() => ({ eq: mockMemberUpdateEq })),
-}));
-vi.mock("./supabase", () => ({
-  createAdminClient: () => ({ from: mockFrom }),
+const mockOptOutOfAllDigests = vi.fn();
+vi.mock("./db/emailJobs", () => ({
+  optOutOfAllDigests: (...a: unknown[]) => mockOptOutOfAllDigests(...a),
 }));
 
 beforeEach(() => {
   vi.stubEnv("ALERT_ACK_SECRET", "test-secret");
   mockGetAlertSettingsForUser.mockReset().mockResolvedValue({ ...DEFAULT_ALERT_SETTINGS });
   mockSaveAlertSettingsForUser.mockReset().mockResolvedValue({ error: null });
-  mockMemberUpdateEq.mockReset().mockResolvedValue({ error: null });
-  mockFrom.mockClear();
+  mockOptOutOfAllDigests.mockReset().mockResolvedValue({ error: null });
 });
 
 afterEach(() => {
@@ -64,7 +60,7 @@ describe("applyUnsubscribe", () => {
       "user-1",
       expect.objectContaining({ dripEmailsEnabled: false }),
     );
-    expect(mockFrom).not.toHaveBeenCalled();
+    expect(mockOptOutOfAllDigests).not.toHaveBeenCalled();
   });
 
   it("also clears household digest opt-ins for digests", async () => {
@@ -76,7 +72,6 @@ describe("applyUnsubscribe", () => {
       "user-1",
       expect.objectContaining({ digestEnabled: false }),
     );
-    expect(mockFrom).toHaveBeenCalledWith("household_members");
-    expect(mockMemberUpdateEq).toHaveBeenCalledWith("user_id", "user-1");
+    expect(mockOptOutOfAllDigests).toHaveBeenCalledWith("user-1");
   });
 });

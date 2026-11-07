@@ -1,6 +1,4 @@
-import { dbBackend } from "./db/client";
 import * as neonIngest from "./db/ingest";
-import { createServerClient } from "./supabase";
 
 function todayUtc(): string {
   return new Date().toISOString().slice(0, 10);
@@ -10,37 +8,7 @@ export async function recordIngestStat(
   deviceId: string,
   success: boolean,
 ): Promise<void> {
-  if (dbBackend() === "neon") return neonIngest.recordIngestStat(deviceId, success, todayUtc());
-  const supabase = createServerClient();
-  const day = todayUtc();
-  const column = success ? "success_count" : "error_count";
-
-  const { data: existing } = await supabase
-    .from("ingest_stats")
-    .select("success_count, error_count")
-    .eq("device_id", deviceId)
-    .eq("day", day)
-    .maybeSingle();
-
-  if (existing) {
-    const nextCount = (existing[column] ?? 0) + 1;
-    await supabase
-      .from("ingest_stats")
-      .update(
-        success
-          ? { success_count: nextCount }
-          : { error_count: nextCount },
-      )
-      .eq("device_id", deviceId)
-      .eq("day", day);
-  } else {
-    await supabase.from("ingest_stats").insert({
-      device_id: deviceId,
-      day,
-      success_count: success ? 1 : 0,
-      error_count: success ? 0 : 1,
-    });
-  }
+  return neonIngest.recordIngestStat(deviceId, success, todayUtc());
 }
 
 export type IngestStatRow = {
@@ -58,56 +26,12 @@ export async function listIngestStatsForHousehold(
   const since = new Date();
   since.setUTCDate(since.getUTCDate() - days);
   const sinceDay = since.toISOString().slice(0, 10);
-  if (dbBackend() === "neon") return neonIngest.listIngestStatsForHousehold(householdId, sinceDay);
-  const supabase = createServerClient();
-
-  const { data: devices } = await supabase
-    .from("devices")
-    .select("id, name")
-    .eq("household_id", householdId);
-
-  if (!devices || devices.length === 0) return [];
-
-  const ids = devices.map((d) => d.id);
-  const nameById = new Map(devices.map((d) => [d.id, d.name]));
-
-  const { data } = await supabase
-    .from("ingest_stats")
-    .select("device_id, day, success_count, error_count")
-    .in("device_id", ids)
-    .gte("day", sinceDay)
-    .order("day", { ascending: false });
-
-  return (data ?? []).map((row) => ({
-    ...row,
-    device_name: nameById.get(row.device_id) ?? "Device",
-  })) as IngestStatRow[];
+  return neonIngest.listIngestStatsForHousehold(householdId, sinceDay);
 }
 
 export async function listRecentIngestStatsAdmin(days = 7): Promise<IngestStatRow[]> {
   const since = new Date();
   since.setUTCDate(since.getUTCDate() - days);
   const sinceDay = since.toISOString().slice(0, 10);
-  if (dbBackend() === "neon") return neonIngest.listRecentIngestStatsAdmin(sinceDay);
-  const supabase = createServerClient();
-
-  const { data: stats } = await supabase
-    .from("ingest_stats")
-    .select("device_id, day, success_count, error_count")
-    .gte("day", sinceDay)
-    .order("day", { ascending: false });
-
-  if (!stats?.length) return [];
-
-  const deviceIds = [...new Set(stats.map((s) => s.device_id))];
-  const { data: devices } = await supabase
-    .from("devices")
-    .select("id, name")
-    .in("id", deviceIds);
-
-  const nameById = new Map((devices ?? []).map((d) => [d.id, d.name]));
-  return stats.map((row) => ({
-    ...row,
-    device_name: nameById.get(row.device_id) ?? "Device",
-  })) as IngestStatRow[];
+  return neonIngest.listRecentIngestStatsAdmin(sinceDay);
 }

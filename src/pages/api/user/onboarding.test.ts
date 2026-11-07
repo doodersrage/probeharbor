@@ -2,18 +2,15 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { APIContext } from "astro";
 
 const mockGetAuthFromCookies = vi.fn();
-const mockSetAuthCookies = vi.fn();
 vi.mock("../../../lib/auth", () => ({
   getAuthFromCookies: (...a: unknown[]) => mockGetAuthFromCookies(...a),
-  setAuthCookies: (...a: unknown[]) => mockSetAuthCookies(...a),
 }));
 
-const mockSetSession = vi.fn();
-const mockUpdateUser = vi.fn();
-const mockRefreshSession = vi.fn();
-const mockCreateAuthClient = vi.fn();
-vi.mock("../../../lib/supabase", () => ({
-  createAuthClient: (...a: unknown[]) => mockCreateAuthClient(...a),
+// The write itself (session token → user_profiles.metadata) is tested against
+// Postgres in accountSettings.db.test.ts.
+const mockUpdateSessionUserMetadata = vi.fn();
+vi.mock("../../../lib/sessionMetadata", () => ({
+  updateSessionUserMetadata: (...a: unknown[]) => mockUpdateSessionUserMetadata(...a),
 }));
 
 const mockFormRedirectPath = vi.fn();
@@ -26,46 +23,21 @@ function fakeRedirect(path: string): Response {
   return new Response(null, { status: 302, headers: { Location: path } });
 }
 
-function makeCookies() {
-  return {
-    get: vi.fn((name: string) => {
-      if (name === "sb-access-token") return { value: "access-tok" };
-      if (name === "sb-refresh-token") return { value: "refresh-tok" };
-      return undefined;
-    }),
-  };
-}
-
 function makeContext(body: Record<string, string> = {}): APIContext {
   const formData = new FormData();
   for (const [key, value] of Object.entries(body)) formData.set(key, value);
   const request = { formData: async () => formData } as unknown as Request;
   const redirect = vi.fn(fakeRedirect);
-  return { request, cookies: makeCookies(), redirect } as unknown as APIContext;
+  return { request, cookies: { get: vi.fn() }, redirect } as unknown as APIContext;
 }
 
 beforeEach(() => {
   mockGetAuthFromCookies.mockReset().mockResolvedValue({
-    session: { access_token: "access-tok", refresh_token: "refresh-tok" },
+    session: { access_token: "access-tok", refresh_token: "" },
     user: { id: "user-1", user_metadata: { existing: true } },
   });
-  mockSetAuthCookies.mockReset();
   mockFormRedirectPath.mockReset().mockReturnValue("/dashboard");
-  // Same shape as supabase-js: { data, error }.
-  mockSetSession.mockReset().mockResolvedValue({ data: { session: { access_token: "access" } }, error: null });
-  mockUpdateUser.mockReset().mockResolvedValue({ data: { user: { id: "user-1" } }, error: null });
-  mockRefreshSession.mockReset().mockResolvedValue({
-    data: {
-      session: { access_token: "new-access", refresh_token: "new-refresh" },
-    },
-  });
-  mockCreateAuthClient.mockReset().mockReturnValue({
-    auth: {
-      setSession: (...a: unknown[]) => mockSetSession(...a),
-      updateUser: (...a: unknown[]) => mockUpdateUser(...a),
-      refreshSession: (...a: unknown[]) => mockRefreshSession(...a),
-    },
-  });
+  mockUpdateSessionUserMetadata.mockReset().mockResolvedValue({ user: { id: "user-1" }, error: null });
 });
 
 describe("POST /api/user/onboarding", () => {
@@ -78,26 +50,19 @@ describe("POST /api/user/onboarding", () => {
 
     expect(context.redirect).toHaveBeenCalledWith("/signin");
     expect(response.status).toBe(302);
+    expect(mockUpdateSessionUserMetadata).not.toHaveBeenCalled();
   });
 
-  it("dismisses onboarding and refreshes auth cookies", async () => {
+  it("dismisses onboarding, keeping the other settings", async () => {
     const { POST } = await import("./onboarding");
     const context = makeContext({ action: "dismiss" });
 
     const response = await POST(context);
 
-    expect(mockSetSession).toHaveBeenCalledWith({
-      access_token: "access-tok",
-      refresh_token: "refresh-tok",
+    expect(mockUpdateSessionUserMetadata).toHaveBeenCalledWith("access-tok", "", {
+      existing: true,
+      onboarding_dismissed: true,
     });
-    expect(mockUpdateUser).toHaveBeenCalledWith({
-      data: { existing: true, onboarding_dismissed: true },
-    });
-    expect(mockSetAuthCookies).toHaveBeenCalledWith(
-      context.cookies,
-      "new-access",
-      "new-refresh",
-    );
     expect(context.redirect).toHaveBeenCalledWith("/dashboard?onboarding_dismissed=1");
     expect(response.status).toBe(302);
   });
@@ -108,31 +73,20 @@ describe("POST /api/user/onboarding", () => {
 
     await POST(context);
 
-    expect(mockUpdateUser).toHaveBeenCalledWith({
-      data: { existing: true, onboarding_dismissed: false },
+    expect(mockUpdateSessionUserMetadata).toHaveBeenCalledWith("access-tok", "", {
+      existing: true,
+      onboarding_dismissed: false,
     });
     expect(context.redirect).toHaveBeenCalledWith("/dashboard?onboarding_reset=1");
   });
 
-  it("redirects with onboarding_error when setSession fails", async () => {
-    mockSetSession.mockResolvedValue({ data: { session: null }, error: { message: "bad session" } });
+  it("redirects with onboarding_error when the write fails (e.g. expired session)", async () => {
+    mockUpdateSessionUserMetadata.mockResolvedValue({ user: null, error: new Error("Invalid session") });
     const { POST } = await import("./onboarding");
     const context = makeContext();
 
     await POST(context);
 
     expect(context.redirect).toHaveBeenCalledWith("/dashboard?onboarding_error=1");
-    expect(mockUpdateUser).not.toHaveBeenCalled();
-  });
-
-  it("redirects with onboarding_error when updateUser fails", async () => {
-    mockUpdateUser.mockResolvedValue({ error: { message: "update failed" } });
-    const { POST } = await import("./onboarding");
-    const context = makeContext();
-
-    await POST(context);
-
-    expect(context.redirect).toHaveBeenCalledWith("/dashboard?onboarding_error=1");
-    expect(mockSetAuthCookies).not.toHaveBeenCalled();
   });
 });

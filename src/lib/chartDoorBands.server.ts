@@ -1,10 +1,8 @@
 import type { ChartDoorBand } from "./chartDoorBands";
 import { readDoorSessions } from "./doorEvents";
-import { dbBackend } from "./db/client";
 import { doorBandsOverlapping } from "./db/doors";
-import { createServerClient } from "./supabase";
 
-/** PostgREST returns at most this many rows by default (`max_rows`). */
+/** Most saved sessions read for one chart window. */
 const DOOR_BAND_LIMIT = 1000;
 /** Same lookback the ingest and alert paths use to find an open session. */
 const OPEN_SESSION_LOOKBACK_MS = 24 * 60 * 60 * 1000;
@@ -22,34 +20,19 @@ export async function fetchChartDoorBands(
   doorSensors: Array<{ id: string; label: string }>,
   now = Date.now(),
 ): Promise<{ bands: ChartDoorBand[]; error: string | null }> {
-  const { data, error } =
-    dbBackend() === "neon"
-      ? await doorBandsOverlapping(householdId, fromIso, toIso, DOOR_BAND_LIMIT).then(
-          (rows) => ({ data: rows, error: null }),
-          (e: unknown) => ({ data: null, error: { message: e instanceof Error ? e.message : String(e) } }),
-        )
-      : await createServerClient()
-          .from("door_open_events")
-          .select("label, opened_at, closed_at")
-          .eq("household_id", householdId)
-          .lte("opened_at", toIso)
-          .gte("closed_at", fromIso)
-          .order("opened_at", { ascending: false })
-          .limit(DOOR_BAND_LIMIT);
-  if (error) {
-    return { bands: [], error: error.message };
+  let rows: Awaited<ReturnType<typeof doorBandsOverlapping>>;
+  try {
+    rows = await doorBandsOverlapping(householdId, fromIso, toIso, DOOR_BAND_LIMIT);
+  } catch (e) {
+    return { bands: [], error: e instanceof Error ? e.message : String(e) };
   }
-  if ((data ?? []).length === DOOR_BAND_LIMIT) {
+  if (rows.length === DOOR_BAND_LIMIT) {
     console.warn(`Door bands for household ${householdId}: hit the ${DOOR_BAND_LIMIT}-row limit; oldest not shown`);
   }
 
-  const bands: ChartDoorBand[] = (data ?? [])
+  const bands: ChartDoorBand[] = rows
     .filter((row) => typeof row.opened_at === "string")
-    .map((row) => ({
-      label: row.label as string,
-      openedAt: row.opened_at as string,
-      closedAt: (row.closed_at as string | null) ?? null,
-    }))
+    .map((row) => ({ label: row.label, openedAt: row.opened_at, closedAt: row.closed_at ?? null }))
     .reverse();
 
   // A door that is open now has no saved session yet.

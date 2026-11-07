@@ -1,33 +1,17 @@
 /**
- * Database access for the move off Supabase (IMPLEMENTATION_PLAN.md, step 3).
- *
- * While the move is in progress, code that has been converted keeps both
- * paths and picks one with `dbBackend()`:
- *
- *   if (dbBackend() === "neon") { ...query("select ...", [..]) }
- *   else { ...existing supabase-js code }
- *
- * DB_BACKEND is unset in production, so production stays on Supabase until
- * the cutover (step 6) sets DB_BACKEND=neon. The Supabase branches are removed
- * in step 7.
+ * Database access: Neon Postgres (the app moved off Supabase in
+ * IMPLEMENTATION_PLAN.md steps 3-7).
  *
  * Queries go to Neon over HTTP (@neondatabase/serverless), one request per
  * query, no connection to open: measured ~25-30 ms per query from a Worker
  * vs ~160 ms to open a TCP connection first (2026-11-07 trial). Results are
- * converted to the shapes Supabase returned (see ./types).
+ * converted to the shapes the app expects (see ./types).
  *
  * Always pass values as parameters ($1, $2, ...); never build SQL from input.
  */
 import { neon, types as neonTypes } from "@neondatabase/serverless";
 import { getRuntimeEnv } from "../runtimeEnv";
 import { makeGetTypeParser } from "./types";
-
-export type DbBackend = "supabase" | "neon";
-
-/** "neon" only when DB_BACKEND says so exactly; anything else keeps Supabase. */
-export function dbBackend(): DbBackend {
-  return getRuntimeEnv("DB_BACKEND")?.trim().toLowerCase() === "neon" ? "neon" : "supabase";
-}
 
 export type QueryRunner = <Row = Record<string, unknown>>(text: string, params?: readonly unknown[]) => Promise<Row[]>;
 
@@ -83,7 +67,11 @@ export async function query<Row = Record<string, unknown>>(
   let run = testRunner;
   if (!run) {
     const url = getRuntimeEnv("DATABASE_URL")?.trim();
-    if (!url) throw new DbQueryError(describeStatement(text), new Error("DATABASE_URL is not set"));
+    if (!url) {
+      // Unit tests set this hook (src/test/unitSetup.ts) so a query nobody mocked fails the test.
+      (globalThis as { __unconfiguredQuery?: (statement: string) => void }).__unconfiguredQuery?.(describeStatement(text));
+      throw new DbQueryError(describeStatement(text), new Error("DATABASE_URL is not set"));
+    }
     if (cached?.url !== url) cached = { url, run: neonRunner(url) };
     run = cached.run;
   }

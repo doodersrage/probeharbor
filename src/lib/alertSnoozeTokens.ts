@@ -1,9 +1,6 @@
-import { dbBackend } from "./db/client";
 import * as neonExtras from "./db/alertExtras";
-import { createServerClient } from "./supabase";
 import { snoozeUntilFromHours, vacationUntilFromDays } from "./alertSnooze";
 import { getAlertSettingsForUser, saveAlertSettingsForUser } from "./notify";
-import type { AlertSettings } from "./alerts";
 import type { Locale } from "../i18n/locales";
 import { plural } from "../i18n/format";
 import { alertJobsMessages } from "../i18n/messages/app/alertJobs";
@@ -44,15 +41,7 @@ type SnoozeTokenRow = {
 };
 
 export async function findSnoozeToken(token: string): Promise<SnoozeTokenRow | null> {
-  if (dbBackend() === "neon") return neonExtras.findSnoozeToken(await snoozeTokenLookupKeys(token));
-  const supabase = createServerClient();
-  const { data } = await supabase
-    .from("alert_snooze_tokens")
-    .select("token, user_id, hours, expires_at, used_at")
-    .in("token", await snoozeTokenLookupKeys(token))
-    .limit(1)
-    .maybeSingle();
-  return (data as SnoozeTokenRow | null) ?? null;
+  return neonExtras.findSnoozeToken(await snoozeTokenLookupKeys(token));
 }
 
 function randomSnoozeToken(): string {
@@ -66,17 +55,7 @@ export async function createSnoozeToken(
 ): Promise<string> {
   const token = randomSnoozeToken();
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
-  if (dbBackend() === "neon") {
-    await neonExtras.insertSnoozeToken(await sha256Hex(token), userId, hours, expiresAt);
-    return token;
-  }
-  const supabase = createServerClient();
-  await supabase.from("alert_snooze_tokens").insert({
-    token: await sha256Hex(token),
-    user_id: userId,
-    hours,
-    expires_at: expiresAt,
-  });
+  await neonExtras.insertSnoozeToken(await sha256Hex(token), userId, hours, expiresAt);
   return token;
 }
 
@@ -85,39 +64,16 @@ export async function applySnoozeToken(
   locale: Locale = "en",
 ): Promise<{ ok: boolean; message: string }> {
   const t = alertJobsMessages(locale).snoozePage;
-  if (dbBackend() === "neon") {
-    const keys = await snoozeTokenLookupKeys(token);
-    const claimed = await neonExtras.claimSnoozeToken(keys).catch(() => null);
-    if (!claimed) {
-      const row = await neonExtras.findSnoozeToken(keys);
-      const expired = row != null && !row.used_at && Date.parse(row.expires_at) < Date.now();
-      return { ok: false, message: expired ? t.resultExpired : t.resultInvalid };
-    }
-    const current = await getAlertSettingsForUser(claimed.user_id);
-    await saveAlertSettingsForUser(claimed.user_id, { ...current, snoozeUntil: snoozeUntilFromHours(claimed.hours) });
-    return { ok: true, message: plural(t.resultSnoozed, claimed.hours, locale) };
+  const keys = await snoozeTokenLookupKeys(token);
+  const claimed = await neonExtras.claimSnoozeToken(keys).catch(() => null);
+  if (!claimed) {
+    const row = await neonExtras.findSnoozeToken(keys);
+    const expired = row != null && !row.used_at && Date.parse(row.expires_at) < Date.now();
+    return { ok: false, message: expired ? t.resultExpired : t.resultInvalid };
   }
-  const data = await findSnoozeToken(token);
-
-  if (!data || data.used_at) {
-    return { ok: false, message: t.resultInvalid };
-  }
-  if (Date.parse(data.expires_at) < Date.now()) {
-    return { ok: false, message: t.resultExpired };
-  }
-
-  const settings = await getAlertSettingsForUser(data.user_id);
-  const updated: AlertSettings = {
-    ...settings,
-    snoozeUntil: snoozeUntilFromHours(data.hours),
-  };
-  await saveAlertSettingsForUser(data.user_id, updated);
-  await createServerClient()
-    .from("alert_snooze_tokens")
-    .update({ used_at: new Date().toISOString() })
-    .eq("token", data.token);
-
-  return { ok: true, message: plural(t.resultSnoozed, data.hours, locale) };
+  const current = await getAlertSettingsForUser(claimed.user_id);
+  await saveAlertSettingsForUser(claimed.user_id, { ...current, snoozeUntil: snoozeUntilFromHours(claimed.hours) });
+  return { ok: true, message: plural(t.resultSnoozed, claimed.hours, locale) };
 }
 
 export async function buildSnoozeUrl(baseUrl: string, userId: string, hours = 24): Promise<string> {
@@ -125,16 +81,9 @@ export async function buildSnoozeUrl(baseUrl: string, userId: string, hours = 24
   return `${baseUrl.replace(/\/$/, "")}/api/alerts/snooze?token=${token}`;
 }
 
-/** The household's members (user ids), from whichever database is active. */
+/** The household's members (user ids). */
 async function householdMembers(householdId: string): Promise<Array<{ user_id: string }>> {
-  if (dbBackend() === "neon") {
-    return (await neonExtras.householdMemberIds(householdId)).map((user_id) => ({ user_id }));
-  }
-  const { data } = await createServerClient()
-    .from("household_members")
-    .select("user_id")
-    .eq("household_id", householdId);
-  return data ?? [];
+  return (await neonExtras.householdMemberIds(householdId)).map((user_id) => ({ user_id }));
 }
 
 export async function applySnoozeForHouseholdMembers(

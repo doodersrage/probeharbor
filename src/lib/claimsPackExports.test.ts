@@ -1,13 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { ClaimsPackData } from "./claimsPack";
 
-const mockFrom = vi.fn();
-vi.mock("./supabase", () => ({
-  createServerClient: () => ({ from: (...args: unknown[]) => mockFrom(...args) }),
+const mockInsert = vi.fn();
+const mockFind = vi.fn();
+vi.mock("./db/householdTools", () => ({
+  insertClaimsPack: (...args: unknown[]) => mockInsert(...args),
+  findClaimsPack: (...args: unknown[]) => mockFind(...args),
 }));
 
 beforeEach(() => {
-  mockFrom.mockReset();
+  mockInsert.mockReset();
+  mockFind.mockReset();
 });
 
 const basePack: ClaimsPackData = {
@@ -68,8 +71,7 @@ describe("computeClaimsPackHash", () => {
 
 describe("createClaimsPackExport", () => {
   it("inserts a row and returns a token + matching content hash", async () => {
-    const insert = vi.fn(() => Promise.resolve({ error: null }));
-    mockFrom.mockReturnValueOnce({ insert });
+    mockInsert.mockResolvedValueOnce({ error: null });
 
     const { createClaimsPackExport, computeClaimsPackHash } = await import(
       "./claimsPackExports"
@@ -84,7 +86,7 @@ describe("createClaimsPackExport", () => {
     expect(error).toBeNull();
     expect(token).toMatch(/^[0-9a-f]{36}$/);
     expect(contentHash).toBe(expectedHash);
-    expect(insert).toHaveBeenCalledWith(
+    expect(mockInsert).toHaveBeenCalledWith(
       expect.objectContaining({
         household_id: "house-1",
         token,
@@ -98,9 +100,7 @@ describe("createClaimsPackExport", () => {
   });
 
   it("returns an error and no token when the insert fails", async () => {
-    mockFrom.mockReturnValueOnce({
-      insert: vi.fn(() => Promise.resolve({ error: { message: "insert failed" } })),
-    });
+    mockInsert.mockResolvedValueOnce({ error: "insert failed" });
     const { createClaimsPackExport } = await import("./claimsPackExports");
     const result = await createClaimsPackExport("house-1", basePack, null);
     expect(result).toEqual({ token: null, contentHash: null, error: "insert failed" });
@@ -109,26 +109,15 @@ describe("createClaimsPackExport", () => {
 
 describe("getClaimsPackExportByToken", () => {
   it("returns the stored pack_data", async () => {
-    mockFrom.mockReturnValueOnce({
-      select: vi.fn(() => ({
-        eq: vi.fn(() => ({
-          maybeSingle: vi.fn(() => Promise.resolve({ data: { pack_data: basePack } })),
-        })),
-      })),
-    });
+    mockFind.mockResolvedValueOnce({ pack_data: basePack, expires_at: null, revoked_at: null });
     const { getClaimsPackExportByToken } = await import("./claimsPackExports");
     const result = await getClaimsPackExportByToken("some-token");
     expect(result).toEqual(basePack);
+    expect(mockFind).toHaveBeenCalledWith("some-token");
   });
 
   it("returns null when the token doesn't resolve", async () => {
-    mockFrom.mockReturnValueOnce({
-      select: vi.fn(() => ({
-        eq: vi.fn(() => ({
-          maybeSingle: vi.fn(() => Promise.resolve({ data: null })),
-        })),
-      })),
-    });
+    mockFind.mockResolvedValueOnce(null);
     const { getClaimsPackExportByToken } = await import("./claimsPackExports");
     expect(await getClaimsPackExportByToken("bad-token")).toBeNull();
   });

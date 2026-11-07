@@ -24,14 +24,19 @@ vi.mock("./emailSuppressions", () => ({
   isEmailSuppressed: (...a: unknown[]) => mockIsEmailSuppressed(...a),
 }));
 
-const mockSelectEq = vi.fn();
-const mockSelect = vi.fn(() => ({ eq: mockSelectEq }));
-const mockUpdateEq = vi.fn();
-const mockUpdate = vi.fn(() => ({ eq: mockUpdateEq }));
-const mockFrom = vi.fn(() => ({ select: mockSelect, update: mockUpdate }));
-const mockGetUserById = vi.fn();
-const mockAdmin = { from: mockFrom, auth: { admin: { getUserById: mockGetUserById } } };
-vi.mock("./supabase", () => ({ createAdminClient: () => mockAdmin }));
+const mockDripCandidates = vi.fn();
+const mockStampSettings = vi.fn();
+const mockUserHasFirstReading = vi.fn();
+vi.mock("./db/emailJobs", () => ({
+  dripCandidates: (...a: unknown[]) => mockDripCandidates(...a),
+  stampSettings: (...a: unknown[]) => mockStampSettings(...a),
+  userHasFirstReading: (...a: unknown[]) => mockUserHasFirstReading(...a),
+}));
+
+const mockGetUserRecord = vi.fn();
+vi.mock("./userRecords", () => ({
+  getUserRecord: (...a: unknown[]) => mockGetUserRecord(...a),
+}));
 
 beforeEach(() => {
   mockBrandedEmailParts.mockReset().mockImplementation((content: { title: string }) => ({
@@ -43,9 +48,10 @@ beforeEach(() => {
   mockIsEmailSuppressed.mockReset().mockResolvedValue(false);
   mockIsMailerRecipientNotAllowed.mockReset().mockReturnValue(false);
   mockPartitionMailErrors.mockReset().mockReturnValue({ hardErrors: [], restrictedErrors: [] });
-  mockSelectEq.mockReset().mockResolvedValue({ data: [] });
-  mockUpdateEq.mockReset().mockResolvedValue({ error: null });
-  mockGetUserById.mockReset();
+  mockDripCandidates.mockReset().mockResolvedValue([]);
+  mockStampSettings.mockReset().mockResolvedValue(undefined);
+  mockUserHasFirstReading.mockReset().mockResolvedValue(true);
+  mockGetUserRecord.mockReset();
   vi.useFakeTimers();
   vi.setSystemTime("2024-06-15T12:00:00.000Z");
 });
@@ -123,8 +129,8 @@ describe("sendDripEmailsForAllUsers", () => {
   }
 
   it("skips a row whose user has no email or no created_at", async () => {
-    mockSelectEq.mockResolvedValue({ data: [row()] });
-    mockGetUserById.mockResolvedValue({ data: { user: { email: null, created_at: "2024-06-14T00:00:00Z" } } });
+    mockDripCandidates.mockResolvedValue([row()]);
+    mockGetUserRecord.mockResolvedValue({ email: null, created_at: "2024-06-14T00:00:00Z" });
     const { sendDripEmailsForAllUsers } = await import("./dripEmails");
 
     const result = await sendDripEmailsForAllUsers();
@@ -134,10 +140,8 @@ describe("sendDripEmailsForAllUsers", () => {
   });
 
   it("skips suppressed addresses instead of logging a send error every run", async () => {
-    mockSelectEq.mockResolvedValue({ data: [row()] });
-    mockGetUserById.mockResolvedValue({
-      data: { user: { email: "bounced@example.com", email_confirmed_at: "2024-06-01T00:00:00Z", created_at: "2024-06-15T10:00:00.000Z" } },
-    });
+    mockDripCandidates.mockResolvedValue([row()]);
+    mockGetUserRecord.mockResolvedValue({ email: "bounced@example.com", email_confirmed_at: "2024-06-01T00:00:00Z", created_at: "2024-06-15T10:00:00.000Z" });
     mockIsEmailSuppressed.mockResolvedValue(true);
     const { sendDripEmailsForAllUsers } = await import("./dripEmails");
 
@@ -145,14 +149,12 @@ describe("sendDripEmailsForAllUsers", () => {
 
     expect(result).toEqual({ sent: 0, skipped: 1, errors: [], restricted: 0 });
     expect(mockSendEmail).not.toHaveBeenCalled();
-    expect(mockUpdate).not.toHaveBeenCalled();
+    expect(mockStampSettings).not.toHaveBeenCalled();
   });
 
   it("sends the day1 stage once the account is at least an hour old", async () => {
-    mockSelectEq.mockResolvedValue({ data: [row()] });
-    mockGetUserById.mockResolvedValue({
-      data: { user: { email: "user@example.com", email_confirmed_at: "2024-06-01T00:00:00Z", created_at: "2024-06-15T10:00:00.000Z" } },
-    });
+    mockDripCandidates.mockResolvedValue([row()]);
+    mockGetUserRecord.mockResolvedValue({ email: "user@example.com", email_confirmed_at: "2024-06-01T00:00:00Z", created_at: "2024-06-15T10:00:00.000Z" });
     const { sendDripEmailsForAllUsers } = await import("./dripEmails");
 
     const result = await sendDripEmailsForAllUsers();
@@ -163,18 +165,16 @@ describe("sendDripEmailsForAllUsers", () => {
       expect.any(String),
       expect.objectContaining({ html: expect.any(String) }),
     );
-    expect(mockUpdate).toHaveBeenCalledWith(
-      expect.objectContaining({ drip_email_stage: 1 }),
-    );
-    expect(mockUpdateEq).toHaveBeenCalledWith("user_id", "user-1");
+    expect(mockStampSettings).toHaveBeenCalledWith("user-1", "last_drip_email_at", {
+      touchUpdatedAt: true,
+      dripStage: 1,
+    });
     expect(result).toEqual({ sent: 1, skipped: 0, errors: [], restricted: 0 });
   });
 
   it("sends setup help on day 3 when the user has no reading yet", async () => {
-    mockSelectEq.mockResolvedValue({ data: [row({ drip_email_stage: 1, last_drip_email_at: "2024-06-10T00:00:00Z" })] });
-    mockGetUserById.mockResolvedValue({
-      data: { user: { email: "user@example.com", email_confirmed_at: "2024-06-01T00:00:00Z", created_at: "2024-06-11T00:00:00.000Z" } },
-    });
+    mockDripCandidates.mockResolvedValue([row({ drip_email_stage: 1, last_drip_email_at: "2024-06-10T00:00:00Z" })]);
+    mockGetUserRecord.mockResolvedValue({ email: "user@example.com", email_confirmed_at: "2024-06-01T00:00:00Z", created_at: "2024-06-11T00:00:00.000Z" });
     const hasFirstReading = vi.fn().mockResolvedValue(false);
     const { sendDripEmailsForAllUsers } = await import("./dripEmails");
 
@@ -187,14 +187,12 @@ describe("sendDripEmailsForAllUsers", () => {
       expect.any(String),
       expect.any(Object),
     );
-    expect(mockUpdate).toHaveBeenCalledWith(expect.objectContaining({ drip_email_stage: 3 }));
+    expect(mockStampSettings).toHaveBeenCalledWith("user-1", "last_drip_email_at", { touchUpdatedAt: true, dripStage: 3 });
   });
 
   it("sends the alerts email on day 3 once a reading exists", async () => {
-    mockSelectEq.mockResolvedValue({ data: [row({ drip_email_stage: 1, last_drip_email_at: "2024-06-10T00:00:00Z" })] });
-    mockGetUserById.mockResolvedValue({
-      data: { user: { email: "user@example.com", email_confirmed_at: "2024-06-01T00:00:00Z", created_at: "2024-06-11T00:00:00.000Z" } },
-    });
+    mockDripCandidates.mockResolvedValue([row({ drip_email_stage: 1, last_drip_email_at: "2024-06-10T00:00:00Z" })]);
+    mockGetUserRecord.mockResolvedValue({ email: "user@example.com", email_confirmed_at: "2024-06-01T00:00:00Z", created_at: "2024-06-11T00:00:00.000Z" });
     const { sendDripEmailsForAllUsers } = await import("./dripEmails");
 
     await sendDripEmailsForAllUsers({ hasFirstReading: async () => true });
@@ -208,10 +206,8 @@ describe("sendDripEmailsForAllUsers", () => {
   });
 
   it("asks an unconfirmed account to confirm instead of sending setup or Pro emails", async () => {
-    mockSelectEq.mockResolvedValue({ data: [row({ drip_email_stage: 1, last_drip_email_at: "2024-06-10T00:00:00Z" })] });
-    mockGetUserById.mockResolvedValue({
-      data: { user: { email: "user@example.com", email_confirmed_at: null, created_at: "2024-06-11T00:00:00.000Z" } },
-    });
+    mockDripCandidates.mockResolvedValue([row({ drip_email_stage: 1, last_drip_email_at: "2024-06-10T00:00:00Z" })]);
+    mockGetUserRecord.mockResolvedValue({ email: "user@example.com", email_confirmed_at: null, created_at: "2024-06-11T00:00:00.000Z" });
     const hasFirstReading = vi.fn();
     const { sendDripEmailsForAllUsers } = await import("./dripEmails");
 
@@ -224,28 +220,24 @@ describe("sendDripEmailsForAllUsers", () => {
       expect.any(String),
       expect.any(Object),
     );
-    expect(mockUpdate).toHaveBeenCalledWith(expect.objectContaining({ drip_email_stage: 3 }));
+    expect(mockStampSettings).toHaveBeenCalledWith("user-1", "last_drip_email_at", { touchUpdatedAt: true, dripStage: 3 });
   });
 
   it("stops after day 3 for an unconfirmed account: no Pro pitch, stage still advances", async () => {
-    mockSelectEq.mockResolvedValue({ data: [row({ drip_email_stage: 3, last_drip_email_at: "2024-06-10T00:00:00Z" })] });
-    mockGetUserById.mockResolvedValue({
-      data: { user: { email: "user@example.com", email_confirmed_at: null, created_at: "2024-06-01T00:00:00.000Z" } },
-    });
+    mockDripCandidates.mockResolvedValue([row({ drip_email_stage: 3, last_drip_email_at: "2024-06-10T00:00:00Z" })]);
+    mockGetUserRecord.mockResolvedValue({ email: "user@example.com", email_confirmed_at: null, created_at: "2024-06-01T00:00:00.000Z" });
     const { sendDripEmailsForAllUsers } = await import("./dripEmails");
 
     const result = await sendDripEmailsForAllUsers();
 
     expect(mockSendEmail).not.toHaveBeenCalled();
-    expect(mockUpdate).toHaveBeenCalledWith(expect.objectContaining({ drip_email_stage: 7 }));
+    expect(mockStampSettings).toHaveBeenCalledWith("user-1", "last_drip_email_at", { touchUpdatedAt: true, dripStage: 7 });
     expect(result).toEqual({ sent: 0, skipped: 1, errors: [], restricted: 0 });
   });
 
   it("skips a row when the account is too young for the next stage", async () => {
-    mockSelectEq.mockResolvedValue({ data: [row()] });
-    mockGetUserById.mockResolvedValue({
-      data: { user: { email: "user@example.com", email_confirmed_at: "2024-06-01T00:00:00Z", created_at: "2024-06-15T11:59:30.000Z" } },
-    });
+    mockDripCandidates.mockResolvedValue([row()]);
+    mockGetUserRecord.mockResolvedValue({ email: "user@example.com", email_confirmed_at: "2024-06-01T00:00:00Z", created_at: "2024-06-15T11:59:30.000Z" });
     const { sendDripEmailsForAllUsers } = await import("./dripEmails");
 
     const result = await sendDripEmailsForAllUsers();
@@ -255,17 +247,13 @@ describe("sendDripEmailsForAllUsers", () => {
   });
 
   it("skips a row when the last drip email was sent under 20 hours ago", async () => {
-    mockSelectEq.mockResolvedValue({
-      data: [
-        row({
-          drip_email_stage: 0,
-          last_drip_email_at: "2024-06-15T00:00:00.000Z",
-        }),
-      ],
-    });
-    mockGetUserById.mockResolvedValue({
-      data: { user: { email: "user@example.com", email_confirmed_at: "2024-06-01T00:00:00Z", created_at: "2024-06-01T00:00:00.000Z" } },
-    });
+    mockDripCandidates.mockResolvedValue([
+      row({
+        drip_email_stage: 0,
+        last_drip_email_at: "2024-06-15T00:00:00.000Z",
+      }),
+    ]);
+    mockGetUserRecord.mockResolvedValue({ email: "user@example.com", email_confirmed_at: "2024-06-01T00:00:00Z", created_at: "2024-06-01T00:00:00.000Z" });
     const { sendDripEmailsForAllUsers } = await import("./dripEmails");
 
     const result = await sendDripEmailsForAllUsers();
@@ -275,10 +263,8 @@ describe("sendDripEmailsForAllUsers", () => {
   });
 
   it("counts a mailer-restricted error separately from other errors", async () => {
-    mockSelectEq.mockResolvedValue({ data: [row()] });
-    mockGetUserById.mockResolvedValue({
-      data: { user: { email: "user@example.com", email_confirmed_at: "2024-06-01T00:00:00Z", created_at: "2024-06-15T10:00:00.000Z" } },
-    });
+    mockDripCandidates.mockResolvedValue([row()]);
+    mockGetUserRecord.mockResolvedValue({ email: "user@example.com", email_confirmed_at: "2024-06-01T00:00:00Z", created_at: "2024-06-15T10:00:00.000Z" });
     mockSendEmail.mockRejectedValue(new Error("recipient not allowed"));
     mockIsMailerRecipientNotAllowed.mockReturnValue(true);
     const { sendDripEmailsForAllUsers } = await import("./dripEmails");
@@ -291,10 +277,8 @@ describe("sendDripEmailsForAllUsers", () => {
   });
 
   it("records a generic send failure as an error without incrementing restricted", async () => {
-    mockSelectEq.mockResolvedValue({ data: [row()] });
-    mockGetUserById.mockResolvedValue({
-      data: { user: { email: "user@example.com", email_confirmed_at: "2024-06-01T00:00:00Z", created_at: "2024-06-15T10:00:00.000Z" } },
-    });
+    mockDripCandidates.mockResolvedValue([row()]);
+    mockGetUserRecord.mockResolvedValue({ email: "user@example.com", email_confirmed_at: "2024-06-01T00:00:00Z", created_at: "2024-06-15T10:00:00.000Z" });
     mockSendEmail.mockRejectedValue(new Error("smtp down"));
     mockIsMailerRecipientNotAllowed.mockReturnValue(false);
     const { sendDripEmailsForAllUsers } = await import("./dripEmails");

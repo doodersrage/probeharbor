@@ -1,8 +1,6 @@
 import type { APIRoute } from "astro";
 import { getAuthFromRequest } from "../../../lib/auth";
-import { dbBackend } from "../../../lib/db/client";
 import * as neonPush from "../../../lib/db/pushTokens";
-import { createAdminClient } from "../../../lib/supabase";
 import { getUserEntitlements } from "../../../lib/entitlements";
 import { releaseFcmTokenFromOtherUsers } from "../../../lib/fcm";
 import { apiCommonMessages, apiLocale } from "../../../i18n/messages/app/api/common";
@@ -55,28 +53,11 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
     });
   }
 
-  let error: { message: string } | null;
-  if (dbBackend() === "neon") {
-    await releaseFcmTokenFromOtherUsers(null, user.id, token);
-    const saved = await neonPush.saveFcmToken(user.id, token, platform, body.appId?.trim() || null);
-    error = saved.error ? { message: saved.error } : null;
-  } else {
-    const supabase = createAdminClient();
-    await releaseFcmTokenFromOtherUsers(supabase, user.id, token);
-    ({ error } = await supabase.from("fcm_device_tokens").upsert(
-      {
-        user_id: user.id,
-        token,
-        platform,
-        app_id: body.appId?.trim() || null,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: "user_id,token" },
-    ));
-  }
+  await releaseFcmTokenFromOtherUsers(null, user.id, token);
+  const saved = await neonPush.saveFcmToken(user.id, token, platform, body.appId?.trim() || null);
 
-  if (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
+  if (saved.error) {
+    return new Response(JSON.stringify({ error: saved.error }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
     });
@@ -116,15 +97,7 @@ export const DELETE: APIRoute = async ({ request, cookies, locals }) => {
     });
   }
 
-  if (dbBackend() === "neon") {
-    await neonPush.deleteFcmToken(user.id, body.token.trim());
-  } else {
-    await createAdminClient()
-      .from("fcm_device_tokens")
-      .delete()
-      .eq("user_id", user.id)
-      .eq("token", body.token.trim());
-  }
+  await neonPush.deleteFcmToken(user.id, body.token.trim());
 
   return new Response(JSON.stringify({ ok: true }), {
     status: 200,

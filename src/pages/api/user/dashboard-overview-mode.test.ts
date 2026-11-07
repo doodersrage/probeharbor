@@ -2,10 +2,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { APIContext } from "astro";
 
 const mockGetAuthFromCookies = vi.fn();
-const mockSetAuthCookies = vi.fn();
 vi.mock("../../../lib/auth", () => ({
   getAuthFromCookies: (...a: unknown[]) => mockGetAuthFromCookies(...a),
-  setAuthCookies: (...a: unknown[]) => mockSetAuthCookies(...a),
 }));
 
 const mockUpdateDashboardOverviewMode = vi.fn();
@@ -17,12 +15,6 @@ const mockFormRedirectPath = vi.fn();
 vi.mock("../../../lib/siteUrl", async (importOriginal) => ({
   ...(await importOriginal<typeof import("../../../lib/siteUrl")>()),
   formRedirectPath: (...a: unknown[]) => mockFormRedirectPath(...a),
-}));
-
-const mockRefreshSession = vi.fn();
-const mockCreateAuthClient = vi.fn();
-vi.mock("../../../lib/supabase", () => ({
-  createAuthClient: () => mockCreateAuthClient(),
 }));
 
 function makeCookies() {
@@ -50,13 +42,8 @@ beforeEach(() => {
     session: { access_token: "access-tok", refresh_token: "refresh-tok" },
     user: { id: "user-1" },
   });
-  mockSetAuthCookies.mockReset();
   mockUpdateDashboardOverviewMode.mockReset().mockResolvedValue({ error: null });
   mockFormRedirectPath.mockReset().mockReturnValue("/dashboard");
-  mockRefreshSession.mockReset().mockResolvedValue({ data: { session: null } });
-  mockCreateAuthClient.mockReset().mockReturnValue({
-    auth: { refreshSession: (...a: unknown[]) => mockRefreshSession(...a) },
-  });
 });
 
 describe("POST /api/user/dashboard-overview-mode", () => {
@@ -107,37 +94,15 @@ describe("POST /api/user/dashboard-overview-mode", () => {
 
     expect(context.redirect).toHaveBeenCalledWith("/dashboard?overview_mode_error=1");
     expect(response.status).toBe(302);
-    expect(mockCreateAuthClient).not.toHaveBeenCalled();
   });
 
-  it("refreshes the session and sets new auth cookies when refresh succeeds", async () => {
-    mockRefreshSession.mockResolvedValue({
-      data: {
-        session: { access_token: "new-access", refresh_token: "new-refresh" },
-      },
-    });
+  it("saves and redirects back", async () => {
     const { POST } = await import("./dashboard-overview-mode");
     const context = makeContext();
 
     await POST(context);
 
-    expect(mockRefreshSession).toHaveBeenCalledWith({ refresh_token: "refresh-tok" });
-    expect(mockSetAuthCookies).toHaveBeenCalledWith(
-      context.cookies,
-      "new-access",
-      "new-refresh",
-    );
     expect(context.redirect).toHaveBeenCalledWith("/dashboard");
   });
 
-  it("skips setting cookies when the refresh doesn't return a session", async () => {
-    mockRefreshSession.mockResolvedValue({ data: { session: null } });
-    const { POST } = await import("./dashboard-overview-mode");
-    const context = makeContext();
-
-    await POST(context);
-
-    expect(mockSetAuthCookies).not.toHaveBeenCalled();
-    expect(context.redirect).toHaveBeenCalledWith("/dashboard");
-  });
 });

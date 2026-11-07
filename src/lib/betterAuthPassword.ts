@@ -1,5 +1,5 @@
 /**
- * Password changes on Better Auth (DB_BACKEND=neon) that keep today's
+ * Password changes on Better Auth that keep today's
  * Supabase behavior.
  *
  * - The emailed reset token is kept in an httpOnly cookie between the link

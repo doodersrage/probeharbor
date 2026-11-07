@@ -1,24 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-function mockQuery(result: { data?: unknown; error?: unknown; count?: number | null }) {
-  const builder: Record<string, unknown> = {};
-  for (const method of ["select", "eq", "or", "order", "range"]) {
-    builder[method] = vi.fn(() => builder);
-  }
-  (builder as { then: unknown }).then = (
-    resolve: (value: unknown) => unknown,
-    reject?: (reason: unknown) => unknown,
-  ) => Promise.resolve(result).then(resolve, reject);
-  return builder;
-}
-
-const mockFrom = vi.fn();
-vi.mock("./supabase", () => ({
-  createServerClient: () => ({ from: (...args: unknown[]) => mockFrom(...args) }),
+const mockPageContacts = vi.fn();
+const mockAllContacts = vi.fn();
+vi.mock("./db/admin", () => ({
+  pageContacts: (...args: unknown[]) => mockPageContacts(...args),
+  allContacts: (...args: unknown[]) => mockAllContacts(...args),
 }));
 
 beforeEach(() => {
-  mockFrom.mockReset();
+  mockPageContacts.mockReset();
+  mockAllContacts.mockReset();
 });
 
 describe("getContactMessageText", () => {
@@ -93,14 +84,13 @@ describe("buildContactsCsv", () => {
 });
 
 describe("fetchContactSubmissions", () => {
-  it("paginates using page/pageSize to compute range", async () => {
-    const builder = mockQuery({ data: [{ id: 1 }], error: null, count: 45 });
-    mockFrom.mockReturnValue(builder);
+  it("paginates using page/pageSize to compute the offset", async () => {
+    mockPageContacts.mockResolvedValue({ rows: [{ id: 1 }], total: 45, error: null });
     const { fetchContactSubmissions } = await import("./contactSubmissions");
 
     const result = await fetchContactSubmissions(2, 20);
 
-    expect(builder.range).toHaveBeenCalledWith(20, 39);
+    expect(mockPageContacts).toHaveBeenCalledWith({}, 20, 20);
     expect(result).toEqual({
       submissions: [{ id: 1 }],
       page: 2,
@@ -112,40 +102,26 @@ describe("fetchContactSubmissions", () => {
   });
 
   it("clamps an invalid page to 1", async () => {
-    const builder = mockQuery({ data: [], error: null, count: 0 });
-    mockFrom.mockReturnValue(builder);
+    mockPageContacts.mockResolvedValue({ rows: [], total: 0, error: null });
     const { fetchContactSubmissions } = await import("./contactSubmissions");
 
     const result = await fetchContactSubmissions(-5, 20);
 
     expect(result.page).toBe(1);
-    expect(builder.range).toHaveBeenCalledWith(0, 19);
+    expect(mockPageContacts).toHaveBeenCalledWith({}, 0, 20);
   });
 
-  it("applies a status filter", async () => {
-    const builder = mockQuery({ data: [], error: null, count: 0 });
-    mockFrom.mockReturnValue(builder);
+  it("passes status and search filters through", async () => {
+    mockPageContacts.mockResolvedValue({ rows: [], total: 0, error: null });
     const { fetchContactSubmissions } = await import("./contactSubmissions");
 
-    await fetchContactSubmissions(1, 20, { status: "open" });
+    await fetchContactSubmissions(1, 20, { status: "open", search: "smith" });
 
-    expect(builder.eq).toHaveBeenCalledWith("status", "open");
-  });
-
-  it("applies a search filter across name/email/message", async () => {
-    const builder = mockQuery({ data: [], error: null, count: 0 });
-    mockFrom.mockReturnValue(builder);
-    const { fetchContactSubmissions } = await import("./contactSubmissions");
-
-    await fetchContactSubmissions(1, 20, { search: "smith" });
-
-    expect(builder.or).toHaveBeenCalledWith(
-      "name.ilike.%smith%,email.ilike.%smith%,message.ilike.%smith%",
-    );
+    expect(mockPageContacts).toHaveBeenCalledWith({ status: "open", search: "smith" }, 0, 20);
   });
 
   it("returns zeroed-out results and the message on error", async () => {
-    mockFrom.mockReturnValue(mockQuery({ data: null, error: { message: "db down" }, count: null }));
+    mockPageContacts.mockResolvedValue({ rows: [], total: 0, error: "db down" });
     const { fetchContactSubmissions } = await import("./contactSubmissions");
 
     expect(await fetchContactSubmissions(1, 20)).toEqual({
@@ -159,7 +135,7 @@ describe("fetchContactSubmissions", () => {
   });
 
   it("reports 0 total pages when there are no rows", async () => {
-    mockFrom.mockReturnValue(mockQuery({ data: [], error: null, count: 0 }));
+    mockPageContacts.mockResolvedValue({ rows: [], total: 0, error: null });
     const { fetchContactSubmissions } = await import("./contactSubmissions");
 
     const result = await fetchContactSubmissions(1, 20);
@@ -169,40 +145,15 @@ describe("fetchContactSubmissions", () => {
 });
 
 describe("fetchAllContactSubmissions", () => {
-  it("stops after one batch smaller than the batch size", async () => {
-    mockFrom.mockReturnValue(mockQuery({ data: [{ id: 1 }, { id: 2 }], error: null }));
+  it("returns every submission", async () => {
+    mockAllContacts.mockResolvedValue({ rows: [{ id: 1 }, { id: 2 }], error: null });
     const { fetchAllContactSubmissions } = await import("./contactSubmissions");
 
-    const result = await fetchAllContactSubmissions();
-
-    expect(result).toEqual({ submissions: [{ id: 1 }, { id: 2 }], error: null });
-    expect(mockFrom).toHaveBeenCalledTimes(1);
+    expect(await fetchAllContactSubmissions()).toEqual({ submissions: [{ id: 1 }, { id: 2 }], error: null });
   });
 
-  it("stops when a batch comes back empty", async () => {
-    mockFrom.mockReturnValue(mockQuery({ data: [], error: null }));
-    const { fetchAllContactSubmissions } = await import("./contactSubmissions");
-
-    expect(await fetchAllContactSubmissions()).toEqual({ submissions: [], error: null });
-  });
-
-  it("pages through multiple full batches", async () => {
-    const fullBatch = Array.from({ length: 1000 }, (_, i) => ({ id: i }));
-    const secondBatch = [{ id: 1000 }];
-    mockFrom
-      .mockReturnValueOnce(mockQuery({ data: fullBatch, error: null }))
-      .mockReturnValueOnce(mockQuery({ data: secondBatch, error: null }));
-    const { fetchAllContactSubmissions } = await import("./contactSubmissions");
-
-    const result = await fetchAllContactSubmissions();
-
-    expect(result.submissions).toHaveLength(1001);
-    expect(result.error).toBeNull();
-    expect(mockFrom).toHaveBeenCalledTimes(2);
-  });
-
-  it("returns the error and stops paging when a batch fails", async () => {
-    mockFrom.mockReturnValue(mockQuery({ data: null, error: { message: "timeout" } }));
+  it("returns the error", async () => {
+    mockAllContacts.mockResolvedValue({ rows: [], error: "timeout" });
     const { fetchAllContactSubmissions } = await import("./contactSubmissions");
 
     expect(await fetchAllContactSubmissions()).toEqual({ submissions: [], error: "timeout" });

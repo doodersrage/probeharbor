@@ -1,18 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { AstroCookies } from "astro";
 
-function mockQuery(result: { data?: unknown; error?: unknown }) {
-  const builder: Record<string, unknown> = {};
-  for (const method of ["select", "eq", "order"]) {
-    builder[method] = vi.fn(() => builder);
-  }
-  (builder as { then: unknown }).then = (
-    resolve: (value: unknown) => unknown,
-    reject?: (reason: unknown) => unknown,
-  ) => Promise.resolve(result).then(resolve, reject);
-  return builder;
-}
-
 const mockGetAuthFromCookies = vi.fn();
 vi.mock("./auth", () => ({
   getAuthFromCookies: (...a: unknown[]) => mockGetAuthFromCookies(...a),
@@ -32,9 +20,9 @@ vi.mock("./entitlements", () => ({
   getUserEntitlements: (...a: unknown[]) => mockGetUserEntitlements(...a),
 }));
 
-const mockFrom = vi.fn();
-vi.mock("./supabase", () => ({
-  createServerClient: () => ({ from: (...args: unknown[]) => mockFrom(...args) }),
+const mockListShareLinks = vi.fn();
+vi.mock("./shareLinksStore", () => ({
+  listShareLinks: (...a: unknown[]) => mockListShareLinks(...a),
 }));
 
 const mockGetSiteUrl = vi.fn();
@@ -102,7 +90,7 @@ beforeEach(() => {
   mockGetUserHouseholdRole.mockReset().mockResolvedValue("owner");
   mockCanManageHousehold.mockReset().mockReturnValue(true);
   mockGetUserEntitlements.mockReset().mockResolvedValue({ tier: "free" });
-  mockFrom.mockReset().mockReturnValue(mockQuery({ data: [] }));
+  mockListShareLinks.mockReset().mockResolvedValue({ links: [], error: null });
   mockGetSiteUrl.mockReset().mockReturnValue("https://example.com");
   mockListHouseholdApiKeys.mockReset().mockResolvedValue([]);
   mockListInboundWebhooks.mockReset().mockResolvedValue({ webhooks: [] });
@@ -136,7 +124,7 @@ describe("loadShareDashboardContext", () => {
     expect(result.statusPages).toEqual([]);
     expect(result.ingestStats).toEqual([]);
     expect(result.activity).toEqual([]);
-    expect(mockFrom).not.toHaveBeenCalled();
+    expect(mockListShareLinks).not.toHaveBeenCalled();
     expect(mockGetUserHouseholdRole).not.toHaveBeenCalled();
     expect(mockListHouseholdApiKeys).not.toHaveBeenCalled();
   });
@@ -155,9 +143,8 @@ describe("loadShareDashboardContext", () => {
 
   it("returns full share links (including token) for a manager", async () => {
     mockCanManageHousehold.mockReturnValue(true);
-    mockFrom.mockReturnValue(
-      mockQuery({
-        data: [
+    mockListShareLinks.mockResolvedValue({
+      links: [
           {
             id: "link-1",
             token: "supersecrettoken",
@@ -167,12 +154,13 @@ describe("loadShareDashboardContext", () => {
             created_at: "2024-01-01T00:00:00.000Z",
           },
         ],
-      }),
-    );
+      error: null,
+    });
     const { loadShareDashboardContext } = await import("./shareDashboardContext");
 
     const result = await loadShareDashboardContext(cookies, request, urlWith());
 
+    expect(mockListShareLinks).toHaveBeenCalledWith("house-1");
     expect(result.links).toEqual([
       {
         id: "link-1",
@@ -194,14 +182,13 @@ describe("loadShareDashboardContext", () => {
     mockConsumeSecretFlash.mockImplementation((_c: unknown, name: string) =>
       name === "flash_share_token" ? fresh : null,
     );
-    mockFrom.mockReturnValue(
-      mockQuery({
-        data: [
+    mockListShareLinks.mockResolvedValue({
+      links: [
           { id: "new", token: null, token_hash: await sha256Hex(fresh), token_preview: "ffff", scope: "live", label: null, expires_at: null, created_at: "2024-01-02T00:00:00.000Z" },
           { id: "old-hashed", token: null, token_hash: "aa".repeat(32), token_preview: "1234", scope: "live", label: null, expires_at: null, created_at: "2024-01-01T00:00:00.000Z" },
         ],
-      }),
-    );
+      error: null,
+    });
     const { loadShareDashboardContext } = await import("./shareDashboardContext");
 
     const result = await loadShareDashboardContext(cookies, request, urlWith());
@@ -215,9 +202,8 @@ describe("loadShareDashboardContext", () => {
 
   it("redacts the token to a preview for a non-manager", async () => {
     mockCanManageHousehold.mockReturnValue(false);
-    mockFrom.mockReturnValue(
-      mockQuery({
-        data: [
+    mockListShareLinks.mockResolvedValue({
+      links: [
           {
             id: "link-1",
             token: "supersecrettoken",
@@ -227,8 +213,8 @@ describe("loadShareDashboardContext", () => {
             created_at: "2024-01-01T00:00:00.000Z",
           },
         ],
-      }),
-    );
+      error: null,
+    });
     const { loadShareDashboardContext } = await import("./shareDashboardContext");
 
     const result = await loadShareDashboardContext(cookies, request, urlWith());

@@ -1,6 +1,4 @@
-import { dbBackend } from "./db/client";
 import * as neonRemaining from "./db/remaining";
-import { createServerClient } from "./supabase";
 
 export type ActivityRow = {
   id: string;
@@ -17,16 +15,7 @@ export async function recordHouseholdActivity(input: {
   action: string;
   detail?: string | null;
 }): Promise<void> {
-  if (dbBackend() === "neon") {
-    return neonRemaining.recordActivity({
-      household_id: input.householdId,
-      user_id: input.userId ?? null,
-      action: input.action,
-      detail: input.detail ?? null,
-    });
-  }
-  const supabase = createServerClient();
-  await supabase.from("household_activity").insert({
+  return neonRemaining.recordActivity({
     household_id: input.householdId,
     user_id: input.userId ?? null,
     action: input.action,
@@ -38,13 +27,5 @@ export async function listHouseholdActivity(
   householdId: string,
   limit = 40,
 ): Promise<ActivityRow[]> {
-  if (dbBackend() === "neon") return neonRemaining.listActivity<ActivityRow>(householdId, limit);
-  const supabase = createServerClient();
-  const { data } = await supabase
-    .from("household_activity")
-    .select("id, household_id, user_id, action, detail, created_at")
-    .eq("household_id", householdId)
-    .order("created_at", { ascending: false })
-    .limit(limit);
-  return (data ?? []) as ActivityRow[];
+  return neonRemaining.listActivity<ActivityRow>(householdId, limit);
 }

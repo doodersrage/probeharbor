@@ -1,4 +1,3 @@
-import { refreshCookiesAfterMetadataWrite } from "../lib/sessionMetadata";
 import { getHouseholdFields } from "../lib/householdRecord";
 import { defineAction, ActionError } from "astro:actions";
 import { z } from "astro/zod";
@@ -105,9 +104,7 @@ export const server = {
       const t = apiMoreActionsMessages(locale);
       const { session } = await requireAuthed(context.cookies, locale);
 
-      // From the resolved session, so it works on both backends: Supabase
-      // sessions always have both tokens (and may have just been rotated);
-      // Better Auth sessions have no refresh token.
+      // The Better Auth session token identifies whose settings to write.
       const accessToken = session.access_token;
       const refreshToken = session.refresh_token;
       if (!accessToken) {
@@ -134,8 +131,6 @@ export const server = {
         sameSite: "lax",
         maxAge: 60 * 60 * 24 * 365,
       });
-
-      await refreshCookiesAfterMetadataWrite(context.cookies, refreshToken);
 
       return {
         ok: true as const,

@@ -1,5 +1,5 @@
 import { getHouseholdFields } from "./householdRecord";
-import type { User } from "@supabase/supabase-js";
+import type { User } from "./appUser";
 import type { AlertSettings } from "./alerts";
 import { ALERT_CHANNEL_LABELS } from "./alertChannelLabels";
 import { getAlertSettingsForUser } from "./notify";

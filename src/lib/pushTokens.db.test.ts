@@ -8,7 +8,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { insertTestUser, useTestDatabase } from "../test/db";
 
 vi.mock("./runtimeEnv", () => ({
-  getRuntimeEnv: (key: string) => (key === "DB_BACKEND" ? "neon" : undefined),
+  getRuntimeEnv: () => undefined,
   hasRuntimeEnv: () => false,
 }));
 const signedIn = vi.hoisted(() => ({ userId: "" }));
@@ -16,14 +16,6 @@ vi.mock("./auth", () => ({
   getAuthFromRequest: async () => ({ user: signedIn.userId ? { id: signedIn.userId } : null }),
 }));
 vi.mock("./entitlements", () => ({ getUserEntitlements: async () => ({ canUsePush: true }) }));
-vi.mock("./supabase", () => ({
-  createAdminClient: () => {
-    throw new Error("Supabase client created on the Neon path");
-  },
-  createServerClient: () => {
-    throw new Error("Supabase client created on the Neon path");
-  },
-}));
 
 import * as fcmRoute from "../pages/api/push/fcm";
 import * as subscribeRoute from "../pages/api/push/subscribe";

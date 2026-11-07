@@ -1,6 +1,4 @@
-import { dbBackend } from "./db/client";
 import * as neonPlaces from "./db/places";
-import { createServerClient } from "./supabase";
 import type { DeviceWithSensors } from "./devices";
 
 export type IndoorReferenceOption = {
@@ -12,74 +10,28 @@ export type IndoorReferenceOption = {
 export async function getIndoorReferenceSensorId(
   householdId: string,
 ): Promise<string | null> {
-  if (dbBackend() === "neon") {
-    try {
-      return await neonPlaces.getIndoorReference(householdId);
-    } catch (error) {
-      console.error("getIndoorReferenceSensorId failed:", error instanceof Error ? error.message : error);
-      return null;
-    }
-  }
-  const supabase = createServerClient();
-  const { data, error } = await supabase
-    .from("households")
-    .select("indoor_reference_sensor_id")
-    .eq("id", householdId)
-    .maybeSingle();
-
-  if (error) {
-    console.error("getIndoorReferenceSensorId failed:", error.message);
+  try {
+    return await neonPlaces.getIndoorReference(householdId);
+  } catch (error) {
+    console.error("getIndoorReferenceSensorId failed:", error instanceof Error ? error.message : error);
     return null;
   }
-
-  return data?.indoor_reference_sensor_id ?? null;
 }
 
 export async function updateIndoorReferenceSensor(
   householdId: string,
   sensorId: string | null,
 ): Promise<{ error: string | null }> {
-  if (dbBackend() === "neon") {
-    if (sensorId) {
-      let kind: string | null;
-      try {
-        kind = await neonPlaces.householdSensorKind(householdId, sensorId);
-      } catch (error) {
-        return { error: error instanceof Error ? error.message : String(error) };
-      }
-      if (kind !== "temperature") return { error: "Choose a temperature sensor from this household." };
-    }
-    return neonPlaces.setIndoorReference(householdId, sensorId);
-  }
-  const supabase = createServerClient();
-
   if (sensorId) {
-    const { data: sensor, error: lookupError } = await supabase
-      .from("device_sensors")
-      .select("id, kind, devices!inner ( household_id )")
-      .eq("id", sensorId)
-      .maybeSingle();
-
-    if (lookupError) {
-      return { error: lookupError.message };
+    let kind: string | null;
+    try {
+      kind = await neonPlaces.householdSensorKind(householdId, sensorId);
+    } catch (error) {
+      return { error: error instanceof Error ? error.message : String(error) };
     }
-
-    const device = sensor?.devices as { household_id?: string } | null;
-    if (
-      !sensor ||
-      sensor.kind !== "temperature" ||
-      device?.household_id !== householdId
-    ) {
-      return { error: "Choose a temperature sensor from this household." };
-    }
+    if (kind !== "temperature") return { error: "Choose a temperature sensor from this household." };
   }
-
-  const { error } = await supabase
-    .from("households")
-    .update({ indoor_reference_sensor_id: sensorId })
-    .eq("id", householdId);
-
-  return { error: error?.message ?? null };
+  return neonPlaces.setIndoorReference(householdId, sensorId);
 }
 
 export function listIndoorReferenceOptions(

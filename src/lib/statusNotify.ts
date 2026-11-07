@@ -1,6 +1,4 @@
-import { dbBackend } from "./db/client";
 import * as neonStatus from "./db/statusPages";
-import { createServerClient } from "./supabase";
 import { fetchAppStatusSummary } from "./appStatus";
 import { sendEmail } from "./mailer";
 import { brandedEmailParts } from "./emailLayout";
@@ -13,37 +11,16 @@ import {
 } from "./statusSubscriptions";
 
 async function readLastKnownHealthy(): Promise<boolean | null | undefined> {
-  if (dbBackend() === "neon") {
-    try {
-      return await neonStatus.readLastKnownHealthy();
-    } catch (error) {
-      console.error("status-notify: failed to read state:", error instanceof Error ? error.message : error);
-      return undefined; // "couldn't determine", distinct from "no row yet"
-    }
+  try {
+    return await neonStatus.readLastKnownHealthy();
+  } catch (error) {
+    console.error("status-notify: failed to read state:", error instanceof Error ? error.message : error);
+    return undefined; // "couldn't determine", distinct from "no row yet"
   }
-  const supabase = createServerClient();
-  const { data, error } = await supabase
-    .from("status_notify_state")
-    .select("last_healthy")
-    .eq("id", 1)
-    .maybeSingle();
-
-  if (error) {
-    console.error("status-notify: failed to read state:", error.message);
-    return undefined; // signals "couldn't determine", distinct from "no row yet"
-  }
-
-  return data ? data.last_healthy : null;
 }
 
 async function writeLastKnownHealthy(healthy: boolean): Promise<void> {
-  if (dbBackend() === "neon") return neonStatus.writeLastKnownHealthy(healthy);
-  const supabase = createServerClient();
-  await supabase.from("status_notify_state").upsert({
-    id: 1,
-    last_healthy: healthy,
-    updated_at: new Date().toISOString(),
-  });
+  return neonStatus.writeLastKnownHealthy(healthy);
 }
 
 async function sendStatusChangeEmail(

@@ -1,25 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-function mockQuery(result: { data?: unknown; error?: unknown }) {
-  const builder: Record<string, unknown> = {};
-  for (const method of ["select", "eq", "update"]) {
-    builder[method] = vi.fn(() => builder);
-  }
-  (builder as { then: unknown }).then = (
-    resolve: (value: unknown) => unknown,
-    reject?: (reason: unknown) => unknown,
-  ) => Promise.resolve(result).then(resolve, reject);
-  return builder;
-}
+const mockOwnerUserIds = vi.fn();
+const mockStampPortfolioAlert = vi.fn();
+vi.mock("./db/remaining", () => ({
+  ownerUserIds: (...a: unknown[]) => mockOwnerUserIds(...a),
+  stampPortfolioAlert: (...a: unknown[]) => mockStampPortfolioAlert(...a),
+}));
 
-const mockFrom = vi.fn();
-const mockGetUserById = vi.fn();
-vi.mock("./supabase", () => ({
-  createServerClient: () => ({ from: (...args: unknown[]) => mockFrom(...args) }),
-  createAdminClient: () => ({
-    from: (...args: unknown[]) => mockFrom(...args),
-    auth: { admin: { getUserById: (...a: unknown[]) => mockGetUserById(...a) } },
-  }),
+const mockGetUserRecord = vi.fn();
+vi.mock("./userRecords", () => ({
+  getUserRecord: (...a: unknown[]) => mockGetUserRecord(...a),
 }));
 
 const mockFetchCrossPropertySnapshots = vi.fn();
@@ -45,10 +35,9 @@ vi.mock("./entitlements", () => ({
 }));
 
 beforeEach(() => {
-  mockFrom.mockReset();
-  mockGetUserById.mockReset().mockResolvedValue({
-    data: { user: { email: "owner@example.com", user_metadata: {} } },
-  });
+  mockOwnerUserIds.mockReset().mockResolvedValue([]);
+  mockStampPortfolioAlert.mockReset().mockResolvedValue(undefined);
+  mockGetUserRecord.mockReset().mockResolvedValue({ email: "owner@example.com", user_metadata: {} });
   mockFetchCrossPropertySnapshots.mockReset().mockResolvedValue({ properties: [] });
   mockGetAlertSettingsForUser.mockReset().mockResolvedValue({
     enabled: true,
@@ -62,15 +51,9 @@ beforeEach(() => {
   mockGetUserEntitlements.mockReset().mockResolvedValue({ canUsePortfolio: true });
 });
 
-function ownersQuery(userIds: string[]) {
-  return mockQuery({ data: userIds.map((user_id) => ({ user_id })) });
-}
-
 describe("sendPortfolioAlertsForAllUsers", () => {
-  it("dedupes owner rows and processes each user once", async () => {
-    mockFrom.mockImplementation((table: string) =>
-      table === "household_members" ? ownersQuery(["u1", "u1", "u2"]) : mockQuery({ error: null }),
-    );
+  it("processes each owner once", async () => {
+    mockOwnerUserIds.mockResolvedValue(["u1", "u2"]);
     mockGetUserEntitlements.mockResolvedValue({ canUsePortfolio: false });
     const { sendPortfolioAlertsForAllUsers } = await import("./portfolioAlerts");
 
@@ -81,9 +64,7 @@ describe("sendPortfolioAlertsForAllUsers", () => {
   });
 
   it("skips a user whose plan does not include portfolio alerts", async () => {
-    mockFrom.mockImplementation((table: string) =>
-      table === "household_members" ? ownersQuery(["u1"]) : mockQuery({ error: null }),
-    );
+    mockOwnerUserIds.mockResolvedValue(["u1"]);
     mockGetUserEntitlements.mockResolvedValue({ canUsePortfolio: false });
     const { sendPortfolioAlertsForAllUsers } = await import("./portfolioAlerts");
 
@@ -92,9 +73,7 @@ describe("sendPortfolioAlertsForAllUsers", () => {
   });
 
   it("skips a user with fewer than 2 households", async () => {
-    mockFrom.mockImplementation((table: string) =>
-      table === "household_members" ? ownersQuery(["u1"]) : mockQuery({ error: null }),
-    );
+    mockOwnerUserIds.mockResolvedValue(["u1"]);
     mockListUserHouseholds.mockResolvedValue({ households: [{ id: "h1" }] });
     const { sendPortfolioAlertsForAllUsers } = await import("./portfolioAlerts");
 
@@ -103,9 +82,7 @@ describe("sendPortfolioAlertsForAllUsers", () => {
   });
 
   it("skips a user who has portfolio alerts disabled", async () => {
-    mockFrom.mockImplementation((table: string) =>
-      table === "household_members" ? ownersQuery(["u1"]) : mockQuery({ error: null }),
-    );
+    mockOwnerUserIds.mockResolvedValue(["u1"]);
     mockGetAlertSettingsForUser.mockResolvedValue({
       enabled: true,
       portfolioAlertsEnabled: false,
@@ -117,9 +94,7 @@ describe("sendPortfolioAlertsForAllUsers", () => {
   });
 
   it("skips a user whose alerts are globally disabled", async () => {
-    mockFrom.mockImplementation((table: string) =>
-      table === "household_members" ? ownersQuery(["u1"]) : mockQuery({ error: null }),
-    );
+    mockOwnerUserIds.mockResolvedValue(["u1"]);
     mockGetAlertSettingsForUser.mockResolvedValue({
       enabled: false,
       portfolioAlertsEnabled: true,
@@ -130,9 +105,7 @@ describe("sendPortfolioAlertsForAllUsers", () => {
   });
 
   it("skips a user still within the cooldown window", async () => {
-    mockFrom.mockImplementation((table: string) =>
-      table === "household_members" ? ownersQuery(["u1"]) : mockQuery({ error: null }),
-    );
+    mockOwnerUserIds.mockResolvedValue(["u1"]);
     mockGetAlertSettingsForUser.mockResolvedValue({
       enabled: true,
       portfolioAlertsEnabled: true,
@@ -145,10 +118,7 @@ describe("sendPortfolioAlertsForAllUsers", () => {
   });
 
   it("sends after the cooldown window has passed", async () => {
-    const updateBuilder = mockQuery({ error: null });
-    mockFrom.mockImplementation((table: string) =>
-      table === "household_members" ? ownersQuery(["u1"]) : updateBuilder,
-    );
+    mockOwnerUserIds.mockResolvedValue(["u1"]);
     mockGetAlertSettingsForUser.mockResolvedValue({
       enabled: true,
       portfolioAlertsEnabled: true,
@@ -164,15 +134,11 @@ describe("sendPortfolioAlertsForAllUsers", () => {
     const result = await sendPortfolioAlertsForAllUsers();
 
     expect(result).toEqual({ sent: 1, skipped: 0, errors: [] });
-    expect(updateBuilder.update).toHaveBeenCalledWith(
-      expect.objectContaining({ last_portfolio_alert_at: expect.any(String) }),
-    );
+    expect(mockStampPortfolioAlert).toHaveBeenCalledWith("u1");
   });
 
   it("skips when no properties are at risk", async () => {
-    mockFrom.mockImplementation((table: string) =>
-      table === "household_members" ? ownersQuery(["u1"]) : mockQuery({ error: null }),
-    );
+    mockOwnerUserIds.mockResolvedValue(["u1"]);
     mockFetchCrossPropertySnapshots.mockResolvedValue({
       properties: [{ name: "Lakehouse", atRisk: false, minTempF: 55, freezeThresholdF: 32 }],
     });
@@ -183,9 +149,7 @@ describe("sendPortfolioAlertsForAllUsers", () => {
   });
 
   it("builds a singular-vs-plural digest body and notifies the user", async () => {
-    mockFrom.mockImplementation((table: string) =>
-      table === "household_members" ? ownersQuery(["u1"]) : mockQuery({ error: null }),
-    );
+    mockOwnerUserIds.mockResolvedValue(["u1"]);
     mockFetchCrossPropertySnapshots.mockResolvedValue({
       properties: [
         { name: "Lakehouse", atRisk: true, minTempF: 28.44, freezeThresholdF: 32 },
@@ -210,9 +174,7 @@ describe("sendPortfolioAlertsForAllUsers", () => {
   });
 
   it("uses singular phrasing for exactly one at-risk property", async () => {
-    mockFrom.mockImplementation((table: string) =>
-      table === "household_members" ? ownersQuery(["u1"]) : mockQuery({ error: null }),
-    );
+    mockOwnerUserIds.mockResolvedValue(["u1"]);
     mockFetchCrossPropertySnapshots.mockResolvedValue({
       properties: [{ name: "Lakehouse", atRisk: true, minTempF: 28.4, freezeThresholdF: 32 }],
     });
@@ -232,9 +194,7 @@ describe("sendPortfolioAlertsForAllUsers", () => {
   });
 
   it("records a per-user error without stopping the batch", async () => {
-    mockFrom.mockImplementation((table: string) =>
-      table === "household_members" ? ownersQuery(["u1", "u2"]) : mockQuery({ error: null }),
-    );
+    mockOwnerUserIds.mockResolvedValue(["u1", "u2"]);
     mockGetUserEntitlements.mockImplementation(async (userId: string) => {
       if (userId === "u1") throw new Error("entitlements lookup failed");
       return { canUsePortfolio: false };
@@ -248,9 +208,7 @@ describe("sendPortfolioAlertsForAllUsers", () => {
   });
 
   it("records a generic message for a non-Error throw", async () => {
-    mockFrom.mockImplementation((table: string) =>
-      table === "household_members" ? ownersQuery(["u1"]) : mockQuery({ error: null }),
-    );
+    mockOwnerUserIds.mockResolvedValue(["u1"]);
     mockGetUserEntitlements.mockRejectedValue("nope");
     const { sendPortfolioAlertsForAllUsers } = await import("./portfolioAlerts");
 

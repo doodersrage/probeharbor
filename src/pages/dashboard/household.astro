@@ -1,5 +1,4 @@
 ---
-import { dbBackend } from "../../lib/db/client";
 import * as neonRemaining from "../../lib/db/remaining";
 import { getHouseholdFields } from "../../lib/householdRecord";
 import { getUserRecord } from "../../lib/userRecords";
@@ -18,7 +17,6 @@ import { listPendingInvites } from "../../lib/householdInvites";
 import { consumeSecretFlash, FLASH_INVITE_LINK } from "../../lib/secretFlash";
 import { getHouseholdErrorMessage } from "../../lib/householdErrors";
 import { getUserEntitlements } from "../../lib/entitlements";
-import { createServerClient } from "../../lib/supabase";
 import { listHouseholdActivity } from "../../lib/householdActivity";
 import { formatHouseholdActivityAction } from "../../lib/householdActivityLabels";
 import { householdRoleLabel } from "../../lib/householdRoleLabel";
@@ -146,19 +144,10 @@ const activityGroups = householdActivity.reduce<Array<{ row: (typeof householdAc
   [],
 );
 const myMembership = membersWithEmail.find((m) => m.user_id === user.id);
-const digestOptInRow =
+const digestOptIn =
   active.householdId && active.householdId !== manageId
-    ? dbBackend() === "neon"
-      ? await neonRemaining.getDigestOptIn(active.householdId, user.id).then((v) => ({ data: v == null ? null : { digest_opt_in: v } }))
-      : await createServerClient()
-          .from("household_members")
-          .select("digest_opt_in")
-          .eq("household_id", active.householdId)
-          .eq("user_id", user.id)
-          .maybeSingle()
-    : Promise.resolve({ data: myMembership ? { digest_opt_in: myMembership.digest_opt_in } : null });
-const digestOptInResult = await digestOptInRow;
-const digestOptIn = Boolean(digestOptInResult.data?.digest_opt_in);
+    ? Boolean(await neonRemaining.getDigestOptIn(active.householdId, user.id))
+    : Boolean(myMembership?.digest_opt_in);
 const digestSaved = Astro.url.searchParams.get("digest_saved");
 const digestError = Astro.url.searchParams.get("digest_error");
 ---

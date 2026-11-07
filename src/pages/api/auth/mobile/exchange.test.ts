@@ -6,6 +6,10 @@ vi.mock("../../../../lib/mobileAuthExchange", () => ({
   verifyMobileExchangeToken: (...a: unknown[]) => mockVerifyMobileExchangeToken(...a),
 }));
 
+vi.mock("../../../../lib/betterAuthAppHandoff", () => ({
+  appSessionCookieName: () => "__Secure-better-auth.session_token",
+}));
+
 function makeContext(body: unknown | string): APIContext {
   const request = {
     json: async () => {
@@ -50,7 +54,7 @@ describe("POST /api/auth/mobile/exchange", () => {
     expect(await response.json()).toEqual({ error: "Invalid or expired exchange token" });
   });
 
-  it("returns the exchanged tokens with a no-store header", async () => {
+  it("returns the exchanged tokens and the session cookie name with a no-store header", async () => {
     const { POST } = await import("./exchange");
 
     const response = await POST(makeContext({ exchange_token: " tok " }));
@@ -58,6 +62,11 @@ describe("POST /api/auth/mobile/exchange", () => {
     expect(mockVerifyMobileExchangeToken).toHaveBeenCalledWith("tok");
     expect(response.status).toBe(200);
     expect(response.headers.get("Cache-Control")).toBe("no-store");
-    expect(await response.json()).toEqual({ ok: true, access_token: "at", refresh_token: "rt" });
+    expect(await response.json()).toEqual({
+      ok: true,
+      access_token: "at",
+      refresh_token: "rt",
+      session_cookie_name: "__Secure-better-auth.session_token",
+    });
   });
 });

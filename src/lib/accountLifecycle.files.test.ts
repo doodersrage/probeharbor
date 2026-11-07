@@ -22,36 +22,20 @@ vi.mock("./stripeSubscriptions", () => ({ getUserSubscription: vi.fn().mockResol
 vi.mock("./stripe", () => ({ getStripe: vi.fn() }));
 vi.mock("./opsNotify", () => ({ notifyOps: vi.fn() }));
 
-// Answers by table: one sole-owned household, one shared chart image.
-function query(result: unknown) {
-  const builder: Record<string, unknown> = {};
-  for (const method of ["select", "eq", "neq", "order", "update", "delete"]) builder[method] = () => builder;
-  (builder as { then: unknown }).then = (resolve: (v: unknown) => unknown) => Promise.resolve(result).then(resolve);
-  return builder;
-}
-let memberQueries = 0;
-let chartShareRows: Array<{ r2_key: string }> = [{ r2_key: "chart-shares/tok1.png" }];
-const mockDeleteUser = vi.fn().mockResolvedValue({ error: null });
-vi.mock("./supabase", () => ({
-  createServerClient: () => ({
-    from: (table: string) => {
-      if (table === "household_members") {
-        memberQueries += 1;
-        return query(memberQueries === 1 ? { data: [{ household_id: "h1" }] } : { count: 1 });
-      }
-      if (table === "chart_share_tokens") return query({ data: chartShareRows });
-      return query({ error: null });
-    },
-  }),
-  createAdminClient: () => ({ auth: { admin: { deleteUser: mockDeleteUser } } }),
+// One sole-owned household (h1) goes with the account; one shared chart image.
+let chartShareRows: string[] = ["chart-shares/tok1.png"];
+const mockDeleteUserRow = vi.fn().mockResolvedValue(undefined);
+vi.mock("./db/accounts", () => ({
+  releaseOwnedHouseholds: vi.fn().mockResolvedValue(["h1"]),
+  chartShareKeys: vi.fn(async () => chartShareRows),
+  deleteUserRow: (...args: unknown[]) => mockDeleteUserRow(...args),
 }));
 
 beforeEach(() => {
   objects.clear();
   deleteSpy.mockClear();
-  memberQueries = 0;
-  chartShareRows = [{ r2_key: "chart-shares/tok1.png" }];
-  mockDeleteUser.mockClear();
+  chartShareRows = ["chart-shares/tok1.png"];
+  mockDeleteUserRow.mockClear();
 });
 
 describe("deleteUserAccount stored files", () => {
@@ -70,12 +54,12 @@ describe("deleteUserAccount stored files", () => {
 
     expect(result.error).toBeNull();
     expect([...objects].sort()).toEqual(["archives/h2/2026-10-01.json", "chart-shares/other.png"]);
-    expect(mockDeleteUser).toHaveBeenCalledWith("user-1");
+    expect(mockDeleteUserRow).toHaveBeenCalledWith("user-1");
   });
 
   it("ignores a chart-share row whose key points outside chart-shares/", async () => {
     for (const key of ["archives/h2/2026-10-01.json", "chart-shares/tok1.png"]) objects.add(key);
-    chartShareRows = [{ r2_key: "archives/h2/2026-10-01.json" }, { r2_key: "chart-shares/tok1.png" }];
+    chartShareRows = ["archives/h2/2026-10-01.json", "chart-shares/tok1.png"];
 
     const { deleteUserAccount } = await import("./accountLifecycle");
     await deleteUserAccount("user-1");
@@ -92,7 +76,7 @@ describe("deleteUserAccount stored files", () => {
     const result = await deleteUserAccount("user-1");
 
     expect(result.error).toBeNull();
-    expect(mockDeleteUser).toHaveBeenCalledWith("user-1");
+    expect(mockDeleteUserRow).toHaveBeenCalledWith("user-1");
   });
 });
 

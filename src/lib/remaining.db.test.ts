@@ -3,7 +3,7 @@ import { insertTestUser, useTestDatabase } from "../test/db";
 
 vi.mock("./runtimeEnv", () => ({
   getRuntimeEnv: (key: string) =>
-    key === "DB_BACKEND" ? "neon" : key === "MOBILE_EXCHANGE_SECRET" ? "test-exchange-secret-0123456789" : undefined,
+    key === "MOBILE_EXCHANGE_SECRET" ? "test-exchange-secret-0123456789" : undefined,
   hasRuntimeEnv: () => false,
 }));
 

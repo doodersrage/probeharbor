@@ -10,7 +10,7 @@ import { requestLocale } from "./_locale";
 import { hasMobileOAuthCookie } from "../../../lib/mobileAuthRedirect";
 
 /**
- * Where OAuth sign-in lands after Better Auth's callback (DB_BACKEND=neon).
+ * Where OAuth sign-in lands after Better Auth's callback.
  * Does what /api/auth/callback and the GitHub callback did after Supabase
  * signed the user in: account language, referral for new accounts, and the
  * page to go to next. Two-factor users never get here: they're sent to

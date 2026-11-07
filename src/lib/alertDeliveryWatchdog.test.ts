@@ -28,14 +28,8 @@ vi.mock("./alertEvents", () => ({
   listRecentAlertEvents: (...a: unknown[]) => mockListRecentAlertEvents(...a),
 }));
 
-vi.mock("./supabase", () => ({
-  createAdminClient: () => ({
-    auth: {
-      admin: {
-        getUserById: async () => ({ data: { user: { email: "u@example.com", user_metadata: {} } } }),
-      },
-    },
-  }),
+vi.mock("./userRecords", () => ({
+  getUserRecord: async (id: string) => ({ id, email: "u@example.com", user_metadata: {} }),
 }));
 
 const settings: AlertSettings = {

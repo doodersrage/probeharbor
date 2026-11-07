@@ -19,9 +19,7 @@ import {
 import { shouldSuppressForSnoozeOrVacation } from "./alertSnooze";
 import { filterChannelsForSpace } from "./spaceChannelRouting";
 import { deliverWebhookPost } from "./webhookDeliveries";
-import { dbBackend } from "./db/client";
 import * as neonSettings from "./db/alertSettings";
-import { createServerClient } from "./supabase";
 import { getUserEntitlements } from "./entitlements";
 import { sendPushChannelToUser } from "./pushChannel";
 import { getRuntimeEnv, hasRuntimeEnv } from "./runtimeEnv";
@@ -401,58 +399,28 @@ export async function getAlertSettingsForUser(
   userId: string,
   metadata?: Record<string, unknown>,
 ): Promise<AlertSettings> {
-  if (dbBackend() === "neon") {
-    let row: Record<string, unknown> | null;
-    try {
-      row = await neonSettings.getAlertSettingsRow(userId);
-    } catch (error) {
-      // Can't read: use the metadata/defaults for this request, but don't
-      // write them over a row that may exist.
-      console.error("Failed to load alert settings:", error instanceof Error ? error.message : error);
-      return getAlertSettingsFromMetadata(metadata);
-    }
-    if (row) return rowToAlertSettings(row);
-    const fresh = getAlertSettingsFromMetadata(metadata);
-    await neonSettings.insertDefaultAlertSettings(userId, alertSettingsToRow(fresh));
-    // Another request may have created the row first; theirs wins.
-    const stored = await neonSettings.getAlertSettingsRow(userId).catch(() => null);
-    return stored ? rowToAlertSettings(stored) : fresh;
+  let row: Record<string, unknown> | null;
+  try {
+    row = await neonSettings.getAlertSettingsRow(userId);
+  } catch (error) {
+    // Can't read: use the metadata/defaults for this request, but don't
+    // write them over a row that may exist.
+    console.error("Failed to load alert settings:", error instanceof Error ? error.message : error);
+    return getAlertSettingsFromMetadata(metadata);
   }
-  const supabase = createServerClient();
-  const { data } = await supabase
-    .from("alert_settings")
-    .select("*")
-    .eq("user_id", userId)
-    .maybeSingle();
-
-  if (data) {
-    return rowToAlertSettings(data as Record<string, unknown>);
-  }
-
-  const fromMeta = getAlertSettingsFromMetadata(metadata);
-  await supabase.from("alert_settings").upsert({
-    user_id: userId,
-    ...alertSettingsToRow(fromMeta),
-  });
-
-  return fromMeta;
+  if (row) return rowToAlertSettings(row);
+  const fresh = getAlertSettingsFromMetadata(metadata);
+  await neonSettings.insertDefaultAlertSettings(userId, alertSettingsToRow(fresh));
+  // Another request may have created the row first; theirs wins.
+  const stored = await neonSettings.getAlertSettingsRow(userId).catch(() => null);
+  return stored ? rowToAlertSettings(stored) : fresh;
 }
 
 export async function saveAlertSettingsForUser(
   userId: string,
   settings: AlertSettings,
 ): Promise<{ error: string | null }> {
-  if (dbBackend() === "neon") return neonSettings.saveAlertSettingsRow(userId, alertSettingsToRow(settings));
-  const supabase = createServerClient();
-  const { error } = await supabase.from("alert_settings").upsert(
-    {
-      user_id: userId,
-      ...alertSettingsToRow(settings),
-    },
-    { onConflict: "user_id" },
-  );
-
-  return { error: error?.message ?? null };
+  return neonSettings.saveAlertSettingsRow(userId, alertSettingsToRow(settings));
 }
 
 export async function markCooldown(
@@ -471,52 +439,10 @@ export async function markCooldown(
     | "last_flood_alert_at"
     | "last_power_alert_at",
 ): Promise<void> {
-  if (dbBackend() === "neon") return neonSettings.markCooldown(userId, field, alertSettingsToRow(DEFAULT_ALERT_SETTINGS));
-  const supabase = createServerClient();
-  const now = new Date().toISOString();
-  const patch = { [field]: now, updated_at: now } as {
-    last_alert_sent_at?: string;
-    last_outage_alert_at?: string;
-    last_rate_alert_at?: string;
-    last_forecast_alert_at?: string;
-    last_runway_alert_at?: string;
-    last_rule_alert_at?: string;
-    last_battery_alert_at?: string;
-    last_battery_trend_alert_at?: string;
-    last_rssi_alert_at?: string;
-    last_nws_alert_at?: string;
-    last_flood_alert_at?: string;
-    last_power_alert_at?: string;
-    updated_at: string;
-  };
-
-  const { data, error } = await supabase
-    .from("alert_settings")
-    .update(patch)
-    .eq("user_id", userId)
-    .select("user_id");
-
-  if (error) {
-    console.error("markCooldown update failed:", error.message);
-  }
-  if (data && data.length > 0) return;
-
-  // Update matched 0 rows (missing settings row). Upsert so test alerts still unlock Overview.
-  const { error: upsertError } = await supabase.from("alert_settings").upsert(
-    {
-      user_id: userId,
-      ...alertSettingsToRow(DEFAULT_ALERT_SETTINGS),
-      ...patch,
-    },
-    { onConflict: "user_id" },
-  );
-  if (upsertError) {
-    console.error("markCooldown upsert failed:", upsertError.message);
-  }
+  return neonSettings.markCooldown(userId, field, alertSettingsToRow(DEFAULT_ALERT_SETTINGS));
 }
 
 type CooldownField = Parameters<typeof markCooldown>[1];
-type CooldownPatch = Partial<Record<CooldownField, string | null>> & { updated_at?: string };
 
 /**
  * Claim the right to send one alert by moving its cooldown timestamp from the
@@ -533,34 +459,7 @@ export async function claimCooldown(
   field: CooldownField,
   previous: string | null,
 ): Promise<{ claimed: boolean; claimedAt: string | null }> {
-  if (dbBackend() === "neon") return neonSettings.claimCooldown(userId, field, previous);
-  const supabase = createServerClient();
-  const now = new Date().toISOString();
-  try {
-    let query = supabase
-      .from("alert_settings")
-      .update({ [field]: now, updated_at: now } as CooldownPatch)
-      .eq("user_id", userId);
-    query = previous == null ? query.is(field, null) : query.eq(field, previous);
-    const { data, error } = await query.select("user_id");
-    if (error) throw new Error(error.message);
-    if (data && data.length > 0) return { claimed: true, claimedAt: now };
-
-    const { data: row, error: readError } = await supabase
-      .from("alert_settings")
-      .select(field)
-      .eq("user_id", userId)
-      .maybeSingle();
-    if (readError) throw new Error(readError.message);
-    const current = (row as Record<string, string | null> | null)?.[field] ?? null;
-    const currentMs = current ? Date.parse(current) : NaN;
-    const previousMs = previous ? Date.parse(previous) : -Infinity;
-    // Someone else stamped a newer time since we read it: they're sending this alert.
-    if (row && Number.isFinite(currentMs) && currentMs > previousMs) return { claimed: false, claimedAt: null };
-  } catch (error) {
-    console.error(`claimCooldown(${field}) failed; sending anyway:`, error);
-  }
-  return { claimed: true, claimedAt: null };
+  return neonSettings.claimCooldown(userId, field, previous);
 }
 
 /** Undo a claim when the alert reached no one, so it can retry (and isn't shown as sent). */
@@ -570,14 +469,7 @@ export async function releaseCooldown(
   claimedAt: string,
   previous: string | null,
 ): Promise<void> {
-  if (dbBackend() === "neon") return neonSettings.releaseCooldown(userId, field, claimedAt, previous);
-  const supabase = createServerClient();
-  const { error } = await supabase
-    .from("alert_settings")
-    .update({ [field]: previous } as CooldownPatch)
-    .eq("user_id", userId)
-    .eq(field, claimedAt);
-  if (error) console.error(`releaseCooldown(${field}) failed:`, error.message);
+  return neonSettings.releaseCooldown(userId, field, claimedAt, previous);
 }
 
 /** Cooldown timestamps that prove at least one alert left the system. */
@@ -610,43 +502,16 @@ export async function ensureAlertDeliveryEvidence(
     return { hasDelivery: true, settings };
   }
 
-  if (dbBackend() === "neon") {
-    try {
-      return { hasDelivery: await neonSettings.recentAlertReachedAChannel(userId), settings };
-    } catch (error) {
-      console.error("ensureAlertDeliveryEvidence failed:", error instanceof Error ? error.message : error);
-      return { hasDelivery: false, settings };
-    }
-  }
-  const supabase = createServerClient();
-  const { data, error } = await supabase
-    .from("alert_events")
-    .select("channels_sent")
-    .eq("user_id", userId)
-    .order("created_at", { ascending: false })
-    .limit(25);
-
-  if (error) {
-    console.error("ensureAlertDeliveryEvidence failed:", error.message);
+  try {
+    return { hasDelivery: await neonSettings.recentAlertReachedAChannel(userId), settings };
+  } catch (error) {
+    console.error("ensureAlertDeliveryEvidence failed:", error instanceof Error ? error.message : error);
     return { hasDelivery: false, settings };
   }
-
-  const delivered = (data ?? []).some(
-    (row) => Array.isArray(row.channels_sent) && row.channels_sent.length > 0,
-  );
-  return { hasDelivery: delivered, settings };
 }
 
 export async function markEscalation(userId: string): Promise<void> {
-  if (dbBackend() === "neon") return neonSettings.markEscalation(userId);
-  const supabase = createServerClient();
-  await supabase
-    .from("alert_settings")
-    .update({
-      last_escalation_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    })
-    .eq("user_id", userId);
+  return neonSettings.markEscalation(userId);
 }
 
 export async function notifyUser(

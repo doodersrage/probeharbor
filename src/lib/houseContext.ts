@@ -8,7 +8,6 @@ import {
 import { findReferenceSensorLabel } from "./indoorReference";
 import type { ChartPoint } from "./garageTempsHistory";
 import { fetchThermostatSnapshotChartPoints } from "./thermostatSnapshots";
-import { fetchNewestFirstPages } from "./pagedRows";
 import { fmt, type Locale } from "../i18n";
 import { libFixed, libTextMessages } from "../i18n/messages/app/libText";
 import { tempUnitLabel, toDisplayTemp } from "./temperatureFormat";
@@ -78,46 +77,13 @@ export function buildHouseContext(input: {
   };
 }
 
-/** Aim for about this many points: PostgREST returns at most 1000 rows, function results included. */
+/** Aim for about this many points per chart line. */
 const REFERENCE_TARGET_POINTS = 900;
 
 /** Bucket width (seconds) so [from, to] comes out near `target` points; at least a minute. */
 export function bucketSecondsFor(fromIso: string, toIso: string, target = REFERENCE_TARGET_POINTS): number {
   const spanSec = Math.max(0, (Date.parse(toIso) - Date.parse(fromIso)) / 1000);
   return Math.max(60, Math.ceil(spanSec / target));
-}
-
-/** null when the bucket function isn't available (or fails): the caller falls back to raw rows. */
-async function fetchReferenceSensorBuckets(
-  supabase: ReturnType<typeof import("./supabase").createServerClient>,
-  householdId: string,
-  sensorId: string,
-  fromIso: string,
-  toIso: string | undefined,
-  locale: Locale,
-): Promise<ChartPoint[] | null> {
-  const to = toIso ?? new Date().toISOString();
-  const { data: sensor } = await supabase
-    .from("device_sensors")
-    .select("label, kind")
-    .eq("id", sensorId)
-    .maybeSingle();
-  if (sensor && sensor.kind !== "temperature") return [];
-  const { data, error } = await supabase.rpc("sensor_bucket_averages", {
-    p_household_id: householdId,
-    p_sensor_ids: [sensorId],
-    p_from: fromIso,
-    p_to: to,
-    p_bucket_seconds: bucketSecondsFor(fromIso, to),
-  });
-  if (error) {
-    console.warn("sensor_bucket_averages unavailable, reading raw rows:", error.message);
-    return null;
-  }
-  const label = (sensor?.label as string | undefined) ?? libTextMessages(locale).house.house;
-  return (data ?? [])
-    .filter((row) => typeof row.avg_num === "number" && Number.isFinite(row.avg_num))
-    .map((row) => ({ timestamp: row.bucket_start, tempf: row.avg_num, humidity: null, probeLabel: label }));
 }
 
 export async function fetchReferenceSensorChartPoints(
@@ -129,74 +95,21 @@ export async function fetchReferenceSensorChartPoints(
 ): Promise<ChartPoint[]> {
   const defaultFrom = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
   const from = filters.from ?? defaultFrom;
-  const { dbBackend } = await import("./db/client");
-  if (dbBackend() === "neon") {
-    const neonPlaces = await import("./db/places");
-    const to = filters.to ?? new Date().toISOString();
-    try {
-      const sensor = await neonPlaces.householdSensor(householdId, sensorId);
-      if (sensor && sensor.kind !== "temperature") return [];
-      const label = sensor?.label ?? libTextMessages(locale).house.house;
-      const rows = await neonPlaces.sensorBucketAverages(householdId, sensorId, from, to, bucketSecondsFor(from, to));
-      return rows
-        .filter((row) => typeof row.avg_num === "number" && Number.isFinite(row.avg_num))
-        .map((row) => ({ timestamp: row.bucket_start, tempf: row.avg_num as number, humidity: null, probeLabel: label }));
-    } catch (error) {
-      console.error("fetchReferenceSensorChartPoints failed:", error instanceof Error ? error.message : error);
-      return [];
-    }
-  }
-  const supabase = (await import("./supabase")).createServerClient();
-
-  // Preferred: averages per time bucket in one call (sensor_bucket_averages,
-  // migration 20261029180000), so a sensor reporting every minute still
-  // covers the whole window.
-  const bucketed = await fetchReferenceSensorBuckets(supabase, householdId, sensorId, from, filters.to, locale);
-  if (bucketed) return bucketed;
-
-  // Fallback (function not there yet): page through, newest first, so the line never stops short of now.
-  const { rows, error, capped } = await fetchNewestFirstPages((start, end) => {
-    let query = supabase
-      .from("sensor_readings")
-      .select(
-        `
-      recorded_at,
-      value_num,
-      device_sensors!inner (
-        id,
-        label,
-        kind
-      )
-    `,
-      )
-      .eq("household_id", householdId)
-      .eq("device_sensors.id", sensorId)
-      .eq("device_sensors.kind", "temperature")
-      .gte("recorded_at", from);
-    if (filters.to) query = query.lte("recorded_at", filters.to);
-    return query.order("recorded_at", { ascending: false }).range(start, end);
-  });
-  if (error) {
-    console.error("fetchReferenceSensorChartPoints failed:", error);
+  const neonPlaces = await import("./db/places");
+  const to = filters.to ?? new Date().toISOString();
+  try {
+    const sensor = await neonPlaces.householdSensor(householdId, sensorId);
+    if (sensor && sensor.kind !== "temperature") return [];
+    const label = sensor?.label ?? libTextMessages(locale).house.house;
+    // Averages per time bucket, so a sensor reporting every minute still covers the whole window.
+    const rows = await neonPlaces.sensorBucketAverages(householdId, sensorId, from, to, bucketSecondsFor(from, to));
+    return rows
+      .filter((row) => typeof row.avg_num === "number" && Number.isFinite(row.avg_num))
+      .map((row) => ({ timestamp: row.bucket_start, tempf: row.avg_num as number, humidity: null, probeLabel: label }));
+  } catch (error) {
+    console.error("fetchReferenceSensorChartPoints failed:", error instanceof Error ? error.message : error);
     return [];
   }
-  if (capped) console.warn(`House reference chart for household ${householdId}: row cap hit; oldest readings not shown`);
-
-  return rows
-    .map((row): ChartPoint | null => {
-      const label =
-        (row.device_sensors as { label?: string } | null)?.label ?? libTextMessages(locale).house.house;
-      const tempf = row.value_num;
-      if (tempf == null || !Number.isFinite(tempf)) return null;
-      return {
-        timestamp: row.recorded_at,
-        tempf,
-        // Reference sensors here are temperature-only.
-        humidity: null,
-        probeLabel: label,
-      };
-    })
-    .filter((point): point is ChartPoint => point != null);
 }
 
 export async function fetchHouseChartOverlay(input: {

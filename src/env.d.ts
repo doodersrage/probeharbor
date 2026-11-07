@@ -1,10 +1,5 @@
 interface ImportMetaEnv {
-  readonly SUPABASE_URL: string;
-  readonly SUPABASE_ANON_KEY: string;
-  readonly SUPABASE_SERVICE_ROLE_KEY?: string;
-  /** Which database the app reads and writes: "supabase" (default) or "neon". Moving off Supabase, see IMPLEMENTATION_PLAN.md. */
-  readonly DB_BACKEND?: string;
-  /** Neon pooled connection string, used when DB_BACKEND=neon. Server-only. */
+  /** Neon pooled connection string. Server-only. */
   readonly DATABASE_URL?: string;
   /** Date-based app version (YYYY.MM.DD[.N]) stamped by the deploy workflow; "" in local builds. */
   readonly APP_VERSION?: string;
@@ -81,8 +76,8 @@ interface ImportMeta {
 
 declare namespace App {
   interface Locals {
-    session?: import("@supabase/supabase-js").Session | null;
-    user?: import("@supabase/supabase-js").User | null;
+    session?: import("./lib/appUser").Session | null;
+    user?: import("./lib/appUser").User | null;
     dashboardShell?: import("./lib/dashboardShell").DashboardShell | null;
     /** Marketing locale from the URL prefix (/es, /fr, /de, /pt-br); "en" otherwise. */
     locale?: import("./i18n/locales").Locale;

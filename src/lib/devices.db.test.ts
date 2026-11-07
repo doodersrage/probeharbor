@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { insertTestUser, useTestDatabase } from "../test/db";
 
 vi.mock("./runtimeEnv", () => ({
-  getRuntimeEnv: (key: string) => (key === "DB_BACKEND" ? "neon" : undefined),
+  getRuntimeEnv: () => undefined,
   hasRuntimeEnv: () => false,
 }));
 
@@ -271,5 +271,32 @@ describe("pull feeds Save (Neon)", () => {
     ]);
     expect(devices.some((d) => d.id === push.id)).toBe(true);
     expect((await listHouseholdDevices(b)).devices.map((d) => d.id)).toEqual([theirs.id]);
+  });
+
+  it("the same feed with a trailing slash is the same device; a feed without a URL is skipped", async () => {
+    const a = await household("a@example.com");
+    await savePullDevicesForHousehold(a, [feed("f1", "https://one.example/feed")], [probe("f1", "0")]);
+    const before = (await listHouseholdDevices(a)).devices.find((d) => d.source === "pull_url")!;
+
+    expect(
+      await savePullDevicesForHousehold(a, [feed("f1", "https://one.example/feed/"), feed("f2", "")], [probe("f1", "0"), probe("f2", "0")]),
+    ).toEqual({ error: null });
+    const pulls = (await listHouseholdDevices(a)).devices.filter((d) => d.source === "pull_url");
+    expect(pulls.map((d) => d.id)).toEqual([before.id]);
+    expect(pulls[0]?.sensors).toHaveLength(2);
+  });
+});
+
+describe("new push device (Neon)", () => {
+  it("stores the key hash and prefix only, trims the space, and starts with no meta and no upload", async () => {
+    const h = await household("a@example.com");
+    const { device, error } = await createPushDevice(h, "Attic", "hash-abc", "th_live_", "  Attic  ");
+    expect(error).toBeNull();
+    const [row] = await sql<Record<string, unknown>>(
+      "select household_id, name, source, ingest_key_hash, ingest_key_prefix, space, meta, last_seen_at, enabled from public.devices where id = $1",
+      [device!.id],
+    );
+    expect(row).toMatchObject({ household_id: h, name: "Attic", source: "push", ingest_key_hash: "hash-abc", ingest_key_prefix: "th_live_", space: "Attic", last_seen_at: null });
+    expect(row?.meta ?? {}).toEqual({});
   });
 });

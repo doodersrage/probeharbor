@@ -37,7 +37,7 @@ const publicApiExactPaths = new Set([
   "/api/feeds/example",
   // Companion start must work before a browser session exists (sets cookies, then OAuth).
   "/api/auth/companion/start",
-  // Checks for itself: a session, or (DB_BACKEND=neon) the emailed reset
+  // Checks for itself: a session, or the emailed reset
   // token, which comes before any session exists.
   "/api/auth/update-password",
 ]);

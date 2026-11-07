@@ -30,22 +30,6 @@ export function collectHistoryStaleMessage(
 export async function fetchLastSuccessfulCollectHistory(
   sinceMs = 24 * 60 * 60 * 1000,
 ): Promise<string | null> {
-  const { dbBackend } = await import("./db/client");
-  if (dbBackend() === "neon") {
-    const { lastSuccessfulRun } = await import("./db/jobs");
-    return lastSuccessfulRun("collect-history", new Date(Date.now() - sinceMs).toISOString());
-  }
-  const { createAdminClient } = await import("./supabase");
-  const admin = createAdminClient();
-  const since = new Date(Date.now() - sinceMs).toISOString();
-  const { data } = await admin
-    .from("job_runs")
-    .select("started_at")
-    .eq("job_name", "collect-history")
-    .eq("status", "success")
-    .gte("started_at", since)
-    .order("started_at", { ascending: false })
-    .limit(1);
-
-  return data?.[0]?.started_at ?? null;
+  const { lastSuccessfulRun } = await import("./db/jobs");
+  return lastSuccessfulRun("collect-history", new Date(Date.now() - sinceMs).toISOString());
 }

@@ -1,6 +1,4 @@
-import { dbBackend } from "./db/client";
 import * as neonAdmin from "./db/admin";
-import { createServerClient } from "./supabase";
 import { escapeCsvField } from "./csvEscape";
 
 export type ContactSubmission = {
@@ -28,8 +26,6 @@ export type ContactFilters = {
 };
 
 export const CONTACTS_PAGE_SIZE = 20;
-
-const CONTACTS_SELECT = "id, name, email, message, created_at, status, admin_notes";
 
 export function formatContactTimestamp(timestamp: string): string {
   return new Intl.DateTimeFormat("en-US", {
@@ -63,103 +59,27 @@ export async function fetchContactSubmissions(
 ): Promise<PaginatedContactSubmissions> {
   const safePage = Number.isFinite(page) && page > 0 ? Math.floor(page) : 1;
   const from = (safePage - 1) * pageSize;
-  const to = from + pageSize - 1;
 
-  if (dbBackend() === "neon") {
-    const paged = await neonAdmin.pageContacts(filters, from, pageSize);
-    if (paged.error) {
-      return { submissions: [], page: safePage, pageSize, totalCount: 0, totalPages: 0, error: paged.error };
-    }
-    return {
-      submissions: paged.rows,
-      page: safePage,
-      pageSize,
-      totalCount: paged.total,
-      totalPages: paged.total === 0 ? 0 : Math.ceil(paged.total / pageSize),
-      error: null,
-    };
+  const paged = await neonAdmin.pageContacts(filters, from, pageSize);
+  if (paged.error) {
+    return { submissions: [], page: safePage, pageSize, totalCount: 0, totalPages: 0, error: paged.error };
   }
-  const supabase = createServerClient();
-  let query = supabase.from("contacts").select(CONTACTS_SELECT, { count: "exact" });
-
-  if (filters.status) {
-    query = query.eq("status", filters.status);
-  }
-
-  if (filters.search) {
-    const term = `%${filters.search}%`;
-    query = query.or(
-      `name.ilike.${term},email.ilike.${term},message.ilike.${term}`,
-    );
-  }
-
-  const { data, error, count } = await query
-    .order("created_at", { ascending: false })
-    .range(from, to);
-
-  if (error) {
-    return {
-      submissions: [],
-      page: safePage,
-      pageSize,
-      totalCount: 0,
-      totalPages: 0,
-      error: error.message,
-    };
-  }
-
-  const totalCount = count ?? 0;
-  const totalPages = totalCount === 0 ? 0 : Math.ceil(totalCount / pageSize);
-
   return {
-    submissions: (data ?? []) as ContactSubmission[],
+    submissions: paged.rows,
     page: safePage,
     pageSize,
-    totalCount,
-    totalPages,
+    totalCount: paged.total,
+    totalPages: paged.total === 0 ? 0 : Math.ceil(paged.total / pageSize),
     error: null,
   };
 }
-
-const EXPORT_BATCH_SIZE = 1000;
 
 export async function fetchAllContactSubmissions(): Promise<{
   submissions: ContactSubmission[];
   error: string | null;
 }> {
-  if (dbBackend() === "neon") {
-    const all = await neonAdmin.allContacts();
-    return { submissions: all.rows, error: all.error };
-  }
-  const supabase = createServerClient();
-  const submissions: ContactSubmission[] = [];
-  let from = 0;
-
-  while (true) {
-    const { data, error } = await supabase
-      .from("contacts")
-      .select(CONTACTS_SELECT)
-      .order("created_at", { ascending: false })
-      .range(from, from + EXPORT_BATCH_SIZE - 1);
-
-    if (error) {
-      return { submissions: [], error: error.message };
-    }
-
-    if (!data || data.length === 0) {
-      break;
-    }
-
-    submissions.push(...(data as ContactSubmission[]));
-
-    if (data.length < EXPORT_BATCH_SIZE) {
-      break;
-    }
-
-    from += EXPORT_BATCH_SIZE;
-  }
-
-  return { submissions, error: null };
+  const all = await neonAdmin.allContacts();
+  return { submissions: all.rows, error: all.error };
 }
 
 export function buildContactsCsv(submissions: ContactSubmission[]): string {

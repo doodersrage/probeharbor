@@ -1,6 +1,4 @@
-import { dbBackend } from "./db/client";
 import * as neonStatus from "./db/statusPages";
-import { createServerClient } from "./supabase";
 import { sendEmail } from "./mailer";
 import { brandedEmailParts } from "./emailLayout";
 import { resolveSiteUrl } from "./schemaMarkup";
@@ -62,69 +60,22 @@ export async function subscribeToStatusUpdates(
     return { ok: false, error: "Enter a valid email address." };
   }
 
-  if (dbBackend() === "neon") {
-    let found: Awaited<ReturnType<typeof neonStatus.findStatusSubscriber>>;
-    try {
-      found = await neonStatus.findStatusSubscriber(email);
-    } catch (lookupError) {
-      console.error("status subscribe lookup failed:", lookupError instanceof Error ? lookupError.message : lookupError);
-      return { ok: false, error: "Something went wrong. Please try again." };
-    }
-    if (found?.confirmed_at) return { ok: true };
-    const neonToken = randomToken();
-    try {
-      await neonStatus.writeStatusSubscriberToken(email, neonToken);
-    } catch (writeError) {
-      console.error("status subscribe write failed:", writeError instanceof Error ? writeError.message : writeError);
-      return { ok: false, error: "Something went wrong. Please try again." };
-    }
-    try {
-      await sendConfirmEmail(email, neonToken, locale);
-    } catch (error) {
-      console.error("Failed to send status confirm email:", error);
-    }
-    return { ok: true };
-  }
-
-  const supabase = createServerClient();
-  const { data: existing, error: lookupError } = await supabase
-    .from("status_subscriptions")
-    .select("id, token, confirmed_at")
-    .eq("email", email)
-    .maybeSingle();
-
-  if (lookupError) {
-    console.error("status subscribe lookup failed:", lookupError.message);
+  let found: Awaited<ReturnType<typeof neonStatus.findStatusSubscriber>>;
+  try {
+    found = await neonStatus.findStatusSubscriber(email);
+  } catch (lookupError) {
+    console.error("status subscribe lookup failed:", lookupError instanceof Error ? lookupError.message : lookupError);
     return { ok: false, error: "Something went wrong. Please try again." };
   }
-
-  if (existing?.confirmed_at) {
-    // Already subscribed and confirmed -- nothing to do, don't re-email.
-    return { ok: true };
-  }
-
+  // Already subscribed and confirmed -- nothing to do, don't re-email.
+  if (found?.confirmed_at) return { ok: true };
   const token = randomToken();
-
-  if (existing) {
-    const { error } = await supabase
-      .from("status_subscriptions")
-      .update({ token })
-      .eq("id", existing.id);
-    if (error) {
-      console.error("status subscribe token rotate failed:", error.message);
-      return { ok: false, error: "Something went wrong. Please try again." };
-    }
-  } else {
-    const { error } = await supabase.from("status_subscriptions").insert({
-      email,
-      token,
-    });
-    if (error) {
-      console.error("status subscribe insert failed:", error.message);
-      return { ok: false, error: "Something went wrong. Please try again." };
-    }
+  try {
+    await neonStatus.writeStatusSubscriberToken(email, token);
+  } catch (writeError) {
+    console.error("status subscribe write failed:", writeError instanceof Error ? writeError.message : writeError);
+    return { ok: false, error: "Something went wrong. Please try again." };
   }
-
   try {
     await sendConfirmEmail(email, token, locale);
   } catch (error) {
@@ -132,60 +83,23 @@ export async function subscribeToStatusUpdates(
     // The row exists either way; the confirm link still works if the user
     // finds it. Don't fail the request over a transient send error.
   }
-
   return { ok: true };
 }
 
 export async function confirmStatusSubscription(
   token: string,
 ): Promise<{ ok: boolean; message: string }> {
-  if (dbBackend() === "neon") {
-    return (await neonStatus.confirmStatusSubscriber(token))
-      ? { ok: true, message: "You're subscribed to status updates." }
-      : { ok: false, message: "Invalid or expired confirmation link." };
-  }
-  const supabase = createServerClient();
-  const { data, error } = await supabase
-    .from("status_subscriptions")
-    .select("id, confirmed_at")
-    .eq("token", token)
-    .maybeSingle();
-
-  if (error || !data) {
-    return { ok: false, message: "Invalid or expired confirmation link." };
-  }
-
-  if (!data.confirmed_at) {
-    await supabase
-      .from("status_subscriptions")
-      .update({ confirmed_at: new Date().toISOString() })
-      .eq("id", data.id);
-  }
-
-  return { ok: true, message: "You're subscribed to status updates." };
+  return (await neonStatus.confirmStatusSubscriber(token))
+    ? { ok: true, message: "You're subscribed to status updates." }
+    : { ok: false, message: "Invalid or expired confirmation link." };
 }
 
 export async function unsubscribeStatusSubscription(
   token: string,
 ): Promise<{ ok: boolean; message: string }> {
-  if (dbBackend() === "neon") {
-    return (await neonStatus.deleteStatusSubscriber(token))
-      ? { ok: true, message: "You've been unsubscribed from status updates." }
-      : { ok: false, message: "Invalid or already-used unsubscribe link." };
-  }
-  const supabase = createServerClient();
-  const { data, error } = await supabase
-    .from("status_subscriptions")
-    .select("id")
-    .eq("token", token)
-    .maybeSingle();
-
-  if (error || !data) {
-    return { ok: false, message: "Invalid or already-used unsubscribe link." };
-  }
-
-  await supabase.from("status_subscriptions").delete().eq("id", data.id);
-  return { ok: true, message: "You've been unsubscribed from status updates." };
+  return (await neonStatus.deleteStatusSubscriber(token))
+    ? { ok: true, message: "You've been unsubscribed from status updates." }
+    : { ok: false, message: "Invalid or already-used unsubscribe link." };
 }
 
 export type ConfirmedStatusSubscriber = {
@@ -199,27 +113,15 @@ export async function listConfirmedStatusSubscribers(): Promise<
   ConfirmedStatusSubscriber[]
 > {
   // No locale column yet: add "locale" here once status_subscriptions stores one.
-  let data: Array<{ email: string; token: string; locale?: unknown }> | null;
-  if (dbBackend() === "neon") {
-    try {
-      data = await neonStatus.listConfirmedStatusSubscribers();
-    } catch (error) {
-      console.error("Failed to list status subscribers:", error instanceof Error ? error.message : error);
-      return [];
-    }
-  } else {
-    const result = await createServerClient()
-      .from("status_subscriptions")
-      .select("email, token")
-      .not("confirmed_at", "is", null);
-    if (result.error) {
-      console.error("Failed to list status subscribers:", result.error.message);
-      return [];
-    }
-    data = result.data;
+  let data: Array<{ email: string; token: string; locale?: unknown }>;
+  try {
+    data = await neonStatus.listConfirmedStatusSubscribers();
+  } catch (error) {
+    console.error("Failed to list status subscribers:", error instanceof Error ? error.message : error);
+    return [];
   }
 
-  return ((data ?? []) as Array<{ email: string; token: string; locale?: unknown }>).map((row) => ({
+  return data.map((row) => ({
     email: row.email,
     token: row.token,
     ...(isLocale(row.locale) ? { locale: row.locale } : {}),

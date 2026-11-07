@@ -1,5 +1,5 @@
 import { getHouseholdFields } from "./householdRecord";
-import type { User } from "@supabase/supabase-js";
+import type { User } from "./appUser";
 import { fetchWeatherSnapshotForConfig, getPersonalWeatherConfig } from "./weatherContext";
 import { getUserHouseholdId } from "./households";
 

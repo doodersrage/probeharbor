@@ -1,16 +1,6 @@
-import { describe, expect, it, vi } from "vitest";
-
-vi.mock("./supabase", () => ({
-  createAdminClient: vi.fn(),
-}));
-
-import { releasePushSubscriptionFromOtherUsers } from "./webPush";
-import type { createAdminClient } from "./supabase";
-
-/** Mirrors webPush.isStalePushStatus without loading Supabase in tests. */
-function isStalePushStatus(status: number): boolean {
-  return status === 404 || status === 410;
-}
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { setQueryRunnerForTests, type QueryRunner } from "./db/client";
+import { isStalePushStatus, releasePushSubscriptionFromOtherUsers } from "./webPush";
 
 describe("web push helpers", () => {
   it("treats 404 and 410 as stale subscriptions", () => {
@@ -21,30 +11,36 @@ describe("web push helpers", () => {
   });
 });
 
-function makeChainClient() {
-  const calls: Array<{ method: string; args: unknown[] }> = [];
-  const builder: Record<string, unknown> = {};
-  for (const method of ["from", "delete", "eq", "neq"]) {
-    builder[method] = vi.fn((...args: unknown[]) => {
-      calls.push({ method, args });
-      return builder;
-    });
-  }
-  (builder as { then: unknown }).then = (resolve: (value: unknown) => unknown) =>
-    Promise.resolve({ error: null }).then(resolve);
-  return { client: builder as unknown as ReturnType<typeof createAdminClient>, calls };
-}
-
 describe("releasePushSubscriptionFromOtherUsers", () => {
-  it("deletes the endpoint from any other account, scoped by endpoint and excluding the caller", async () => {
-    const { client, calls } = makeChainClient();
-    await releasePushSubscriptionFromOtherUsers(client, "user-a", "https://push.example.com/ep1");
+  // Stand-in for the database: records each statement.
+  const run = vi.fn<(text: string, params?: readonly unknown[]) => Promise<unknown[]>>();
 
-    expect(calls).toEqual([
-      { method: "from", args: ["push_subscriptions"] },
-      { method: "delete", args: [] },
-      { method: "eq", args: ["endpoint", "https://push.example.com/ep1"] },
-      { method: "neq", args: ["user_id", "user-a"] },
-    ]);
+  beforeEach(() => {
+    run.mockReset().mockResolvedValue([]);
+    setQueryRunnerForTests(run as unknown as QueryRunner);
+  });
+
+  afterEach(() => {
+    setQueryRunnerForTests(null);
+    vi.restoreAllMocks();
+  });
+
+  it("deletes the endpoint from any other account, scoped by endpoint and excluding the caller", async () => {
+    await releasePushSubscriptionFromOtherUsers(null, "user-a", "https://push.example.com/ep1");
+
+    expect(run).toHaveBeenCalledTimes(1);
+    const [text, params] = run.mock.calls[0]!;
+    expect(text).toMatch(/delete from public\.push_subscriptions where endpoint = \$1 and user_id <> \$2/);
+    expect(params).toEqual(["https://push.example.com/ep1", "user-a"]);
+  });
+
+  it("logs, rather than throws, when the delete fails (subscribing continues)", async () => {
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    run.mockRejectedValue(new Error("connection error"));
+
+    await expect(
+      releasePushSubscriptionFromOtherUsers(null, "user-a", "https://push.example.com/ep1"),
+    ).resolves.toBeUndefined();
+    expect(error).toHaveBeenCalled();
   });
 });

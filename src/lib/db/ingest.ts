@@ -2,7 +2,7 @@
  * Neon versions of the queries on the push-ingest path (POST /api/ingest/…):
  * device lookup by key, sensor discovery, device meta / last seen, readings,
  * and daily ingest counts. Called from devices.ts, sensorReadings.ts and
- * ingestStats.ts when `dbBackend() === "neon"`.
+ * ingestStats.ts.
  *
  * Differences from the Supabase path, all deliberate:
  * - Ingest counts and device meta change in one statement. The Supabase path

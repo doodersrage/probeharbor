@@ -6,9 +6,9 @@ vi.mock("../../../lib/alertAckTokens", () => ({
   applyAckToken: (...a: unknown[]) => mockApplyAckToken(...a),
 }));
 
-const mockGetUserById = vi.fn();
-vi.mock("../../../lib/supabase", () => ({
-  createAdminClient: () => ({ auth: { admin: { getUserById: (...a: unknown[]) => mockGetUserById(...a) } } }),
+const mockGetUserRecord = vi.fn();
+vi.mock("../../../lib/userRecords", () => ({
+  getUserRecord: (...a: unknown[]) => mockGetUserRecord(...a),
 }));
 
 function makeContext(query: string): APIContext {
@@ -18,7 +18,7 @@ function makeContext(query: string): APIContext {
 
 beforeEach(() => {
   mockApplyAckToken.mockReset();
-  mockGetUserById.mockReset().mockResolvedValue({ data: { user: { user_metadata: {} } } });
+  mockGetUserRecord.mockReset().mockResolvedValue({ id: "user-1", email: "a@example.com", user_metadata: {} });
 });
 
 describe("POST /api/alerts/ack", () => {
@@ -141,10 +141,11 @@ describe("ack links in the alert owner's language", () => {
   it("renders the confirm page and the result in German", async () => {
     const { ensureLocale } = await import("../../../i18n/catalog");
     await ensureLocale("de", ["app"]);
-    mockGetUserById.mockResolvedValue({ data: { user: { user_metadata: { locale: "de" } } } });
+    mockGetUserRecord.mockResolvedValue({ id: "user-1", email: "a@example.com", user_metadata: { locale: "de" } });
     const { GET, POST } = await import("./ack");
 
     const html = await (await GET(makeContext("?uid=user-1&exp=123&sig=abc"))).text();
+    expect(mockGetUserRecord).toHaveBeenCalledWith("user-1");
     expect(html).toContain('<html lang="de">');
     expect(html).toContain("<h1>Alarm bestätigen?</h1>");
     expect(html).toContain("Ja, als erledigt markieren");

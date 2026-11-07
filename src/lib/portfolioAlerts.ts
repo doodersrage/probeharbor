@@ -1,9 +1,7 @@
-import { dbBackend } from "./db/client";
 import * as neonRemaining from "./db/remaining";
 import { getUserRecord } from "./userRecords";
 import { fetchCrossPropertySnapshots } from "./crossProperty";
 import { getAlertSettingsForUser, notifyUser } from "./notify";
-import { createServerClient } from "./supabase";
 import { listUserHouseholds } from "./households";
 import { getUserEntitlements } from "./entitlements";
 import type { Locale } from "../i18n/locales";
@@ -48,12 +46,8 @@ export async function sendPortfolioAlertsForAllUsers(): Promise<{
   const errors: string[] = [];
   let sent = 0;
   let skipped = 0;
-  const neon = dbBackend() === "neon";
-  const supabase = neon ? null : createServerClient();
 
-  const userIds = supabase
-    ? [...new Set(((await supabase.from("household_members").select("user_id").eq("role", "owner")).data ?? []).map((r) => r.user_id))]
-    : await neonRemaining.ownerUserIds();
+  const userIds = await neonRemaining.ownerUserIds();
 
   for (const userId of userIds) {
     try {
@@ -104,17 +98,7 @@ export async function sendPortfolioAlertsForAllUsers(): Promise<{
       if (locale === "en") await notifyUser(userId, email, settings, payload);
       else await notifyUser(userId, email, settings, payload, undefined, locale);
 
-      if (supabase) {
-        await supabase
-          .from("alert_settings")
-          .update({
-            last_portfolio_alert_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          })
-          .eq("user_id", userId);
-      } else {
-        await neonRemaining.stampPortfolioAlert(userId);
-      }
+      await neonRemaining.stampPortfolioAlert(userId);
 
       sent += 1;
     } catch (err) {

@@ -1,9 +1,7 @@
 import { signWithAlertLinkSecret, verifyWithAlertLinkSecret } from "./alertAckTokens";
 import type { AlertSettings } from "./alerts";
 import { getAlertSettingsForUser, saveAlertSettingsForUser } from "./notify";
-import { dbBackend } from "./db/client";
 import * as neonEmail from "./db/emailJobs";
-import { createAdminClient } from "./supabase";
 import type { Locale } from "../i18n/locales";
 
 /** Recurring (non-alert) emails a recipient can unsubscribe from. */
@@ -86,17 +84,10 @@ export async function applyUnsubscribe(
   });
   if (error) return { error };
 
-  if (kind === "digest" && dbBackend() === "neon") {
+  if (kind === "digest") {
+    // Members also receive digests fanned out from households they opted into.
     const optedOut = await neonEmail.optOutOfAllDigests(userId);
     if (optedOut.error) return optedOut;
-  } else if (kind === "digest") {
-    const admin = createAdminClient();
-    // Members also receive digests fanned out from households they opted into.
-    const { error: memberError } = await admin
-      .from("household_members")
-      .update({ digest_opt_in: false })
-      .eq("user_id", userId);
-    if (memberError) return { error: memberError.message };
   }
 
   return { error: null };

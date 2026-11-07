@@ -1,7 +1,5 @@
 import { getUserRecord } from "./userRecords";
-import { dbBackend } from "./db/client";
 import * as neonJobs from "./db/jobs";
-import { createServerClient } from "./supabase";
 import { checkFeedHealth, type FeedHealthStatus } from "./collectHistory";
 import { feedHealthMessage } from "./feedErrorText";
 import { isDemoFeedUrl } from "./demoFeed";
@@ -36,8 +34,7 @@ export async function storeFeedUptimeChecks(
     latency_ms: null,
     checked_at: s.checkedAt,
   }));
-  if (dbBackend() === "neon") return neonJobs.insertFeedUptimeChecks(rows);
-  await createServerClient().from("feed_uptime_checks").insert(rows);
+  return neonJobs.insertFeedUptimeChecks(rows);
 }
 
 /**
@@ -54,18 +51,7 @@ export function isNewFeedOutage(lastOkAt: string | null, lastAlertAt: string | n
 }
 
 async function lastOkCheckAt(userId: string, feedId: string): Promise<string | null> {
-  if (dbBackend() === "neon") return neonJobs.lastOkFeedCheckAt(userId, feedId);
-  const supabase = createServerClient();
-  const { data } = await supabase
-    .from("feed_uptime_checks")
-    .select("checked_at")
-    .eq("user_id", userId)
-    .eq("feed_id", feedId)
-    .eq("ok", true)
-    .order("checked_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  return typeof data?.checked_at === "string" ? data.checked_at : null;
+  return neonJobs.lastOkFeedCheckAt(userId, feedId);
 }
 
 export async function runFeedUptimeForAllUsers(): Promise<{
@@ -122,17 +108,7 @@ export async function runFeedUptimeForAllUsers(): Promise<{
       if (locale === "en") await notifyUser(userId, settings.email, settings, payload);
       else await notifyUser(userId, settings.email, settings, payload, undefined, locale);
 
-      if (dbBackend() === "neon") {
-        await neonJobs.markFeedUptimeAlert(userId);
-      } else {
-        await createServerClient()
-          .from("alert_settings")
-          .update({
-            last_feed_uptime_alert_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          })
-          .eq("user_id", userId);
-      }
+      await neonJobs.markFeedUptimeAlert(userId);
 
       alertsSent += 1;
     } catch (err) {

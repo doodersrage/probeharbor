@@ -1,17 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-function mockQuery(result: { data?: unknown; error?: unknown }) {
-  const builder: Record<string, unknown> = {};
-  for (const method of ["select", "eq"]) {
-    builder[method] = vi.fn(() => builder);
-  }
-  builder.maybeSingle = vi.fn(() => Promise.resolve(result));
-  return builder;
-}
-
-const mockFrom = vi.fn();
-vi.mock("./supabase", () => ({
-  createServerClient: () => ({ from: (...args: unknown[]) => mockFrom(...args) }),
+const mockGetHouseholdFields = vi.fn();
+vi.mock("./householdRecord", () => ({
+  getHouseholdFields: (...args: unknown[]) => mockGetHouseholdFields(...args),
 }));
 
 const mockGetAlertEventForUser = vi.fn();
@@ -65,7 +56,7 @@ const baseEvent = {
 };
 
 beforeEach(() => {
-  mockFrom.mockReset();
+  mockGetHouseholdFields.mockReset().mockResolvedValue({ data: null, error: null });
   mockGetAlertEventForUser.mockReset().mockResolvedValue(baseEvent);
   mockAcknowledgeAlertEvent.mockReset().mockResolvedValue({ ok: true });
   mockUpdateAlertEventMeta.mockReset().mockResolvedValue({ ok: true });
@@ -148,7 +139,7 @@ describe("executeAlertAckPlaybook", () => {
     });
 
     it("relays using the household name and acks on success", async () => {
-      mockFrom.mockReturnValue(mockQuery({ data: { name: "The Smiths" } }));
+      mockGetHouseholdFields.mockResolvedValue({ data: { name: "The Smiths" }, error: null });
       const { executeAlertAckPlaybook } = await import("./alertAckPlaybook");
 
       const result = await executeAlertAckPlaybook({
@@ -167,12 +158,13 @@ describe("executeAlertAckPlaybook", () => {
         alertBody: "Temp dropped below 32F",
         siteUrl: "https://custom.example",
       });
+      expect(mockGetHouseholdFields).toHaveBeenCalledWith("house-1", ["name"]);
       expect(mockAcknowledgeAlertEvent).toHaveBeenCalledWith("user-1", 42);
       expect(result).toEqual({ ok: true, message: "Alert handled: tenant contact emailed." });
     });
 
     it("falls back to 'Property' when the household has no usable name", async () => {
-      mockFrom.mockReturnValue(mockQuery({ data: { name: "   " } }));
+      mockGetHouseholdFields.mockResolvedValue({ data: { name: "   " }, error: null });
       const { executeAlertAckPlaybook } = await import("./alertAckPlaybook");
 
       await executeAlertAckPlaybook({
@@ -188,7 +180,7 @@ describe("executeAlertAckPlaybook", () => {
     });
 
     it("surfaces a relay failure and does not ack", async () => {
-      mockFrom.mockReturnValue(mockQuery({ data: { name: "The Smiths" } }));
+      mockGetHouseholdFields.mockResolvedValue({ data: { name: "The Smiths" }, error: null });
       mockSendTenantFreezeRelay.mockResolvedValue({ ok: false, error: "Not authorized to notify tenant." });
       const { executeAlertAckPlaybook } = await import("./alertAckPlaybook");
 
@@ -204,7 +196,7 @@ describe("executeAlertAckPlaybook", () => {
     });
 
     it("falls back to a generic relay error message", async () => {
-      mockFrom.mockReturnValue(mockQuery({ data: { name: "The Smiths" } }));
+      mockGetHouseholdFields.mockResolvedValue({ data: { name: "The Smiths" }, error: null });
       mockSendTenantFreezeRelay.mockResolvedValue({ ok: false });
       const { executeAlertAckPlaybook } = await import("./alertAckPlaybook");
 

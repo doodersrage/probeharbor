@@ -1,7 +1,6 @@
 /**
  * Neon versions of the queries in src/lib/households.ts. Same inputs, same
- * results and error shapes; households.ts calls these when
- * `dbBackend() === "neon"`.
+ * results and error shapes; households.ts calls these.
  *
  * Differences from the Supabase path, all deliberate:
  * - Creating a household and its owner row is one statement, so a failure

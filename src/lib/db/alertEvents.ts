@@ -1,7 +1,7 @@
 /**
  * Neon versions of the alert-event queries in src/lib/alertEvents.ts (the
  * Alerts log, acknowledgement, auto-resolve, and the "unhandled" count).
- * Called when `dbBackend() === "neon"`. Every query is scoped to one user.
+ * Every query is scoped to one user.
  *
  * "Unhandled" is one SQL fragment shared by the count, the lists and the
  * acknowledge / auto-resolve updates, built from the same kind lists as

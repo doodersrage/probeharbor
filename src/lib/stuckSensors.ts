@@ -1,7 +1,5 @@
 import type { DeviceWithSensors } from "./devices";
-import { dbBackend } from "./db/client";
 import { stuckSensorFacts } from "./db/jobs";
-import { createServerClient } from "./supabase";
 import type { Locale } from "../i18n/locales";
 import { fmt, formatNumber, plural } from "../i18n/format";
 import { alertJobsMessages } from "../i18n/messages/app/alertJobs";
@@ -102,8 +100,6 @@ export async function findStuckSensors(
   locale: Locale = "en",
   useCelsius = false,
 ): Promise<StuckSensor[]> {
-  const neon = dbBackend() === "neon";
-  const supabase = neon ? null : createServerClient();
   const windowStart = new Date(nowMs - STUCK_WINDOW_MS).toISOString();
   const lookbackStart = new Date(nowMs - 3 * STUCK_WINDOW_MS).toISOString();
   const sensors = devices
@@ -114,67 +110,17 @@ export async function findStuckSensors(
   const results = await Promise.all(
     sensors.map(async (sensor): Promise<StuckSensor | null> => {
       try {
-        if (!supabase) {
-          const facts = await stuckSensorFacts(sensor.id, windowStart, lookbackStart);
-          if (typeof facts?.latest_value !== "number" || typeof facts.latest_at !== "string") return null;
-          return evaluateStuckSensor(
-            {
-              sensorId: sensor.id,
-              label: sensor.label,
-              latestValue: facts.latest_value,
-              latestAt: facts.latest_at,
-              lastDifferentAt: facts.last_different_at,
-              reportedBeforeWindow: facts.reported_before_window,
-              samplesInWindow: facts.samples_in_window,
-            },
-            nowMs,
-            locale,
-            useCelsius,
-          );
-        }
-        const { data: latest } = await supabase
-          .from("sensor_readings")
-          .select("value_num, recorded_at")
-          .eq("sensor_id", sensor.id)
-          .not("value_num", "is", null)
-          .order("recorded_at", { ascending: false })
-          .limit(1)
-          .maybeSingle();
-        if (typeof latest?.value_num !== "number" || typeof latest.recorded_at !== "string") return null;
-
-        const [different, older, count] = await Promise.all([
-          supabase
-            .from("sensor_readings")
-            .select("recorded_at")
-            .eq("sensor_id", sensor.id)
-            .gte("recorded_at", lookbackStart)
-            .neq("value_num", latest.value_num)
-            .order("recorded_at", { ascending: false })
-            .limit(1)
-            .maybeSingle(),
-          supabase
-            .from("sensor_readings")
-            .select("recorded_at")
-            .eq("sensor_id", sensor.id)
-            .lt("recorded_at", windowStart)
-            .limit(1)
-            .maybeSingle(),
-          supabase
-            .from("sensor_readings")
-            .select("id", { count: "exact", head: true })
-            .eq("sensor_id", sensor.id)
-            .gte("recorded_at", windowStart),
-        ]);
-
+        const facts = await stuckSensorFacts(sensor.id, windowStart, lookbackStart);
+        if (typeof facts?.latest_value !== "number" || typeof facts.latest_at !== "string") return null;
         return evaluateStuckSensor(
           {
             sensorId: sensor.id,
             label: sensor.label,
-            latestValue: latest.value_num,
-            latestAt: latest.recorded_at,
-            lastDifferentAt: typeof different.data?.recorded_at === "string" ? different.data.recorded_at : null,
-            reportedBeforeWindow: Boolean(older.data),
-            samplesInWindow: count.count ?? 0,
+            latestValue: facts.latest_value,
+            latestAt: facts.latest_at,
+            lastDifferentAt: facts.last_different_at,
+            reportedBeforeWindow: facts.reported_before_window,
+            samplesInWindow: facts.samples_in_window,
           },
           nowMs,
           locale,

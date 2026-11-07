@@ -2,35 +2,26 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { APIContext } from "astro";
 
 const mockGetAuthFromCookies = vi.fn();
-const mockSetAuthCookies = vi.fn();
 vi.mock("../../../lib/auth", () => ({
   getAuthFromCookies: (...a: unknown[]) => mockGetAuthFromCookies(...a),
-  setAuthCookies: (...a: unknown[]) => mockSetAuthCookies(...a),
 }));
 
-const mockCreateAuthClient = vi.fn();
-const mockGetAssuranceLevels = vi.fn();
-const mockGetAalClaim = vi.fn();
-const mockNeedsMfaStepUp = vi.fn();
 const mockSetMfaRequiredCookie = vi.fn();
 vi.mock("../../../lib/mfa", () => ({
-  createAuthClient: () => mockCreateAuthClient(),
-  getAssuranceLevels: (...a: unknown[]) => mockGetAssuranceLevels(...a),
-  getAalClaim: (...a: unknown[]) => mockGetAalClaim(...a),
-  needsMfaStepUp: (...a: unknown[]) => mockNeedsMfaStepUp(...a),
   setMfaRequiredCookie: (...a: unknown[]) => mockSetMfaRequiredCookie(...a),
 }));
 
 const mockCreateMfaStepUpProof = vi.fn();
 const mockSetMfaStepUpCookie = vi.fn();
+const mockHasValidMfaStepUpProof = vi.fn();
 vi.mock("../../../lib/mfaStepUpProof", () => ({
   createMfaStepUpProof: (...a: unknown[]) => mockCreateMfaStepUpProof(...a),
   setMfaStepUpCookie: (...a: unknown[]) => mockSetMfaStepUpCookie(...a),
+  hasValidMfaStepUpProof: (...a: unknown[]) => mockHasValidMfaStepUpProof(...a),
 }));
 
-const mockSanitizeNextPath = vi.fn();
 vi.mock("../../../lib/siteUrl", () => ({
-  sanitizeNextPath: (...a: unknown[]) => mockSanitizeNextPath(...a),
+  sanitizeNextPath: (v: string | null | undefined) => (v?.startsWith("/") && !v.startsWith("//") ? v : null),
 }));
 
 const mockCheckMfaVerifyRateLimit = vi.fn();
@@ -42,426 +33,269 @@ vi.mock("../../../lib/mfaVerifyLimits", () => ({
   recordMfaVerifyFailure: (...a: unknown[]) => mockRecordMfaVerifyFailure(...a),
 }));
 
-const mockChallengeWebAuthnFactor = vi.fn();
-const mockVerifyWebAuthnFactor = vi.fn();
-vi.mock("../../../lib/webauthnMfaApi", () => ({
-  challengeWebAuthnFactor: (...a: unknown[]) => mockChallengeWebAuthnFactor(...a),
-  verifyWebAuthnFactor: (...a: unknown[]) => mockVerifyWebAuthnFactor(...a),
-}));
-
-const mockResolveWebAuthnRp = vi.fn();
-vi.mock("../../../lib/webauthnRp", () => ({
-  resolveWebAuthnRp: (...a: unknown[]) => mockResolveWebAuthnRp(...a),
-}));
-
 const mockGetYubiKeyPublicIdsFromUser = vi.fn();
 const mockIsYubiKeyOtpConfigured = vi.fn();
-const mockUserHasYubiKeyOtpEnrolled = vi.fn();
 const mockVerifyYubiKeyOtpWithYubiCloud = vi.fn();
 vi.mock("../../../lib/yubikeyOtp", () => ({
   getYubiKeyPublicIdsFromUser: (...a: unknown[]) => mockGetYubiKeyPublicIdsFromUser(...a),
   isYubiKeyOtpConfigured: () => mockIsYubiKeyOtpConfigured(),
-  userHasYubiKeyOtpEnrolled: (...a: unknown[]) => mockUserHasYubiKeyOtpEnrolled(...a),
   verifyYubiKeyOtpWithYubiCloud: (...a: unknown[]) => mockVerifyYubiKeyOtpWithYubiCloud(...a),
 }));
 
-const mockMaybeRedirectMobileOAuth = vi.fn();
+const mockHasMobileOAuthCookie = vi.fn();
 vi.mock("../../../lib/mobileAuthRedirect", () => ({
-  maybeRedirectMobileOAuth: (...a: unknown[]) => mockMaybeRedirectMobileOAuth(...a),
+  hasMobileOAuthCookie: (...a: unknown[]) => mockHasMobileOAuthCookie(...a),
 }));
 
-function makeClient() {
-  return {
-    auth: {
-      setSession: vi.fn().mockResolvedValue({ error: null }),
-      getUser: vi.fn().mockResolvedValue({ data: { user: { id: "user-1" } } }),
-      mfa: {
-        listFactors: vi.fn().mockResolvedValue({
-          data: { totp: [{ id: "t1", status: "verified" }], webauthn: [{ id: "w1", status: "verified" }] },
-          error: null,
-        }),
-        challengeAndVerify: vi.fn().mockResolvedValue({
-          data: { access_token: "new-at", refresh_token: "new-rt" },
-          error: null,
-        }),
-      },
-    },
-  };
-}
+const mockGetUserMetadata = vi.fn();
+vi.mock("../../../lib/db/userMetadata", () => ({
+  getUserMetadata: (...a: unknown[]) => mockGetUserMetadata(...a),
+}));
 
-let client: ReturnType<typeof makeClient>;
+const mockVerifyTOTP = vi.fn();
+const mockVerifyYubiKeyTwoFactor = vi.fn();
+vi.mock("../../../lib/betterAuthRuntime", () => ({
+  withBetterAuth: (_req: unknown, fn: (auth: unknown) => unknown) =>
+    fn({ api: { verifyTOTP: mockVerifyTOTP, verifyYubiKeyTwoFactor: mockVerifyYubiKeyTwoFactor } }),
+}));
 
-function makeContext(options: {
-  json?: boolean;
-  body?: Record<string, unknown> | string;
-} = {}): APIContext {
+const mockNeedsStepUp = vi.fn();
+vi.mock("../../../lib/betterAuthMfaGate", () => ({
+  betterAuthNeedsStepUp: (...a: unknown[]) => mockNeedsStepUp(...a),
+}));
+
+const mockHasTwoFactorChallenge = vi.fn();
+vi.mock("../../../lib/betterAuthMfa", () => ({
+  hasTwoFactorChallenge: (...a: unknown[]) => mockHasTwoFactorChallenge(...a),
+  jsonWithAuthCookies: (body: unknown, status: number, from?: Response) => {
+    const headers = new Headers({ "Content-Type": "application/json" });
+    for (const cookie of from?.headers.getSetCookie() ?? []) headers.append("Set-Cookie", cookie);
+    return new Response(JSON.stringify(body), { status, headers });
+  },
+}));
+
+function makeContext(options: { json?: boolean; body?: Record<string, unknown> | string } = {}): APIContext {
   const { json = false, body = {} } = options;
   const url = new URL("https://example.com/api/auth/mfa-verify");
   const redirect = vi.fn((path: string) => new Response(null, { status: 302, headers: { Location: path } }));
-
   let request: Request;
   if (json) {
-    const payload = typeof body === "string" ? body : JSON.stringify(body);
     request = new Request(url, {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: payload,
+      body: typeof body === "string" ? body : JSON.stringify(body),
     });
   } else {
-    const formData = new FormData();
-    if (typeof body === "object") {
-      for (const [k, v] of Object.entries(body)) formData.set(k, String(v));
-    }
-    request = { formData: async () => formData, headers: new Headers() } as unknown as Request;
+    const form = new FormData();
+    if (typeof body === "object") for (const [k, v] of Object.entries(body)) form.set(k, String(v));
+    request = new Request(url, { method: "POST", body: form });
   }
+  const cookies = { get: (name: string) => (name === "better-auth.two_factor" ? { value: "chal" } : undefined) };
+  return { request, cookies, redirect, url } as unknown as APIContext;
+}
 
-  return { request, cookies: {}, redirect, url } as unknown as APIContext;
+function sessionResponse(): Response {
+  const headers = new Headers();
+  headers.append("Set-Cookie", "better-auth.session_token=abc; Path=/; HttpOnly");
+  return new Response("{}", { status: 200, headers });
+}
+
+async function post(options: Parameters<typeof makeContext>[0]): Promise<Response> {
+  const { POST } = await import("./mfa-verify");
+  return (await POST(makeContext(options))) as Response;
 }
 
 beforeEach(() => {
-  client = makeClient();
-  mockGetAuthFromCookies.mockReset().mockResolvedValue({
-    session: { access_token: "at", refresh_token: "rt" },
-    user: { id: "user-1" },
-  });
-  mockSetAuthCookies.mockReset();
-  mockCreateAuthClient.mockReset().mockReturnValue(client);
-  mockGetAssuranceLevels.mockReset().mockResolvedValue({});
-  mockGetAalClaim.mockReset().mockReturnValue("aal1");
-  mockNeedsMfaStepUp.mockReset().mockReturnValue(true);
+  mockGetAuthFromCookies.mockReset().mockResolvedValue({ session: { token: "s" }, user: { id: "user-1", user_metadata: {} } });
   mockSetMfaRequiredCookie.mockReset();
-  mockCreateMfaStepUpProof.mockReset().mockResolvedValue("stepup-token");
+  mockCreateMfaStepUpProof.mockReset().mockResolvedValue("proof");
   mockSetMfaStepUpCookie.mockReset();
-  mockSanitizeNextPath.mockReset().mockImplementation((v: string | null | undefined) => v || null);
+  mockHasValidMfaStepUpProof.mockReset().mockResolvedValue(false);
   mockCheckMfaVerifyRateLimit.mockReset().mockReturnValue({ ok: true });
   mockClearMfaVerifyFailures.mockReset();
   mockRecordMfaVerifyFailure.mockReset();
-  mockChallengeWebAuthnFactor.mockReset();
-  mockVerifyWebAuthnFactor.mockReset();
-  mockResolveWebAuthnRp.mockReset().mockReturnValue({ id: "example.com", name: "ProbeHarbor" });
-  mockGetYubiKeyPublicIdsFromUser.mockReset().mockReturnValue([]);
+  mockGetYubiKeyPublicIdsFromUser.mockReset().mockReturnValue(["ccccccabcdef"]);
   mockIsYubiKeyOtpConfigured.mockReset().mockReturnValue(true);
-  mockUserHasYubiKeyOtpEnrolled.mockReset().mockReturnValue(false);
-  mockVerifyYubiKeyOtpWithYubiCloud.mockReset();
-  mockMaybeRedirectMobileOAuth.mockReset().mockResolvedValue(null);
+  mockVerifyYubiKeyOtpWithYubiCloud.mockReset().mockResolvedValue({ ok: true, publicId: "ccccccabcdef" });
+  mockHasMobileOAuthCookie.mockReset().mockReturnValue(false);
+  mockGetUserMetadata.mockReset().mockResolvedValue({ yubikey_otp_public_ids: ["ccccccabcdef"] });
+  mockVerifyTOTP.mockReset().mockImplementation(async () => sessionResponse());
+  mockVerifyYubiKeyTwoFactor.mockReset().mockImplementation(async () => sessionResponse());
+  mockNeedsStepUp.mockReset().mockResolvedValue(true);
+  mockHasTwoFactorChallenge.mockReset().mockReturnValue(false);
+  vi.spyOn(console, "error").mockImplementation(() => {});
 });
 
-describe("POST /api/auth/mfa-verify — auth and setup", () => {
-  it("returns 401 JSON when not authenticated", async () => {
-    mockGetAuthFromCookies.mockResolvedValue({ session: null, user: null });
-    const { POST } = await import("./mfa-verify");
-
-    const response = await POST(makeContext({ json: true, body: { code: "123456" } }));
-
-    expect(response.status).toBe(401);
-  });
-
-  it("redirects to signin when not authenticated on a form request", async () => {
-    mockGetAuthFromCookies.mockResolvedValue({ session: null, user: null });
-    const { POST } = await import("./mfa-verify");
-    const context = makeContext({ body: { code: "123456" } });
-
-    await POST(context);
-
-    expect(context.redirect).toHaveBeenCalledWith("/signin?error=generic");
-  });
-
+describe("POST /api/auth/mfa-verify — request handling", () => {
   it("returns 400 for invalid JSON", async () => {
-    const { POST } = await import("./mfa-verify");
-
-    const response = await POST(makeContext({ json: true, body: "not json" }));
-
-    expect(response.status).toBe(400);
+    const res = await post({ json: true, body: "not json" });
+    expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({ error: "Invalid JSON" });
   });
 
-  it("redirects to generic when setSession fails", async () => {
-    client.auth.setSession.mockResolvedValue({ error: { message: "boom" } });
-    const { POST } = await import("./mfa-verify");
-    const context = makeContext({ body: { code: "123456" } });
-
-    await POST(context);
-
-    expect(context.redirect).toHaveBeenCalledWith("/signin?error=generic");
-  });
-});
-
-describe("POST /api/auth/mfa-verify — already satisfied", () => {
-  it("returns an ok JSON payload with a step-up proof when no step-up is needed", async () => {
-    mockNeedsMfaStepUp.mockReturnValue(false);
-    mockGetAalClaim.mockReturnValue("aal2");
-    const { POST } = await import("./mfa-verify");
-
-    const json = (await (
-      await POST(makeContext({ json: true, body: { code: "123456" } }))
-    ).json()) as Record<string, unknown>;
-
-    expect(json).toMatchObject({ ok: true, aal: "aal2", mfa_stepup: "stepup-token" });
+  it("answers security-key actions with no_factor (they moved to passkeys)", async () => {
+    const res = await post({ json: true, body: { action: "webauthn_challenge" } });
+    expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({ error: "no_factor" });
+    expect((await post({ json: true, body: { action: "webauthn_verify" } })).status).toBe(400);
   });
 
-  it("redirects to the safe next path when no step-up is needed on a form request", async () => {
-    mockNeedsMfaStepUp.mockReturnValue(false);
-    const { POST } = await import("./mfa-verify");
-    const context = makeContext({ body: { next: "/dashboard/alerts" } });
-
-    await POST(context);
-
-    expect(context.redirect).toHaveBeenCalledWith("/dashboard/alerts");
-  });
-
-  it("returns the mobile handoff response when no step-up is needed and mobile applies", async () => {
-    mockNeedsMfaStepUp.mockReturnValue(false);
-    const handoff = new Response(null, { status: 302, headers: { Location: "myapp://done" } });
-    mockMaybeRedirectMobileOAuth.mockResolvedValue(handoff);
-    const { POST } = await import("./mfa-verify");
-
-    const response = await POST(makeContext({}));
-
-    expect(response).toBe(handoff);
-  });
-});
-
-describe("POST /api/auth/mfa-verify — webauthn (JSON)", () => {
-  it("returns a challenge payload for webauthn_challenge", async () => {
-    mockChallengeWebAuthnFactor.mockResolvedValue({
-      challenge: { factorId: "w1", challengeId: "c1", ceremonyType: "request", publicKey: {} },
-      error: null,
-    });
-    const { POST } = await import("./mfa-verify");
-
-    const json = (await (
-      await POST(makeContext({ json: true, body: { action: "webauthn_challenge" } }))
-    ).json()) as Record<string, unknown>;
-
-    expect(json).toMatchObject({ ok: true, factorId: "w1", challengeId: "c1" });
-  });
-
-  it("returns no_factor when there's no webauthn factor to challenge", async () => {
-    client.auth.mfa.listFactors.mockResolvedValue({ data: { totp: [], webauthn: [] }, error: null });
-    const { POST } = await import("./mfa-verify");
-
-    const response = await POST(
-      makeContext({ json: true, body: { action: "webauthn_challenge" } }),
+  it("keeps a safe next on form errors and drops an off-site one", async () => {
+    mockHasTwoFactorChallenge.mockReturnValue(true);
+    expect((await post({ body: { code: "12", next: "/dashboard/alerts" } })).headers.get("Location")).toBe(
+      "/signin/mfa?error=invalid_code&next=%2Fdashboard%2Falerts",
     );
-    const json = await response.json();
+    expect((await post({ body: { code: "12", next: "//evil.example" } })).headers.get("Location")).toBe(
+      "/signin/mfa?error=invalid_code&next=%2Fdashboard",
+    );
+  });
+});
 
-    expect(json).toEqual({ error: "no_factor" });
+describe("POST /api/auth/mfa-verify — pending sign-in challenge, TOTP", () => {
+  beforeEach(() => mockHasTwoFactorChallenge.mockReturnValue(true));
+
+  it("refuses a malformed code without asking Better Auth", async () => {
+    const res = await post({ json: true, body: { code: "12ab56" } });
+    expect(await res.json()).toEqual({ error: "invalid_code" });
+    expect(mockVerifyTOTP).not.toHaveBeenCalled();
   });
 
-  it("rate-limits webauthn_verify", async () => {
+  it("reports a wrong code as invalid_code", async () => {
+    mockVerifyTOTP.mockResolvedValue(Response.json({ code: "INVALID_CODE" }, { status: 401 }));
+    const res = await post({ json: true, body: { code: "123456" } });
+    expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({ error: "invalid_code" });
+  });
+
+  it("reports too many attempts as rate_limited", async () => {
+    mockVerifyTOTP.mockResolvedValue(Response.json({ code: "TOO_MANY_ATTEMPTS_REQUEST_NEW_CODE" }, { status: 429 }));
+    const res = await post({ json: true, body: { code: "123456" } });
+    expect(res.status).toBe(429);
+    expect(await res.json()).toEqual({ error: "rate_limited" });
+  });
+
+  it("signs in to the next page with the session cookie on the right code", async () => {
+    const res = await post({ body: { code: "123456", next: "/dashboard/alerts" } });
+    expect(mockVerifyTOTP).toHaveBeenCalledWith(expect.objectContaining({ body: { code: "123456" }, asResponse: true }));
+    expect(res.headers.get("Location")).toBe("/dashboard/alerts");
+    expect(res.headers.getSetCookie().join(";")).toContain("session_token=abc");
+    expect(mockSetMfaRequiredCookie).toHaveBeenCalledWith(expect.anything(), false);
+  });
+
+  it("answers JSON callers with ok and aal2, passing the session cookie", async () => {
+    const res = await post({ json: true, body: { code: "123456" } });
+    expect(await res.json()).toEqual({ ok: true, aal: "aal2" });
+    expect(res.headers.getSetCookie().join(";")).toContain("session_token=abc");
+  });
+
+  it("finishes an app sign-in at companion/complete", async () => {
+    mockHasMobileOAuthCookie.mockReturnValue(true);
+    const res = await post({ body: { code: "123456", next: "/dashboard/alerts" } });
+    expect(res.headers.get("Location")).toBe("/api/auth/companion/complete");
+  });
+});
+
+describe("POST /api/auth/mfa-verify — pending sign-in challenge, YubiKey", () => {
+  beforeEach(() => mockHasTwoFactorChallenge.mockReturnValue(true));
+
+  it("rate-limits per challenge", async () => {
     mockCheckMfaVerifyRateLimit.mockReturnValue({ ok: false });
-    const { POST } = await import("./mfa-verify");
-
-    const response = await POST(
-      makeContext({ json: true, body: { action: "webauthn_verify" } }),
-    );
-
-    expect(response.status).toBe(429);
+    const res = await post({ json: true, body: { yubikey_otp: "otp" } });
+    expect(res.status).toBe(429);
+    expect(mockCheckMfaVerifyRateLimit).toHaveBeenCalledWith("2fa:chal");
+    expect(mockVerifyYubiKeyTwoFactor).not.toHaveBeenCalled();
   });
 
-  it("returns invalid_code for webauthn_verify with a missing payload", async () => {
-    const { POST } = await import("./mfa-verify");
-
-    const response = await POST(
-      makeContext({ json: true, body: { action: "webauthn_verify" } }),
-    );
-    const json = await response.json();
-
-    expect(json).toEqual({ error: "invalid_code" });
-    expect(mockRecordMfaVerifyFailure).toHaveBeenCalledWith("user-1");
+  it("maps Better Auth's refusals to the page's errors", async () => {
+    const cases: Array<[string, number, string]> = [
+      ["REPLAYED", 400, "replayed_otp"],
+      ["NOT_ENROLLED", 400, "yubikey_not_enrolled"],
+      ["BAD_OTP", 400, "invalid_yubikey"],
+      ["YUBIKEY_NOT_CONFIGURED", 503, "generic"],
+    ];
+    for (const [code, status, error] of cases) {
+      mockVerifyYubiKeyTwoFactor.mockResolvedValueOnce(Response.json({ code }, { status: 401 }));
+      const res = await post({ json: true, body: { yubikey_otp: "otp" } });
+      expect(res.status).toBe(status);
+      expect(await res.json()).toEqual({ error });
+    }
+    expect(mockRecordMfaVerifyFailure).toHaveBeenCalledWith("2fa:chal");
   });
 
-  it("verifies webauthn and returns tokens with a step-up proof", async () => {
-    mockVerifyWebAuthnFactor.mockResolvedValue({
-      result: { accessToken: "wat", refreshToken: "wrt" },
-      error: null,
-    });
-    const { POST } = await import("./mfa-verify");
-
-    const json = (await (
-      await POST(
-        makeContext({
-          json: true,
-          body: {
-            action: "webauthn_verify",
-            factorId: "w1",
-            challengeId: "c1",
-            ceremonyType: "request",
-            credentialResponse: { id: "cred" },
-          },
-        }),
-      )
-    ).json()) as Record<string, unknown>;
-
-    expect(mockSetAuthCookies).toHaveBeenCalledWith(expect.anything(), "wat", "wrt");
-    expect(json).toMatchObject({ ok: true, access_token: "wat", aal: "aal2" });
+  it("finishes the challenge with the key", async () => {
+    const res = await post({ body: { yubikey_otp: "otp" } });
+    expect(mockVerifyYubiKeyTwoFactor).toHaveBeenCalledWith(expect.objectContaining({ body: { otp: "otp" }, asResponse: true }));
+    expect(mockClearMfaVerifyFailures).toHaveBeenCalledWith("2fa:chal");
+    expect(res.headers.get("Location")).toBe("/dashboard");
+    expect(res.headers.getSetCookie().join(";")).toContain("session_token=abc");
   });
 });
 
-describe("POST /api/auth/mfa-verify — yubikey OTP", () => {
-  it("rate-limits yubikey otp submission", async () => {
-    mockCheckMfaVerifyRateLimit.mockReturnValue({ ok: false });
-    const { POST } = await import("./mfa-verify");
-
-    const response = await POST(makeContext({ body: { yubikey_otp: "cccc" } }));
-
-    expect(response.status).toBe(302);
-    expect(response.headers.get("Location")).toContain("error=rate_limited");
+describe("POST /api/auth/mfa-verify — signed in, YubiKey step-up", () => {
+  it("returns 401 JSON / redirects to sign-in when not signed in", async () => {
+    mockGetAuthFromCookies.mockResolvedValue({ session: null, user: null });
+    expect((await post({ json: true, body: {} })).status).toBe(401);
+    expect((await post({ body: {} })).headers.get("Location")).toBe("/signin?error=generic");
   });
 
-  it("redirects with generic error when yubikey OTP isn't configured", async () => {
+  it("goes straight on when no step-up is needed", async () => {
+    mockNeedsStepUp.mockResolvedValue(false);
+    expect(await (await post({ json: true, body: {} })).json()).toEqual({ ok: true, aal: "aal2" });
+    expect((await post({ body: { next: "/dashboard/alerts" } })).headers.get("Location")).toBe("/dashboard/alerts");
+    expect(mockSetMfaRequiredCookie).toHaveBeenCalledWith(expect.anything(), false);
+  });
+
+  it("checks the step-up against the stored metadata", async () => {
+    await post({ json: true, body: { yubikey_otp: "otp" } });
+    expect(mockNeedsStepUp).toHaveBeenCalledWith(
+      { id: "user-1", user_metadata: { yubikey_otp_public_ids: ["ccccccabcdef"] } },
+      expect.any(Function),
+    );
+  });
+
+  it("asks for the key when no OTP is given", async () => {
+    expect(await (await post({ json: true, body: {} })).json()).toEqual({ error: "invalid_yubikey" });
+  });
+
+  it("rate-limits per user", async () => {
+    mockCheckMfaVerifyRateLimit.mockReturnValue({ ok: false });
+    const res = await post({ json: true, body: { yubikey_otp: "otp" } });
+    expect(res.status).toBe(429);
+    expect(mockCheckMfaVerifyRateLimit).toHaveBeenCalledWith("user-1");
+    expect(mockVerifyYubiKeyOtpWithYubiCloud).not.toHaveBeenCalled();
+  });
+
+  it("answers 503 when YubiCloud isn't configured", async () => {
     mockIsYubiKeyOtpConfigured.mockReturnValue(false);
-    const { POST } = await import("./mfa-verify");
-    const context = makeContext({ body: { yubikey_otp: "cccc" } });
-
-    await POST(context);
-
-    expect(context.redirect).toHaveBeenCalledWith(expect.stringContaining("error=generic"));
-  });
-
-  it("returns no_factor when the user has no yubikeys enrolled", async () => {
-    const { POST } = await import("./mfa-verify");
-
-    const response = await POST(
-      makeContext({ json: true, body: { yubikey_otp: "cccc" } }),
-    );
-    const json = await response.json();
-
-    expect(json).toEqual({ error: "no_factor" });
+    const res = await post({ body: { yubikey_otp: "otp" } });
+    expect(res.headers.get("Location")).toBe("/signin/mfa?error=generic&next=%2Fdashboard");
   });
 
   it("reports a replayed OTP distinctly from an invalid one", async () => {
-    mockGetYubiKeyPublicIdsFromUser.mockReturnValue(["ccccccexisting"]);
-    mockVerifyYubiKeyOtpWithYubiCloud.mockResolvedValue({ ok: false, error: "OTP already used" });
-    const { POST } = await import("./mfa-verify");
-
-    const json = (await (
-      await POST(makeContext({ json: true, body: { yubikey_otp: "cccc" } }))
-    ).json()) as Record<string, unknown>;
-
-    expect(json).toEqual({ error: "replayed_otp" });
+    mockVerifyYubiKeyOtpWithYubiCloud.mockResolvedValueOnce({ ok: false, error: "OTP already used" });
+    expect(await (await post({ json: true, body: { yubikey_otp: "otp" } })).json()).toEqual({ error: "replayed_otp" });
+    mockVerifyYubiKeyOtpWithYubiCloud.mockResolvedValueOnce({ ok: false, error: "BAD_OTP" });
+    expect(await (await post({ json: true, body: { yubikey_otp: "otp" } })).json()).toEqual({ error: "invalid_yubikey" });
+    expect(mockRecordMfaVerifyFailure).toHaveBeenCalledTimes(2);
   });
 
-  it("rejects an OTP for a yubikey not enrolled on this account", async () => {
-    mockGetYubiKeyPublicIdsFromUser.mockReturnValue(["ccccccexisting"]);
-    mockVerifyYubiKeyOtpWithYubiCloud.mockResolvedValue({ ok: true, publicId: "ccccccother" });
-    const { POST } = await import("./mfa-verify");
-
-    const json = (await (
-      await POST(makeContext({ json: true, body: { yubikey_otp: "cccc" } }))
-    ).json()) as Record<string, unknown>;
-
-    expect(json).toEqual({ error: "yubikey_not_enrolled" });
-  });
-
-  it("verifies a matching yubikey OTP and returns tokens with a step-up proof", async () => {
-    mockGetYubiKeyPublicIdsFromUser.mockReturnValue(["ccccccexisting"]);
-    mockVerifyYubiKeyOtpWithYubiCloud.mockResolvedValue({ ok: true, publicId: "ccccccexisting" });
-    mockGetAalClaim.mockReturnValue("aal1");
-    const { POST } = await import("./mfa-verify");
-
-    const json = (await (
-      await POST(makeContext({ json: true, body: { yubikey_otp: "cccc" } }))
-    ).json()) as Record<string, unknown>;
-
-    expect(mockClearMfaVerifyFailures).toHaveBeenCalledWith("user-1");
-    expect(json).toMatchObject({ ok: true, mfa_stepup: "stepup-token" });
-  });
-
-  it("returns generic error when step-up proof cannot be minted after yubikey success", async () => {
-    mockGetYubiKeyPublicIdsFromUser.mockReturnValue(["ccccccexisting"]);
-    mockVerifyYubiKeyOtpWithYubiCloud.mockResolvedValue({ ok: true, publicId: "ccccccexisting" });
-    mockGetAalClaim.mockReturnValue("aal1");
-    mockCreateMfaStepUpProof.mockResolvedValue(null);
-    const { POST } = await import("./mfa-verify");
-
-    const response = await POST(
-      makeContext({ json: true, body: { yubikey_otp: "cccc" } }),
-    );
-    const json = (await response.json()) as Record<string, unknown>;
-
-    expect(response.status).toBe(503);
-    expect(json).toEqual({ error: "generic" });
+  it("rejects an OTP from a key not enrolled on this account", async () => {
+    mockVerifyYubiKeyOtpWithYubiCloud.mockResolvedValue({ ok: true, publicId: "cccccczzzzzz" });
+    expect(await (await post({ json: true, body: { yubikey_otp: "otp" } })).json()).toEqual({ error: "yubikey_not_enrolled" });
     expect(mockSetMfaStepUpCookie).not.toHaveBeenCalled();
   });
-});
 
-describe("POST /api/auth/mfa-verify — totp code", () => {
-  it("rate-limits totp submission", async () => {
-    mockCheckMfaVerifyRateLimit.mockReturnValue({ ok: false });
-    const { POST } = await import("./mfa-verify");
-
-    const response = await POST(
-      makeContext({ json: true, body: { code: "123456" } }),
-    );
-
-    expect(response.status).toBe(429);
+  it("sets the step-up proof and returns it on success", async () => {
+    const res = await post({ json: true, body: { yubikey_otp: "otp" } });
+    expect(await res.json()).toEqual({ ok: true, aal: "aal2", mfa_stepup: "proof" });
+    expect(mockSetMfaStepUpCookie).toHaveBeenCalledWith(expect.anything(), "proof");
+    expect(mockClearMfaVerifyFailures).toHaveBeenCalledWith("user-1");
   });
 
-  it("returns invalid_code for a malformed code", async () => {
-    const { POST } = await import("./mfa-verify");
-
-    const json = (await (
-      await POST(makeContext({ json: true, body: { code: "abc" } }))
-    ).json()) as Record<string, unknown>;
-
-    expect(json).toEqual({ error: "invalid_code" });
-  });
-
-  it("returns no_factor when step-up isn't actually needed", async () => {
-    // Supabase step-up isn't needed, but a yubikey-only user without an OTP
-    // in the request still reaches the totp code path and finds no factor.
-    mockNeedsMfaStepUp.mockReturnValue(false);
-    mockUserHasYubiKeyOtpEnrolled.mockReturnValue(true);
-    mockGetAalClaim.mockReturnValue("aal1");
-    const { POST } = await import("./mfa-verify");
-
-    const json = (await (
-      await POST(makeContext({ json: true, body: { code: "123456" } }))
-    ).json()) as Record<string, unknown>;
-
-    expect(json).toEqual({ error: "no_factor" });
-  });
-
-  it("returns no_factor when there is no verified totp factor", async () => {
-    client.auth.mfa.listFactors.mockResolvedValue({ data: { totp: [], webauthn: [] }, error: null });
-    const { POST } = await import("./mfa-verify");
-
-    const json = (await (
-      await POST(makeContext({ json: true, body: { code: "123456" } }))
-    ).json()) as Record<string, unknown>;
-
-    expect(json).toEqual({ error: "no_factor" });
-  });
-
-  it("returns invalid_code when challengeAndVerify fails", async () => {
-    client.auth.mfa.challengeAndVerify.mockResolvedValue({ data: null, error: { message: "bad" } });
-    const { POST } = await import("./mfa-verify");
-
-    const json = (await (
-      await POST(makeContext({ json: true, body: { code: "123456" } }))
-    ).json()) as Record<string, unknown>;
-
-    expect(json).toEqual({ error: "invalid_code" });
-    expect(mockRecordMfaVerifyFailure).toHaveBeenCalledWith("user-1");
-  });
-
-  it("verifies a valid totp code and returns tokens with aal2", async () => {
-    const { POST } = await import("./mfa-verify");
-
-    const json = (await (
-      await POST(makeContext({ json: true, body: { code: "123456" } }))
-    ).json()) as Record<string, unknown>;
-
-    expect(mockSetAuthCookies).toHaveBeenCalledWith(expect.anything(), "new-at", "new-rt");
-    expect(json).toMatchObject({ ok: true, access_token: "new-at", aal: "aal2" });
-  });
-
-  it("redirects to the safe next path after a successful form-based totp verify", async () => {
-    const { POST } = await import("./mfa-verify");
-    const context = makeContext({ body: { code: "123456", next: "/dashboard/alerts" } });
-
-    await POST(context);
-
-    expect(context.redirect).toHaveBeenCalledWith("/dashboard/alerts");
+  it("answers 503 when the step-up proof can't be minted", async () => {
+    mockCreateMfaStepUpProof.mockResolvedValue(null);
+    const res = await post({ json: true, body: { yubikey_otp: "otp" } });
+    expect(res.status).toBe(503);
+    expect(mockSetMfaRequiredCookie).not.toHaveBeenCalled();
   });
 });

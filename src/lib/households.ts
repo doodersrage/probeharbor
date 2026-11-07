@@ -1,6 +1,4 @@
-import { dbBackend } from "./db/client";
 import * as neon from "./db/households";
-import { createServerClient } from "./supabase";
 
 export type HouseholdRole =
   | "owner"
@@ -46,155 +44,25 @@ export async function getOrCreateHouseholdForUser(
   }
 
   const name = `${(email ?? "My").split("@")[0]}'s household`;
-  if (dbBackend() === "neon") return neon.insertHouseholdWithOwner(userId, name);
-  const supabase = createServerClient();
-  const { data: household, error: createError } = await supabase
-    .from("households")
-    .insert({ name })
-    .select("id")
-    .single();
-
-  if (createError || !household) {
-    return { householdId: "", error: createError?.message ?? "Failed to create household" };
-  }
-
-  const { error: memberError } = await supabase.from("household_members").insert({
-    household_id: household.id,
-    user_id: userId,
-    role: "owner",
-  });
-
-  if (memberError) {
-    // Don't leave a household with no owner behind (e.g. the user was deleted meanwhile).
-    await supabase.from("households").delete().eq("id", household.id);
-    return { householdId: "", error: memberError.message };
-  }
-
-  return { householdId: household.id, error: null };
+  return neon.insertHouseholdWithOwner(userId, name);
 }
 
 export async function getOwnedHouseholdId(userId: string): Promise<string | null> {
-  if (dbBackend() === "neon") return neon.getOwnedHouseholdId(userId);
-  const supabase = createServerClient();
-  const { data } = await supabase
-    .from("household_members")
-    .select("household_id")
-    .eq("user_id", userId)
-    .eq("role", "owner")
-    .order("created_at", { ascending: true });
-
-  if (!data || data.length === 0) return null;
-
-  // Prefer active household when the user owns multiple properties
-  try {
-    const { createAdminClient } = await import("./supabase");
-    const admin = createAdminClient();
-    const { data: authData } = await admin.auth.admin.getUserById(userId);
-    const active = authData.user?.user_metadata?.active_household_id;
-    if (
-      typeof active === "string" &&
-      data.some((row) => row.household_id === active)
-    ) {
-      return active;
-    }
-  } catch {
-    // fall through to first owned
-  }
-
-  return data[0]?.household_id ?? null;
+  return neon.getOwnedHouseholdId(userId);
 }
 
 export async function countOwnedHouseholds(userId: string): Promise<number> {
-  if (dbBackend() === "neon") return neon.countOwnedHouseholds(userId);
-  const supabase = createServerClient();
-  const { count, error } = await supabase
-    .from("household_members")
-    .select("id", { count: "exact", head: true })
-    .eq("user_id", userId)
-    .eq("role", "owner");
-
-  if (error) {
-    console.error("countOwnedHouseholds failed:", error.message);
-    return 0;
-  }
-
-  return count ?? 0;
+  return neon.countOwnedHouseholds(userId);
 }
 
 export async function listUserHouseholds(
   userId: string,
 ): Promise<{ households: UserHousehold[]; error: string | null }> {
-  if (dbBackend() === "neon") return neon.listUserHouseholds(userId);
-  const supabase = createServerClient();
-  const { data, error } = await supabase
-    .from("household_members")
-    .select("household_id, role, households(name)")
-    .eq("user_id", userId)
-    .order("created_at", { ascending: true });
-
-  if (error) {
-    return { households: [], error: error.message };
-  }
-
-  const households: UserHousehold[] = (data ?? []).map((row) => {
-    const nested = row.households as { name?: string } | { name?: string }[] | null;
-    const name = Array.isArray(nested)
-      ? nested[0]?.name
-      : nested?.name;
-    return {
-      household_id: row.household_id,
-      role: row.role as HouseholdRole,
-      name: name ?? "Household",
-    };
-  });
-
-  return { households, error: null };
+  return neon.listUserHouseholds(userId);
 }
 
 async function getPreferredHouseholdId(userId: string): Promise<string | null> {
-  if (dbBackend() === "neon") return neon.getPreferredHouseholdId(userId);
-  const supabase = createServerClient();
-  const { data: memberRows } = await supabase
-    .from("household_members")
-    .select("household_id, role")
-    .eq("user_id", userId);
-
-  if (!memberRows || memberRows.length === 0) return null;
-
-  const membershipIds = new Set(memberRows.map((row) => row.household_id));
-
-  // Prefer explicit active_household_id from auth metadata when valid
-  try {
-    const { createAdminClient } = await import("./supabase");
-    const admin = createAdminClient();
-    const { data } = await admin.auth.admin.getUserById(userId);
-    const active = data.user?.user_metadata?.active_household_id;
-    if (typeof active === "string" && membershipIds.has(active)) {
-      return active;
-    }
-  } catch {
-    // ignore — fall through
-  }
-
-  // Prefer a household that already has devices (shared homes)
-  const { data: devices } = await supabase
-    .from("devices")
-    .select("household_id")
-    .in("household_id", [...membershipIds])
-    .limit(50);
-
-  if (devices && devices.length > 0) {
-    const withDevices = new Set(devices.map((d) => d.household_id));
-    const shared = memberRows.find(
-      (row) => row.role === "member" && withDevices.has(row.household_id),
-    );
-    if (shared) return shared.household_id;
-    const any = memberRows.find((row) => withDevices.has(row.household_id));
-    if (any) return any.household_id;
-  }
-
-  const owner = memberRows.find((row) => row.role === "owner");
-  return (owner ?? memberRows[0]).household_id;
+  return neon.getPreferredHouseholdId(userId);
 }
 
 export async function getUserHouseholdId(
@@ -210,53 +78,20 @@ export async function setActiveHouseholdForUser(
   if (!(await isUserInHousehold(userId, householdId))) {
     return { error: "Not a member of that household" };
   }
-  if (dbBackend() === "neon") return neon.setActiveHousehold(userId, householdId);
-
-  const { createAdminClient } = await import("./supabase");
-  const admin = createAdminClient();
-  const { data } = await admin.auth.admin.getUserById(userId);
-  const existing = (data.user?.user_metadata ?? {}) as Record<string, unknown>;
-  const { error } = await admin.auth.admin.updateUserById(userId, {
-    user_metadata: {
-      ...existing,
-      active_household_id: householdId,
-    },
-  });
-
-  return { error: error?.message ?? null };
+  return neon.setActiveHousehold(userId, householdId);
 }
 
 export async function listHouseholdMembers(
   householdId: string,
 ): Promise<{ members: HouseholdMember[]; error: string | null }> {
-  if (dbBackend() === "neon") return neon.listHouseholdMembers(householdId);
-  const supabase = createServerClient();
-  const { data, error } = await supabase
-    .from("household_members")
-    .select("id, household_id, user_id, role, created_at, digest_opt_in")
-    .eq("household_id", householdId)
-    .order("created_at", { ascending: true });
-
-  if (error) {
-    return { members: [], error: error.message };
-  }
-
-  return { members: (data ?? []) as HouseholdMember[], error: null };
+  return neon.listHouseholdMembers(householdId);
 }
 
 export async function getUserHouseholdRole(
   userId: string,
   householdId: string,
 ): Promise<HouseholdRole | null> {
-  if (dbBackend() === "neon") return neon.getUserHouseholdRole(userId, householdId);
-  const supabase = createServerClient();
-  const { data } = await supabase
-    .from("household_members")
-    .select("role")
-    .eq("user_id", userId)
-    .eq("household_id", householdId)
-    .maybeSingle();
-  return (data?.role as HouseholdRole | undefined) ?? null;
+  return neon.getUserHouseholdRole(userId, householdId);
 }
 
 export function canEditHousehold(role: HouseholdRole | null): boolean {
@@ -277,50 +112,16 @@ export async function createAdditionalHouseholdForUser(
   name: string,
 ): Promise<{ householdId: string; error: string | null }> {
   const trimmed = name.trim() || "My property";
-  if (dbBackend() === "neon") {
-    const created = await neon.insertHouseholdWithOwner(userId, trimmed);
-    if (!created.error) await setActiveHouseholdForUser(userId, created.householdId);
-    return created;
-  }
-  const supabase = createServerClient();
-  const { data: household, error: createError } = await supabase
-    .from("households")
-    .insert({ name: trimmed })
-    .select("id")
-    .single();
-
-  if (createError || !household) {
-    return { householdId: "", error: createError?.message ?? "Failed to create household" };
-  }
-
-  const { error: memberError } = await supabase.from("household_members").insert({
-    household_id: household.id,
-    user_id: userId,
-    role: "owner",
-  });
-
-  if (memberError) {
-    return { householdId: "", error: memberError.message };
-  }
-
-  await setActiveHouseholdForUser(userId, household.id);
-  return { householdId: household.id, error: null };
+  const created = await neon.insertHouseholdWithOwner(userId, trimmed);
+  if (!created.error) await setActiveHouseholdForUser(userId, created.householdId);
+  return created;
 }
 
 export async function isUserInHousehold(
   userId: string,
   householdId: string,
 ): Promise<boolean> {
-  if (dbBackend() === "neon") return neon.isUserInHousehold(userId, householdId);
-  const supabase = createServerClient();
-  const { data } = await supabase
-    .from("household_members")
-    .select("id")
-    .eq("user_id", userId)
-    .eq("household_id", householdId)
-    .maybeSingle();
-
-  return Boolean(data);
+  return neon.isUserInHousehold(userId, householdId);
 }
 
 export async function addHouseholdMemberByUserId(
@@ -328,45 +129,14 @@ export async function addHouseholdMemberByUserId(
   userId: string,
   role: HouseholdRole = "member",
 ): Promise<{ error: string | null }> {
-  if (dbBackend() === "neon") return neon.upsertHouseholdMember(householdId, userId, role);
-  const supabase = createServerClient();
-  const { error } = await supabase.from("household_members").upsert(
-    {
-      household_id: householdId,
-      user_id: userId,
-      role,
-    },
-    { onConflict: "household_id,user_id" },
-  );
-
-  return { error: error?.message ?? null };
+  return neon.upsertHouseholdMember(householdId, userId, role);
 }
 
 export async function removeHouseholdMember(
   householdId: string,
   userId: string,
 ): Promise<{ error: string | null }> {
-  if (dbBackend() === "neon") return neon.removeHouseholdMember(householdId, userId);
-  const supabase = createServerClient();
-
-  const { data: member } = await supabase
-    .from("household_members")
-    .select("role")
-    .eq("household_id", householdId)
-    .eq("user_id", userId)
-    .maybeSingle();
-
-  if (member?.role === "owner") {
-    return { error: "Cannot remove the household owner" };
-  }
-
-  const { error } = await supabase
-    .from("household_members")
-    .delete()
-    .eq("household_id", householdId)
-    .eq("user_id", userId);
-
-  return { error: error?.message ?? null };
+  return neon.removeHouseholdMember(householdId, userId);
 }
 
 /** Member leaves their current household (not allowed for owners). */
@@ -398,51 +168,16 @@ export async function updateHouseholdName(
   householdId: string,
   name: string,
 ): Promise<{ error: string | null }> {
-  if (dbBackend() === "neon") return neon.updateHouseholdName(householdId, name.trim() || "My household");
-  const supabase = createServerClient();
-  const { error } = await supabase
-    .from("households")
-    .update({ name: name.trim() || "My household" })
-    .eq("id", householdId);
-
-  return { error: error?.message ?? null };
+  return neon.updateHouseholdName(householdId, name.trim() || "My household");
 }
 
 export async function listAllHouseholdOwnerUserIds(): Promise<string[]> {
-  if (dbBackend() === "neon") return neon.listAllHouseholdOwnerUserIds();
-  const supabase = createServerClient();
-  const { data, error } = await supabase
-    .from("household_members")
-    .select("user_id")
-    .eq("role", "owner");
-
-  if (error || !data) return [];
-  return [...new Set(data.map((row) => row.user_id))];
+  return neon.listAllHouseholdOwnerUserIds();
 }
 
 /** Unique households that should be polled by cron (those with devices, else all owned). */
 export async function listHouseholdIdsForCron(): Promise<
   Array<{ householdId: string; ownerUserId: string }>
 > {
-  if (dbBackend() === "neon") return neon.listHouseholdIdsForCron();
-  const supabase = createServerClient();
-  const { data: owners } = await supabase
-    .from("household_members")
-    .select("household_id, user_id")
-    .eq("role", "owner");
-
-  if (!owners || owners.length === 0) return [];
-
-  const rows = owners.map((row) => ({
-    householdId: row.household_id,
-    ownerUserId: row.user_id,
-  }));
-
-  // Deduplicate by household
-  const seen = new Set<string>();
-  return rows.filter((row) => {
-    if (seen.has(row.householdId)) return false;
-    seen.add(row.householdId);
-    return true;
-  });
+  return neon.listHouseholdIdsForCron();
 }

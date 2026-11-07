@@ -1,20 +1,388 @@
 /**
  * Alert pipeline integration tests: real evaluation, dwell sampling,
  * notifyUser, channel delivery, cooldowns, and the watchdog. Only the
- * database (in-memory), fetch, and the weather context are faked.
+ * database queries (src/lib/db/*, faked over in-memory tables), fetch, and
+ * the weather context are faked. Any database call without a fake fails the
+ * test, so the fakes below are exactly what the pipeline reads and writes.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { FakeSupabase } from "../test/fakeSupabase";
 
-let db: FakeSupabase;
-vi.mock("./supabase", () => ({
-  createServerClient: () => db,
-  createAdminClient: () => db,
-  createAuthClient: () => db,
-  supabase: {},
+type Row = Record<string, unknown>;
+type Fn = (...args: never[]) => unknown;
+
+const h = vi.hoisted(() => {
+  const unfaked = new Set<string>();
+  const fakes: Record<string, Record<string, (...args: never[]) => unknown>> = {};
+  /** The module's real exports, with every function routed to its fake (or a recorded failure). */
+  function wrap(name: string, actual: Record<string, unknown>): Record<string, unknown> {
+    const out: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(actual)) {
+      if (typeof value !== "function") {
+        out[key] = value;
+        continue;
+      }
+      out[key] = (...args: never[]) => {
+        const fake = fakes[name]?.[key];
+        if (fake) return fake(...args);
+        unfaked.add(`${name}.${key}`);
+        return Promise.reject(new Error(`db fake missing: ${name}.${key}`));
+      };
+    }
+    return out;
+  }
+  return { unfaked, fakes, wrap };
+});
+
+vi.mock("./db/client", async (orig) => ({
+  ...(await orig<Record<string, unknown>>()),
+  query: (text: string) => {
+    h.unfaked.add(`client.query: ${text.replace(/\s+/g, " ").slice(0, 80)}`);
+    return Promise.reject(new Error("raw query in pipeline test"));
+  },
 }));
+vi.mock("./userRecords", async (orig) => h.wrap("userRecords", await orig()));
+vi.mock("./db/alertSettings", async (orig) => h.wrap("alertSettings", await orig()));
+vi.mock("./db/alertEvents", async (orig) => h.wrap("alertEvents", await orig()));
+vi.mock("./db/alertExtras", async (orig) => h.wrap("alertExtras", await orig()));
+vi.mock("./db/readings", async (orig) => h.wrap("readings", await orig()));
+vi.mock("./db/devices", async (orig) => h.wrap("devices", await orig()));
+vi.mock("./db/ingest", async (orig) => h.wrap("ingest", await orig()));
+vi.mock("./db/households", async (orig) => h.wrap("households", await orig()));
+vi.mock("./db/admin", async (orig) => h.wrap("admin", await orig()));
+vi.mock("./db/emailJobs", async (orig) => h.wrap("emailJobs", await orig()));
+vi.mock("./db/billing", async (orig) => h.wrap("billing", await orig()));
+vi.mock("./db/doors", async (orig) => h.wrap("doors", await orig()));
+vi.mock("./db/pushTokens", async (orig) => h.wrap("pushTokens", await orig()));
+vi.mock("./db/jobs", async (orig) => h.wrap("jobs", await orig()));
+vi.mock("./db/remaining", async (orig) => h.wrap("remaining", await orig()));
+vi.mock("./db/places", async (orig) => h.wrap("places", await orig()));
+vi.mock("./db/userMetadata", async (orig) => h.wrap("userMetadata", await orig()));
+vi.mock("./db/householdTools", async (orig) => h.wrap("householdTools", await orig()));
+vi.mock("./db/thermostats", async (orig) => h.wrap("thermostats", await orig()));
+vi.mock("./db/pucks", async (orig) => h.wrap("pucks", await orig()));
+vi.mock("./db/history", async (orig) => h.wrap("history", await orig()));
+vi.mock("./db/access", async (orig) => h.wrap("access", await orig()));
+vi.mock("./db/accounts", async (orig) => h.wrap("accounts", await orig()));
+vi.mock("./db/shareLinks", async (orig) => h.wrap("shareLinks", await orig()));
+vi.mock("./db/statusPages", async (orig) => h.wrap("statusPages", await orig()));
+vi.mock("./db/deviceActions", async (orig) => h.wrap("deviceActions", await orig()));
+vi.mock("./db/freezeSubscriptions", async (orig) => h.wrap("freezeSubscriptions", await orig()));
+vi.mock("./db/referrals", async (orig) => h.wrap("referrals", await orig()));
+vi.mock("./db/legacyTempConfig", async (orig) => h.wrap("legacyTempConfig", await orig()));
 // Weather/thermostat context is decoration on the alert body; keep it out.
 vi.mock("./alertContext", () => ({ buildFreezeAlertContext: async () => null }));
+
+/** In-memory tables the fakes read and write. */
+class MemDb {
+  tables: Record<string, Row[]> = {};
+  users = new Map<string, { id: string; email?: string; user_metadata?: Row }>();
+  private nextId = 1;
+
+  table(name: string): Row[] {
+    this.tables[name] ??= [];
+    return this.tables[name];
+  }
+
+  seed(name: string, rows: Row[]): void {
+    for (const row of rows) this.table(name).push({ id: this.nextId++, created_at: new Date().toISOString(), ...row });
+  }
+
+  insert(name: string, row: Row): Row {
+    const stored = { id: this.nextId++, created_at: new Date().toISOString(), ...row };
+    this.table(name).push(stored);
+    return stored;
+  }
+}
+
+let db: MemDb;
+
+const ms = (iso: unknown) => (typeof iso === "string" ? Date.parse(iso) : Number.NaN);
+const newestFirst = (a: Row, b: Row) => ms(b.created_at) - ms(a.created_at) || Number(b.id) - Number(a.id);
+
+/** What the unhandled-alert SQL (db/alertEvents unhandledSql) selects. */
+function isUnhandled(event: Row, informational: readonly string[], safety: readonly string[]): boolean {
+  const sent = (event.channels_sent as string[] | undefined) ?? [];
+  const kind = String(event.kind);
+  return event.acknowledged_at == null && !informational.includes(kind) && (sent.length > 0 || safety.includes(kind));
+}
+
+function settingsRow(userId: unknown): Row | undefined {
+  return db.table("alert_settings").find((row) => row.user_id === userId);
+}
+
+/** Readings of one sensor, oldest first, matching `keep`. */
+function readingsOf(sensorId: string, keep: (row: Row) => boolean): Row[] {
+  return db
+    .table("sensor_readings")
+    .filter((row) => row.sensor_id === sensorId && keep(row))
+    .sort((a, b) => ms(a.recorded_at) - ms(b.recorded_at));
+}
+
+function sensorsOf(deviceId: unknown): Row[] {
+  return db.table("device_sensors").filter((sensor) => sensor.device_id === deviceId);
+}
+
+function installFakes() {
+  const f = h.fakes;
+  for (const key of Object.keys(f)) delete f[key];
+
+  f.userRecords = {
+    getUserRecord: async (userId: string) => {
+      const user = db.users.get(userId);
+      return user ? { app_metadata: {}, user_metadata: {}, ...user } : null;
+    },
+  } as Record<string, Fn>;
+
+  f.alertSettings = {
+    getAlertSettingsRow: async (userId: string) => {
+      const row = settingsRow(userId);
+      return row ? { ...row } : null;
+    },
+    insertDefaultAlertSettings: async (userId: string, row: Row) => {
+      if (!settingsRow(userId)) db.table("alert_settings").push({ ...row, user_id: userId });
+    },
+    saveAlertSettingsRow: async (userId: string, row: Row) => {
+      const existing = settingsRow(userId);
+      if (existing) Object.assign(existing, row);
+      else db.table("alert_settings").push({ ...row, user_id: userId });
+      return { error: null };
+    },
+    markCooldown: async (userId: string, field: string, defaults: Row) => {
+      const now = new Date().toISOString();
+      const existing = settingsRow(userId);
+      if (existing) Object.assign(existing, { [field]: now, updated_at: now });
+      else db.table("alert_settings").push({ ...defaults, user_id: userId, [field]: now, updated_at: now });
+    },
+    // Compare-and-set, as the SQL: wins only when the stored stamp still equals `previous`.
+    claimCooldown: async (userId: string, field: string, previous: string | null) => {
+      const now = new Date().toISOString();
+      const row = settingsRow(userId);
+      const current = (row?.[field] as string | null | undefined) ?? null;
+      const same = current === null || previous === null ? current === previous : ms(current) === ms(previous);
+      if (row && same) {
+        Object.assign(row, { [field]: now, updated_at: now });
+        return { claimed: true, claimedAt: now };
+      }
+      const previousMs = previous ? ms(previous) : Number.NEGATIVE_INFINITY;
+      if (row && Number.isFinite(ms(current)) && ms(current) > previousMs) return { claimed: false, claimedAt: null };
+      return { claimed: true, claimedAt: null };
+    },
+    releaseCooldown: async (userId: string, field: string, claimedAt: string, previous: string | null) => {
+      const row = settingsRow(userId);
+      if (row && ms(row[field]) === ms(claimedAt)) row[field] = previous;
+    },
+    markEscalation: async (userId: string) => {
+      const row = settingsRow(userId);
+      if (row) row.last_escalation_at = new Date().toISOString();
+    },
+    recentAlertReachedAChannel: async (userId: string) =>
+      db
+        .table("alert_events")
+        .filter((event) => event.user_id === userId)
+        .sort(newestFirst)
+        .slice(0, 25)
+        .some((event) => ((event.channels_sent as string[]) ?? []).length > 0),
+  } as Record<string, Fn>;
+
+  f.alertEvents = {
+    recordAlertEvent: async (input: {
+      userId: string;
+      kind: string;
+      title: string;
+      body: string;
+      channelsSent: string[];
+      channelsSkipped: string[];
+      meta?: Row;
+    }) =>
+      db.insert("alert_events", {
+        user_id: input.userId,
+        kind: input.kind,
+        title: input.title,
+        body: input.body,
+        channels_sent: [...input.channelsSent],
+        channels_skipped: [...input.channelsSkipped],
+        meta: input.meta ?? {},
+        acknowledged_at: null,
+      }).id,
+    updateAlertEventChannels: async (eventId: number, userId: string, sent: string[], skipped: string[]) => {
+      const event = db.table("alert_events").find((row) => row.id === eventId && row.user_id === userId);
+      if (event) Object.assign(event, { channels_sent: [...sent], channels_skipped: [...skipped] });
+    },
+    listRecentAlertEvents: async (userId: string, limit: number) =>
+      db
+        .table("alert_events")
+        .filter((event) => event.user_id === userId)
+        .sort(newestFirst)
+        .slice(0, limit)
+        .map((event) => ({ ...event })),
+    listRecentAlertEventsFiltered: async (
+      userId: string,
+      informational: readonly string[],
+      safety: readonly string[],
+      options: { limit: number; offset: number; kind?: string | null; kinds?: readonly string[] | null; unackedOnly?: boolean },
+    ) => {
+      const kindLike = options.kind?.trim().toLowerCase();
+      const rows = db
+        .table("alert_events")
+        .filter(
+          (event) =>
+            event.user_id === userId &&
+            (!kindLike || String(event.kind).toLowerCase().includes(kindLike)) &&
+            (!options.kinds?.length || options.kinds.includes(String(event.kind))) &&
+            (!options.unackedOnly || isUnhandled(event, informational, safety)),
+        )
+        .sort(newestFirst)
+        .slice(options.offset, options.offset + options.limit + 1)
+        .map((event) => ({ ...event }));
+      return { events: rows.slice(0, options.limit), hasMore: rows.length > options.limit };
+    },
+    listRecentDeliveryAttempts: async (userId: string, limit: number) =>
+      db
+        .table("alert_events")
+        .filter((event) => event.user_id === userId)
+        .sort(newestFirst)
+        .slice(0, limit)
+        .map(({ created_at, channels_sent, channels_skipped }) => ({ created_at, channels_sent, channels_skipped })),
+    hasUnhandledAlertOfKinds: async (
+      userId: string,
+      kinds: readonly string[],
+      informational: readonly string[],
+      safety: readonly string[],
+    ) =>
+      db
+        .table("alert_events")
+        .some(
+          (event) =>
+            event.user_id === userId && kinds.includes(String(event.kind)) && isUnhandled(event, informational, safety),
+        ),
+    autoResolveAlerts: async (
+      userId: string,
+      informational: readonly string[],
+      safety: readonly string[],
+      options: { kinds?: string[]; olderThanIso?: string; reason: string },
+    ) => {
+      const resolved = db
+        .table("alert_events")
+        .filter(
+          (event) =>
+            event.user_id === userId &&
+            isUnhandled(event, informational, safety) &&
+            (!options.kinds?.length || options.kinds.includes(String(event.kind))) &&
+            (!options.olderThanIso || ms(event.created_at) < ms(options.olderThanIso)),
+        );
+      for (const event of resolved) {
+        event.acknowledged_at = new Date().toISOString();
+        event.meta = { ...(event.meta as Row), autoResolved: options.reason };
+      }
+      return { resolved: resolved.length, channels: [...new Set(resolved.flatMap((e) => e.channels_sent as string[]))] };
+    },
+  } as Record<string, Fn>;
+
+  f.readings = {
+    getRecentNumericReadings: async (sensorId: string, sinceIso: string) =>
+      readingsOf(sensorId, (r) => ms(r.recorded_at) >= ms(sinceIso) && r.value_num != null).map((r) => r.value_num),
+    getRecentNumericReadingSamples: async (sensorId: string, sinceIso: string) =>
+      readingsOf(sensorId, (r) => ms(r.recorded_at) >= ms(sinceIso) && r.value_num != null).map((r) => ({
+        at: r.recorded_at,
+        tempF: r.value_num,
+      })),
+    getNumericReadingInWindow: async (sensorId: string, notBeforeIso: string, atOrBeforeIso: string) => {
+      const row = readingsOf(
+        sensorId,
+        (r) => ms(r.recorded_at) >= ms(notBeforeIso) && ms(r.recorded_at) <= ms(atOrBeforeIso),
+      ).at(-1);
+      return row && typeof row.value_num === "number" ? { value: row.value_num, at: row.recorded_at } : null;
+    },
+    hasNumericReadingAboveSince: async (sensorId: string, sinceIso: string, thresholdF: number) =>
+      readingsOf(sensorId, (r) => ms(r.recorded_at) >= ms(sinceIso) && Number(r.value_num) > thresholdF).length > 0,
+    getDwellAnchor: async (sensorId: string, anchorSinceIso: string, cutoffIso: string) =>
+      readingsOf(
+        sensorId,
+        (r) => ms(r.recorded_at) >= ms(anchorSinceIso) && ms(r.recorded_at) < ms(cutoffIso) && r.value_num != null,
+      )
+        .slice(-1)
+        .map((r) => ({ at: r.recorded_at, tempF: r.value_num })),
+    fetchRecentBoolReadings: async (sensorId: string, sinceIso: string) =>
+      readingsOf(sensorId, (r) => ms(r.recorded_at) >= ms(sinceIso) && r.value_bool != null).map((r) => ({
+        value: r.value_bool,
+        recordedAt: r.recorded_at,
+      })),
+    // Latest reading per visible sensor on enabled devices, offsets applied, demo devices flagged.
+    fetchLatestSensorValuesResult: async (householdId: string) => {
+      const { isDemoDevice } = await import("./demoFeed");
+      const { applySensorOffset } = await import("./sensorCalibration");
+      const { reportIntervalMsFromMeta } = await import("./reportInterval");
+      const rows = [];
+      for (const device of db.table("devices").filter((d) => d.household_id === householdId && d.enabled)) {
+        for (const sensor of sensorsOf(device.id).filter((s) => s.visible)) {
+          const latest = readingsOf(String(sensor.id), () => true).at(-1);
+          if (!latest) continue;
+          const offset = typeof sensor.offset_num === "number" ? sensor.offset_num : 0;
+          const numeric = sensor.kind === "temperature" || sensor.kind === "humidity";
+          rows.push({
+            sensor: { sort_order: 0, ...sensor },
+            deviceName: device.name ?? "Device",
+            deviceSpace: typeof device.space === "string" ? device.space : null,
+            value_num:
+              latest.value_num != null && numeric ? applySensorOffset(Number(latest.value_num), offset) : latest.value_num,
+            value_bool: latest.value_bool,
+            value_text: latest.value_text,
+            recorded_at: latest.recorded_at,
+            deviceDemo: isDemoDevice({
+              source: device.source as string,
+              pull_url: device.pull_url as string | null,
+              meta: device.meta as Row | null,
+            }),
+            reportIntervalMs: reportIntervalMsFromMeta(device.meta as Row | null) ?? null,
+          });
+        }
+      }
+      return { rows, error: null };
+    },
+  } as Record<string, Fn>;
+
+  f.devices = {
+    listHouseholdDevices: async (householdId: string) => ({
+      devices: db
+        .table("devices")
+        .filter((device) => device.household_id === householdId)
+        .map((device) => ({
+          source: "push",
+          pull_url: null,
+          last_seen_at: null,
+          sort_order: 0,
+          meta: {},
+          ...device,
+          sensors: sensorsOf(device.id).map((sensor) => ({ sort_order: 0, ...sensor })),
+        })),
+      error: null,
+    }),
+  } as Record<string, Fn>;
+
+  f.households = {
+    listHouseholdIdsForCron: async () => {
+      const seen = new Map<string, string>();
+      for (const member of db.table("household_members")) {
+        if (member.role === "owner" && !seen.has(String(member.household_id))) {
+          seen.set(String(member.household_id), String(member.user_id));
+        }
+      }
+      return [...seen].map(([householdId, ownerUserId]) => ({ householdId, ownerUserId }));
+    },
+    listHouseholdMembers: async (householdId: string) => ({
+      members: db.table("household_members").filter((member) => member.household_id === householdId),
+      error: null,
+    }),
+  } as Record<string, Fn>;
+
+  f.admin = {
+    isUserInGroup: async () => false,
+  } as Record<string, Fn>;
+
+  f.emailJobs = {
+    isSuppressed: async () => false,
+  } as Record<string, Fn>;
+}
 
 const DISCORD = "https://discord.com/api/webhooks/1/abc";
 const USER = "user-1";
@@ -82,7 +450,9 @@ const discordPosts = () => fetchMock.mock.calls.filter(([url]) => url === DISCOR
 const thresholdEvents = () => db.table("alert_events").filter((e) => e.kind === "threshold");
 
 beforeEach(() => {
-  db = new FakeSupabase();
+  db = new MemDb();
+  h.unfaked.clear();
+  installFakes();
   fetchMock.mockReset().mockImplementation(async (url: string) =>
     url === DISCORD ? new Response(null, { status: 204 }) : new Response("not found", { status: 404 }),
   );
@@ -91,6 +461,8 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.unstubAllGlobals();
+  // Every database call the pipeline made had a fake behind it.
+  expect([...h.unfaked]).toEqual([]);
 });
 
 describe("freeze alert pipeline", () => {

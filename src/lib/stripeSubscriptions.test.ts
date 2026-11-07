@@ -1,41 +1,23 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-function mockQuery(result: { data?: unknown; error?: unknown }) {
-  const builder: Record<string, unknown> = {};
-  for (const method of ["select", "eq", "order", "upsert"]) {
-    builder[method] = vi.fn(() => builder);
-  }
-  builder.maybeSingle = vi.fn(() => Promise.resolve(result));
-  (builder as { then: unknown }).then = (
-    resolve: (value: unknown) => unknown,
-    reject?: (reason: unknown) => unknown,
-  ) => Promise.resolve(result).then(resolve, reject);
-  return builder;
-}
-
-const mockFrom = vi.fn();
-const mockRpc = vi.fn();
-vi.mock("./supabase", () => ({
-  createServerClient: () => ({
-    from: (...args: unknown[]) => mockFrom(...args),
-    rpc: (...args: unknown[]) => mockRpc(...args),
-  }),
+const billing = vi.hoisted(() => ({
+  getUserSubscription: vi.fn(),
+  storedSubscription: vi.fn(),
+  upsertSubscriptionRow: vi.fn(),
+  syncPlanGroup: vi.fn(),
+  findUserIdBySubscriptionId: vi.fn(),
 }));
+vi.mock("./db/billing", () => billing);
 
 beforeEach(() => {
-  mockFrom.mockReset();
-  mockRpc.mockReset();
+  for (const fn of Object.values(billing)) fn.mockReset();
+  billing.storedSubscription.mockResolvedValue(null);
+  billing.upsertSubscriptionRow.mockResolvedValue({ error: null });
+  billing.syncPlanGroup.mockResolvedValue({ error: null });
 });
 
 describe("getUserSubscription", () => {
-  it("returns null when supabase has no row for the user", async () => {
-    mockFrom.mockReturnValue(mockQuery({ data: null }));
-    const { getUserSubscription } = await import("./stripeSubscriptions");
-
-    expect(await getUserSubscription("user-1")).toBeNull();
-  });
-
-  it("returns the row as-is when found", async () => {
+  it("returns the stored row, or null", async () => {
     const row = {
       user_id: "user-1",
       stripe_customer_id: "cus_1",
@@ -43,97 +25,52 @@ describe("getUserSubscription", () => {
       status: "active",
       current_period_end: "2026-01-01T00:00:00.000Z",
     };
-    mockFrom.mockReturnValue(mockQuery({ data: row }));
+    billing.getUserSubscription.mockResolvedValueOnce(row).mockResolvedValueOnce(null);
     const { getUserSubscription } = await import("./stripeSubscriptions");
 
     expect(await getUserSubscription("user-1")).toEqual(row);
+    expect(await getUserSubscription("user-2")).toBeNull();
+    expect(billing.getUserSubscription).toHaveBeenCalledWith("user-1");
   });
 });
 
 describe("findUserIdByStripeSubscriptionId", () => {
-  it("returns null when no row matches", async () => {
-    mockFrom.mockReturnValue(mockQuery({ data: null }));
-    const { findUserIdByStripeSubscriptionId } = await import("./stripeSubscriptions");
-
-    expect(await findUserIdByStripeSubscriptionId("sub_missing")).toBeNull();
-  });
-
-  it("returns the user id when a row matches", async () => {
-    mockFrom.mockReturnValue(mockQuery({ data: { user_id: "user-9" } }));
+  it("returns the user id when a row matches, else null", async () => {
+    billing.findUserIdBySubscriptionId.mockResolvedValueOnce("user-9").mockResolvedValueOnce(null);
     const { findUserIdByStripeSubscriptionId } = await import("./stripeSubscriptions");
 
     expect(await findUserIdByStripeSubscriptionId("sub_9")).toBe("user-9");
+    expect(await findUserIdByStripeSubscriptionId("sub_missing")).toBeNull();
   });
 });
 
 describe("syncPlanGroupForUser", () => {
-  it("calls the current sync_plan_group_membership RPC and returns no error on success", async () => {
-    mockRpc.mockResolvedValue({ error: null });
+  it("syncs the plan group and passes the result through", async () => {
     const { syncPlanGroupForUser } = await import("./stripeSubscriptions");
 
-    const result = await syncPlanGroupForUser("user-1", "pro", true);
+    expect(await syncPlanGroupForUser("user-1", "pro", true)).toEqual({ error: null });
+    expect(billing.syncPlanGroup).toHaveBeenCalledWith("user-1", "pro", true);
 
-    expect(result).toEqual({ error: null });
-    expect(mockRpc).toHaveBeenCalledWith("sync_plan_group_membership", {
-      target_user_id: "user-1",
-      plan_tier: "pro",
-      is_active: true,
-    });
-    expect(mockRpc).toHaveBeenCalledTimes(1);
-  });
-
-  it("falls back to the legacy sync_member_group_membership RPC when the new one errors", async () => {
-    mockRpc
-      .mockResolvedValueOnce({ error: { message: "function does not exist" } })
-      .mockResolvedValueOnce({ error: null });
-    const { syncPlanGroupForUser } = await import("./stripeSubscriptions");
-
-    const result = await syncPlanGroupForUser("user-1", "member", true);
-
-    expect(result).toEqual({ error: null });
-    expect(mockRpc).toHaveBeenNthCalledWith(2, "sync_member_group_membership", {
-      target_user_id: "user-1",
-      is_active: true,
-    });
-  });
-
-  it("surfaces the original error message when the legacy fallback also fails", async () => {
-    mockRpc
-      .mockResolvedValueOnce({ error: { message: "primary failed" } })
-      .mockResolvedValueOnce({ error: { message: "legacy failed" } });
-    const { syncPlanGroupForUser } = await import("./stripeSubscriptions");
-
-    const result = await syncPlanGroupForUser("user-1", "member", false);
-
-    expect(result).toEqual({ error: "legacy failed" });
+    billing.syncPlanGroup.mockResolvedValueOnce({ error: "sync failed" });
+    expect(await syncPlanGroupForUser("user-1", "member", false)).toEqual({ error: "sync failed" });
   });
 });
 
 describe("syncMemberGroupForUser", () => {
   it("maps an active-like status to an active member sync", async () => {
-    mockRpc.mockResolvedValue({ error: null });
     const { syncMemberGroupForUser } = await import("./stripeSubscriptions");
 
     await syncMemberGroupForUser("user-1", "trialing");
 
-    expect(mockRpc).toHaveBeenCalledWith("sync_plan_group_membership", {
-      target_user_id: "user-1",
-      plan_tier: "member",
-      is_active: true,
-    });
+    expect(billing.syncPlanGroup).toHaveBeenCalledWith("user-1", "member", true);
   });
 
   it("maps a canceled status to an inactive member sync", async () => {
-    mockRpc.mockResolvedValue({ error: null });
     const { syncMemberGroupForUser } = await import("./stripeSubscriptions");
 
     await syncMemberGroupForUser("user-1", "canceled");
 
-    expect(mockRpc).toHaveBeenCalledWith("sync_plan_group_membership", {
-      target_user_id: "user-1",
-      plan_tier: "member",
-      is_active: false,
-    });
+    expect(billing.syncPlanGroup).toHaveBeenCalledWith("user-1", "member", false);
   });
 });
 
@@ -165,11 +102,7 @@ describe("upsertUserSubscription", () => {
   }
 
   it("ignores a canceled stray subscription while a different one is active", async () => {
-    const builder = mockQuery({
-      data: { stripe_subscription_id: "sub_active", status: "active" },
-      error: null,
-    });
-    mockFrom.mockReturnValue(builder);
+    billing.storedSubscription.mockResolvedValue({ stripe_subscription_id: "sub_active", status: "active" });
     const { upsertUserSubscription } = await import("./stripeSubscriptions");
 
     const result = await upsertUserSubscription(
@@ -179,87 +112,76 @@ describe("upsertUserSubscription", () => {
     );
 
     expect(result).toEqual({ error: null });
-    expect(builder.upsert).not.toHaveBeenCalled();
-    expect(mockRpc).not.toHaveBeenCalled();
+    expect(billing.storedSubscription).toHaveBeenCalledWith("user-1");
+    expect(billing.upsertSubscriptionRow).not.toHaveBeenCalled();
+    expect(billing.syncPlanGroup).not.toHaveBeenCalled();
   });
 
   it("still records a cancellation of the stored subscription itself", async () => {
-    const builder = mockQuery({
-      data: { stripe_subscription_id: "sub_123", status: "active" },
-      error: null,
-    });
-    mockFrom.mockReturnValue(builder);
-    mockRpc.mockResolvedValue({ error: null });
+    billing.storedSubscription.mockResolvedValue({ stripe_subscription_id: "sub_123", status: "active" });
     const { upsertUserSubscription } = await import("./stripeSubscriptions");
 
     await upsertUserSubscription("user-1", makeSubscription({ status: "canceled" }), "cus_1");
 
-    expect(builder.upsert).toHaveBeenCalledWith(
+    expect(billing.upsertSubscriptionRow).toHaveBeenCalledWith(
       expect.objectContaining({ stripe_subscription_id: "sub_123", status: "canceled" }),
-      expect.anything(),
     );
   });
 
-  it("upserts the subscription row and syncs the plan group on success", async () => {
-    const upsertBuilder = mockQuery({ error: null });
-    mockFrom.mockReturnValue(upsertBuilder);
-    mockRpc.mockResolvedValue({ error: null });
+  it("still writes the row when the stored subscription can't be read", async () => {
+    billing.storedSubscription.mockRejectedValue(new Error("db hiccup"));
     const { upsertUserSubscription } = await import("./stripeSubscriptions");
 
     const result = await upsertUserSubscription("user-1", makeSubscription({ status: "active" }), "cus_1");
 
     expect(result).toEqual({ error: null });
-    expect(upsertBuilder.upsert).toHaveBeenCalledWith(
+    expect(billing.upsertSubscriptionRow).toHaveBeenCalledTimes(1);
+  });
+
+  it("upserts the subscription row and syncs the plan group on success", async () => {
+    const { upsertUserSubscription } = await import("./stripeSubscriptions");
+
+    const result = await upsertUserSubscription("user-1", makeSubscription({ status: "active" }), "cus_1");
+
+    expect(result).toEqual({ error: null });
+    expect(billing.upsertSubscriptionRow).toHaveBeenCalledWith(
       expect.objectContaining({
         user_id: "user-1",
         stripe_customer_id: "cus_1",
         stripe_subscription_id: "sub_123",
         status: "active",
         current_period_end: new Date(1735689600 * 1000).toISOString(),
+        stripe_price_id: "price_pro_monthly",
       }),
-      { onConflict: "user_id" },
     );
-    expect(mockRpc).toHaveBeenCalledWith(
-      "sync_plan_group_membership",
-      expect.objectContaining({ target_user_id: "user-1", is_active: true }),
-    );
+    expect(billing.syncPlanGroup).toHaveBeenCalledWith("user-1", expect.any(String), true);
   });
 
   it("short-circuits without syncing the plan group when the upsert itself fails", async () => {
-    mockFrom.mockReturnValue(mockQuery({ error: { message: "db down" } }));
+    billing.upsertSubscriptionRow.mockResolvedValue({ error: "db down" });
     const { upsertUserSubscription } = await import("./stripeSubscriptions");
 
     const result = await upsertUserSubscription("user-1", makeSubscription({}), "cus_1");
 
     expect(result).toEqual({ error: "db down" });
-    expect(mockRpc).not.toHaveBeenCalled();
+    expect(billing.syncPlanGroup).not.toHaveBeenCalled();
   });
 
   it("stores a null current_period_end when Stripe omits it", async () => {
-    const upsertBuilder = mockQuery({ error: null });
-    mockFrom.mockReturnValue(upsertBuilder);
-    mockRpc.mockResolvedValue({ error: null });
     const { upsertUserSubscription } = await import("./stripeSubscriptions");
 
     await upsertUserSubscription("user-1", makeSubscription({ currentPeriodEnd: undefined }), "cus_1");
 
-    expect(upsertBuilder.upsert).toHaveBeenCalledWith(
+    expect(billing.upsertSubscriptionRow).toHaveBeenCalledWith(
       expect.objectContaining({ current_period_end: null }),
-      { onConflict: "user_id" },
     );
   });
 
   it("marks the synced plan as inactive for a canceled subscription", async () => {
-    const upsertBuilder = mockQuery({ error: null });
-    mockFrom.mockReturnValue(upsertBuilder);
-    mockRpc.mockResolvedValue({ error: null });
     const { upsertUserSubscription } = await import("./stripeSubscriptions");
 
     await upsertUserSubscription("user-1", makeSubscription({ status: "canceled" }), "cus_1");
 
-    expect(mockRpc).toHaveBeenCalledWith(
-      "sync_plan_group_membership",
-      expect.objectContaining({ is_active: false }),
-    );
+    expect(billing.syncPlanGroup).toHaveBeenCalledWith("user-1", expect.any(String), false);
   });
 });

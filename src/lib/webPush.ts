@@ -1,6 +1,5 @@
-import { dbBackend, query } from "./db/client";
+import { query } from "./db/client";
 import * as neonPush from "./db/pushTokens";
-import { createAdminClient } from "./supabase";
 import { getRuntimeEnv, hasRuntimeEnv } from "./runtimeEnv";
 
 export type WebPushPayload = {
@@ -24,7 +23,7 @@ export function isVapidConfigured(): boolean {
 
 /**
  * A single browser push subscription (endpoint) can only belong to one
- * Supabase account at a time. If a different user previously subscribed
+ * account at a time. If a different user previously subscribed
  * this exact endpoint (e.g. a shared browser profile where a different
  * household member was signed in before), drop their subscription for it
  * first -- otherwise that other account's alerts would keep arriving as
@@ -32,21 +31,17 @@ export function isVapidConfigured(): boolean {
  * their data to whoever is signed in now.
  */
 export async function releasePushSubscriptionFromOtherUsers(
-  /** Unused (may be null) when DB_BACKEND=neon. */
-  supabase: ReturnType<typeof createAdminClient> | null,
+  /** Ignored (callers pass null); kept so call sites don't change. */
+  _unused: unknown,
   userId: string,
   endpoint: string,
 ): Promise<void> {
-  if (dbBackend() === "neon") {
-    try {
-      await query("delete from public.push_subscriptions where endpoint = $1 and user_id <> $2", [endpoint, userId]);
-    } catch (error) {
-      // Same outcome as the Supabase path (subscribing continues), but logged.
-      console.error("Failed to release push subscription from other users:", error instanceof Error ? error.message : error);
-    }
-    return;
+  try {
+    await query("delete from public.push_subscriptions where endpoint = $1 and user_id <> $2", [endpoint, userId]);
+  } catch (error) {
+    // Subscribing continues either way; the failure is logged.
+    console.error("Failed to release push subscription from other users:", error instanceof Error ? error.message : error);
   }
-  await supabase!.from("push_subscriptions").delete().eq("endpoint", endpoint).neq("user_id", userId);
 }
 
 export async function sendWebPushToUser(
@@ -61,29 +56,15 @@ export async function sendWebPushToUser(
     return { delivered: 0, failed: 0, skippedReason: "push_not_configured" };
   }
 
-  const neon = dbBackend() === "neon";
-  const supabase = neon ? null : createAdminClient();
-  let subs: Array<{ endpoint: string; p256dh: string; auth: string }> | null;
-  if (supabase) {
-    const result = await supabase
-      .from("push_subscriptions")
-      .select("endpoint, p256dh, auth")
-      .eq("user_id", userId);
-    if (result.error) {
-      console.error("Failed to load push subscriptions:", result.error.message);
-      return { delivered: 0, failed: 0, skippedReason: "push_load_failed" };
-    }
-    subs = result.data;
-  } else {
-    try {
-      subs = await neonPush.listPushSubscriptions(userId);
-    } catch (error) {
-      console.error("Failed to load push subscriptions:", error instanceof Error ? error.message : error);
-      return { delivered: 0, failed: 0, skippedReason: "push_load_failed" };
-    }
+  let subs: Array<{ endpoint: string; p256dh: string; auth: string }>;
+  try {
+    subs = await neonPush.listPushSubscriptions(userId);
+  } catch (error) {
+    console.error("Failed to load push subscriptions:", error instanceof Error ? error.message : error);
+    return { delivered: 0, failed: 0, skippedReason: "push_load_failed" };
   }
 
-  if (!subs || subs.length === 0) {
+  if (subs.length === 0) {
     return { delivered: 0, failed: 0, skippedReason: "push_no_subscription" };
   }
 
@@ -136,14 +117,8 @@ export async function sendWebPushToUser(
           await response.text().catch(() => ""),
         );
 
-        if (isStalePushStatus(response.status) && !supabase) {
+        if (isStalePushStatus(response.status)) {
           await neonPush.deletePushSubscription(userId, sub.endpoint);
-        } else if (isStalePushStatus(response.status) && supabase) {
-          await supabase
-            .from("push_subscriptions")
-            .delete()
-            .eq("user_id", userId)
-            .eq("endpoint", sub.endpoint);
         }
       } catch (error) {
         failed += 1;
@@ -167,28 +142,14 @@ export async function sendWebPushToUser(
 }
 
 export async function countPushSubscriptions(userId: string): Promise<number> {
-  if (dbBackend() === "neon") {
-    try {
-      const rows = await query<{ n: number }>(
-        "select count(*) as n from public.push_subscriptions where user_id = $1",
-        [userId],
-      );
-      return rows[0]?.n ?? 0;
-    } catch (error) {
-      console.error("Failed to count push subscriptions:", error instanceof Error ? error.message : error);
-      return 0;
-    }
-  }
-  const supabase = createAdminClient();
-  const { count, error } = await supabase
-    .from("push_subscriptions")
-    .select("id", { count: "exact", head: true })
-    .eq("user_id", userId);
-
-  if (error) {
-    console.error("Failed to count push subscriptions:", error.message);
+  try {
+    const rows = await query<{ n: number }>(
+      "select count(*) as n from public.push_subscriptions where user_id = $1",
+      [userId],
+    );
+    return rows[0]?.n ?? 0;
+  } catch (error) {
+    console.error("Failed to count push subscriptions:", error instanceof Error ? error.message : error);
     return 0;
   }
-
-  return count ?? 0;
 }

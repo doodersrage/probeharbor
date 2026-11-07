@@ -2,28 +2,17 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { DeviceSensor, DeviceWithSensors } from "./devices";
 import type { TempFeedResult, TempProbeConfig } from "./tempFeedConfig";
 
-function mockQuery(result: { data?: unknown; error?: unknown }) {
-  const builder: Record<string, unknown> = {};
-  for (const method of ["select", "eq", "in", "gte", "lt", "not", "order", "limit", "insert", "range"]) {
-    builder[method] = vi.fn(() => builder);
-  }
-  builder.maybeSingle = vi.fn(() => Promise.resolve(result));
-  (builder as { then: unknown }).then = (
-    resolve: (value: unknown) => unknown,
-    reject?: (reason: unknown) => unknown,
-  ) => Promise.resolve(result).then(resolve, reject);
-  return builder;
-}
-
-const mockFrom = vi.fn();
-// Default: latest_sensor_readings isn't deployed, so the per-sensor fallback runs.
-const mockRpc = vi.fn(() => Promise.resolve({ data: null, error: { message: "missing" } }));
-vi.mock("./supabase", () => ({
-  createServerClient: () => ({
-    from: (...args: unknown[]) => mockFrom(...args),
-    rpc: (...args: unknown[]) => mockRpc(...(args as [])),
-  }),
+const mockInsert = vi.fn();
+vi.mock("./db/ingest", () => ({
+  insertSensorReadings: (...args: unknown[]) => mockInsert(...args),
 }));
+
+const readings = vi.hoisted(() => ({
+  getDwellAnchor: vi.fn(),
+  getRecentNumericReadingSamples: vi.fn(),
+  fetchLatestSensorValuesResult: vi.fn(),
+}));
+vi.mock("./db/readings", () => readings);
 
 function sensor(overrides: Partial<DeviceSensor> = {}): DeviceSensor {
   return {
@@ -59,7 +48,8 @@ function device(overrides: Partial<DeviceWithSensors> = {}): DeviceWithSensors {
 }
 
 beforeEach(() => {
-  mockFrom.mockReset();
+  mockInsert.mockReset();
+  for (const fn of Object.values(readings)) fn.mockReset();
 });
 
 describe("insertSensorReadings", () => {
@@ -69,34 +59,22 @@ describe("insertSensorReadings", () => {
     const result = await insertSensorReadings([]);
 
     expect(result).toEqual({ error: null });
-    expect(mockFrom).not.toHaveBeenCalled();
+    expect(mockInsert).not.toHaveBeenCalled();
   });
 
-  it("inserts rows, filling in defaults for optional fields", async () => {
-    const mockInsert = vi.fn().mockResolvedValue({ error: null });
-    mockFrom.mockReturnValue({ insert: mockInsert });
+  it("stores the rows and passes the database result through", async () => {
+    mockInsert.mockResolvedValue({ error: null });
     const { insertSensorReadings } = await import("./sensorReadings");
+    const rows = [{ sensor_id: "s1", household_id: "h1", value_num: 40 }];
 
-    const result = await insertSensorReadings([
-      { sensor_id: "s1", household_id: "h1", value_num: 40 },
-    ]);
+    const result = await insertSensorReadings(rows);
 
     expect(result).toEqual({ error: null });
-    expect(mockFrom).toHaveBeenCalledWith("sensor_readings");
-    const [rows] = mockInsert.mock.calls[0]!;
-    expect(rows[0]).toMatchObject({
-      sensor_id: "s1",
-      household_id: "h1",
-      value_num: 40,
-      value_bool: null,
-      value_text: null,
-      meta: {},
-    });
-    expect(typeof rows[0].recorded_at).toBe("string");
+    expect(mockInsert).toHaveBeenCalledWith(rows);
   });
 
   it("returns the error message on failure", async () => {
-    mockFrom.mockReturnValue({ insert: vi.fn().mockResolvedValue({ error: { message: "boom" } }) });
+    mockInsert.mockResolvedValue({ error: "boom" });
     const { insertSensorReadings } = await import("./sensorReadings");
 
     const result = await insertSensorReadings([{ sensor_id: "s1", household_id: "h1" }]);
@@ -197,100 +175,10 @@ describe("buildReadingRowsFromTempResults", () => {
   });
 });
 
-describe("getRecentNumericReadings", () => {
-  it("returns numeric values oldest first, filtering out non-numbers", async () => {
-    // The query reads newest first (for paging); the result is oldest first.
-    mockFrom.mockReturnValue(
-      mockQuery({ data: [{ value_num: 41 }, { value_num: null }, { value_num: 40 }] }),
-    );
-    const { getRecentNumericReadings } = await import("./sensorReadings");
-
-    const result = await getRecentNumericReadings("sensor-1", "2024-01-01");
-
-    expect(result).toEqual([40, 41]);
-  });
-
-  it("returns an empty array when there is no data", async () => {
-    mockFrom.mockReturnValue(mockQuery({ data: null }));
-    const { getRecentNumericReadings } = await import("./sensorReadings");
-
-    expect(await getRecentNumericReadings("sensor-1", "2024-01-01")).toEqual([]);
-  });
-});
-
-describe("getRecentNumericReadingSamples", () => {
-  it("returns only rows with both a numeric value and a string timestamp", async () => {
-    mockFrom.mockReturnValue(
-      mockQuery({
-        data: [
-          { value_num: 40, recorded_at: "2024-01-01T00:00:00Z" },
-          { value_num: null, recorded_at: "2024-01-01T01:00:00Z" },
-          { value_num: 41, recorded_at: null },
-        ],
-      }),
-    );
-    const { getRecentNumericReadingSamples } = await import("./sensorReadings");
-
-    const result = await getRecentNumericReadingSamples("sensor-1", "2024-01-01");
-
-    expect(result).toEqual([{ at: "2024-01-01T00:00:00Z", tempF: 40 }]);
-  });
-});
-
-describe("long windows keep the newest readings (freeze runway, energy card)", () => {
-  // A week of readings every 5 minutes: 2016 rows, past the 1000-row page.
-  const start = Date.parse("2026-11-01T00:00:00Z");
-  const week = Array.from({ length: 2016 }, (_, i) => ({
-    value_num: i,
-    recorded_at: new Date(start + i * 5 * 60000).toISOString(),
-  }));
-  const newestFirst = [...week].reverse();
-  const pagedFrom = () => {
-    const q = mockQuery({ data: [] });
-    q.range = vi.fn((from: number, to: number) => Promise.resolve({ data: newestFirst.slice(from, to + 1), error: null }));
-    return q;
-  };
-
-  it("getRecentNumericReadingSamples returns the whole week, ending with the newest reading", async () => {
-    mockFrom.mockImplementation(pagedFrom);
-    const { getRecentNumericReadingSamples } = await import("./sensorReadings");
-
-    const result = await getRecentNumericReadingSamples("sensor-1", "2026-11-01T00:00:00Z");
-
-    expect(result).toHaveLength(2016);
-    expect(result[0]).toEqual({ at: week[0]!.recorded_at, tempF: 0 });
-    expect(result.at(-1)).toEqual({ at: week[2015]!.recorded_at, tempF: 2015 });
-  });
-
-  it("getRecentNumericReadings does too", async () => {
-    mockFrom.mockImplementation(pagedFrom);
-    const { getRecentNumericReadings } = await import("./sensorReadings");
-
-    const result = await getRecentNumericReadings("sensor-1", "2026-11-01T00:00:00Z");
-
-    expect(result).toHaveLength(2016);
-    expect(result.at(-1)).toBe(2015);
-  });
-
-  it("a failed read is empty and logged, as before", async () => {
-    mockFrom.mockReturnValue(mockQuery({ data: null, error: { message: "timeout" } }));
-    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
-    const { getRecentNumericReadingSamples } = await import("./sensorReadings");
-    expect(await getRecentNumericReadingSamples("sensor-1", "2026-11-01T00:00:00Z")).toEqual([]);
-    expect(spy).toHaveBeenCalled();
-    spy.mockRestore();
-  });
-});
-
 describe("getFreezeDwellSamples", () => {
   it("prepends the latest pre-cutoff reading to the window samples", async () => {
-    mockFrom
-      .mockReturnValueOnce(
-        mockQuery({ data: [{ value_num: 31, recorded_at: "2024-01-01T11:20:00Z" }] }),
-      )
-      .mockReturnValueOnce(
-        mockQuery({ data: [{ value_num: 30, recorded_at: "2024-01-01T11:40:00Z" }] }),
-      );
+    readings.getDwellAnchor.mockResolvedValue([{ at: "2024-01-01T11:20:00Z", tempF: 31 }]);
+    readings.getRecentNumericReadingSamples.mockResolvedValue([{ at: "2024-01-01T11:40:00Z", tempF: 30 }]);
     const { getFreezeDwellSamples } = await import("./sensorReadings");
 
     const result = await getFreezeDwellSamples("sensor-1", "2024-01-01T11:30:00.000Z");
@@ -299,223 +187,26 @@ describe("getFreezeDwellSamples", () => {
       { at: "2024-01-01T11:20:00Z", tempF: 31 },
       { at: "2024-01-01T11:40:00Z", tempF: 30 },
     ]);
-  });
-});
-
-describe("fetchRecentBoolReadings", () => {
-  it("returns only rows with a boolean value", async () => {
-    mockFrom.mockReturnValue(
-      mockQuery({
-        data: [
-          { value_bool: true, recorded_at: "2024-01-01T00:00:00Z" },
-          { value_bool: null, recorded_at: "2024-01-01T01:00:00Z" },
-        ],
-      }),
+    // The anchor is looked for in the 24 hours before the cutoff.
+    expect(readings.getDwellAnchor).toHaveBeenCalledWith(
+      "sensor-1",
+      "2023-12-31T11:30:00.000Z",
+      "2024-01-01T11:30:00.000Z",
     );
-    const { fetchRecentBoolReadings } = await import("./sensorReadings");
-
-    const result = await fetchRecentBoolReadings("sensor-1", "2024-01-01");
-
-    expect(result).toEqual([{ value: true, recordedAt: "2024-01-01T00:00:00Z" }]);
-  });
-
-  it("returns an empty array when there is no data", async () => {
-    mockFrom.mockReturnValue(mockQuery({ data: null }));
-    const { fetchRecentBoolReadings } = await import("./sensorReadings");
-
-    expect(await fetchRecentBoolReadings("sensor-1", "2024-01-01")).toEqual([]);
-  });
-
-  it("reads a whole day of once-a-minute door states, including the newest (not just the oldest 1000)", async () => {
-    // 1440 readings, door closed except opened for the last 10 minutes.
-    const start = Date.parse("2026-10-28T12:00:00Z");
-    const newestFirst = Array.from({ length: 1440 }, (_, i) => ({
-      value_bool: i >= 1430,
-      recorded_at: new Date(start + i * 60000).toISOString(),
-    })).reverse();
-    mockFrom.mockImplementation(() => {
-      const q = mockQuery({ data: [] });
-      q.range = vi.fn((from: number, to: number) => Promise.resolve({ data: newestFirst.slice(from, to + 1), error: null }));
-      return q;
-    });
-    const { fetchRecentBoolReadings } = await import("./sensorReadings");
-
-    const result = await fetchRecentBoolReadings("door-1", "2026-10-28T12:00:00Z");
-
-    expect(result).toHaveLength(1440);
-    expect(result[0]?.recordedAt).toBe("2026-10-28T12:00:00.000Z");
-    expect(result.at(-1)).toEqual({ value: true, recordedAt: new Date(start + 1439 * 60000).toISOString() });
-  });
-
-  it("returns no readings (and logs) when the query fails", async () => {
-    mockFrom.mockReturnValue(mockQuery({ data: null, error: { message: "timeout" } }));
-    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
-    const { fetchRecentBoolReadings } = await import("./sensorReadings");
-    expect(await fetchRecentBoolReadings("door-1", "2026-10-28T12:00:00Z")).toEqual([]);
-    expect(spy).toHaveBeenCalled();
-    spy.mockRestore();
-  });
-});
-
-describe("fetchLatestSensorValuesResult", () => {
-  it("reports a failed devices query instead of an empty household", async () => {
-    mockFrom.mockReturnValue(mockQuery({ data: null, error: { message: "db down" } }));
-    const { fetchLatestSensorValuesResult, fetchLatestSensorValues } = await import("./sensorReadings");
-
-    expect(await fetchLatestSensorValuesResult("house-1")).toEqual({ rows: [], error: "db down" });
-    // The plain helper keeps its old shape for its many callers.
-    expect(await fetchLatestSensorValues("house-1")).toEqual([]);
-  });
-
-  it("reports a failed sensors query", async () => {
-    mockFrom
-      .mockReturnValueOnce(mockQuery({ data: [{ id: "device-1", name: "Garage", space: null }] }))
-      .mockReturnValueOnce(mockQuery({ data: null, error: { message: "sensors timeout" } }));
-    const { fetchLatestSensorValuesResult } = await import("./sensorReadings");
-
-    expect(await fetchLatestSensorValuesResult("house-1")).toEqual({ rows: [], error: "sensors timeout" });
-  });
-
-  it("reports a failed per-sensor reading query in the fallback path", async () => {
-    mockFrom
-      .mockReturnValueOnce(mockQuery({ data: [{ id: "device-1", name: "Garage", space: null }] }))
-      .mockReturnValueOnce(
-        mockQuery({
-          data: [
-            { id: "sensor-1", device_id: "device-1", key: "avg", label: "Garage", kind: "temperature", unit: "F", visible: true, sort_order: 0, offset_num: 0 },
-          ],
-        }),
-      )
-      .mockReturnValueOnce(mockQuery({ data: null, error: { message: "readings timeout" } }));
-    const { fetchLatestSensorValuesResult } = await import("./sensorReadings");
-
-    const result = await fetchLatestSensorValuesResult("house-1");
-    expect(result.rows).toEqual([]);
-    expect(result.error).toBe("readings timeout");
-  });
-
-  it("has no error for a household with no devices", async () => {
-    mockFrom.mockReturnValue(mockQuery({ data: [] }));
-    const { fetchLatestSensorValuesResult } = await import("./sensorReadings");
-
-    expect(await fetchLatestSensorValuesResult("house-1")).toEqual({ rows: [], error: null });
+    expect(readings.getRecentNumericReadingSamples).toHaveBeenCalledWith("sensor-1", "2024-01-01T11:30:00.000Z");
   });
 });
 
 describe("fetchLatestSensorValues", () => {
-  it("returns an empty array when the household has no devices", async () => {
-    mockFrom.mockReturnValue(mockQuery({ data: [] }));
+  it("returns the rows of the result, a failed lookup as no rows", async () => {
+    const row = { sensor: sensor(), deviceName: "Garage", value_num: 40, value_bool: null, value_text: null, recorded_at: "2024-01-01T00:00:00Z" };
+    readings.fetchLatestSensorValuesResult
+      .mockResolvedValueOnce({ rows: [row], error: null })
+      .mockResolvedValueOnce({ rows: [], error: "connection lost" });
     const { fetchLatestSensorValues } = await import("./sensorReadings");
 
+    expect(await fetchLatestSensorValues("house-1")).toEqual([row]);
     expect(await fetchLatestSensorValues("house-1")).toEqual([]);
-  });
-
-  it("returns an empty array when there are no visible sensors", async () => {
-    mockFrom
-      .mockReturnValueOnce(mockQuery({ data: [{ id: "device-1", name: "Garage", space: null }] }))
-      .mockReturnValueOnce(mockQuery({ data: [] }));
-    const { fetchLatestSensorValues } = await import("./sensorReadings");
-
-    expect(await fetchLatestSensorValues("house-1")).toEqual([]);
-  });
-
-  it("joins the latest reading per sensor and applies calibration offsets to numeric temp/humidity", async () => {
-    mockFrom
-      .mockReturnValueOnce(mockQuery({ data: [{ id: "device-1", name: "Garage", space: "Attached" }] }))
-      .mockReturnValueOnce(
-        mockQuery({
-          data: [
-            {
-              id: "sensor-1",
-              device_id: "device-1",
-              key: "avg",
-              label: "Garage",
-              kind: "temperature",
-              unit: "F",
-              visible: true,
-              sort_order: 0,
-              offset_num: 2,
-            },
-          ],
-        }),
-      )
-      .mockReturnValueOnce(
-        mockQuery({
-          data: {
-            value_num: 40,
-            value_bool: null,
-            value_text: null,
-            recorded_at: "2024-01-01T00:00:00Z",
-          },
-        }),
-      );
-    const { fetchLatestSensorValues } = await import("./sensorReadings");
-
-    const result = await fetchLatestSensorValues("house-1");
-
-    expect(result).toHaveLength(1);
-    expect(result[0]).toMatchObject({
-      deviceName: "Garage",
-      deviceSpace: "Attached",
-      value_num: 42,
-      recorded_at: "2024-01-01T00:00:00Z",
-    });
-  });
-
-  it("fetches every sensor's latest reading in one rpc call", async () => {
-    const tempSensor = {
-      id: "sensor-1",
-      device_id: "device-1",
-      key: "temp_air",
-      label: "Garage",
-      kind: "temperature",
-      unit: "F",
-      visible: true,
-      sort_order: 0,
-      offset_num: 0,
-    };
-    mockFrom
-      .mockReturnValueOnce(mockQuery({ data: [{ id: "device-1", name: "Garage", space: null }] }))
-      .mockReturnValueOnce(
-        mockQuery({ data: [tempSensor, { ...tempSensor, id: "sensor-2", key: "pressure_air", kind: "pressure" }] }),
-      );
-    mockRpc.mockResolvedValueOnce({
-      data: [{ sensor_id: "sensor-2", value_num: 1013, value_bool: null, value_text: null, recorded_at: "2024-01-01T00:00:00Z" }],
-      error: null,
-    } as never);
-    const { fetchLatestSensorValues } = await import("./sensorReadings");
-
-    const result = await fetchLatestSensorValues("house-1");
-
-    expect(mockRpc).toHaveBeenCalledWith("latest_sensor_readings", { p_sensor_ids: ["sensor-1", "sensor-2"] });
-    expect(mockFrom).toHaveBeenCalledTimes(2);
-    expect(result).toHaveLength(1);
-    expect(result[0]).toMatchObject({ value_num: 1013, sensor: { id: "sensor-2" } });
-  });
-
-  it("skips a sensor that has no reading yet", async () => {
-    mockFrom
-      .mockReturnValueOnce(mockQuery({ data: [{ id: "device-1", name: "Garage", space: null }] }))
-      .mockReturnValueOnce(
-        mockQuery({
-          data: [
-            {
-              id: "sensor-1",
-              device_id: "device-1",
-              key: "avg",
-              label: "Garage",
-              kind: "temperature",
-              unit: "F",
-              visible: true,
-              sort_order: 0,
-              offset_num: 0,
-            },
-          ],
-        }),
-      )
-      .mockReturnValueOnce(mockQuery({ data: null }));
-    const { fetchLatestSensorValues } = await import("./sensorReadings");
-
-    expect(await fetchLatestSensorValues("house-1")).toEqual([]);
+    expect(readings.fetchLatestSensorValuesResult).toHaveBeenCalledWith("house-1");
   });
 });

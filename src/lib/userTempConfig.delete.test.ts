@@ -14,13 +14,17 @@ vi.mock("./devices", () => ({
   savePullDevicesForHousehold,
 }));
 vi.mock("./households", () => ({ getOrCreateHouseholdForUser: vi.fn().mockResolvedValue({ householdId: "h1" }) }));
-// Legacy per-user tables are empty: every query resolves to no rows.
-vi.mock("./supabase", () => {
-  const chain: Record<string, unknown> = {};
-  for (const method of ["select", "delete", "eq", "order"]) chain[method] = () => chain;
-  chain.then = (resolve: (value: unknown) => unknown) => Promise.resolve({ data: [], error: null }).then(resolve);
-  return { createServerClient: () => ({ from: () => chain }) };
-});
+// Legacy per-user tables are empty.
+const clearLegacy = vi.fn().mockResolvedValue(undefined);
+vi.mock("./db/legacyTempConfig", () => ({
+  legacyFeeds: vi.fn().mockResolvedValue([]),
+  legacyProbes: vi.fn().mockResolvedValue([]),
+  insertPullDevice: vi.fn(),
+  updatePullDevice: vi.fn(),
+  ensureProbeSensors: vi.fn(),
+  clearLegacy,
+  usersWithLegacyFeeds: vi.fn().mockResolvedValue([]),
+}));
 
 beforeEach(() => savePullDevicesForHousehold.mockClear());
 
@@ -30,6 +34,8 @@ describe("deleteUserTempFeed", () => {
     const result = await deleteUserTempFeed("user-1", "dev-example");
     expect(result.error).toBeNull();
     expect(savePullDevicesForHousehold).toHaveBeenCalledWith("h1", [], []);
+    // The old per-user rows are cleared too, so the feed can't come back from them.
+    expect(clearLegacy).toHaveBeenCalledWith("user-1");
   });
 });
 

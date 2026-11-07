@@ -1,6 +1,6 @@
 import { fetchWeatherSnapshot, resolveWeatherCityId } from "./FetchWeather";
 import { fetchWeatherSnapshotForConfig, getPersonalWeatherConfig } from "./weatherContext";
-import type { User } from "@supabase/supabase-js";
+import type { User } from "./appUser";
 import type { ChartPoint } from "./garageTempsHistory";
 
 export type IndoorOutdoorDelta = {

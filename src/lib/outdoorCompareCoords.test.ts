@@ -12,20 +12,16 @@ vi.mock("./households", () => ({
   getUserHouseholdId: (...a: unknown[]) => mockGetUserHouseholdId(...a),
 }));
 
-const mockMaybeSingle = vi.fn();
-const mockFrom = vi.fn();
-vi.mock("./supabase", () => ({
-  createServerClient: () => ({ from: (...a: unknown[]) => mockFrom(...a) }),
+const mockGetHouseholdFields = vi.fn();
+vi.mock("./householdRecord", () => ({
+  getHouseholdFields: (...a: unknown[]) => mockGetHouseholdFields(...a),
 }));
 
 beforeEach(() => {
   mockFetchWeatherSnapshotForConfig.mockReset().mockResolvedValue(null);
   mockGetPersonalWeatherConfig.mockReset().mockReturnValue({ source: "openweather" });
   mockGetUserHouseholdId.mockReset().mockResolvedValue(null);
-  mockMaybeSingle.mockReset().mockResolvedValue({ data: null, error: null });
-  mockFrom.mockReset().mockReturnValue({
-    select: () => ({ eq: () => ({ maybeSingle: mockMaybeSingle }) }),
-  });
+  mockGetHouseholdFields.mockReset().mockResolvedValue({ data: null, error: null });
 });
 
 describe("resolveOutdoorCompareCoords", () => {
@@ -61,14 +57,16 @@ describe("resolveOutdoorCompareCoords", () => {
   it("falls back to the household freeze map when the snapshot has no lat/lon", async () => {
     mockFetchWeatherSnapshotForConfig.mockResolvedValue({ lat: null, lon: null });
     mockGetUserHouseholdId.mockResolvedValue("house-1");
-    mockMaybeSingle.mockResolvedValue({
+    mockGetHouseholdFields.mockResolvedValue({
       data: { freeze_map_lat: 5, freeze_map_lon: 6, freeze_map_label: "My Freeze Map" },
+      error: null,
     });
     const { resolveOutdoorCompareCoords } = await import("./outdoorCompareCoords");
 
     const result = await resolveOutdoorCompareCoords("user-1", { id: "user-1" } as never);
 
     expect(result).toEqual({ lat: 5, lon: 6, label: "My Freeze Map" });
+    expect(mockGetHouseholdFields).toHaveBeenCalledWith("house-1", ["freeze_map_lat", "freeze_map_lon", "freeze_map_label"]);
   });
 
   it("returns null when there is no household", async () => {
@@ -76,12 +74,12 @@ describe("resolveOutdoorCompareCoords", () => {
     const { resolveOutdoorCompareCoords } = await import("./outdoorCompareCoords");
 
     expect(await resolveOutdoorCompareCoords("user-1")).toBeNull();
-    expect(mockFrom).not.toHaveBeenCalled();
+    expect(mockGetHouseholdFields).not.toHaveBeenCalled();
   });
 
   it("returns null when the household lookup errors", async () => {
     mockGetUserHouseholdId.mockResolvedValue("house-1");
-    mockMaybeSingle.mockResolvedValue({ data: null, error: { message: "db down" } });
+    mockGetHouseholdFields.mockResolvedValue({ data: null, error: "db down" });
     const { resolveOutdoorCompareCoords } = await import("./outdoorCompareCoords");
 
     expect(await resolveOutdoorCompareCoords("user-1")).toBeNull();
@@ -91,17 +89,18 @@ describe("resolveOutdoorCompareCoords", () => {
     mockGetUserHouseholdId.mockResolvedValue("house-1");
     const { resolveOutdoorCompareCoords } = await import("./outdoorCompareCoords");
 
-    mockMaybeSingle.mockResolvedValue({ data: { freeze_map_lat: null, freeze_map_lon: 6 } });
+    mockGetHouseholdFields.mockResolvedValue({ data: { freeze_map_lat: null, freeze_map_lon: 6 }, error: null });
     expect(await resolveOutdoorCompareCoords("user-1")).toBeNull();
 
-    mockMaybeSingle.mockResolvedValue({ data: { freeze_map_lat: NaN, freeze_map_lon: 6 } });
+    mockGetHouseholdFields.mockResolvedValue({ data: { freeze_map_lat: NaN, freeze_map_lon: 6 }, error: null });
     expect(await resolveOutdoorCompareCoords("user-1")).toBeNull();
   });
 
   it("falls back to 'Freeze map location' when the row has no label", async () => {
     mockGetUserHouseholdId.mockResolvedValue("house-1");
-    mockMaybeSingle.mockResolvedValue({
+    mockGetHouseholdFields.mockResolvedValue({
       data: { freeze_map_lat: 5, freeze_map_lon: 6, freeze_map_label: "   " },
+      error: null,
     });
     const { resolveOutdoorCompareCoords } = await import("./outdoorCompareCoords");
 

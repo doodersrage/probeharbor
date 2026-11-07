@@ -1,6 +1,4 @@
-import { dbBackend } from "./db/client";
 import * as neonAccounts from "./db/accounts";
-import { createAdminClient, createServerClient } from "./supabase";
 import { createStripeClient, isActiveSubscriptionStatus } from "./stripe";
 import { getUserSubscription } from "./stripeSubscriptions";
 import { notifyOps } from "./opsNotify";
@@ -87,83 +85,17 @@ export async function deleteUserAccount(
 ): Promise<{ error: string | null }> {
   await cancelStripeSubscriptionForDeletedAccount(userId);
 
-  if (dbBackend() === "neon") {
-    let deletedNeon: string[];
-    try {
-      deletedNeon = await neonAccounts.releaseOwnedHouseholds(userId);
-    } catch (error) {
-      return { error: error instanceof Error ? error.message : String(error) };
-    }
-    await deleteStoredFilesForAccount(() => neonAccounts.chartShareKeys(userId), deletedNeon);
-    try {
-      await neonAccounts.deleteUserRow(userId);
-      return { error: null };
-    } catch (error) {
-      return { error: error instanceof Error ? error.message : String(error) };
-    }
+  let deletedHouseholdIds: string[];
+  try {
+    deletedHouseholdIds = await neonAccounts.releaseOwnedHouseholds(userId);
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : String(error) };
   }
-
-  const supabase = createServerClient();
-
-  // Remove owned households where user is sole owner (cascade deletes devices)
-  const deletedHouseholdIds: string[] = [];
-  const { data: owned } = await supabase
-    .from("household_members")
-    .select("household_id")
-    .eq("user_id", userId)
-    .eq("role", "owner");
-
-  for (const row of owned ?? []) {
-    const { count } = await supabase
-      .from("household_members")
-      .select("id", { count: "exact", head: true })
-      .eq("household_id", row.household_id);
-
-    if ((count ?? 0) <= 1) {
-      await supabase.from("households").delete().eq("id", row.household_id);
-      deletedHouseholdIds.push(row.household_id);
-    } else {
-      // This household has other members and this deleted account is its
-      // only owner. Promote someone else to owner first -- otherwise the
-      // household is left with members but no owner, and nobody can rename
-      // it, manage billing, or invite/remove members afterward. Prefer an
-      // existing "member" (already trusted with owner-level management),
-      // falling back to whoever else has been in the household longest.
-      const { data: candidates } = await supabase
-        .from("household_members")
-        .select("id, role, created_at")
-        .eq("household_id", row.household_id)
-        .neq("user_id", userId)
-        .order("created_at", { ascending: true });
-
-      const promotee =
-        (candidates ?? []).find((member) => member.role === "member") ??
-        candidates?.[0] ??
-        null;
-
-      if (promotee) {
-        await supabase
-          .from("household_members")
-          .update({ role: "owner" })
-          .eq("id", promotee.id);
-      }
-
-      await supabase
-        .from("household_members")
-        .delete()
-        .eq("household_id", row.household_id)
-        .eq("user_id", userId);
-    }
+  await deleteStoredFilesForAccount(() => neonAccounts.chartShareKeys(userId), deletedHouseholdIds);
+  try {
+    await neonAccounts.deleteUserRow(userId);
+    return { error: null };
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : String(error) };
   }
-
-  await supabase.from("alert_settings").delete().eq("user_id", userId);
-  await deleteStoredFilesForAccount(async () => {
-    const { data } = await supabase.from("chart_share_tokens").select("r2_key").eq("user_id", userId);
-    return (data ?? []).map((row) => row.r2_key);
-  }, deletedHouseholdIds);
-
-  const admin = createAdminClient();
-  const { error } = await admin.auth.admin.deleteUser(userId);
-  return { error: error?.message ?? null };
 }
-

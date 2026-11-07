@@ -1,4 +1,4 @@
-import { refreshCookiesAfterMetadataWrite, updateSessionUserMetadata } from "../../lib/sessionMetadata";
+import { updateSessionUserMetadata } from "../../lib/sessionMetadata";
 import type { APIRoute } from "astro";
 import { isLocale, localizePath, splitLocalePath } from "../../i18n/locales";
 import { isLocalizablePath } from "../../i18n/routes";
@@ -34,9 +34,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
 
   const { session, user } = await getAuthFromRequest(request, cookies);
   if (session && user && user.user_metadata?.locale !== locale) {
-    const { error } = await updateSessionUserMetadata(session.access_token, session.refresh_token, { locale });
-    // Supabase: the access token carries user_metadata; refresh so the next page sees the new language.
-    if (!error) await refreshCookiesAfterMetadataWrite(cookies, session.refresh_token);
+    await updateSessionUserMetadata(session.access_token, session.refresh_token, { locale });
   }
 
   const cut = target.search(/[?#]/);

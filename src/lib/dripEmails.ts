@@ -1,7 +1,5 @@
-import { dbBackend } from "./db/client";
 import * as neonEmail from "./db/emailJobs";
 import { getUserRecord } from "./userRecords";
-import { createAdminClient } from "./supabase";
 import { PRO_MAX_DEVICES } from "./entitlements";
 import { resolveSiteUrl } from "./schemaMarkup";
 import {
@@ -165,39 +163,6 @@ export function dripEmailIdForStage(stageId: DripStageId, hasReading: boolean): 
   return stageId === "day3" ? "day3_setup" : "day7_setup";
 }
 
-type AdminClient = ReturnType<typeof createAdminClient>;
-
-/** Any push device that has posted, or any pull-feed reading. Errors count as "yes" so the usual email goes out. */
-async function userHasFirstReading(admin: AdminClient, userId: string): Promise<boolean> {
-  try {
-    const { data: memberships, error: memberError } = await admin
-      .from("household_members")
-      .select("household_id")
-      .eq("user_id", userId);
-    if (memberError) return true;
-    const householdIds = (memberships ?? []).map((m) => m.household_id);
-    if (householdIds.length > 0) {
-      const { data: seen, error } = await admin
-        .from("devices")
-        .select("id")
-        .in("household_id", householdIds)
-        .not("last_seen_at", "is", null)
-        .limit(1);
-      if (error) return true;
-      if ((seen ?? []).length > 0) return true;
-    }
-    const { data: pulled, error: pullError } = await admin
-      .from("garage_temps")
-      .select("id")
-      .eq("user_id", userId)
-      .limit(1);
-    if (pullError) return true;
-    return (pulled ?? []).length > 0;
-  } catch {
-    return true;
-  }
-}
-
 export async function sendDripEmailsForAllUsers(
   deps: { hasFirstReading?: (userId: string) => Promise<boolean> } = {},
 ): Promise<{
@@ -206,27 +171,16 @@ export async function sendDripEmailsForAllUsers(
   errors: string[];
   restricted: number;
 }> {
-  const neon = dbBackend() === "neon";
-  const admin = neon ? null : createAdminClient();
-  const hasFirstReading =
-    deps.hasFirstReading ??
-    ((userId: string) => (admin ? userHasFirstReading(admin, userId) : neonEmail.userHasFirstReading(userId)));
+  const hasFirstReading = deps.hasFirstReading ?? ((userId: string) => neonEmail.userHasFirstReading(userId));
   const siteUrl = resolveSiteUrl(null);
   let sent = 0;
   let skipped = 0;
   let restricted = 0;
   const errors: string[] = [];
 
-  const settingsRows = admin
-    ? (
-        await admin
-          .from("alert_settings")
-          .select("user_id, drip_emails_enabled, drip_email_stage, last_drip_email_at")
-          .eq("drip_emails_enabled", true)
-      ).data
-    : await neonEmail.dripCandidates();
+  const settingsRows = await neonEmail.dripCandidates();
 
-  for (const row of settingsRows ?? []) {
+  for (const row of settingsRows) {
     try {
       const user = await getUserRecord(row.user_id);
       if (!user?.email || !user.created_at) {
@@ -276,18 +230,7 @@ export async function sendDripEmailsForAllUsers(
           headers: unsubscribeHeaders(unsubscribeUrl),
         });
       }
-      if (admin) {
-        await admin
-          .from("alert_settings")
-          .update({
-            drip_email_stage: nextStage.day,
-            last_drip_email_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          })
-          .eq("user_id", row.user_id);
-      } else {
-        await neonEmail.stampSettings(row.user_id, "last_drip_email_at", { touchUpdatedAt: true, dripStage: nextStage.day });
-      }
+      await neonEmail.stampSettings(row.user_id, "last_drip_email_at", { touchUpdatedAt: true, dripStage: nextStage.day });
       if (emailId) sent += 1;
       else skipped += 1;
     } catch (error) {

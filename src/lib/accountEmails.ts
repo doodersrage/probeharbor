@@ -1,6 +1,6 @@
 /**
- * Account emails the app sends itself once sign-in runs on Better Auth
- * (DB_BACKEND=neon). Supabase sent these from supabase/templates/ before.
+ * Account emails the app sends itself (sign-in runs on Better Auth).
+ * Supabase sent these from supabase/templates/ before.
  *
  * Links go to the existing landing route, /api/auth/confirm, so the email
  * URL format stays `...?token_hash=...&type=...` on both backends.

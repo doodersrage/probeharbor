@@ -1,7 +1,4 @@
-import { dbBackend } from "./db/client";
 import * as neonThermostats from "./db/thermostats";
-import { createServerClient } from "./supabase";
-import { fetchNewestFirstPages } from "./pagedRows";
 import type { ChartPoint } from "./garageTempsHistory";
 import { getUserEntitlements } from "./entitlements";
 import { listConnectionsForHousehold } from "./thermostatConnections";
@@ -38,10 +35,7 @@ export type ThermostatSnapshotRow = {
 export async function insertThermostatSnapshot(
   row: ThermostatSnapshotRow,
 ): Promise<{ error: string | null }> {
-  if (dbBackend() === "neon") return neonThermostats.insertSnapshot(row);
-  const supabase = createServerClient();
-  const { error } = await supabase.from("thermostat_snapshots").insert(row);
-  return { error: error?.message ?? null };
+  return neonThermostats.insertSnapshot(row);
 }
 
 export async function collectThermostatSnapshotsForHousehold(
@@ -145,43 +139,16 @@ export async function fetchThermostatSnapshotChartPoints(
 ): Promise<ChartPoint[]> {
   const defaultFrom = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
   const from = filters.from ?? defaultFrom;
-  if (dbBackend() === "neon") {
-    try {
-      const series = await neonThermostats.snapshotSeries(householdId, from, filters.to);
-      if (series.capped) console.warn(`Thermostat chart for household ${householdId}: row cap hit; oldest snapshots not shown`);
-      return series.rows
-        .map((row) => chartPointFromSnapshot(row.recorded_at, row.ambient_temp_f, locale))
-        .filter((point): point is ChartPoint => point != null);
-    } catch (error) {
-      console.error("fetchThermostatSnapshotChartPoints failed:", error instanceof Error ? error.message : error);
-      return [];
-    }
-  }
-  const supabase = createServerClient();
-
-  // Snapshots every 15 min are ~2900 rows in 30 days, past the 1000-row
-  // limit: page through, newest first (reading oldest-first stopped the
-  // Overview house line ~10 days in).
-  const { rows, error, capped } = await fetchNewestFirstPages((start, end) => {
-    let query = supabase
-      .from("thermostat_snapshots")
-      .select("recorded_at, ambient_temp_f")
-      .eq("household_id", householdId)
-      .gte("recorded_at", from);
-    if (filters.to) query = query.lte("recorded_at", filters.to);
-    return query.order("recorded_at", { ascending: false }).range(start, end);
-  });
-  if (error) {
-    console.error("fetchThermostatSnapshotChartPoints failed:", error);
+  try {
+    const series = await neonThermostats.snapshotSeries(householdId, from, filters.to);
+    if (series.capped) console.warn(`Thermostat chart for household ${householdId}: row cap hit; oldest snapshots not shown`);
+    return series.rows
+      .map((row) => chartPointFromSnapshot(row.recorded_at, row.ambient_temp_f, locale))
+      .filter((point): point is ChartPoint => point != null);
+  } catch (error) {
+    console.error("fetchThermostatSnapshotChartPoints failed:", error instanceof Error ? error.message : error);
     return [];
   }
-  if (capped) console.warn(`Thermostat chart for household ${householdId}: row cap hit; oldest snapshots not shown`);
-
-  return rows
-    .map((row) =>
-      chartPointFromSnapshot(row.recorded_at, row.ambient_temp_f, locale),
-    )
-    .filter((point): point is ChartPoint => point != null);
 }
 
 export function latestThermostatSnapshotToDisplay(

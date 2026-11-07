@@ -1,12 +1,9 @@
-import { dbBackend } from "./db/client";
 import * as neonRemaining from "./db/remaining";
 import { formatDurationLabel, formatHitsAtLabel, type TimeToFreezeProjection } from "./spaceThermalModel";
 import { tempUnitLabel, toDisplayDelta, toDisplayTemp } from "./temperatureFormat";
 import { fmt, formatNumber } from "../i18n/format";
 import type { Locale } from "../i18n/locales";
 import { overviewCardsMessages } from "../i18n/messages/app/overviewCards";
-import { createServerClient } from "./supabase";
-import type { Json } from "../types/supabase";
 
 /**
  * "Why did the time-to-freeze estimate move?" Keeps one earlier estimate per
@@ -137,28 +134,12 @@ export async function compareAndStoreFreezeEstimate(
   useCelsius = false,
 ): Promise<FreezeEstimateChange | null> {
   try {
-    const neon = dbBackend() === "neon";
-    const supabase = neon ? null : createServerClient();
-    const data = supabase
-      ? (
-          await supabase
-            .from("freeze_estimate_snapshots")
-            .select("data, updated_at")
-            .eq("household_id", householdId)
-            .maybeSingle()
-        ).data
-      : await neonRemaining.getEstimateSnapshot(householdId);
+    const data = await neonRemaining.getEstimateSnapshot(householdId);
     const previous = (data?.data as unknown as FreezeEstimateSnapshot | undefined) ?? null;
     const change = explainEstimateChange(previous, next, timeZone, nowMs, locale, useCelsius);
     const storedAt = data?.updated_at ? Date.parse(data.updated_at) : NaN;
     if (!Number.isFinite(storedAt) || nowMs - storedAt >= SNAPSHOT_REFRESH_MS) {
-      if (supabase) {
-        await supabase
-          .from("freeze_estimate_snapshots")
-          .upsert({ household_id: householdId, data: next as unknown as Json, updated_at: new Date(nowMs).toISOString() });
-      } else {
-        await neonRemaining.saveEstimateSnapshot(householdId, next, new Date(nowMs).toISOString());
-      }
+      await neonRemaining.saveEstimateSnapshot(householdId, next, new Date(nowMs).toISOString());
     }
     return change;
   } catch (error) {

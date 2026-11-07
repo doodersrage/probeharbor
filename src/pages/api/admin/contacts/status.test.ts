@@ -11,11 +11,9 @@ vi.mock("../../../../lib/adminAccess", () => ({
   isUserAdmin: (...a: unknown[]) => mockIsUserAdmin(...a),
 }));
 
-const mockEq = vi.fn();
-const mockUpdate = vi.fn(() => ({ eq: mockEq }));
-const mockFrom = vi.fn(() => ({ update: mockUpdate }));
-vi.mock("../../../../lib/supabase", () => ({
-  createServerClient: () => ({ from: mockFrom }),
+const mockUpdateContact = vi.fn();
+vi.mock("../../../../lib/db/admin", () => ({
+  updateContact: (...a: unknown[]) => mockUpdateContact(...a),
 }));
 
 const mockFormRedirectPath = vi.fn();
@@ -38,7 +36,7 @@ beforeEach(() => {
     user: { id: "user-1" },
   });
   mockIsUserAdmin.mockReset().mockResolvedValue(true);
-  mockEq.mockReset().mockResolvedValue({ error: null });
+  mockUpdateContact.mockReset().mockResolvedValue({ error: null });
   mockFormRedirectPath.mockReset().mockReturnValue("/dashboard/contacts");
 });
 
@@ -69,7 +67,7 @@ describe("POST /api/admin/contacts/status", () => {
     await POST(context);
 
     expect(context.redirect).toHaveBeenCalledWith("/dashboard/contacts?contact_error=1");
-    expect(mockFrom).not.toHaveBeenCalled();
+    expect(mockUpdateContact).not.toHaveBeenCalled();
   });
 
   it("updates the status when it's an allowed value", async () => {
@@ -78,9 +76,7 @@ describe("POST /api/admin/contacts/status", () => {
 
     await POST(context);
 
-    expect(mockFrom).toHaveBeenCalledWith("contacts");
-    expect(mockUpdate).toHaveBeenCalledWith({ status: "spam" });
-    expect(mockEq).toHaveBeenCalledWith("id", 1);
+    expect(mockUpdateContact).toHaveBeenCalledWith(1, { status: "spam" });
     expect(context.redirect).toHaveBeenCalledWith("/dashboard/contacts");
   });
 
@@ -90,11 +86,11 @@ describe("POST /api/admin/contacts/status", () => {
 
     await POST(context);
 
-    expect(mockUpdate).toHaveBeenCalledWith({ admin_notes: "" });
+    expect(mockUpdateContact).toHaveBeenCalledWith(1, { admin_notes: "" });
   });
 
   it("redirects with contact_error when the update fails", async () => {
-    mockEq.mockResolvedValue({ error: { message: "db down" } });
+    mockUpdateContact.mockResolvedValue({ error: { message: "db down" } });
     const { POST } = await import("./status");
     const context = makeContext({ id: "1", status: "read" });
 

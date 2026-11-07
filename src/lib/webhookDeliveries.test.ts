@@ -1,11 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const mockInsert = vi.fn().mockResolvedValue({ error: null });
+const mockInsert = vi.fn().mockResolvedValue(undefined);
 
-vi.mock("./supabase", () => ({
-  createServerClient: () => ({
-    from: () => ({ insert: mockInsert }),
-  }),
+vi.mock("./db/alertExtras", () => ({
+  recordWebhookDelivery: (...args: unknown[]) => mockInsert(...args),
 }));
 
 describe("deliverWebhookPost retry", () => {

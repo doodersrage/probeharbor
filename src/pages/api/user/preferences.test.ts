@@ -2,16 +2,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { APIContext } from "astro";
 
 const mockGetAuthFromRequest = vi.fn();
-const mockSetAuthCookies = vi.fn();
 vi.mock("../../../lib/auth", () => ({
   getAuthFromRequest: (...a: unknown[]) => mockGetAuthFromRequest(...a),
-  setAuthCookies: (...a: unknown[]) => mockSetAuthCookies(...a),
-}));
-
-const mockRefreshSession = vi.fn();
-const mockCreateAuthClient = vi.fn();
-vi.mock("../../../lib/supabase", () => ({
-  createAuthClient: (...a: unknown[]) => mockCreateAuthClient(...a),
 }));
 
 const mockUpdateUserDisplayPreferences = vi.fn();
@@ -69,20 +61,9 @@ beforeEach(() => {
     session: { access_token: "access-tok", refresh_token: "refresh-tok" },
     user: { id: "user-1" },
   });
-  mockSetAuthCookies.mockReset();
   mockFormRedirectPath.mockReset().mockReturnValue("/dashboard");
   mockParseDisplayPreferencesInput.mockReset().mockReturnValue(samplePrefs);
   mockUpdateUserDisplayPreferences.mockReset().mockResolvedValue({ error: null });
-  mockRefreshSession.mockReset().mockResolvedValue({
-    data: {
-      session: { access_token: "new-access", refresh_token: "new-refresh" },
-    },
-  });
-  mockCreateAuthClient.mockReset().mockReturnValue({
-    auth: {
-      refreshSession: (...a: unknown[]) => mockRefreshSession(...a),
-    },
-  });
 });
 
 describe("POST /api/user/preferences", () => {
@@ -112,11 +93,6 @@ describe("POST /api/user/preferences", () => {
       "theme",
       "dark",
       expect.objectContaining({ path: "/", httpOnly: false }),
-    );
-    expect(mockSetAuthCookies).toHaveBeenCalledWith(
-      context.cookies,
-      "new-access",
-      "new-refresh",
     );
     expect(context.redirect).toHaveBeenCalledWith("/dashboard?prefs_saved=1");
     expect(response.status).toBe(302);

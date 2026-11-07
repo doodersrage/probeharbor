@@ -1,8 +1,7 @@
 /**
  * Neon versions of the push-registration queries: browser Web Push
  * subscriptions (push_subscriptions; webPush.ts and /api/push/subscribe) and
- * app tokens (fcm_device_tokens; fcm.ts and /api/push/fcm). Called when
- * `dbBackend() === "neon"`. Every query is scoped to one user, except the
+ * app tokens (fcm_device_tokens; fcm.ts and /api/push/fcm). Every query is scoped to one user, except the
  * hand-off delete that removes an endpoint/token from OTHER users.
  */
 import { query } from "./client";

@@ -1,9 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { APIContext } from "astro";
 
-const mockResend = vi.fn();
-vi.mock("../../../lib/supabase", () => ({
-  createAuthClient: () => ({ auth: { resend: (...a: unknown[]) => mockResend(...a) } }),
+const mockSendVerificationEmail = vi.fn();
+const mockWithBetterAuth = vi.fn();
+vi.mock("../../../lib/betterAuthRuntime", () => ({
+  withBetterAuth: (...a: unknown[]) => mockWithBetterAuth(...a),
 }));
 
 const mockVerifyTurnstileToken = vi.fn();
@@ -17,7 +18,7 @@ function makeContext(form: Record<string, string>): APIContext {
   for (const [k, v] of Object.entries(form)) formData.set(k, v);
   const request = { formData: async () => formData } as unknown as Request;
   const redirect = vi.fn((path: string) => new Response(null, { status: 302, headers: { Location: path } }));
-  return { request, redirect, clientAddress: "127.0.0.1" } as unknown as APIContext;
+  return { request, redirect, clientAddress: "127.0.0.1", locals: { locale: "fr" } } as unknown as APIContext;
 }
 
 async function post(form: Record<string, string>): Promise<string | null> {
@@ -27,18 +28,25 @@ async function post(form: Record<string, string>): Promise<string | null> {
 }
 
 beforeEach(() => {
-  mockResend.mockReset().mockResolvedValue({ data: {}, error: null });
+  mockSendVerificationEmail.mockReset().mockResolvedValue({ status: true });
+  mockWithBetterAuth
+    .mockReset()
+    .mockImplementation((_req: unknown, fn: (auth: unknown) => unknown) =>
+      fn({ api: { sendVerificationEmail: (...a: unknown[]) => mockSendVerificationEmail(...a) } }),
+    );
   mockVerifyTurnstileToken.mockReset().mockResolvedValue({ success: true });
 });
 
 describe("POST /api/auth/resend-confirmation", () => {
-  it("resends the signup email and confirms without revealing account state", async () => {
+  it("resends the signup email in the page's language and confirms without revealing account state", async () => {
     expect(await post({ email: " a@example.com " })).toBe("/resend-confirmation?sent=1");
-    expect(mockResend).toHaveBeenCalledWith({ type: "signup", email: "a@example.com" });
+    expect(mockSendVerificationEmail).toHaveBeenCalledWith({ body: { email: "a@example.com" } });
+    expect(mockWithBetterAuth).toHaveBeenCalledWith(expect.anything(), expect.any(Function), { emailLocale: "fr" });
   });
 
-  it("reports sent even when Supabase errors (no account enumeration)", async () => {
-    mockResend.mockResolvedValue({ data: null, error: { message: "User already confirmed" } });
+  it("reports sent even when sending fails (no account enumeration)", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    mockSendVerificationEmail.mockRejectedValue(new Error("User already confirmed"));
     expect(await post({ email: "a@example.com" })).toBe("/resend-confirmation?sent=1");
   });
 
@@ -47,6 +55,6 @@ describe("POST /api/auth/resend-confirmation", () => {
     expect(await post({ email: "a@example.com" })).toBe("/resend-confirmation?error=verification");
     mockVerifyTurnstileToken.mockResolvedValue({ success: true });
     expect(await post({ email: "" })).toBe("/resend-confirmation?error=missing_email");
-    expect(mockResend).not.toHaveBeenCalled();
+    expect(mockWithBetterAuth).not.toHaveBeenCalled();
   });
 });

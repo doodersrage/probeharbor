@@ -1,7 +1,6 @@
 /**
  * Neon versions of the door-history queries in doorEvents.ts,
- * doorEventReport.ts and chartDoorBands.server.ts. Called when
- * `dbBackend() === "neon"`. Door sessions are scoped by household; door
+ * doorEventReport.ts and chartDoorBands.server.ts. Door sessions are scoped by household; door
  * readings by sensor (callers pass the household's own sensors).
  *
  * Differences from the Supabase path, all deliberate:
