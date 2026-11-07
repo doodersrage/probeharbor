@@ -5136,8 +5136,17 @@ Cloudflare email binding.
 7. **Cleanup** after 30 calm days: remove `@supabase/*`, Supabase env
    vars and scripts, update docs. Pause the Supabase project; deleting it
    is a separate decision with its own approval.
-   - [ ] **7a, app code (committed locally 2026-11-07, not pushed: it ends
-         the one-switch rollback, see below).** Every `dbBackend()` branch
+   - [x] **7a, app code. Deployed 2026-11-07 23:22 UTC on the owner's
+         "push" (`406a822`, CI fixes up to `d464747`).** After the deploy:
+         public pages 200, dashboard → sign-in, set-session 404,
+         reveal-ingest-key 401 without a session, readings still arriving
+         (latest 23:22:59, 60 in 5 min), 0 server errors. CI e2e now signs
+         in through Better Auth against the Neon dev branch (GitHub secrets
+         `E2E_DATABASE_URL`, `E2E_BETTER_AUTH_SECRET`; `e2e/helpers/auth.ts`);
+         the e2e inbox was taken off the dev branch's suppression list (the
+         other 11 addresses stay suppressed). Correction: the local preview
+         smoke below had a quoted database URL, so it didn't reach the
+         database; its page and redirect results stand. Every `dbBackend()` branch
          and Supabase call is gone from `src/`; `dbBackend()` and
          `DB_BACKEND` are removed; `src/lib/supabase.ts`, `oauthAuthClient`,
          `githubOAuth`, `webauthnMfaApi`, `src/types/supabase.ts` and the
@@ -5159,8 +5168,8 @@ Cloudflare email binding.
          200, dashboard → sign-in, set-session 404, reveal-ingest-key 401
          without a session, GitHub app sign-in reaches GitHub, unknown
          ingest key 401. Not checked: a signed-in session on the preview.
-         Rollback once deployed: revert the commit and redeploy (Supabase
-         also lacks every row written since the cutover).
+         Rollback: revert the commits and redeploy (Supabase also lacks
+         every row written since the cutover).
          Found on the way, fixed and pushed separately: the settings page
          asked Google/GitHub/Discord-only users for a password to delete
          their account (`7858d0c`); showing a device's ingest key failed on
