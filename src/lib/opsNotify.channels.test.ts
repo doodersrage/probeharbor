@@ -4,6 +4,9 @@ import { env } from "cloudflare:workers";
 // cloudflare:workers is aliased to a stub whose `env` stands in for Worker secrets.
 const workerEnv = env as unknown as Record<string, string | undefined>;
 
+// CI sets SMTP_MAIL_TO/FROM, so the email channel runs too; this test is about Discord.
+vi.mock("./mailer", () => ({ sendEmail: vi.fn().mockResolvedValue(undefined) }));
+
 afterEach(() => {
   vi.unstubAllGlobals();
   delete workerEnv.OPS_DISCORD_WEBHOOK_URL;
