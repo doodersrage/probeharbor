@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Read-only check that Stripe and Supabase agree on who is paying for what.
+ * Read-only check that Stripe and the database (Neon) agree on who is paying for what.
  * Run it after the first real subscription, and after any plan change or cancel.
  *
  *   - webhook endpoint is enabled on the canonical host with every handled event
@@ -11,8 +11,8 @@
  *
  * Usage: pnpm audit:billing   (exit 0 = consistent, 2 = mismatches)
  */
-import { createClient } from "@supabase/supabase-js";
 import Stripe from "stripe";
+import { openDb } from "./lib/scriptDb.mjs";
 
 const CANONICAL_HOST = "probeharbor.dev";
 const WEBHOOK_PATH = "/api/stripe/webhook";
@@ -28,17 +28,22 @@ const GRANTING = new Set(["active", "trialing"]);
 const LIVE = new Set(["active", "trialing", "past_due", "unpaid", "incomplete"]);
 
 const stripeKey = process.env.STRIPE_SECRET_KEY;
-const supabaseUrl = process.env.SUPABASE_URL;
-const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-if (!stripeKey?.startsWith("sk_") || !supabaseUrl || !serviceKey) {
-  console.error("Needs STRIPE_SECRET_KEY, SUPABASE_URL, and SUPABASE_SERVICE_ROLE_KEY in .env");
+const databaseUrl = process.env.DATABASE_URL;
+if (!stripeKey?.startsWith("sk_") || !databaseUrl) {
+  console.error("Needs STRIPE_SECRET_KEY and DATABASE_URL in .env");
   process.exit(1);
 }
 
 const stripe = new Stripe(stripeKey);
-const db = createClient(supabaseUrl, serviceKey, {
-  auth: { autoRefreshToken: false, persistSession: false },
-});
+const db = openDb(databaseUrl);
+/** Supabase-style { data, error } so the checks below read as before. */
+async function read(text) {
+  try {
+    return { data: await db.rows(text), error: null };
+  } catch (error) {
+    return { data: null, error };
+  }
+}
 
 const tierByPrice = new Map();
 for (const [envName, tier] of [
@@ -113,11 +118,9 @@ try {
 }
 
 // 3. What the Worker has actually received
-const { data: received, error: receivedError } = await db
-  .from("stripe_webhook_events")
-  .select("type, received_at")
-  .order("received_at", { ascending: false })
-  .limit(500);
+const { data: received, error: receivedError } = await read(
+  "select type, received_at from public.stripe_webhook_events order by received_at desc limit 500",
+);
 if (receivedError) bad(`could not read stripe_webhook_events: ${receivedError.message}`);
 else if (!received?.length) note("stripe_webhook_events is empty: the Worker has not processed a webhook yet");
 else {
@@ -137,11 +140,12 @@ try {
   bad(`could not list Stripe subscriptions: ${errMsg(error)}`);
 }
 
-const { data: rows, error: rowsError } = await db
-  .from("stripe_subscriptions")
-  .select("user_id, stripe_customer_id, stripe_subscription_id, status, stripe_price_id, plan_tier");
+const { data: rows, error: rowsError } = await read(
+  "select user_id, stripe_customer_id, stripe_subscription_id, status, stripe_price_id, plan_tier from public.stripe_subscriptions",
+);
 if (rowsError) {
   bad(`could not read stripe_subscriptions: ${rowsError.message}`);
+  await db.end();
   process.exit(2);
 }
 const rowBySub = new Map(rows.map((r) => [r.stripe_subscription_id, r]));
@@ -188,5 +192,6 @@ for (const row of rows) {
   );
 }
 
+await db.end();
 console.log(problems === 0 ? "\nBilling is consistent." : `\n${problems} problem(s).`);
 process.exit(problems === 0 ? 0 : 2);

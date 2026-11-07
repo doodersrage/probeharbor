@@ -3,12 +3,15 @@
  * Authenticated dogfood: alert test + admin Ops email smokes against production.
  * Usage: pnpm ops:dogfood [baseUrl]
  *
- * Requires E2E_TEST_EMAIL, E2E_TEST_PASSWORD, SUPABASE_URL, SUPABASE_ANON_KEY in .env.
+ * Requires E2E_TEST_EMAIL, E2E_TEST_PASSWORD, DATABASE_URL and BETTER_AUTH_SECRET
+ * in .env: the database and secret of the site under test (production by
+ * default). Signs in with the e2e account's password, without the Turnstile
+ * form, and deletes the session at the end.
  * Admin email tests need the E2E user in the admin group.
  */
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
-import { createClient } from "@supabase/supabase-js";
+import { openDb, signInForScript } from "./lib/scriptDb.mjs";
 
 const envFile = resolve(process.cwd(), ".env");
 if (existsSync(envFile)) {
@@ -22,8 +25,8 @@ const base = (process.argv[2] ?? process.env.SMOKE_BASE_URL ?? "https://probehar
 
 const email = process.env.E2E_TEST_EMAIL?.trim();
 const password = process.env.E2E_TEST_PASSWORD;
-const supabaseUrl = process.env.SUPABASE_URL?.trim();
-const anonKey = process.env.SUPABASE_ANON_KEY?.trim();
+const databaseUrl = process.env.DATABASE_URL?.trim();
+const secret = process.env.BETTER_AUTH_SECRET?.trim();
 
 function fail(message) {
   console.error(`✗ ${message}`);
@@ -31,23 +34,19 @@ function fail(message) {
 }
 
 if (!email || !password) fail("E2E_TEST_EMAIL and E2E_TEST_PASSWORD required");
-if (!supabaseUrl || !anonKey) fail("SUPABASE_URL and SUPABASE_ANON_KEY required");
-
-const supabase = createClient(supabaseUrl, anonKey, {
-  auth: { persistSession: false, autoRefreshToken: false },
-});
+if (!databaseUrl || !secret) fail("DATABASE_URL and BETTER_AUTH_SECRET required (the site's own)");
 
 console.log(`Ops dogfood against ${base}\n`);
 
-const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-if (error || !data.session) {
-  fail(error?.message || "Supabase sign-in failed");
+const db = openDb(databaseUrl);
+let session;
+try {
+  session = await signInForScript(db, { email, password, secret, userAgent: "ops-dogfood" });
+} catch (error) {
+  await db.end();
+  fail(error instanceof Error ? error.message : String(error));
 }
-
-const cookie = [
-  `sb-access-token=${data.session.access_token}`,
-  `sb-refresh-token=${data.session.refresh_token}`,
-].join("; ");
+const cookie = session.cookie;
 
 async function get(path) {
   const res = await fetch(`${base}${path}`, {
@@ -185,4 +184,6 @@ console.log(
 );
 console.log("Manual remaining: Twilio TWILIO_* secrets; Google Search Console sitemap confirm.");
 
+await session.end().catch(() => {});
+await db.end();
 process.exit(ok ? 0 : 1);

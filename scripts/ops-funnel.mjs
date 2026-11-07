@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Activation funnel and feature usage straight from Supabase, so it works
+ * Activation funnel and feature usage straight from the database (Neon), so it works
  * without GA4 and counts what actually happened rather than what was clicked.
  *
  * Usage: pnpm ops:funnel [--days 90] [--exclude a@x.com,b@y.com] [--list]
@@ -9,12 +9,10 @@
  *              FUNNEL_EXCLUDE_EMAILS in .env (your own test accounts) always are.
  *   --list     print one line per account with the furthest step reached
  */
-import { createClient } from "@supabase/supabase-js";
+import { openDb } from "./lib/scriptDb.mjs";
 
-const supabaseUrl = process.env.SUPABASE_URL;
-const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-if (!supabaseUrl || !serviceKey) {
-  console.error("Needs SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in .env");
+if (!process.env.DATABASE_URL) {
+  console.error("Needs DATABASE_URL in .env");
   process.exit(1);
 }
 
@@ -35,28 +33,24 @@ const excluded = new Set(
     .filter(Boolean),
 );
 
-const db = createClient(supabaseUrl, serviceKey, {
-  auth: { autoRefreshToken: false, persistSession: false },
-});
+const db = openDb(process.env.DATABASE_URL);
 
-async function all(table, columns, apply = (q) => q) {
-  const rows = [];
-  for (let from = 0; ; from += 1000) {
-    const { data, error } = await apply(db.from(table).select(columns)).range(from, from + 999);
-    if (error) throw new Error(`${table}: ${error.message}`);
-    rows.push(...data);
-    if (data.length < 1000) return rows;
+/** Every row of a table (table and column names are fixed in this file, never input). */
+async function all(table, columns, where = "") {
+  try {
+    return await db.rows(`select ${columns} from public.${table} ${where}`);
+  } catch (error) {
+    throw new Error(`${table}: ${error.message}`);
   }
 }
 
+/** Accounts in the shape the steps below read (email_confirmed_at set when verified). */
 async function allUsers() {
-  const users = [];
-  for (let page = 1; ; page += 1) {
-    const { data, error } = await db.auth.admin.listUsers({ page, perPage: 1000 });
-    if (error) throw new Error(`auth users: ${error.message}`);
-    users.push(...data.users);
-    if (data.users.length < 1000) return users;
-  }
+  return db.rows(
+    `select id, email, "createdAt" as created_at,
+            case when "emailVerified" then "createdAt" end as email_confirmed_at
+     from public.auth_users`,
+  );
 }
 
 const now = Date.now();
@@ -73,7 +67,7 @@ const [members, devices, feeds, alertSettings, events, subs] = await Promise.all
   all("devices", "household_id, name, source, created_at, last_seen_at, enabled"),
   all("user_temp_feeds", "user_id, name, enabled"),
   all("alert_settings", "*"),
-  all("alert_events", "user_id, kind, title", (q) => q.not("channels_sent", "eq", "{}")),
+  all("alert_events", "user_id, kind, title", "where cardinality(channels_sent) > 0"),
   all("stripe_subscriptions", "user_id, status, plan_tier"),
 ]);
 
@@ -93,13 +87,10 @@ const feedUsers = new Set(feeds.map((f) => f.user_id));
 const pullSeen = new Map();
 await Promise.all(
   [...feedUsers].filter((id) => userIds.has(id)).map(async (id) => {
-    const { data } = await db
-      .from("garage_temps")
-      .select("timestamp")
-      .eq("user_id", id)
-      .order("timestamp", { ascending: false })
-      .limit(1);
-    if (data?.[0]) pullSeen.set(id, Date.parse(data[0].timestamp));
+    const [row] = await db
+      .rows('select "timestamp" from public.garage_temps where user_id = $1 order by "timestamp" desc limit 1', [id])
+      .catch(() => []);
+    if (row) pullSeen.set(id, Date.parse(row.timestamp));
   }),
 );
 
@@ -207,8 +198,8 @@ const [thermostats, apiKeys, inbound, shares, statusPages, pucks, claims, pushSu
 
 const distinct = (rows, key) => new Set(rows.map((r) => r[key])).size;
 const usage = [
-  ["Push devices", distinct(devices.filter((d) => d.source !== "pull"), "household_id"), "households"],
-  ["Pull devices", distinct(devices.filter((d) => d.source === "pull"), "household_id"), "households"],
+  ["Push devices", distinct(devices.filter((d) => d.source === "push"), "household_id"), "households"],
+  ["Pull devices", distinct(devices.filter((d) => d.source === "pull_url"), "household_id"), "households"],
   ["Legacy pull feeds", feedUsers.size, "users"],
   ["Shared households (2+ members)", [...membersByHousehold.values()].filter((n) => n > 1).length, "households"],
   ...[...new Set(thermostats.map((t) => t.provider))].map((p) => [
@@ -252,3 +243,5 @@ const usageWidth = Math.max(...usage.map(([label]) => label.length));
 for (const [label, n, unit] of usage.sort((a, b) => b[1] - a[1])) {
   console.log(`  ${label.padEnd(usageWidth)}  ${String(n).padStart(4)} ${unit}${n === 0 ? "  ← unused" : ""}`);
 }
+
+await db.end();
