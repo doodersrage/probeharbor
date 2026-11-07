@@ -31,6 +31,7 @@ import { GET as providerCallback } from "./callback/[provider]";
 import { GET as githubCallback } from "./github/callback";
 import { GET as oauthDone } from "./oauth-done";
 import { POST as signin } from "./signin";
+import { buildSiteUrl } from "../../../lib/siteUrl";
 
 const db = useTestDatabase();
 const sql = async <T = Record<string, unknown>>(text: string, params: unknown[] = []) =>
@@ -96,8 +97,10 @@ async function viaRoutes(provider: "github" | "discord", form: Record<string, st
   const started = await signin(start);
   const authorize = new URL(loc(started));
   expect(authorize.hostname).toBe(provider === "github" ? "github.com" : "discord.com");
+  // The configured site URL (CI sets SITE_URL), else the request's origin.
+  const site = buildSiteUrl(start.request);
   expect(authorize.searchParams.get("redirect_uri")).toBe(
-    provider === "github" ? "http://localhost:4321/api/auth/github/callback" : "http://localhost:4321/api/auth/callback/discord",
+    provider === "github" ? `${site}/api/auth/github/callback` : `${site}/api/auth/callback/discord`,
   );
   const query = `?code=c&state=${authorize.searchParams.get("state")}`;
   const back =
