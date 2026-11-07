@@ -5128,8 +5128,11 @@ Cloudflare email binding.
          Neon's id sequence had reissued their ids to new readings; added
          with fresh ids, matched by sensor + time (0 missing after).
          Supabase is untouched (rollback: delete `DB_BACKEND`).
-         Still to do: owner sign-in check on production; Google/Discord
-         credentials (owner, after); Android 1.3.0 release.
+         Owner signed in on production (password + second factor) after
+         the switch. `pnpm secrets:push` now also manages `DATABASE_URL`,
+         `BETTER_AUTH_SECRET` and the Google/Discord keys (skipped while
+         empty). Still to do: Google/Discord credentials (owner); Android
+         1.3.0 release.
 7. **Cleanup** after 30 calm days: remove `@supabase/*`, Supabase env
    vars and scripts, update docs. Pause the Supabase project; deleting it
    is a separate decision with its own approval.

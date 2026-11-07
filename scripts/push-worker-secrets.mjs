@@ -63,6 +63,14 @@ const SECRET_KEYS = [
   "NEST_PROJECT_ID",
   "ECOBEE_CLIENT_ID",
   "SENTRY_DSN",
+  // Neon + Better Auth (since the 2026-11-07 cutover). DB_BACKEND=neon is set
+  // on the Worker on purpose and isn't pushed from .env.
+  "DATABASE_URL",
+  "BETTER_AUTH_SECRET",
+  "GOOGLE_CLIENT_ID",
+  "GOOGLE_CLIENT_SECRET",
+  "DISCORD_CLIENT_ID",
+  "DISCORD_CLIENT_SECRET",
 ];
 
 const args = process.argv.slice(2);
