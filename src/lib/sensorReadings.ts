@@ -1,5 +1,6 @@
 import { dbBackend } from "./db/client";
 import { insertSensorReadings as neonInsertSensorReadings } from "./db/ingest";
+import * as neonReadings from "./db/readings";
 import { createServerClient } from "./supabase";
 import type { Json } from "../types/supabase";
 import type { DeviceSensor, DeviceWithSensors } from "./devices";
@@ -108,6 +109,7 @@ export async function getRecentNumericReadings(
   sensorId: string,
   sinceIso: string,
 ): Promise<number[]> {
+  if (dbBackend() === "neon") return neonReadings.getRecentNumericReadings(sensorId, sinceIso);
   const supabase = createServerClient();
   const { data } = await supabase
     .from("sensor_readings")
@@ -130,6 +132,7 @@ export async function getNumericReadingInWindow(
   notBeforeIso: string,
   atOrBeforeIso: string,
 ): Promise<{ value: number; at: string } | null> {
+  if (dbBackend() === "neon") return neonReadings.getNumericReadingInWindow(sensorId, notBeforeIso, atOrBeforeIso);
   const supabase = createServerClient();
   const { data } = await supabase
     .from("sensor_readings")
@@ -151,6 +154,7 @@ export async function hasNumericReadingAboveSince(
   sinceIso: string,
   thresholdF: number,
 ): Promise<boolean> {
+  if (dbBackend() === "neon") return neonReadings.hasNumericReadingAboveSince(sensorId, sinceIso, thresholdF);
   const supabase = createServerClient();
   const { data } = await supabase
     .from("sensor_readings")
@@ -166,6 +170,7 @@ export async function getRecentNumericReadingSamples(
   sensorId: string,
   sinceIso: string,
 ): Promise<Array<{ at: string; tempF: number }>> {
+  if (dbBackend() === "neon") return neonReadings.getRecentNumericReadingSamples(sensorId, sinceIso);
   const supabase = createServerClient();
   const { data } = await supabase
     .from("sensor_readings")
@@ -197,6 +202,13 @@ export async function getFreezeDwellSamples(
   const anchorSinceIso = new Date(
     Date.parse(cutoffIso) - DWELL_ANCHOR_LOOKBACK_MS,
   ).toISOString();
+  if (dbBackend() === "neon") {
+    const [neonAnchor, neonWindow] = await Promise.all([
+      neonReadings.getDwellAnchor(sensorId, anchorSinceIso, cutoffIso),
+      getRecentNumericReadingSamples(sensorId, cutoffIso),
+    ]);
+    return [...neonAnchor, ...neonWindow];
+  }
   const supabase = createServerClient();
   const [anchor, window] = await Promise.all([
     supabase
@@ -221,6 +233,7 @@ export async function fetchRecentBoolReadings(
   sensorId: string,
   sinceIso: string,
 ): Promise<Array<{ value: boolean; recordedAt: string }>> {
+  if (dbBackend() === "neon") return neonReadings.fetchRecentBoolReadings(sensorId, sinceIso);
   const supabase = createServerClient();
   // A device posting every minute sends 1440 door states a day, past the
   // 1000-row limit. Reading oldest-first cut off the newest ~7 hours, so
@@ -321,6 +334,7 @@ async function fetchLatestReadingsBySensor(
 export async function fetchLatestSensorValuesResult(
   householdId: string,
 ): Promise<{ rows: LatestSensorRow[]; error: string | null }> {
+  if (dbBackend() === "neon") return neonReadings.fetchLatestSensorValuesResult(householdId);
   const supabase = createServerClient();
   const { data: devices, error: devicesError } = await supabase
     .from("devices")

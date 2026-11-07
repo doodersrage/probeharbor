@@ -4413,10 +4413,30 @@ Cloudflare email binding.
          `sensor_reading_rollups` or `door_open_events`, which are read by
          household. Older chart history and door openings stay with the
          old household. Fix separately, with a test, on both paths.
-   - [ ] Convert the remaining ~290 queries and 13 Postgres function calls,
-         one area per commit, each with database tests. Next: reading
-         queries (`sensorReadings.ts`, history, `latest_sensor_readings`),
-         then the after-response ingest work and alerts.
+   - [x] Area 3a, reading queries in `sensorReadings.ts`
+         (`src/lib/db/readings.ts`): latest value per sensor (one query
+         around `latest_sensor_readings`), numeric and door series, window
+         lookups, threshold probe, freeze-dwell anchor. Series read newest
+         first, cap 10,000 rows (as the paged Supabase reads), returned
+         oldest first. 7 database tests: only the household's visible
+         sensors on enabled devices, offsets, demo flag, 1,500 rows all
+         returned, past the cap the newest are kept, dwell anchor.
+         Mutation: latest values without the household filter → 1 fails.
+   - [ ] **Existing production bug (Supabase path), affects an alert:**
+         `getRecentNumericReadings` and `getRecentNumericReadingSamples`
+         aren't paged. Supabase returns at most 1000 rows, oldest first, so
+         a window holding more gets its OLDEST 1000. Callers with 7-day
+         windows: the freeze runway alert (`maybeSendRunwayAlert`, coldest
+         sensor's indoor samples) and the Overview energy card. Any sensor
+         with more than 1000 readings in 7 days (one every ~10 minutes or
+         more often) feeds the runway model the week's oldest ~1000
+         readings instead of recent ones. The 1-hour callers are under the
+         limit. Fix: page newest first (`fetchNewestFirstPages`), as door
+         readings already do; regression test with >1000 rows.
+   - [ ] Convert the remaining ~280 queries and 13 Postgres function calls,
+         one area per commit, each with database tests. Next: history and
+         charts (`garageTempsHistory.ts`, bucket functions, counts), then
+         the after-response ingest work and alerts.
    - [ ] Cross-household tests for every household-scoped read and write.
 4. **Login on Better Auth.** Email + password (accept existing bcrypt
    hashes, so passwords keep working), Google, GitHub, Discord, email
