@@ -48,7 +48,7 @@ export const DEFAULT_USER_PREFERENCES: UserPreferences = {
 };
 
 export function getDisplayPreferencesFromMetadata(
-  user: User | null | undefined,
+  user: Pick<User, "user_metadata"> | null | undefined,
 ): Pick<
   UserPreferences,
   | "showGarageTemps"
@@ -126,7 +126,8 @@ export function personalWeatherConfigFromPreferences(
 }
 
 export async function getUserPreferences(
-  user: User | null | undefined,
+  /** Any user record with these fields (a full Supabase User fits). */
+  user: Pick<User, "id" | "email" | "user_metadata"> | null | undefined,
 ): Promise<UserPreferences> {
   if (!user) {
     return DEFAULT_USER_PREFERENCES;

@@ -1,3 +1,5 @@
+import { dbBackend } from "./db/client";
+import * as neonEmail from "./db/emailJobs";
 import { createServerClient } from "./supabase";
 
 export function normalizeEmailAddress(email: string): string {
@@ -57,6 +59,7 @@ export async function isEmailSuppressed(email: string): Promise<boolean> {
   const normalized = normalizeEmailAddress(email);
   if (!normalized) return false;
   try {
+    if (dbBackend() === "neon") return await neonEmail.isSuppressed(normalized);
     const supabase = createServerClient();
     const { data, error } = await supabase
       .from("email_suppressions")
@@ -111,6 +114,10 @@ async function upsertEmailSuppression(
     return { ok: false, error: "Enter a valid email address" };
   }
   try {
+    if (dbBackend() === "neon") {
+      await neonEmail.upsertSuppression(normalized, reason.trim().slice(0, 80) || "manual", lastError?.trim().slice(0, 500) || null);
+      return { ok: true, error: null };
+    }
     const supabase = createServerClient();
     const { error } = await supabase.from("email_suppressions").upsert(
       {
@@ -145,6 +152,9 @@ export async function listEmailSuppressions(
   limit = 200,
 ): Promise<{ rows: EmailSuppressionRow[]; error: string | null }> {
   try {
+    if (dbBackend() === "neon") {
+      return { rows: await neonEmail.listSuppressions<EmailSuppressionRow>(Math.min(Math.max(limit, 1), 500)), error: null };
+    }
     const supabase = createServerClient();
     const { data, error } = await supabase
       .from("email_suppressions")
@@ -165,6 +175,10 @@ export async function unsuppressEmail(email: string): Promise<{ ok: boolean; err
   const normalized = normalizeEmailAddress(email);
   if (!normalized) return { ok: false, error: "Missing email" };
   try {
+    if (dbBackend() === "neon") {
+      await neonEmail.deleteSuppression(normalized);
+      return { ok: true, error: null };
+    }
     const supabase = createServerClient();
     const { error } = await supabase
       .from("email_suppressions")

@@ -4621,9 +4621,27 @@ Cloudflare email binding.
          there broke `pnpm build` (caught before commit). Fixed with a
          dynamic import, as `edgeRateLimit.ts` does. Anything the
          middleware imports must load `db/*` lazily.
-   - [ ] Convert the remaining ~100 queries in ~40 files and 1 Postgres
+   - [x] Area 8b, email jobs (`src/lib/db/emailJobs.ts`): drip, trial
+         reminders, weekly digest (+ member fan-out), monthly / quarterly
+         reports, freeze drills, email suppressions, digest unsubscribe.
+         New `src/lib/userRecords.ts` `getUserRecord(userId)` replaces
+         `auth.admin.getUserById` in these jobs (same Supabase call; on
+         Neon auth_users + user_profiles, Supabase-shaped). Stamped
+         settings columns are allow-listed. `getUserPreferences`,
+         `getUserTempConfig` and the legacy-metadata migration now take
+         just the user fields they read (a full User still fits). 7
+         database tests: user record, suppressions, digest unsubscribe
+         scope, drip once and stage advance, suppressed address skipped,
+         trial reminder once, report/digest queries. Mutation: digest
+         fan-out including the owner → 1 fails (after making the owner
+         opt in; the first version of the test couldn't see it).
+         Monthly/quarterly/drill flows aren't run end to end yet: they
+         load preferences via `userTempConfig.ts` (next).
+   - [ ] Convert the remaining ~85 queries in ~32 files and 1 Postgres
          function call (`sensor_bucket_averages`), one area per commit,
-         each with database tests. Next: emails and reports.
+         each with database tests. Next: userTempConfig (legacy pull
+         config), then the other 14 `getUserById` callers, thermostats,
+         archives, pucks, dashboard pages.
    - [ ] Cross-household tests for every household-scoped read and write.
 4. **Login on Better Auth.** Email + password (accept existing bcrypt
    hashes, so passwords keep working), Google, GitHub, Discord, email

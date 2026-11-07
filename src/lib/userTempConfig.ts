@@ -441,7 +441,7 @@ export async function deleteUserTempFeed(
 }
 
 export async function migrateLegacyTempConfigFromMetadata(
-  user: User,
+  user: Pick<User, "id" | "user_metadata">,
 ): Promise<TempConfigRow> {
   const metadata = user.user_metadata ?? {};
   const tempFeeds = metadata.temp_feeds
@@ -456,7 +456,7 @@ export async function migrateLegacyTempConfigFromMetadata(
   return { feeds: tempFeeds, probes: tempProbes };
 }
 
-export async function getUserTempConfig(user: User): Promise<{
+export async function getUserTempConfig(user: Pick<User, "id" | "email" | "user_metadata">): Promise<{
   feeds: TempFeedConfig[];
   probes: TempProbeConfig[];
   error: string | null;

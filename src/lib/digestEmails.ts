@@ -1,3 +1,6 @@
+import { dbBackend } from "./db/client";
+import * as neonEmail from "./db/emailJobs";
+import { getUserRecord } from "./userRecords";
 import { createAdminClient } from "./supabase";
 import type { ChartPoint } from "./garageTempsHistory";
 import { getAlertSettingsForUser, notifyUser } from "./notify";
@@ -461,7 +464,8 @@ export async function sendWeeklyDigestsForAllUsers(): Promise<{
   skipped: number;
   errors: string[];
 }> {
-  const admin = createAdminClient();
+  // Supabase only; on Neon the queries go through db/emailJobs.
+  const admin = dbBackend() === "neon" ? null : createAdminClient();
   const errors: string[] = [];
   let sent = 0;
   let skipped = 0;
@@ -471,8 +475,7 @@ export async function sendWeeklyDigestsForAllUsers(): Promise<{
 
   for (const userId of userIds) {
     try {
-      const { data: userData } = await admin.auth.admin.getUserById(userId);
-      const user = userData.user;
+      const user = await getUserRecord(userId);
       if (!user?.email) {
         skipped += 1;
         continue;
@@ -506,12 +509,17 @@ export async function sendWeeklyDigestsForAllUsers(): Promise<{
 
       const ownerUnsubscribeUrl = await buildUnsubscribeUrl(siteUrl, userId, "digest", ownerLocale);
       const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-      const { data: weekEvents, error: weekEventsError } = await admin
-        .from("alert_events")
-        .select("kind, channels_sent, channels_skipped")
-        .eq("user_id", userId)
-        .gte("created_at", weekAgo)
-        .limit(1000);
+      const { data: weekEvents, error: weekEventsError } = admin
+        ? await admin
+            .from("alert_events")
+            .select("kind, channels_sent, channels_skipped")
+            .eq("user_id", userId)
+            .gte("created_at", weekAgo)
+            .limit(1000)
+        : await neonEmail.weekAlertDeliveries(userId, weekAgo).then(
+            (data) => ({ data, error: null }),
+            (error: unknown) => ({ data: null, error }),
+          );
       const digest = buildWeeklyDigestParts({
         points,
         freezeThresholdF: settings.freezeThresholdF,
@@ -537,30 +545,34 @@ export async function sendWeeklyDigestsForAllUsers(): Promise<{
 
       // Fan-out to household members who opted into digests.
       try {
-        const { data: ownerMemberships } = await admin
-          .from("household_members")
-          .select("household_id")
-          .eq("user_id", userId);
-        const ownerHouseholdIds = [
-          ...new Set(
-            (ownerMemberships ?? []).map((row) => row.household_id as string),
-          ),
-        ];
-
-        if (ownerHouseholdIds.length > 0) {
-          const { data: sharedMembers } = await admin
+        let fanOutIds: string[] = [];
+        if (!admin) {
+          fanOutIds = await neonEmail.digestFanOutMemberIds(userId);
+        } else {
+          const { data: ownerMemberships } = await admin
             .from("household_members")
-            .select("user_id")
-            .in("household_id", ownerHouseholdIds)
-            .eq("digest_opt_in", true)
-            .neq("user_id", userId);
-
-          const fanOutIds = [
-            ...new Set((sharedMembers ?? []).map((row) => row.user_id as string)),
+            .select("household_id")
+            .eq("user_id", userId);
+          const ownerHouseholdIds = [
+            ...new Set(
+              (ownerMemberships ?? []).map((row) => row.household_id as string),
+            ),
           ];
+          if (ownerHouseholdIds.length > 0) {
+            const { data: sharedMembers } = await admin
+              .from("household_members")
+              .select("user_id")
+              .in("household_id", ownerHouseholdIds)
+              .eq("digest_opt_in", true)
+              .neq("user_id", userId);
+            fanOutIds = [...new Set((sharedMembers ?? []).map((row) => row.user_id as string))];
+          }
+        }
+
+        if (fanOutIds.length > 0) {
 
           for (const memberId of fanOutIds) {
-            const { data: memberData } = await admin.auth.admin.getUserById(memberId);
+            const memberData = { user: await getUserRecord(memberId) };
             const memberEmail = memberData.user?.email;
             if (!memberEmail) continue;
             // Each recipient gets a link that unsubscribes their own account.

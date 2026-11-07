@@ -1,3 +1,6 @@
+import { dbBackend } from "./db/client";
+import * as neonEmail from "./db/emailJobs";
+import { getUserRecord } from "./userRecords";
 import { createAdminClient } from "./supabase";
 import { getAlertSettingsForUser } from "./notify";
 import { recordAlertEvent } from "./alertEvents";
@@ -86,11 +89,10 @@ export async function sendQuarterlyReportsForAllUsers(): Promise<{
   skipped: number;
   errors: string[];
 }> {
-  const supabase = createAdminClient();
-  const { data: rows } = await supabase
-    .from("alert_settings")
-    .select("user_id")
-    .eq("quarterly_report_enabled", true);
+  const rows =
+    dbBackend() === "neon"
+      ? (await neonEmail.userIdsWithFlag("quarterly_report_enabled")).map((user_id) => ({ user_id }))
+      : (await createAdminClient().from("alert_settings").select("user_id").eq("quarterly_report_enabled", true)).data;
 
   let sent = 0;
   let skipped = 0;
@@ -115,9 +117,7 @@ async function sendQuarterlyReportForUser(userId: string): Promise<boolean> {
   const settings = await getAlertSettingsForUser(userId);
   if (!settings.quarterlyReportEnabled) return false;
 
-  const admin = createAdminClient();
-  const { data: authData } = await admin.auth.admin.getUserById(userId);
-  const authUser = authData.user;
+  const authUser = await getUserRecord(userId);
   const email = settings.email ?? authUser?.email ?? null;
   if (!email || !authUser) return false;
 
@@ -181,10 +181,8 @@ async function sendQuarterlyReportForUser(userId: string): Promise<boolean> {
     channelsSkipped: [],
   });
 
-  await admin
-    .from("alert_settings")
-    .update({ last_quarterly_report_at: new Date().toISOString() })
-    .eq("user_id", userId);
+  if (dbBackend() === "neon") await neonEmail.stampSettings(userId, "last_quarterly_report_at");
+  else await createAdminClient().from("alert_settings").update({ last_quarterly_report_at: new Date().toISOString() }).eq("user_id", userId);
 
   return true;
 }

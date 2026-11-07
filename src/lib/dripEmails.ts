@@ -1,3 +1,6 @@
+import { dbBackend } from "./db/client";
+import * as neonEmail from "./db/emailJobs";
+import { getUserRecord } from "./userRecords";
 import { createAdminClient } from "./supabase";
 import { PRO_MAX_DEVICES } from "./entitlements";
 import { resolveSiteUrl } from "./schemaMarkup";
@@ -203,23 +206,29 @@ export async function sendDripEmailsForAllUsers(
   errors: string[];
   restricted: number;
 }> {
-  const admin = createAdminClient();
-  const hasFirstReading = deps.hasFirstReading ?? ((userId: string) => userHasFirstReading(admin, userId));
+  const neon = dbBackend() === "neon";
+  const admin = neon ? null : createAdminClient();
+  const hasFirstReading =
+    deps.hasFirstReading ??
+    ((userId: string) => (admin ? userHasFirstReading(admin, userId) : neonEmail.userHasFirstReading(userId)));
   const siteUrl = resolveSiteUrl(null);
   let sent = 0;
   let skipped = 0;
   let restricted = 0;
   const errors: string[] = [];
 
-  const { data: settingsRows } = await admin
-    .from("alert_settings")
-    .select("user_id, drip_emails_enabled, drip_email_stage, last_drip_email_at")
-    .eq("drip_emails_enabled", true);
+  const settingsRows = admin
+    ? (
+        await admin
+          .from("alert_settings")
+          .select("user_id, drip_emails_enabled, drip_email_stage, last_drip_email_at")
+          .eq("drip_emails_enabled", true)
+      ).data
+    : await neonEmail.dripCandidates();
 
   for (const row of settingsRows ?? []) {
     try {
-      const { data: userData } = await admin.auth.admin.getUserById(row.user_id);
-      const user = userData.user;
+      const user = await getUserRecord(row.user_id);
       if (!user?.email || !user.created_at) {
         skipped += 1;
         continue;
@@ -267,14 +276,18 @@ export async function sendDripEmailsForAllUsers(
           headers: unsubscribeHeaders(unsubscribeUrl),
         });
       }
-      await admin
-        .from("alert_settings")
-        .update({
-          drip_email_stage: nextStage.day,
-          last_drip_email_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-        .eq("user_id", row.user_id);
+      if (admin) {
+        await admin
+          .from("alert_settings")
+          .update({
+            drip_email_stage: nextStage.day,
+            last_drip_email_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          })
+          .eq("user_id", row.user_id);
+      } else {
+        await neonEmail.stampSettings(row.user_id, "last_drip_email_at", { touchUpdatedAt: true, dripStage: nextStage.day });
+      }
       if (emailId) sent += 1;
       else skipped += 1;
     } catch (error) {

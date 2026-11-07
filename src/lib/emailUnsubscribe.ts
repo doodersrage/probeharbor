@@ -1,6 +1,8 @@
 import { signWithAlertLinkSecret, verifyWithAlertLinkSecret } from "./alertAckTokens";
 import type { AlertSettings } from "./alerts";
 import { getAlertSettingsForUser, saveAlertSettingsForUser } from "./notify";
+import { dbBackend } from "./db/client";
+import * as neonEmail from "./db/emailJobs";
 import { createAdminClient } from "./supabase";
 import type { Locale } from "../i18n/locales";
 
@@ -84,7 +86,10 @@ export async function applyUnsubscribe(
   });
   if (error) return { error };
 
-  if (kind === "digest") {
+  if (kind === "digest" && dbBackend() === "neon") {
+    const optedOut = await neonEmail.optOutOfAllDigests(userId);
+    if (optedOut.error) return optedOut;
+  } else if (kind === "digest") {
     const admin = createAdminClient();
     // Members also receive digests fanned out from households they opted into.
     const { error: memberError } = await admin
