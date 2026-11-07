@@ -1,3 +1,5 @@
+import { dbBackend } from "./db/client";
+import * as neonAdmin from "./db/admin";
 import { createServerClient } from "./supabase";
 
 export const ADMIN_GROUP_NAME = "admin";
@@ -14,6 +16,7 @@ export async function isUserInGroup(
   userId: string,
   groupName: string,
 ): Promise<boolean> {
+  if (dbBackend() === "neon") return neonAdmin.isUserInGroup(userId, groupName);
   const supabase = createServerClient();
 
   const { data: group, error: groupError } = await supabase

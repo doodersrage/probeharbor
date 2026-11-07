@@ -1,3 +1,5 @@
+import { dbBackend } from "./db/client";
+import * as neonAdmin from "./db/admin";
 import { createAdminClient } from "./supabase";
 
 export type CheckoutEvent = {
@@ -52,15 +54,19 @@ export async function fetchCheckoutAnalyticsAdmin(
   days = 30,
   recentLimit = 25,
 ): Promise<CheckoutAnalytics> {
-  const admin = createAdminClient();
   const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
 
-  const { data: rows } = await admin
-    .from("household_activity")
-    .select("id, user_id, detail, created_at")
-    .eq("action", "checkout_started")
-    .order("created_at", { ascending: false })
-    .limit(500);
+  const rows =
+    dbBackend() === "neon"
+      ? await neonAdmin.recentCheckoutRows()
+      : (
+          await createAdminClient()
+            .from("household_activity")
+            .select("id, user_id, detail, created_at")
+            .eq("action", "checkout_started")
+            .order("created_at", { ascending: false })
+            .limit(500)
+        ).data;
 
   const all = rows ?? [];
   const recentRows = all.filter((row) => row.created_at >= since);

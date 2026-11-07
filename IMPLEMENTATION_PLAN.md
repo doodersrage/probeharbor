@@ -4605,10 +4605,25 @@ Cloudflare email binding.
          signed-in user's app_metadata (checkout, plans and alerts pages
          read referral days from it). **Step 5 must:** copy
          `auth.users.raw_app_meta_data` into it.
-   - [ ] Convert the remaining ~115 queries in ~46 files and 1 Postgres
+   - [x] Area 8a, admin and ops (`src/lib/db/admin.ts`): user manager
+         (the caller-checked `list/count_managed_users`,
+         `set_user_admin_membership`), group membership (admin check),
+         server error log, contact submissions (search now a bound
+         parameter; the Supabase path pastes it into a PostgREST `or`
+         filter, admin-only), checkout analytics, app status. 5 database
+         tests: admin group only, non-admin gets "Forbidden" for list and
+         grant, admin can grant, contacts paging/filter/safe search/update,
+         error log order, checkout counts. Mutation: group check ignoring
+         the group name → 2 fail.
+   - [x] **Build rule found:** the middleware imports `serverErrors.ts`
+         and also runs for prerendered pages at build time, where
+         `cloudflare:workers` can't load. A static import of `db/client`
+         there broke `pnpm build` (caught before commit). Fixed with a
+         dynamic import, as `edgeRateLimit.ts` does. Anything the
+         middleware imports must load `db/*` lazily.
+   - [ ] Convert the remaining ~100 queries in ~40 files and 1 Postgres
          function call (`sensor_bucket_averages`), one area per commit,
-         each with database tests. Next: admin and user manager, emails
-         and reports.
+         each with database tests. Next: emails and reports.
    - [ ] Cross-household tests for every household-scoped read and write.
 4. **Login on Better Auth.** Email + password (accept existing bcrypt
    hashes, so passwords keep working), Google, GitHub, Discord, email

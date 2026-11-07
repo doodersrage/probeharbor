@@ -1,3 +1,5 @@
+import { dbBackend } from "./db/client";
+import * as neonAdmin from "./db/admin";
 import { createAdminClient } from "./supabase";
 import { listRecentIngestStatsAdmin } from "./ingestStats";
 import { flagIngestAbuse } from "./ingestAbuse";
@@ -23,16 +25,17 @@ export type AppStatus = {
 };
 
 export async function fetchAppStatus(): Promise<AppStatus> {
-  const admin = createAdminClient();
   const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
   const [{ data: jobs }, lastHistoryPollAt] = await Promise.all([
-    admin
-      .from("job_runs")
-      .select("job_name, status, started_at")
-      .gte("started_at", since)
-      .order("started_at", { ascending: false })
-      .limit(50),
+    dbBackend() === "neon"
+      ? neonAdmin.jobRunsSince(since).then((data) => ({ data }))
+      : createAdminClient()
+          .from("job_runs")
+          .select("job_name, status, started_at")
+          .gte("started_at", since)
+          .order("started_at", { ascending: false })
+          .limit(50),
     fetchLastSuccessfulCollectHistory(),
   ]);
 

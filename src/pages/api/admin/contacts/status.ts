@@ -1,6 +1,8 @@
 import type { APIRoute } from "astro";
 import { getAuthFromCookies } from "../../../../lib/auth";
 import { isUserAdmin } from "../../../../lib/adminAccess";
+import { dbBackend } from "../../../../lib/db/client";
+import { updateContact } from "../../../../lib/db/admin";
 import { createServerClient } from "../../../../lib/supabase";
 import { formRedirectPath, withQuery } from "../../../../lib/siteUrl";
 
@@ -38,8 +40,10 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     return redirect(withQuery(redirectTo, { contact_error: "1" }));
   }
 
-  const supabase = createServerClient();
-  const { error } = await supabase.from("contacts").update(updates).eq("id", id);
+  const { error } =
+    dbBackend() === "neon"
+      ? await updateContact(id, updates)
+      : await createServerClient().from("contacts").update(updates).eq("id", id);
 
   if (error) {
     return redirect(withQuery(redirectTo, { contact_error: "1" }));

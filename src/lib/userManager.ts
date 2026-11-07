@@ -1,3 +1,5 @@
+import { dbBackend } from "./db/client";
+import * as neonAdmin from "./db/admin";
 import { createServerClient } from "./supabase";
 
 export type ManagedUser = {
@@ -100,10 +102,32 @@ export async function fetchManagedUsers(
   },
 ): Promise<PaginatedManagedUsers> {
   const safePage = Number.isFinite(page) && page > 0 ? Math.floor(page) : 1;
-  const supabase = createServerClient();
   const sort = MANAGED_USER_SORTS[filters.sort] ?? MANAGED_USER_SORTS.created_desc;
   const searchText = filters.search.trim() || null;
   const groupFilter = filters.group.trim() || null;
+  if (dbBackend() === "neon") {
+    const listed = await neonAdmin.listManagedUsers({
+      callerId,
+      page: safePage,
+      pageSize,
+      search: searchText,
+      group: groupFilter,
+      sortBy: sort.sortBy,
+      sortDir: sort.sortDir,
+    });
+    if (listed.error) {
+      return { users: [], page: safePage, pageSize, totalCount: 0, totalPages: 0, error: listed.error };
+    }
+    return {
+      users: listed.users,
+      page: safePage,
+      pageSize,
+      totalCount: listed.total,
+      totalPages: listed.total === 0 ? 0 : Math.ceil(listed.total / pageSize),
+      error: null,
+    };
+  }
+  const supabase = createServerClient();
 
   const [{ data: users, error: listError }, { data: totalCount, error: countError }] =
     await Promise.all([
@@ -152,6 +176,7 @@ export async function setUserAdminMembership(
   targetUserId: string,
   makeAdmin: boolean,
 ): Promise<{ error: string | null }> {
+  if (dbBackend() === "neon") return neonAdmin.setUserAdminMembership(callerId, targetUserId, makeAdmin);
   const supabase = createServerClient();
   const { error } = await supabase.rpc("set_user_admin_membership", {
     caller_id: callerId,

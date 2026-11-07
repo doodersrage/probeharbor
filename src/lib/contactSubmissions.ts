@@ -1,3 +1,5 @@
+import { dbBackend } from "./db/client";
+import * as neonAdmin from "./db/admin";
 import { createServerClient } from "./supabase";
 import { escapeCsvField } from "./csvEscape";
 
@@ -63,6 +65,20 @@ export async function fetchContactSubmissions(
   const from = (safePage - 1) * pageSize;
   const to = from + pageSize - 1;
 
+  if (dbBackend() === "neon") {
+    const paged = await neonAdmin.pageContacts(filters, from, pageSize);
+    if (paged.error) {
+      return { submissions: [], page: safePage, pageSize, totalCount: 0, totalPages: 0, error: paged.error };
+    }
+    return {
+      submissions: paged.rows,
+      page: safePage,
+      pageSize,
+      totalCount: paged.total,
+      totalPages: paged.total === 0 ? 0 : Math.ceil(paged.total / pageSize),
+      error: null,
+    };
+  }
   const supabase = createServerClient();
   let query = supabase.from("contacts").select(CONTACTS_SELECT, { count: "exact" });
 
@@ -111,6 +127,10 @@ export async function fetchAllContactSubmissions(): Promise<{
   submissions: ContactSubmission[];
   error: string | null;
 }> {
+  if (dbBackend() === "neon") {
+    const all = await neonAdmin.allContacts();
+    return { submissions: all.rows, error: all.error };
+  }
   const supabase = createServerClient();
   const submissions: ContactSubmission[] = [];
   let from = 0;

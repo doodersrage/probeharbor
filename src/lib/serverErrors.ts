@@ -1,4 +1,9 @@
 import { createAdminClient } from "./supabase";
+
+// The middleware imports this module, and it also runs for prerendered pages
+// at build time, where cloudflare:workers can't load. The database modules
+// read it on import, so they're loaded only when an error is recorded.
+const loadNeon = async () => ({ ...(await import("./db/client")), ...(await import("./db/admin")) });
 import { notifyOps } from "./opsNotify";
 
 export type ServerErrorRow = {
@@ -35,14 +40,16 @@ export async function recordServerError(input: {
   }
 
   try {
-    const admin = createAdminClient();
-    await admin.from("server_errors").insert({
+    const row = {
       path: input.path.slice(0, 500),
       method: (input.method ?? "GET").slice(0, 16),
       message: message.slice(0, 2000),
       stack: stack?.slice(0, 8000) ?? null,
       user_id: input.userId ?? null,
-    });
+    };
+    const neon = await loadNeon();
+    if (neon.dbBackend() === "neon") await neon.insertServerError(row);
+    else await createAdminClient().from("server_errors").insert(row);
   } catch (dbError) {
     console.error("Failed to record server error:", dbError);
   }
@@ -61,6 +68,8 @@ export async function recordServerError(input: {
 }
 
 export async function listRecentServerErrors(limit = 20): Promise<ServerErrorRow[]> {
+  const neon = await loadNeon();
+  if (neon.dbBackend() === "neon") return neon.listServerErrors<ServerErrorRow>(limit);
   const admin = createAdminClient();
   const { data } = await admin
     .from("server_errors")
