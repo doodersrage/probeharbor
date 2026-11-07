@@ -1,3 +1,5 @@
+import { dbBackend } from "./db/client";
+import * as neonExtras from "./db/alertExtras";
 import { createServerClient } from "./supabase";
 import { snoozeUntilFromHours, vacationUntilFromDays } from "./alertSnooze";
 import { getAlertSettingsForUser, saveAlertSettingsForUser } from "./notify";
@@ -42,6 +44,7 @@ type SnoozeTokenRow = {
 };
 
 export async function findSnoozeToken(token: string): Promise<SnoozeTokenRow | null> {
+  if (dbBackend() === "neon") return neonExtras.findSnoozeToken(await snoozeTokenLookupKeys(token));
   const supabase = createServerClient();
   const { data } = await supabase
     .from("alert_snooze_tokens")
@@ -63,6 +66,10 @@ export async function createSnoozeToken(
 ): Promise<string> {
   const token = randomSnoozeToken();
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+  if (dbBackend() === "neon") {
+    await neonExtras.insertSnoozeToken(await sha256Hex(token), userId, hours, expiresAt);
+    return token;
+  }
   const supabase = createServerClient();
   await supabase.from("alert_snooze_tokens").insert({
     token: await sha256Hex(token),
@@ -78,6 +85,18 @@ export async function applySnoozeToken(
   locale: Locale = "en",
 ): Promise<{ ok: boolean; message: string }> {
   const t = alertJobsMessages(locale).snoozePage;
+  if (dbBackend() === "neon") {
+    const keys = await snoozeTokenLookupKeys(token);
+    const claimed = await neonExtras.claimSnoozeToken(keys).catch(() => null);
+    if (!claimed) {
+      const row = await neonExtras.findSnoozeToken(keys);
+      const expired = row != null && !row.used_at && Date.parse(row.expires_at) < Date.now();
+      return { ok: false, message: expired ? t.resultExpired : t.resultInvalid };
+    }
+    const current = await getAlertSettingsForUser(claimed.user_id);
+    await saveAlertSettingsForUser(claimed.user_id, { ...current, snoozeUntil: snoozeUntilFromHours(claimed.hours) });
+    return { ok: true, message: plural(t.resultSnoozed, claimed.hours, locale) };
+  }
   const data = await findSnoozeToken(token);
 
   if (!data || data.used_at) {
@@ -106,18 +125,26 @@ export async function buildSnoozeUrl(baseUrl: string, userId: string, hours = 24
   return `${baseUrl.replace(/\/$/, "")}/api/alerts/snooze?token=${token}`;
 }
 
+/** The household's members (user ids), from whichever database is active. */
+async function householdMembers(householdId: string): Promise<Array<{ user_id: string }>> {
+  if (dbBackend() === "neon") {
+    return (await neonExtras.householdMemberIds(householdId)).map((user_id) => ({ user_id }));
+  }
+  const { data } = await createServerClient()
+    .from("household_members")
+    .select("user_id")
+    .eq("household_id", householdId);
+  return data ?? [];
+}
+
 export async function applySnoozeForHouseholdMembers(
   householdId: string,
   hours: number,
 ): Promise<number> {
-  const supabase = createServerClient();
-  const { data: members } = await supabase
-    .from("household_members")
-    .select("user_id")
-    .eq("household_id", householdId);
+  const members = await householdMembers(householdId);
 
   let count = 0;
-  for (const member of members ?? []) {
+  for (const member of members) {
     const settings = await getAlertSettingsForUser(member.user_id);
     await saveAlertSettingsForUser(member.user_id, {
       ...settings,
@@ -132,14 +159,10 @@ export async function applyVacationForHouseholdMembers(
   householdId: string,
   days: number,
 ): Promise<number> {
-  const supabase = createServerClient();
-  const { data: members } = await supabase
-    .from("household_members")
-    .select("user_id")
-    .eq("household_id", householdId);
+  const members = await householdMembers(householdId);
 
   let count = 0;
-  for (const member of members ?? []) {
+  for (const member of members) {
     const settings = await getAlertSettingsForUser(member.user_id);
     await saveAlertSettingsForUser(member.user_id, {
       ...settings,
@@ -161,14 +184,10 @@ export async function clearVacationForUser(userId: string): Promise<void> {
 }
 
 export async function clearSnoozeForHouseholdMembers(householdId: string): Promise<number> {
-  const supabase = createServerClient();
-  const { data: members } = await supabase
-    .from("household_members")
-    .select("user_id")
-    .eq("household_id", householdId);
+  const members = await householdMembers(householdId);
 
   let count = 0;
-  for (const member of members ?? []) {
+  for (const member of members) {
     await clearSnoozeForUser(member.user_id);
     count += 1;
   }
@@ -176,14 +195,10 @@ export async function clearSnoozeForHouseholdMembers(householdId: string): Promi
 }
 
 export async function clearVacationForHouseholdMembers(householdId: string): Promise<number> {
-  const supabase = createServerClient();
-  const { data: members } = await supabase
-    .from("household_members")
-    .select("user_id")
-    .eq("household_id", householdId);
+  const members = await householdMembers(householdId);
 
   let count = 0;
-  for (const member of members ?? []) {
+  for (const member of members) {
     await clearVacationForUser(member.user_id);
     count += 1;
   }

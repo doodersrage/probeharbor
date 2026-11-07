@@ -1,3 +1,5 @@
+import { dbBackend } from "./db/client";
+import * as neonExtras from "./db/alertExtras";
 import { createServerClient } from "./supabase";
 import { isSafeHttpsUrl } from "./ssrfGuard";
 
@@ -30,6 +32,17 @@ export async function recordWebhookDelivery(input: {
   durationMs?: number | null;
 }): Promise<void> {
   if (!input.userId) return;
+  if (dbBackend() === "neon") {
+    return neonExtras.recordWebhookDelivery({
+      user_id: input.userId,
+      webhook_type: input.webhookType,
+      url_host: hostFromUrl(input.url),
+      status_code: input.statusCode,
+      success: input.success,
+      error_message: input.errorMessage ?? null,
+      duration_ms: input.durationMs ?? null,
+    });
+  }
 
   const supabase = createServerClient();
   const { error } = await supabase.from("webhook_deliveries").insert({
@@ -51,6 +64,7 @@ export async function listRecentWebhookDeliveries(
   userId: string,
   limit = 15,
 ): Promise<WebhookDeliveryRow[]> {
+  if (dbBackend() === "neon") return neonExtras.listRecentWebhookDeliveries(userId, limit);
   const supabase = createServerClient();
   const { data } = await supabase
     .from("webhook_deliveries")

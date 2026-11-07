@@ -4477,11 +4477,27 @@ Cloudflare email binding.
          stale value loses / full-precision stored value wins, release
          only undoes its own claim, no row → fails open, non-cooldown
          field refused. Mutation: claim without the compare → 2 fail.
-   - [ ] Convert the remaining ~245 queries and 3 Postgres function calls
+   - [x] Deployed 2026-11-07 (user gave standing approval to push): 12
+         commits up to 7a8d89f, including the runway/energy fix. CI all
+         green; the new `db` job ran 80 database tests on Postgres 18 in
+         GitHub Actions. Deploy succeeded; `pnpm smoke:public` passed. Neon
+         code is deployed but off (`DB_BACKEND` unset).
+   - [x] Area 4c (`src/lib/db/alertExtras.ts`): settings history (record
+         + prune in SQL, list, restore snapshot), snooze links (claimed
+         used in one statement before the snooze applies, so two clicks
+         can't both use one), household snooze/vacation member lists, and
+         the webhook delivery log. Supabase-path code in
+         `alertSnoozeTokens.ts` (shared member lookup) and
+         `restoreAlertSettings` (snapshot read) restructured with the same
+         queries; unit tests unchanged and passing. 7 database tests:
+         history cap and restore, other users' history refused, single-use
+         link, 3 concurrent clicks → 1 snooze, expired vs unknown,
+         household snooze scope, delivery log host-only and per user.
+         Mutation: claim without "unused" → 2 fail.
+   - [ ] Convert the remaining ~230 queries and 3 Postgres function calls
          (`sensor_bucket_averages`, `sensor_values_before`,
          `roll_up_and_prune_readings`), one area per commit, each with
-         database tests. Next: settings history, snooze tokens, door
-         events, push/FCM registrations, webhook deliveries.
+         database tests. Next: door events, push/FCM registrations.
    - [ ] Cross-household tests for every household-scoped read and write.
 4. **Login on Better Auth.** Email + password (accept existing bcrypt
    hashes, so passwords keep working), Google, GitHub, Discord, email

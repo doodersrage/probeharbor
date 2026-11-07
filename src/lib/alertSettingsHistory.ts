@@ -1,5 +1,7 @@
 import { alertSettingsToRow, rowToAlertSettings, type AlertSettings } from "./alerts";
 import { getAlertSettingsForUser, saveAlertSettingsForUser } from "./notify";
+import { dbBackend } from "./db/client";
+import * as neonExtras from "./db/alertExtras";
 import { createServerClient } from "./supabase";
 import type { Json } from "../types/supabase";
 import { fmt, formatNumber, plural } from "../i18n/format";
@@ -157,6 +159,10 @@ export async function recordAlertSettingsChange(
   const changes = describeAlertSettingsChanges(before, after, locale);
   if (changes.length === 0) return;
   try {
+    if (dbBackend() === "neon") {
+      await neonExtras.recordSettingsHistory(userId, configRow(before), changes, HISTORY_KEEP);
+      return;
+    }
     const supabase = createServerClient();
     await supabase.from("alert_settings_history").insert({ user_id: userId, settings: configRow(before) as Json, changes });
     const { data } = await supabase
@@ -175,6 +181,7 @@ export async function recordAlertSettingsChange(
 export type AlertSettingsHistoryEntry = { id: number; savedAt: string; changes: string[] };
 
 export async function listAlertSettingsHistory(userId: string, limit = 10): Promise<AlertSettingsHistoryEntry[]> {
+  if (dbBackend() === "neon") return neonExtras.listSettingsHistory(userId, limit);
   const supabase = createServerClient();
   const { data, error } = await supabase
     .from("alert_settings_history")
@@ -205,16 +212,21 @@ export async function restoreAlertSettings(
   id: number,
   locale: Locale = "en",
 ): Promise<{ error: string | null }> {
-  const supabase = createServerClient();
-  const { data, error } = await supabase
-    .from("alert_settings_history")
-    .select("settings")
-    .eq("user_id", userId)
-    .eq("id", id)
-    .maybeSingle();
-  if (error || !data) return { error: "not_found" };
+  let snapshot: Record<string, unknown> | null;
+  if (dbBackend() === "neon") {
+    snapshot = await neonExtras.getSettingsHistorySnapshot(userId, id);
+  } else {
+    const { data, error } = await createServerClient()
+      .from("alert_settings_history")
+      .select("settings")
+      .eq("user_id", userId)
+      .eq("id", id)
+      .maybeSingle();
+    snapshot = error || !data ? null : (data.settings as Record<string, unknown>);
+  }
+  if (!snapshot) return { error: "not_found" };
   const current = await getAlertSettingsForUser(userId);
-  const restored = mergeSnapshotOntoCurrent(data.settings as Record<string, unknown>, current);
+  const restored = mergeSnapshotOntoCurrent(snapshot, current);
   const saved = await saveAlertSettingsForUser(userId, restored);
   if (saved.error) return { error: saved.error };
   await recordAlertSettingsChange(userId, current, restored, locale);
