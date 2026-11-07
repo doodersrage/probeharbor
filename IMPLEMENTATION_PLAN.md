@@ -4449,10 +4449,25 @@ Cloudflare email binding.
          never appear. Mutation: no household filter → 2 fail.
          `fetchHistoryFilterOptions`' Supabase branch was restructured
          (same query and result; unit tests unchanged and passing).
-   - [ ] Convert the remaining ~270 queries and 3 Postgres function calls
+   - [x] Area 4a, alert events (`src/lib/db/alertEvents.ts`): all 15
+         queries in `alertEvents.ts` (record, channels, meta, acknowledge
+         one / latest / all, auto-resolve, log pages, export range,
+         delivered-any, unhandled count and kind check). "Unhandled" is one
+         SQL fragment built from the same kind lists as
+         `isUnhandledAlertEvent`. Acknowledge-all/latest and auto-resolve
+         select and update in one statement; meta merges in the database.
+         The count's Sentry report now covers both paths (moved to
+         `reportCountFailure`; same message). 9 database tests, including
+         a parity test: for every combination of kind (informational,
+         safety, other) × channels × acknowledged, the count, the unhandled
+         list and the kind check match `isUnhandledAlertEvent` row for row.
+         Mutations: rule without the safety branch → 3 fail; acknowledge
+         without the user check → 1 fails.
+   - [ ] Convert the remaining ~255 queries and 3 Postgres function calls
          (`sensor_bucket_averages`, `sensor_values_before`,
          `roll_up_and_prune_readings`), one area per commit, each with
-         database tests. Next: the after-response ingest work and alerts.
+         database tests. Next: alert settings and cooldowns (`notify.ts`,
+         `alertSettingsHistory.ts`), snooze tokens, door events, push/FCM.
    - [ ] Cross-household tests for every household-scoped read and write.
 4. **Login on Better Auth.** Email + password (accept existing bcrypt
    hashes, so passwords keep working), Google, GitHub, Discord, email

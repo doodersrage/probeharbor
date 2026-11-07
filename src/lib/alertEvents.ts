@@ -1,3 +1,5 @@
+import { dbBackend } from "./db/client";
+import * as neonEvents from "./db/alertEvents";
 import { createServerClient } from "./supabase";
 import { escapeCsvField } from "./csvEscape";
 import type { Locale } from "../i18n/locales";
@@ -53,6 +55,7 @@ export async function recordAlertEvent(input: {
   channelsSkipped: string[];
   meta?: AlertEventMeta;
 }): Promise<number | null> {
+  if (dbBackend() === "neon") return neonEvents.recordAlertEvent(input);
   const supabase = createServerClient();
   const { data, error } = await supabase
     .from("alert_events")
@@ -82,6 +85,9 @@ export async function updateAlertEventMeta(
   patch: AlertEventMeta,
   locale: Locale = "en",
 ): Promise<{ ok: boolean; error?: string }> {
+  if (dbBackend() === "neon") {
+    return neonEvents.updateAlertEventMeta(userId, eventId, patch, alertJobsMessages(locale).events.notFound);
+  }
   const supabase = createServerClient();
   const existing = await getAlertEventForUser(userId, eventId);
   if (!existing) return { ok: false, error: alertJobsMessages(locale).events.notFound };
@@ -102,6 +108,7 @@ export async function updateAlertEventChannels(
   channelsSent: string[],
   channelsSkipped: string[],
 ): Promise<void> {
+  if (dbBackend() === "neon") return neonEvents.updateAlertEventChannels(eventId, userId, channelsSent, channelsSkipped);
   const supabase = createServerClient();
   const { error } = await supabase
     .from("alert_events")
@@ -121,6 +128,7 @@ export async function acknowledgeAlertEvent(
   userId: string,
   eventId: number,
 ): Promise<{ ok: boolean; error?: string }> {
+  if (dbBackend() === "neon") return neonEvents.acknowledgeAlertEvent(userId, eventId);
   const supabase = createServerClient();
   const { error } = await supabase
     .from("alert_events")
@@ -138,6 +146,14 @@ export async function acknowledgeLatestUnackedAlert(
   userId: string,
   locale: Locale = "en",
 ): Promise<{ ok: boolean; eventId?: number; error?: string }> {
+  if (dbBackend() === "neon") {
+    return neonEvents.acknowledgeLatestUnackedAlert(
+      userId,
+      INFORMATIONAL_ALERT_KINDS,
+      SAFETY_ALERT_KINDS,
+      alertJobsMessages(locale).events.noUnhandled,
+    );
+  }
   const supabase = createServerClient();
   const { data, error: fetchError } = await supabase
     .from("alert_events")
@@ -164,6 +180,15 @@ export async function acknowledgeAllUnackedAlerts(
   limit = 50,
   locale: Locale = "en",
 ): Promise<{ ok: boolean; count: number; error?: string }> {
+  if (dbBackend() === "neon") {
+    return neonEvents.acknowledgeAllUnackedAlerts(
+      userId,
+      limit,
+      INFORMATIONAL_ALERT_KINDS,
+      SAFETY_ALERT_KINDS,
+      alertJobsMessages(locale).events.noUnhandled,
+    );
+  }
   const supabase = createServerClient();
   const { data, error: fetchError } = await supabase
     .from("alert_events")
@@ -208,6 +233,13 @@ export async function autoResolveAlerts(
   userId: string,
   options: { kinds?: string[]; olderThanMs?: number; reason?: "recovered" | "expired" } = {},
 ): Promise<AutoResolveResult> {
+  if (dbBackend() === "neon") {
+    return neonEvents.autoResolveAlerts(userId, INFORMATIONAL_ALERT_KINDS, SAFETY_ALERT_KINDS, {
+      kinds: options.kinds,
+      olderThanIso: options.olderThanMs ? new Date(Date.now() - options.olderThanMs).toISOString() : undefined,
+      reason: options.reason ?? "recovered",
+    });
+  }
   const supabase = createServerClient();
   let query = supabase
     .from("alert_events")
@@ -255,6 +287,15 @@ export async function listRecentAlertEventsFiltered(
 ): Promise<{ events: AlertEventRow[]; hasMore: boolean }> {
   const limit = Math.min(Math.max(options.limit ?? 20, 1), 50);
   const offset = Math.max(options.offset ?? 0, 0);
+  if (dbBackend() === "neon") {
+    return neonEvents.listRecentAlertEventsFiltered(userId, INFORMATIONAL_ALERT_KINDS, SAFETY_ALERT_KINDS, {
+      limit,
+      offset,
+      kind: options.kind,
+      kinds: options.kinds,
+      unackedOnly: options.unackedOnly,
+    });
+  }
   const supabase = createServerClient();
   let query = supabase
     .from("alert_events")
@@ -291,6 +332,7 @@ export async function getAlertEventForUser(
   userId: string,
   eventId: number,
 ): Promise<AlertEventRow | null> {
+  if (dbBackend() === "neon") return neonEvents.getAlertEventForUser(userId, eventId);
   const supabase = createServerClient();
   const { data, error } = await supabase
     .from("alert_events")
@@ -310,6 +352,7 @@ export async function listRecentAlertEvents(
   userId: string,
   limit = 20,
 ): Promise<AlertEventRow[]> {
+  if (dbBackend() === "neon") return neonEvents.listRecentAlertEvents(userId, limit);
   const supabase = createServerClient();
   const { data, error } = await supabase
     .from("alert_events")
@@ -330,6 +373,7 @@ export async function listRecentDeliveryAttempts(
   userId: string,
   limit = 100,
 ): Promise<Array<Pick<AlertEventRow, "created_at" | "channels_sent" | "channels_skipped">>> {
+  if (dbBackend() === "neon") return neonEvents.listRecentDeliveryAttempts(userId, limit);
   const supabase = createServerClient();
   const { data, error } = await supabase
     .from("alert_events")
@@ -350,6 +394,7 @@ export async function listAlertEventsInRange(
   toIso: string,
   limit = ALERT_EVENTS_EXPORT_MAX,
 ): Promise<AlertEventRow[]> {
+  if (dbBackend() === "neon") return neonEvents.listAlertEventsInRange(userId, fromIso, toIso, limit);
   const supabase = createServerClient();
   const { data, error } = await supabase
     .from("alert_events")
@@ -398,6 +443,7 @@ export function buildAlertEventsCsv(events: AlertEventRow[]): string {
  * fallback "has a test gone out?" signal.
  */
 export async function hasDeliveredAnyAlert(userId: string): Promise<boolean> {
+  if (dbBackend() === "neon") return neonEvents.hasDeliveredAnyAlert(userId);
   const supabase = createServerClient();
   const { data, error } = await supabase
     .from("alert_events")
@@ -447,6 +493,9 @@ export const CLAIMS_PACK_ALERT_KINDS = ["threshold", "freeze", "flood"] as const
 
 /** Any unhandled alert of these kinds (same rule as the count). */
 export async function hasUnhandledAlertOfKinds(userId: string, kinds: readonly string[]): Promise<boolean> {
+  if (dbBackend() === "neon") {
+    return neonEvents.hasUnhandledAlertOfKinds(userId, kinds, INFORMATIONAL_ALERT_KINDS, SAFETY_ALERT_KINDS);
+  }
   const supabase = createServerClient();
   const { data, error } = await supabase
     .from("alert_events")
@@ -462,6 +511,14 @@ export async function hasUnhandledAlertOfKinds(userId: string, kinds: readonly s
 }
 
 export async function countUnacknowledgedAlerts(userId: string): Promise<number> {
+  if (dbBackend() === "neon") {
+    try {
+      return await neonEvents.countUnacknowledgedAlerts(userId, INFORMATIONAL_ALERT_KINDS, SAFETY_ALERT_KINDS);
+    } catch (error) {
+      await reportCountFailure(error instanceof Error ? error.message : String(error));
+      return 0;
+    }
+  }
   const supabase = createServerClient();
   const { count, error } = await supabase
     .from("alert_events")
@@ -473,14 +530,16 @@ export async function countUnacknowledgedAlerts(userId: string): Promise<number>
 
   // A failed count must not pass silently as "nothing unhandled": report it so a
   // broken filter or an outage is noticed (Sentry groups repeats).
-  if (error) {
-    console.error("countUnacknowledgedAlerts failed", error.message ?? error);
-    try {
-      const Sentry = await import("@sentry/cloudflare");
-      Sentry.captureException(new Error(`countUnacknowledgedAlerts: ${error.message ?? "query failed"}`));
-    } catch {
-      /* Sentry optional at build/test time */
-    }
-  }
+  if (error) await reportCountFailure(error.message ?? "query failed");
   return count ?? 0;
+}
+
+async function reportCountFailure(reason: string): Promise<void> {
+  console.error("countUnacknowledgedAlerts failed", reason);
+  try {
+    const Sentry = await import("@sentry/cloudflare");
+    Sentry.captureException(new Error(`countUnacknowledgedAlerts: ${reason}`));
+  } catch {
+    /* Sentry optional at build/test time */
+  }
 }

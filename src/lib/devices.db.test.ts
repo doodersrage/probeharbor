@@ -61,7 +61,7 @@ describe("device lists (Neon)", () => {
     const a = await household("a@example.com");
     const b = await household("b@example.com");
     const d1 = await pushDevice(a, "One");
-    const d2 = await pushDevice(a, "Two");
+    await pushDevice(a, "Two");
     const other = await pushDevice(b, "Theirs");
     await upsertDeviceSensor(d1.id, "t", "T", "temperature", "F");
     await upsertDeviceSensor(d1.id, "h", "H", "humidity", "%");
