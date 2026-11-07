@@ -4382,9 +4382,25 @@ Cloudflare email binding.
          (now() is fixed inside a transaction, so created_at tied and
          "oldest first" flapped: 3 of 4 runs failed). Each query commits,
          tables are emptied after each test; 6 runs in a row pass.
-   - [ ] Convert the remaining ~320 queries and 13 Postgres function calls,
-         one area per commit, each with database tests. Next: sensor
-         ingest and readings, then alerts.
+   - [x] Area 2a, push-ingest write path (`src/lib/db/ingest.ts`):
+         `findDeviceByIngestKeyHash` (device + sensors in one query; a key
+         matching two devices finds none), `upsertDeviceSensor` (safe if
+         two uploads create the same sensor), `updateDeviceMeta` and
+         `touchDeviceLastSeen`, `insertSensorReadings` (one statement, all
+         or nothing), and all of `ingestStats.ts` (counts as one atomic
+         increment; the Supabase path's read-then-write could lose counts).
+         11 database tests, 6 of them through the real
+         `POST /api/ingest/[deviceKey]` handler (only after-response work
+         stubbed): classic and typed payloads, sensor reuse, unknown and
+         disabled keys, two households kept apart, success/error counts,
+         meta merge; 20 parallel count updates all kept. Mutation: letting
+         disabled devices through → 1 fails. Found and fixed: two list
+         functions built the Supabase client before checking the switch.
+   - [ ] Convert the remaining ~310 queries and 13 Postgres function calls,
+         one area per commit, each with database tests. Next: the rest of
+         `devices.ts` (device setup and settings), then reading queries
+         (`sensorReadings.ts`, history, `latest_sensor_readings`), then
+         the after-response ingest work and alerts.
    - [ ] Cross-household tests for every household-scoped read and write.
 4. **Login on Better Auth.** Email + password (accept existing bcrypt
    hashes, so passwords keep working), Google, GitHub, Discord, email

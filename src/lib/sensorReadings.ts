@@ -1,3 +1,5 @@
+import { dbBackend } from "./db/client";
+import { insertSensorReadings as neonInsertSensorReadings } from "./db/ingest";
 import { createServerClient } from "./supabase";
 import type { Json } from "../types/supabase";
 import type { DeviceSensor, DeviceWithSensors } from "./devices";
@@ -35,6 +37,7 @@ export async function insertSensorReadings(
   rows: SensorReadingInsert[],
 ): Promise<{ error: string | null }> {
   if (rows.length === 0) return { error: null };
+  if (dbBackend() === "neon") return neonInsertSensorReadings(rows);
 
   const supabase = createServerClient();
   const { error } = await supabase.from("sensor_readings").insert(

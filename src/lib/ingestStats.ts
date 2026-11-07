@@ -1,3 +1,5 @@
+import { dbBackend } from "./db/client";
+import * as neonIngest from "./db/ingest";
 import { createServerClient } from "./supabase";
 
 function todayUtc(): string {
@@ -8,6 +10,7 @@ export async function recordIngestStat(
   deviceId: string,
   success: boolean,
 ): Promise<void> {
+  if (dbBackend() === "neon") return neonIngest.recordIngestStat(deviceId, success, todayUtc());
   const supabase = createServerClient();
   const day = todayUtc();
   const column = success ? "success_count" : "error_count";
@@ -52,10 +55,11 @@ export async function listIngestStatsForHousehold(
   householdId: string,
   days = 7,
 ): Promise<IngestStatRow[]> {
-  const supabase = createServerClient();
   const since = new Date();
   since.setUTCDate(since.getUTCDate() - days);
   const sinceDay = since.toISOString().slice(0, 10);
+  if (dbBackend() === "neon") return neonIngest.listIngestStatsForHousehold(householdId, sinceDay);
+  const supabase = createServerClient();
 
   const { data: devices } = await supabase
     .from("devices")
@@ -81,10 +85,11 @@ export async function listIngestStatsForHousehold(
 }
 
 export async function listRecentIngestStatsAdmin(days = 7): Promise<IngestStatRow[]> {
-  const supabase = createServerClient();
   const since = new Date();
   since.setUTCDate(since.getUTCDate() - days);
   const sinceDay = since.toISOString().slice(0, 10);
+  if (dbBackend() === "neon") return neonIngest.listRecentIngestStatsAdmin(sinceDay);
+  const supabase = createServerClient();
 
   const { data: stats } = await supabase
     .from("ingest_stats")

@@ -1,3 +1,5 @@
+import { dbBackend } from "./db/client";
+import * as neonIngest from "./db/ingest";
 import { createServerClient } from "./supabase";
 import type { Json } from "../types/supabase";
 import { getOrCreateHouseholdForUser, getUserHouseholdId } from "./households";
@@ -220,6 +222,7 @@ export async function getUserDevicesAsTempConfig(userId: string, email?: string 
 }
 
 export async function touchDeviceLastSeen(deviceId: string): Promise<void> {
+  if (dbBackend() === "neon") return neonIngest.touchDeviceLastSeen(deviceId);
   const supabase = createServerClient();
   await supabase
     .from("devices")
@@ -238,6 +241,7 @@ export async function updateDeviceMeta(
   patch: Record<string, unknown>,
   options: { touchLastSeen?: boolean } = {},
 ): Promise<void> {
+  if (dbBackend() === "neon") return neonIngest.updateDeviceMeta(deviceId, patch, options.touchLastSeen !== false);
   const supabase = createServerClient();
   const { data } = await supabase
     .from("devices")
@@ -261,6 +265,7 @@ export async function updateDeviceMeta(
 export async function findDeviceByIngestKeyHash(
   keyHash: string,
 ): Promise<DeviceWithSensors | null> {
+  if (dbBackend() === "neon") return neonIngest.findDeviceByIngestKeyHash(keyHash);
   const supabase = createServerClient();
   const { data: device } = await supabase
     .from("devices")
@@ -481,6 +486,7 @@ export async function upsertDeviceSensor(
   kind: SensorKind,
   unit?: string | null,
 ): Promise<{ sensor: DeviceSensor | null; error: string | null }> {
+  if (dbBackend() === "neon") return neonIngest.upsertDeviceSensor(deviceId, key, label, kind, unit);
   const supabase = createServerClient();
   const { data: existing } = await supabase
     .from("device_sensors")
