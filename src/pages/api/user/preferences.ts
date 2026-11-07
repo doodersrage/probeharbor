@@ -1,8 +1,7 @@
+import { refreshCookiesAfterMetadataWrite } from "../../../lib/sessionMetadata";
 import type { APIRoute } from "astro";
-import { createAuthClient } from "../../../lib/supabase";
 import {
   getAuthFromRequest,
-  setAuthCookies,
 } from "../../../lib/auth";
 import {
   updateUserDisplayPreferences,
@@ -52,21 +51,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     maxAge: 60 * 60 * 24 * 365,
   });
 
-  // Fresh client -- never the shared `supabase` singleton, whose ambient
-  // session is effectively shared mutable state across concurrent
-  // requests under Cloudflare Workers, and whose refreshSession() result
-  // here gets turned straight into this response's auth cookies.
-  const { data: refreshedSession } = await createAuthClient().auth.refreshSession({
-    refresh_token: refreshToken,
-  });
-
-  if (refreshedSession.session) {
-    setAuthCookies(
-      cookies,
-      refreshedSession.session.access_token,
-      refreshedSession.session.refresh_token,
-    );
-  }
+  await refreshCookiesAfterMetadataWrite(cookies, refreshToken);
 
   return redirect(`${redirectTo}${redirectTo.includes("?") ? "&" : "?"}prefs_saved=1`);
 };

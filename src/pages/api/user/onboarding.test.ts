@@ -51,8 +51,9 @@ beforeEach(() => {
   });
   mockSetAuthCookies.mockReset();
   mockFormRedirectPath.mockReset().mockReturnValue("/dashboard");
-  mockSetSession.mockReset().mockResolvedValue({ error: null });
-  mockUpdateUser.mockReset().mockResolvedValue({ error: null });
+  // Same shape as supabase-js: { data, error }.
+  mockSetSession.mockReset().mockResolvedValue({ data: { session: { access_token: "access" } }, error: null });
+  mockUpdateUser.mockReset().mockResolvedValue({ data: { user: { id: "user-1" } }, error: null });
   mockRefreshSession.mockReset().mockResolvedValue({
     data: {
       session: { access_token: "new-access", refresh_token: "new-refresh" },
@@ -114,7 +115,7 @@ describe("POST /api/user/onboarding", () => {
   });
 
   it("redirects with onboarding_error when setSession fails", async () => {
-    mockSetSession.mockResolvedValue({ error: { message: "bad session" } });
+    mockSetSession.mockResolvedValue({ data: { session: null }, error: { message: "bad session" } });
     const { POST } = await import("./onboarding");
     const context = makeContext();
 

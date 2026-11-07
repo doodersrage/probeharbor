@@ -1,3 +1,4 @@
+import { updateSessionUserMetadata } from "../../../lib/sessionMetadata";
 import type { APIRoute } from "astro";
 import { createAuthClient } from "../../../lib/supabase";
 import { getAuthFromCookies, setAuthCookies } from "../../../lib/auth";
@@ -16,19 +17,11 @@ async function updateDefaultHistoryViewId(
   refreshToken: string,
   viewId: string | null,
 ): Promise<{ error: Error | null; accessToken?: string; refreshToken?: string }> {
-  const client = createAuthClient();
-  const { data: sessionData, error: sessionError } = await client.auth.setSession({
-    access_token: accessToken,
-    refresh_token: refreshToken,
-  });
-  if (sessionError || !sessionData.session) {
-    return { error: sessionError ?? new Error("Invalid session") };
-  }
-  const { error } = await client.auth.updateUser({
-    data: { default_history_view_id: viewId },
-  });
+  const { error } = await updateSessionUserMetadata(accessToken, refreshToken, { default_history_view_id: viewId });
   if (error) return { error };
-  const { data: refreshed } = await client.auth.refreshSession({
+  // Better Auth sessions (no refresh token) read metadata from the database: nothing to refresh.
+  if (!refreshToken) return { error: null };
+  const { data: refreshed } = await createAuthClient().auth.refreshSession({
     refresh_token: refreshToken,
   });
   return {

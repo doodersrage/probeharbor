@@ -1,13 +1,12 @@
+import { refreshCookiesAfterMetadataWrite } from "../lib/sessionMetadata";
 import { getHouseholdFields } from "../lib/householdRecord";
 import { defineAction, ActionError } from "astro:actions";
 import { z } from "astro/zod";
-import { getAuthFromCookies, setAuthCookies } from "../lib/auth";
+import { getAuthFromCookies } from "../lib/auth";
 import {
   updateUserDisplayPreferences,
   parseDisplayPreferencesInput,
-  type ThemePreference,
 } from "../lib/userPreferences";
-import { createAuthClient } from "../lib/supabase";
 import { updateUserAlertSettings } from "../lib/alertNotifications";
 import {
   alertChannelsIncomplete,
@@ -104,11 +103,14 @@ export const server = {
     handler: async (input, context) => {
       const locale = apiLocale(context);
       const t = apiMoreActionsMessages(locale);
-      await requireAuthed(context.cookies, locale);
+      const { session } = await requireAuthed(context.cookies, locale);
 
-      const accessToken = context.cookies.get("sb-access-token")?.value;
-      const refreshToken = context.cookies.get("sb-refresh-token")?.value;
-      if (!accessToken || !refreshToken) {
+      // From the resolved session, so it works on both backends: Supabase
+      // sessions always have both tokens (and may have just been rotated);
+      // Better Auth sessions have no refresh token.
+      const accessToken = session.access_token;
+      const refreshToken = session.refresh_token;
+      if (!accessToken) {
         throw new ActionError({
           code: "UNAUTHORIZED",
           message: t.sessionExpired,
@@ -133,22 +135,7 @@ export const server = {
         maxAge: 60 * 60 * 24 * 365,
       });
 
-      // Fresh client -- never the shared `supabase` singleton, whose
-      // ambient session is effectively shared mutable state across
-      // concurrent requests under Cloudflare Workers, and whose
-      // refreshSession() result here gets turned straight into this
-      // response's auth cookies.
-      const { data: refreshedSession } = await createAuthClient().auth.refreshSession({
-        refresh_token: refreshToken,
-      });
-
-      if (refreshedSession.session) {
-        setAuthCookies(
-          context.cookies,
-          refreshedSession.session.access_token,
-          refreshedSession.session.refresh_token,
-        );
-      }
+      await refreshCookiesAfterMetadataWrite(context.cookies, refreshToken);
 
       return {
         ok: true as const,

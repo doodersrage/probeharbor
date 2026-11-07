@@ -1,5 +1,5 @@
+import { updateSessionUserMetadata } from "./sessionMetadata";
 import type { User } from "@supabase/supabase-js";
-import { createAuthClient } from "./supabase";
 import type { TempFeedConfig, TempProbeConfig } from "./tempFeedConfig";
 import {
   getDefaultTempFeeds,
@@ -160,39 +160,18 @@ export async function updateUserDisplayPreferences(
     | "theme"
   >,
 ): Promise<{ user: User | null; error: Error | null }> {
-  // Fresh client per call -- the shared `supabase` singleton would race
-  // against any other concurrent request's auth calls (see its doc comment
-  // in ./supabase.ts).
-  const client = createAuthClient();
-  const { data: sessionData, error: sessionError } = await client.auth.setSession({
-    access_token: accessToken,
-    refresh_token: refreshToken,
-  });
-
-  if (sessionError || !sessionData.session) {
-    return { user: null, error: sessionError ?? new Error("Invalid session") };
-  }
-
   const personalPatch = personalWeatherMetadataPatch(
     personalWeatherConfigFromPreferences(preferences),
   );
 
-  const { data, error } = await client.auth.updateUser({
-    data: {
+  return updateSessionUserMetadata(accessToken, refreshToken, {
       show_garage_temps: preferences.showGarageTemps,
       show_weather: preferences.showWeather,
       weather_city_id: preferences.weatherCityId,
       use_celsius: preferences.useCelsius,
       theme: preferences.theme,
       ...personalPatch,
-    },
-  });
-
-  if (error) {
-    return { user: null, error };
-  }
-
-  return { user: data.user, error: null };
+    });
 }
 
 export function resolveTheme(

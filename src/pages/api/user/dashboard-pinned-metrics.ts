@@ -1,6 +1,6 @@
+import { refreshCookiesAfterMetadataWrite } from "../../../lib/sessionMetadata";
 import type { APIRoute } from "astro";
-import { createAuthClient } from "../../../lib/supabase";
-import { getAuthFromCookies, setAuthCookies } from "../../../lib/auth";
+import { getAuthFromCookies } from "../../../lib/auth";
 import {
   DEFAULT_PINNED_OVERVIEW_METRICS,
   PINNABLE_OVERVIEW_METRICS,
@@ -144,17 +144,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect, locals }) => 
     return redirect(withQuery(redirectTo, { pinned_error: "1" }));
   }
 
-  const { data: refreshedSession } = await createAuthClient().auth.refreshSession({
-    refresh_token: refreshToken,
-  });
-
-  if (refreshedSession.session) {
-    setAuthCookies(
-      cookies,
-      refreshedSession.session.access_token,
-      refreshedSession.session.refresh_token,
-    );
-  }
+  await refreshCookiesAfterMetadataWrite(cookies, refreshToken);
 
   if (asJson) {
     return new Response(JSON.stringify({ ok: true, metrics }), {

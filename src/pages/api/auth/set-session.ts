@@ -1,4 +1,5 @@
 import type { APIRoute } from "astro";
+import { dbBackend } from "../../../lib/db/client";
 import { getAuthFromCookies, setAuthCookies } from "../../../lib/auth";
 import {
   createAuthClient,
@@ -11,6 +12,10 @@ import {
  * Tokens must belong to the same user already signed in via cookies.
  */
 export const POST: APIRoute = async ({ request, cookies }) => {
+  // Supabase-only (stores client-side Supabase tokens); nothing to set on Neon.
+  if (dbBackend() === "neon") {
+    return new Response(JSON.stringify({ error: "Not found" }), { status: 404, headers: { "Content-Type": "application/json" } });
+  }
   const { session: existing, user } = await getAuthFromCookies(cookies);
   if (!existing || !user) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {

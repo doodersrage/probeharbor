@@ -1,6 +1,6 @@
+import { refreshCookiesAfterMetadataWrite } from "../../../lib/sessionMetadata";
 import type { APIRoute } from "astro";
-import { createAuthClient } from "../../../lib/supabase";
-import { getAuthFromCookies, setAuthCookies } from "../../../lib/auth";
+import { getAuthFromCookies } from "../../../lib/auth";
 import {
   quietUntilSevenDaysFromNow,
   updateDashboardQuietUntil,
@@ -34,17 +34,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     return redirect(withQuery(redirectTo, { quiet_error: "1" }));
   }
 
-  const { data: refreshedSession } = await createAuthClient().auth.refreshSession({
-    refresh_token: refreshToken,
-  });
-
-  if (refreshedSession.session) {
-    setAuthCookies(
-      cookies,
-      refreshedSession.session.access_token,
-      refreshedSession.session.refresh_token,
-    );
-  }
+  await refreshCookiesAfterMetadataWrite(cookies, refreshToken);
 
   return redirect(
     withQuery(redirectTo, quietUntil ? { quiet_saved: "1" } : { quiet_cleared: "1" }),

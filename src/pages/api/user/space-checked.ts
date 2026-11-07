@@ -1,6 +1,6 @@
+import { refreshCookiesAfterMetadataWrite, updateSessionUserMetadata } from "../../../lib/sessionMetadata";
 import type { APIRoute } from "astro";
-import { createAuthClient } from "../../../lib/supabase";
-import { getAuthFromCookies, setAuthCookies } from "../../../lib/auth";
+import { getAuthFromCookies } from "../../../lib/auth";
 import { formRedirectPath, withQuery } from "../../../lib/siteUrl";
 import { apiCommonMessages, apiLocale } from "../../../i18n/messages/app/api/common";
 
@@ -82,21 +82,6 @@ export const POST: APIRoute = async ({ request, cookies, redirect, locals }) => 
 
   const accessToken = session.access_token;
   const refreshToken = session.refresh_token;
-  const client = createAuthClient();
-  const { error: sessionError } = await client.auth.setSession({
-    access_token: accessToken,
-    refresh_token: refreshToken,
-  });
-  if (sessionError) {
-    if (wantsJson) {
-      return new Response(JSON.stringify({ error: tc.sessionError }), {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
-    return redirect(withQuery(redirectTo, { checked_error: "1" }));
-  }
-
   const existingMap = parseCheckedMap(user.user_metadata?.space_checked_by_household);
   const nextMap = { ...existingMap };
   const key = spaceCheckedKey(householdId, space);
@@ -108,12 +93,19 @@ export const POST: APIRoute = async ({ request, cookies, redirect, locals }) => 
     nextMap[householdId] = checkedAt;
   }
 
-  const { error } = await client.auth.updateUser({
-    data: {
-      space_checked_at: checkedAt,
-      space_checked_by_household: nextMap,
-    },
+  const { error } = await updateSessionUserMetadata(accessToken, refreshToken, {
+    space_checked_at: checkedAt,
+    space_checked_by_household: nextMap,
   });
+  if (error?.message === "Invalid session") {
+    if (wantsJson) {
+      return new Response(JSON.stringify({ error: tc.sessionError }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+    return redirect(withQuery(redirectTo, { checked_error: "1" }));
+  }
   if (error) {
     if (wantsJson) {
       return new Response(JSON.stringify({ error: error.message }), {
@@ -124,16 +116,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect, locals }) => 
     return redirect(withQuery(redirectTo, { checked_error: "1" }));
   }
 
-  const { data: refreshed } = await client.auth.refreshSession({
-    refresh_token: refreshToken,
-  });
-  if (refreshed.session) {
-    setAuthCookies(
-      cookies,
-      refreshed.session.access_token,
-      refreshed.session.refresh_token,
-    );
-  }
+  await refreshCookiesAfterMetadataWrite(cookies, refreshToken);
 
   if (wantsJson) {
     return new Response(

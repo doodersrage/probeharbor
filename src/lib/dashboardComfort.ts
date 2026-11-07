@@ -1,5 +1,5 @@
+import { updateSessionUserMetadata } from "./sessionMetadata";
 import type { User } from "@supabase/supabase-js";
-import { createAuthClient } from "./supabase";
 
 /** Metric card ids that can be pinned on Overview Status. */
 export const PINNABLE_OVERVIEW_METRICS = [
@@ -122,25 +122,7 @@ export async function updateDashboardQuietUntil(
   refreshToken: string,
   quietUntilIso: string | null,
 ): Promise<{ user: User | null; error: Error | null }> {
-  const client = createAuthClient();
-  const { data: sessionData, error: sessionError } = await client.auth.setSession({
-    access_token: accessToken,
-    refresh_token: refreshToken,
-  });
-
-  if (sessionError || !sessionData.session) {
-    return { user: null, error: sessionError ?? new Error("Invalid session") };
-  }
-
-  const { data, error } = await client.auth.updateUser({
-    data: { dashboard_quiet_until: quietUntilIso },
-  });
-
-  if (error) {
-    return { user: null, error };
-  }
-
-  return { user: data.user, error: null };
+  return updateSessionUserMetadata(accessToken, refreshToken, { dashboard_quiet_until: quietUntilIso });
 }
 
 export async function updatePinnedOverviewMetrics(
@@ -148,27 +130,9 @@ export async function updatePinnedOverviewMetrics(
   refreshToken: string,
   metrics: PinnableOverviewMetric[],
 ): Promise<{ user: User | null; error: Error | null }> {
-  const client = createAuthClient();
-  const { data: sessionData, error: sessionError } = await client.auth.setSession({
-    access_token: accessToken,
-    refresh_token: refreshToken,
-  });
-
-  if (sessionError || !sessionData.session) {
-    return { user: null, error: sessionError ?? new Error("Invalid session") };
-  }
-
-  const { data, error } = await client.auth.updateUser({
-    data: {
+  return updateSessionUserMetadata(accessToken, refreshToken, {
       pinned_overview_metrics: metrics.slice(0, PINNED_METRICS_MAX),
-    },
-  });
-
-  if (error) {
-    return { user: null, error };
-  }
-
-  return { user: data.user, error: null };
+    });
 }
 
 export function quietUntilSevenDaysFromNow(nowMs = Date.now()): string {
@@ -208,25 +172,7 @@ export async function updateDashboardGrowthTipsDismissed(
   refreshToken: string,
   dismissed: boolean,
 ): Promise<{ user: User | null; error: Error | null }> {
-  const client = createAuthClient();
-  const { data: sessionData, error: sessionError } = await client.auth.setSession({
-    access_token: accessToken,
-    refresh_token: refreshToken,
-  });
-
-  if (sessionError || !sessionData.session) {
-    return { user: null, error: sessionError ?? new Error("Invalid session") };
-  }
-
-  const { data, error } = await client.auth.updateUser({
-    data: { dashboard_growth_tips_dismissed: dismissed },
-  });
-
-  if (error) {
-    return { user: null, error };
-  }
-
-  return { user: data.user, error: null };
+  return updateSessionUserMetadata(accessToken, refreshToken, { dashboard_growth_tips_dismissed: dismissed });
 }
 
 /** Viewer / alert_only roles stay on Simple overview. */

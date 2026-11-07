@@ -1,6 +1,6 @@
+import { refreshCookiesAfterMetadataWrite, updateSessionUserMetadata } from "../../../lib/sessionMetadata";
 import type { APIRoute } from "astro";
-import { getAuthFromCookies, setAuthCookies } from "../../../lib/auth";
-import { createAuthClient } from "../../../lib/supabase";
+import { getAuthFromCookies } from "../../../lib/auth";
 import { formRedirectPath, withQuery } from "../../../lib/siteUrl";
 
 export const POST: APIRoute = async ({ request, cookies, redirect }) => {
@@ -16,49 +16,19 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const accessToken = session.access_token;
   const refreshToken = session.refresh_token;
 
-  // One fresh client for this whole request, never the shared `supabase`
-  // singleton. Cloudflare Workers can interleave concurrent requests
-  // within one isolate's shared global scope, so a shared client's
-  // session would be a race between unrelated users' requests -- and
-  // below we take whatever session ends up on the client and hand it
-  // back to the browser as auth cookies, so a shared client here could
-  // actually issue one user's session cookies to a different user.
-  const client = createAuthClient();
-
-  const { error: sessionError } = await client.auth.setSession({
-    access_token: accessToken,
-    refresh_token: refreshToken,
-  });
-
-  if (sessionError) {
-    return redirect(withQuery(redirectTo, { onboarding_error: "1" }));
-  }
-
   const existing = (user.user_metadata ?? {}) as Record<string, unknown>;
   const dismissed = action !== "reset";
 
-  const { error } = await client.auth.updateUser({
-    data: {
-      ...existing,
-      onboarding_dismissed: dismissed,
-    },
+  const { error } = await updateSessionUserMetadata(accessToken, refreshToken, {
+    ...existing,
+    onboarding_dismissed: dismissed,
   });
 
   if (error) {
     return redirect(withQuery(redirectTo, { onboarding_error: "1" }));
   }
 
-  const { data: refreshed } = await client.auth.refreshSession({
-    refresh_token: refreshToken,
-  });
-
-  if (refreshed.session) {
-    setAuthCookies(
-      cookies,
-      refreshed.session.access_token,
-      refreshed.session.refresh_token,
-    );
-  }
+  await refreshCookiesAfterMetadataWrite(cookies, refreshToken);
 
   return redirect(
     `${redirectTo}${redirectTo.includes("?") ? "&" : "?"}${

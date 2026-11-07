@@ -4962,8 +4962,31 @@ Cloudflare email binding.
            already supported) and keep the bearer token. Owner to decide.
          Session lifetime for apps is Better Auth's default (7 days,
          extended while used); apps idle longer sign in again.
-   - [ ] 4g: `user_metadata` → `user_profiles.metadata`, app_metadata,
-         admin user lookups, account deletion also deletes the login.
+   - [x] 4g (2026-11-07): the last Supabase sign-in calls on the Neon
+         path. Settings in `user_metadata` (display preferences, dashboard
+         quiet / pinned metrics / overview mode / growth tips, onboarding,
+         space checked, default history view, language) go through
+         `src/lib/sessionMetadata.ts`: on Neon the session token's user gets
+         the keys merged into `user_profiles.metadata` in one statement, and
+         the Supabase "refresh so the token carries the new metadata" step
+         is skipped (Better Auth reads it per request). The preferences
+         action read the `sb-*` cookies directly; it now uses the resolved
+         session. Account deletion on Neon checks the password with Better
+         Auth (or the typed email for accounts without one) and needs a
+         verified session with two-factor on; deleting the user row
+         cascades to its Better Auth sessions, logins, TOTP secret and
+         passkeys. Supabase-only entry points answer as gone on Neon
+         (`/api/auth/callback`, `set-session`, the reset page's old `?code=`
+         links). Admin lookups (`getUserRecord`, households, referrals)
+         were already on Neon (step 3). 7 database tests. Mutations: expired
+         session token accepted → 1 fails; deletion without the password
+         check → 1 fails. Unit-test mocks for onboarding now return
+         supabase-js's real `{ data, error }` shape.
+   - **Step 4 status:** all parts done in code and tested against local
+     Postgres. Still open from its "done when": a manual run-through of
+     each sign-in method on a Neon branch with copied data (step 5),
+     real-provider OAuth (needs the Google/Discord setup in 4d), passkeys
+     in a real browser, and the Android release (4f).
    - [ ] Follow-up: re-hash a copied bcrypt password to Better Auth's
          default after its first successful sign-in.
 5. **Copy rehearsal.** Script that copies all app data plus users

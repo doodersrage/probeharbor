@@ -1,10 +1,10 @@
+import { refreshCookiesAfterMetadataWrite, updateSessionUserMetadata } from "../../lib/sessionMetadata";
 import type { APIRoute } from "astro";
 import { isLocale, localizePath, splitLocalePath } from "../../i18n/locales";
 import { isLocalizablePath } from "../../i18n/routes";
 import { LOCALE_COOKIE, LOCALE_COOKIE_MAX_AGE } from "../../i18n/userLocale";
-import { getAuthFromRequest, setAuthCookies } from "../../lib/auth";
+import { getAuthFromRequest } from "../../lib/auth";
 import { formRedirectPath } from "../../lib/siteUrl";
-import { createAuthClient } from "../../lib/supabase";
 
 /**
  * Change the interface language. Form fields: `locale` (en, es, fr, de,
@@ -34,21 +34,9 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
 
   const { session, user } = await getAuthFromRequest(request, cookies);
   if (session && user && user.user_metadata?.locale !== locale) {
-    const client = createAuthClient();
-    const { error: sessionError } = await client.auth.setSession({
-      access_token: session.access_token,
-      refresh_token: session.refresh_token,
-    });
-    if (!sessionError) {
-      const { error } = await client.auth.updateUser({ data: { locale } });
-      if (!error) {
-        // The access token carries user_metadata; refresh so the next page sees the new language.
-        const { data } = await client.auth.refreshSession({ refresh_token: session.refresh_token });
-        if (data.session) {
-          setAuthCookies(cookies, data.session.access_token, data.session.refresh_token);
-        }
-      }
-    }
+    const { error } = await updateSessionUserMetadata(session.access_token, session.refresh_token, { locale });
+    // Supabase: the access token carries user_metadata; refresh so the next page sees the new language.
+    if (!error) await refreshCookiesAfterMetadataWrite(cookies, session.refresh_token);
   }
 
   const cut = target.search(/[?#]/);

@@ -23,9 +23,13 @@ import {
 import { setAuthCookies } from "../../../lib/auth";
 import { setMfaRequiredCookie, needsMfaStepUp, getAssuranceLevels, createAuthClient } from "../../../lib/mfa";
 import { requestLocale, saveLocaleIfMissing } from "./_locale";
+import { dbBackend } from "../../../lib/db/client";
 
 export const GET: APIRoute = async (context) => {
   const { url, cookies, redirect } = context;
+  // Supabase's OAuth return. On Neon, providers return to
+  // /api/auth/callback/<provider> or the GitHub callback instead.
+  if (dbBackend() === "neon") return redirect(buildSignInRedirectUrl("oauth_exchange_failed"));
   const oauthError = url.searchParams.get("error");
   const oauthErrorDescription = url.searchParams.get("error_description");
   const authCode = url.searchParams.get("code");
