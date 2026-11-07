@@ -1,5 +1,7 @@
 import { env as cloudflareEnv } from "cloudflare:workers";
 import { chartShareKey, isChartShareKey } from "./chartShareKeys";
+import { dbBackend } from "./db/client";
+import { findChartShare, insertChartShare } from "./db/shareLinks";
 import { createServerClient } from "./supabase";
 
 function randomToken(): string {
@@ -39,14 +41,17 @@ export async function createChartShare(input: {
     httpMetadata: { contentType: "image/png" },
   });
 
-  const supabase = createServerClient();
-  const { error } = await supabase.from("chart_share_tokens").insert({
+  const row = {
     token,
     user_id: input.userId,
     r2_key: key,
     title: input.title?.slice(0, 120) ?? null,
     expires_at: expiresAt,
-  });
+  };
+  const { error } =
+    dbBackend() === "neon"
+      ? await insertChartShare(row).then((r) => ({ error: r.error ? { message: r.error } : null }))
+      : await createServerClient().from("chart_share_tokens").insert(row);
 
   if (error) {
     try {
@@ -65,12 +70,16 @@ export async function getChartShareByToken(token: string): Promise<{
   png: ArrayBuffer | null;
   expiresAt: string;
 } | null> {
-  const supabase = createServerClient();
-  const { data } = await supabase
-    .from("chart_share_tokens")
-    .select("r2_key, title, expires_at")
-    .eq("token", token)
-    .maybeSingle();
+  const data =
+    dbBackend() === "neon"
+      ? await findChartShare(token)
+      : (
+          await createServerClient()
+            .from("chart_share_tokens")
+            .select("r2_key, title, expires_at")
+            .eq("token", token)
+            .maybeSingle()
+        ).data;
 
   if (!data) return null;
   if (Date.parse(data.expires_at as string) < Date.now()) return null;

@@ -2,7 +2,7 @@ import type { AstroCookies } from "astro";
 import { getAuthFromCookies } from "./auth";
 import { getOrCreateHouseholdForUser, getUserHouseholdRole, canManageHousehold } from "./households";
 import { getUserEntitlements } from "./entitlements";
-import { createServerClient } from "./supabase";
+import { listShareLinks } from "./shareLinksStore";
 import { getSiteUrl } from "./stripe";
 import { listHouseholdApiKeys } from "./apiKeys";
 import { listInboundWebhooks } from "./inboundWebhooks";
@@ -38,14 +38,7 @@ export async function loadShareDashboardContext(
 
   const entitlements = await getUserEntitlements(user.id);
   const household = await getOrCreateHouseholdForUser(user.id, user.email);
-  const supabase = createServerClient();
-  const { data: rawLinks } = household.householdId
-    ? await supabase
-        .from("share_links")
-        .select("id, token, token_hash, token_preview, scope, label, expires_at, created_at")
-        .eq("household_id", household.householdId)
-        .order("created_at", { ascending: false })
-    : { data: [] };
+  const rawLinks = household.householdId ? (await listShareLinks(household.householdId)).links : [];
 
   const householdRole = household.householdId
     ? await getUserHouseholdRole(user.id, household.householdId)

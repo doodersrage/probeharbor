@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { createServerClient } from "../../../../lib/supabase";
+import { resolveShareToken } from "../../../../lib/shareLinksStore";
 import { LEGACY_RAW_SHARE_TOKEN, sha256Hex } from "../../../../lib/shareLinkTokens";
 import { checkEdgeRateLimit } from "../../../../lib/edgeRateLimit";
 import { fetchLatestSensorValues } from "../../../../lib/sensorReadings";
@@ -15,26 +15,13 @@ import { apiLocale } from "../../../../i18n/messages/app/apiMore/common";
 import { apiMorePublicFormsMessages } from "../../../../i18n/messages/app/apiMore/publicForms";
 
 async function resolveShare(token: string) {
-  const supabase = createServerClient();
-  const columns = "id, household_id, scope, label, expires_at";
-  let { data, error } = await supabase
-    .from("share_links")
-    .select(columns)
-    .eq("token_hash", await sha256Hex(token))
-    .maybeSingle();
-
   // Rows the previous code created after the migration but before this
   // deploy have no hash yet. Only the old 48-hex shape is tried raw.
-  if (!data && LEGACY_RAW_SHARE_TOKEN.test(token)) {
-    ({ data, error } = await supabase
-      .from("share_links")
-      .select(columns)
-      .eq("token", token)
-      .is("token_hash", null)
-      .maybeSingle());
-  }
-
-  if (error || !data) return null;
+  const data = await resolveShareToken(
+    await sha256Hex(token),
+    LEGACY_RAW_SHARE_TOKEN.test(token) ? token : null,
+  );
+  if (!data) return null;
   if (data.expires_at && Date.parse(data.expires_at) < Date.now()) return null;
   return data;
 }

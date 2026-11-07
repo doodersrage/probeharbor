@@ -2,7 +2,14 @@ import type { APIRoute } from "astro";
 import { getAuthFromRequest } from "../../../lib/auth";
 import { getOrCreateHouseholdForUser } from "../../../lib/households";
 import { getUserEntitlements } from "../../../lib/entitlements";
-import { createServerClient } from "../../../lib/supabase";
+import {
+  countLiveShareLinks,
+  deleteShareLink,
+  findShareLink,
+  insertShareLink,
+  listShareLinks,
+  replaceShareLinkToken,
+} from "../../../lib/shareLinksStore";
 import {
   redirectUnlessManager,
   requireHouseholdManager,
@@ -37,12 +44,8 @@ export const GET: APIRoute = async ({ request, cookies }) => {
   const manager = await requireHouseholdManager(user.id);
   const canManage = manager.ok;
 
-  const supabase = createServerClient();
-  const { data, error } = await supabase
-    .from("share_links")
-    .select("id, token, token_preview, scope, label, expires_at, created_at")
-    .eq("household_id", household.householdId)
-    .order("created_at", { ascending: false });
+  const { links: data, error: listError } = await listShareLinks(household.householdId);
+  const error = listError ? { message: listError } : null;
 
   if (error) {
     return new Response(JSON.stringify({ error: error.message }), {
@@ -53,7 +56,8 @@ export const GET: APIRoute = async ({ request, cookies }) => {
 
   // `token` is only present for links created before hashing (and only for
   // managers); newer links are shown once at creation.
-  const links = (data ?? []).map(({ token, token_preview, ...rest }) => ({
+  // token_hash never leaves the server.
+  const links = (data ?? []).map(({ token, token_preview, token_hash: _hash, ...rest }) => ({
     ...rest,
     ...(canManage ? { token } : {}),
     token_preview: token_preview ?? token?.slice(-4) ?? null,
@@ -86,31 +90,16 @@ export const POST: APIRoute = async (context) => {
     return redirect(withQuery(redirectTo, { error: "1" }));
   }
 
-  const supabase = createServerClient();
-
   // Revoking stays available after a downgrade so old credentials can be shut off.
   if (action === "revoke") {
     const id = formData.get("id")?.toString();
-    if (id) {
-      await supabase
-        .from("share_links")
-        .delete()
-        .eq("id", id)
-        .eq("household_id", household.householdId);
-    }
+    if (id) await deleteShareLink(household.householdId, id);
     return redirect(withQuery(redirectTo, { revoked: "1" }));
   }
 
   if (action === "regenerate") {
     const id = formData.get("id")?.toString();
-    const { data: link } = id
-      ? await supabase
-          .from("share_links")
-          .select("id, scope")
-          .eq("id", id)
-          .eq("household_id", household.householdId)
-          .maybeSingle()
-      : { data: null };
+    const link = id ? await findShareLink(household.householdId, id) : null;
     if (!link) return redirect(withQuery(redirectTo, { error: "1" }));
     const allowed =
       entitlements.canCreateShareLinks ||
@@ -118,11 +107,7 @@ export const POST: APIRoute = async (context) => {
     if (!allowed) return redirect(withQuery(redirectTo, { error: "pro_required" }));
 
     const token = randomShareToken();
-    const { error } = await supabase
-      .from("share_links")
-      .update(await storedShareTokenFields(token))
-      .eq("id", link.id)
-      .eq("household_id", household.householdId);
+    const { error } = await replaceShareLinkToken(household.householdId, link.id, await storedShareTokenFields(token));
     if (error) return redirect(withQuery(redirectTo, { error: "1" }));
 
     await recordHouseholdActivity({
@@ -159,12 +144,8 @@ export const POST: APIRoute = async (context) => {
     }
     // Cap free/member family links at one live view.
     if (familyOnly) {
-      const { count } = await supabase
-        .from("share_links")
-        .select("id", { count: "exact", head: true })
-        .eq("household_id", household.householdId)
-        .eq("scope", "live");
-      if ((count ?? 0) >= FAMILY_MAX_LIVE_LINKS) {
+      const count = await countLiveShareLinks(household.householdId);
+      if (count >= FAMILY_MAX_LIVE_LINKS) {
         return redirect(withQuery(redirectTo, { error: "family_limit" }));
       }
       // Free/member: never allow never-expire or non-live.
@@ -180,7 +161,7 @@ export const POST: APIRoute = async (context) => {
       : null;
 
   const token = randomShareToken();
-  const { error } = await supabase.from("share_links").insert({
+  const { error } = await insertShareLink({
     ...(await storedShareTokenFields(token)),
     household_id: household.householdId,
     scope,

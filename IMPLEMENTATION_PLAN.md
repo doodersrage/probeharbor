@@ -4546,10 +4546,22 @@ Cloudflare email binding.
          revoke, list or see; revoked keys don't resolve. Mutations: key
          revoke without household → 1 fails; resolve ignoring revoked → 1
          fails.
-   - [ ] Convert the remaining ~180 queries in ~58 files and 1 Postgres
+   - [x] Area 6b, share links and chart shares: new
+         `src/lib/shareLinksStore.ts` holds both paths (Supabase queries
+         moved unchanged from `/api/share/manage`, the public readings
+         endpoint and the Share page, which now call it); Neon SQL in
+         `src/lib/db/shareLinks.ts`. `chartShare.ts` wired too. The manage
+         GET strips `token_hash` from its response (the shared list now
+         selects it). 6 database tests: hash-only resolve, legacy raw only
+         when asked and only unhashed rows, another household can't
+         find/regenerate/revoke/list, regenerate kills the old token,
+         live-link count, the Share API never sends `token_hash`.
+         Mutations: no stripping → 1 fails; revoke without household → 1
+         fails. Existing route unit tests unchanged and passing.
+   - [ ] Convert the remaining ~165 queries in ~53 files and 1 Postgres
          function call (`sensor_bucket_averages`), one area per commit,
-         each with database tests. Next: share links and status pages,
-         billing, account lifecycle.
+         each with database tests. Next: status pages, billing, account
+         lifecycle.
    - [ ] Cross-household tests for every household-scoped read and write.
 4. **Login on Better Auth.** Email + password (accept existing bcrypt
    hashes, so passwords keep working), Google, GitHub, Discord, email
