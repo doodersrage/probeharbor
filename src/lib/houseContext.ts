@@ -127,9 +127,26 @@ export async function fetchReferenceSensorChartPoints(
   filters: { from?: string; to?: string } = {},
   locale: Locale = "en",
 ): Promise<ChartPoint[]> {
-  const supabase = (await import("./supabase")).createServerClient();
   const defaultFrom = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
   const from = filters.from ?? defaultFrom;
+  const { dbBackend } = await import("./db/client");
+  if (dbBackend() === "neon") {
+    const neonPlaces = await import("./db/places");
+    const to = filters.to ?? new Date().toISOString();
+    try {
+      const sensor = await neonPlaces.householdSensor(householdId, sensorId);
+      if (sensor && sensor.kind !== "temperature") return [];
+      const label = sensor?.label ?? libTextMessages(locale).house.house;
+      const rows = await neonPlaces.sensorBucketAverages(householdId, sensorId, from, to, bucketSecondsFor(from, to));
+      return rows
+        .filter((row) => typeof row.avg_num === "number" && Number.isFinite(row.avg_num))
+        .map((row) => ({ timestamp: row.bucket_start, tempf: row.avg_num as number, humidity: null, probeLabel: label }));
+    } catch (error) {
+      console.error("fetchReferenceSensorChartPoints failed:", error instanceof Error ? error.message : error);
+      return [];
+    }
+  }
+  const supabase = (await import("./supabase")).createServerClient();
 
   // Preferred: averages per time bucket in one call (sensor_bucket_averages,
   // migration 20261029180000), so a sensor reporting every minute still

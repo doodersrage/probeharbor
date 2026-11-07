@@ -1,3 +1,5 @@
+import { dbBackend } from "./db/client";
+import * as neonPlaces from "./db/places";
 import { createServerClient } from "./supabase";
 import type { DeviceWithSensors } from "./devices";
 
@@ -10,6 +12,14 @@ export type IndoorReferenceOption = {
 export async function getIndoorReferenceSensorId(
   householdId: string,
 ): Promise<string | null> {
+  if (dbBackend() === "neon") {
+    try {
+      return await neonPlaces.getIndoorReference(householdId);
+    } catch (error) {
+      console.error("getIndoorReferenceSensorId failed:", error instanceof Error ? error.message : error);
+      return null;
+    }
+  }
   const supabase = createServerClient();
   const { data, error } = await supabase
     .from("households")
@@ -29,6 +39,18 @@ export async function updateIndoorReferenceSensor(
   householdId: string,
   sensorId: string | null,
 ): Promise<{ error: string | null }> {
+  if (dbBackend() === "neon") {
+    if (sensorId) {
+      let kind: string | null;
+      try {
+        kind = await neonPlaces.householdSensorKind(householdId, sensorId);
+      } catch (error) {
+        return { error: error instanceof Error ? error.message : String(error) };
+      }
+      if (kind !== "temperature") return { error: "Choose a temperature sensor from this household." };
+    }
+    return neonPlaces.setIndoorReference(householdId, sensorId);
+  }
   const supabase = createServerClient();
 
   if (sensorId) {

@@ -1,3 +1,5 @@
+import { dbBackend } from "./db/client";
+import * as neonPlaces from "./db/places";
 import { createServerClient } from "./supabase";
 import { fetchLatestSensorValues } from "./sensorReadings";
 import {
@@ -37,9 +39,18 @@ export async function updateHouseholdFreezeMapSettings(
   householdId: string,
   settings: FreezeMapHouseholdSettings,
 ): Promise<{ error: string | null }> {
-  const supabase = createServerClient();
   const cityId =
     settings.cityId && /^\d+$/.test(settings.cityId) ? settings.cityId : null;
+  if (dbBackend() === "neon") {
+    return neonPlaces.updateFreezeMapSettings(householdId, {
+      optIn: settings.optIn,
+      cityId,
+      lat: settings.lat,
+      lon: settings.lon,
+      label: settings.label?.trim() || null,
+    });
+  }
+  const supabase = createServerClient();
   const { error } = await supabase
     .from("households")
     .update({
@@ -56,12 +67,14 @@ export async function updateHouseholdFreezeMapSettings(
 export async function getHouseholdFreezeMapSettings(
   householdId: string,
 ): Promise<FreezeMapHouseholdSettings> {
-  const supabase = createServerClient();
-  const { data, error } = await supabase
-    .from("households")
-    .select("freeze_map_opt_in, freeze_map_city_id, freeze_map_lat, freeze_map_lon, freeze_map_label")
-    .eq("id", householdId)
-    .maybeSingle();
+  const { data, error } =
+    dbBackend() === "neon"
+      ? { data: await neonPlaces.getFreezeMapSettings(householdId), error: null }
+      : await createServerClient()
+          .from("households")
+          .select("freeze_map_opt_in, freeze_map_city_id, freeze_map_lat, freeze_map_lon, freeze_map_label")
+          .eq("id", householdId)
+          .maybeSingle();
 
   if (error || !data) {
     return { optIn: false, cityId: null, lat: null, lon: null, label: null };
@@ -78,6 +91,7 @@ export async function getHouseholdFreezeMapSettings(
 
 /** Count households currently opted into the public freeze map. */
 export async function countFreezeMapOptIns(): Promise<number> {
+  if (dbBackend() === "neon") return neonPlaces.countOptIns();
   const supabase = createServerClient();
   const { count, error } = await supabase
     .from("households")
@@ -91,16 +105,22 @@ export async function collectFreezeMapSnapshots(): Promise<{
   cities: number;
   error: string | null;
 }> {
-  const supabase = createServerClient();
-  const { data: households, error } = await supabase
-    .from("households")
-    .select(
-      "id, freeze_map_city_id, freeze_map_lat, freeze_map_lon, freeze_map_label",
-    )
-    .eq("freeze_map_opt_in", true);
-
-  if (error) {
-    return { cities: 0, error: error.message };
+  const neon = dbBackend() === "neon";
+  const supabase = neon ? null : createServerClient();
+  let households: Awaited<ReturnType<typeof neonPlaces.optedInHouseholds>> | null;
+  if (supabase) {
+    const loaded = await supabase
+      .from("households")
+      .select("id, freeze_map_city_id, freeze_map_lat, freeze_map_lon, freeze_map_label")
+      .eq("freeze_map_opt_in", true);
+    if (loaded.error) return { cities: 0, error: loaded.error.message };
+    households = loaded.data;
+  } else {
+    try {
+      households = await neonPlaces.optedInHouseholds();
+    } catch (loadError) {
+      return { cities: 0, error: loadError instanceof Error ? loadError.message : String(loadError) };
+    }
   }
 
   type Acc = {
@@ -178,11 +198,15 @@ export async function collectFreezeMapSnapshots(): Promise<{
   });
 
   if (rows.length > 0) {
-    const { error: insertError } = await supabase
-      .from("freeze_map_snapshots")
-      .insert(rows);
-    if (insertError) {
-      return { cities: 0, error: insertError.message };
+    if (supabase) {
+      const { error: insertError } = await supabase.from("freeze_map_snapshots").insert(rows);
+      if (insertError) return { cities: 0, error: insertError.message };
+    } else {
+      try {
+        await neonPlaces.insertSnapshots(rows);
+      } catch (insertError) {
+        return { cities: 0, error: insertError instanceof Error ? insertError.message : String(insertError) };
+      }
     }
   }
 
@@ -195,10 +219,11 @@ export async function collectFreezeMapSnapshots(): Promise<{
 export async function pruneFreezeMapSnapshots(
   retainDays = 90,
 ): Promise<{ deleted: number; error: string | null }> {
-  const supabase = createServerClient();
   const cutoff = new Date(
     Date.now() - Math.max(1, retainDays) * 24 * 60 * 60 * 1000,
   ).toISOString();
+  if (dbBackend() === "neon") return neonPlaces.pruneSnapshots(cutoff);
+  const supabase = createServerClient();
   const { data, error } = await supabase
     .from("freeze_map_snapshots")
     .delete()
@@ -211,14 +236,17 @@ export async function pruneFreezeMapSnapshots(
 }
 
 export async function listLatestFreezeMapSnapshots(): Promise<FreezeMapSnapshot[]> {
-  const supabase = createServerClient();
-  const { data, error } = await supabase
-    .from("freeze_map_snapshots")
-    .select(
-      "city_id, city_label, sample_count, avg_temp_f, min_temp_f, freeze_risk_count, captured_at, lat, lon",
-    )
-    .order("captured_at", { ascending: false })
-    .limit(400);
+  const { data, error } =
+    dbBackend() === "neon"
+      ? await neonPlaces.recentSnapshots(400).then(
+          (rows) => ({ data: rows, error: null }),
+          (e: unknown) => ({ data: null, error: e }),
+        )
+      : await createServerClient()
+          .from("freeze_map_snapshots")
+          .select("city_id, city_label, sample_count, avg_temp_f, min_temp_f, freeze_risk_count, captured_at, lat, lon")
+          .order("captured_at", { ascending: false })
+          .limit(400);
 
   if (error || !data) return [];
 
@@ -236,12 +264,17 @@ export async function listLatestFreezeMapSnapshots(): Promise<FreezeMapSnapshot[
 export async function listFreezeMapSparklines(
   limitPoints = 7,
 ): Promise<Map<string, number[]>> {
-  const supabase = createServerClient();
-  const { data, error } = await supabase
-    .from("freeze_map_snapshots")
-    .select("city_id, avg_temp_f, captured_at")
-    .order("captured_at", { ascending: false })
-    .limit(800);
+  const { data, error } =
+    dbBackend() === "neon"
+      ? await neonPlaces.recentSnapshots(800).then(
+          (rows) => ({ data: rows, error: null }),
+          (e: unknown) => ({ data: null, error: e }),
+        )
+      : await createServerClient()
+          .from("freeze_map_snapshots")
+          .select("city_id, avg_temp_f, captured_at")
+          .order("captured_at", { ascending: false })
+          .limit(800);
 
   const map = new Map<string, number[]>();
   if (error || !data) return map;

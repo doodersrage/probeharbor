@@ -4688,11 +4688,22 @@ Cloudflare email binding.
          archive writes oldest-first and records the row count.
          Mutations: claims revoke without household → 1 fails; saved view
          delete without user → 1 fails.
-   - [ ] Convert the remaining ~30 queries in ~20 files and 1 Postgres
-         function call (`sensor_bucket_averages`), one area per commit,
-         each with database tests. Next: freeze map, cross-property,
-         house context, indoor reference, the rest of the API routes and
-         pages.
+   - [x] Area 9d (`src/lib/db/places.ts`): freeze map (settings, opt-in
+         count, collection, snapshot batch insert, prune, latest batch,
+         sparklines), indoor reference sensor (must be a temperature
+         sensor in the same household), cross-property snapshots, house
+         reference line (`sensor_bucket_averages`; the sensor-label lookup
+         is now household-scoped too). 4 database tests: city aggregation
+         from opted-in households only, latest/sparklines/prune; reference
+         sensor refuses another household's or a non-temperature sensor;
+         reference line from own sensor only; cross-property covers the
+         user's households with coldest reading and leak state. Mutation:
+         reference sensor check without household → 1 fails. Build
+         checked (freezeMap.ts now loads db/client; no prerendered page
+         imports it).
+   - [ ] Convert the remaining ~15 queries in ~15 files (API routes,
+         pages, actions, small libs), one area per commit, each with
+         database tests.
    - [ ] Cross-household tests for every household-scoped read and write.
 4. **Login on Better Auth.** Email + password (accept existing bcrypt
    hashes, so passwords keep working), Google, GitHub, Discord, email
