@@ -1,3 +1,5 @@
+import { dbBackend } from "./db/client";
+import * as neonReferrals from "./db/referrals";
 import { createAdminClient, createServerClient } from "./supabase";
 
 const CODE_CHARS = "abcdefghjkmnpqrstuvwxyz23456789";
@@ -10,6 +12,18 @@ function randomCode(length = 8): string {
 }
 
 export async function getOrCreateReferralCode(userId: string): Promise<string> {
+  if (dbBackend() === "neon") {
+    const existingNeon = await neonReferrals.findReferralCode(userId);
+    if (existingNeon) return existingNeon;
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      const code = randomCode();
+      if (await neonReferrals.insertReferralCode(userId, code)) return code;
+      // Lost a race for this user's code: use the one that was stored.
+      const stored = await neonReferrals.findReferralCode(userId);
+      if (stored) return stored;
+    }
+    throw new Error("Unable to create referral code");
+  }
   const supabase = createServerClient();
   const { data: existing } = await supabase
     .from("referral_codes")
@@ -35,6 +49,7 @@ export async function getOrCreateReferralCode(userId: string): Promise<string> {
 export async function resolveReferrerUserId(code: string): Promise<string | null> {
   const normalized = code.trim().toLowerCase();
   if (!normalized) return null;
+  if (dbBackend() === "neon") return neonReferrals.referrerForCode(normalized);
 
   const supabase = createServerClient();
   const { data } = await supabase
@@ -51,6 +66,7 @@ export async function recordReferralSignup(
   referredUserId: string,
 ): Promise<void> {
   if (referrerUserId === referredUserId) return;
+  if (dbBackend() === "neon") return neonReferrals.recordSignup(referrerUserId, referredUserId);
 
   const admin = createAdminClient();
   await admin.from("referral_signups").upsert(
@@ -63,6 +79,7 @@ export async function recordReferralSignup(
 }
 
 export async function countReferralSignups(userId: string): Promise<number> {
+  if (dbBackend() === "neon") return neonReferrals.countSignups(userId);
   const supabase = createServerClient();
   const { count } = await supabase
     .from("referral_signups")
@@ -110,6 +127,15 @@ export async function applyReferralForNewUser(
 ): Promise<void> {
   const normalized = refCode.trim().toLowerCase();
   if (!normalized || userAppMetadata?.referred_by) return;
+  if (dbBackend() === "neon") {
+    // The database copy is the authority, not the session's.
+    if (await neonReferrals.referredBy(userId)) return;
+    const referrer = await resolveReferrerUserId(normalized);
+    if (!referrer) return;
+    await recordReferralSignup(referrer, userId);
+    await neonReferrals.setReferredBy(userId, normalized);
+    return;
+  }
 
   const referrerId = await resolveReferrerUserId(normalized);
   if (!referrerId) return;
@@ -133,6 +159,11 @@ export type ReferralStats = {
 export async function grantReferrerRewardOnSubscription(
   referredUserId: string,
 ): Promise<void> {
+  if (dbBackend() === "neon") {
+    const referrer = await neonReferrals.claimReferralReward(referredUserId);
+    if (referrer) await neonReferrals.addReferralRewardDays(referrer);
+    return;
+  }
   const admin = createAdminClient();
   const { data: signup } = await admin
     .from("referral_signups")
@@ -161,6 +192,10 @@ export async function grantReferrerRewardOnSubscription(
 }
 
 export async function fetchReferralAdminStats(): Promise<ReferralStats> {
+  if (dbBackend() === "neon") {
+    const stats = await neonReferrals.adminStats();
+    return { totalSignups: stats.total, rewardedSignups: stats.rewarded, topReferrers: stats.top };
+  }
   const supabase = createServerClient();
   const { count: totalSignups } = await supabase
     .from("referral_signups")

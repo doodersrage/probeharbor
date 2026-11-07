@@ -4590,10 +4590,25 @@ Cloudflare email binding.
          without the "member first" rule → 1 fails.
          **Step 4 must:** also delete the login (Better Auth) when this
          runs; until then the Neon path removes the Neon user only.
-   - [ ] Convert the remaining ~125 queries in ~47 files and 1 Postgres
+   - [x] Area 7c, referrals (`src/lib/db/referrals.ts`) + migration
+         `0002_user_profiles_app_metadata.sql` (applied to the dev branch):
+         trusted fields (referred_by, referral_reward_days) go to
+         `user_profiles.app_metadata`, apart from user settings, as
+         Supabase kept them. Reward claim and the +7 days are single
+         statements (the Supabase path's read-then-write could reward
+         twice). 5 database tests: one code per user under concurrency,
+         referral recorded once in app_metadata only, self-referral
+         ignored, double event → +7 once, three friends at once → +21,
+         the old 28-day cap kept. Mutation: claim without "not yet
+         rewarded" → 1 fails.
+         **Step 4 must:** expose `user_profiles.app_metadata` as the
+         signed-in user's app_metadata (checkout, plans and alerts pages
+         read referral days from it). **Step 5 must:** copy
+         `auth.users.raw_app_meta_data` into it.
+   - [ ] Convert the remaining ~115 queries in ~46 files and 1 Postgres
          function call (`sensor_bucket_averages`), one area per commit,
-         each with database tests. Next: referrals, admin and user
-         manager, emails and reports.
+         each with database tests. Next: admin and user manager, emails
+         and reports.
    - [ ] Cross-household tests for every household-scoped read and write.
 4. **Login on Better Auth.** Email + password (accept existing bcrypt
    hashes, so passwords keep working), Google, GitHub, Discord, email
