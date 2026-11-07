@@ -4312,8 +4312,17 @@ Cloudflare email binding.
          SELECT granted, sees 0 rows and can't call `list_managed_users`;
          the owner role can, as an admin.
    - [x] Neon reachable from the runner (`--status`, read-only): 1 pending.
-   - [ ] Apply to a Neon branch (needs a branch URL; the main Neon branch
-         stays empty until step 6).
+   - [x] Applied to the Neon branch in `DATABASE_URL_DEV_UNPOOLED`
+         (2026-11-07, 308 ms); second run and `--check`: nothing pending.
+         57 tables (56 + `schema_migrations`), RLS on all 57, 0 policies,
+         groups seeded, no other roles hold grants. App role
+         `neondb_owner` has BYPASSRLS (Neon default). In a rolled-back
+         transaction: signup created the household (owner) and `user`
+         group; a role granted SELECT on every table saw 0 rows; a role
+         without EXECUTE was denied `list_managed_users`; the owner, as
+         admin, could call it. Branch left with no test data. The main
+         Neon branch stays empty until step 6.
+   **Step 2 done (2026-11-07).**
    Note for step 5: the baseline seeds the five built-in groups with new
    ids; the data copy must replace them with production's rows (no members
    reference them before the copy).
