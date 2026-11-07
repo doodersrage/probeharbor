@@ -1,3 +1,5 @@
+import { dbBackend } from "./db/client";
+import * as neonFreeze from "./db/freezeSubscriptions";
 import { createServerClient } from "./supabase";
 import { sendEmail } from "./mailer";
 import { brandedEmailParts, formatEmailDate } from "./emailLayout";
@@ -106,6 +108,30 @@ export async function subscribeToFreezeAlerts(input: {
   const lon = roundCoordinate(input.lon);
   const label = input.label.trim().slice(0, MAX_LABEL_LENGTH) || `${lat.toFixed(2)}, ${lon.toFixed(2)}`;
 
+  if (dbBackend() === "neon") {
+    let found: Awaited<ReturnType<typeof neonFreeze.findByEmail>>;
+    try {
+      found = await neonFreeze.findByEmail(email);
+    } catch (lookupError) {
+      console.error("freeze alert subscribe lookup failed:", lookupError instanceof Error ? lookupError.message : lookupError);
+      return { ok: false, error: errors.generic };
+    }
+    if (found?.confirmed_at && found.lat === lat && found.lon === lon) return { ok: true };
+    const neonToken = randomToken();
+    try {
+      await neonFreeze.writeUnconfirmed(email, label, lat, lon, neonToken);
+    } catch (writeError) {
+      console.error("freeze alert subscribe write failed:", writeError instanceof Error ? writeError.message : writeError);
+      return { ok: false, error: errors.generic };
+    }
+    try {
+      await sendConfirmEmail(email, neonToken, label, locale);
+    } catch (sendError) {
+      console.error("Failed to send freeze alert confirm email:", sendError);
+    }
+    return { ok: true };
+  }
+
   const supabase = createServerClient();
   const { data: existing, error: lookupError } = await supabase
     .from("freeze_alert_subscriptions")
@@ -140,6 +166,7 @@ export async function subscribeToFreezeAlerts(input: {
 }
 
 export async function confirmFreezeAlerts(token: string): Promise<{ ok: boolean }> {
+  if (dbBackend() === "neon") return { ok: await neonFreeze.confirm(token) };
   const supabase = createServerClient();
   const { data, error } = await supabase
     .from("freeze_alert_subscriptions")
@@ -157,6 +184,7 @@ export async function confirmFreezeAlerts(token: string): Promise<{ ok: boolean 
 }
 
 export async function unsubscribeFreezeAlerts(token: string): Promise<{ ok: boolean }> {
+  if (dbBackend() === "neon") return { ok: await neonFreeze.unsubscribe(token) };
   const supabase = createServerClient();
   const { data, error } = await supabase
     .from("freeze_alert_subscriptions")
@@ -305,14 +333,26 @@ export type FreezeAlertRunResult = { sent: number; skipped: number; locations: n
 /** Called from the hourly cron. Fetches each location once, however many subscribers share it. */
 export async function sendFreezeAlerts(now = new Date()): Promise<FreezeAlertRunResult> {
   const result: FreezeAlertRunResult = { sent: 0, skipped: 0, locations: 0, errors: [] };
-  const supabase = createServerClient();
-  const { data, error } = await supabase
-    .from("freeze_alert_subscriptions")
-    .select("id, email, token, place_label, lat, lon, last_alert_night")
-    .not("confirmed_at", "is", null);
-  if (error) {
-    result.errors.push(`load: ${error.message}`);
-    return result;
+  const neon = dbBackend() === "neon";
+  const supabase = neon ? null : createServerClient();
+  let data: FreezeAlertSubscriber[] | null;
+  if (supabase) {
+    const loaded = await supabase
+      .from("freeze_alert_subscriptions")
+      .select("id, email, token, place_label, lat, lon, last_alert_night")
+      .not("confirmed_at", "is", null);
+    if (loaded.error) {
+      result.errors.push(`load: ${loaded.error.message}`);
+      return result;
+    }
+    data = loaded.data as FreezeAlertSubscriber[] | null;
+  } else {
+    try {
+      data = await neonFreeze.listConfirmed();
+    } catch (loadError) {
+      result.errors.push(`load: ${loadError instanceof Error ? loadError.message : loadError}`);
+      return result;
+    }
   }
 
   const byLocation = new Map<string, FreezeAlertSubscriber[]>();
@@ -344,10 +384,14 @@ export async function sendFreezeAlerts(now = new Date()): Promise<FreezeAlertRun
           html: mail.html,
           headers: unsubscribeHeaders(mail.unsubscribeUrl),
         });
-        await supabase
-          .from("freeze_alert_subscriptions")
-          .update({ last_alert_night: decision.night.date })
-          .eq("id", sub.id);
+        if (supabase) {
+          await supabase
+            .from("freeze_alert_subscriptions")
+            .update({ last_alert_night: decision.night.date })
+            .eq("id", sub.id);
+        } else {
+          await neonFreeze.markAlerted(sub.id, decision.night.date);
+        }
         result.sent += 1;
       } catch (sendError) {
         const message = sendError instanceof Error ? sendError.message : "send failed";

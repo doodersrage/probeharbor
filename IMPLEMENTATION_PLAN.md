@@ -4517,10 +4517,20 @@ Cloudflare email binding.
          row. Mutation: token hand-off without "other users" → 1 fails
          (only once the direct test was added; through the route the
          re-save hid it).
-   - [ ] Convert the remaining ~205 queries and 2 Postgres function calls
-         (`sensor_bucket_averages`, `roll_up_and_prune_readings`), one area
-         per commit, each with database tests. Next: the rest of the alert
-         senders and cron jobs.
+   - [x] Area 4f, public freeze-alert email subscriptions
+         (`src/lib/db/freezeSubscriptions.ts`): sign up (write with ON
+         CONFLICT (email)), confirm and unsubscribe (one statement each),
+         the hourly job's subscriber list and "alerted for this night"
+         stamp. 4 database tests with the forecast and email stubbed:
+         sign-up flow, same place keeps the token / new place restarts, two
+         simultaneous sign-ups → one row, unknown tokens, the job emails
+         confirmed subscribers once per night only. Mutation: job includes
+         unconfirmed → 1 fails.
+   - [ ] Convert the remaining ~205 queries in ~64 files and 2 Postgres
+         function calls (`sensor_bucket_averages`,
+         `roll_up_and_prune_readings`), one area per commit, each with
+         database tests. Next: cron jobs (`jobRuns.ts`, stuck sensors,
+         feed uptime), then sharing, invites, API keys, billing.
    - [ ] Cross-household tests for every household-scoped read and write.
 4. **Login on Better Auth.** Email + password (accept existing bcrypt
    hashes, so passwords keep working), Google, GitHub, Discord, email
