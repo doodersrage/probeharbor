@@ -5115,6 +5115,21 @@ Cloudflare email binding.
    smoke tests (`pnpm smoke:public`, sign-in, a test reading, a test
    alert) → reopen. Everyone is signed out; companion and Android apps
    must sign in again.
+   - [x] **Done 2026-11-07 (owner's explicit go-ahead).** Backup
+         `probeharbor-20261107T194905Z.dump` (19:49:04 UTC) → migrations on
+         the empty production Neon endpoint → local restore → copy with
+         `--cutover` (dry run first; all tables match, 11/11 users, 136 274
+         readings) → Worker secrets `DATABASE_URL`, `BETTER_AUTH_SECRET`,
+         then `DB_BACKEND=neon` at **19:51:17 UTC** (secrets are read at
+         runtime: no redeploy). Smoke tests pass; the live sign-in page is
+         the Neon one; device readings reach Neon (`POST /api/ingest` 200,
+         no errors in `wrangler tail`). Top-up: 27 readings that reached
+         Supabase between the backup and the switch were missing because
+         Neon's id sequence had reissued their ids to new readings; added
+         with fresh ids, matched by sensor + time (0 missing after).
+         Supabase is untouched (rollback: delete `DB_BACKEND`).
+         Still to do: owner sign-in check on production; Google/Discord
+         credentials (owner, after); Android 1.3.0 release.
 7. **Cleanup** after 30 calm days: remove `@supabase/*`, Supabase env
    vars and scripts, update docs. Pause the Supabase project; deleting it
    is a separate decision with its own approval.
