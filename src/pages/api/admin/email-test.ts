@@ -1,7 +1,7 @@
+import { getUserRecord } from "../../../lib/userRecords";
 import type { APIRoute } from "astro";
 import { getAuthFromCookies } from "../../../lib/auth";
 import { isUserAdmin } from "../../../lib/adminAccess";
-import { createAdminClient } from "../../../lib/supabase";
 import { resolveSiteUrl } from "../../../lib/schemaMarkup";
 import { buildDripEmail } from "../../../lib/dripEmails";
 import { buildTrialReminderEmail } from "../../../lib/trialEmails";
@@ -119,8 +119,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
   const formData = await request.formData().catch(() => null);
   const kind = formData?.get("kind")?.toString() ?? "drip_day1";
-  const admin = createAdminClient();
-  const { data: authData } = await admin.auth.admin.getUserById(user.id);
+  const authData = { user: await getUserRecord(user.id) };
   const email = authData.user?.email ?? user.email;
   if (!email) {
     return new Response("No email on account", { status: 400 });

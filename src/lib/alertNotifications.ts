@@ -1,3 +1,4 @@
+import { getUserRecord } from "./userRecords";
 import type { TempFeedConfig, TempFeedResult, TempProbeConfig } from "./tempFeedConfig";
 import {
   evaluateAlerts,
@@ -145,7 +146,6 @@ import { fetchNwsAlerts, hasFreezeRelatedNwsAlert } from "./nwsAlerts";
 import { buildSnoozeUrl } from "./alertSnoozeTokens";
 import { buildSiteUrl } from "./siteUrl";
 import { persistDoorSessions, readDoorSessions } from "./doorEvents";
-import { createAdminClient } from "./supabase";
 import type { StuckSensor } from "./stuckSensors";
 import { getUserEntitlements } from "./entitlements";
 import { buildFreezeAlertContext } from "./alertContext";
@@ -576,8 +576,7 @@ export async function sendPowerAlertsIfNeeded(
 
 async function getWeatherConfigForUser(userId: string): Promise<import("./personalWeatherStations").PersonalWeatherConfig> {
   try {
-    const admin = createAdminClient();
-    const { data } = await admin.auth.admin.getUserById(userId);
+    const data = { user: await getUserRecord(userId) };
     const meta = data.user?.user_metadata as Record<string, unknown> | undefined;
     const cityId =
       typeof meta?.weather_city_id === "string" && /^\d+$/.test(meta.weather_city_id.trim())

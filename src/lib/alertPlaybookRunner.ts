@@ -1,8 +1,8 @@
+import { getUserRecord } from "./userRecords";
 import type { AlertChannelName, AlertSettings } from "./alerts";
 import type { AlertPlaybookStep } from "./alertPlaybooks";
 import { listRecentAlertEvents, type AlertEventRow } from "./alertEvents";
 import { getAlertSettingsForUser, notifyUser, saveAlertSettingsForUser } from "./notify";
-import { createAdminClient } from "./supabase";
 import { listAllHouseholdOwnerUserIds } from "./households";
 import type { Locale } from "../i18n/locales";
 import { fmt } from "../i18n/format";
@@ -86,11 +86,10 @@ export async function runPlaybooksForAllUsers(): Promise<{
   const errors: string[] = [];
   let stepsExecuted = 0;
   const userIds = await listAllHouseholdOwnerUserIds();
-  const admin = createAdminClient();
 
   for (const userId of userIds) {
     try {
-      const { data } = await admin.auth.admin.getUserById(userId);
+      const data = { user: await getUserRecord(userId) };
       const email = data.user?.email ?? null;
       const settings = await getAlertSettingsForUser(
         userId,

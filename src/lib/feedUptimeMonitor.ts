@@ -1,3 +1,4 @@
+import { getUserRecord } from "./userRecords";
 import { dbBackend } from "./db/client";
 import * as neonJobs from "./db/jobs";
 import { createServerClient } from "./supabase";
@@ -13,8 +14,7 @@ import { alertJobsMessages } from "../i18n/messages/app/alertJobs";
 /** Account language of a user (English when it can't be read). */
 async function ownerLocale(userId: string): Promise<Locale> {
   try {
-    const { createAdminClient } = await import("./supabase");
-    const { data } = await createAdminClient().auth.admin.getUserById(userId);
+    const data = { user: await getUserRecord(userId) };
     return localeFromMetadata(data.user?.user_metadata as Record<string, unknown> | undefined);
   } catch {
     return "en";

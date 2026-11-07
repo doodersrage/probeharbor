@@ -1,3 +1,4 @@
+import { getUserRecord } from "./userRecords";
 import { fetchCrossPropertySnapshots } from "./crossProperty";
 import { getAlertSettingsForUser, notifyUser } from "./notify";
 import { createServerClient } from "./supabase";
@@ -46,8 +47,6 @@ export async function sendPortfolioAlertsForAllUsers(): Promise<{
   let sent = 0;
   let skipped = 0;
   const supabase = createServerClient();
-  const { createAdminClient } = await import("./supabase");
-  const admin = createAdminClient();
 
   const { data: owners } = await supabase
     .from("household_members")
@@ -70,7 +69,7 @@ export async function sendPortfolioAlertsForAllUsers(): Promise<{
         continue;
       }
 
-      const { data: userData } = await admin.auth.admin.getUserById(userId);
+      const userData = { user: await getUserRecord(userId) };
       const email = userData.user?.email ?? null;
       const settings = await getAlertSettingsForUser(
         userId,

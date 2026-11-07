@@ -1,3 +1,4 @@
+import { getUserRecord } from "../../../lib/userRecords";
 import type { APIRoute } from "astro";
 import { createServerClient } from "../../../lib/supabase";
 import {
@@ -28,8 +29,7 @@ import { alertJobsMessages } from "../../../i18n/messages/app/alertJobs";
 /** The linked account's language for bot replies (English when it can't be read). */
 async function linkedUserLocale(userId: string): Promise<Locale> {
   try {
-    const { createAdminClient } = await import("../../../lib/supabase");
-    const { data } = await createAdminClient().auth.admin.getUserById(userId);
+    const data = { user: await getUserRecord(userId) };
     const locale = localeFromMetadata(data.user?.user_metadata as Record<string, unknown> | undefined);
     await ensureLocale(locale, ["app"]);
     return locale;

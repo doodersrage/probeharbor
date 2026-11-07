@@ -1,3 +1,4 @@
+import { getUserRecord } from "./userRecords";
 import { listRecentAlertEvents, type AlertEventRow } from "./alertEvents";
 import { buildAlertReadingsFromLatestSensors } from "./alertReadings";
 import { evaluateAlerts, type AlertSettings } from "./alerts";
@@ -7,7 +8,6 @@ import { listHouseholdIdsForCron, listHouseholdMembers } from "./households";
 import { getAlertSettingsForUser } from "./notify";
 import { fetchLatestSensorValues, getFreezeDwellSamples, type LatestSensorRow } from "./sensorReadings";
 import { excludeDemoRows } from "./demoFeed";
-import { createAdminClient } from "./supabase";
 import { freezeThresholdForReading } from "./thresholdSensorScope";
 
 /** Only readings this fresh count: a stale cold probe is the outage monitor's job. */
@@ -83,7 +83,6 @@ export async function runAlertDeliveryWatchdog(nowMs = Date.now()): Promise<{
   findings: WatchdogFinding[];
   errors: string[];
 }> {
-  const admin = createAdminClient();
   const findings: WatchdogFinding[] = [];
   const errors: string[] = [];
   let checked = 0;
@@ -99,7 +98,7 @@ export async function runAlertDeliveryWatchdog(nowMs = Date.now()): Promise<{
       const { members } = await listHouseholdMembers(householdId);
       for (const member of members) {
         try {
-          const { data } = await admin.auth.admin.getUserById(member.user_id);
+          const data = { user: await getUserRecord(member.user_id) };
           const settings = await getAlertSettingsForUser(
             member.user_id,
             data.user?.user_metadata as Record<string, unknown> | undefined,

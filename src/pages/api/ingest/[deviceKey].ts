@@ -1,3 +1,4 @@
+import { getUserRecord } from "../../../lib/userRecords";
 import type { APIRoute } from "astro";
 import { checkEdgeRateLimit } from "../../../lib/edgeRateLimit";
 import { localeFromMetadata } from "../../../i18n/userLocale";
@@ -235,13 +236,11 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
     try {
       const { listHouseholdMembers } = await import("../../../lib/households");
       const { getAlertSettingsForUser } = await import("../../../lib/notify");
-      const { createAdminClient } = await import("../../../lib/supabase");
       const members = await listHouseholdMembers(device.household_id);
-      const admin = createAdminClient();
       for (const member of members.members) {
         // Isolate each member so one failure can't skip everyone after them.
         try {
-          const { data } = await admin.auth.admin.getUserById(member.user_id);
+          const data = { user: await getUserRecord(member.user_id) };
           const userMetadata = data.user?.user_metadata as Record<string, unknown> | undefined;
           memberContexts.push({
             userId: member.user_id,

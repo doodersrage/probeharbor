@@ -4646,10 +4646,19 @@ Cloudflare email binding.
          4 sensors, second run changes nothing, same-URL device reused,
          one-shot job per household. Mutation: old feed rows not cleared
          → 1 fails.
-   - [ ] Convert the remaining ~75 queries in ~30 files and 1 Postgres
+   - [x] Area 8d, the other 14 `auth.admin.getUserById` lookups (alert
+         ack/snooze, Telegram webhook, ingest after-response alerts,
+         history collection, delivery watchdog, playbooks, alert
+         notifications, feed uptime, portfolio alerts, household page,
+         admin email test) use `getUserRecord` (same Supabase call; tested
+         Neon lookup). Left-over Supabase admin clients removed. Lint
+         warnings in those files were already there (checked against the
+         previous versions). Only `households.ts` and `referrals.ts` still
+         call the Supabase admin API, inside their Supabase branches.
+   - [ ] Convert the remaining ~60 queries in ~28 files and 1 Postgres
          function call (`sensor_bucket_averages`), one area per commit,
-         each with database tests. Next: the other `getUserById` callers,
-         thermostats, archives, pucks, dashboard pages.
+         each with database tests. Next: thermostats, archives, pucks,
+         freeze map, inbound webhooks, dashboard pages and API routes.
    - [ ] Cross-household tests for every household-scoped read and write.
 4. **Login on Better Auth.** Email + password (accept existing bcrypt
    hashes, so passwords keep working), Google, GitHub, Discord, email

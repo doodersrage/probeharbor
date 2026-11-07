@@ -1,4 +1,4 @@
-import { createAdminClient } from "./supabase";
+import { getUserRecord } from "./userRecords";
 import { localeFromMetadata } from "../i18n/userLocale";
 import { fetchTemps } from "./FetchTemps";
 import { getUserDevicesAsTempConfig } from "./devices";
@@ -87,10 +87,9 @@ export async function collectAllUsersFeedHealth(): Promise<{
   const errors: string[] = [];
   const statuses: FeedHealthStatus[] = [];
   const userIds = await listAllHouseholdOwnerUserIds();
-  const admin = createAdminClient();
 
   for (const userId of userIds) {
-    const { data: userData } = await admin.auth.admin.getUserById(userId);
+    const userData = { user: await getUserRecord(userId) };
     const userEmail = userData.user?.email ?? null;
 
     const health = await checkFeedHealth(userId);
@@ -116,7 +115,6 @@ export async function collectHistoryForAllUsers(): Promise<{
   errors: string[];
   warnings: string[];
 }> {
-  const admin = createAdminClient();
   const errors: string[] = [];
   const warnings: string[] = [];
   let usersProcessed = 0;
@@ -126,7 +124,7 @@ export async function collectHistoryForAllUsers(): Promise<{
 
   for (const { householdId, ownerUserId } of households) {
     try {
-      const { data: userData } = await admin.auth.admin.getUserById(ownerUserId);
+      const userData = { user: await getUserRecord(ownerUserId) };
       const authUser = userData.user;
       // Account deleted after the household list was read: nothing to collect,
       // and looking it up would try to recreate a household for a missing user.
@@ -172,7 +170,7 @@ export async function collectHistoryForAllUsers(): Promise<{
       for (const member of members.members) {
         // Isolate each member so one failure can't skip the rest of the household.
         try {
-          const { data: memberData } = await admin.auth.admin.getUserById(member.user_id);
+          const memberData = { user: await getUserRecord(member.user_id) };
           const memberUser = memberData.user;
           // Alerts go out in each member's account language.
           const memberLocale = localeFromMetadata(

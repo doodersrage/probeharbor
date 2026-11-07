@@ -1,3 +1,4 @@
+import { getUserRecord } from "../../../lib/userRecords";
 import type { APIRoute } from "astro";
 import { applyAckToken } from "../../../lib/alertAckTokens";
 import { LOCALE_META, type Locale } from "../../../i18n/locales";
@@ -9,8 +10,7 @@ import { alertJobsMessages } from "../../../i18n/messages/app/alertJobs";
 async function ownerLocale(userId: string, fallback: Locale | undefined): Promise<Locale> {
   let locale: Locale = fallback ?? "en";
   try {
-    const { createAdminClient } = await import("../../../lib/supabase");
-    const { data } = await createAdminClient().auth.admin.getUserById(userId);
+    const data = { user: await getUserRecord(userId) };
     if (data.user) locale = localeFromMetadata(data.user.user_metadata as Record<string, unknown> | undefined);
   } catch {
     // Keep the request language.
