@@ -4536,9 +4536,19 @@ Cloudflare email binding.
          old rows (avg 35 from 30 + 40, household kept), stuck vs varying
          vs too-few-samples, uptime rows per user. Mutation: "different
          value" ignored → 1 fails.
-   - [ ] Convert the remaining ~190 queries in ~60 files and 1 Postgres
+   - [x] Area 6a, household invites and API keys (`src/lib/db/access.ts`):
+         create / reissue / list / accept / revoke invites, create / list /
+         revoke / resolve API keys (resolve finds the key and stamps use in
+         one statement). Email match, expiry and role rules stay in shared
+         code. 5 database tests: only the invited address joins, with the
+         invited role; links and keys stored hashed; expired refused;
+         reissue kills the old link; another household can't reissue,
+         revoke, list or see; revoked keys don't resolve. Mutations: key
+         revoke without household → 1 fails; resolve ignoring revoked → 1
+         fails.
+   - [ ] Convert the remaining ~180 queries in ~58 files and 1 Postgres
          function call (`sensor_bucket_averages`), one area per commit,
-         each with database tests. Next: sharing, invites, API keys,
+         each with database tests. Next: share links and status pages,
          billing, account lifecycle.
    - [ ] Cross-household tests for every household-scoped read and write.
 4. **Login on Better Auth.** Email + password (accept existing bcrypt

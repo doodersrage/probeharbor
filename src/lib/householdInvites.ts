@@ -1,3 +1,5 @@
+import { dbBackend } from "./db/client";
+import * as neonAccess from "./db/access";
 import { createServerClient } from "./supabase";
 import { addHouseholdMemberByUserId, setActiveHouseholdForUser } from "./households";
 import { ensureLocale } from "../i18n/catalog";
@@ -79,12 +81,23 @@ export async function createHouseholdInvite(
   expiresInDays = 7,
   role: HouseholdInviteRole = "member",
 ): Promise<{ invite: PendingInvite | null; token: string | null; error: string | null }> {
-  const supabase = createServerClient();
   const normalized = email.trim().toLowerCase();
   const token = randomToken();
   const expires_at = new Date(
     Date.now() + expiresInDays * 24 * 60 * 60 * 1000,
   ).toISOString();
+  if (dbBackend() === "neon") {
+    const created = await neonAccess.insertInvite({
+      householdId,
+      email: normalized,
+      tokenHash: await sha256Hex(token),
+      invitedBy,
+      expiresAt: expires_at,
+      role,
+    });
+    return created.invite ? { invite: created.invite, token, error: null } : { invite: null, token: null, error: created.error };
+  }
+  const supabase = createServerClient();
 
   const { data, error } = await supabase
     .from("household_invites")
@@ -115,9 +128,13 @@ export async function reissueHouseholdInvite(
   inviteId: string,
   expiresInDays = 7,
 ): Promise<{ invite: PendingInvite | null; token: string | null; error: string | null }> {
-  const supabase = createServerClient();
   const token = randomToken();
   const expires_at = new Date(Date.now() + expiresInDays * 24 * 60 * 60 * 1000).toISOString();
+  if (dbBackend() === "neon") {
+    const reissued = await neonAccess.reissueInvite(householdId, inviteId, await sha256Hex(token), expires_at);
+    return reissued.invite ? { invite: reissued.invite, token, error: null } : { invite: null, token: null, error: reissued.error };
+  }
+  const supabase = createServerClient();
   const { data, error } = await supabase
     .from("household_invites")
     .update({ token: await sha256Hex(token), expires_at })
@@ -136,6 +153,7 @@ export async function reissueHouseholdInvite(
 export async function listPendingInvites(
   householdId: string,
 ): Promise<{ invites: PendingInvite[]; error: string | null }> {
+  if (dbBackend() === "neon") return neonAccess.listPendingInvites(householdId);
   const supabase = createServerClient();
   const { data, error } = await supabase
     .from("household_invites")
@@ -155,6 +173,7 @@ export async function listPendingInvites(
 export async function getInviteByToken(
   token: string,
 ): Promise<HouseholdInvite | null> {
+  if (dbBackend() === "neon") return neonAccess.findInviteByTokenKeys(await inviteTokenLookupKeys(token.trim()));
   const supabase = createServerClient();
   const { data } = await supabase
     .from("household_invites")
@@ -211,6 +230,10 @@ export async function acceptHouseholdInvite(
 
   await setActiveHouseholdForUser(userId, invite.household_id);
 
+  if (dbBackend() === "neon") {
+    await neonAccess.markInviteAccepted(invite.id);
+    return { householdId: invite.household_id, error: null };
+  }
   const supabase = createServerClient();
   await supabase
     .from("household_invites")
@@ -224,6 +247,7 @@ export async function revokeHouseholdInvite(
   householdId: string,
   inviteId: string,
 ): Promise<{ error: string | null }> {
+  if (dbBackend() === "neon") return neonAccess.revokeInvite(householdId, inviteId);
   const supabase = createServerClient();
   const { error } = await supabase
     .from("household_invites")

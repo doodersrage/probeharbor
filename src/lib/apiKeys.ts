@@ -1,3 +1,5 @@
+import { dbBackend } from "./db/client";
+import * as neonAccess from "./db/access";
 import { createServerClient } from "./supabase";
 
 async function sha256Hex(value: string): Promise<string> {
@@ -28,6 +30,7 @@ export type ApiKeyRow = {
 export async function listHouseholdApiKeys(
   householdId: string,
 ): Promise<ApiKeyRow[]> {
+  if (dbBackend() === "neon") return neonAccess.listApiKeys(householdId);
   const supabase = createServerClient();
   const { data } = await supabase
     .from("api_keys")
@@ -46,6 +49,16 @@ export async function createHouseholdApiKey(input: {
   const plaintext = randomApiKey();
   const key_hash = await sha256Hex(plaintext);
   const key_prefix = plaintext.slice(0, 10);
+  if (dbBackend() === "neon") {
+    const created = await neonAccess.insertApiKey({
+      householdId: input.householdId,
+      name: input.name.trim() || "Metrics key",
+      keyPrefix: key_prefix,
+      keyHash: key_hash,
+      createdBy: input.createdBy,
+    });
+    return created.key ? { plaintext, key: created.key, error: null } : { plaintext: null, key: null, error: created.error };
+  }
   const supabase = createServerClient();
   const { data, error } = await supabase
     .from("api_keys")
@@ -69,6 +82,7 @@ export async function revokeHouseholdApiKey(
   householdId: string,
   keyId: string,
 ): Promise<{ error: string | null }> {
+  if (dbBackend() === "neon") return neonAccess.revokeApiKey(householdId, keyId);
   const supabase = createServerClient();
   const { error } = await supabase
     .from("api_keys")
@@ -84,6 +98,7 @@ export async function resolveApiKey(
   const token = bearer.trim();
   if (!token.startsWith("gtm_")) return null;
   const key_hash = await sha256Hex(token);
+  if (dbBackend() === "neon") return neonAccess.resolveApiKey(key_hash);
   const supabase = createServerClient();
   const { data } = await supabase
     .from("api_keys")
