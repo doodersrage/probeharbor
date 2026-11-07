@@ -4719,8 +4719,26 @@ Cloudflare email binding.
          owner (via `getFirstOwnerId`). 5 database tests. Mutations: jti
          read without delete → token reusable → 1 fails; opt-in update
          without the user condition → 1 fails.
-   - [ ] Remaining: `src/pages/api/devices/index.ts` (6 queries).
-   - [ ] Cross-household tests for every household-scoped read and write.
+   - [x] Area 9g (`src/lib/db/deviceActions.ts`): the devices route's
+         delete, bulk enable/disable/space/delete and add-sensor(s), each
+         one statement limited to the household; a sensor pair is added
+         all-or-none. 2 database tests. Mutations: bulk delete without the
+         household condition → 1 fails; add-sensor without it → 1 fails.
+   - [x] **All queries converted (2026-11-07).** A scan finds no file that
+         calls `.from(...)`/`.rpc(...)` without a Neon path, and each
+         remaining `.rpc` call sits behind an earlier Neon return. Totals:
+         179 database tests (local Postgres 18, same migrations), 3562
+         unit tests, typecheck/lint/build clean.
+   - [ ] **Done-when check still open:** the database tests run on local
+         Postgres through a test query runner, not through the Neon HTTP
+         driver on a Neon branch (the harness refuses remote hosts on
+         purpose). Close this in step 5: run the app with
+         `DB_BACKEND=neon` against a Neon branch holding copied data and
+         walk the main pages, ingest, alerts and jobs.
+   - [ ] Cross-household tests: every area added isolation tests for its
+         household-scoped reads and writes, but no single audit has
+         checked that *every* path is covered. Do that audit before
+         step 6.
 4. **Login on Better Auth.** Email + password (accept existing bcrypt
    hashes, so passwords keep working), Google, GitHub, Discord, email
    confirm and reset through Cloudflare email, TOTP and WebAuthn per
