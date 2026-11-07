@@ -4578,10 +4578,22 @@ Cloudflare email binding.
          active → group granted, canceled → group removed, a stray
          inactive subscription can't overwrite the active one, users kept
          apart. Mutation: plain insert for the claim → 2 fail.
-   - [ ] Convert the remaining ~135 queries in ~48 files and 1 Postgres
+   - [x] Area 7b, account deletion (`src/lib/db/accounts.ts`): one
+         statement deletes solely-owned households and promotes a new
+         owner in shared ones (earliest "member", else longest-standing
+         member), then stored files, then the user row (foreign keys
+         remove memberships, settings, alerts, tokens; set created_by to
+         null elsewhere). Stripe cancel unchanged. 4 database tests: sole
+         owner's household/devices/readings go, shared household keeps
+         going with the right new owner, fallback promotion, a plain
+         member's leaving touches nobody else's data. Mutation: promotion
+         without the "member first" rule → 1 fails.
+         **Step 4 must:** also delete the login (Better Auth) when this
+         runs; until then the Neon path removes the Neon user only.
+   - [ ] Convert the remaining ~125 queries in ~47 files and 1 Postgres
          function call (`sensor_bucket_averages`), one area per commit,
-         each with database tests. Next: account lifecycle (deletion,
-         export), referrals, admin and user manager.
+         each with database tests. Next: referrals, admin and user
+         manager, emails and reports.
    - [ ] Cross-household tests for every household-scoped read and write.
 4. **Login on Better Auth.** Email + password (accept existing bcrypt
    hashes, so passwords keep working), Google, GitHub, Discord, email

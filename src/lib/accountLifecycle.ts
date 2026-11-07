@@ -1,3 +1,5 @@
+import { dbBackend } from "./db/client";
+import * as neonAccounts from "./db/accounts";
 import { createAdminClient, createServerClient } from "./supabase";
 import { createStripeClient, isActiveSubscriptionStatus } from "./stripe";
 import { getUserSubscription } from "./stripeSubscriptions";
@@ -63,8 +65,8 @@ export async function deleteR2Prefix(bucket: R2Bucket, prefix: string): Promise<
  * hiccup never blocks deleting the account.
  */
 async function deleteStoredFilesForAccount(
-  supabase: ReturnType<typeof createServerClient>,
-  userId: string,
+  /** The user's shared chart image keys (read before the account is removed). */
+  loadChartKeys: () => Promise<string[]>,
   deletedHouseholdIds: string[],
 ): Promise<void> {
   const bucket = await historyArchiveBucket();
@@ -73,8 +75,7 @@ async function deleteStoredFilesForAccount(
     for (const householdId of deletedHouseholdIds) {
       await deleteR2Prefix(bucket, `archives/${householdId}/`);
     }
-    const { data } = await supabase.from("chart_share_tokens").select("r2_key").eq("user_id", userId);
-    const keys = (data ?? []).map((row) => row.r2_key).filter(isChartShareKey);
+    const keys = (await loadChartKeys()).filter(isChartShareKey);
     if (keys.length) await bucket.delete(keys);
   } catch (error) {
     console.error("Account deletion: stored file cleanup failed:", error);
@@ -85,6 +86,22 @@ export async function deleteUserAccount(
   userId: string,
 ): Promise<{ error: string | null }> {
   await cancelStripeSubscriptionForDeletedAccount(userId);
+
+  if (dbBackend() === "neon") {
+    let deletedNeon: string[];
+    try {
+      deletedNeon = await neonAccounts.releaseOwnedHouseholds(userId);
+    } catch (error) {
+      return { error: error instanceof Error ? error.message : String(error) };
+    }
+    await deleteStoredFilesForAccount(() => neonAccounts.chartShareKeys(userId), deletedNeon);
+    try {
+      await neonAccounts.deleteUserRow(userId);
+      return { error: null };
+    } catch (error) {
+      return { error: error instanceof Error ? error.message : String(error) };
+    }
+  }
 
   const supabase = createServerClient();
 
@@ -140,7 +157,10 @@ export async function deleteUserAccount(
   }
 
   await supabase.from("alert_settings").delete().eq("user_id", userId);
-  await deleteStoredFilesForAccount(supabase, userId, deletedHouseholdIds);
+  await deleteStoredFilesForAccount(async () => {
+    const { data } = await supabase.from("chart_share_tokens").select("r2_key").eq("user_id", userId);
+    return (data ?? []).map((row) => row.r2_key);
+  }, deletedHouseholdIds);
 
   const admin = createAdminClient();
   const { error } = await admin.auth.admin.deleteUser(userId);
