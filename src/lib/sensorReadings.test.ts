@@ -198,9 +198,10 @@ describe("buildReadingRowsFromTempResults", () => {
 });
 
 describe("getRecentNumericReadings", () => {
-  it("returns numeric values, filtering out non-numbers", async () => {
+  it("returns numeric values oldest first, filtering out non-numbers", async () => {
+    // The query reads newest first (for paging); the result is oldest first.
     mockFrom.mockReturnValue(
-      mockQuery({ data: [{ value_num: 40 }, { value_num: null }, { value_num: 41 }] }),
+      mockQuery({ data: [{ value_num: 41 }, { value_num: null }, { value_num: 40 }] }),
     );
     const { getRecentNumericReadings } = await import("./sensorReadings");
 
@@ -233,6 +234,51 @@ describe("getRecentNumericReadingSamples", () => {
     const result = await getRecentNumericReadingSamples("sensor-1", "2024-01-01");
 
     expect(result).toEqual([{ at: "2024-01-01T00:00:00Z", tempF: 40 }]);
+  });
+});
+
+describe("long windows keep the newest readings (freeze runway, energy card)", () => {
+  // A week of readings every 5 minutes: 2016 rows, past the 1000-row page.
+  const start = Date.parse("2026-11-01T00:00:00Z");
+  const week = Array.from({ length: 2016 }, (_, i) => ({
+    value_num: i,
+    recorded_at: new Date(start + i * 5 * 60000).toISOString(),
+  }));
+  const newestFirst = [...week].reverse();
+  const pagedFrom = () => {
+    const q = mockQuery({ data: [] });
+    q.range = vi.fn((from: number, to: number) => Promise.resolve({ data: newestFirst.slice(from, to + 1), error: null }));
+    return q;
+  };
+
+  it("getRecentNumericReadingSamples returns the whole week, ending with the newest reading", async () => {
+    mockFrom.mockImplementation(pagedFrom);
+    const { getRecentNumericReadingSamples } = await import("./sensorReadings");
+
+    const result = await getRecentNumericReadingSamples("sensor-1", "2026-11-01T00:00:00Z");
+
+    expect(result).toHaveLength(2016);
+    expect(result[0]).toEqual({ at: week[0]!.recorded_at, tempF: 0 });
+    expect(result.at(-1)).toEqual({ at: week[2015]!.recorded_at, tempF: 2015 });
+  });
+
+  it("getRecentNumericReadings does too", async () => {
+    mockFrom.mockImplementation(pagedFrom);
+    const { getRecentNumericReadings } = await import("./sensorReadings");
+
+    const result = await getRecentNumericReadings("sensor-1", "2026-11-01T00:00:00Z");
+
+    expect(result).toHaveLength(2016);
+    expect(result.at(-1)).toBe(2015);
+  });
+
+  it("a failed read is empty and logged, as before", async () => {
+    mockFrom.mockReturnValue(mockQuery({ data: null, error: { message: "timeout" } }));
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const { getRecentNumericReadingSamples } = await import("./sensorReadings");
+    expect(await getRecentNumericReadingSamples("sensor-1", "2026-11-01T00:00:00Z")).toEqual([]);
+    expect(spy).toHaveBeenCalled();
+    spy.mockRestore();
   });
 });
 

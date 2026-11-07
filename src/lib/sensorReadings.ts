@@ -105,20 +105,41 @@ export function buildReadingRowsFromTempResults(
   return rows;
 }
 
+/**
+ * Numeric readings for one sensor since `sinceIso`, oldest first. Paged
+ * newest first like door readings: a single request returns at most 1000
+ * rows, and reading oldest first gave long windows (7 days for the freeze
+ * runway alert and the energy card) their OLDEST 1000 rows instead of the
+ * recent ones.
+ */
+async function fetchNumericSeries(
+  sensorId: string,
+  sinceIso: string,
+): Promise<Array<{ value_num: number | null; recorded_at: string | null }>> {
+  const supabase = createServerClient();
+  const { rows, error, capped } = await fetchNewestFirstPages((start, end) =>
+    supabase
+      .from("sensor_readings")
+      .select("value_num, recorded_at")
+      .eq("sensor_id", sensorId)
+      .gte("recorded_at", sinceIso)
+      .order("recorded_at", { ascending: false })
+      .range(start, end),
+  );
+  if (error) {
+    console.error(`numeric readings for ${sensorId} failed:`, error);
+    return [];
+  }
+  if (capped) console.warn(`numeric readings for ${sensorId}: row cap hit; oldest readings not included`);
+  return rows;
+}
+
 export async function getRecentNumericReadings(
   sensorId: string,
   sinceIso: string,
 ): Promise<number[]> {
   if (dbBackend() === "neon") return neonReadings.getRecentNumericReadings(sensorId, sinceIso);
-  const supabase = createServerClient();
-  const { data } = await supabase
-    .from("sensor_readings")
-    .select("value_num")
-    .eq("sensor_id", sensorId)
-    .gte("recorded_at", sinceIso)
-    .order("recorded_at", { ascending: true });
-
-  return (data ?? [])
+  return (await fetchNumericSeries(sensorId, sinceIso))
     .map((row) => row.value_num)
     .filter((v): v is number => typeof v === "number");
 }
@@ -171,15 +192,7 @@ export async function getRecentNumericReadingSamples(
   sinceIso: string,
 ): Promise<Array<{ at: string; tempF: number }>> {
   if (dbBackend() === "neon") return neonReadings.getRecentNumericReadingSamples(sensorId, sinceIso);
-  const supabase = createServerClient();
-  const { data } = await supabase
-    .from("sensor_readings")
-    .select("value_num, recorded_at")
-    .eq("sensor_id", sensorId)
-    .gte("recorded_at", sinceIso)
-    .order("recorded_at", { ascending: true });
-
-  return (data ?? [])
+  return (await fetchNumericSeries(sensorId, sinceIso))
     .filter((row) => typeof row.value_num === "number" && typeof row.recorded_at === "string")
     .map((row) => ({
       at: row.recorded_at as string,

@@ -4422,7 +4422,10 @@ Cloudflare email binding.
          sensors on enabled devices, offsets, demo flag, 1,500 rows all
          returned, past the cap the newest are kept, dwell anchor.
          Mutation: latest values without the household filter → 1 fails.
-   - [ ] **Existing production bug (Supabase path), affects an alert:**
+   - [x] **Fixed 2026-11-07 (commit after e1bb863, not yet deployed).**
+         Supabase path now pages newest first; 3 unit tests with a week of
+         5-minute readings (2016 rows) fail on the old code and pass now.
+         **Existing production bug (Supabase path), affects an alert:**
          `getRecentNumericReadings` and `getRecentNumericReadingSamples`
          aren't paged. Supabase returns at most 1000 rows, oldest first, so
          a window holding more gets its OLDEST 1000. Callers with 7-day
