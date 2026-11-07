@@ -128,9 +128,9 @@ jobs:
   e2e:
     runs-on: ubuntu-latest
     needs: build
-    # Authenticated specs need a preview built with real Supabase/Stripe secrets
-    # (Astro inlines import.meta.env at build time). Workflow-level placeholders
-    # are not enough — mirror deploy.yml env here when secrets are synced.
+    # Authenticated specs sign in against the Neon dev branch (see the step
+    # before test:e2e). Stripe values are inlined at build time, so they mirror
+    # deploy.yml. SUPABASE_* are leftovers until step 7b.
     env:
       SUPABASE_URL: ${{ secrets.SUPABASE_URL || 'https://example.supabase.co' }}
       SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.ci-build-placeholder' }}
@@ -172,6 +172,16 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm build || (rm -rf node_modules/.vite && pnpm build)
+      # Signed-in specs use the Neon dev branch (scrubbed copy; has the e2e
+      # account), never production. The preview reads dist/server/.dev.vars as
+      # Worker secrets at runtime, so these aren't baked into the build.
+      - name: Database for signed-in specs (Neon dev branch)
+        env:
+          E2E_DATABASE_URL: ${{ secrets.E2E_DATABASE_URL }}
+          E2E_BETTER_AUTH_SECRET: ${{ secrets.E2E_BETTER_AUTH_SECRET }}
+        run: |
+          mkdir -p dist/server
+          printf 'DATABASE_URL="%s"\nBETTER_AUTH_SECRET="%s"\n' "$E2E_DATABASE_URL" "$E2E_BETTER_AUTH_SECRET" >> dist/server/.dev.vars
       # Do not set PLAYWRIGHT_BASE_URL here — that disables webServer and nothing listens on :4321.
       - run: pnpm test:e2e
 
