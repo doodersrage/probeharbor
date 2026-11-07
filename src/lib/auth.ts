@@ -5,7 +5,31 @@ import type { Session, User } from "@supabase/supabase-js";
 export type AuthResult = {
   session: Session | null;
   user: User | null;
+  /**
+   * "better-auth" when DB_BACKEND=neon. Better Auth only issues a session
+   * after the second factor, so the Supabase "aal" step-up checks don't apply.
+   */
+  source?: "supabase" | "better-auth";
 };
+
+/** Lazy: db/client and the Better Auth runtime load cloudflare:workers. */
+async function usesBetterAuth(): Promise<boolean> {
+  const { dbBackend } = await import("./db/client");
+  return dbBackend() === "neon";
+}
+
+async function betterAuthResult(request: Request | undefined, headers: Headers): Promise<AuthResult> {
+  try {
+    const [{ withBetterAuth }, { authResultFromHeaders }] = await Promise.all([
+      import("./betterAuthRuntime"),
+      import("./betterAuthSession"),
+    ]);
+    return await withBetterAuth(request, (auth) => authResultFromHeaders(auth, headers));
+  } catch (error) {
+    console.error("Better Auth session lookup failed:", error instanceof Error ? error.message : error);
+    return { session: null, user: null, source: "better-auth" };
+  }
+}
 
 /** Native companions (Android / Bay Buddy) send tokens as headers instead of cookies. */
 export const ACCESS_HEADER = "authorization";
@@ -53,6 +77,8 @@ export async function getAuthFromRequest(
   request: Request,
   cookies: AstroCookies,
 ): Promise<AuthResult> {
+  // Better Auth reads its cookie or the companion's Authorization: Bearer header itself.
+  if (await usesBetterAuth()) return betterAuthResult(request, request.headers);
   const access = bearerAccessToken(request);
   const refresh = request.headers.get(REFRESH_HEADER)?.trim();
   if (access && refresh) {
@@ -64,6 +90,12 @@ export async function getAuthFromRequest(
 export async function getAuthFromCookies(
   cookies: AstroCookies,
 ): Promise<AuthResult> {
+  if (await usesBetterAuth()) {
+    const { betterAuthCookieHeader } = await import("./betterAuthSession");
+    const cookie = betterAuthCookieHeader((name) => cookies.get(name)?.value);
+    if (!cookie) return { session: null, user: null, source: "better-auth" };
+    return betterAuthResult(undefined, new Headers({ cookie }));
+  }
   const accessToken = cookies.get("sb-access-token");
   const refreshToken = cookies.get("sb-refresh-token");
 

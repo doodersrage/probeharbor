@@ -112,7 +112,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   try {
     if (pathRequiresAuth(pathname)) {
-      const { session, user } = await getAuthFromRequest(
+      const { session, user, source } = await getAuthFromRequest(
         context.request,
         context.cookies,
       );
@@ -153,7 +153,11 @@ export const onRequest = defineMiddleware(async (context, next) => {
         );
       }
 
-      if (!isMfaExemptPath(pathname)) {
+      // Supabase sessions only. Better Auth withholds the session until the
+      // second factor is passed, but only for email/password sign-in
+      // (betterAuthSession.db.test.ts). OAuth sign-in (step 4d) must add its
+      // own second-factor check before it ships.
+      if (source !== "better-auth" && !isMfaExemptPath(pathname)) {
         const aal = getAalClaim(session.access_token);
         let needsMfa = false;
 

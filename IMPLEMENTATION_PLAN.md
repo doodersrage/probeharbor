@@ -4736,6 +4736,17 @@ Cloudflare email binding.
          remaining `.rpc` call sits behind an earlier Neon return. Totals:
          179 database tests (local Postgres 18, same migrations), 3562
          unit tests, typecheck/lint/build clean.
+   - [x] **Bug found on a real Neon branch (2026-11-07, fixed):** the HTTP
+         driver ignored the type parsers passed to `neon(url, { types })`
+         for `sql.query()`, so on the Neon path counts and numerics came
+         back as strings and timestamps/dates as `Date` objects, not the
+         Supabase shapes the database tests assert (they use their own
+         runner). Fix: parsers passed on every query in
+         `src/lib/db/client.ts`. Checked from Node against the dev branch
+         (count → number, timestamptz → "…+00:00", date → "YYYY-MM-DD")
+         and in local workerd (`/api/user/referral` count now a number).
+         Unit test `src/lib/db/client.test.ts` (fails if the per-query
+         parsers are removed).
    - [ ] **Done-when check still open:** the database tests run on local
          Postgres through a test query runner, not through the Neon HTTP
          driver on a Neon branch (the harness refuses remote hosts on
@@ -4767,14 +4778,37 @@ Cloudflare email binding.
          password refused, copied bcrypt password signs in and a wrong one
          doesn't, bearer token resolves. Mutations: bcrypt branch removed
          → 2 fail; bcrypt check always true → 2 fail.
-   - [ ] 4b: per-request instance on Workers (Neon Pool), mount the
-         Better Auth handler, resolve the session in middleware and
-         `getAuthFromRequest` when `DB_BACKEND=neon` (same `AuthResult`
-         shape), and confirm it bundles and runs in local workerd.
+   - [x] 4b (2026-11-07): `src/lib/betterAuthRuntime.ts` opens a Neon
+         pool per call and closes it before returning;
+         `src/lib/betterAuthSession.ts` turns a Better Auth session into the
+         app's `AuthResult` (Supabase-shaped user from `getUserRecord`,
+         session token as `access_token`, no refresh token).
+         `getAuthFromRequest` / `getAuthFromCookies` use it when
+         `DB_BACKEND=neon` (loaded lazily; build checked). The middleware's
+         Supabase "aal" gate is skipped for Better Auth sessions (see 4d).
+         Better Auth's own HTTP endpoints are **not** mounted yet: nothing
+         needs them, and once mounted its raw sign-in endpoint would skip
+         the app's rate limits; mount behind an allow-list in 4d/4e.
+         3 database tests: bearer and cookie both resolve with profile
+         metadata, unknown/revoked/missing tokens give no session, and with
+         two-factor on email sign-in gives no session. Mutations: Neon
+         dispatch off → 1 fails; cookie reader ignoring the cookie → 1
+         fails. **Local workerd check** (built Worker, Neon dev branch,
+         throwaway user, removed afterwards): no auth 401, session cookie
+         200 on `/api/user/referral`, bearer token 200 on `/dashboard`,
+         forged cookie 401. Note: the cookie is `__Secure-` prefixed
+         because the site URL is https; a session signed with an http URL
+         isn't accepted (setup mistake during the check, not an app bug).
+         Emails still throw "not wired yet" until 4c.
    - [ ] 4c: email + password routes (register, sign-in, confirm,
          resend, forgot/update password, sign-out, sign-out everywhere),
          emails through the existing Cloudflare email sender.
    - [ ] 4d: Google, Discord and GitHub sign-in, linking by email.
+         **Must add a second-factor check:** Better Auth only demands the
+         second factor on `/sign-in/email` (and username/phone), not on
+         social sign-in, and the middleware skips the Supabase "aal" gate
+         for Better Auth sessions. Without a check, a user with TOTP on
+         could skip it by signing in with Google. Test it before shipping.
    - [ ] 4e: TOTP (enroll, verify, remove, the middleware step-up gate)
          and passkeys.
    - [ ] 4f: companion and Android token flows (contract change:
