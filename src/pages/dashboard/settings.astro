@@ -9,6 +9,7 @@ import AccountLifecycle from "../../components/AccountLifecycle.astro";
 import DataExportCard from "../../components/dashboard/DataExportCard.astro";
 import NotificationsLinksCard from "../../components/dashboard/NotificationsLinksCard.astro";
 import { getAuthFromCookies } from "../../lib/auth";
+import { getTotpState } from "../../lib/betterAuthMfa";
 import { getUserPreferences } from "../../lib/userPreferences";
 import { getUserEntitlements } from "../../lib/entitlements";
 import { getAlertSettingsForUser } from "../../lib/notify";
@@ -44,13 +45,17 @@ const householdRole = household.householdId
   : null;
 const canEdit = canEditHousehold(householdRole);
 
-const [preferences, entitlements, alertSettings, tenantNotify] = await Promise.all([
+const [preferences, entitlements, alertSettings, tenantNotify, hasPassword] = await Promise.all([
   getUserPreferences(user),
   shell ? Promise.resolve(shell.entitlements) : getUserEntitlements(user.id),
   getAlertSettingsForUser(user.id, user.user_metadata),
   household.householdId
     ? getTenantNotifySettings(household.householdId)
     : Promise.resolve({ email: null, name: null }),
+  // Same rule as /api/user/account/delete: password accounts confirm with the
+  // password, Google/GitHub/Discord-only accounts with their email.
+  // If the lookup fails, ask for the password; the route still checks.
+  getTotpState(user.id).then((state) => state.hasPassword, () => true),
 ]);
 const prefsSaved = Astro.url.searchParams.get("prefs_saved");
 const prefsError = Astro.url.searchParams.get("prefs_error");
@@ -179,10 +184,7 @@ const planLabel =
 
         <AccountLifecycle
           userEmail={user.email ?? t.accountSecurity.yourAccount}
-          hasPasswordAuth={
-            (user.identities?.some((identity) => identity.provider === "email") ??
-              Boolean(user.email))
-          }
+          hasPasswordAuth={hasPassword}
           deleteError={deleteError}
         />
 
