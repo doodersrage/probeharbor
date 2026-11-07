@@ -4668,10 +4668,19 @@ Cloudflare email binding.
          without the household condition → 2 fail; bind without consuming
          the nonce → 1 fails (needed the concurrent test; a later replay
          is already stopped by the pending read).
-   - [ ] Convert the remaining ~50 queries in ~27 files and 1 Postgres
+   - [x] Area 9b, thermostats (`src/lib/db/thermostats.ts`): connections
+         (list, get, save one per provider, token refresh keeping or
+         rotating the refresh token, delete) and snapshots (insert, chart
+         series newest-first with the 10,000-row cap). 3 database tests:
+         replace on reconnect, refresh keep/rotate, another household
+         can't see/refresh/delete, chart window and order. Mutation:
+         token refresh without the household → 1 fails. (OAuth tokens are
+         stored as plain text on both paths, as before; worth a separate
+         look.)
+   - [ ] Convert the remaining ~45 queries in ~25 files and 1 Postgres
          function call (`sensor_bucket_averages`), one area per commit,
-         each with database tests. Next: thermostats, archives, freeze
-         map, inbound webhooks, dashboard pages and API routes.
+         each with database tests. Next: archives, freeze map, inbound
+         webhooks, dashboard pages and API routes.
    - [ ] Cross-household tests for every household-scoped read and write.
 4. **Login on Better Auth.** Email + password (accept existing bcrypt
    hashes, so passwords keep working), Google, GitHub, Discord, email

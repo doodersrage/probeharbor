@@ -1,3 +1,5 @@
+import { dbBackend } from "./db/client";
+import * as neonThermostats from "./db/thermostats";
 import { createServerClient } from "./supabase";
 
 export type ThermostatProvider = "nest" | "ecobee";
@@ -47,6 +49,7 @@ function fromRow(row: ConnectionRow): ThermostatConnection {
 export async function listConnectionsForHousehold(
   householdId: string,
 ): Promise<ThermostatConnection[]> {
+  if (dbBackend() === "neon") return (await neonThermostats.listConnections(householdId)).map(fromRow);
   const supabase = createServerClient();
   const { data } = await supabase
     .from("household_thermostat_connections")
@@ -61,6 +64,10 @@ export async function getConnectionForHousehold(
   householdId: string,
   provider: ThermostatProvider,
 ): Promise<ThermostatConnection | null> {
+  if (dbBackend() === "neon") {
+    const row = await neonThermostats.getConnection(householdId, provider);
+    return row ? fromRow(row) : null;
+  }
   const supabase = createServerClient();
   const { data } = await supabase
     .from("household_thermostat_connections")
@@ -83,6 +90,17 @@ export async function saveConnection(input: {
   externalDeviceId?: string | null;
   connectedBy?: string | null;
 }): Promise<{ error: string | null }> {
+  if (dbBackend() === "neon") {
+    return neonThermostats.saveConnection({
+      householdId: input.householdId,
+      provider: input.provider,
+      refreshToken: input.refreshToken,
+      accessToken: input.accessToken ?? null,
+      accessTokenExpiresAt: input.accessTokenExpiresAt ?? null,
+      externalDeviceId: input.externalDeviceId ?? null,
+      connectedBy: input.connectedBy ?? null,
+    });
+  }
   const supabase = createServerClient();
   const { error } = await supabase
     .from("household_thermostat_connections")
@@ -108,6 +126,15 @@ export async function updateTokensAfterRefresh(
   provider: ThermostatProvider,
   tokens: { accessToken: string; refreshToken?: string; expiresAtMs: number },
 ): Promise<{ error: string | null }> {
+  if (dbBackend() === "neon") {
+    return neonThermostats.updateTokens(
+      householdId,
+      provider,
+      tokens.accessToken,
+      new Date(tokens.expiresAtMs).toISOString(),
+      tokens.refreshToken || null,
+    );
+  }
   const supabase = createServerClient();
   const { error } = await supabase
     .from("household_thermostat_connections")
@@ -126,6 +153,7 @@ export async function deleteConnection(
   householdId: string,
   provider: ThermostatProvider,
 ): Promise<{ error: string | null }> {
+  if (dbBackend() === "neon") return neonThermostats.deleteConnection(householdId, provider);
   const supabase = createServerClient();
   const { error } = await supabase
     .from("household_thermostat_connections")
