@@ -181,6 +181,15 @@ const fr: SettingsMessages = {
     verifySubmit: "Vérifier et activer",
     passwordLabel: "Mot de passe du compte",
     passwordHint: "Nécessaire pour activer ou désactiver l’application d’authentification.",
+    passkeysHeading: "Clés d’accès (passkeys)",
+    passkeysHint: "Connectez-vous avec votre empreinte, votre visage ou le code de l’appareil au lieu d’un mot de passe et d’un code. Une passkey évite l’étape de l’application d’authentification.",
+    addPasskey: "Ajouter une passkey",
+    passkeyDefaultName: "Passkey",
+    passkeyAdded: "Passkey ajoutée.",
+    passkeyRemoved: "Passkey supprimée.",
+    passkeyFailed: "Cela n’a pas fonctionné. Réessayez ou utilisez un autre appareil.",
+    passkeyUnsupported: "Ce navigateur ne peut pas créer de passkeys.",
+    passkeyFresh: "Par sécurité, reconnectez-vous avant d’ajouter une passkey.",
   },
   /** Settings → "Data & export" card (retention and export links). */
   dataExport: {

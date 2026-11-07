@@ -17,6 +17,8 @@ const ptBr: AuthSigninMessages = {
     password: "Senha",
     submit: "Entrar com e-mail",
     forgotPassword: "Esqueceu a senha?",
+    passkeySignIn: "Entrar com uma passkey",
+    passkeyFailed: "O login com passkey não funcionou. Tente de novo ou entre com seu e-mail e senha.",
     newHere: "Novo por aqui?",
     createAccount: "Crie uma conta grátis",
     privacy: "Privacidade",

@@ -180,6 +180,15 @@ const ptBr: SettingsMessages = {
     verifySubmit: "Verificar e ativar",
     passwordLabel: "Senha da conta",
     passwordHint: "Necessária para ativar ou desativar o app autenticador.",
+    passkeysHeading: "Chaves de acesso (passkeys)",
+    passkeysHint: "Entre com sua digital, rosto ou PIN do dispositivo em vez de senha e código. Uma passkey pula a etapa do app autenticador.",
+    addPasskey: "Adicionar uma passkey",
+    passkeyDefaultName: "Passkey",
+    passkeyAdded: "Passkey adicionada.",
+    passkeyRemoved: "Passkey removida.",
+    passkeyFailed: "Não funcionou. Tente de novo ou use outro dispositivo.",
+    passkeyUnsupported: "Este navegador não consegue criar passkeys.",
+    passkeyFresh: "Por segurança, entre novamente antes de adicionar uma passkey.",
   },
   /** Settings → "Data & export" card (retention and export links). */
   dataExport: {

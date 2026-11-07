@@ -17,6 +17,8 @@ const es: AuthSigninMessages = {
     password: "Contraseña",
     submit: "Iniciar sesión con correo",
     forgotPassword: "¿Olvidaste tu contraseña?",
+    passkeySignIn: "Iniciar sesión con una passkey",
+    passkeyFailed: "El inicio de sesión con passkey no funcionó. Inténtalo de nuevo o usa tu correo y contraseña.",
     newHere: "¿Eres nuevo?",
     createAccount: "Crea una cuenta gratis",
     privacy: "Privacidad",

@@ -17,6 +17,8 @@ const de: AuthSigninMessages = {
     password: "Passwort",
     submit: "Mit E-Mail anmelden",
     forgotPassword: "Passwort vergessen?",
+    passkeySignIn: "Mit Passkey anmelden",
+    passkeyFailed: "Die Anmeldung mit Passkey hat nicht geklappt. Versuche es erneut oder melde dich mit E-Mail und Passwort an.",
     newHere: "Neu hier?",
     createAccount: "Kostenloses Konto erstellen",
     privacy: "Datenschutz",

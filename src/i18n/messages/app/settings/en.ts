@@ -177,6 +177,15 @@ const en = {
     verifySubmit: "Verify & activate",
     passwordLabel: "Account password",
     passwordHint: "Needed to turn the authenticator app on or off.",
+    passkeysHeading: "Passkeys",
+    passkeysHint: "Sign in with your fingerprint, face or device PIN instead of a password and code. A passkey skips the authenticator-app step.",
+    addPasskey: "Add a passkey",
+    passkeyDefaultName: "Passkey",
+    passkeyAdded: "Passkey added.",
+    passkeyRemoved: "Passkey removed.",
+    passkeyFailed: "That didn't work. Try again, or use a different device.",
+    passkeyUnsupported: "This browser can't create passkeys.",
+    passkeyFresh: "For safety, sign in again before adding a passkey.",
   },
   /** Settings → "Data & export" card (retention and export links). */
   dataExport: {

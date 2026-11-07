@@ -183,6 +183,15 @@ const de: SettingsMessages = {
     verifySubmit: "Bestätigen & aktivieren",
     passwordLabel: "Kontopasswort",
     passwordHint: "Wird benötigt, um die Authenticator-App ein- oder auszuschalten.",
+    passkeysHeading: "Passkeys",
+    passkeysHint: "Melde dich mit Fingerabdruck, Gesicht oder Geräte-PIN statt mit Passwort und Code an. Ein Passkey überspringt den Schritt mit der Authenticator-App.",
+    addPasskey: "Passkey hinzufügen",
+    passkeyDefaultName: "Passkey",
+    passkeyAdded: "Passkey hinzugefügt.",
+    passkeyRemoved: "Passkey entfernt.",
+    passkeyFailed: "Das hat nicht geklappt. Versuche es erneut oder nutze ein anderes Gerät.",
+    passkeyUnsupported: "Dieser Browser kann keine Passkeys erstellen.",
+    passkeyFresh: "Melde dich zur Sicherheit erneut an, bevor du einen Passkey hinzufügst.",
   },
   /** Settings → "Data & export" card (retention and export links). */
   dataExport: {

@@ -17,6 +17,8 @@ const fr: AuthSigninMessages = {
     password: "Mot de passe",
     submit: "Se connecter avec un e-mail",
     forgotPassword: "Mot de passe oublié ?",
+    passkeySignIn: "Se connecter avec une passkey",
+    passkeyFailed: "La connexion par passkey n’a pas fonctionné. Réessayez ou connectez-vous avec votre e-mail et votre mot de passe.",
     newHere: "Nouveau ici ?",
     createAccount: "Créer un compte gratuit",
     privacy: "Confidentialité",

@@ -180,6 +180,15 @@ const es: SettingsMessages = {
     verifySubmit: "Verificar y activar",
     passwordLabel: "Contraseña de la cuenta",
     passwordHint: "Necesaria para activar o desactivar la app de autenticación.",
+    passkeysHeading: "Llaves de acceso (passkeys)",
+    passkeysHint: "Inicia sesión con tu huella, tu cara o el PIN del dispositivo en lugar de contraseña y código. Una passkey evita el paso de la app de autenticación.",
+    addPasskey: "Añadir una passkey",
+    passkeyDefaultName: "Passkey",
+    passkeyAdded: "Passkey añadida.",
+    passkeyRemoved: "Passkey eliminada.",
+    passkeyFailed: "No ha funcionado. Inténtalo de nuevo o usa otro dispositivo.",
+    passkeyUnsupported: "Este navegador no puede crear passkeys.",
+    passkeyFresh: "Por seguridad, vuelve a iniciar sesión antes de añadir una passkey.",
   },
   /** Settings → "Data & export" card (retention and export links). */
   dataExport: {

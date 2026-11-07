@@ -18,6 +18,8 @@ const en = {
     password: "Password",
     submit: "Sign in with email",
     forgotPassword: "Forgot password?",
+    passkeySignIn: "Sign in with a passkey",
+    passkeyFailed: "Passkey sign-in didn't work. Try again, or sign in with your email and password.",
     newHere: "New here?",
     createAccount: "Create a free account",
     privacy: "Privacy",

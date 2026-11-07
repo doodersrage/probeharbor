@@ -1,6 +1,8 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import OAuthButtons from "../components/OAuthButtons.astro";
+import PasskeySignIn from "../components/PasskeySignIn";
+import { dbBackend } from "../lib/db/client";
 import ProductAnalyticsTracker from "../components/ProductAnalyticsTracker.astro";
 import { getAuthFromCookies } from "../lib/auth";
 import { getSignInErrorMessage } from "../lib/signInErrors";
@@ -93,6 +95,9 @@ const registerHref = buildRegisterHref({ next: safeNext || REGISTER_NEXT_DEVICES
       )}
 
       <OAuthButtons next={safeNext} primary />
+      {dbBackend() === "neon" && (
+        <PasskeySignIn client:load next={safeNext} text={{ passkeySignIn: t.passkeySignIn, passkeyFailed: t.passkeyFailed }} />
+      )}
 
       <form action="/api/auth/signin" method="post">
         {safeNext && <input type="hidden" name="next" value={safeNext} />}

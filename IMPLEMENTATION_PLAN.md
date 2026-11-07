@@ -4912,8 +4912,27 @@ Cloudflare email binding.
          accepted → 1 fails. Not yet: companion/Android JSON callers get
          tokens in 4f; Better Auth's backup codes are created but not
          shown (Supabase had none).
-   - [ ] 4e-2: passkeys (add in settings, sign in with one), replacing
-         security keys as decided.
+   - [x] 4e-2 (2026-11-07): passkeys on Better Auth, replacing
+         security keys as decided. `/api/auth/passkey` (Neon only): list,
+         add (Better Auth also wants a recent session), remove your own,
+         sign in. A passkey signs in without the TOTP step (it is strong
+         authentication on its own), so **adding one needs a verified
+         session when the account already has a second factor**, as for
+         adding any factor; otherwise a stolen password-only session could
+         add a passkey and skip TOTP from then on. YubiKey users still get
+         the YubiKey step after a passkey sign-in (middleware). UI: a
+         Passkeys section in settings (`PasskeyManager.tsx`) and "Sign in
+         with a passkey" on /signin (`PasskeySignIn.tsx`), both only when
+         `DB_BACKEND=neon`; same WebAuthn browser helper as before (needs a
+         browser with `PublicKeyCredential.parseCreationOptionsFromJSON`).
+         11 new strings, 5 languages. 5 database tests with a software
+         authenticator (P-256, "none" attestation), so the WebAuthn checks
+         run for real: add then sign in on a fresh browser, unknown key /
+         wrong origin / replay refused, second-factor users need a verified
+         session to add one, delete only your own, settings need a session;
+         also under CI's `SITE_URL`. Mutation: the verified-session rule
+         removed → 1 fails. **Not checked in a real browser or with a real
+         authenticator yet.**
    - [ ] 4f: companion and Android token flows (contract change:
          those apps sign in again after cutover; document it).
    - [ ] 4g: `user_metadata` → `user_profiles.metadata`, app_metadata,

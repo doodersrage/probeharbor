@@ -1,6 +1,8 @@
 ---
 import DashboardCard from "./dashboard/DashboardCard.astro";
 import MfaEnroll from "./MfaEnroll.tsx";
+import PasskeyManager from "./PasskeyManager.tsx";
+import { dbBackend } from "../lib/db/client";
 import { getLocale } from "../i18n";
 import { settingsMessages } from "../i18n/messages/app/settings";
 
@@ -14,6 +16,8 @@ const t = messages.security;
     {t.subtitle}
   </p>
   <MfaEnroll client:visible text={messages.mfa} locale={locale} />
+  {/* Passkeys exist once sign-in runs on Better Auth (DB_BACKEND=neon). */}
+  {dbBackend() === "neon" && <PasskeyManager client:visible text={messages.mfa} locale={locale} />}
 
   <h3 class="mt-6 mb-1 text-base font-semibold">{t.signOutHeading}</h3>
   <p class="mt-0 mb-3 text-sm text-[var(--color-text-muted)]">
