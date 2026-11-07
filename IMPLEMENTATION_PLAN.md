@@ -4995,6 +4995,43 @@ Cloudflare email binding.
    Done when: per-table row counts match, spot checks of readings,
    alerts and households match, and a copied test account can sign in
    with its old password.
+   - [x] Script (2026-11-07): `scripts/db-copy-from-supabase.mjs`. One
+         transaction on the target (a failure leaves it empty); refuses a
+         Supabase target, a target with users or households, and the
+         production Neon URL without `--cutover`; prints counts only.
+         Copies users (same ids; name, avatar, confirmed, `user_metadata` →
+         `user_profiles.metadata`, `app_metadata` → `.app_metadata`),
+         logins (bcrypt password, Google/Discord/GitHub identities, GitHub
+         users of the old custom flow from `user_metadata.github_id`),
+         verified TOTP secrets (Better Auth's import format
+         `base32:<secret>`, encrypted with the target's
+         `BETTER_AUTH_SECRET`; newest per user), then all 49 public tables
+         parents first, with sign-up triggers off and sequences reset. The
+         one foreign-key cycle (households → device_sensors → devices →
+         households) is broken at the nullable
+         `households.indoor_reference_sensor_id`, filled in afterwards.
+         Sessions and security keys aren't copied.
+   - [x] Local rehearsal (2026-11-07) from the owner's backup
+         `backups/probeharbor-20261107T130635Z.dump` (no production read):
+         restored auth + public into a local Postgres, copied into a fresh
+         local database built by `pnpm db:migrate`. All 49 tables match
+         (e.g. sensor_readings 131 148, job_runs 21 366, alert_snooze_tokens
+         13 119); 11/11 users, 8 password logins, 7 OAuth logins (1 GitHub
+         from metadata), 1 TOTP; no security keys in production. md5 spot
+         checks equal for households, household members, all readings,
+         alert events and the cycle-broken column. Two test users added to
+         the *local restore only* (bcrypt made with pgcrypto like Supabase,
+         one with a known TOTP secret): both sign in through the app's
+         Better Auth config with the old password, the TOTP one also with
+         a code from the old secret. Guards checked (missing secret,
+         production URL, Supabase target, non-empty target).
+   - [ ] Run against a fresh Neon branch (needs the owner's go-ahead: it
+         puts a copy of production data on that branch), then a manual
+         walk-through there with `DB_BACKEND=neon` (closes step 3's
+         done-when check too).
+   - Suggested for step 6: take a fresh `pnpm db:backup` after writes
+     stop, restore it locally and copy from that, so the script never
+     reads production directly.
 6. **Cutover** (needs explicit approval; production change). Maintenance
    notice → stop writes → final copy → set production secrets → deploy →
    smoke tests (`pnpm smoke:public`, sign-in, a test reading, a test
