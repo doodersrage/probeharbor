@@ -28,7 +28,7 @@ try {
 const groups = [
   {
     label: "Core",
-    keys: ["SUPABASE_URL", "SUPABASE_ANON_KEY", "SUPABASE_SERVICE_ROLE_KEY", "SITE_URL"],
+    keys: ["DATABASE_URL", "BETTER_AUTH_SECRET", "SITE_URL"],
   },
   {
     label: "SMS (Pro)",

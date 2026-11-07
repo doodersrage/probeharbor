@@ -9,9 +9,6 @@ import { resolve } from "node:path";
 import { parseEnvFile as parseEnvText } from "./parseEnvFile.mjs";
 
 const SECRET_KEYS = [
-  "SUPABASE_URL",
-  "SUPABASE_ANON_KEY",
-  "SUPABASE_SERVICE_ROLE_KEY",
   "GITHUB_CLIENT_ID",
   "GITHUB_CLIENT_SECRET",
   "GARAGE_TEMP_FEED_URL",
@@ -63,8 +60,7 @@ const SECRET_KEYS = [
   "NEST_PROJECT_ID",
   "ECOBEE_CLIENT_ID",
   "SENTRY_DSN",
-  // Neon + Better Auth (since the 2026-11-07 cutover). DB_BACKEND=neon is set
-  // on the Worker on purpose and isn't pushed from .env.
+  // Neon + Better Auth.
   "DATABASE_URL",
   "BETTER_AUTH_SECRET",
   "GOOGLE_CLIENT_ID",
@@ -109,7 +105,7 @@ if (fcmJson) {
 }
 
 const missing = SECRET_KEYS.filter((k) => !secrets[k]);
-const critical = ["SUPABASE_URL", "SUPABASE_ANON_KEY", "SUPABASE_SERVICE_ROLE_KEY"];
+const critical = ["DATABASE_URL", "BETTER_AUTH_SECRET"];
 const missingCritical = critical.filter((k) => !secrets[k]);
 
 if (missingCritical.length > 0) {

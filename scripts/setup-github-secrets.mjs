@@ -16,9 +16,6 @@ import { parseEnvFile as parseEnvText } from "./parseEnvFile.mjs";
 
 /** Keys needed at `astro build` time for a production Worker bundle. */
 const BUILD_SECRET_KEYS = [
-  "SUPABASE_URL",
-  "SUPABASE_ANON_KEY",
-  "SUPABASE_SERVICE_ROLE_KEY",
   "GARAGE_TEMP_FEED_URL",
   "OPENWEATHER_API_KEY",
   "OPENWEATHER_CITY_ID",

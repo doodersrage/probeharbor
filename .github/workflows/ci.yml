@@ -8,9 +8,6 @@ on:
 # Placeholder env so `astro build` can evaluate modules that construct clients at import time.
 # These are not production secrets — Cloudflare/runtime uses real Worker secrets.
 env:
-  SUPABASE_URL: https://example.supabase.co
-  SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.ci-build-placeholder
-  SUPABASE_SERVICE_ROLE_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.ci-build-placeholder
   SITE_URL: https://example.com
   ORIGIN: https://example.com
   GARAGE_TEMP_FEED_URL: https://example.com/feed.json
@@ -130,11 +127,8 @@ jobs:
     needs: build
     # Authenticated specs sign in against the Neon dev branch (see the step
     # before test:e2e). Stripe values are inlined at build time, so they mirror
-    # deploy.yml. SUPABASE_* are leftovers until step 7b.
+    # deploy.yml.
     env:
-      SUPABASE_URL: ${{ secrets.SUPABASE_URL || 'https://example.supabase.co' }}
-      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.ci-build-placeholder' }}
-      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.ci-build-placeholder' }}
       SITE_URL: ${{ secrets.SITE_URL || 'https://probeharbor.dev' }}
       ORIGIN: ${{ secrets.ORIGIN || 'https://probeharbor.dev' }}
       TURNSTILE_SITE_KEY: ${{ secrets.TURNSTILE_SITE_KEY || 'ci-placeholder' }}
@@ -154,6 +148,7 @@ jobs:
       STRIPE_DISPLAY_PORTFOLIO_MONTHLY: ${{ secrets.STRIPE_DISPLAY_PORTFOLIO_MONTHLY || '29' }}
       STRIPE_DISPLAY_PORTFOLIO_ANNUAL: ${{ secrets.STRIPE_DISPLAY_PORTFOLIO_ANNUAL || '290' }}
       PRICING_DEFAULT_INTERVAL: ${{ secrets.PRICING_DEFAULT_INTERVAL || 'annual' }}
+      # GitHub secret names kept from before the move (only the prefix is old).
       E2E_TEST_EMAIL: ${{ secrets.SUPABASE_E2E_TEST_EMAIL }}
       E2E_TEST_PASSWORD: ${{ secrets.SUPABASE_E2E_TEST_PASSWORD }}
       # Inbox the owner controls; household-invites.spec.ts sends real invites there.

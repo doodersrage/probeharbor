@@ -5,17 +5,19 @@
  * Usage: pnpm setup:e2e-github-secrets
  *
  * Requires: gh CLI authenticated, .env with E2E_TEST_EMAIL, E2E_TEST_PASSWORD,
- * SUPABASE_URL, SUPABASE_ANON_KEY (same project as production test user).
+ * E2E_DATABASE_URL (the Neon dev branch, never production) and
+ * E2E_BETTER_AUTH_SECRET (any random value; CI only).
  */
 import { execSync } from "node:child_process";
 import { readFileSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
 
 const E2E_KEYS = [
-  { github: "SUPABASE_URL", env: "SUPABASE_URL", required: true },
-  { github: "SUPABASE_ANON_KEY", env: "SUPABASE_ANON_KEY", required: true },
+  // GitHub names kept from before the move; ci.yml reads these.
   { github: "SUPABASE_E2E_TEST_EMAIL", env: "E2E_TEST_EMAIL", required: true },
   { github: "SUPABASE_E2E_TEST_PASSWORD", env: "E2E_TEST_PASSWORD", required: true },
+  { github: "E2E_DATABASE_URL", env: "E2E_DATABASE_URL", required: true },
+  { github: "E2E_BETTER_AUTH_SECRET", env: "E2E_BETTER_AUTH_SECRET", required: true },
 ];
 
 function parseEnvFile(path) {
