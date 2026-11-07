@@ -1,3 +1,5 @@
+import { dbBackend } from "./db/client";
+import { temperatureReadingCounts } from "./db/history";
 import { createServerClient } from "./supabase";
 
 /**
@@ -16,6 +18,17 @@ export async function fetchTemperatureReadingCounts(
   thresholdF: number,
   sensorIds: string[] | null = null,
 ): Promise<ReadingCounts | null> {
+  if (dbBackend() === "neon") {
+    try {
+      const row = await temperatureReadingCounts(householdId, fromIso, toIso, thresholdF, sensorIds);
+      if (!row) return null;
+      return { total: Number(row.total_count), below: Number(row.below_count), approximate: row.from_rollups === true };
+    } catch (err) {
+      // A report (e.g. the claims pack) must not fail over a count.
+      console.warn("temperature_reading_counts failed:", err instanceof Error ? err.message : err);
+      return null;
+    }
+  }
   let result: Awaited<ReturnType<ReturnType<typeof createServerClient>["rpc"]>>;
   try {
     result = await createServerClient().rpc("temperature_reading_counts", {

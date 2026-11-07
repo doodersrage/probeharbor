@@ -4436,10 +4436,23 @@ Cloudflare email binding.
          readings instead of recent ones. The 1-hour callers are under the
          limit. Fix: page newest first (`fetchNewestFirstPages`), as door
          readings already do; regression test with >1000 rows.
-   - [ ] Convert the remaining ~280 queries and 13 Postgres function calls,
-         one area per commit, each with database tests. Next: history and
-         charts (`garageTempsHistory.ts`, bucket functions, counts), then
-         the after-response ingest work and alerts.
+   - [x] Area 3b, History and charts (`src/lib/db/history.ts`): the 9
+         query helpers in `garageTempsHistory.ts` (table pages + counts,
+         humidity pairing, full export, sampled charts via
+         `sensor_bucket_samples`, rollup charts via
+         `rollup_bucket_averages`, earliest reading, filter options) and
+         `temperature_reading_counts`. Same row shapes, so pairing,
+         filters and thinning stay shared. The export reads 5,000 rows a
+         request by position (recorded_at, id). 8 database tests: paging,
+         filters, 5,120-row export without gaps or repeats, sampled and
+         rollup charts, filter options, counts; other households' rows
+         never appear. Mutation: no household filter → 2 fail.
+         `fetchHistoryFilterOptions`' Supabase branch was restructured
+         (same query and result; unit tests unchanged and passing).
+   - [ ] Convert the remaining ~270 queries and 3 Postgres function calls
+         (`sensor_bucket_averages`, `sensor_values_before`,
+         `roll_up_and_prune_readings`), one area per commit, each with
+         database tests. Next: the after-response ingest work and alerts.
    - [ ] Cross-household tests for every household-scoped read and write.
 4. **Login on Better Auth.** Email + password (accept existing bcrypt
    hashes, so passwords keep working), Google, GitHub, Discord, email

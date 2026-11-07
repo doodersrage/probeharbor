@@ -1,3 +1,5 @@
+import { dbBackend } from "./db/client";
+import * as neonHistory from "./db/history";
 import { createServerClient } from "./supabase";
 import { probePairingKey } from "./probePairing";
 import { fetchNewestFirstPages } from "./pagedRows";
@@ -271,8 +273,11 @@ async function fetchAllRawSensorRows(
     ascending?: boolean;
   } = {},
 ): Promise<{ rows: SensorRow[]; error: string | null }> {
-  const supabase = createServerClient();
   const kinds = options.kinds ?? ["temperature", "humidity"];
+  if (dbBackend() === "neon") {
+    return neonHistory.fetchAllRawSensorRows(householdId, filters, kinds, options.ascending === true);
+  }
+  const supabase = createServerClient();
   const rows: SensorRow[] = [];
 
   for (let offset = 0; ; offset += POSTGREST_PAGE_SIZE) {
@@ -315,6 +320,7 @@ async function countTemperatureHistoryRows(
   householdId: string,
   filters: HistoryFilters,
 ): Promise<{ count: number; error: string | null }> {
+  if (dbBackend() === "neon") return neonHistory.countTemperatureHistoryRows(householdId, filters);
   const supabase = createServerClient();
   let query = supabase
     .from("sensor_readings")
@@ -347,8 +353,9 @@ async function fetchTemperatureHistoryPage(
   page: number,
   pageSize: number,
 ): Promise<{ rows: SensorRow[]; error: string | null }> {
-  const supabase = createServerClient();
   const offset = (page - 1) * pageSize;
+  if (dbBackend() === "neon") return neonHistory.fetchTemperatureHistoryPage(householdId, filters, offset, pageSize);
+  const supabase = createServerClient();
 
   let query = supabase
     .from("sensor_readings")
@@ -387,6 +394,17 @@ async function fetchHumidityRowsForTemps(
     timestamps.add(row.recorded_at);
   }
 
+  if (dbBackend() === "neon") {
+    const neonRows = await neonHistory.fetchHumidityRowsAt(householdId, [...timestamps]);
+    if (neonRows.error) return neonRows;
+    return {
+      rows: neonRows.rows.filter((row) => {
+        const sensor = row.device_sensors;
+        return sensor != null && wantedKeys.has(`${sensor.devices?.name ?? "Device"}::${sensor.key}`);
+      }),
+      error: null,
+    };
+  }
   const supabase = createServerClient();
   const { data, error } = await supabase
     .from("sensor_readings")
@@ -617,8 +635,9 @@ async function fetchSampledSensorRows(
   fromIso: string,
   toIso?: string,
 ): Promise<{ rows: SensorRow[]; bucketMs: number } | null> {
-  const supabase = createServerClient();
   const to = toIso ?? new Date().toISOString();
+  if (dbBackend() === "neon") return fetchSampledSensorRowsNeon(householdId, fromIso, to);
+  const supabase = createServerClient();
   const { data: sensors, error: sensorError } = await supabase
     .from("device_sensors")
     .select("id, key, label, kind, offset_num, devices!inner(name, household_id)")
@@ -665,6 +684,57 @@ async function fetchSampledSensorRows(
   const rows: SensorRow[] = [];
   for (const result of results) {
     for (const row of result.data ?? []) {
+      const sensor = byId.get(row.sensor_id);
+      if (!sensor || typeof row.value_num !== "number") continue;
+      rows.push({
+        recorded_at: row.recorded_at,
+        value_num: row.value_num,
+        meta: {},
+        device_sensors: {
+          key: sensor.key,
+          label: sensor.label,
+          kind: sensor.kind,
+          offset_num: sensor.offset_num,
+          devices: { name: sensor.devices?.name ?? "Device" },
+        },
+      });
+    }
+  }
+  return { rows, bucketMs: bucketSeconds * 1000 };
+}
+
+/** Neon: same steps as fetchSampledSensorRows (sensors, then one sample call per group). */
+async function fetchSampledSensorRowsNeon(
+  householdId: string,
+  fromIso: string,
+  to: string,
+): Promise<{ rows: SensorRow[]; bucketMs: number } | null> {
+  const list = await neonHistory.listChartSensors(householdId);
+  if (!list) return null;
+  if (list.length === 0) return { rows: [], bucketMs: 0 };
+
+  const buckets = sampleBucketCount(list.filter((s) => s.kind === "temperature").length);
+  const spanSec = Math.max(0, (Date.parse(to) - Date.parse(fromIso)) / 1000);
+  const bucketSeconds = Math.max(60, Math.ceil(spanSec / buckets));
+  const byId = new Map(list.map((s) => [s.id, s]));
+
+  const results = await Promise.all(
+    groupSensorsForSampling(list, buckets).map((group) =>
+      neonHistory.sensorBucketSamples(
+        householdId,
+        group.map((s) => s.id),
+        group.filter((s) => s.kind === "temperature").map((s) => s.id),
+        fromIso,
+        to,
+        bucketSeconds,
+      ),
+    ),
+  );
+  if (results.some((r) => r === null)) return null;
+
+  const rows: SensorRow[] = [];
+  for (const result of results) {
+    for (const row of result ?? []) {
       const sensor = byId.get(row.sensor_id);
       if (!sensor || typeof row.value_num !== "number") continue;
       rows.push({
@@ -831,6 +901,33 @@ export async function fetchRollupChartPointsForHousehold(
   sinceIso: string,
   filters: HistoryFilters = {},
 ): Promise<ChartPoint[]> {
+  if (dbBackend() === "neon") {
+    try {
+      const to = filters.to ?? new Date().toISOString();
+      const sensorCount = await neonHistory.countChartSensors(householdId);
+      const rows = await neonHistory.rollupBucketAverages(
+        householdId,
+        sinceIso,
+        to,
+        rollupBucketSeconds(sinceIso, to, sensorCount || 1),
+      );
+      const shaped: RollupRow[] = rows.map((row) => ({
+        bucket_start: row.bucket_start,
+        avg_num: row.avg_num,
+        device_sensors: {
+          key: row.key,
+          label: row.label,
+          kind: row.kind,
+          offset_num: row.offset_num,
+          devices: { name: row.device_name },
+        },
+      }));
+      return thinChartPoints(rollupRowsToPoints(shaped, filters));
+    } catch (error) {
+      console.error("fetchRollupChartPointsForHousehold failed:", error instanceof Error ? error.message : error);
+      return [];
+    }
+  }
   const supabase = createServerClient();
 
   // Preferred: one call returning wider buckets (rollup_bucket_averages,
@@ -1060,6 +1157,7 @@ export async function fetchGarageTempChartDataPriorYear(
 export async function fetchEarliestSensorReadingAt(
   householdId: string,
 ): Promise<string | null> {
+  if (dbBackend() === "neon") return neonHistory.fetchEarliestSensorReadingAt(householdId);
   const supabase = createServerClient();
   const { data, error } = await supabase
     .from("sensor_readings")
@@ -1083,15 +1181,18 @@ export async function fetchHistoryFilterOptions(userId: string): Promise<{
     return { feeds: [], probes: [], error: null };
   }
 
-  const supabase = createServerClient();
-  const { data, error } = await supabase
-    .from("devices")
-    .select("name, device_sensors(key, label, kind)")
-    .eq("household_id", householdId)
-    .order("sort_order", { ascending: true });
+  const { data, error } =
+    dbBackend() === "neon"
+      ? await neonHistory.listDevicesWithSensorsForFilters(householdId)
+      : await createServerClient()
+          .from("devices")
+          .select("name, device_sensors(key, label, kind)")
+          .eq("household_id", householdId)
+          .order("sort_order", { ascending: true })
+          .then(({ data: rows, error: e }) => ({ data: rows, error: e?.message ?? null }));
 
   if (error) {
-    return { feeds: [], probes: [], error: error.message };
+    return { feeds: [], probes: [], error };
   }
 
   const feeds = [
