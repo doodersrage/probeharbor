@@ -36,6 +36,8 @@ import { POST as resend } from "./resend-confirmation";
 import { POST as signin } from "./signin";
 import { POST as signout } from "./signout";
 import { POST as signoutEverywhere } from "./signout-everywhere";
+import { POST as forgot } from "./forgot-password";
+import { POST as updatePassword } from "./update-password";
 
 const db = useTestDatabase();
 const sql = async <T = Record<string, unknown>>(text: string, params: unknown[] = []) =>
@@ -54,7 +56,11 @@ function fakeCookies() {
 }
 const redirect = (location: string) => new Response(null, { status: 302, headers: { Location: location } });
 
-function ctx(method: "GET" | "POST", path: string, opts: { form?: Record<string, string>; cookie?: string; locale?: string } = {}) {
+function ctx(
+  method: "GET" | "POST",
+  path: string,
+  opts: { form?: Record<string, string>; cookie?: string; locale?: string; jar?: Record<string, string> } = {},
+) {
   const headers = new Headers();
   if (opts.cookie) headers.set("cookie", opts.cookie);
   const request = new Request(`http://localhost:4321${path}`, {
@@ -62,10 +68,12 @@ function ctx(method: "GET" | "POST", path: string, opts: { form?: Record<string,
     headers,
     body: opts.form ? new URLSearchParams(opts.form) : undefined,
   });
+  const cookies = fakeCookies();
+  for (const [name, value] of Object.entries(opts.jar ?? {})) cookies.set(name, value);
   return {
     request,
     url: new URL(request.url),
-    cookies: fakeCookies(),
+    cookies,
     redirect,
     clientAddress: "127.0.0.1",
     locals: { locale: opts.locale ?? "en" },
@@ -188,5 +196,112 @@ describe("sign in and out (Neon)", () => {
     const all = await signoutEverywhere(c);
     expect(location(all)).toBe("/signin?signed_out=all");
     expect(await sql("select 1 from public.auth_sessions")).toHaveLength(0);
+  });
+});
+
+/** The decoded session cookie, as Astro's cookies.get() would give it. */
+function sessionJar(res: Response): Record<string, string> {
+  const pair = cookieHeader(res).split("; ").find((c) => c.includes("session_token="))!;
+  const cut = pair.indexOf("=");
+  return { [pair.slice(0, cut)]: decodeURIComponent(pair.slice(cut + 1)) };
+}
+const signIn = (email: string, password: string) =>
+  signin(ctx("POST", "/api/auth/signin", { form: { email, password } }));
+
+describe("password reset (Neon)", () => {
+  async function requestReset(email: string, locale = "en") {
+    mail.length = 0;
+    const res = await forgot(ctx("POST", "/api/auth/forgot-password", { form: { email }, locale }));
+    expect(location(res)).toBe("/forgot-password?sent=1");
+    return mail;
+  }
+  async function followLink(text: string) {
+    const link = linkFrom(text);
+    const c = ctx("GET", `${link.pathname}${link.search}`);
+    const res = await confirm(c);
+    return { res, token: c.cookies.get("ph_reset_token")?.value };
+  }
+
+  it("unknown address: same answer, no email", async () => {
+    expect(await requestReset("nobody@example.com")).toHaveLength(0);
+  });
+
+  it("the emailed link resets the password once and signs in; old password and other sessions end", async () => {
+    await registerAndConfirm("a@example.com", "old-password-123");
+    const other = await signIn("a@example.com", "old-password-123");
+    const sent = await requestReset("a@example.com", "fr");
+    expect(sent).toHaveLength(1);
+    expect(sent[0]!.subject).toBe("Réinitialisez votre mot de passe");
+    expect(linkFrom(sent[0]!.text).searchParams.get("type")).toBe("recovery");
+
+    const { res, token } = await followLink(sent[0]!.text);
+    expect(location(res)).toBe("/reset-password");
+    expect(token).toBeTruthy();
+
+    const mismatch = await updatePassword(
+      ctx("POST", "/api/auth/update-password", { form: { password: "new-password-456", confirm: "nope-nope-nope" }, jar: { ph_reset_token: token! } }),
+    );
+    expect(location(mismatch)).toBe("/reset-password?error=mismatch");
+
+    const c = ctx("POST", "/api/auth/update-password", {
+      form: { password: "new-password-456", confirm: "new-password-456" },
+      jar: { ph_reset_token: token! },
+    });
+    const done = await updatePassword(c);
+    expect(location(done)).toBe("/dashboard?password=updated");
+    expect(cookieHeader(done)).toMatch(/session_token=/);
+    expect(c.cookies.get("ph_reset_token")).toBeUndefined();
+
+    expect(location(await signIn("a@example.com", "old-password-123"))).toContain("error=invalid_credentials");
+    expect(location(await signIn("a@example.com", "new-password-456"))).toBe("/dashboard");
+    const stale = await getAuthFromRequest(new Request("http://x/", { headers: { cookie: cookieHeader(other) } }), fakeCookies() as never);
+    expect(stale.user).toBeNull();
+
+    // The same token again: used up.
+    const again = await updatePassword(
+      ctx("POST", "/api/auth/update-password", { form: { password: "third-password-789", confirm: "third-password-789" }, jar: { ph_reset_token: token! } }),
+    );
+    expect(location(again)).toBe("/reset-password?error=session");
+  });
+
+  it("an expired link is refused", async () => {
+    await registerAndConfirm("a@example.com", "old-password-123");
+    const sent = await requestReset("a@example.com");
+    await sql(`update public.auth_verifications set "expiresAt" = now() - interval '1 minute' where identifier like 'reset-password:%'`);
+    const { res, token } = await followLink(sent[0]!.text);
+    expect(location(res)).toBe("/reset-password?error=session");
+    expect(token).toBeUndefined();
+  });
+
+  it("a forged reset token is refused at the link and at the form", async () => {
+    const res = await confirm(ctx("GET", "/api/auth/confirm?token_hash=forged-token&type=recovery"));
+    expect(location(res)).toBe("/reset-password?error=session");
+    const post = await updatePassword(
+      ctx("POST", "/api/auth/update-password", { form: { password: "new-password-456", confirm: "new-password-456" }, jar: { ph_reset_token: "forged-token" } }),
+    );
+    expect(location(post)).toBe("/reset-password?error=session");
+  });
+
+  it("signed in, no token: changes the password without the current one", async () => {
+    await registerAndConfirm("a@example.com", "old-password-123");
+    const session = await signIn("a@example.com", "old-password-123");
+    const res = await updatePassword(
+      ctx("POST", "/api/auth/update-password", { form: { password: "changed-pass-1", confirm: "changed-pass-1" }, jar: sessionJar(session) }),
+    );
+    expect(location(res)).toBe("/dashboard?password=updated");
+    expect(location(await signIn("a@example.com", "changed-pass-1"))).toBe("/dashboard");
+    const anon = await updatePassword(ctx("POST", "/api/auth/update-password", { form: { password: "changed-pass-2", confirm: "changed-pass-2" } }));
+    expect(location(anon)).toBe("/signin?error=generic");
+  });
+
+  it("resetting proves the inbox: an unconfirmed account ends up confirmed and signed in", async () => {
+    await register(ctx("POST", "/api/auth/register", { form: { email: "late@example.com", password: "old-password-123" } }));
+    const sent = await requestReset("late@example.com");
+    const { token } = await followLink(sent[0]!.text);
+    const done = await updatePassword(
+      ctx("POST", "/api/auth/update-password", { form: { password: "new-password-456", confirm: "new-password-456" }, jar: { ph_reset_token: token! } }),
+    );
+    expect(location(done)).toBe("/dashboard?password=updated");
+    expect(await sql(`select "emailVerified" as v from public.auth_users`)).toEqual([{ v: true }]);
   });
 });

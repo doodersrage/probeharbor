@@ -4835,9 +4835,28 @@ Cloudflare email binding.
          two-factor step skipped → 1 fails; sign-out keeping the session →
          1 fails; sign-out everywhere ending one session → 1 fails.
          Not checked in local workerd: it would send real email.
-   - [ ] 4c-2: password reset (forgot, the emailed link, reset page,
-         update password; `secure_password_change = false` today, so a
-         signed-in user changes it without the current password).
+   - [x] 4c-2 (2026-11-07): password reset on Better Auth. Forgot
+         password sends the app's own reset email (en/es/fr/de/pt-br, same
+         wording as `supabase/templates/recovery.html`, plus "expires in 1
+         hour") linking to `/api/auth/confirm?...&type=recovery`, which
+         checks the token and keeps it in an httpOnly `ph_reset_token`
+         cookie (1 hour) instead of the address bar. The form then resets
+         the password, marks the email confirmed (the link proves the
+         inbox) and signs in with the new password, ending on
+         `/dashboard?password=updated` as before. Signed in without a
+         token, the password changes without the current one (Supabase's
+         `secure_password_change = false`); an account without a password
+         gets one. `/api/auth/update-password` moved from the middleware's
+         protected list to the self-checking list (a reset link comes
+         before any session; the route checks on both backends).
+         **Behavior change on Neon:** a reset ends the account's other
+         sessions (`revokeSessionsOnPasswordReset`). 6 more database tests:
+         unknown address reveals nothing, French reset email, link resets
+         once then refused, old password and other sessions end, expired
+         and forged tokens refused, signed-in change without the current
+         password, unconfirmed account confirmed by a reset. Mutations:
+         expiry ignored → 1 fails; reset skipped → 2 fail; not marking the
+         email confirmed → 1 fails.
    - [ ] 4d: Google, Discord and GitHub sign-in, linking by email.
          **Must add a second-factor check:** Better Auth only demands the
          second factor on `/sign-in/email` (and username/phone), not on

@@ -21,7 +21,6 @@ const protectedApiPrefixes = [
   "/api/status/manage",
   "/api/contacts",
   "/api/ical",
-  "/api/auth/update-password",
   "/api/auth/mfa-manage",
   "/api/auth/companion",
   "/api/integrations",
@@ -38,6 +37,9 @@ const publicApiExactPaths = new Set([
   "/api/feeds/example",
   // Companion start must work before a browser session exists (sets cookies, then OAuth).
   "/api/auth/companion/start",
+  // Checks for itself: a session, or (DB_BACKEND=neon) the emailed reset
+  // token, which comes before any session exists.
+  "/api/auth/update-password",
 ]);
 
 /** Public API path prefixes (e.g. token-based inbound webhooks). */

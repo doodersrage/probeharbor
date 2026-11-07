@@ -9,19 +9,14 @@
  */
 import { Pool } from "@neondatabase/serverless";
 import type { Locale } from "../i18n/locales";
-import { accountEmailLink, sendConfirmationEmail } from "./accountEmails";
+import { accountEmailLink, sendConfirmationEmail, sendPasswordResetEmail } from "./accountEmails";
 import { createBetterAuth, type ProbeHarborAuth } from "./betterAuthConfig";
 import { getRuntimeEnv } from "./runtimeEnv";
 import { buildSiteUrl } from "./siteUrl";
 import { resolveWebAuthnRp } from "./webauthnRp";
 
-const notWiredYet = (what: string) => async () => {
-  // Password reset moves over in step 4c-2; until then, fail loudly instead of pretending to send.
-  throw new Error(`${what} email is not wired to Better Auth yet (step 4c-2).`);
-};
-
 export type WithBetterAuthOptions = {
-  /** Language for emails sent during this call (sign-up, resend). Default English. */
+  /** Language for emails sent during this call (sign-up, resend, password reset). Default English. */
   emailLocale?: Locale;
 };
 
@@ -44,7 +39,8 @@ export async function withBetterAuth<T>(
       secureCookies: import.meta.env.PROD,
       sendVerificationEmail: ({ email, token }) =>
         sendConfirmationEmail(email, accountEmailLink(siteUrl, "signup", token), options.emailLocale ?? "en"),
-      sendResetPassword: notWiredYet("Password reset"),
+      sendResetPassword: ({ email, token }) =>
+        sendPasswordResetEmail(email, accountEmailLink(siteUrl, "recovery", token), options.emailLocale ?? "en"),
     });
     return await run(auth);
   } finally {

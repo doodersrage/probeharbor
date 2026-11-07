@@ -16,14 +16,15 @@ export function accountEmailLink(siteUrl: string, type: "signup" | "recovery", t
 
 /**
  * Best effort, like the other account emails: a failed send is logged for
- * operators and the user can ask again from /resend-confirmation. Never
- * reports success itself; the caller only says "check your email".
+ * operators and the user can ask again (/resend-confirmation,
+ * /forgot-password). Never reports success itself; the caller only says
+ * "check your email".
  */
-export async function sendConfirmationEmail(to: string, url: string, locale: Locale): Promise<void> {
+async function sendAccountEmail(kind: "confirm" | "reset", to: string, url: string, locale: Locale): Promise<void> {
   try {
     const [{ sendEmail }, { brandedEmailParts }] = await Promise.all([import("./mailer"), import("./emailLayout")]);
     await ensureLocale(locale, ["app"]);
-    const t = accountEmailMessages(locale).confirm;
+    const t = accountEmailMessages(locale)[kind];
     const parts = brandedEmailParts(
       {
         eyebrow: t.eyebrow,
@@ -39,6 +40,9 @@ export async function sendConfirmationEmail(to: string, url: string, locale: Loc
     );
     await sendEmail(to, t.subject, parts.text, { html: parts.html });
   } catch (error) {
-    console.error("Failed to send confirmation email:", error instanceof Error ? error.message : error);
+    console.error(`Failed to send ${kind} email:`, error instanceof Error ? error.message : error);
   }
 }
+
+export const sendConfirmationEmail = (to: string, url: string, locale: Locale) => sendAccountEmail("confirm", to, url, locale);
+export const sendPasswordResetEmail = (to: string, url: string, locale: Locale) => sendAccountEmail("reset", to, url, locale);

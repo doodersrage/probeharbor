@@ -9,6 +9,7 @@ import { getSavedUserLocale } from "../../../i18n/userLocale";
 import { dbBackend } from "../../../lib/db/client";
 import { getUserMetadata } from "../../../lib/db/userMetadata";
 import { redirectWithAuthCookies } from "../../../lib/betterAuthResponse";
+import { resetTokenUserId, setResetTokenCookie } from "../../../lib/betterAuthPassword";
 import { withBetterAuth } from "../../../lib/betterAuthRuntime";
 
 /**
@@ -58,7 +59,14 @@ export const GET: APIRoute = async ({ url, cookies, redirect, request }) => {
   }
 
   if (dbBackend() === "neon") {
-    // Password reset links move over in step 4c-2.
+    if (type === "recovery") {
+      // Keep the token in an httpOnly cookie for the reset form; nothing is used up yet.
+      const userId = await withBetterAuth(request, (auth) => resetTokenUserId(auth, tokenHash));
+      if (!userId) return redirect("/reset-password?error=session");
+      setResetTokenCookie(cookies, tokenHash);
+      const metadata = await getUserMetadata(userId).catch(() => ({}));
+      return redirect(localizeForAccount("/reset-password", getSavedUserLocale({ user_metadata: metadata })));
+    }
     if (type !== "signup" && type !== "email") return redirect("/signin?error=confirm_link");
     const { res, userId } = await withBetterAuth(request, async (auth) => {
       const res = await auth.api.verifyEmail({ query: { token: tokenHash }, asResponse: true });

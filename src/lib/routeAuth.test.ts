@@ -25,7 +25,6 @@ describe("pathRequiresAuth", () => {
     expect(pathRequiresAuth("/api/status/manage")).toBe(true);
     expect(pathRequiresAuth("/api/contacts/export.csv")).toBe(true);
     expect(pathRequiresAuth("/api/ical/outlook")).toBe(true);
-    expect(pathRequiresAuth("/api/auth/update-password")).toBe(true);
     expect(pathRequiresAuth("/api/auth/mfa-manage")).toBe(true);
     expect(pathRequiresAuth("/api/auth/companion/complete")).toBe(true);
     expect(pathRequiresAuth("/api/integrations/nest/connect")).toBe(true);
@@ -36,6 +35,11 @@ describe("pathRequiresAuth", () => {
     expect(pathRequiresAuth("/api/bays/garage/mood")).toBe(true);
     expect(pathRequiresAuth("/api/monitoring/certificate")).toBe(true);
     expect(pathRequiresAuth("/_actions/updateAlertSettings")).toBe(true);
+  });
+
+  it("lets update-password check for itself (a reset link comes before any session)", () => {
+    expect(pathRequiresAuth("/api/auth/update-password")).toBe(false);
+    expect(pathRequiresAuth("/api/auth/mfa-manage")).toBe(true);
   });
 
   it("keeps companion start public so unsigned OAuth can begin", () => {
