@@ -1,4 +1,5 @@
 ---
+import { getHouseholdFields } from "../../lib/householdRecord";
 import { getUserRecord } from "../../lib/userRecords";
 import DashboardLayout from "../../layouts/DashboardLayout.astro";
 import { getAuthFromCookies } from "../../lib/auth";
@@ -61,13 +62,24 @@ const [membersResult, householdsResult, invitesResult, householdRow, entitlement
       : listUserHouseholds(user.id),
     manageId ? listPendingInvites(manageId) : Promise.resolve({ invites: [], error: null }),
     manageId
-      ? createServerClient()
-          .from("households")
-          .select(
-            "name, freeze_map_opt_in, freeze_map_city_id, freeze_map_lat, freeze_map_lon, freeze_map_label",
-          )
-          .eq("id", manageId)
-          .maybeSingle()
+      ? (getHouseholdFields(manageId, [
+          "name",
+          "freeze_map_opt_in",
+          "freeze_map_city_id",
+          "freeze_map_lat",
+          "freeze_map_lon",
+          "freeze_map_label",
+        ]) as Promise<{
+          data: {
+            name: string;
+            freeze_map_opt_in: boolean;
+            freeze_map_city_id: string | null;
+            freeze_map_lat: number | null;
+            freeze_map_lon: number | null;
+            freeze_map_label: string | null;
+          } | null;
+          error: string | null;
+        }>)
       : Promise.resolve({ data: null }),
     shell ? Promise.resolve(shell.entitlements) : getUserEntitlements(user.id),
     countOwnedHouseholds(user.id),

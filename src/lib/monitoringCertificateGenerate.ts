@@ -1,10 +1,10 @@
+import { getHouseholdFields } from "./householdRecord";
 import type { User } from "@supabase/supabase-js";
 import type { AlertSettings } from "./alerts";
 import { ALERT_CHANNEL_LABELS } from "./alertChannelLabels";
 import { getAlertSettingsForUser } from "./notify";
 import { getUserHouseholdId } from "./households";
 import { listHouseholdDevices } from "./devices";
-import { createServerClient } from "./supabase";
 import { getUserEntitlements } from "./entitlements";
 import {
   buildMonitoringCertificateHtml,
@@ -75,7 +75,7 @@ export async function generateMonitoringCertificateForUser(
   const [alertSettings, devicesResult, householdRow, entitlements] = await Promise.all([
     getAlertSettingsForUser(user.id, user.user_metadata as Record<string, unknown>),
     listHouseholdDevices(householdId),
-    createServerClient().from("households").select("name").eq("id", householdId).maybeSingle(),
+    getHouseholdFields(householdId, ["name"]) as Promise<{ data: { name: string } | null }>,
     getUserEntitlements(user.id),
   ]);
 

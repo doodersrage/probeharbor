@@ -1,6 +1,6 @@
+import { getHouseholdFields } from "./householdRecord";
 import type { User } from "@supabase/supabase-js";
 import { fetchWeatherSnapshotForConfig, getPersonalWeatherConfig } from "./weatherContext";
-import { createServerClient } from "./supabase";
 import { getUserHouseholdId } from "./households";
 
 export type OutdoorCompareCoords = {
@@ -12,12 +12,10 @@ export type OutdoorCompareCoords = {
 async function freezeMapCoordsForHousehold(
   householdId: string,
 ): Promise<OutdoorCompareCoords | null> {
-  const supabase = createServerClient();
-  const { data, error } = await supabase
-    .from("households")
-    .select("freeze_map_lat, freeze_map_lon, freeze_map_label")
-    .eq("id", householdId)
-    .maybeSingle();
+  const { data, error } = (await getHouseholdFields(householdId, ["freeze_map_lat", "freeze_map_lon", "freeze_map_label"])) as {
+    data: { freeze_map_lat: number | null; freeze_map_lon: number | null; freeze_map_label: string | null } | null;
+    error: string | null;
+  };
 
   if (error || !data) return null;
 

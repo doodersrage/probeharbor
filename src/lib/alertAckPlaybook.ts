@@ -1,6 +1,6 @@
+import { getHouseholdFields } from "./householdRecord";
 import { acknowledgeAlertEvent, getAlertEventForUser, updateAlertEventMeta } from "./alertEvents";
 import { getUserHouseholdId } from "./households";
-import { createServerClient } from "./supabase";
 import { snoozeAlertsForUser } from "./alertSnooze";
 import { sendTenantFreezeRelay } from "./tenantRelay";
 import { deliverWebhookPost } from "./webhookDeliveries";
@@ -90,12 +90,7 @@ export async function executeAlertAckPlaybook(input: {
     if (!householdId) {
       return { ok: false, message: t.noHousehold };
     }
-    const supabase = createServerClient();
-    const { data: household } = await supabase
-      .from("households")
-      .select("name")
-      .eq("id", householdId)
-      .maybeSingle();
+    const { data: household } = (await getHouseholdFields(householdId, ["name"])) as { data: { name: string } | null };
     const relay = await sendTenantFreezeRelay({
       householdId,
       managerUserId: input.userId,

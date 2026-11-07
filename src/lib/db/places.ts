@@ -195,3 +195,19 @@ export function sensorBucketAverages(
     [householdId, sensorId, fromIso, toIso, bucketSeconds],
   );
 }
+
+/** The newest freeze-map snapshot for one city key, or null. */
+export async function latestSnapshotForCity(
+  cityId: string,
+): Promise<{ city_label: string; avg_temp_f: number | null; min_temp_f: number | null; sample_count: number } | null> {
+  try {
+    const [row] = await query<{ city_label: string; avg_temp_f: number | null; min_temp_f: number | null; sample_count: number }>(
+      `select city_label, avg_temp_f, min_temp_f, sample_count from public.freeze_map_snapshots
+       where city_id = $1 order by captured_at desc, id desc limit 1`,
+      [cityId],
+    );
+    return row ?? null;
+  } catch {
+    return null;
+  }
+}

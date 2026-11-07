@@ -1,9 +1,9 @@
 ---
+import { getHouseholdFields } from "../../lib/householdRecord";
 import Layout from "../../layouts/Layout.astro";
 import { getAuthFromCookies } from "../../lib/auth";
 import { getInviteByToken } from "../../lib/householdInvites";
 import { getHouseholdErrorMessage } from "../../lib/householdErrors";
-import { createServerClient } from "../../lib/supabase";
 import { fmt, getLocale } from "../../i18n";
 import { authHandoffMessages } from "../../i18n/messages/app/auth/handoff";
 
@@ -20,13 +20,8 @@ const { session, user } = await getAuthFromCookies(Astro.cookies);
 
 let householdName = t.aHousehold;
 if (invite) {
-  const supabase = createServerClient();
-  const { data } = await supabase
-    .from("households")
-    .select("name")
-    .eq("id", invite.household_id)
-    .maybeSingle();
-  householdName = data?.name ?? householdName;
+  const { data } = await getHouseholdFields(invite.household_id, ["name"]);
+  householdName = (data?.name as string | undefined) ?? householdName;
 }
 
 const expired = invite ? Date.parse(invite.expires_at) < Date.now() : false;

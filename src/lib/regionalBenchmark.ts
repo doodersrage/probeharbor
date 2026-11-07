@@ -1,3 +1,6 @@
+import { dbBackend } from "./db/client";
+import { latestSnapshotForCity } from "./db/places";
+import { getHouseholdFields } from "./householdRecord";
 import { createServerClient } from "./supabase";
 import { freezeMapAggregateKey } from "./weatherCities";
 import { FREEZE_MAP_SAMPLE_FLOOR } from "./freezeMapSeed";
@@ -19,12 +22,11 @@ export async function fetchRegionalBenchmark(input: {
 }, locale: Locale = "en"): Promise<RegionalBenchmark | null> {
   if (!Number.isFinite(input.yourTempF)) return null;
 
-  const supabase = createServerClient();
-  const { data: household } = await supabase
-    .from("households")
-    .select("freeze_map_city_id, freeze_map_label, freeze_map_opt_in")
-    .eq("id", input.householdId)
-    .maybeSingle();
+  const { data: household } = (await getHouseholdFields(input.householdId, [
+    "freeze_map_city_id",
+    "freeze_map_label",
+    "freeze_map_opt_in",
+  ])) as { data: { freeze_map_city_id: string | null; freeze_map_label: string | null; freeze_map_opt_in: boolean } | null };
 
   if (!household?.freeze_map_opt_in || !household.freeze_map_city_id) {
     return null;
@@ -37,13 +39,18 @@ export async function fetchRegionalBenchmark(input: {
   });
   if (!cityId) return null;
 
-  const { data: snapshot } = await supabase
-    .from("freeze_map_snapshots")
-    .select("city_label, avg_temp_f, min_temp_f, sample_count")
-    .eq("city_id", cityId)
-    .order("captured_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  const snapshot =
+    dbBackend() === "neon"
+      ? await latestSnapshotForCity(cityId)
+      : (
+          await createServerClient()
+            .from("freeze_map_snapshots")
+            .select("city_label, avg_temp_f, min_temp_f, sample_count")
+            .eq("city_id", cityId)
+            .order("captured_at", { ascending: false })
+            .limit(1)
+            .maybeSingle()
+        ).data;
 
   if (!snapshot?.avg_temp_f && snapshot?.min_temp_f == null) {
     return null;

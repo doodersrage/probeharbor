@@ -1,4 +1,4 @@
-import { createServerClient } from "./supabase";
+import { getHouseholdFields, updateHouseholdFields } from "./householdRecord";
 import { sendEmail } from "./mailer";
 import { brandedEmailParts } from "./emailLayout";
 import { resolveSiteUrl } from "./schemaMarkup";
@@ -15,12 +15,9 @@ export type TenantNotifySettings = {
 export async function getTenantNotifySettings(
   householdId: string,
 ): Promise<TenantNotifySettings> {
-  const supabase = createServerClient();
-  const { data } = await supabase
-    .from("households")
-    .select("tenant_notify_email, tenant_notify_name")
-    .eq("id", householdId)
-    .maybeSingle();
+  const { data } = (await getHouseholdFields(householdId, ["tenant_notify_email", "tenant_notify_name"])) as {
+    data: { tenant_notify_email: string | null; tenant_notify_name: string | null } | null;
+  };
 
   return {
     email: data?.tenant_notify_email?.trim() || null,
@@ -40,16 +37,7 @@ export async function updateTenantNotifySettings(
     return { error: alertJobsMessages(locale).tenant.errors.invalidEmail };
   }
 
-  const supabase = createServerClient();
-  const { error } = await supabase
-    .from("households")
-    .update({
-      tenant_notify_email: email,
-      tenant_notify_name: name,
-    })
-    .eq("id", householdId);
-
-  return { error: error?.message ?? null };
+  return updateHouseholdFields(householdId, { tenant_notify_email: email, tenant_notify_name: name });
 }
 
 export async function sendTenantFreezeRelay(input: {

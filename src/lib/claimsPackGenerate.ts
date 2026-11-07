@@ -4,6 +4,7 @@
  * (api/claims/pack.ts) and the email-to-adjuster route (api/claims/email.ts)
  * so they can't drift out of sync with each other.
  */
+import { getHouseholdFields } from "./householdRecord";
 import type { Entitlements } from "./entitlements";
 import { clampIsoToHistoryWindow, historyCutoffIso } from "./retentionSchedule";
 import { fetchGarageTempChartData } from "./garageTempsHistory";
@@ -12,7 +13,6 @@ import { getAlertSettingsForUser } from "./notify";
 import { getUserHouseholdId } from "./households";
 import { listHouseholdDevices } from "./devices";
 import { listAlertEventsInRange } from "./alertEvents";
-import { createServerClient } from "./supabase";
 import { buildClaimsPackData, type ClaimsDeviceSummary, type ClaimsPackData } from "./claimsPack";
 import { buildHistoryChartUrl } from "./historyUrls";
 
@@ -86,7 +86,7 @@ export async function generateClaimsPackForUser(
       ? listHouseholdDevices(householdId)
       : Promise.resolve({ devices: [], error: null }),
     householdId
-      ? createServerClient().from("households").select("name").eq("id", householdId).maybeSingle()
+      ? (getHouseholdFields(householdId, ["name"]) as Promise<{ data: { name: string } | null }>)
       : Promise.resolve({ data: null }),
   ]);
 

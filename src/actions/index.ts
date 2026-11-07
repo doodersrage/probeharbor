@@ -1,3 +1,4 @@
+import { getHouseholdFields } from "../lib/householdRecord";
 import { defineAction, ActionError } from "astro:actions";
 import { z } from "astro/zod";
 import { getAuthFromCookies, setAuthCookies } from "../lib/auth";
@@ -6,7 +7,7 @@ import {
   parseDisplayPreferencesInput,
   type ThemePreference,
 } from "../lib/userPreferences";
-import { createServerClient, createAuthClient } from "../lib/supabase";
+import { createAuthClient } from "../lib/supabase";
 import { updateUserAlertSettings } from "../lib/alertNotifications";
 import {
   alertChannelsIncomplete,
@@ -381,12 +382,7 @@ export const server = {
         });
       }
 
-      const db = createServerClient();
-      const { data: householdRow } = await db
-        .from("households")
-        .select("name")
-        .eq("id", manageId)
-        .maybeSingle();
+      const { data: householdRow } = (await getHouseholdFields(manageId, ["name"])) as { data: { name: string } | null };
 
       const acceptUrl = buildSiteUrl(context.request, `/invite/${token}`);
       // Only the hash is stored: show the link once after the page reloads.

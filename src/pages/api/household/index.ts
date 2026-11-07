@@ -1,6 +1,6 @@
+import { getHouseholdFields } from "../../../lib/householdRecord";
 import type { APIRoute } from "astro";
 import { getAuthFromRequest } from "../../../lib/auth";
-import { createServerClient } from "../../../lib/supabase";
 import {
   canManageHousehold,
   countOwnedHouseholds,
@@ -257,11 +257,7 @@ async function emailInviteLink(
   token: string,
   inviterEmail: string | null,
 ): Promise<void> {
-  const { data: householdRow } = await createServerClient()
-    .from("households")
-    .select("name")
-    .eq("id", householdId)
-    .maybeSingle();
+  const { data: householdRow } = (await getHouseholdFields(householdId, ["name"])) as { data: { name: string } | null };
 
   const acceptUrl = buildSiteUrl(context.request, `/invite/${token}`);
   setSecretFlash(context.cookies, FLASH_INVITE_LINK, acceptUrl);

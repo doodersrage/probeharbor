@@ -4701,9 +4701,20 @@ Cloudflare email binding.
          reference sensor check without household → 1 fails. Build
          checked (freezeMap.ts now loads db/client; no prerendered page
          imports it).
-   - [ ] Convert the remaining ~15 queries in ~15 files (API routes,
-         pages, actions, small libs), one area per commit, each with
-         database tests.
+   - [x] Area 9e, household field reads: new `src/lib/householdRecord.ts`
+         (`getHouseholdFields`, `updateHouseholdFields` with an allow-list
+         of columns, `getFirstOwnerId`), both paths. Used by regional
+         benchmark, monitoring certificate, claims pack, tenant relay,
+         outdoor-compare coords, ack playbook, API plan check, the invite
+         page, household page and route, and the invite action. Unused
+         Supabase imports removed. 4 database tests: one household's
+         columns read/updated, others untouched, unknown columns refused,
+         first owner, tenant relay, API plan fails closed with no owner.
+         Mutation: update without the id condition → 2 fail.
+   - [ ] Remaining: ~15 queries in ~10 files (devices API route,
+         household activity, mobile auth exchange, freeze-estimate
+         snapshots, portfolio alerts, Telegram, contact form, digest
+         opt-in, pull setup, household page member list).
    - [ ] Cross-household tests for every household-scoped read and write.
 4. **Login on Better Auth.** Email + password (accept existing bcrypt
    hashes, so passwords keep working), Google, GitHub, Discord, email
