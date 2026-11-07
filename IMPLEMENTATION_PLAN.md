@@ -4173,3 +4173,164 @@ were online: temperature and humidity from the house, garage, and shed sensors
   - Serial numbers get cut at Matter's 32 characters, e.g.
     `TT-SHED-ESP32-C3-TEMP1-TEMPERATU`, so two long names could end up with the
     same serial.
+
+------------------------------------------------------------------------
+
+## Move off Supabase: Neon database + Better Auth (planned 2026-11-07)
+
+**Status: Plan only. Nothing built, nothing deployed. Production still runs
+entirely on Supabase.**
+
+Why now: few users, so a one-time sign-out and a short maintenance window
+are acceptable. Goal: Postgres on Neon, login run by Better Auth inside the
+Worker, no `@supabase/*` packages left. Same features, same data, same user
+IDs.
+
+Non-goals: no feature changes, no schema redesign beyond replacing Supabase's
+`auth` schema, no Neon Auth (managed login; no MFA yet, see below), no
+changes to the Android app in this repo (it is separate).
+
+### Decisions made
+
+- **Database: Neon.** Project created; `DATABASE_URL` (pooled) works from
+  this machine: Postgres 18.6, `pgcrypto`, `uuid-ossp` and `pg_cron`
+  available. Region `us-east-2`.
+- **Login: Better Auth, run in the Worker, storing its tables in Neon.**
+  Chosen over Neon Auth because Neon Auth doesn't offer two-factor yet and
+  users already have TOTP and WebAuthn factors.
+- **Keep every user's UUID.** 28 foreign keys point at `auth.users(id)`;
+  new user rows reuse the same IDs so no other table changes keys.
+
+### What depends on Supabase today (audit, 2026-11-07)
+
+| Area | Evidence | Size |
+| --- | --- | --- |
+| Queries through supabase-js | `.from("…")` outside tests | ~343 calls, 81 files |
+| Postgres functions via `.rpc()` | `latest_sensor_readings`, `sensor_bucket_*`, `roll_up_and_prune_readings`, … | 13 |
+| DB clients | `src/lib/supabase.ts`: `createServerClient` (68 files), `createAdminClient` (32), `createAuthClient` (28) | |
+| Auth calls | `setSession`, `admin.getUserById` (25), `mfa.*` (18), `updateUser` (17), OAuth, OTP, reset | ~110 |
+| Sessions | `sb-access-token` / `sb-refresh-token` cookies (`src/lib/auth.ts`) | |
+| Companion / Android | Bearer + `X-SB-Refresh-Token`; `/api/auth/mobile/*`, `/api/auth/companion/*` | |
+| MFA | TOTP (`mfa.enroll`), WebAuthn via Supabase's auth REST API (`src/lib/webauthnMfaApi.ts`) | |
+| Profile settings | `user_metadata`: locale, °C, active household, dashboard prefs, `github_id`, … | ~15 keys |
+| SQL tied to Supabase auth | `auth.uid()` 22 lines/10 files; `auth.users` 40 lines/24 files; 2 triggers on `auth.users` (household + group membership) | |
+| Supabase roles | `to authenticated` 47, `to anon` 8, `service_role` 31 lines | |
+| RLS | `enable row level security` in 26 files, 43 policies | |
+| Tooling | `db:push` / `db:pending` use the Supabase CLI; `db:backup` reads `SUPABASE_DB_URL` | |
+| Not used | Storage, Realtime, Edge Functions, `pg_net`, Vault, `pg_cron` | |
+
+Sign-in providers: email + password, Google, Discord (configured in the
+Supabase dashboard), GitHub (the app's own OAuth app already). Auth emails
+(confirm, reset) are sent by Supabase today; they will move to the existing
+Cloudflare email binding.
+
+### Open decisions (settle before the step that needs them)
+
+1. **How queries reach Neon** (step 3). Neon's Data API is PostgREST-
+   compatible, so most `.from()` calls could stay, but server code relies on
+   a service-role style key that bypasses RLS; confirm Neon has a clean
+   equivalent. Otherwise: SQL through a Postgres driver (Neon serverless
+   driver or Hyperdrive), moved file by file. Decide by spike, not guess.
+2. **RLS after the move** (step 2). Server code mostly uses the
+   service-role client and checks access in app code. Either keep RLS as a
+   second layer using a per-request setting (`app.user_id`) in place of
+   `auth.uid()`, or rely on app-code checks plus tests. Must not weaken
+   cross-household protection either way.
+3. **Existing MFA** (step 4). Copy TOTP secrets into Better Auth's format,
+   or ask those users to set MFA up again. WebAuthn: check whether Better
+   Auth's passkey plugin works as a *second* factor the way it's used now.
+4. **Readings during the cutover window** (step 6). Check what firmware and
+   pull feeds do when ingest returns 503 (retry, buffer, or drop) before
+   picking the window length.
+
+### Steps (each one reviewable on its own; app stays on Supabase until step 6)
+
+1. **Prep.** Add `DATABASE_URL_UNPOOLED`. Record Supabase's Postgres
+   version, table count, user count and size (read-only; needs approval
+   for a production read). Fresh `pnpm db:backup`.
+   Done when: both Neon URLs work; Supabase numbers are written here.
+   - [x] Neon pooled and direct URLs connect (Postgres 18.6). All new
+         env vars set locally; `BETTER_AUTH_URL` = `SITE_URL`. (2026-11-07)
+   - [x] Supabase, read-only counts (2026-11-07): Postgres 17.6, 63 MB,
+         49 public tables. Largest: `sensor_readings` 31 MB (~123k rows),
+         `job_runs` 7 MB (~20k), `alert_snooze_tokens` 2.6 MB (~13k).
+         Users: 11 (9 confirmed, 8 with a password, all bcrypt `$2a$`).
+         Identities: email 8, Google 5, Discord 1 (GitHub sign-in is the
+         app's own OAuth, stored as `user_metadata.github_id`). MFA: one
+         verified TOTP factor, no WebAuthn factors. Extensions:
+         `pgcrypto`, `uuid-ossp`, `pg_stat_statements`, `supabase_vault`
+         (enabled but unused by migrations).
+         Note: the pooler ignored the read-only session option; every
+         query was a SELECT.
+   - [x] Fresh `pnpm db:backup` (run by the user, 2026-11-07 08:06 EST):
+         `backups/probeharbor-20261107T130635Z.dump`, 3.8 MB, pg_dump
+         custom format, Postgres 17.6. Holds data for all 49 public tables
+         and 27 `auth` tables (users, identities, MFA factors).
+   Effect on the open decisions: the data copy is small (seconds, not
+   minutes). Decision 3 is minor: one TOTP user, zero WebAuthn users.
+   Password import needs a bcrypt check in Better Auth.
+2. **Schema on Neon.** One baseline migration made from the 67 Supabase
+   migrations, with: Better Auth's tables (UUID ids); `auth.users`
+   foreign keys pointed at the new user table; the two `auth.users`
+   triggers moved to the new table (or Better Auth hooks); Supabase roles
+   and `auth.uid()` replaced per decision 2. New `db:migrate` / `db:pending`
+   scripts that don't need the Supabase CLI. Applied to a Neon **branch**.
+   Done when: the schema applies cleanly to an empty branch twice, and a
+   diff of tables, columns, indexes and functions against Supabase shows
+   only the intended auth changes.
+3. **Data access.** Spike decision 1 on one read path and one write path,
+   then move the rest behind `src/lib/db` (one backend switch for the whole
+   app, chosen by env var). Includes the 13 Postgres functions.
+   Done when: the full test suite passes against the Neon branch, plus
+   tests that one household can't read or change another's data.
+4. **Login on Better Auth.** Email + password (accept existing bcrypt
+   hashes, so passwords keep working), Google, GitHub, Discord, email
+   confirm and reset through Cloudflare email, TOTP and WebAuthn per
+   decision 3, sign-out everywhere, admin user lookups, profile settings
+   moved out of `user_metadata`, companion and Android token flows.
+   Done when: every auth route's tests pass, and a manual run-through of
+   each sign-in method works on a Neon branch with copied data.
+5. **Copy rehearsal.** Script that copies all app data plus users
+   (`auth.users`, `auth.identities`, MFA factors) into Better Auth's
+   tables, keeping IDs. Run against a fresh Neon branch until clean.
+   Done when: per-table row counts match, spot checks of readings,
+   alerts and households match, and a copied test account can sign in
+   with its old password.
+6. **Cutover** (needs explicit approval; production change). Maintenance
+   notice → stop writes → final copy → set production secrets → deploy →
+   smoke tests (`pnpm smoke:public`, sign-in, a test reading, a test
+   alert) → reopen. Everyone is signed out; companion and Android apps
+   must sign in again.
+7. **Cleanup** after 30 calm days: remove `@supabase/*`, Supabase env
+   vars and scripts, update docs. Pause the Supabase project; deleting it
+   is a separate decision with its own approval.
+
+### Rollback
+
+- Steps 1–5 never touch production. Rollback = ignore the Neon branch.
+- During cutover: redeploy the previous version and restore the old
+  secrets. Supabase is unchanged up to the moment writes stopped.
+- After reopening, Neon has new data Supabase doesn't. Set a rollback
+  deadline (e.g. 48 hours); after that, fix forward. A late rollback
+  would need the new rows copied back.
+
+### Environment variables
+
+Set now (local `.env` only): `DATABASE_URL` (done), `DATABASE_URL_UNPOOLED`,
+`BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `GOOGLE_CLIENT_ID`,
+`GOOGLE_CLIENT_SECRET`, `DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET`.
+`GITHUB_CLIENT_*` and email settings are already in place. Keep all
+`SUPABASE_*` until step 7. OAuth redirect URLs change in step 4; production
+secrets are pushed only at step 6.
+
+### Risks
+
+- Cross-household data exposure if RLS or app checks are lost in the move.
+  Mitigation: access tests written in step 3, before any cutover.
+- Lost readings or alerts during the window (decision 4).
+- Companion and Android apps signed out; Android may need an update if it
+  depends on Supabase token details (separate repo, check before step 6).
+- Neon Auth is switched on in the Neon project but unused (`neon_auth`
+  schema, empty). Harmless; can be turned off in the Neon console.
+- Better Auth on Workers: confirm the Postgres connection approach works
+  under Workers' request limits in step 3's spike.
