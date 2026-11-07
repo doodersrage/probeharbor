@@ -19,6 +19,8 @@ import {
 import { shouldSuppressForSnoozeOrVacation } from "./alertSnooze";
 import { filterChannelsForSpace } from "./spaceChannelRouting";
 import { deliverWebhookPost } from "./webhookDeliveries";
+import { dbBackend } from "./db/client";
+import * as neonSettings from "./db/alertSettings";
 import { createServerClient } from "./supabase";
 import { getUserEntitlements } from "./entitlements";
 import { sendPushChannelToUser } from "./pushChannel";
@@ -399,6 +401,23 @@ export async function getAlertSettingsForUser(
   userId: string,
   metadata?: Record<string, unknown>,
 ): Promise<AlertSettings> {
+  if (dbBackend() === "neon") {
+    let row: Record<string, unknown> | null;
+    try {
+      row = await neonSettings.getAlertSettingsRow(userId);
+    } catch (error) {
+      // Can't read: use the metadata/defaults for this request, but don't
+      // write them over a row that may exist.
+      console.error("Failed to load alert settings:", error instanceof Error ? error.message : error);
+      return getAlertSettingsFromMetadata(metadata);
+    }
+    if (row) return rowToAlertSettings(row);
+    const fresh = getAlertSettingsFromMetadata(metadata);
+    await neonSettings.insertDefaultAlertSettings(userId, alertSettingsToRow(fresh));
+    // Another request may have created the row first; theirs wins.
+    const stored = await neonSettings.getAlertSettingsRow(userId).catch(() => null);
+    return stored ? rowToAlertSettings(stored) : fresh;
+  }
   const supabase = createServerClient();
   const { data } = await supabase
     .from("alert_settings")
@@ -423,6 +442,7 @@ export async function saveAlertSettingsForUser(
   userId: string,
   settings: AlertSettings,
 ): Promise<{ error: string | null }> {
+  if (dbBackend() === "neon") return neonSettings.saveAlertSettingsRow(userId, alertSettingsToRow(settings));
   const supabase = createServerClient();
   const { error } = await supabase.from("alert_settings").upsert(
     {
@@ -451,6 +471,7 @@ export async function markCooldown(
     | "last_flood_alert_at"
     | "last_power_alert_at",
 ): Promise<void> {
+  if (dbBackend() === "neon") return neonSettings.markCooldown(userId, field, alertSettingsToRow(DEFAULT_ALERT_SETTINGS));
   const supabase = createServerClient();
   const now = new Date().toISOString();
   const patch = { [field]: now, updated_at: now } as {
@@ -512,6 +533,7 @@ export async function claimCooldown(
   field: CooldownField,
   previous: string | null,
 ): Promise<{ claimed: boolean; claimedAt: string | null }> {
+  if (dbBackend() === "neon") return neonSettings.claimCooldown(userId, field, previous);
   const supabase = createServerClient();
   const now = new Date().toISOString();
   try {
@@ -548,6 +570,7 @@ export async function releaseCooldown(
   claimedAt: string,
   previous: string | null,
 ): Promise<void> {
+  if (dbBackend() === "neon") return neonSettings.releaseCooldown(userId, field, claimedAt, previous);
   const supabase = createServerClient();
   const { error } = await supabase
     .from("alert_settings")
@@ -587,6 +610,14 @@ export async function ensureAlertDeliveryEvidence(
     return { hasDelivery: true, settings };
   }
 
+  if (dbBackend() === "neon") {
+    try {
+      return { hasDelivery: await neonSettings.recentAlertReachedAChannel(userId), settings };
+    } catch (error) {
+      console.error("ensureAlertDeliveryEvidence failed:", error instanceof Error ? error.message : error);
+      return { hasDelivery: false, settings };
+    }
+  }
   const supabase = createServerClient();
   const { data, error } = await supabase
     .from("alert_events")
@@ -607,6 +638,7 @@ export async function ensureAlertDeliveryEvidence(
 }
 
 export async function markEscalation(userId: string): Promise<void> {
+  if (dbBackend() === "neon") return neonSettings.markEscalation(userId);
   const supabase = createServerClient();
   await supabase
     .from("alert_settings")

@@ -4463,11 +4463,25 @@ Cloudflare email binding.
          list and the kind check match `isUnhandledAlertEvent` row for row.
          Mutations: rule without the safety branch → 3 fail; acknowledge
          without the user check → 1 fails.
-   - [ ] Convert the remaining ~255 queries and 3 Postgres function calls
+   - [x] Area 4b, alert settings and cooldowns in `notify.ts`
+         (`src/lib/db/alertSettings.ts`): load (first load inserts defaults
+         with ON CONFLICT DO NOTHING and re-reads, so a concurrent first
+         save isn't overwritten; a failed read no longer writes defaults),
+         save (jsonb_populate_record: Postgres converts each value to its
+         column type; column names checked against the table), markCooldown
+         (one statement), claimCooldown compare-and-set (`is not distinct
+         from`, same fail-open contract), releaseCooldown, markEscalation,
+         delivery evidence. Cooldown field names are allow-listed before
+         use in SQL. 11 database tests: defaults, every field type round
+         trip, users kept apart, 5 simultaneous claims → exactly 1 wins,
+         stale value loses / full-precision stored value wins, release
+         only undoes its own claim, no row → fails open, non-cooldown
+         field refused. Mutation: claim without the compare → 2 fail.
+   - [ ] Convert the remaining ~245 queries and 3 Postgres function calls
          (`sensor_bucket_averages`, `sensor_values_before`,
          `roll_up_and_prune_readings`), one area per commit, each with
-         database tests. Next: alert settings and cooldowns (`notify.ts`,
-         `alertSettingsHistory.ts`), snooze tokens, door events, push/FCM.
+         database tests. Next: settings history, snooze tokens, door
+         events, push/FCM registrations, webhook deliveries.
    - [ ] Cross-household tests for every household-scoped read and write.
 4. **Login on Better Auth.** Email + password (accept existing bcrypt
    hashes, so passwords keep working), Google, GitHub, Discord, email
