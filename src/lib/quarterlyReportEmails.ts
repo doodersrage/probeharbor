@@ -60,7 +60,9 @@ async function sendQuarterlyReportEmail(
 ): Promise<void> {
   const { EmailMessage } = await import("cloudflare:email");
   const { createMimeMessage } = await import("mimetext");
-  const { requireSmtpMailFrom, sendMailerRaw } = await import("./mailer");
+  const { assertRecipientSendable, requireSmtpMailFrom, sendMailerRaw } = await import("./mailer");
+  // Same refusal as every other email: suppressed (bounced, unsubscribed) or implausible addresses.
+  await assertRecipientSendable(to);
   const from = requireSmtpMailFrom();
 
   const msg = createMimeMessage();

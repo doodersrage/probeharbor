@@ -39,6 +39,21 @@ export type SendEmailOptions = {
 };
 
 /**
+ * Refuse suppressed and implausible addresses (recording the latter), for
+ * every sender: sendEmail, and the report emails that build their own MIME
+ * message for sendMailerRaw. Throws, like a failed send.
+ */
+export async function assertRecipientSendable(to: string): Promise<void> {
+  if (!isPlausibleEmailAddress(to)) {
+    await suppressEmail(to, "invalid", "implausible address");
+    throw new Error(`Email address is suppressed (invalid): ${to}`);
+  }
+  if (await isEmailSuppressed(to)) {
+    throw new Error(`Email address is suppressed: ${to}`);
+  }
+}
+
+/**
  * Send multipart email (plain + optional HTML). Prefer branded helpers for product mail.
  * Skips (and records) suppressed / implausible addresses to protect bounce rate.
  */
@@ -48,13 +63,7 @@ export async function sendEmail(
   text: string,
   options?: SendEmailOptions,
 ): Promise<void> {
-  if (!isPlausibleEmailAddress(to)) {
-    await suppressEmail(to, "invalid", "implausible address");
-    throw new Error(`Email address is suppressed (invalid): ${to}`);
-  }
-  if (await isEmailSuppressed(to)) {
-    throw new Error(`Email address is suppressed: ${to}`);
-  }
+  await assertRecipientSendable(to);
 
   const from = requireSmtpMailFrom();
   const { EmailMessage } = await import("cloudflare:email");
