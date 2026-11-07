@@ -4655,10 +4655,23 @@ Cloudflare email binding.
          warnings in those files were already there (checked against the
          previous versions). Only `households.ts` and `referrals.ts` still
          call the Supabase admin API, inside their Supabase branches.
-   - [ ] Convert the remaining ~60 queries in ~28 files and 1 Postgres
+   - [x] Area 9a, pucks (`src/lib/db/pucks.ts`): register (one statement
+         that only updates a puck the same household owns; the Supabase
+         path's check-then-upsert could hand a device to whichever of two
+         simultaneous registrations wrote last), claims (HMAC checked
+         first, then the nonce is consumed in the same statement that
+         binds the bay), mood override, bay mood. 6 database tests:
+         re-key own puck, other household refused, simultaneous
+         registrations → one owner, wrong HMAC never binds, replay
+         refused, same response sent 3× at once → 1 bind, other household
+         can't claim or set mood, override shown. Mutations: register
+         without the household condition → 2 fail; bind without consuming
+         the nonce → 1 fails (needed the concurrent test; a later replay
+         is already stopped by the pending read).
+   - [ ] Convert the remaining ~50 queries in ~27 files and 1 Postgres
          function call (`sensor_bucket_averages`), one area per commit,
-         each with database tests. Next: thermostats, archives, pucks,
-         freeze map, inbound webhooks, dashboard pages and API routes.
+         each with database tests. Next: thermostats, archives, freeze
+         map, inbound webhooks, dashboard pages and API routes.
    - [ ] Cross-household tests for every household-scoped read and write.
 4. **Login on Better Auth.** Email + password (accept existing bcrypt
    hashes, so passwords keep working), Google, GitHub, Discord, email
