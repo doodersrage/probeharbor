@@ -7,6 +7,8 @@
  *   pnpm db:migrate                 apply pending migrations
  *   pnpm db:migrate --status        list applied / pending; change nothing
  *   pnpm db:migrate --check         like --status, exit 1 if anything is pending
+ *   pnpm db:migrate --up-to 0003    apply pending migrations up to and including 0003 only
+ *                                   (for a migration that must wait until after a deploy)
  *   options: --env-file .env  --url-env DATABASE_URL_UNPOOLED  --dir db/migrations
  *
  * Uses the direct (unpooled) connection string by default: migrations need a
@@ -57,6 +59,12 @@ export function planMigrations(files, applied) {
   const lastApplied = done.at(-1) ?? changed.at(-1);
   const outOfOrder = lastApplied ? pending.filter((v) => v < lastApplied) : [];
   return { pending, changed, done, missing, outOfOrder };
+}
+
+/** Pending versions to apply now: all of them, or only up to `NNNN` (inclusive). */
+export function pendingUpTo(pending, upTo) {
+  if (!upTo) return pending;
+  return pending.filter((version) => version.slice(0, 4) <= upTo);
 }
 
 /** Problems that must stop `db:migrate` before it applies anything. */
@@ -111,6 +119,11 @@ async function main() {
   const envPath = resolve(argValue("--env-file", ".env"));
   const urlEnv = argValue("--url-env", "DATABASE_URL_UNPOOLED");
   const dir = resolve(argValue("--dir", "db/migrations"));
+  const upTo = argValue("--up-to", "");
+  if (upTo && !/^\d{4}$/.test(upTo)) {
+    console.error("--up-to takes a four-digit migration number, e.g. --up-to 0003.");
+    return 1;
+  }
 
   const env = existsSync(envPath) ? parseEnvFile(readFileSync(envPath, "utf8")) : {};
   const raw = (process.env[urlEnv] ?? env[urlEnv] ?? "").trim();
@@ -156,7 +169,11 @@ async function main() {
     }
     if (statusOnly) return check && plan.pending.length ? 1 : 0;
 
-    for (const version of plan.pending) {
+    const toApply = pendingUpTo(plan.pending, upTo);
+    if (upTo && toApply.length < plan.pending.length) {
+      console.log(`Up to ${upTo}: applying ${toApply.length ? toApply.join(", ") : "nothing"}; leaving ${plan.pending.filter((v) => !toApply.includes(v)).join(", ")}.`);
+    }
+    for (const version of toApply) {
       const sql = files.find((f) => f.version === version).sql;
       const started = Date.now();
       await client.query("begin");
@@ -176,7 +193,7 @@ async function main() {
       }
       console.log(`Applied ${version} (${Date.now() - started} ms)`);
     }
-    if (plan.pending.length === 0) console.log("Nothing to apply.");
+    if (toApply.length === 0) console.log("Nothing to apply.");
     return 0;
   } finally {
     await client.end();

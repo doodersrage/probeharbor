@@ -8,6 +8,7 @@ import {
   checkTargetUrl,
   planMigrations,
   readMigrationFiles,
+  pendingUpTo,
 } from "../../scripts/db-migrate.mjs";
 
 const file = (version: string, sql = `-- ${version}`) => ({ version, sql });
@@ -40,6 +41,18 @@ describe("db:migrate planning", () => {
     const plan = planMigrations([file("0001_a"), file("0002_b")], [applied("0002_b")]);
     expect(plan.outOfOrder).toEqual(["0001_a"]);
     expect(blockingProblems(plan)).toHaveLength(1);
+  });
+});
+
+describe("db:migrate --up-to", () => {
+  const pending = ["0003_key_scopes", "0004_hash_secrets", "0012_later"];
+  it("applies only migrations up to and including the given number", () => {
+    expect(pendingUpTo(pending, "0003")).toEqual(["0003_key_scopes"]);
+    expect(pendingUpTo(pending, "0004")).toEqual(["0003_key_scopes", "0004_hash_secrets"]);
+    expect(pendingUpTo(pending, "0002")).toEqual([]);
+  });
+  it("applies everything without --up-to", () => {
+    expect(pendingUpTo(pending, "")).toEqual(pending);
   });
 });
 
