@@ -47,6 +47,10 @@ const de: AlertsMessages = {
     householdSnoozedUntil: "Eine Integration hat die Routinealarme dieses Haushalts bis {time} pausiert, für alle Mitglieder.",
     householdVacationUntil: "Eine Integration hat diesen Haushalt bis {time} in den Urlaubsmodus versetzt: Routinealarme werden für alle Mitglieder zurückgehalten.",
     householdClearHint: "Zum vorzeitigen Beenden clear_snooze oder clear_vacation aus der Integration senden.",
+    /** Resume buttons for the household hold (owners and editors). */
+    householdResume: "Alarme für alle fortsetzen",
+    householdEndVacation: "Urlaub für alle beenden",
+    householdResumeHint: "Das Fortsetzen hebt die Pause dieses Haushalts für alle Mitglieder auf; die Integration kann sie erneut setzen.",
   },
   activity: {
     heading: "Letzte Alarmaktivität",

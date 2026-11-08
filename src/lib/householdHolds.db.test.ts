@@ -17,6 +17,14 @@ vi.mock("./runtimeEnv", () => ({
   getRuntimeEnv: () => undefined,
   hasRuntimeEnv: () => false,
 }));
+// The dashboard resume route's session: whoever `signedIn` names.
+const signedIn = vi.hoisted(() => ({ userId: null as string | null }));
+vi.mock("./auth", () => ({
+  getAuthFromRequest: async () =>
+    signedIn.userId
+      ? { session: { access_token: "t" }, user: { id: signedIn.userId, user_metadata: {} } }
+      : { session: null, user: null },
+}));
 
 import { DEFAULT_ALERT_SETTINGS } from "./alerts";
 import { collectHistoryForAllUsers } from "./collectHistory";
@@ -26,6 +34,7 @@ import { addHouseholdMemberByUserId } from "./households";
 import { createInboundWebhook } from "./inboundWebhooks";
 import { getAlertSettingsForUser, saveAlertSettingsForUser } from "./notify";
 import { POST as inboundPost } from "../pages/api/inbound/[token]";
+import { POST as resumePost } from "../pages/api/user/household-alert-hold";
 
 const db = useTestDatabase();
 const sql = async <T = Record<string, unknown>>(text: string, params: unknown[] = []) =>
@@ -250,3 +259,61 @@ describe("inbound webhook: household snooze / vacation", () => {
     expect((await eventsOf(s, "threshold"))[0]!.channels_sent).toEqual(["discord"]);
   });
 });
+
+/** POST the dashboard "Resume alerts" form as `userId`; returns the redirect location. */
+async function resume(userId: string, fields: Record<string, string>) {
+  signedIn.userId = userId;
+  const form = new FormData();
+  for (const [k, v] of Object.entries(fields)) form.set(k, v);
+  const request = new Request("https://example.com/api/user/household-alert-hold", { method: "POST", body: form });
+  const redirect = (path: string) => new Response(null, { status: 302, headers: { Location: path } });
+  const response = await resumePost({ request, cookies: {}, redirect } as unknown as APIContext);
+  return response.headers.get("Location");
+}
+
+describe("dashboard resume of the household hold", () => {
+  it("an owner lifts only their current household's hold; its alerts send again", async () => {
+    const { a, ha, hb, token, secret } = await setup({ aBattery: 5 });
+    await inbound(token, secret, { action: "snooze", hours: 3 });
+    await inbound(token, secret, { action: "vacation", days: 2 });
+    const hbUntil = new Date(Date.now() + 3600_000).toISOString();
+    await setHouseholdSnoozeUntil(hb, hbUntil);
+
+    // A household id in the form is ignored: the session's household (HA) is used.
+    expect(await resume(a, { action: "clear_snooze", redirect: "/dashboard", household_id: hb })).toBe(
+      "/dashboard?snooze_cleared=1",
+    );
+    expect(await resume(a, { action: "clear_vacation", redirect: "/dashboard" })).toBe("/dashboard?vacation_cleared=1");
+
+    expect(await getHouseholdAlertHold(ha)).toEqual({ snoozeUntil: null, vacationUntil: null });
+    expect(Date.parse((await getHouseholdAlertHold(hb)).snoozeUntil!)).toBe(Date.parse(hbUntil));
+    expect(await ownHolds(a)).toEqual({ snooze_until: null, vacation_until: null });
+    expect(
+      await sql("select user_id, action from public.household_activity where household_id = $1 and action like 'household_%' order by action", [ha]),
+    ).toEqual([
+      { user_id: a, action: "household_snooze_cleared" },
+      { user_id: a, action: "household_vacation_cleared" },
+    ]);
+
+    await collectHistoryForAllUsers();
+    const battery = await eventsOf(a, "battery");
+    expect(battery).toHaveLength(1);
+    expect(battery[0]!.channels_sent).toEqual(["discord"]);
+  });
+
+  it.each(["viewer", "alert_only"] as const)("a %s member is refused and the hold stays", async (role) => {
+    const { ha, token, secret } = await setup();
+    const v = await insertTestUser(db.client(), `${role}@example.com`);
+    await addHouseholdMemberByUserId(ha, v, role);
+    await mergeUserMetadata(v, { active_household_id: ha });
+    await inbound(token, secret, { action: "snooze", hours: 3 });
+
+    expect(await resume(v, { action: "clear_snooze", redirect: "/dashboard" })).toBe("/dashboard?error=viewer");
+
+    expect((await getHouseholdAlertHold(ha)).snoozeUntil).not.toBeNull();
+    expect(
+      await sql("select action from public.household_activity where household_id = $1 and action = 'household_snooze_cleared'", [ha]),
+    ).toEqual([]);
+  });
+});
+

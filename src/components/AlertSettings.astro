@@ -568,6 +568,15 @@ const heatThresholdShown = displayTempInputValue(HEAT_THRESHOLD_F, useCelsius);
           {/* Stored hashed: never echoed back. Empty input keeps the saved secret. */}
           <input class="form-input" type="text" id="telegram_command_secret" name="telegram_command_secret" value="" placeholder={settings.telegramCommandSecret ? t.channels.webhookSecretReplacePlaceholder : "random-secret"} autocomplete="off" aria-describedby={settings.telegramCommandSecret ? "telegram_command_secret_saved" : undefined} />
           {settings.telegramCommandSecret && <p class="form-hint" id="telegram_command_secret_saved">{t.channels.webhookSecretSaved}</p>}
+          {settings.telegramCommandSecret && (
+            <>
+            <label class="checkbox-row mb-1">
+              <input type="checkbox" name="telegram_command_secret_clear" value="true" aria-describedby="telegram_command_secret_clear_hint" />
+              <span>{t.channels.webhookSecretRemove}</span>
+            </label>
+            <p class="form-hint" id="telegram_command_secret_clear_hint">{t.channels.webhookSecretRemoveHint}</p>
+            </>
+          )}
           <p class="form-hint mb-0" set:html={t.channels.telegramHintHtml} />
         </div>
       </div>

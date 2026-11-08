@@ -159,6 +159,8 @@ const es: HouseholdMessages = {
     share_link_regenerated: "Enlace compartido regenerado",
     inbound_snooze: "Alertas pospuestas (entrante)",
     inbound_vacation: "Modo vacaciones (entrante)",
+    household_snooze_cleared: "Pausa del hogar terminada",
+    household_vacation_cleared: "Vacaciones del hogar terminadas",
   },
 };
 

@@ -264,9 +264,12 @@ export function buildAlertSettingsFromFormData(
         return existing.alertTemplates;
       }
     })(),
-    telegramCommandSecret:
-      formString(formData, "telegram_command_secret", existing.telegramCommandSecret) ||
-      existing.telegramCommandSecret,
+    // Never echoed back, so an empty input keeps the saved secret; the explicit
+    // "remove" checkbox clears it (and wins over a value typed alongside it).
+    telegramCommandSecret: formCheckbox(formData, "telegram_command_secret_clear")
+      ? null
+      : formString(formData, "telegram_command_secret", existing.telegramCommandSecret) ||
+        existing.telegramCommandSecret,
     lastEscalationAt: existing.lastEscalationAt,
     channelSeverity: (() => {
       if (!formData.has("channel_severity_json")) return existing.channelSeverity;

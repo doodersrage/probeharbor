@@ -159,6 +159,8 @@ const ptBr: HouseholdMessages = {
     share_link_regenerated: "Link de compartilhamento gerado de novo",
     inbound_snooze: "Alertas adiados (entrada)",
     inbound_vacation: "Modo férias (entrada)",
+    household_snooze_cleared: "Pausa da casa encerrada",
+    household_vacation_cleared: "Férias da casa encerradas",
   },
 };
 

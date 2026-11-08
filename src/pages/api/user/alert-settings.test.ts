@@ -158,4 +158,27 @@ describe("POST /api/user/alert-settings", () => {
     expect(context.redirect).toHaveBeenCalledWith("/dashboard/alerts?alert_saved=1");
     expect(response.status).toBe(302);
   });
+
+  it("removing the Telegram secret saves null and doesn't trip the weak-secret check (real parser)", async () => {
+    const real = await vi.importActual<typeof import("../../../lib/alertSettingsForm")>("../../../lib/alertSettingsForm");
+    const { DEFAULT_ALERT_SETTINGS } = await import("../../../lib/alerts");
+    mockBuildAlertSettingsFromFormData.mockImplementation(real.buildAlertSettingsFromFormData);
+    mockIsWeakTelegramSecret.mockImplementation(real.isWeakTelegramSecret);
+    const existing = { ...DEFAULT_ALERT_SETTINGS, telegramCommandSecret: `sha256:${"b".repeat(64)}` };
+    mockGetAlertSettingsForUser.mockResolvedValue(existing);
+    const { POST } = await import("./alert-settings");
+    const context = makeContext({ telegram_command_secret: "", telegram_command_secret_clear: "true" });
+
+    await POST(context);
+
+    expect(mockUpdateUserAlertSettings).toHaveBeenCalledTimes(1);
+    expect(mockUpdateUserAlertSettings.mock.calls[0]![3].telegramCommandSecret).toBeNull();
+    expect(mockRecordAlertSettingsChange).toHaveBeenCalledWith(
+      "user-1",
+      existing,
+      expect.objectContaining({ telegramCommandSecret: null }),
+      expect.anything(),
+    );
+    expect(context.redirect).not.toHaveBeenCalledWith(expect.stringContaining("weak_telegram_secret"));
+  });
 });

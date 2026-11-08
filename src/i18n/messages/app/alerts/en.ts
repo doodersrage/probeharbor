@@ -51,6 +51,10 @@ const en = {
     householdSnoozedUntil: "An integration snoozed this household's routine alerts until {time}, for everyone in it.",
     householdVacationUntil: "An integration put this household in vacation mode until {time}: routine alerts are held for everyone in it.",
     householdClearHint: "To end it early, send clear_snooze or clear_vacation from the integration.",
+    /** Resume buttons for the household hold (owners and editors). */
+    householdResume: "Resume alerts for everyone",
+    householdEndVacation: "End vacation for everyone",
+    householdResumeHint: "Resuming lifts this household's hold for everyone in it; the integration can set it again.",
   },
   activity: {
     heading: "Recent alert activity",

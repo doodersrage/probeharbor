@@ -309,3 +309,33 @@ describe("isWeakTelegramSecret", () => {
     expect(isWeakTelegramSecret("exactlysixteench")).toBe(false);
   });
 });
+
+describe("Telegram command secret: keep, replace, remove", () => {
+  const saved = `sha256:${"a".repeat(64)}`;
+  const existing: AlertSettings = { ...DEFAULT_ALERT_SETTINGS, telegramCommandSecret: saved };
+  const build = (fields: Record<string, string>) => {
+    const form = new FormData();
+    for (const [k, v] of Object.entries(fields)) form.set(k, v);
+    return buildAlertSettingsFromFormData(form, existing, freeEntitlements).telegramCommandSecret;
+  };
+
+  it("an empty input keeps the saved secret", () => {
+    expect(build({ telegram_command_secret: "" })).toBe(saved);
+    expect(build({})).toBe(saved);
+  });
+
+  it("a new value replaces it", () => {
+    expect(build({ telegram_command_secret: "a-new-long-secret-value" })).toBe("a-new-long-secret-value");
+  });
+
+  it("the remove checkbox clears it (null), even with a value typed alongside, and isn't a weak secret", () => {
+    expect(build({ telegram_command_secret: "", telegram_command_secret_clear: "true" })).toBeNull();
+    const withTyped = build({ telegram_command_secret: "short", telegram_command_secret_clear: "true" });
+    expect(withTyped).toBeNull();
+    expect(isWeakTelegramSecret(withTyped)).toBe(false);
+  });
+
+  it("only the checkbox's own value clears it", () => {
+    expect(build({ telegram_command_secret: "", telegram_command_secret_clear: "" })).toBe(saved);
+  });
+});

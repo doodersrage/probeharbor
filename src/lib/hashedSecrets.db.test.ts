@@ -38,7 +38,7 @@ const health = vi.hoisted(() => ({ healthy: true }));
 vi.mock("./appStatus", () => ({ fetchAppStatusSummary: async () => ({ healthy: health.healthy }) }));
 
 import { POST as telegramWebhook } from "../pages/api/telegram/webhook";
-import { buildAlertSettingsFromFormData } from "./alertSettingsForm";
+import { buildAlertSettingsFromFormData, isWeakTelegramSecret } from "./alertSettingsForm";
 import { recordAlertSettingsChange, restoreAlertSettings } from "./alertSettingsHistory";
 import { writeLastKnownHealthy } from "./db/statusPages";
 import type { Entitlements } from "./entitlements";
@@ -225,6 +225,40 @@ describe("Telegram command secret is stored hashed", () => {
     ]);
     expect(await webhook(SECRET)).toBe(200);
     expect(JSON.stringify(await sql("select settings from public.alert_settings_history"))).not.toContain("second-secret-abcdefgh");
+  });
+
+  it("the remove checkbox clears the secret: row null, webhook matches nothing, history has no plaintext", async () => {
+    const id = await userWithBot("remove@example.com");
+    const v1 = await getAlertSettingsForUser(id);
+    const s1 = saveForm(v1, SECRET);
+    await saveAlertSettingsForUser(id, s1);
+    await recordAlertSettingsChange(id, v1, s1);
+    expect(await webhook(SECRET)).toBe(200);
+
+    const v2 = await getAlertSettingsForUser(id);
+    const form = new FormData();
+    form.set("telegram_command_secret", "");
+    form.set("telegram_command_secret_clear", "true");
+    const cleared = buildAlertSettingsFromFormData(form, v2, { tier: "free" } as Entitlements);
+    expect(cleared.telegramCommandSecret).toBeNull();
+    expect(isWeakTelegramSecret(cleared.telegramCommandSecret)).toBe(false);
+    await saveAlertSettingsForUser(id, cleared);
+    await recordAlertSettingsChange(id, v2, cleared);
+
+    expect(await sql("select telegram_command_secret from public.alert_settings")).toEqual([
+      { telegram_command_secret: null },
+    ]);
+    expect(await webhook(SECRET)).toBe(401);
+    expect(await webhook(`sha256:${sha(SECRET)}`)).toBe(401);
+
+    const history = await sql<{ settings: Record<string, unknown>; changes: string[] }>(
+      "select settings, changes from public.alert_settings_history order by id",
+    );
+    expect(JSON.stringify(history)).not.toContain(SECRET);
+    // The snapshot taken before the removal holds the hash; the change is named, not shown.
+    expect(history.at(-1)?.settings.telegram_command_secret).toBe(`sha256:${sha(SECRET)}`);
+    expect(history).toHaveLength(2);
+    expect(history.at(-1)?.changes.length).toBeGreaterThan(0);
   });
 
   it("legacy plaintext rows still match before 0004, and two users sharing a secret match nobody", async () => {

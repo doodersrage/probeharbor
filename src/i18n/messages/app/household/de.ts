@@ -159,6 +159,8 @@ const de: HouseholdMessages = {
     share_link_regenerated: "Freigabelink neu erstellt",
     inbound_snooze: "Alarme pausiert (eingehend)",
     inbound_vacation: "Urlaubsmodus (eingehend)",
+    household_snooze_cleared: "Haushaltspause beendet",
+    household_vacation_cleared: "Haushaltsurlaub beendet",
   },
 };
 

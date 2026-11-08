@@ -5,8 +5,10 @@
  * /api/user/alert-snooze. It does not change which alerts send.
  *
  * `householdHold` is the current household's own snooze / vacation, set by
- * its inbound webhook for everyone in it. It is shown on its own lines with no
- * resume button (the member's clear actions don't touch it).
+ * its inbound webhook for everyone in it. It is shown on its own lines; owners
+ * and editors (`canEdit`) get a resume button that posts to
+ * /api/user/household-alert-hold (the member's own clear actions don't touch
+ * it). That route checks the role itself and acts on the session's household.
  */
 import type { AlertSettings } from "../../lib/alerts";
 import { formatAlertPauseUntil, getAlertPauseState, type HouseholdAlertHold } from "../../lib/alertSnooze";
@@ -51,12 +53,16 @@ const householdLines = householdPause
       householdPause.snoozeUntil && {
         text: fmt(t.householdSnoozedUntil, { time: when(householdPause.snoozeUntil) }),
         kind: "household_snooze",
+        action: "clear_snooze",
+        label: t.householdResume,
       },
       householdPause.vacationUntil && {
         text: fmt(t.householdVacationUntil, { time: when(householdPause.vacationUntil) }),
         kind: "household_vacation",
+        action: "clear_vacation",
+        label: t.householdEndVacation,
       },
-    ].filter((line): line is { text: string; kind: string } => Boolean(line))
+    ].filter((line): line is { text: string; kind: string; action: string; label: string } => Boolean(line))
   : [];
 ---
 {(lines.length > 0 || householdLines.length > 0) && (
@@ -81,10 +87,24 @@ const householdLines = householdPause
       </p>
     ))}
     {householdLines.map((line) => (
-      <p class="m-0" data-alert-pause-kind={line.kind}>{line.text}</p>
+      <p class="m-0" data-alert-pause-kind={line.kind}>
+        {line.text}
+        {canEdit && (
+          <>
+            {" · "}
+            <form action="/api/user/household-alert-hold" method="post" class="inline">
+              <input type="hidden" name="action" value={line.action} />
+              <input type="hidden" name="redirect" value={redirect} />
+              <button type="submit" class="text-link alert-pause-resume">{line.label}</button>
+            </form>
+          </>
+        )}
+      </p>
     ))}
     {householdLines.length > 0 && (
-      <p class="m-0 text-sm text-[var(--color-text-muted)]" data-alert-pause-kind="household_hint">{t.householdClearHint}</p>
+      <p class="m-0 text-sm text-[var(--color-text-muted)]" data-alert-pause-kind="household_hint">
+        {canEdit ? t.householdResumeHint : t.householdClearHint}
+      </p>
     )}
     <p class="m-0 text-sm text-[var(--color-text-muted)]">{t.stillSend}</p>
   </div>

@@ -68,6 +68,8 @@ const en = {
     webhookSecretSaved:
       "A secret is saved. It isn't shown again: enter a new one to replace it, or leave this empty to keep it.",
     webhookSecretReplacePlaceholder: "Enter a new secret to replace it",
+    webhookSecretRemove: "Remove the saved secret",
+    webhookSecretRemoveHint: "Telegram commands stop working until you save a new secret.",
     telegramHintHtml:
       "Use Telegram <code>setWebhook</code> with <code>secret_token</code> so Telegram sends <code>X-Telegram-Bot-Api-Secret-Token</code> (query <code>?secret=</code> is not accepted). Save a Chat ID above: commands only run from that chat (/status [name], /snooze [hours], /vacation [days]).",
     incomingWebhookUrl: "Incoming webhook URL",

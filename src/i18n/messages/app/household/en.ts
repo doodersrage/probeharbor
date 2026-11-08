@@ -157,6 +157,8 @@ const en = {
     share_link_regenerated: "Share link regenerated",
     inbound_snooze: "Alerts snoozed (inbound)",
     inbound_vacation: "Vacation mode (inbound)",
+    household_snooze_cleared: "Household snooze ended",
+    household_vacation_cleared: "Household vacation ended",
   },
 };
 

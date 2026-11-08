@@ -47,6 +47,10 @@ const ptBr: AlertsMessages = {
     householdSnoozedUntil: "Uma integração adiou os alertas de rotina desta casa até {time}, para todos os membros.",
     householdVacationUntil: "Uma integração colocou esta casa em modo férias até {time}: alertas de rotina ficam retidos para todos os membros.",
     householdClearHint: "Para encerrar antes, envie clear_snooze ou clear_vacation pela integração.",
+    /** Resume buttons for the household hold (owners and editors). */
+    householdResume: "Retomar alertas para todos",
+    householdEndVacation: "Encerrar férias para todos",
+    householdResumeHint: "Retomar remove a pausa desta casa para todos os membros; a integração pode ativá-la de novo.",
   },
   activity: {
     heading: "Atividade recente de alertas",

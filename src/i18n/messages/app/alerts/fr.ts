@@ -47,6 +47,10 @@ const fr: AlertsMessages = {
     householdSnoozedUntil: "Une intégration a mis en pause les alertes de routine de ce foyer jusqu’à {time}, pour tous ses membres.",
     householdVacationUntil: "Une intégration a mis ce foyer en mode vacances jusqu’à {time} : les alertes de routine sont retenues pour tous ses membres.",
     householdClearHint: "Pour y mettre fin plus tôt, envoyez clear_snooze ou clear_vacation depuis l’intégration.",
+    /** Resume buttons for the household hold (owners and editors). */
+    householdResume: "Reprendre les alertes pour tous",
+    householdEndVacation: "Terminer les vacances pour tous",
+    householdResumeHint: "La reprise lève la pause de ce foyer pour tous ses membres ; l’intégration peut la réactiver.",
   },
   activity: {
     heading: "Activité récente des alertes",
