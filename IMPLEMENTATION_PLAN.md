@@ -4415,11 +4415,16 @@ Cloudflare email binding.
          Mutations: rename without the household filter, sensor delete
          without the device filter, move without the "from" household →
          1 failure each.
-   - [ ] **Existing bug found (both paths, not fixed here):** moving a
-         device to another household moves its raw readings but not its
+   - [x] **Existing bug found (both paths, not fixed here):** moving a
+         device to another household moved its raw readings but not its
          `sensor_reading_rollups` or `door_open_events`, which are read by
-         household. Older chart history and door openings stay with the
-         old household. Fix separately, with a test, on both paths.
+         household. **Fixed 2026-11-08** in the same statement
+         (`transferDeviceToHousehold`, src/lib/db/devices.ts); a door
+         session the target already has under the same label and start
+         time stays behind instead of failing the move. Two new db tests
+         (both fail without the fix). The cutover copy had 0 rollups,
+         door events or readings in the wrong household, so no repair is
+         needed for data up to the cutover.
    - [x] Area 3a, reading queries in `sensorReadings.ts`
          (`src/lib/db/readings.ts`): latest value per sensor (one query
          around `latest_sensor_readings`), numeric and door series, window

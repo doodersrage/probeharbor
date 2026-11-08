@@ -212,6 +212,62 @@ describe("moving a device between households (Neon)", () => {
     ]);
   });
 
+  it("moves the device's hourly rollups and door sessions too, and nothing of the other devices", async () => {
+    const a = await household("a@example.com");
+    const b = await household("b@example.com");
+    const moving = await pushDevice(a, "Moving");
+    const staying = await pushDevice(a, "Staying");
+    const { sensor: temp } = await upsertDeviceSensor(moving.id, "t", "T", "temperature", "F");
+    const { sensor: door } = await upsertDeviceSensor(moving.id, "d", "Garage door", "door", "");
+    const { sensor: other } = await upsertDeviceSensor(staying.id, "t", "T", "temperature", "F");
+    for (const id of [temp!.id, other!.id]) {
+      await sql(
+        `insert into public.sensor_reading_rollups (sensor_id, household_id, bucket_start, avg_num, sample_count)
+         values ($1, $2, now() - interval '200 days', 40, 12)`,
+        [id, a],
+      );
+    }
+    await sql(
+      `insert into public.door_open_events (household_id, sensor_id, label, opened_at, closed_at)
+       values ($1, $2, 'Garage door', now() - interval '1 day', now() - interval '23 hours')`,
+      [a, door!.id],
+    );
+
+    await expect(transferDeviceToHousehold(moving.id, a, b)).resolves.toEqual({ error: null });
+    const rollups = await sql<{ sensor_id: string; household_id: string }>(
+      "select sensor_id, household_id from public.sensor_reading_rollups",
+    );
+    expect(rollups).toEqual(
+      expect.arrayContaining([
+        { sensor_id: temp!.id, household_id: b },
+        { sensor_id: other!.id, household_id: a },
+      ]),
+    );
+    const [doorRow] = await sql<{ household_id: string }>("select household_id from public.door_open_events");
+    expect(doorRow?.household_id).toBe(b);
+  });
+
+  it("a door session the target already has (same label and start) stays behind instead of failing the move", async () => {
+    const a = await household("a@example.com");
+    const b = await household("b@example.com");
+    const moving = await pushDevice(a, "Moving");
+    const theirs = await pushDevice(b, "Theirs");
+    const { sensor: door } = await upsertDeviceSensor(moving.id, "d", "Garage door", "door", "");
+    const { sensor: theirDoor } = await upsertDeviceSensor(theirs.id, "d", "Garage door", "door", "");
+    const [{ at }] = await sql<{ at: string }>("select (now() - interval '2 days')::text as at");
+    await sql("insert into public.door_open_events (household_id, sensor_id, label, opened_at) values ($1, $2, 'Garage door', $3::timestamptz)", [a, door!.id, at]);
+    await sql("insert into public.door_open_events (household_id, sensor_id, label, opened_at) values ($1, $2, 'Garage door', now() - interval '1 day')", [a, door!.id]);
+    await sql("insert into public.door_open_events (household_id, sensor_id, label, opened_at) values ($1, $2, 'Garage door', $3::timestamptz)", [b, theirDoor!.id, at]);
+
+    await expect(transferDeviceToHousehold(moving.id, a, b)).resolves.toEqual({ error: null });
+    expect((await deviceRow(moving.id))?.household_id).toBe(b);
+    const rows = await sql<{ sensor_id: string; household_id: string }>(
+      "select sensor_id, household_id from public.door_open_events order by opened_at, household_id",
+    );
+    expect(rows.filter((r) => r.sensor_id === door!.id).map((r) => r.household_id).sort()).toEqual([a, b].sort());
+    expect(rows.filter((r) => r.sensor_id === theirDoor!.id)).toEqual([{ sensor_id: theirDoor!.id, household_id: b }]);
+  });
+
   it("moves nothing when the device isn't in the 'from' household", async () => {
     const a = await household("a@example.com");
     const b = await household("b@example.com");

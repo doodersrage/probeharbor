@@ -186,7 +186,14 @@ export async function replaceDeviceSensor(
   }
 }
 
-/** Move the device and its readings together; nothing moves if the device isn't in `from`. */
+/**
+ * Move the device to another household with everything read by household:
+ * raw readings, hourly rollups (older chart history) and door sessions.
+ * One statement, so it all moves or nothing does; nothing moves if the
+ * device isn't in `from`. A door session the target already has under the
+ * same label and start time (unique per household) stays behind rather than
+ * failing the move.
+ */
 export async function transferDeviceToHousehold(
   deviceId: string,
   fromHouseholdId: string,
@@ -203,6 +210,18 @@ export async function transferDeviceToHousehold(
          update public.sensor_readings r set household_id = $3
          from public.device_sensors s, moved
          where s.device_id = moved.id and r.sensor_id = s.id and r.household_id = $2
+       ), rollups as (
+         update public.sensor_reading_rollups u set household_id = $3
+         from public.device_sensors s, moved
+         where s.device_id = moved.id and u.sensor_id = s.id and u.household_id = $2
+       ), doors as (
+         update public.door_open_events d set household_id = $3
+         from public.device_sensors s, moved
+         where s.device_id = moved.id and d.sensor_id = s.id and d.household_id = $2
+           and not exists (
+             select 1 from public.door_open_events t
+             where t.household_id = $3 and t.label = d.label and t.opened_at = d.opened_at
+           )
        )
        select id from moved`,
       [deviceId, fromHouseholdId, toHouseholdId],
