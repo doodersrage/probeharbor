@@ -5131,8 +5131,9 @@ Cloudflare email binding.
          Owner signed in on production (password + second factor) after
          the switch. `pnpm secrets:push` now also manages `DATABASE_URL`,
          `BETTER_AUTH_SECRET` and the Google/Discord keys (skipped while
-         empty). Still to do: Google/Discord credentials (owner); Android
-         1.3.0 release.
+         empty). Google/Discord sign-in: done 2026-11-07 (owner set the new
+         redirect URIs and pushed the keys; owner signed in with both).
+         Still to do: Android 1.3.0 release.
 7. **Cleanup** after 30 calm days: remove `@supabase/*`, Supabase env
    vars and scripts, update docs. Pause the Supabase project; deleting it
    is a separate decision with its own approval.
