@@ -11,11 +11,6 @@ vi.mock("../../../lib/apiKeys", () => ({
   resolveApiKey: (...a: unknown[]) => mockResolveApiKey(...a),
 }));
 
-const mockGetFirstOwnerId = vi.fn();
-vi.mock("../../../lib/householdRecord", () => ({
-  getFirstOwnerId: (...a: unknown[]) => mockGetFirstOwnerId(...a),
-}));
-
 const mockSanitizeTempFeeds = vi.fn();
 const mockSanitizeTempProbes = vi.fn();
 vi.mock("../../../lib/tempFeedConfig", () => ({
@@ -23,9 +18,9 @@ vi.mock("../../../lib/tempFeedConfig", () => ({
   sanitizeTempProbes: (...a: unknown[]) => mockSanitizeTempProbes(...a),
 }));
 
-const mockSaveUserPullSetup = vi.fn();
+const mockSaveHouseholdPullSetup = vi.fn();
 vi.mock("../../../lib/userTempConfig", () => ({
-  saveUserPullSetup: (...a: unknown[]) => mockSaveUserPullSetup(...a),
+  saveHouseholdPullSetup: (...a: unknown[]) => mockSaveHouseholdPullSetup(...a),
 }));
 
 function makeContext(options: {
@@ -72,10 +67,9 @@ const sampleFeed = {
 beforeEach(() => {
   mockCheckApiPlan.mockReset().mockResolvedValue({ ok: true, entitlements: { canCreateShareLinks: true, maxDevices: 24 } });
   mockResolveApiKey.mockReset().mockResolvedValue({ householdId: "house-1" });
-  mockGetFirstOwnerId.mockReset().mockResolvedValue("owner-1");
   mockSanitizeTempFeeds.mockReset().mockImplementation((feeds: unknown) => feeds);
   mockSanitizeTempProbes.mockReset().mockImplementation((probes: unknown) => probes);
-  mockSaveUserPullSetup.mockReset().mockResolvedValue({
+  mockSaveHouseholdPullSetup.mockReset().mockResolvedValue({
     error: null,
     discoveredProbes: 2,
   });
@@ -122,14 +116,13 @@ describe("POST /api/v1/pull-setup", () => {
     });
   });
 
-  it("saves the pull setup for the household owner", async () => {
+  it("saves the pull setup into the API key's household", async () => {
     const { POST } = await import("./pull-setup");
 
     const response = await POST(makeContext());
 
-    expect(mockGetFirstOwnerId).toHaveBeenCalledWith("house-1");
-    expect(mockSaveUserPullSetup).toHaveBeenCalledWith(
-      "owner-1",
+    expect(mockSaveHouseholdPullSetup).toHaveBeenCalledWith(
+      "house-1",
       expect.arrayContaining([expect.objectContaining({ url: "https://example.com/temps" })]),
       expect.any(Array),
     );
@@ -137,15 +130,14 @@ describe("POST /api/v1/pull-setup", () => {
     expect(await response.json()).toEqual({ ok: true, discoveredProbes: 2 });
   });
 
-  it("returns 404 when the household owner can't be found", async () => {
-    mockGetFirstOwnerId.mockRejectedValue(new Error("db down"));
+  it("returns 500 when the save fails", async () => {
+    mockSaveHouseholdPullSetup.mockResolvedValue({ error: new Error("db down") });
     const { POST } = await import("./pull-setup");
 
     const response = await POST(makeContext());
 
-    expect(response.status).toBe(404);
-    expect(await response.json()).toEqual({ ok: false, error: "Household owner not found." });
-    expect(mockSaveUserPullSetup).not.toHaveBeenCalled();
+    expect(response.status).toBe(500);
+    expect(await response.json()).toEqual({ ok: false, error: "db down" });
   });
 });
 
@@ -158,6 +150,6 @@ describe("POST /api/v1/pull-setup plan check", () => {
 
     expect(response.status).toBe(403);
     expect(await response.json()).toEqual({ ok: false, error: "API access needs a Pro plan" });
-    expect(mockSaveUserPullSetup).not.toHaveBeenCalled();
+    expect(mockSaveHouseholdPullSetup).not.toHaveBeenCalled();
   });
 });

@@ -290,6 +290,31 @@ export async function saveUserPullSetup(
   return { error: null, discoveredProbes: discovered };
 }
 
+/**
+ * The same save for a known household (the metrics API: the key names the
+ * household). Never goes through a user's preferred household, which can be
+ * a different one they only view.
+ */
+export async function saveHouseholdPullSetup(
+  householdId: string,
+  feeds: TempFeedConfig[],
+  probes: TempProbeConfig[],
+): Promise<{ error: Error | null; discoveredProbes?: number }> {
+  const sanitizedFeeds = sanitizeTempFeeds(feeds);
+  const sanitizedProbes = sanitizeTempProbes(probes, sanitizedFeeds);
+  const { feeds: mergedFeeds, probes: mergedProbes, discovered } =
+    await discoverAndMergeFeedProbes(sanitizedFeeds, sanitizedProbes);
+  try {
+    const { savePullDevicesForHousehold } = await import("./devices");
+    const finalFeeds = sanitizeTempFeeds(mergedFeeds);
+    const sync = await savePullDevicesForHousehold(householdId, finalFeeds, sanitizeTempProbes(mergedProbes, finalFeeds));
+    if (sync.error) return { error: new Error(sync.error) };
+  } catch (error) {
+    return { error: error instanceof Error ? error : new Error("Failed to save pull devices") };
+  }
+  return { error: null, discoveredProbes: discovered };
+}
+
 export async function deleteUserTempFeed(
   userId: string,
   feedId: string,

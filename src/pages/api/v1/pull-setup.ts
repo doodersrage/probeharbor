@@ -1,10 +1,9 @@
-import { getFirstOwnerId } from "../../../lib/householdRecord";
 import type { APIRoute } from "astro";
 import { checkApiPlan } from "../../../lib/apiPlan";
 import { resolveApiKey } from "../../../lib/apiKeys";
 import type { TempFeedConfig, TempProbeConfig } from "../../../lib/tempFeedConfig";
 import { sanitizeTempFeeds, sanitizeTempProbes } from "../../../lib/tempFeedConfig";
-import { saveUserPullSetup } from "../../../lib/userTempConfig";
+import { saveHouseholdPullSetup } from "../../../lib/userTempConfig";
 
 function parseFeeds(body: unknown): TempFeedConfig[] | null {
   if (!body || typeof body !== "object") return null;
@@ -62,10 +61,6 @@ function parseProbes(body: unknown, feedIds: Set<string>): TempProbeConfig[] {
   return parsed;
 }
 
-async function householdOwnerUserId(householdId: string): Promise<string | null> {
-  return getFirstOwnerId(householdId).catch(() => null);
-}
-
 export const POST: APIRoute = async ({ request }) => {
   const auth = request.headers.get("Authorization")?.replace(/^Bearer\s+/i, "");
   if (!auth) {
@@ -119,15 +114,10 @@ export const POST: APIRoute = async ({ request }) => {
     });
   }
   const sanitizedProbes = sanitizeTempProbes(probes, sanitizedFeeds);
-  const ownerUserId = await householdOwnerUserId(resolved.householdId);
-  if (!ownerUserId) {
-    return new Response(JSON.stringify({ ok: false, error: "Household owner not found." }), {
-      status: 404,
-      headers: { "Content-Type": "application/json" },
-    });
-  }
-  const { error, discoveredProbes } = await saveUserPullSetup(
-    ownerUserId,
+  // The key's household, never its owner's preferred one (which can be
+  // another household they only view).
+  const { error, discoveredProbes } = await saveHouseholdPullSetup(
+    resolved.householdId,
     sanitizedFeeds,
     sanitizedProbes,
   );
