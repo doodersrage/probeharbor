@@ -4801,8 +4801,12 @@ Cloudflare email binding.
            (`households.alerts_*_until`), members' own holds unchanged;
            status-page subscription tokens and the Telegram command secret
            stored and matched as SHA-256 (signed unsubscribe links).
-         - Migration 0004 (after the deploy): hashes the remaining
-           plaintext tokens/secrets, incl. alert-settings history.
+         - Migration 0004: hashes the remaining plaintext tokens/secrets,
+           incl. alert-settings history. Applied to production 2026-11-08
+           ~02:08 UTC after the deploy of `b92e097` (production had no
+           status subscribers or Telegram secrets, so no rows changed);
+           rehearsed on the dev branch first. `db:migrate --check`: none
+           pending.
            `db:migrate --up-to NNNN` added for this kind of ordering.
          - Found on the way: the history cron loaded each household through
            its owner's preferred household, so an owner who was also in
