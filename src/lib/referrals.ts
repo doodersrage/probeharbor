@@ -75,7 +75,8 @@ export async function applyReferralForNewUser(
   // The database copy is the authority, not the session's.
   if (await neonReferrals.referredBy(userId)) return;
   const referrer = await resolveReferrerUserId(normalized);
-  if (!referrer) return;
+  // Your own code isn't a referral (it would add trial days at checkout).
+  if (!referrer || referrer === userId) return;
   await recordReferralSignup(referrer, userId);
   await neonReferrals.setReferredBy(userId, normalized);
 }

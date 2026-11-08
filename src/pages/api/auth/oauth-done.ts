@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
 import { getAuthFromRequest } from "../../../lib/auth";
 import { getUserMetadata, mergeUserMetadata } from "../../../lib/db/userMetadata";
-import { applyReferralForNewUser } from "../../../lib/referrals";
+import { applyReferralForNewUser, isLikelyNewUser } from "../../../lib/referrals";
 import { REGISTER_NEXT_DEVICES } from "../../../lib/registerUrl";
 import { type SignInErrorCode, buildSignInRedirectUrl } from "../../../lib/signInErrors";
 import { OAUTH_NEXT_COOKIE, OAUTH_REF_COOKIE, sanitizeNextPath } from "../../../lib/siteUrl";
@@ -49,7 +49,11 @@ export const GET: APIRoute = async (context) => {
 
   const refCode = cookies.get(OAUTH_REF_COOKIE)?.value?.trim().toLowerCase() ?? "";
   cookies.delete(OAUTH_REF_COOKIE, { path: "/" });
-  if (refCode && isNew) await applyReferralForNewUser(user.id, refCode, user.app_metadata);
+  // `new=1` comes from the URL, so it only picks the landing page. A referral
+  // needs an account that really was just created.
+  if (refCode && isNew && isLikelyNewUser(user.created_at)) {
+    await applyReferralForNewUser(user.id, refCode, user.app_metadata);
+  }
 
   const nextCookie = cookies.get(OAUTH_NEXT_COOKIE)?.value;
   cookies.delete(OAUTH_NEXT_COOKIE, { path: "/" });
