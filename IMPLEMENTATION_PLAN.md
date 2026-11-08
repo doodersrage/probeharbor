@@ -5220,9 +5220,10 @@ Cloudflare email binding.
            `backups/probeharbor-20261107T235826Z.dump` (90 tables, local).
          - Done by the owner, checked 2026-11-07: the Worker secrets and
            GitHub secrets below are deleted (only `SUPABASE_E2E_TEST_*`
-           remain on GitHub; site still 200). Project pause: still
-           ACTIVE_HEALTHY when checked right after; confirm in the
-           dashboard.
+           remain on GitHub; site still 200). Supabase project paused
+           by the owner (status PAUSING when checked; site still 200).
+           Deleting the project is a separate decision; the final dump is
+           `backups/probeharbor-20261107T235826Z.dump`.
          - **Was owner to do (blocked for the agent by the permission
            check):** delete Worker secrets `DB_BACKEND`, `SUPABASE_URL`,
            `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`; delete GitHub
