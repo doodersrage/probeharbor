@@ -3,9 +3,9 @@
  * Pucks belong to one household; claims are
  * proved with an HMAC of a one-time nonce (checked by the caller).
  *
- * Differences from the Supabase path, all deliberate:
+ * Differences from the old Supabase code, all deliberate:
  * - Registering only updates a puck the same household already owns, in one
- *   statement; the Supabase path checks ownership and then upserts, so two
+ *   statement; the old code checked ownership and then upserted, so two
  *   households registering the same device at once could hand it over.
  * - Finishing a claim consumes the pending nonce in the same statement that
  *   binds the bay, so one valid response can't be used twice.

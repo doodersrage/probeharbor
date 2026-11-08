@@ -7,9 +7,9 @@
  * acknowledge / auto-resolve updates, built from the same kind lists as
  * isUnhandledAlertEvent, so they can't drift apart.
  *
- * Differences from the Supabase path, all deliberate:
+ * Differences from the old Supabase code, all deliberate:
  * - Acknowledge-all, acknowledge-latest and auto-resolve select and update in
- *   one statement; counts are the rows actually updated (Supabase: rows
+ *   one statement; counts are the rows actually updated (before: rows
  *   selected first, then updated one by one or as a batch).
  * - Meta merges happen in the database, so two writers can't drop each
  *   other's keys.
@@ -183,7 +183,7 @@ export async function autoResolveAlerts(
     );
     return { resolved: rows.length, channels: [...new Set(rows.flatMap((r) => r.channels_sent ?? []))] };
   } catch {
-    return { resolved: 0, channels: [] }; // as the Supabase path: a failure resolves nothing
+    return { resolved: 0, channels: [] }; // a failure resolves nothing (as before the move)
   }
 }
 

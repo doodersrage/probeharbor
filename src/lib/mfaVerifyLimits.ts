@@ -5,10 +5,8 @@
  * this endpoint at all already means the caller has a valid primary
  * session (password verified) -- this is precisely the "attacker has the
  * password, MFA is the last line of defense" moment, so unlimited
- * guessing here would make MFA far weaker than intended. Supabase does
- * not rate-limit MFA verification attempts by default (that's left to the
- * app via the MFA Verification Attempt auth hook or, as here, app-level
- * throttling) -- this mirrors the existing signinLimits.ts pattern, keyed
+ * guessing here would make MFA far weaker than intended. The app throttles
+ * attempts itself -- this mirrors the existing signinLimits.ts pattern, keyed
  * by user id instead of email since MFA verify always happens against an
  * already-authenticated session.
  */

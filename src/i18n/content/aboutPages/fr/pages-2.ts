@@ -96,7 +96,7 @@ export default {
     title: "Le flux de données de bout en bout",
     description:
       "Suivez un relevé du fil de la sonde aux flux JSON, au stockage, jusqu’au tableau de bord d’historique connecté.",
-    summary: "Matériel, relais, récupération par le site, stockage Supabase et export CSV en une seule chaîne.",
+    summary: "Matériel, relais, récupération par le site, stockage dans Neon Postgres et export CSV en une seule chaîne.",
   },
   "debugging-stale-readings": {
     title: "Déboguer des relevés figés",
@@ -127,7 +127,7 @@ export default {
   "group-membership-model": {
     title: "Le modèle d’appartenance aux groupes",
     description:
-      "Comment les groupes default, member et admin de Supabase régissent l’export CSV, les outils d’opérateur et les fonctions des offres, sans e-mails codés en dur.",
+      "Comment les groupes default, member et admin, enregistrés dans Neon Postgres, régissent l’export CSV, les outils d’opérateur et les fonctions des offres, sans e-mails codés en dur.",
     summary:
       "Les groupes portent les rôles d’abonnement et d’opérateur sans e-mails écrits en dur dans le code source.",
   },

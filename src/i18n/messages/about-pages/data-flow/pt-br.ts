@@ -15,10 +15,10 @@ const ptBr: Messages = {
   jsonCaption: "Formato do feed ao vivo consumido pelo site depois de sair da rede local.",
   step3Title: "Passo 3. Busca e exibição no site",
   step3Html:
-    "Quando você carrega a página inicial, o servidor busca cada URL de feed configurada, interpreta as chaves das sondas e monta os cartões de leitura. Usuários conectados carregam do Supabase os próprios mapeamentos de feeds e sondas em vez dos padrões. Os dados de clima seguem um caminho paralelo pelo OpenWeather, usando a cidade que você escolher, se quiser.",
+    "Quando você carrega a página inicial, o servidor busca cada URL de feed configurada, interpreta as chaves das sondas e monta os cartões de leitura. Usuários conectados carregam do banco de dados os próprios mapeamentos de feeds e sondas em vez dos padrões. Os dados de clima seguem um caminho paralelo pelo OpenWeather, usando a cidade que você escolher, se quiser.",
   step4Title: "Passo 4. Gravação do histórico",
   step4Html:
-    'Se você estiver conectado, cada leitura bem-sucedida insere linhas no Supabase com nome do feed, rótulo e chave da sonda, temperaturas, umidade e data e hora. Visitantes continuam vendo os dados ao vivo, mas não adicionam histórico. Saiba mais em <a class="text-link" href="/about/historical-data">uso dos dados históricos</a>.',
+    'Se você estiver conectado, cada leitura bem-sucedida insere linhas no banco de dados (Neon Postgres) com nome do feed, rótulo e chave da sonda, temperaturas, umidade e data e hora. Visitantes continuam vendo os dados ao vivo, mas não adicionam histórico. Saiba mais em <a class="text-link" href="/about/historical-data">uso dos dados históricos</a>.',
   step5Title: "Passo 5. Painel e exportação",
   step5Html:
     'A tabela de histórico mostra essas linhas em páginas. A exportação em CSV entrega o conjunto completo para administradores e assinantes. Webhooks do Stripe mantêm a participação no grupo com permissão de exportar. As ferramentas da conta estão descritas em <a class="text-link" href="/about/accounts-and-dashboard">contas e painel</a>.',

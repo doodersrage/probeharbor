@@ -17,7 +17,7 @@ const en = {
   account: {
     title: "Account creation",
     bodyHtml:
-      "Registration uses email and password via Supabase Auth. Password reset and (when enabled in Supabase) OAuth providers such as Google, GitHub, or Discord are available from the sign-in page. New users start on the Free plan with a default household.",
+      "Registration uses email and password through Better Auth, which runs inside the app. Password reset and (when configured) Google, GitHub, or Discord sign-in are available from the sign-in page; confirmation and reset emails come from the app itself. New users start on the Free plan with a default household.",
   },
   checklist: {
     title: "Getting started checklist",

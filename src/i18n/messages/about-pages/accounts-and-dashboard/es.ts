@@ -18,7 +18,7 @@ const es: AccountsAndDashboardMessages = {
   account: {
     title: "Creación de la cuenta",
     bodyHtml:
-      "El registro usa correo y contraseña mediante Supabase Auth. Desde la página de inicio de sesión puedes restablecer la contraseña y, si están activados en Supabase, usar proveedores OAuth como Google, GitHub o Discord. Los usuarios nuevos empiezan en el plan Free con un hogar predeterminado.",
+      "El registro usa correo y contraseña con Better Auth, que funciona dentro de la propia app. Desde la página de inicio de sesión puedes restablecer la contraseña (la app envía el correo mediante Cloudflare Email) y, si el sitio los tiene configurados, entrar con Google, GitHub o Discord. También puedes proteger la cuenta con una app de autenticación (TOTP), una YubiKey (OTP) o passkeys. Los usuarios nuevos empiezan en el plan Free con un hogar predeterminado.",
   },
   checklist: {
     title: "Lista de primeros pasos",

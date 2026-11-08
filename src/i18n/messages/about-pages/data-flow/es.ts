@@ -15,10 +15,10 @@ const es: Messages = {
   jsonCaption: "Estructura del feed en vivo que consume el sitio web una vez que sale de la red local.",
   step3Title: "Paso 3. Obtención y visualización en el sitio",
   step3Html:
-    "Al cargar la página principal, el servidor obtiene cada URL de feed configurada, interpreta las claves de las sondas y genera las tarjetas de datos. Los usuarios con sesión iniciada cargan desde Supabase sus propias asignaciones de feeds y sondas en lugar de las predeterminadas. Los datos meteorológicos siguen un camino paralelo a través de OpenWeather, con la ciudad que hayas elegido si la indicas.",
+    "Al cargar la página principal, el servidor obtiene cada URL de feed configurada, interpreta las claves de las sondas y genera las tarjetas de datos. Los usuarios con sesión iniciada cargan desde la base de datos (Postgres en Neon) sus propias asignaciones de feeds y sondas en lugar de las predeterminadas. Los datos meteorológicos siguen un camino paralelo a través de OpenWeather, con la ciudad que hayas elegido si la indicas.",
   step4Title: "Paso 4. Guardado del historial",
   step4Html:
-    'Si has iniciado sesión, cada lectura correcta de sonda inserta filas en Supabase con el nombre del feed, la etiqueta y la clave de la sonda, las temperaturas, la humedad y la marca de tiempo. Los visitantes siguen viendo datos en vivo, pero no añaden historial. Más información en <a class="text-link" href="/about/historical-data">uso de los datos históricos</a>.',
+    'Si has iniciado sesión, cada lectura correcta de sonda inserta filas en la base de datos Postgres (Neon) con el nombre del feed, la etiqueta y la clave de la sonda, las temperaturas, la humedad y la marca de tiempo. Los visitantes siguen viendo datos en vivo, pero no añaden historial. Más información en <a class="text-link" href="/about/historical-data">uso de los datos históricos</a>.',
   step5Title: "Paso 5. Panel y exportación",
   step5Html:
     'La tabla de historial pagina esas filas. La exportación CSV envía el conjunto completo a administradores y suscriptores. Los webhooks de Stripe mantienen la pertenencia al grupo con permiso de exportación. Las herramientas de la cuenta se describen en <a class="text-link" href="/about/accounts-and-dashboard">cuentas y panel</a>.',

@@ -1,16 +1,13 @@
 /**
  * Neon version of account deletion (accountLifecycle.ts).
  *
- * Same rules as the Supabase path, done in fewer, atomic steps:
+ * Same rules as the old Supabase code, done in fewer, atomic steps:
  * 1. One statement: delete households the user solely belongs to; in shared
  *    households they own, promote the earliest "member" (else the longest-
  *    standing other member) to owner. Returns the deleted household ids.
  * 2. The caller removes stored files (needs the user's chart keys first).
  * 3. Delete the user row; foreign keys remove or detach everything else
  *    (memberships, settings, alerts, tokens, sessions).
- *
- * Until login moves to Better Auth (step 4) this removes the Neon user only,
- * not a Supabase Auth login; that path is for testing, not production.
  */
 import { query } from "./client";
 

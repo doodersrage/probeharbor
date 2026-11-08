@@ -15,10 +15,10 @@ const fr: Messages = {
   jsonCaption: "Structure du flux en direct consommée par le site une fois sortie du réseau local.",
   step3Title: "Étape 3. Récupération et affichage sur le site",
   step3Html:
-    "Quand vous chargez la page d’accueil, le serveur récupère chaque URL de flux configurée, analyse les clés de sonde et affiche les cartes de mesures. Les utilisateurs connectés chargent leurs propres associations de flux et de sondes depuis Supabase plutôt que les valeurs par défaut. Les données météo suivent un chemin parallèle via OpenWeather, avec la ville de votre choix si vous en indiquez une.",
+    "Quand vous chargez la page d’accueil, le serveur récupère chaque URL de flux configurée, analyse les clés de sonde et affiche les cartes de mesures. Les utilisateurs connectés chargent leurs propres associations de flux et de sondes depuis la base Neon Postgres, via des requêtes côté serveur limitées à leur compte, plutôt que les valeurs par défaut. Les données météo suivent un chemin parallèle via OpenWeather, avec la ville de votre choix si vous en indiquez une.",
   step4Title: "Étape 4. Enregistrement de l’historique",
   step4Html:
-    'Si vous êtes connecté, chaque lecture de sonde réussie insère des lignes dans Supabase avec le nom du flux, le libellé et la clé de la sonde, les températures, l’humidité et l’horodatage. Les visiteurs voient toujours les données en direct, mais n’alimentent pas l’historique. Pour en savoir plus : <a class="text-link" href="/about/historical-data">utilisation des données historiques</a>.',
+    'Si vous êtes connecté, chaque lecture de sonde réussie insère des lignes dans la base Neon Postgres avec le nom du flux, le libellé et la clé de la sonde, les températures, l’humidité et l’horodatage. Les visiteurs voient toujours les données en direct, mais n’alimentent pas l’historique. Pour en savoir plus : <a class="text-link" href="/about/historical-data">utilisation des données historiques</a>.',
   step5Title: "Étape 5. Tableau de bord et export",
   step5Html:
     'La table d’historique pagine ces lignes. L’export CSV transmet l’ensemble complet aux administrateurs et aux abonnés. Les webhooks Stripe tiennent à jour l’appartenance au groupe autorisé à exporter. Les outils du compte sont décrits dans <a class="text-link" href="/about/accounts-and-dashboard">comptes et tableau de bord</a>.',

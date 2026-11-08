@@ -2,7 +2,7 @@
  * Two-factor state and rules on Better Auth, used by
  * /api/auth/mfa-manage, /api/auth/mfa-verify and /signin/mfa.
  *
- * "Elevated" replaces Supabase's aal2: a Better Auth session for a user with
+ * "Elevated" (Supabase called it aal2): a Better Auth session for a user with
  * TOTP on only exists after the code was checked (email, OAuth and reset
  * sign-in all enforce it), so such a session counts; otherwise a valid
  * YubiKey step-up proof does. Same uses as before: adding a second factor,

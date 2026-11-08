@@ -1,7 +1,6 @@
 /**
- * Account emails sent by the app once sign-in moves to Better Auth (step 4 of
- * the move off Supabase). Same wording as the Supabase templates in
- * supabase/templates/, now translated.
+ * Account emails the app sends (sign-in runs on Better Auth). The wording
+ * started from the email templates the app used on Supabase.
  */
 const en = {
   confirm: {

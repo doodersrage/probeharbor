@@ -1,8 +1,8 @@
 /**
  * Look up a user by id for server jobs (emails, reports): email, sign-up time,
  * whether the email is confirmed, settings (user_metadata) and server-only
- * fields (app_metadata), from auth_users + user_profiles. Same shape as the
- * Supabase admin user callers (getUserLocale, getUserPreferences, ...) expect.
+ * fields (app_metadata), from auth_users + user_profiles. Same field names
+ * callers (getUserLocale, getUserPreferences, ...) were written against.
  */
 import type { User } from "./appUser";
 import { query } from "./db/client";

@@ -18,7 +18,7 @@ export function getRegisterErrorMessage(code: string | null): string | null {
     return REGISTER_ERROR_MESSAGES[code as RegisterErrorCode];
   }
 
-  // Supabase may return a human-readable message as the error query value.
+  // Not a known code: show short plain text as is (the register route itself only sends known codes).
   if (code.length > 0 && code.length < 200 && !code.includes("<")) {
     return code;
   }

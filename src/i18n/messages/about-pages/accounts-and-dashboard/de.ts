@@ -18,7 +18,7 @@ const de: AccountsAndDashboardMessages = {
   account: {
     title: "Konto anlegen",
     bodyHtml:
-      "Die Registrierung läuft per E-Mail und Passwort über Supabase Auth. Passwort-Zurücksetzen und (sofern in Supabase aktiviert) OAuth-Anbieter wie Google, GitHub oder Discord stehen auf der Anmeldeseite zur Verfügung. Neue Nutzer starten im Free-Tarif mit einem Standardhaushalt.",
+      "Die Registrierung läuft per E-Mail und Passwort über Better Auth, das direkt in der App läuft. Auf der Anmeldeseite stehen außerdem Passwort-Zurücksetzen sowie die Anmeldung über Google, GitHub oder Discord zur Verfügung; Bestätigungs- und Zurücksetzungs-E-Mails verschickt die App über Cloudflare Email. Neue Nutzer starten im Free-Tarif mit einem Standardhaushalt.",
   },
   checklist: {
     title: "Checkliste für den Einstieg",

@@ -92,9 +92,9 @@ export const expandedAboutContent: Record<string, AboutContentBlock[]> = {
   ],
 
   "history-dashboard-browsing": [
-      { type: "p", html: "Live readings answer “what is it now?” History answers “how bad was last week?” The signed-in dashboard charts stored Supabase rows so you can zoom from recent hours to multi-month trends without re-querying the probe on every page load." },
+      { type: "p", html: "Live readings answer “what is it now?” History answers “how bad was last week?” The signed-in dashboard charts readings stored in Postgres so you can zoom from recent hours to multi-month trends without re-querying the probe on every page load." },
       { type: "h2", text: "What gets stored" },
-      { type: "p", html: "Each snapshot captures probe keys, temperature, humidity, and timestamps when the site polls your configured feeds. Inserts are described in <a class=\"text-link\" href=\"/about/supabase-history-inserts\">Supabase history inserts</a>. Not every page view hits your probes: polling runs on a schedule server-side." },
+      { type: "p", html: "Each snapshot captures probe keys, temperature, humidity, and timestamps when the site polls your configured feeds. Inserts are described in <a class=\"text-link\" href=\"/about/history-inserts\">history inserts</a>. Not every page view hits your probes: polling runs on a schedule server-side." },
       { type: "h2", text: "Reading the charts" },
       { type: "ul", items: ["**Compare zones** to see whether one corner always runs coldest.","**Look at nights** for freeze risk rather than daytime peaks.","**Spot gaps** that may indicate feed outages: see <a class=\"text-link\" href=\"/about/debugging-stale-readings\">debugging stale readings</a>."] },
       { type: "h2", text: "Export for deeper analysis" },
@@ -271,7 +271,7 @@ export const expandedAboutContent: Record<string, AboutContentBlock[]> = {
       { type: "h2", text: "Failure modes" },
       { type: "p", html: "If Redis is empty and Arduino is down, return 503 with a clear log line: better than inventing zeros. Site-side handling: <a class=\"text-link\" href=\"/about/debugging-stale-readings\">debugging stale readings</a>. Relay setup: <a class=\"text-link\" href=\"/about/fastapi-relay-setup\">FastAPI relay setup</a>." },
       { type: "h2", text: "Data flow placement" },
-      { type: "p", html: "See step 2 in <a class=\"text-link\" href=\"/about/data-flow\">end-to-end data flow</a>. History still lands in Supabase via <a class=\"text-link\" href=\"/about/supabase-history-inserts\">history inserts</a> on the website schedule." }
+      { type: "p", html: "See step 2 in <a class=\"text-link\" href=\"/about/data-flow\">end-to-end data flow</a>. History still lands in Postgres via <a class=\"text-link\" href=\"/about/history-inserts\">history inserts</a> on the website schedule." }
   ],
 
   "relay-security-and-access": [
@@ -279,7 +279,7 @@ export const expandedAboutContent: Record<string, AboutContentBlock[]> = {
       { type: "h2", text: "Hardening checklist" },
       { type: "ul", items: ["**HTTPS only** on public URLs; HSTS at the reverse proxy.","**Optional API keys** or signed tokens for non-browser clients.","**Firewall** the Arduino to LAN-only; only the relay reaches it.","**No secrets** in firmware source committed to public repos."] },
       { type: "h2", text: "Dashboard integration" },
-      { type: "p", html: "Users paste HTTPS feed URLs in <a class=\"text-link\" href=\"/about/configuring-temperature-feeds\">temperature feed settings</a>. The site stores URLs per account: pair with <a class=\"text-link\" href=\"/about/supabase-auth-flow\">Supabase auth</a> so feeds are not world-editable." },
+      { type: "p", html: "Users paste HTTPS feed URLs in <a class=\"text-link\" href=\"/about/configuring-temperature-feeds\">temperature feed settings</a>. The site stores URLs per account: pair with the <a class=\"text-link\" href=\"/about/sign-in-flow\">sign-in flow</a> so feeds are not world-editable." },
       { type: "h2", text: "Compare stacks" },
       { type: "p", html: "Node and Next patterns for APIs: <a class=\"text-link\" href=\"/about/node-express-api-patterns\">Node Express API patterns</a>. This project uses Astro fetch routes: <a class=\"text-link\" href=\"/about/astro-server-side-rendering\">Astro SSR</a>." }
   ],
@@ -289,7 +289,7 @@ export const expandedAboutContent: Record<string, AboutContentBlock[]> = {
       { type: "h2", text: "SSR in this project" },
       { type: "p", html: "The home page fetches live JSON during SSR via <a class=\"text-link\" href=\"/about/home-page-probe-fetch\">server-side probe fetch</a>. About articles are static content with optional expanded blocks from generated TypeScript. API routes handle auth and history writes." },
       { type: "h2", text: "Benefits for monitoring" },
-      { type: "ul", items: ["**Secrets stay server-side**: feed URLs and Supabase keys never ship to the browser wholesale.","**Edge deployment** on Cloudflare reduces latency: see <a class=\"text-link\" href=\"/about/cloudflare-workers-deployment\">Cloudflare Workers deployment</a>.","**Progressive enhancement** for dashboard features that need client state."] },
+      { type: "ul", items: ["**Secrets stay server-side**: feed URLs and database credentials never ship to the browser wholesale.","**Edge deployment** on Cloudflare reduces latency: see <a class=\"text-link\" href=\"/about/cloudflare-workers-deployment\">Cloudflare Workers deployment</a>.","**Progressive enhancement** for dashboard features that need client state."] },
       { type: "h2", text: "Related reading" },
       { type: "p", html: "Interactive widgets use <a class=\"text-link\" href=\"/about/astro-islands-and-hydration\">Astro islands</a>. Compare with <a class=\"text-link\" href=\"/about/nextjs-monitoring-dashboards\">Next.js monitoring dashboards</a>." }
   ],
@@ -307,7 +307,7 @@ export const expandedAboutContent: Record<string, AboutContentBlock[]> = {
   "cloudflare-workers-deployment": [
       { type: "p", html: "This site targets Cloudflare Workers/Pages via the Astro adapter so HTML and API routes run at the edge close to visitors. Probe fetch latency improves versus a single-region VPS for a globally readable demo." },
       { type: "h2", text: "Deployment considerations" },
-      { type: "ol", items: ["**Environment variables** for Supabase and Stripe live in Cloudflare dashboard secrets.","**Fetch timeouts** to residential feed URLs must tolerate slow home uplinks.","**Cron or scheduled triggers** may drive <a class=\"text-link\" href=\"/about/supabase-history-inserts\">history inserts</a>."] },
+      { type: "ol", items: ["**Environment variables** for the database, Better Auth, and Stripe live in Cloudflare dashboard secrets.","**Fetch timeouts** to residential feed URLs must tolerate slow home uplinks.","**Cron or scheduled triggers** may drive <a class=\"text-link\" href=\"/about/history-inserts\">history inserts</a>."] },
       { type: "h2", text: "Caching interaction" },
       { type: "p", html: "Do not cache authenticated dashboard HTML at the CDN edge. Public home page caching should respect how fresh probes need to be, often aligned with <a class=\"text-link\" href=\"/about/redis-cache-for-feeds\">Redis TTL</a> upstream." },
       { type: "h2", text: "Reliability for users" },
@@ -319,7 +319,7 @@ export const expandedAboutContent: Record<string, AboutContentBlock[]> = {
   "nextjs-monitoring-dashboards": [
       { type: "p", html: "Next.js excels at authenticated dashboards with React Server Components, API routes, and a vast component ecosystem. A garage monitor could be built entirely in Next: fetching probes in server components and charting in client charts." },
       { type: "h2", text: "Typical Next layout" },
-      { type: "ul", items: ["**app/dashboard/page.tsx** server-fetches JSON feeds with cached revalidation.","**Route handlers** proxy probes to hide LAN URLs: similar to <a class=\"text-link\" href=\"/about/fastapi-relay-setup\">FastAPI relay</a>.","**Middleware** guards signed-in pages using <a class=\"text-link\" href=\"/about/supabase-auth-flow\">Supabase auth</a> patterns."] },
+      { type: "ul", items: ["**app/dashboard/page.tsx** server-fetches JSON feeds with cached revalidation.","**Route handlers** proxy probes to hide LAN URLs: similar to <a class=\"text-link\" href=\"/about/fastapi-relay-setup\">FastAPI relay</a>.","**Middleware** guards signed-in pages with session checks like the ones in this site's <a class=\"text-link\" href=\"/about/sign-in-flow\">sign-in flow</a>."] },
       { type: "h2", text: "Why this project uses Astro" },
       { type: "p", html: "Documentation-heavy about pages and minimal JS for public visitors fit Astro’s content-first model. Edge deployment on Cloudflare is first-class: <a class=\"text-link\" href=\"/about/cloudflare-workers-deployment\">Workers deployment</a>." },
       { type: "h2", text: "Further comparison" },
@@ -327,13 +327,13 @@ export const expandedAboutContent: Record<string, AboutContentBlock[]> = {
   ],
 
   "node-express-api-patterns": [
-      { type: "p", html: "Express (or Fastify) on Node remains a straightforward choice for JSON APIs, webhooks, and cron jobs. A monitoring stack might use Express to poll probes, write Supabase rows, and serve CSV export links." },
+      { type: "p", html: "Express (or Fastify) on Node remains a straightforward choice for JSON APIs, webhooks, and cron jobs. A monitoring stack might use Express to poll probes, write Postgres rows, and serve CSV export links." },
       { type: "h2", text: "Common routes" },
       { type: "ol", items: ["<code>GET /api/feeds/:id</code>: cached probe JSON for dashboards.","<code>POST /webhooks/stripe</code>: unlock <a class=\"text-link\" href=\"/about/stripe-csv-subscription\">CSV subscription</a> features.","<code>GET /export/history.csv</code>: authenticated download."] },
       { type: "h2", text: "Operational notes" },
-      { type: "ul", items: ["Run behind **HTTPS reverse proxy** with rate limits.","Use **connection pooling** for Supabase Postgres if querying directly.","Prefer **idempotent webhooks** for Stripe events."] },
+      { type: "ul", items: ["Run behind **HTTPS reverse proxy** with rate limits.","Use **connection pooling** for Postgres if querying directly.","Prefer **idempotent webhooks** for Stripe events."] },
       { type: "h2", text: "Parallel in Astro" },
-      { type: "p", html: "This repo implements similar endpoints as Astro server routes: <a class=\"text-link\" href=\"/about/supabase-history-inserts\">history inserts</a> and <a class=\"text-link\" href=\"/about/home-page-probe-fetch\">probe fetch</a>." }
+      { type: "p", html: "This repo implements similar endpoints as Astro server routes: <a class=\"text-link\" href=\"/about/history-inserts\">history inserts</a> and <a class=\"text-link\" href=\"/about/home-page-probe-fetch\">probe fetch</a>." }
   ],
 
   "comparing-full-stack-options": [
@@ -341,7 +341,7 @@ export const expandedAboutContent: Record<string, AboutContentBlock[]> = {
       { type: "h2", text: "Decision matrix" },
       { type: "ul", items: ["**Astro + edge:** Best here for content, light public JS, Cloudflare deploy: <a class=\"text-link\" href=\"/about/astro-applications\">Astro applications</a>.","**Next.js:** Rich client dashboards, Vercel-native workflows: <a class=\"text-link\" href=\"/about/nextjs-monitoring-dashboards\">Next dashboards</a>.","**Node + Express:** Maximum control, long-running cron on a VPS: <a class=\"text-link\" href=\"/about/node-express-api-patterns\">Express patterns</a>.","**Python relay:** TLS and cache at home: <a class=\"text-link\" href=\"/about/python-feeds\">Python feeds</a>."] },
       { type: "h2", text: "Shared backend" },
-      { type: "p", html: "Supabase auth and Postgres history are stack-agnostic: <a class=\"text-link\" href=\"/about/accounts-and-dashboard\">accounts and dashboard</a>. Data pipeline: <a class=\"text-link\" href=\"/about/data-flow\">data flow</a>." }
+      { type: "p", html: "Sign-in and Postgres history are stack-agnostic: <a class=\"text-link\" href=\"/about/accounts-and-dashboard\">accounts and dashboard</a>. Data pipeline: <a class=\"text-link\" href=\"/about/data-flow\">data flow</a>." }
   ],
 
   "home-page-probe-fetch": [
@@ -354,12 +354,12 @@ export const expandedAboutContent: Record<string, AboutContentBlock[]> = {
       { type: "p", html: "Mappings come from <a class=\"text-link\" href=\"/about/configuring-temperature-feeds\">dashboard feed settings</a>. Upstream cache: <a class=\"text-link\" href=\"/about/redis-cache-for-feeds\">Redis cache</a>. Broader pipeline: <a class=\"text-link\" href=\"/about/data-flow\">data flow overview</a>." }
   ],
 
-  "supabase-history-inserts": [
-      { type: "p", html: "Historical charts depend on periodic inserts into Supabase Postgres, not on the browser remembering prior values. A scheduled job or edge function polls feeds and writes normalized rows keyed by user and probe." },
+  "history-inserts": [
+      { type: "p", html: "Historical charts depend on rows stored in Postgres (Neon), not on the browser remembering prior values. The Worker writes them: push devices post readings to the ingest API, and server code polls pull feeds on a schedule. Each row is tied to a household and a sensor." },
       { type: "h2", text: "Insert model" },
-      { type: "ul", items: ["**Timestamp + user_id + probe_key** uniquely identify a sample.","Store **temp, humidity, units** as typed columns for fast chart queries.","Skip insert if **upstream fetch failed** to avoid flatlines at zero."] },
+      { type: "ul", items: ["**Household, sensor, and timestamp** identify each sample.","Store **numeric, on/off, or text values** in typed columns for fast chart queries.","Skip insert if **upstream fetch failed** to avoid flatlines at zero."] },
       { type: "h2", text: "Auth boundary" },
-      { type: "p", html: "Row-level security ties history to signed-in users: <a class=\"text-link\" href=\"/about/supabase-auth-flow\">Supabase auth flow</a>. Only the service role or trusted server route should insert on schedule." },
+      { type: "p", html: "Every history query runs on the server and is scoped in SQL to the signed-in user's household: <a class=\"text-link\" href=\"/about/sign-in-flow\">sign-in flow</a>. Only server code in the Worker writes rows, such as the ingest route and scheduled jobs; the browser never inserts history directly." },
       { type: "h2", text: "Consumption" },
       { type: "p", html: "Dashboard reads via <a class=\"text-link\" href=\"/about/history-dashboard-browsing\">history browsing</a>; export via <a class=\"text-link\" href=\"/about/csv-export-spreadsheet-analysis\">CSV export</a>. Live path: <a class=\"text-link\" href=\"/about/home-page-probe-fetch\">home page fetch</a>." }
   ],
@@ -371,27 +371,27 @@ export const expandedAboutContent: Record<string, AboutContentBlock[]> = {
       { type: "h2", text: "Hardware-side causes" },
       { type: "p", html: "<a class=\"text-link\" href=\"/about/firmware-watchdog-recovery\">Watchdog reboots</a> cause short gaps. <a class=\"text-link\" href=\"/about/dht22-read-errors-retries\">DHT22 errors</a> drop keys from JSON. Ethernet: <a class=\"text-link\" href=\"/about/circuit-wiring-troubleshooting\">wiring troubleshooting</a>." },
       { type: "h2", text: "History vs live" },
-      { type: "p", html: "Charts can lag if inserts stop but home page still looks live: check <a class=\"text-link\" href=\"/about/supabase-history-inserts\">history inserts</a> separately from <a class=\"text-link\" href=\"/about/home-page-probe-fetch\">home page fetch</a>." }
+      { type: "p", html: "Charts can lag if inserts stop but home page still looks live: check <a class=\"text-link\" href=\"/about/history-inserts\">history inserts</a> separately from <a class=\"text-link\" href=\"/about/home-page-probe-fetch\">home page fetch</a>." }
   ],
 
-  "supabase-auth-flow": [
-      { type: "p", html: "User accounts use Supabase Auth for email or OAuth sign-in, session cookies, and row-level security on history and feed configuration. The Astro site validates sessions on protected routes before rendering dashboard HTML or API mutations." },
+  "sign-in-flow": [
+      { type: "p", html: "User accounts run on Better Auth inside the app: email and password, or Google, GitHub, and Discord, with an authenticator app (TOTP), YubiKey OTP, or passkey as extra protection. The web session is a signed HttpOnly cookie; the Android and desktop apps send the same session as a Bearer token. Every query for history and feed configuration runs on the server, scoped in SQL to the signed-in user or household. The Astro site validates sessions on protected routes before rendering dashboard HTML or API mutations." },
       { type: "h2", text: "Session lifecycle" },
-      { type: "ol", items: ["User signs in via **Supabase client** or server exchange.","Session **cookie** scoped to site domain; HttpOnly where configured.","Server routes read session and **query Postgres** with user context."] },
+      { type: "ol", items: ["User signs in through **Better Auth** on the same site (password or OAuth).","Signed, HttpOnly session **cookie** scoped to the site domain.","Server routes read the session and **query Postgres**, scoped to that user or household."] },
       { type: "h2", text: "What auth protects" },
       { type: "ul", items: ["**Feed URLs and probe labels**: <a class=\"text-link\" href=\"/about/configuring-temperature-feeds\">temperature feeds</a>.","**History rows**: <a class=\"text-link\" href=\"/about/history-dashboard-browsing\">history browsing</a>.","**CSV export**: <a class=\"text-link\" href=\"/about/stripe-csv-subscription\">subscription gating</a>.","**Admin tools**: <a class=\"text-link\" href=\"/about/admin-dashboard-features\">admin features</a>."] },
       { type: "h2", text: "Security notes" },
-      { type: "p", html: "Never expose service role keys to the browser. Relay security for public JSON: <a class=\"text-link\" href=\"/about/relay-security-and-access\">relay security</a>." }
+      { type: "p", html: "Never expose the database connection string or auth secret to the browser. Relay security for public JSON: <a class=\"text-link\" href=\"/about/relay-security-and-access\">relay security</a>." }
   ],
 
   "stripe-csv-subscription": [
-      { type: "p", html: "CSV export of temperature history is a subscription feature billed through Stripe. Checkout creates a customer portal link; webhooks flip a flag in Supabase so export buttons unlock without manual admin work." },
+      { type: "p", html: "CSV export of temperature history is a subscription feature billed through Stripe. Checkout creates a customer portal link; webhooks update the subscription record in Postgres so export buttons unlock without manual admin work." },
       { type: "h2", text: "User flow" },
       { type: "ol", items: ["Signed-in user opens **billing** from the dashboard.","Stripe **Checkout** completes payment method capture.","Webhook marks **subscription active**; user downloads CSV from history."] },
       { type: "h2", text: "Export contents" },
       { type: "p", html: "Files mirror stored history columns: see <a class=\"text-link\" href=\"/about/csv-export-spreadsheet-analysis\">CSV analysis guide</a>. Live data path remains separate: <a class=\"text-link\" href=\"/about/data-flow\">data flow</a>." },
       { type: "h2", text: "Implementation peers" },
-      { type: "p", html: "Webhook handling patterns overlap with <a class=\"text-link\" href=\"/about/node-express-api-patterns\">Express webhooks</a>. Auth prerequisite: <a class=\"text-link\" href=\"/about/supabase-auth-flow\">Supabase auth</a>." }
+      { type: "p", html: "Webhook handling patterns overlap with <a class=\"text-link\" href=\"/about/node-express-api-patterns\">Express webhooks</a>. Auth prerequisite: the <a class=\"text-link\" href=\"/about/sign-in-flow\">sign-in flow</a>." }
   ],
 
   "configuring-temperature-feeds": [
@@ -409,9 +409,9 @@ export const expandedAboutContent: Record<string, AboutContentBlock[]> = {
   ],
 
   "admin-dashboard-features": [
-      { type: "p", html: "Admin-only dashboard areas support operators who manage demo content, review user issues, or inspect system health. Role checks run server-side alongside standard <a class=\"text-link\" href=\"/about/supabase-auth-flow\">Supabase auth</a>, never gate solely with hidden client buttons." },
+      { type: "p", html: "Admin-only dashboard areas support operators who manage demo content, review user issues, or inspect system health. Role checks run server-side alongside the standard <a class=\"text-link\" href=\"/about/sign-in-flow\">sign-in flow</a>, never gate solely with hidden client buttons." },
       { type: "h2", text: "Typical admin capabilities" },
-      { type: "ul", items: ["**User lookup** for feed misconfiguration support tickets.","**Feature flags** for beta chart types or export limits.","**Audit logs** of webhook and insert failures tied to <a class=\"text-link\" href=\"/about/supabase-history-inserts\">history inserts</a>."] },
+      { type: "ul", items: ["**User lookup** for feed misconfiguration support tickets.","**Feature flags** for beta chart types or export limits.","**Audit logs** of webhook and insert failures tied to <a class=\"text-link\" href=\"/about/history-inserts\">history inserts</a>."] },
       { type: "h2", text: "Deployment" },
       { type: "p", html: "Admin routes deploy with the same <a class=\"text-link\" href=\"/about/cloudflare-workers-deployment\">Cloudflare Workers</a> bundle as public pages: protect with role claims in JWT or a separate allowlist table." },
       { type: "h2", text: "Related product docs" },
@@ -476,10 +476,10 @@ export const expandedAboutContent: Record<string, AboutContentBlock[]> = {
   ],
 
   "spotting-data-gaps": [
-      { type: "p", html: "Saved history is only as complete as the polling pipeline. Power loss at the Arduino, relay downtime, auth misconfiguration, or Supabase insert failures all leave gaps. Learning to distinguish **missing data** from **flat temperature** prevents false confidence during cold snaps and billing disputes over CSV completeness." },
+      { type: "p", html: "Saved history is only as complete as the polling pipeline. Power loss at the Arduino, relay downtime, auth misconfiguration, or database insert failures all leave gaps. Learning to distinguish **missing data** from **flat temperature** prevents false confidence during cold snaps and billing disputes over CSV completeness." },
       { type: "figure", illustration: "spotting-data-gaps.svg", alt: "Chart with a visible gap versus a flat line segment labeled differently", caption: "True gaps show missing timestamps; flat segments may be valid stable readings: learn the visual difference." },
       { type: "h2", text: "Common gap causes" },
-      { type: "ol", items: ["**Feed unreachable**: relay down or IP change; start with <a class=\"text-link\" href=\"/about/debugging-stale-readings\">stale reading debug</a>.","**MCU reboot**: short blank period after <a class=\"text-link\" href=\"/about/firmware-watchdog-recovery\">watchdog reset</a>.","**Insert skipped**: upstream fetch failed per <a class=\"text-link\" href=\"/about/supabase-history-inserts\">history insert rules</a>.","**Account/session**: signed-out loads do not save; see <a class=\"text-link\" href=\"/about/cookie-session-lifecycle\">session lifecycle</a>."] },
+      { type: "ol", items: ["**Feed unreachable**: relay down or IP change; start with <a class=\"text-link\" href=\"/about/debugging-stale-readings\">stale reading debug</a>.","**MCU reboot**: short blank period after <a class=\"text-link\" href=\"/about/firmware-watchdog-recovery\">watchdog reset</a>.","**Insert skipped**: upstream fetch failed per <a class=\"text-link\" href=\"/about/history-inserts\">history insert rules</a>.","**Account/session**: signed-out loads do not save; see <a class=\"text-link\" href=\"/about/cookie-session-lifecycle\">session lifecycle</a>."] },
       { type: "h2", text: "Visual patterns" },
       { type: "ul", items: ["**Vertical whitespace** in charts when time axis jumps forward.","**Repeated identical values** can mean stuck cache: check <a class=\"text-link\" href=\"/about/caching-feed-responses\">feed caching</a>.","**Single-zone flat while others move** suggests mapping or sensor fault."] },
       { type: "h2", text: "Workflow" },
@@ -613,7 +613,7 @@ export const expandedAboutContent: Record<string, AboutContentBlock[]> = {
       { type: "h2", text: "Common variables" },
       { type: "pre", code: "UPSTREAM_URL=http://192.168.1.50/\nREDIS_URL=redis://redis:6379/0\nCACHE_TTL_SECONDS=60\nLOG_LEVEL=info" },
       { type: "h2", text: "Secrets handling" },
-      { type: "p", html: "Optional API keys for public relay auth belong in env, not committed files. Mirror patterns from <a class=\"text-link\" href=\"/about/env-secrets-cloudflare\">Cloudflare secrets</a> on the Astro side. Never store Supabase service keys in the relay unless it writes history directly." },
+      { type: "p", html: "Optional API keys for public relay auth belong in env, not committed files. Mirror patterns from <a class=\"text-link\" href=\"/about/env-secrets-cloudflare\">Cloudflare secrets</a> on the Astro side. Never store database credentials in the relay: it only needs to serve JSON, or push readings through the device ingest API." },
       { type: "h2", text: "Validation on boot" },
       { type: "p", html: "Fail fast when <code>UPSTREAM_URL</code> is missing; log resolved values once at INFO. Pair with <a class=\"text-link\" href=\"/about/health-check-endpoints\">health checks</a> so orchestrators restart unhealthy containers instead of serving blank JSON." }
   ],
@@ -630,12 +630,12 @@ export const expandedAboutContent: Record<string, AboutContentBlock[]> = {
   ],
 
   "middleware-auth-patterns": [
-      { type: "p", html: "Authenticated dashboard pages must not rely on hidden UI alone. Astro middleware on Cloudflare can inspect cookies, validate JWT or session against Supabase, and redirect anonymous visitors to sign-in before expensive fetches run. The same layer protects API routes that mutate feed settings or trigger <a class=\"text-link\" href=\"/about/supabase-history-inserts\">history inserts</a>." },
+      { type: "p", html: "Authenticated dashboard pages must not rely on hidden UI alone. Astro middleware on Cloudflare can inspect cookies, validate the Better Auth session, and redirect anonymous visitors to sign-in before expensive fetches run. The same layer protects API routes that mutate feed settings or trigger <a class=\"text-link\" href=\"/about/history-inserts\">history inserts</a>." },
       { type: "figure", illustration: "middleware-auth-patterns.svg", alt: "Request path through Astro middleware to auth check then dashboard render", caption: "Middleware intercepts protected routes, validates session, then allows SSR or redirects to sign-in." },
       { type: "h2", text: "What to protect" },
       { type: "ul", items: ["**/dashboard/**: settings, history, billing.","**POST API routes**: feed updates, contact submissions.","Leave **public about and home** unauthenticated unless A/B testing."] },
       { type: "h2", text: "Session sources" },
-      { type: "p", html: "Read HttpOnly cookies set during <a class=\"text-link\" href=\"/about/supabase-auth-flow\">Supabase auth</a>. Refresh tokens before SSR if your adapter supports it: details overlap <a class=\"text-link\" href=\"/about/cookie-session-lifecycle\">cookie session lifecycle</a>." },
+      { type: "p", html: "Read the HttpOnly session cookie set during the <a class=\"text-link\" href=\"/about/sign-in-flow\">sign-in flow</a>. Better Auth renews active sessions itself, so there is no separate refresh token to rotate before SSR: details overlap <a class=\"text-link\" href=\"/about/cookie-session-lifecycle\">cookie session lifecycle</a>." },
       { type: "h2", text: "Edge considerations" },
       { type: "p", html: "Middleware runs at the edge, keep calls fast; cache public keys. Admin routes need role checks via <a class=\"text-link\" href=\"/about/group-membership-model\">group membership</a>. Broader SSR context: <a class=\"text-link\" href=\"/about/astro-server-side-rendering\">Astro SSR</a>." }
   ],
@@ -644,7 +644,7 @@ export const expandedAboutContent: Record<string, AboutContentBlock[]> = {
       { type: "p", html: "Edge-deployed Astro reads configuration from Cloudflare Workers environment at runtime. Service role keys and Stripe webhook secrets must never appear in client bundles or public GitHub repos. Separating **public** anon keys from **server-only** secrets mirrors relay hygiene in <a class=\"text-link\" href=\"/about/environment-variables-relay\">relay env vars</a>." },
       { type: "figure", illustration: "env-secrets-cloudflare.svg", alt: "Cloudflare dashboard secrets flowing to Worker runtime without appearing in client JS", caption: "Server-only secrets inject at deploy time; public anon keys may ship to the browser bundle." },
       { type: "h2", text: "Variable classes" },
-      { type: "ul", items: ["**PUBLIC_** prefix: safe for client islands if truly public.","**Server secrets**. Supabase service role, Stripe secret, webhook signing.","**Per-environment**: preview vs production values in separate namespaces."] },
+      { type: "ul", items: ["**PUBLIC_** prefix: safe for client islands if truly public.","**Server secrets**. database URL, Better Auth secret, Stripe secret, webhook signing.","**Per-environment**: preview vs production values in separate namespaces."] },
       { type: "h2", text: "Local development" },
       { type: "p", html: "Use <code>.dev.vars</code> gitignored locally; never commit. Rotate after laptop loss. Pair with <a class=\"text-link\" href=\"/about/middleware-auth-patterns\">middleware auth</a> so mis-set keys fail closed on dashboard routes." },
       { type: "h2", text: "Deployment pipeline" },
@@ -674,10 +674,10 @@ export const expandedAboutContent: Record<string, AboutContentBlock[]> = {
   ],
 
   "hosting-cost-comparison": [
-      { type: "p", html: "Total cost of ownership includes domain, hosting, Stripe fees, Supabase tier, electricity for the Arduino stack, and optional VPS for Python relays. Comparing <a class=\"text-link\" href=\"/about/comparing-full-stack-options\">full-stack options</a> without dollars hides why this repo chose Astro on Cloudflare with residential upstream JSON." },
+      { type: "p", html: "Total cost of ownership includes domain, hosting, Stripe fees, Neon database plan, electricity for the Arduino stack, and optional VPS for Python relays. Comparing <a class=\"text-link\" href=\"/about/comparing-full-stack-options\">full-stack options</a> without dollars hides why this repo chose Astro on Cloudflare with residential upstream JSON." },
       { type: "figure", illustration: "hosting-cost-comparison.svg", alt: "Bar chart comparing monthly costs of edge, VPS, and home relay hosting options", caption: "Hobby monitoring costs split across edge hosting, database tier, and home relay power." },
-      { type: "h2", text: "Cloudflare + Supabase path" },
-      { type: "ul", items: ["**Workers/Pages**, often free tier for modest traffic.","**Supabase**: free tier for small history; watch row growth.","**Home relay**: existing PC or Pi power only."] },
+      { type: "h2", text: "Cloudflare + Neon path" },
+      { type: "ul", items: ["**Workers/Pages**, often free tier for modest traffic.","**Neon Postgres**: a small plan covers modest history; watch row growth.","**Home relay**: existing PC or Pi power only."] },
       { type: "h2", text: "VPS Node/Next path" },
       { type: "p", html: "$5–20/month VPS running <a class=\"text-link\" href=\"/about/node-express-api-patterns\">Express</a> or <a class=\"text-link\" href=\"/about/nextjs-monitoring-dashboards\">Next</a> with cron polling: predictable bill, you maintain OS patches. <a class=\"text-link\" href=\"/about/docker-relay-deployment\">Docker</a> on same VPS consolidates services." },
       { type: "h2", text: "Hidden costs" },
@@ -696,14 +696,14 @@ export const expandedAboutContent: Record<string, AboutContentBlock[]> = {
   ],
 
   "cookie-session-lifecycle": [
-      { type: "p", html: "Authentication is not only the sign-in form: it is the HttpOnly cookie chain that lets server routes know which feed mappings and history rows belong to you. Expired sessions explain sudden “default demo feeds” on the home page and missing <a class=\"text-link\" href=\"/about/supabase-history-inserts\">history inserts</a> even when probes are healthy." },
+      { type: "p", html: "Authentication is not only the sign-in form: it is the HttpOnly cookie chain that lets server routes know which feed mappings and history rows belong to you. Expired sessions explain sudden “default demo feeds” on the home page and missing <a class=\"text-link\" href=\"/about/history-inserts\">history inserts</a> even when probes are healthy." },
       { type: "figure", illustration: "cookie-session-lifecycle.svg", alt: "Sequence diagram from sign-in through cookie set, SSR fetch, and history insert", caption: "Sign-in establishes session cookies consumed by SSR routes and history insert logic." },
       { type: "h2", text: "Lifecycle stages" },
-      { type: "ol", items: ["**Sign-in**. Supabase returns session; server sets scoped cookies.","**SSR requests**: middleware validates before dashboard render.","**Refresh**: silent token rotation before expiry when configured.","**Sign-out**: cookies cleared; subsequent loads are anonymous."] },
+      { type: "ol", items: ["**Sign-in**. Better Auth creates a session; the server sets a signed HttpOnly cookie.","**SSR requests**: middleware validates before dashboard render.","**Refresh**: Better Auth extends active sessions; idle ones expire.","**Sign-out**: cookies cleared; subsequent loads are anonymous."] },
       { type: "h2", text: "Impact on data pipeline" },
       { type: "p", html: "History saves on authenticated home loads: see <a class=\"text-link\" href=\"/about/data-flow\">data flow overview</a>. Guest visitors read public demo feeds via <a class=\"text-link\" href=\"/about/home-page-probe-fetch\">probe fetch</a> without writing rows. Session bugs resemble <a class=\"text-link\" href=\"/about/spotting-data-gaps\">data gaps</a> in charts." },
       { type: "h2", text: "Security pairing" },
-      { type: "p", html: "Combine with <a class=\"text-link\" href=\"/about/middleware-auth-patterns\">middleware auth</a> and <a class=\"text-link\" href=\"/about/supabase-auth-flow\">Supabase auth flow</a>. Admin routes additionally check <a class=\"text-link\" href=\"/about/group-membership-model\">group membership</a>." }
+      { type: "p", html: "Combine with <a class=\"text-link\" href=\"/about/middleware-auth-patterns\">middleware auth</a> and the <a class=\"text-link\" href=\"/about/sign-in-flow\">sign-in flow</a>. Admin routes additionally check <a class=\"text-link\" href=\"/about/group-membership-model\">group membership</a>." }
   ],
 
   "caching-feed-responses": [
@@ -712,24 +712,24 @@ export const expandedAboutContent: Record<string, AboutContentBlock[]> = {
       { type: "h2", text: "Layer guide" },
       { type: "ul", items: ["**Redis**: <a class=\"text-link\" href=\"/about/redis-cache-for-feeds\">primary TTL</a> 30–120s at relay.","**Astro fetch**, optional short memo during single SSR request.","**CDN**: avoid caching authenticated HTML; public home may cache briefly."] },
       { type: "h2", text: "Stale-while-revalidate" },
-      { type: "p", html: "Serve last good JSON while async refresh runs if Arduino is slow: documented in <a class=\"text-link\" href=\"/about/health-check-endpoints\">health checks</a>. Do not cache error bodies. Probe insert logic should skip failed fetches per <a class=\"text-link\" href=\"/about/supabase-history-inserts\">history inserts</a>." },
+      { type: "p", html: "Serve last good JSON while async refresh runs if Arduino is slow: documented in <a class=\"text-link\" href=\"/about/health-check-endpoints\">health checks</a>. Do not cache error bodies. Probe insert logic should skip failed fetches per <a class=\"text-link\" href=\"/about/history-inserts\">history inserts</a>." },
       { type: "h2", text: "Tuning workflow" },
       { type: "ol", items: ["Measure **curl latency** from edge to relay.","Set TTL ≥ Arduino poll interval.","Verify LCD vs web after changes: <a class=\"text-link\" href=\"/about/lcd-local-display-format\">LCD is often fresher</a>."] }
   ],
 
   "group-membership-model": [
-      { type: "p", html: "Users belong to one or more groups stored in Supabase: typically default registered users, paying members with CSV access, and admins who review contact submissions. Server routes check group membership before unlocking <a class=\"text-link\" href=\"/about/stripe-csv-subscription\">CSV export</a> or <a class=\"text-link\" href=\"/about/admin-dashboard-features\">admin dashboard</a> tools rather than scattering email allowlists in code." },
-      { type: "figure", illustration: "group-membership-model.svg", alt: "User account linked to member and admin group nodes with feature flags", caption: "Supabase group rows determine CSV export, billing features, and admin route access." },
+      { type: "p", html: "Users belong to one or more groups stored in Postgres: typically default registered users, paying members with CSV access, and admins who review contact submissions. Server routes check group membership before unlocking <a class=\"text-link\" href=\"/about/stripe-csv-subscription\">CSV export</a> or <a class=\"text-link\" href=\"/about/admin-dashboard-features\">admin dashboard</a> tools rather than scattering email allowlists in code." },
+      { type: "figure", illustration: "group-membership-model.svg", alt: "User account linked to member and admin group nodes with feature flags", caption: "Group rows in Postgres determine CSV export, billing features, and admin route access." },
       { type: "h2", text: "Common groups" },
       { type: "ul", items: ["**default**: signed-in feeds and history browsing.","**member**: active Stripe subscription for CSV.","**admin**: user lookup and <a class=\"text-link\" href=\"/about/contact-form-admin-review\">contact review</a>."] },
       { type: "h2", text: "Enforcement points" },
       { type: "p", html: "Check groups in Astro middleware and API handlers: <a class=\"text-link\" href=\"/about/middleware-auth-patterns\">middleware patterns</a>. Webhooks add member group on successful checkout; cancellations remove it. Never trust client-side group claims." },
       { type: "h2", text: "Auth foundation" },
-      { type: "p", html: "Registration flow in <a class=\"text-link\" href=\"/about/supabase-auth-flow\">Supabase auth</a> assigns default group. Session cookies carry JWT claims read during <a class=\"text-link\" href=\"/about/cookie-session-lifecycle\">session lifecycle</a>." }
+      { type: "p", html: "Registration, described in the <a class=\"text-link\" href=\"/about/sign-in-flow\">sign-in flow</a>, assigns the default group. The session cookie only identifies the user; server routes look up their groups in Postgres. See <a class=\"text-link\" href=\"/about/cookie-session-lifecycle\">session lifecycle</a>." }
   ],
 
   "contact-form-admin-review": [
-      { type: "p", html: "Public visitors submit questions through a hydrated contact island. Rows persist in Supabase for admins to review: separate from temperature telemetry. This workflow keeps support out of personal email folders and aligns permissions with <a class=\"text-link\" href=\"/about/group-membership-model\">group membership</a> instead of sharing one password." },
+      { type: "p", html: "Public visitors submit questions through a hydrated contact island. Rows persist in Postgres for admins to review: separate from temperature telemetry. This workflow keeps support out of personal email folders and aligns permissions with <a class=\"text-link\" href=\"/about/group-membership-model\">group membership</a> instead of sharing one password." },
       { type: "figure", illustration: "contact-form-admin-review.svg", alt: "Admin dashboard table listing contact submissions with status filters", caption: "Admins filter contact submissions by date and handled status from the dashboard queue." },
       { type: "h2", text: "Submission path" },
       { type: "ol", items: ["Visitor completes **contact form** island.","API route validates and **inserts row** with timestamp.","Admin views queue under **dashboard admin** section."] },
@@ -909,9 +909,9 @@ export const EXPANDED_ABOUT_SLUGS: readonly string[] = [
   "node-express-api-patterns",
   "comparing-full-stack-options",
   "home-page-probe-fetch",
-  "supabase-history-inserts",
+  "history-inserts",
   "debugging-stale-readings",
-  "supabase-auth-flow",
+  "sign-in-flow",
   "stripe-csv-subscription",
   "configuring-temperature-feeds",
   "admin-dashboard-features",

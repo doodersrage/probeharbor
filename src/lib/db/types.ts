@@ -1,12 +1,12 @@
 /**
  * Postgres → JavaScript value conversion for the Neon database path.
  *
- * Supabase (PostgREST) returned JSON, so the app was written against these
- * shapes. Postgres drivers return different ones by default (Date objects,
- * bigint as text). These parsers give back what Supabase gave, so moved code
- * reads results the same way:
+ * The app was written against the JSON shapes Supabase (PostgREST) returned
+ * before the move. Postgres drivers return different ones by default (Date
+ * objects, bigint as text). These parsers keep the old shapes, so callers
+ * read results the same way:
  *
- * | Postgres type | Driver default    | Here (= Supabase)                       |
+ * | Postgres type | Driver default    | Here (= the old PostgREST shape)        |
  * | timestamptz   | Date (ms only)    | "2026-11-07T13:22:38.104689+00:00"      |
  * | timestamp     | Date              | "2026-11-07T13:22:38.104689"            |
  * | date          | Date (local time) | "2026-11-07"                            |

@@ -124,9 +124,9 @@ export default {
   ],
 
   "history-dashboard-browsing": [
-    { html: 'Las lecturas en vivo responden a “¿cómo está ahora?”. El historial responde a “¿qué tan mal fue la semana pasada?”. El panel con sesión iniciada grafica las filas guardadas en Supabase para que puedas pasar de las últimas horas a tendencias de varios meses sin volver a consultar la sonda en cada carga de página.' },
+    { html: 'Las lecturas en vivo responden a “¿cómo está ahora?”. El historial responde a “¿qué tan mal fue la semana pasada?”. El panel con sesión iniciada grafica las filas guardadas en la base de datos Postgres (Neon) para que puedas pasar de las últimas horas a tendencias de varios meses sin volver a consultar la sonda en cada carga de página.' },
     { text: "Qué se guarda" },
-    { html: 'Cada instantánea registra las claves de las sondas, la temperatura, la humedad y la marca de tiempo cuando el sitio consulta los feeds que configuraste. Las inserciones se describen en <a class="text-link" href="/about/supabase-history-inserts">inserciones de historial en Supabase</a>. No todas las visitas a la página llegan a tus sondas: la consulta se ejecuta de forma programada en el servidor.' },
+    { html: 'Cada instantánea registra las claves de las sondas, la temperatura, la humedad y la marca de tiempo cuando el sitio consulta los feeds que configuraste. Las inserciones se describen en <a class="text-link" href="/about/history-inserts">inserciones del historial</a>. No todas las visitas a la página llegan a tus sondas: la consulta se ejecuta de forma programada en el servidor.' },
     { text: "Cómo leer los gráficos" },
     { items: [
       "**Compara zonas** para ver si un rincón es siempre el más frío.",

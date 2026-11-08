@@ -1,5 +1,5 @@
 /**
- * Better Auth for ProbeHarbor (step 4 of the move off Supabase).
+ * Better Auth for ProbeHarbor: sign-in, sessions, two-factor and OAuth.
  *
  * A factory, not a singleton: on Workers a database pool can't be shared
  * between requests, so the caller builds one instance per request with its
@@ -9,9 +9,6 @@
  * Table names, the uuid ids and the plugin list must stay in step with
  * db/tools/better-auth-schema.mjs, which generated the auth_* tables in
  * db/migrations/0001_baseline.sql.
- *
- * Not yet used by any route: sign-in still goes through Supabase. Routes
- * move over in later parts of step 4.
  */
 import { passkey } from "@better-auth/passkey";
 import bcrypt from "bcryptjs";
@@ -21,7 +18,7 @@ import { bearer, twoFactor } from "better-auth/plugins";
 import { type OAuthProviderId, oauthTwoFactorPlugin, refuseGitHubImplicitLink } from "./betterAuthOAuth";
 import { type YubiKeyVerifier, yubikeyTwoFactorPlugin } from "./betterAuthYubiKey";
 
-/** Same rule as the Supabase sign-up and reset forms today. */
+/** Minimum length on the sign-up and reset forms. */
 export const MIN_PASSWORD_LENGTH = 8;
 
 const BCRYPT_PREFIX = /^\$2[aby]\$\d{2}\$/;
@@ -92,7 +89,7 @@ export function createBetterAuth(deps: BetterAuthDeps) {
     },
     emailVerification: {
       sendOnSignUp: true,
-      // As with Supabase: following the confirmation link signs the user in.
+      // Following the confirmation link signs the user in.
       autoSignInAfterVerification: true,
       sendVerificationEmail: async ({ user, url, token }) => deps.sendVerificationEmail({ email: user.email, url, token }),
     },

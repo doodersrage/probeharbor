@@ -5,7 +5,7 @@ export type WebAuthnRp = {
   rpOrigins: string[];
 };
 
-/** Relying party id + allowed origins for Supabase WebAuthn MFA (must match production hostname). */
+/** Relying party id + allowed origins for passkeys (WebAuthn) on Better Auth (must match production hostname). */
 export function resolveWebAuthnRp(request?: Request): WebAuthnRp {
   const siteUrl = buildSiteUrl(request);
   const { hostname, origin } = new URL(siteUrl);

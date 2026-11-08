@@ -63,7 +63,7 @@ export default {
     description:
       "Acompanhe uma leitura do fio da sonda, passando pelos feeds JSON e pelo armazenamento, até o dashboard de histórico após o login.",
     summary:
-      "Hardware, relay, busca pelo site, armazenamento no Supabase e exportação em CSV em um único pipeline.",
+      "Hardware, relay, busca pelo site, armazenamento no Neon Postgres e exportação em CSV em um único pipeline.",
   },
   "accounts-and-dashboard": {
     title: "Contas, assinaturas e ferramentas do dashboard",

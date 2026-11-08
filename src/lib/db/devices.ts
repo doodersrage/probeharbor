@@ -4,14 +4,13 @@
  * The caller-facing checks (name required, same household, messages) stay in
  * devices.ts; these run the SQL.
  *
- * Every write that names a device also filters on its household, as the
- * Supabase path did. `listHouseholdDevices` is what API routes use to check a
+ * Every write that names a device also filters on its household. `listHouseholdDevices` is what API routes use to check a
  * device belongs to the caller's household before editing its sensors.
  *
- * Differences from the Supabase path, all deliberate:
+ * Differences from the old Supabase code, all deliberate:
  * - Devices + sensors load in one query.
  * - Moving a device to another household moves its readings in the same
- *   statement (Supabase: two requests, the second's error ignored).
+ *   statement (before: two requests, the second's error ignored).
  * - Ties in sort_order are ordered by created_at, id.
  */
 import { type Device, type DeviceSensor, type DeviceWithSensors, pullDeviceMeta } from "../devices";
@@ -215,10 +214,10 @@ export async function transferDeviceToHousehold(
 }
 
 /**
- * Pull feeds settings "Save": same steps as the Supabase path (match feeds to
+ * Pull feeds settings "Save": same steps as before the move (match feeds to
  * pull devices by URL, update or create them, sync their temperature and
  * humidity sensors to the probe list, delete pull devices no longer listed).
- * Like the Supabase path this is several statements, not one transaction; a
+ * This is several statements, not one transaction; a
  * failure part way returns the error and a re-save completes it.
  */
 export async function savePullDevicesForHousehold(
@@ -308,7 +307,7 @@ export async function savePullDevicesForHousehold(
               [found.id, label, probe.visible, probeIndex, deviceId],
             );
           } else {
-            // Duplicates were ignored on the Supabase path too.
+            // Duplicates are ignored.
             await query(
               `insert into public.device_sensors (device_id, key, label, kind, unit, visible, sort_order)
                values ($1, $2, $3, $4, $5, $6, $7)

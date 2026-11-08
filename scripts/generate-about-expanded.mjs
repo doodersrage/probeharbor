@@ -269,12 +269,12 @@ const pages = [
     blocks: [
       {
         type: "p",
-        html: `Live readings answer “what is it now?” History answers “how bad was last week?” The signed-in dashboard charts stored Supabase rows so you can zoom from recent hours to multi-month trends without re-querying the probe on every page load.`,
+        html: `Live readings answer “what is it now?” History answers “how bad was last week?” The signed-in dashboard charts readings stored in Postgres so you can zoom from recent hours to multi-month trends without re-querying the probe on every page load.`,
       },
       { type: "h2", text: "What gets stored" },
       {
         type: "p",
-        html: `Each snapshot captures probe keys, temperature, humidity, and timestamps when the site polls your configured feeds. Inserts are described in ${link("supabase-history-inserts", "Supabase history inserts")}. Not every page view hits your garage—polling runs on a schedule server-side.`,
+        html: `Each snapshot captures probe keys, temperature, humidity, and timestamps when the site polls your configured feeds. Inserts are described in ${link("history-inserts", "history inserts")}. Not every page view hits your garage—polling runs on a schedule server-side.`,
       },
       { type: "h2", text: "Reading the charts" },
       {
@@ -818,7 +818,7 @@ const pages = [
       { type: "h2", text: "Data flow placement" },
       {
         type: "p",
-        html: `See step 2 in ${link("data-flow", "end-to-end data flow")}. History still lands in Supabase via ${link("supabase-history-inserts", "history inserts")} on the website schedule.`,
+        html: `See step 2 in ${link("data-flow", "end-to-end data flow")}. History still lands in Postgres via ${link("history-inserts", "history inserts")} on the website schedule.`,
       },
     ],
   },
@@ -843,7 +843,7 @@ const pages = [
       { type: "h2", text: "Dashboard integration" },
       {
         type: "p",
-        html: `Users paste HTTPS feed URLs in ${link("configuring-temperature-feeds", "temperature feed settings")}. The site stores URLs per account—pair with ${link("supabase-auth-flow", "Supabase auth")} so feeds are not world-editable.`,
+        html: `Users paste HTTPS feed URLs in ${link("configuring-temperature-feeds", "temperature feed settings")}. The site stores URLs per account—pair with the ${link("sign-in-flow", "sign-in flow")} so feeds are not world-editable.`,
       },
       { type: "h2", text: "Compare stacks" },
       {
@@ -871,7 +871,7 @@ const pages = [
       {
         type: "ul",
         items: [
-          "**Secrets stay server-side**—feed URLs and Supabase keys never ship to the browser wholesale.",
+          "**Secrets stay server-side**—feed URLs and database credentials never ship to the browser wholesale.",
           `**Edge deployment** on Cloudflare reduces latency—see ${link("cloudflare-workers-deployment", "Cloudflare Workers deployment")}.`,
           "**Progressive enhancement** for dashboard features that need client state.",
         ],
@@ -924,9 +924,9 @@ const pages = [
       {
         type: "ol",
         items: [
-          "**Environment variables** for Supabase and Stripe live in Cloudflare dashboard secrets.",
+          "**Environment variables** for the database, Better Auth, and Stripe live in Cloudflare dashboard secrets.",
           "**Fetch timeouts** to residential feed URLs must tolerate slow home uplinks.",
-          `**Cron or scheduled triggers** may drive ${link("supabase-history-inserts", "history inserts")}.`,
+          `**Cron or scheduled triggers** may drive ${link("history-inserts", "history inserts")}.`,
         ],
       },
       { type: "h2", text: "Caching interaction" },
@@ -957,7 +957,7 @@ const pages = [
         items: [
           "**app/dashboard/page.tsx** server-fetches JSON feeds with cached revalidation.",
           `**Route handlers** proxy probes to hide LAN URLs—similar to ${link("fastapi-relay-setup", "FastAPI relay")}.`,
-          `**Middleware** guards signed-in pages using ${link("supabase-auth-flow", "Supabase auth")} patterns.`,
+          `**Middleware** guards signed-in pages with session checks like the ones in this site's ${link("sign-in-flow", "sign-in flow")}.`,
         ],
       },
       { type: "h2", text: "Why this project uses Astro" },
@@ -978,7 +978,7 @@ const pages = [
     blocks: [
       {
         type: "p",
-        html: `Express (or Fastify) on Node remains a straightforward choice for JSON APIs, webhooks, and cron jobs. A monitoring stack might use Express to poll probes, write Supabase rows, and serve CSV export links.`,
+        html: `Express (or Fastify) on Node remains a straightforward choice for JSON APIs, webhooks, and cron jobs. A monitoring stack might use Express to poll probes, write Postgres rows, and serve CSV export links.`,
       },
       { type: "h2", text: "Common routes" },
       {
@@ -994,14 +994,14 @@ const pages = [
         type: "ul",
         items: [
           "Run behind **HTTPS reverse proxy** with rate limits.",
-          "Use **connection pooling** for Supabase Postgres if querying directly.",
+          "Use **connection pooling** for Postgres if querying directly.",
           "Prefer **idempotent webhooks** for Stripe events.",
         ],
       },
       { type: "h2", text: "Parallel in Astro" },
       {
         type: "p",
-        html: `This repo implements similar endpoints as Astro server routes—${link("supabase-history-inserts", "history inserts")} and ${link("home-page-probe-fetch", "probe fetch")}.`,
+        html: `This repo implements similar endpoints as Astro server routes—${link("history-inserts", "history inserts")} and ${link("home-page-probe-fetch", "probe fetch")}.`,
       },
     ],
   },
@@ -1026,7 +1026,7 @@ const pages = [
       { type: "h2", text: "Shared backend" },
       {
         type: "p",
-        html: `Supabase auth and Postgres history are stack-agnostic—${link("accounts-and-dashboard", "accounts and dashboard")}. Data pipeline: ${link("data-flow", "data flow")}.`,
+        html: `Sign-in and Postgres history are stack-agnostic—${link("accounts-and-dashboard", "accounts and dashboard")}. Data pipeline: ${link("data-flow", "data flow")}.`,
       },
     ],
   },
@@ -1063,26 +1063,26 @@ const pages = [
     ],
   },
   {
-    slug: "supabase-history-inserts",
+    slug: "history-inserts",
     parentSlug: "data-flow",
     blocks: [
       {
         type: "p",
-        html: `Historical charts depend on periodic inserts into Supabase Postgres—not on the browser remembering prior values. A scheduled job or edge function polls feeds and writes normalized rows keyed by user and probe.`,
+        html: `Historical charts depend on rows stored in Postgres (Neon)—not on the browser remembering prior values. The Worker writes them: push devices post readings to the ingest API, and server code polls pull feeds on a schedule. Each row is tied to a household and a sensor.`,
       },
       { type: "h2", text: "Insert model" },
       {
         type: "ul",
         items: [
-          "**Timestamp + user_id + probe_key** uniquely identify a sample.",
-          "Store **temp, humidity, units** as typed columns for fast chart queries.",
+          "**Household, sensor, and timestamp** identify each sample.",
+          "Store **numeric, on/off, or text values** in typed columns for fast chart queries.",
           "Skip insert if **upstream fetch failed** to avoid flatlines at zero.",
         ],
       },
       { type: "h2", text: "Auth boundary" },
       {
         type: "p",
-        html: `Row-level security ties history to signed-in users—${link("supabase-auth-flow", "Supabase auth flow")}. Only the service role or trusted server route should insert on schedule.`,
+        html: `Every history query runs on the server and is scoped in SQL to the signed-in user's household—${link("sign-in-flow", "sign-in flow")}. Only server code in the Worker writes rows, such as the ingest route and scheduled jobs; the browser never inserts history directly.`,
       },
       { type: "h2", text: "Consumption" },
       {
@@ -1117,27 +1117,27 @@ const pages = [
       { type: "h2", text: "History vs live" },
       {
         type: "p",
-        html: `Charts can lag if inserts stop but home page still looks live—check ${link("supabase-history-inserts", "history inserts")} separately from ${link("home-page-probe-fetch", "home page fetch")}.`,
+        html: `Charts can lag if inserts stop but home page still looks live—check ${link("history-inserts", "history inserts")} separately from ${link("home-page-probe-fetch", "home page fetch")}.`,
       },
     ],
   },
 
   // ── accounts-and-dashboard (4) ──
   {
-    slug: "supabase-auth-flow",
+    slug: "sign-in-flow",
     parentSlug: "accounts-and-dashboard",
     blocks: [
       {
         type: "p",
-        html: `User accounts use Supabase Auth for email or OAuth sign-in, session cookies, and row-level security on history and feed configuration. The Astro site validates sessions on protected routes before rendering dashboard HTML or API mutations.`,
+        html: `User accounts run on Better Auth inside the app: email and password, or Google, GitHub, and Discord, with an authenticator app (TOTP), YubiKey OTP, or passkey as extra protection. The web session is a signed HttpOnly cookie; the Android and desktop apps send the same session as a Bearer token. Every query for history and feed configuration runs on the server, scoped in SQL to the signed-in user or household. The Astro site validates sessions on protected routes before rendering dashboard HTML or API mutations.`,
       },
       { type: "h2", text: "Session lifecycle" },
       {
         type: "ol",
         items: [
-          "User signs in via **Supabase client** or server exchange.",
-          "Session **cookie** scoped to site domain; HttpOnly where configured.",
-          "Server routes read session and **query Postgres** with user context.",
+          "User signs in through **Better Auth** on the same site (password or OAuth).",
+          "Signed, HttpOnly session **cookie** scoped to the site domain.",
+          "Server routes read the session and **query Postgres**, scoped to that user or household.",
         ],
       },
       { type: "h2", text: "What auth protects" },
@@ -1153,7 +1153,7 @@ const pages = [
       { type: "h2", text: "Security notes" },
       {
         type: "p",
-        html: `Never expose service role keys to the browser. Relay security for public JSON: ${link("relay-security-and-access", "relay security")}.`,
+        html: `Never expose the database connection string or auth secret to the browser. Relay security for public JSON: ${link("relay-security-and-access", "relay security")}.`,
       },
     ],
   },
@@ -1163,7 +1163,7 @@ const pages = [
     blocks: [
       {
         type: "p",
-        html: `CSV export of temperature history is a subscription feature billed through Stripe. Checkout creates a customer portal link; webhooks flip a flag in Supabase so export buttons unlock without manual admin work.`,
+        html: `CSV export of temperature history is a subscription feature billed through Stripe. Checkout creates a customer portal link; webhooks update the subscription record in Postgres so export buttons unlock without manual admin work.`,
       },
       { type: "h2", text: "User flow" },
       {
@@ -1182,7 +1182,7 @@ const pages = [
       { type: "h2", text: "Implementation peers" },
       {
         type: "p",
-        html: `Webhook handling patterns overlap with ${link("node-express-api-patterns", "Express webhooks")}. Auth prerequisite: ${link("supabase-auth-flow", "Supabase auth")}.`,
+        html: `Webhook handling patterns overlap with ${link("node-express-api-patterns", "Express webhooks")}. Auth prerequisite: the ${link("sign-in-flow", "sign-in flow")}.`,
       },
     ],
   },
@@ -1222,7 +1222,7 @@ const pages = [
     blocks: [
       {
         type: "p",
-        html: `Admin-only dashboard areas support operators who manage demo content, review user issues, or inspect system health. Role checks run server-side alongside standard ${link("supabase-auth-flow", "Supabase auth")}—never gate solely with hidden client buttons.`,
+        html: `Admin-only dashboard areas support operators who manage demo content, review user issues, or inspect system health. Role checks run server-side alongside the standard ${link("sign-in-flow", "sign-in flow")}—never gate solely with hidden client buttons.`,
       },
       { type: "h2", text: "Typical admin capabilities" },
       {
@@ -1230,7 +1230,7 @@ const pages = [
         items: [
           "**User lookup** for feed misconfiguration support tickets.",
           "**Feature flags** for beta chart types or export limits.",
-          `**Audit logs** of webhook and insert failures tied to ${link("supabase-history-inserts", "history inserts")}.`,
+          `**Audit logs** of webhook and insert failures tied to ${link("history-inserts", "history inserts")}.`,
         ],
       },
       { type: "h2", text: "Deployment" },

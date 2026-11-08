@@ -4,9 +4,9 @@
  * and daily ingest counts. Called from devices.ts, sensorReadings.ts and
  * ingestStats.ts.
  *
- * Differences from the Supabase path, all deliberate:
- * - Ingest counts and device meta change in one statement. The Supabase path
- *   reads, adds in JS and writes back, so two uploads at the same moment
+ * Differences from the old Supabase code, all deliberate:
+ * - Ingest counts and device meta change in one statement. The old code
+ *   read, added in JS and wrote back, so two uploads at the same moment
  *   could lose a count or a meta key.
  * - Device + sensors load in one query (one round trip on every upload).
  * - Lists that had no order (sensor ties on sort_order) are ordered by
@@ -30,7 +30,7 @@ export const SENSOR_COLUMNS = "id, device_id, key, label, kind, unit, visible, s
 /**
  * Enabled device with this ingest-key hash, with its sensors. Null when there
  * is none, or (never expected) more than one: an ambiguous key must not pick
- * a household at random. The Supabase path's maybeSingle() also gave null.
+ * a household at random.
  */
 export async function findDeviceByIngestKeyHash(keyHash: string): Promise<DeviceWithSensors | null> {
   let rows: DeviceWithSensors[];
@@ -93,7 +93,7 @@ export async function upsertDeviceSensor(
   }
 }
 
-/** Shallow-merge `patch` into devices.meta (as the Supabase path's spread did). */
+/** Shallow-merge `patch` into devices.meta (top-level keys replaced, others kept). */
 export async function updateDeviceMeta(
   deviceId: string,
   patch: Record<string, unknown>,
@@ -121,7 +121,7 @@ export async function touchDeviceLastSeen(deviceId: string): Promise<void> {
   }
 }
 
-/** All rows in one statement: all are stored or none (as Supabase's bulk insert). */
+/** All rows in one statement: all are stored or none. */
 export async function insertSensorReadings(rows: SensorReadingInsert[]): Promise<{ error: string | null }> {
   if (rows.length === 0) return { error: null };
   try {

@@ -5,11 +5,11 @@
  * (archiveHistory.ts). Changes name the
  * household (or user, for saved views); webhook tokens are looked up by hash.
  *
- * Differences from the Supabase path, all deliberate:
+ * Differences from the old Supabase code, all deliberate:
  * - Resolving an inbound webhook finds it and stamps last_used_at in one
  *   statement.
  * - The archive job reads up to the 5000 rows it asks for, oldest first; the
- *   Supabase path's request was cut to 1000 rows in no set order.
+ *   old Supabase request was cut to 1000 rows in no set order.
  */
 import type { HistorySavedViewParams } from "../historySavedViews";
 import { query } from "./client";

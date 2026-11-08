@@ -3,7 +3,7 @@
  * cronHealth.ts), raw-reading retention, stuck-sensor facts
  * (stuckSensors.ts) and feed uptime checks (feedUptimeMonitor.ts).
  *
- * Differences from the Supabase path, all deliberate:
+ * Differences from the old Supabase code, all deliberate:
  * - The four stuck-sensor lookups per sensor are one query (same filters).
  */
 import type { JobRun } from "../jobRuns";

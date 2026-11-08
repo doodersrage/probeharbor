@@ -18,7 +18,7 @@ const fr: AccountsAndDashboardMessages = {
   account: {
     title: "Création du compte",
     bodyHtml:
-      "L’inscription se fait par e-mail et mot de passe via Supabase Auth. La réinitialisation du mot de passe et (si activés dans Supabase) des fournisseurs OAuth comme Google, GitHub ou Discord sont disponibles depuis la page de connexion. Les nouveaux utilisateurs démarrent sur l’offre Free avec un foyer par défaut.",
+      "L’inscription se fait par e-mail et mot de passe, gérée par Better Auth au sein même de l’application. La page de connexion propose aussi Google, GitHub et Discord, la réinitialisation du mot de passe et, en option, une seconde étape par application d’authentification (TOTP), clé YubiKey (OTP) ou passkey. Les e-mails de confirmation et de réinitialisation sont envoyés par l’application via Cloudflare Email. Les nouveaux utilisateurs démarrent sur l’offre Free avec un foyer par défaut.",
   },
   checklist: {
     title: "Check-list de démarrage",

@@ -174,7 +174,7 @@ export default {
     { text: "Causas del lado del hardware" },
     { html: 'Los <a class="text-link" href="/about/firmware-watchdog-recovery">reinicios por watchdog</a> provocan huecos cortos. Los <a class="text-link" href="/about/dht22-read-errors-retries">errores del DHT22</a> hacen desaparecer claves del JSON. Ethernet: <a class="text-link" href="/about/circuit-wiring-troubleshooting">solución de problemas de cableado</a>.' },
     { text: "Historial frente a datos en vivo" },
-    { html: 'Los gráficos pueden quedarse atrás si se detienen las inserciones aunque la página de inicio parezca en vivo: revisa las <a class="text-link" href="/about/supabase-history-inserts">inserciones del historial</a> por separado de la <a class="text-link" href="/about/home-page-probe-fetch">consulta de la página de inicio</a>.' },
+    { html: 'Los gráficos pueden quedarse atrás si se detienen las inserciones aunque la página de inicio parezca en vivo: revisa las <a class="text-link" href="/about/history-inserts">inserciones del historial</a> por separado de la <a class="text-link" href="/about/home-page-probe-fetch">consulta de la página de inicio</a>.' },
   ],
 
   "configuring-temperature-feeds": [

@@ -2,8 +2,8 @@ import type { AboutExpandedOverlay } from "../index";
 
 export default {
   "group-membership-model": [
-    { html: 'Os usuários pertencem a um ou mais grupos armazenados no Supabase: normalmente os usuários cadastrados padrão, os membros pagantes com acesso ao CSV e os administradores que revisam as mensagens de contato. As rotas do servidor verificam a participação nos grupos antes de liberar a <a class="text-link" href="/about/stripe-csv-subscription">exportação CSV</a> ou as ferramentas do <a class="text-link" href="/about/admin-dashboard-features">painel de administração</a>, em vez de espalhar listas de e-mails permitidos pelo código.' },
-    { alt: "Conta de usuário ligada aos nós dos grupos member e admin, com flags de recursos", caption: "As linhas de grupo no Supabase determinam a exportação CSV, os recursos de cobrança e o acesso às rotas de administração." },
+    { html: 'Os usuários pertencem a um ou mais grupos armazenados no banco de dados Postgres (Neon): normalmente os usuários cadastrados padrão, os membros pagantes com acesso ao CSV e os administradores que revisam as mensagens de contato. As rotas do servidor verificam a participação nos grupos antes de liberar a <a class="text-link" href="/about/stripe-csv-subscription">exportação CSV</a> ou as ferramentas do <a class="text-link" href="/about/admin-dashboard-features">painel de administração</a>, em vez de espalhar listas de e-mails permitidos pelo código.' },
+    { alt: "Conta de usuário ligada aos nós dos grupos member e admin, com flags de recursos", caption: "As linhas de grupo no banco de dados determinam a exportação CSV, os recursos de cobrança e o acesso às rotas de administração." },
     { text: "Grupos comuns" },
     { items: [
       "**default**: feeds e navegação no histórico para usuários conectados.",
@@ -13,7 +13,7 @@ export default {
     { text: "Pontos de verificação" },
     { html: 'Verifique os grupos no middleware do Astro e nos handlers da API: <a class="text-link" href="/about/middleware-auth-patterns">padrões de middleware</a>. Os webhooks adicionam o grupo member quando o checkout é concluído; os cancelamentos o removem. Nunca confie em informações de grupo vindas do cliente.' },
     { text: "Base da autenticação" },
-    { html: 'O fluxo de cadastro em <a class="text-link" href="/about/supabase-auth-flow">autenticação com Supabase</a> atribui o grupo padrão. Os cookies de sessão carregam as claims do JWT lidas durante o <a class="text-link" href="/about/cookie-session-lifecycle">ciclo de vida da sessão</a>.' },
+    { html: 'O fluxo de cadastro em <a class="text-link" href="/about/sign-in-flow">fluxo de login</a> atribui o grupo padrão. A sessão fica em um cookie HttpOnly assinado, que o servidor valida ao longo do <a class="text-link" href="/about/cookie-session-lifecycle">ciclo de vida da sessão</a>.' },
   ],
 
   "display-preferences-deep-dive": [

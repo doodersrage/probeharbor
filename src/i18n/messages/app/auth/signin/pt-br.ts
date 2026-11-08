@@ -68,7 +68,7 @@ const ptBr: AuthSigninMessages = {
     oauth_provider_failed:
       "O login social falhou no provedor. Tente novamente ou entre com seu e-mail.",
     oauth_secret_mismatch:
-      "As credenciais do login social estão desatualizadas. Gere um novo client secret no app do provedor (Discord, GitHub ou Google) e cole o novo valor em Supabase → Authentication → Providers.",
+      "As credenciais do login social estão desatualizadas. Gere um novo client secret no app do provedor (Discord, GitHub ou Google) e atualize a configuração *_CLIENT_SECRET correspondente no site.",
     oauth_github_profile:
       "O login com GitHub não conseguiu ler seu perfil ou e-mail. Revogue o ProbeHarbor em GitHub → Settings → Authorized OAuth Apps e tente novamente: a tela de autorização deve mostrar o ProbeHarbor e pedir acesso ao e-mail.",
     oauth_account_exists:

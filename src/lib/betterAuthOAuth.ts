@@ -1,10 +1,10 @@
 /**
- * OAuth sign-in rules for Better Auth (step 4d of the move off Supabase).
+ * OAuth sign-in rules for Better Auth.
  *
  * Linking, as decided 2026-11-07 ("keep today's rules"):
  * - Google and Discord join an existing account with the same email when
- *   both sides have a verified email (Better Auth's default; Supabase's
- *   rule today).
+ *   both sides have a verified email (Better Auth's default; also the
+ *   rule on Supabase before the move).
  * - GitHub never joins an existing account that isn't already linked to
  *   GitHub (the app's own GitHub flow refused this before the move).
  *

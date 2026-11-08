@@ -63,13 +63,13 @@ export default {
   ],
 
   "spotting-data-gaps": [
-    { html: `L’historique enregistré n’est complet que si la chaîne d’interrogation l’est. Une coupure de courant de l’Arduino, une panne du relais, une erreur de configuration d’authentification ou un échec d’insertion dans Supabase laissent tous des trous. Savoir distinguer des **données manquantes** d’une **température stable** évite une fausse assurance pendant les vagues de froid et des litiges de facturation sur la complétude des CSV.` },
+    { html: `L’historique enregistré n’est complet que si la chaîne d’interrogation l’est. Une coupure de courant de l’Arduino, une panne du relais, une erreur de configuration d’authentification ou un échec d’insertion dans la base Neon Postgres laissent tous des trous. Savoir distinguer des **données manquantes** d’une **température stable** évite une fausse assurance pendant les vagues de froid et des litiges de facturation sur la complétude des CSV.` },
     { alt: `Graphique comparant un trou visible et un segment plat, étiquetés différemment`, caption: `Un vrai trou se traduit par des horodatages manquants ; un segment plat peut correspondre à des relevés stables valides : apprenez à faire la différence visuellement.` },
     { text: `Causes fréquentes de trous` },
     { items: [
       `**Flux injoignable** : relais en panne ou changement d’IP ; commencez par le <a class="text-link" href="/about/debugging-stale-readings">diagnostic des relevés figés</a>.`,
       `**Redémarrage du microcontrôleur** : courte période vide après une <a class="text-link" href="/about/firmware-watchdog-recovery">réinitialisation par watchdog</a>.`,
-      `**Insertion ignorée** : la récupération en amont a échoué selon les <a class="text-link" href="/about/supabase-history-inserts">règles d’insertion de l’historique</a>.`,
+      `**Insertion ignorée** : la récupération en amont a échoué selon les <a class="text-link" href="/about/history-inserts">règles d’insertion de l’historique</a>.`,
       `**Compte/session** : les chargements déconnectés n’enregistrent rien ; voir <a class="text-link" href="/about/cookie-session-lifecycle">cycle de vie de la session</a>.`,
     ] },
     { text: `Indices visuels` },

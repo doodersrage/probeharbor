@@ -531,7 +531,7 @@ export const aboutFaqsBySlug: Record<string, AboutFaqItem[]> = {
     {
       question: "Which stack does ProbeHarbor use?",
       answer:
-        "Astro SSR on Cloudflare Workers, Supabase for data, and probe ingest over HTTPS. Alternatives (Next, Express) are compared on this page.",
+        "Astro SSR on Cloudflare Workers, Neon Postgres for data, Better Auth for sign-in, and probe ingest over HTTPS. Alternatives (Next, Express) are compared on this page.",
     },
     {
       question: "Should I rebuild ProbeHarbor myself?",

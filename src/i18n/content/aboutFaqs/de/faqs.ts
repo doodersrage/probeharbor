@@ -525,7 +525,7 @@ export default {
     {
       question: "Welchen Stack nutzt ProbeHarbor?",
       answer:
-        "Astro SSR auf Cloudflare Workers, Supabase für die Daten und Fühler-Ingest über HTTPS. Alternativen (Next, Express) werden auf dieser Seite verglichen.",
+        "Astro SSR auf Cloudflare Workers, Neon Postgres für die Daten, Better Auth für die Anmeldung und Fühler-Ingest über HTTPS. Alternativen (Next, Express) werden auf dieser Seite verglichen.",
     },
     {
       question: "Sollte ich ProbeHarbor selbst nachbauen?",

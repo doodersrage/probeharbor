@@ -95,7 +95,7 @@ export const coreAboutPages: AboutPage[] = [
     description:
       "Follow a reading from the probe wire through JSON feeds, storage, and the signed-in history dashboard.",
     summary:
-      "Hardware, relay, website fetch, Supabase storage, and CSV export in one pipeline.",
+      "Hardware, relay, website fetch, Postgres storage, and CSV export in one pipeline.",
   },
   {
     slug: "accounts-and-dashboard",

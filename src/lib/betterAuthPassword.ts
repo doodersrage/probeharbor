@@ -1,19 +1,19 @@
 /**
- * Password changes on Better Auth that keep today's
- * Supabase behavior.
+ * Password changes on Better Auth, with the same rules the app had on
+ * Supabase.
  *
  * - The emailed reset token is kept in an httpOnly cookie between the link
  *   (/api/auth/confirm) and the form (/api/auth/update-password), so it
  *   doesn't sit in the address bar or browser history.
  * - A signed-in user changes the password without the current one
- *   (Supabase: secure_password_change = false). Accounts without a password
- *   yet (OAuth sign-up) get one, as Supabase's updateUser did.
+ *   (as on Supabase before the move). Accounts without a password yet
+ *   (OAuth sign-up) get one.
  */
 import type { AstroCookies } from "astro";
 import type { ProbeHarborAuth } from "./betterAuthConfig";
 
 export const RESET_TOKEN_COOKIE = "ph_reset_token";
-/** Same lifetime as the reset link (Better Auth's default, Supabase's otp_expiry). */
+/** Same lifetime as the reset link (Better Auth's default: one hour). */
 const RESET_TOKEN_MAX_AGE = 60 * 60;
 
 export function setResetTokenCookie(cookies: AstroCookies, token: string): void {
@@ -49,7 +49,7 @@ export async function setPasswordForUser(auth: ProbeHarborAuth, userId: string, 
   }
 }
 
-/** Following a reset link proves the inbox is theirs (Supabase's recovery confirmed it too). */
+/** Following a reset link proves the inbox is theirs, so the email counts as verified. */
 export async function markEmailVerified(auth: ProbeHarborAuth, userId: string): Promise<void> {
   const ctx = await auth.$context;
   await ctx.internalAdapter.updateUser(userId, { emailVerified: true });

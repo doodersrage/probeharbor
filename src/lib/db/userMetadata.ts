@@ -1,8 +1,7 @@
 /**
- * Per-user settings that Supabase kept in `user_metadata` (active household,
- * locale, °C, dashboard preferences, ...). On Neon they live in
- * `public.user_profiles.metadata` as the same JSON object, copied from
- * Supabase in step 5.
+ * Per-user settings (active household, locale, °C, dashboard preferences,
+ * ...) in `public.user_profiles.metadata`: the same JSON object Supabase kept
+ * in `user_metadata`, copied over in step 5 of the move.
  */
 import { query } from "./client";
 
@@ -16,8 +15,8 @@ export async function getUserMetadata(userId: string): Promise<Record<string, un
 
 /**
  * Set some keys, keeping the rest. One statement, so two requests changing
- * different keys at the same time can't drop each other's change (the
- * Supabase path reads, merges in JS, then writes the whole object).
+ * different keys at the same time can't drop each other's change (the old
+ * Supabase code read, merged in JS, then wrote the whole object).
  */
 export async function mergeUserMetadata(userId: string, patch: Record<string, unknown>): Promise<void> {
   await query(

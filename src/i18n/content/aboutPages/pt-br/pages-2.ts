@@ -130,7 +130,7 @@ export default {
   "group-membership-model": {
     title: "Modelo de associação a grupos",
     description:
-      "Veja como os grupos default, member e admin no Supabase controlam a exportação CSV, as ferramentas de operador e os recursos do plano, sem e-mails fixos.",
+      "Veja como os grupos default, member e admin no banco de dados controlam a exportação CSV, as ferramentas de operador e os recursos do plano, sem e-mails fixos.",
     summary:
       "Os grupos representam papéis de assinatura e de operador sem deixar e-mails fixos no código-fonte.",
   },

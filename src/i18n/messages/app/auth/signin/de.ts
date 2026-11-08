@@ -70,7 +70,7 @@ const de: AuthSigninMessages = {
     oauth_provider_failed:
       "Die Anmeldung über ein soziales Konto ist beim Anbieter fehlgeschlagen. Versuche es erneut oder melde dich mit E-Mail an.",
     oauth_secret_mismatch:
-      "Die Zugangsdaten für die soziale Anmeldung sind veraltet. Erzeuge in der App des Anbieters (Discord, GitHub oder Google) ein neues Client Secret und füge den neuen Wert in Supabase → Authentication → Providers ein.",
+      "Die Zugangsdaten für die soziale Anmeldung sind veraltet. Erzeuge in der App des Anbieters (Discord, GitHub oder Google) ein neues Client Secret und aktualisiere die passende Einstellung *_CLIENT_SECRET der Website.",
     oauth_github_profile:
       "Die GitHub-Anmeldung konnte dein Profil oder deine E-Mail nicht lesen. Entziehe ProbeHarbor unter GitHub → Settings → Authorized OAuth Apps den Zugriff und versuche es erneut: Der Autorisierungsbildschirm muss ProbeHarbor anzeigen und Zugriff auf die E-Mail anfordern.",
     oauth_account_exists:

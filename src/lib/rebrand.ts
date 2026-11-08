@@ -38,6 +38,17 @@ export function isRenameNoticeAccountPath(pathname: string): boolean {
 
 /** Old public download paths kept as 301 redirects in middleware. */
 export const THERMALTRACE_STATIC_REDIRECTS: Record<string, string> = {
+  // About pages renamed after the move off Supabase (2026-11-07).
+  "/about/supabase-auth-flow": "/about/sign-in-flow",
+  "/es/about/supabase-auth-flow": "/es/about/sign-in-flow",
+  "/fr/about/supabase-auth-flow": "/fr/about/sign-in-flow",
+  "/de/about/supabase-auth-flow": "/de/about/sign-in-flow",
+  "/pt-br/about/supabase-auth-flow": "/pt-br/about/sign-in-flow",
+  "/about/supabase-history-inserts": "/about/history-inserts",
+  "/es/about/supabase-history-inserts": "/es/about/history-inserts",
+  "/fr/about/supabase-history-inserts": "/fr/about/history-inserts",
+  "/de/about/supabase-history-inserts": "/de/about/history-inserts",
+  "/pt-br/about/supabase-history-inserts": "/pt-br/about/history-inserts",
   "/esphome/thermaltrace.yaml": "/esphome/probeharbor.yaml",
   "/grafana/thermaltrace-dashboard.json": "/grafana/probeharbor-dashboard.json",
   "/ha/thermaltrace_entities.yaml": "/ha/probeharbor_entities.yaml",

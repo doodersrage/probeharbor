@@ -11,9 +11,8 @@ import { hasMobileOAuthCookie } from "../../../lib/mobileAuthRedirect";
 
 /**
  * Where OAuth sign-in lands after Better Auth's callback.
- * Does what /api/auth/callback and the GitHub callback did after Supabase
- * signed the user in: account language, referral for new accounts, and the
- * page to go to next. Two-factor users never get here: they're sent to
+ * Sets the account language, applies a referral for new accounts, and
+ * sends the user to the next page. Two-factor users never get here: they're sent to
  * /signin/mfa first (oauthTwoFactorPlugin). YubiKey users are stopped by the
  * middleware on the next page, as before.
  */

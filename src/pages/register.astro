@@ -17,7 +17,7 @@ const signinMessages = authSigninMessages(getLocale(Astro));
 const t = signinMessages.register;
 const forgotPasswordLabel = signinMessages.signin.forgotPassword;
 const errorCode = Astro.url.searchParams.get("error");
-// Known codes are translated; anything else (a raw Supabase message) shows as is.
+// Known codes are translated; other short text in ?error= shows as is (see registerErrors.ts).
 const rawErrorMessage = getRegisterErrorMessage(errorCode);
 const errorMessage =
   errorCode && Object.hasOwn(t.errors, errorCode)

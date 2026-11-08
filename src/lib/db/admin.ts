@@ -3,8 +3,8 @@
  * caller-checked Postgres functions), group membership (admin check),
  * server error log, contact submissions, checkout analytics, app status.
  *
- * Difference from the Supabase path: contact search text is a bound
- * parameter. The Supabase path pasted it into a PostgREST `or` filter, where
+ * Difference from the old Supabase code: contact search text is a bound
+ * parameter. The old code pasted it into a PostgREST `or` filter, where
  * commas or parentheses in a search could add filter conditions (admin-only
  * page, so low risk, but not repeated here).
  */

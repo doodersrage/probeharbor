@@ -24,14 +24,14 @@ export default {
   ],
 
   "group-membership-model": [
-    { html: 'Nutzer gehören zu einer oder mehreren Gruppen, die in Supabase gespeichert sind: typischerweise registrierte Standardnutzer, zahlende Mitglieder mit CSV-Zugang und Admins, die Kontaktanfragen prüfen. Serverrouten prüfen die Gruppenzugehörigkeit, bevor sie den <a class="text-link" href="/about/stripe-csv-subscription">CSV-Export</a> oder Werkzeuge des <a class="text-link" href="/about/admin-dashboard-features">Admin-Dashboards</a> freischalten, statt E-Mail-Freigabelisten im Code zu verstreuen.' },
-    { alt: "Nutzerkonto, verbunden mit Mitglieder- und Admin-Gruppenknoten samt Feature-Flags", caption: "Gruppenzeilen in Supabase bestimmen CSV-Export, Abrechnungsfunktionen und den Zugang zu Admin-Routen." },
+    { html: 'Nutzer gehören zu einer oder mehreren Gruppen, die in der Datenbank (Neon Postgres) gespeichert sind: typischerweise registrierte Standardnutzer, zahlende Mitglieder mit CSV-Zugang und Admins, die Kontaktanfragen prüfen. Serverrouten prüfen die Gruppenzugehörigkeit, bevor sie den <a class="text-link" href="/about/stripe-csv-subscription">CSV-Export</a> oder Werkzeuge des <a class="text-link" href="/about/admin-dashboard-features">Admin-Dashboards</a> freischalten, statt E-Mail-Freigabelisten im Code zu verstreuen.' },
+    { alt: "Nutzerkonto, verbunden mit Mitglieder- und Admin-Gruppenknoten samt Feature-Flags", caption: "Gruppenzeilen in der Datenbank bestimmen CSV-Export, Abrechnungsfunktionen und den Zugang zu Admin-Routen." },
     { text: "Übliche Gruppen" },
     { items: ["**default**: Feeds und Verlauf für angemeldete Nutzer.", "**member**: aktives Stripe-Abo für den CSV-Export.", '**admin**: Nutzersuche und <a class="text-link" href="/about/contact-form-admin-review">Prüfung von Kontaktanfragen</a>.'] },
     { text: "Wo geprüft wird" },
     { html: 'Prüfe die Gruppen in der Astro-Middleware und in den API-Handlern: <a class="text-link" href="/about/middleware-auth-patterns">Middleware-Muster</a>. Webhooks fügen nach erfolgreichem Checkout die Mitgliedergruppe hinzu; Kündigungen entfernen sie. Vertraue niemals Gruppenangaben vom Client.' },
     { text: "Grundlage Authentifizierung" },
-    { html: 'Der Registrierungsablauf in der <a class="text-link" href="/about/supabase-auth-flow">Supabase-Authentifizierung</a> weist die Standardgruppe zu. Sitzungscookies enthalten JWT-Claims, die im <a class="text-link" href="/about/cookie-session-lifecycle">Lebenszyklus der Sitzung</a> ausgelesen werden.' },
+    { html: 'Der Registrierungsablauf im <a class="text-link" href="/about/sign-in-flow">Anmeldeablauf</a> weist die Standardgruppe zu. Die Sitzung steckt in einem signierten HttpOnly-Cookie, das der Server bei jeder Anfrage prüft; Details im <a class="text-link" href="/about/cookie-session-lifecycle">Lebenszyklus der Sitzung</a>.' },
   ],
 
   "display-preferences-deep-dive": [

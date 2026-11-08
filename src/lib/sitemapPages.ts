@@ -6,7 +6,7 @@ import { answers } from "./answers";
 const EXCLUDED_ABOUT_SLUGS = new Set(["zapier-integration"]);
 
 /**
- * Web-stack and operator explainers (Astro, Next.js, Supabase, Redis, …) that
+ * Web-stack and operator explainers (Astro, Next.js, sign-in, history, Redis, …) that
  * are not about freeze or leak monitoring. They stay reachable from the About
  * hub but are noindex and left out of the sitemap, so search engines read the
  * site as being about its actual topic.
@@ -31,10 +31,10 @@ export const NOINDEX_ABOUT_SLUGS: ReadonlySet<string> = new Set([
   "environment-variables-relay",
   "health-check-endpoints",
   "home-page-probe-fetch",
-  "supabase-history-inserts",
+  "history-inserts",
   "cookie-session-lifecycle",
   "caching-feed-responses",
-  "supabase-auth-flow",
+  "sign-in-flow",
   "stripe-csv-subscription",
   "admin-dashboard-features",
   "contact-form-admin-review",

@@ -1,16 +1,14 @@
 /**
  * Neon versions of the reading queries in src/lib/sensorReadings.ts. Called
  *
- * Row cap: Supabase returned at most 1000 rows per request. Series here are
- * read newest first with a cap of MAX_SERIES_ROWS (the same 10 x 1000 the
- * paged Supabase reads use, src/lib/pagedRows.ts) and returned oldest first,
+ * Row cap: series are read newest first with a cap of MAX_SERIES_ROWS (the
+ * 10 pages x 1000 rows the old Supabase reads used) and returned oldest first,
  * so a long window drops its OLDEST rows, never the newest.
  *
  * Deliberate difference: getRecentNumericReadings and
- * getRecentNumericReadingSamples were not paged on the Supabase path, so a
+ * getRecentNumericReadingSamples were not paged in the old Supabase code, so a
  * window with more than 1000 rows (a 7-day window on a sensor reporting
  * every few minutes) got the oldest 1000. Here they get the newest rows.
- * See IMPLEMENTATION_PLAN.md for the Supabase-path fix.
  */
 import { isDemoDevice } from "../demoFeed";
 import type { DeviceSensor } from "../devices";
@@ -19,7 +17,7 @@ import { applySensorOffset } from "../sensorCalibration";
 import type { LatestSensorRow } from "../sensorReadings";
 import { query } from "./client";
 
-/** Newest rows kept for one series (10 Supabase pages). */
+/** Newest rows kept for one series (10 x 1000). */
 export const MAX_SERIES_ROWS = 10_000;
 
 const message = (error: unknown) => (error instanceof Error ? error.message : String(error));
@@ -46,7 +44,7 @@ export async function getRecentNumericReadings(sensorId: string, sinceIso: strin
     return (await numericSeries(sensorId, sinceIso)).map((r) => r.value_num);
   } catch (error) {
     console.error("getRecentNumericReadings failed:", message(error));
-    return []; // a failed read was an empty list on the Supabase path too
+    return []; // a failed read is an empty list
   }
 }
 
@@ -74,7 +72,7 @@ export async function getNumericReadingInWindow(
        order by recorded_at desc, id desc limit 1`,
       [sensorId, notBeforeIso, atOrBeforeIso],
     );
-    // The Supabase path took the newest row even if its value was null, then returned null.
+    // The newest row in the window wins even if its value is null; then this returns null.
     return row && typeof row.value_num === "number" ? { value: row.value_num, at: row.recorded_at } : null;
   } catch {
     return null;
@@ -149,7 +147,7 @@ type LatestJoinedRow = DeviceSensor & {
 /**
  * Latest reading per visible sensor on the household's enabled devices,
  * with calibration offsets applied to temperature and humidity. Sensors
- * that never reported are left out, as on the Supabase path.
+ * that never reported are left out.
  */
 export async function fetchLatestSensorValuesResult(
   householdId: string,

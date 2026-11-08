@@ -3,7 +3,7 @@ interface ImportMetaEnv {
   readonly DATABASE_URL?: string;
   /** Date-based app version (YYYY.MM.DD[.N]) stamped by the deploy workflow; "" in local builds. */
   readonly APP_VERSION?: string;
-  /** ProbeHarbor GitHub OAuth app (direct sign-in, bypasses Supabase GitHub provider). */
+  /** ProbeHarbor GitHub OAuth app (GitHub sign-in through Better Auth). */
   readonly GITHUB_CLIENT_ID?: string;
   readonly GITHUB_CLIENT_SECRET?: string;
   readonly GARAGE_TEMP_FEED_URL?: string;

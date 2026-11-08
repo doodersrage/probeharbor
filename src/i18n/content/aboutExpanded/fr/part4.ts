@@ -32,8 +32,8 @@ export default {
   ],
 
   "group-membership-model": [
-    { html: `Les utilisateurs appartiennent à un ou plusieurs groupes stockés dans Supabase : en général les utilisateurs inscrits par défaut, les membres payants avec accès CSV et les administrateurs qui traitent les messages de contact. Les routes serveur vérifient l’appartenance aux groupes avant de débloquer l’<a class="text-link" href="/about/stripe-csv-subscription">export CSV</a> ou les outils du <a class="text-link" href="/about/admin-dashboard-features">tableau de bord d’administration</a>, plutôt que d’éparpiller des listes d’e-mails autorisés dans le code.` },
-    { alt: `Compte utilisateur relié aux groupes membre et administrateur, avec des indicateurs de fonctionnalités`, caption: `Les lignes de groupe dans Supabase déterminent l’export CSV, les fonctions de facturation et l’accès aux routes d’administration.` },
+    { html: `Les utilisateurs appartiennent à un ou plusieurs groupes enregistrés dans la base Neon Postgres : en général les utilisateurs inscrits par défaut, les membres payants avec accès CSV et les administrateurs qui traitent les messages de contact. Les routes serveur vérifient l’appartenance aux groupes avant de débloquer l’<a class="text-link" href="/about/stripe-csv-subscription">export CSV</a> ou les outils du <a class="text-link" href="/about/admin-dashboard-features">tableau de bord d’administration</a>, plutôt que d’éparpiller des listes d’e-mails autorisés dans le code.` },
+    { alt: `Compte utilisateur relié aux groupes membre et administrateur, avec des indicateurs de fonctionnalités`, caption: `Les lignes de groupe dans la base Neon Postgres déterminent l’export CSV, les fonctions de facturation et l’accès aux routes d’administration.` },
     { text: `Groupes courants` },
     { items: [
       `**default** : flux et historique pour les utilisateurs connectés.`,
@@ -43,7 +43,7 @@ export default {
     { text: `Points de contrôle` },
     { html: `Vérifiez les groupes dans le middleware Astro et les gestionnaires d’API : <a class="text-link" href="/about/middleware-auth-patterns">modèles de middleware</a>. Les webhooks ajoutent le groupe member après un paiement réussi ; une résiliation le retire. Ne faites jamais confiance à une appartenance déclarée côté client.` },
     { text: `Socle d’authentification` },
-    { html: `Le parcours d’inscription décrit dans <a class="text-link" href="/about/supabase-auth-flow">authentification Supabase</a> attribue le groupe par défaut. Les cookies de session transportent des claims JWT lus au fil du <a class="text-link" href="/about/cookie-session-lifecycle">cycle de vie de la session</a>.` },
+    { html: `Le parcours d’inscription décrit dans <a class="text-link" href="/about/sign-in-flow">le parcours de connexion</a> attribue le groupe par défaut. La session web repose sur un cookie HttpOnly signé, émis par Better Auth au sein de l’application et vérifié côté serveur tout au long du <a class="text-link" href="/about/cookie-session-lifecycle">cycle de vie de la session</a>.` },
   ],
 
   "display-preferences-deep-dive": [

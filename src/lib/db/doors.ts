@@ -3,11 +3,11 @@
  * doorEventReport.ts and chartDoorBands.server.ts. Door sessions are scoped by household; door
  * readings by sensor (callers pass the household's own sensors).
  *
- * Differences from the Supabase path, all deliberate:
+ * Differences from the old Supabase code, all deliberate:
  * - Session saves rely on the unique index door_open_events_session_key
  *   (in the baseline), so there is no plain-insert fallback for databases
  *   without it.
- * - The door report reads its rows in one query (Supabase: 1000-row pages).
+ * - The door report reads its rows in one query (before: 1000-row pages).
  */
 import type { DoorEventInsert, DoorEventRow } from "../doorEvents";
 import { query } from "./client";

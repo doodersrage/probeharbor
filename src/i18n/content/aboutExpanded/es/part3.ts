@@ -63,13 +63,13 @@ export default {
   ],
 
   "spotting-data-gaps": [
-    { html: 'El historial guardado solo es tan completo como la cadena de sondeo. Un corte de luz en el Arduino, la caída del relay, una autenticación mal configurada o fallos de inserción en Supabase dejan huecos. Aprender a distinguir los **datos que faltan** de una **temperatura plana** evita una falsa confianza durante las olas de frío y discusiones de facturación sobre si el CSV está completo.' },
+    { html: 'El historial guardado solo es tan completo como la cadena de sondeo. Un corte de luz en el Arduino, la caída del relay, una autenticación mal configurada o fallos de inserción en la base de datos dejan huecos. Aprender a distinguir los **datos que faltan** de una **temperatura plana** evita una falsa confianza durante las olas de frío y discusiones de facturación sobre si el CSV está completo.' },
     { alt: "Gráfico con un hueco visible frente a un tramo plano, etiquetados de forma distinta", caption: "Los huecos reales muestran marcas de tiempo que faltan; los tramos planos pueden ser lecturas estables válidas: aprende a ver la diferencia." },
     { text: "Causas habituales de los huecos" },
     { items: [
       "**Feed inaccesible**: relay caído o cambio de IP; empieza por <a class=\"text-link\" href=\"/about/debugging-stale-readings\">depurar lecturas obsoletas</a>.",
       "**Reinicio del MCU**: periodo en blanco corto tras un <a class=\"text-link\" href=\"/about/firmware-watchdog-recovery\">reinicio por watchdog</a>.",
-      "**Inserción omitida**: falló la consulta al origen, según las <a class=\"text-link\" href=\"/about/supabase-history-inserts\">reglas de inserción del historial</a>.",
+      "**Inserción omitida**: falló la consulta al origen, según las <a class=\"text-link\" href=\"/about/history-inserts\">reglas de inserción del historial</a>.",
       "**Cuenta/sesión**: las cargas sin sesión iniciada no se guardan; consulta <a class=\"text-link\" href=\"/about/cookie-session-lifecycle\">ciclo de vida de la sesión</a>.",
     ] },
     { text: "Patrones visuales" },

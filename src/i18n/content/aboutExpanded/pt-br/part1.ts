@@ -124,9 +124,9 @@ export default {
   ],
 
   "history-dashboard-browsing": [
-    { html: 'As leituras ao vivo respondem “como está agora?”. O histórico responde “quão ruim foi a semana passada?”. O dashboard para usuários conectados mostra em gráficos as linhas armazenadas no Supabase, para que você vá das últimas horas a tendências de vários meses sem consultar a sonda de novo a cada carregamento de página.' },
+    { html: 'As leituras ao vivo respondem “como está agora?”. O histórico responde “quão ruim foi a semana passada?”. O dashboard para usuários conectados mostra em gráficos as linhas armazenadas no banco de dados Postgres (Neon), para que você vá das últimas horas a tendências de vários meses sem consultar a sonda de novo a cada carregamento de página.' },
     { text: "O que é armazenado" },
-    { html: 'Cada registro guarda as chaves das sondas, temperatura, umidade e horários sempre que o site consulta os feeds configurados. As inserções são descritas em <a class="text-link" href="/about/supabase-history-inserts">inserções de histórico no Supabase</a>. Nem toda visualização de página chega às suas sondas: a consulta roda em um agendamento no servidor.' },
+    { html: 'Cada registro guarda as chaves das sondas, temperatura, umidade e horários sempre que o site consulta os feeds configurados. As inserções são descritas em <a class="text-link" href="/about/history-inserts">gravação do histórico</a>. Nem toda visualização de página chega às suas sondas: a consulta roda em um agendamento no servidor.' },
     { text: "Lendo os gráficos" },
     { items: [
       "**Compare as zonas** para ver se um canto é sempre o mais frio.",

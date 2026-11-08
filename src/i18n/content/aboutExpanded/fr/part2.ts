@@ -174,7 +174,7 @@ export default {
     { text: `Causes côté matériel` },
     { html: `Les <a class="text-link" href="/about/firmware-watchdog-recovery">redémarrages par watchdog</a> provoquent de courts trous. Les <a class="text-link" href="/about/dht22-read-errors-retries">erreurs DHT22</a> font disparaître des clés du JSON. Ethernet : <a class="text-link" href="/about/circuit-wiring-troubleshooting">dépannage du câblage</a>.` },
     { text: `Historique ou direct` },
-    { html: `Les graphiques peuvent prendre du retard si les insertions s’arrêtent alors que la page d’accueil semble encore en direct : vérifiez les <a class="text-link" href="/about/supabase-history-inserts">insertions d’historique</a> indépendamment de la <a class="text-link" href="/about/home-page-probe-fetch">récupération de la page d’accueil</a>.` },
+    { html: `Les graphiques peuvent prendre du retard si les insertions s’arrêtent alors que la page d’accueil semble encore en direct : vérifiez les <a class="text-link" href="/about/history-inserts">insertions d’historique</a> indépendamment de la <a class="text-link" href="/about/home-page-probe-fetch">récupération de la page d’accueil</a>.` },
   ],
 
   "configuring-temperature-feeds": [

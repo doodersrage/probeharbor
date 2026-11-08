@@ -17,13 +17,13 @@ export default {
   ],
 
   "spotting-data-gaps": [
-    { html: 'O histórico salvo só é tão completo quanto o pipeline de consulta. Falta de energia no Arduino, relay fora do ar, autenticação mal configurada ou falhas de inserção no Supabase deixam lacunas. Aprender a distinguir **dados ausentes** de **temperatura estável** evita uma falsa sensação de segurança durante ondas de frio e discussões de cobrança sobre a completude do CSV.' },
+    { html: 'O histórico salvo só é tão completo quanto o pipeline de consulta. Falta de energia no Arduino, relay fora do ar, autenticação mal configurada ou falhas de inserção no banco de dados deixam lacunas. Aprender a distinguir **dados ausentes** de **temperatura estável** evita uma falsa sensação de segurança durante ondas de frio e discussões de cobrança sobre a completude do CSV.' },
     { alt: "Gráfico com uma lacuna visível e um trecho de linha plana identificados de formas diferentes", caption: "Lacunas reais mostram horários ausentes; trechos planos podem ser leituras estáveis válidas: aprenda a diferença visual." },
     { text: "Causas comuns de lacunas" },
     { items: [
       "**Feed inacessível**: relay fora do ar ou mudança de IP; comece pela <a class=\"text-link\" href=\"/about/debugging-stale-readings\">depuração de leituras desatualizadas</a>.",
       "**Reinicialização do microcontrolador**: breve período em branco após um <a class=\"text-link\" href=\"/about/firmware-watchdog-recovery\">reset por watchdog</a>.",
-      "**Inserção ignorada**: a busca na origem falhou, conforme as <a class=\"text-link\" href=\"/about/supabase-history-inserts\">regras de inserção no histórico</a>.",
+      "**Inserção ignorada**: a busca na origem falhou, conforme as <a class=\"text-link\" href=\"/about/history-inserts\">regras de inserção no histórico</a>.",
       "**Conta/sessão**: carregamentos sem login não são salvos; veja <a class=\"text-link\" href=\"/about/cookie-session-lifecycle\">ciclo de vida da sessão</a>.",
     ] },
     { text: "Padrões visuais" },

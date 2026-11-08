@@ -1,13 +1,13 @@
 /**
  * Neon versions of the query helpers in src/lib/garageTempsHistory.ts and
- * src/lib/readingCounts.ts. They return the same row shapes as the Supabase
+ * src/lib/readingCounts.ts. They return the same row shapes as the old Supabase
  * queries (sensor + device nested as `device_sensors.devices`), so pairing,
  * filtering and thinning stay shared.
  *
  * Every query is scoped to one household: readings by their household_id,
  * sensors through their device's household.
  *
- * Differences from the Supabase path, all deliberate:
+ * Differences from the old Supabase code, all deliberate:
  * - Full-history reads (CSV export) page by position (recorded_at, id), 5000
  *   rows a request, instead of by offset; same rows, and later pages don't
  *   get slower.

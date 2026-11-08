@@ -2,11 +2,11 @@
  * Neon versions of the queries in src/lib/households.ts. Same inputs, same
  * results and error shapes; households.ts calls these.
  *
- * Differences from the Supabase path, all deliberate:
+ * Differences from the old Supabase code, all deliberate:
  * - Creating a household and its owner row is one statement, so a failure
- *   can't leave a household with no owner (Supabase path: two inserts plus
+ *   can't leave a household with no owner (before: two inserts plus
  *   a cleanup delete, or none for additional households).
- * - Lists the Supabase path returned in unspecified order are ordered by
+ * - Lists the old code returned in unspecified order are ordered by
  *   created_at, id (what Postgres returned in practice: insertion order).
  */
 import type { HouseholdMember, HouseholdRole, UserHousehold } from "../households";
@@ -40,7 +40,7 @@ async function activeHouseholdId(userId: string): Promise<string | null> {
     const active = (await getUserMetadata(userId)).active_household_id;
     return typeof active === "string" ? active : null;
   } catch {
-    return null; // same as the Supabase path: fall back to the default choice
+    return null; // fall back to the default choice
   }
 }
 
@@ -54,7 +54,7 @@ export async function getOwnedHouseholdId(userId: string): Promise<string | null
     );
     owned = rows.map((r) => r.household_id);
   } catch {
-    return null; // the Supabase path treated a failed read as "none"
+    return null; // a failed read counts as "none"
   }
   if (owned.length === 0) return null;
   const active = await activeHouseholdId(userId);

@@ -146,7 +146,7 @@ export default {
     { text: "Causas do lado do hardware" },
     { html: 'As <a class="text-link" href="/about/firmware-watchdog-recovery">reinicializações por watchdog</a> causam lacunas curtas. Os <a class="text-link" href="/about/dht22-read-errors-retries">erros do DHT22</a> tiram chaves do JSON. Ethernet: <a class="text-link" href="/about/circuit-wiring-troubleshooting">solução de problemas na fiação</a>.' },
     { text: "Histórico versus ao vivo" },
-    { html: 'Os gráficos podem ficar atrasados se as inserções pararem enquanto a página inicial ainda parece ao vivo: verifique as <a class="text-link" href="/about/supabase-history-inserts">inserções de histórico</a> separadamente da <a class="text-link" href="/about/home-page-probe-fetch">busca da página inicial</a>.' },
+    { html: 'Os gráficos podem ficar atrasados se as inserções pararem enquanto a página inicial ainda parece ao vivo: verifique as <a class="text-link" href="/about/history-inserts">inserções de histórico</a> separadamente da <a class="text-link" href="/about/home-page-probe-fetch">busca da página inicial</a>.' },
   ],
 
   "configuring-temperature-feeds": [

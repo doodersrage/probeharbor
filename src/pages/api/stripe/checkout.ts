@@ -52,9 +52,8 @@ export const POST: APIRoute = async (context) => {
   }
 
   // referred_by / referral_reward_days live in app_metadata, not
-  // user_metadata -- app_metadata can only be written by the service role,
-  // so a user can't grant themselves extra trial days by calling
-  // Supabase's own auth.updateUser() directly with their own session.
+  // user_metadata -- only the server writes app_metadata, so a user can't
+  // grant themselves extra trial days.
   const appMetadata = user.app_metadata as Record<string, unknown> | undefined;
   const referredBy =
     typeof appMetadata?.referred_by === "string" ? appMetadata.referred_by : null;
@@ -125,6 +124,7 @@ export const POST: APIRoute = async (context) => {
         },
       ],
       subscription_data: {
+        // supabase_user_id: legacy key name, kept because existing subscriptions carry it.
         metadata: {
           supabase_user_id: user.id,
           plan_tier: plan,

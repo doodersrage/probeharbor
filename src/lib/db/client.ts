@@ -1,5 +1,5 @@
 /**
- * Database access: Neon Postgres (the app moved off Supabase in
+ * Database access: Neon Postgres (the app moved here from Supabase in
  * IMPLEMENTATION_PLAN.md steps 3-7).
  *
  * Queries go to Neon over HTTP (@neondatabase/serverless), one request per
@@ -57,8 +57,7 @@ export function describeStatement(text: string): string {
 
 /**
  * Run one SQL statement and return its rows. Throws DbQueryError on failure;
- * callers decide whether that is fatal or logged, as they did with Supabase's
- * `{ error }` results.
+ * callers decide whether that is fatal or logged.
  */
 export async function query<Row = Record<string, unknown>>(
   text: string,

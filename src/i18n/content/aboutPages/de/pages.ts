@@ -63,7 +63,7 @@ export default {
     description:
       "Verfolge einen Messwert vom Fühlerkabel über JSON-Feeds und Speicherung bis zum Verlaufs-Dashboard nach der Anmeldung.",
     summary:
-      "Hardware, Relay, Abruf durch die Website, Speicherung in Supabase und CSV-Export in einer Pipeline.",
+      "Hardware, Relay, Abruf durch die Website, Speicherung in Neon Postgres und CSV-Export in einer Pipeline.",
   },
   "accounts-and-dashboard": {
     title: "Konten, Abos und Dashboard-Werkzeuge",

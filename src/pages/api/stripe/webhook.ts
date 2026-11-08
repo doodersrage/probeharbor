@@ -30,6 +30,7 @@ export const GET: APIRoute = async () => {
 function getUserIdFromSubscription(
   subscription: Stripe.Subscription,
 ): string | null {
+  // Legacy key name, kept because existing subscriptions carry it.
   return subscription.metadata.supabase_user_id ?? null;
 }
 

@@ -78,7 +78,7 @@ export async function ensureProbeSensors(
   return rows.length > 0;
 }
 
-/** Remove the user's legacy rows (probes first, as the Supabase path). Throws on failure. */
+/** Remove the user's legacy rows (probes first). Throws on failure. */
 export async function clearLegacy(userId: string): Promise<void> {
   await query("delete from public.user_temp_probes where user_id = $1", [userId]);
   await query("delete from public.user_temp_feeds where user_id = $1", [userId]);

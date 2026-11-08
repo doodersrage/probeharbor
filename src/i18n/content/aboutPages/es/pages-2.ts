@@ -96,7 +96,7 @@ export default {
     title: "Flujo de datos de monitoreo de principio a fin",
     description:
       "Sigue una lectura desde el cable de la sonda pasando por los feeds JSON y el almacenamiento hasta el panel de historial con sesión iniciada.",
-    summary: "Hardware, relay, consulta del sitio web, almacenamiento en Supabase y exportación CSV en un solo flujo.",
+    summary: "Hardware, relay, consulta del sitio web, almacenamiento en Postgres (Neon) y exportación CSV en un solo flujo.",
   },
   "debugging-stale-readings": {
     title: "Depurar lecturas desactualizadas",
@@ -127,7 +127,7 @@ export default {
   "group-membership-model": {
     title: "Modelo de pertenencia a grupos",
     description:
-      "Cómo los grupos default, member y admin de Supabase controlan el CSV, las herramientas de operador y las funciones del plan sin fijar emails en el código.",
+      "Cómo los grupos default, member y admin guardados en Postgres controlan el CSV, las herramientas de operador y las funciones del plan sin fijar emails en el código.",
     summary:
       "Los grupos codifican los roles de suscripción y de operador sin escribir correos electrónicos en el código fuente.",
   },

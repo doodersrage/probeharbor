@@ -85,9 +85,9 @@ export default {
   ],
 
   "history-dashboard-browsing": [
-    { html: "Live-Werte beantworten „Wie ist es gerade?“. Der Verlauf beantwortet „Wie schlimm war letzte Woche?“. Das Dashboard für angemeldete Nutzer stellt gespeicherte Supabase-Zeilen als Diagramme dar, sodass du von den letzten Stunden bis zu mehrmonatigen Trends zoomen kannst, ohne den Fühler bei jedem Seitenaufruf neu abzufragen." },
+    { html: "Live-Werte beantworten „Wie ist es gerade?“. Der Verlauf beantwortet „Wie schlimm war letzte Woche?“. Das Dashboard für angemeldete Nutzer stellt die in der Datenbank gespeicherten Messwerte als Diagramme dar, sodass du von den letzten Stunden bis zu mehrmonatigen Trends zoomen kannst, ohne den Fühler bei jedem Seitenaufruf neu abzufragen." },
     { text: "Was gespeichert wird" },
-    { html: 'Jede Momentaufnahme erfasst Fühlerschlüssel, Temperatur, Luftfeuchte und Zeitstempel, wenn die Website deine eingerichteten Feeds abfragt. Die Einfügevorgänge sind in <a class="text-link" href="/about/supabase-history-inserts">Verlaufsdaten in Supabase speichern</a> beschrieben. Nicht jeder Seitenaufruf fragt deine Fühler ab: Die Abfrage läuft serverseitig nach Zeitplan.' },
+    { html: 'Jede Momentaufnahme erfasst Fühlerschlüssel, Temperatur, Luftfeuchte und Zeitstempel, wenn die Website deine eingerichteten Feeds abfragt. Die Einfügevorgänge sind in <a class="text-link" href="/about/history-inserts">Verlaufseinträge speichern</a> beschrieben. Nicht jeder Seitenaufruf fragt deine Fühler ab: Die Abfrage läuft serverseitig nach Zeitplan.' },
     { text: "Die Diagramme lesen" },
     { items: ["**Vergleiche die Zonen**, um zu sehen, ob eine Ecke immer am kältesten ist.", "**Achte auf die Nächte**, wenn es um Frostgefahr geht, nicht auf die Tageshöchstwerte.", '**Erkenne Lücken**, die auf Feed-Ausfälle hindeuten können: siehe <a class="text-link" href="/about/debugging-stale-readings">veraltete Messwerte untersuchen</a>.'] },
     { text: "Export für tiefere Auswertungen" },

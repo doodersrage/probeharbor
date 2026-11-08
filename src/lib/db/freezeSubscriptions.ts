@@ -3,7 +3,7 @@
  * (src/lib/freezeAlerts.ts): no account, one row per email, a token in each
  * confirm / unsubscribe link.
  *
- * Differences from the Supabase path, all deliberate:
+ * Differences from the old Supabase code, all deliberate:
  * - Subscribe writes with ON CONFLICT (email), so two sign-ups for the same
  *   address at once can't fail on the unique email.
  * - Confirm and unsubscribe are one statement each.

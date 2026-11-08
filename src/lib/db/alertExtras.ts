@@ -4,9 +4,9 @@
  * delivery log (webhookDeliveries.ts).
  * Everything is scoped to one user, or to one household's members.
  *
- * Differences from the Supabase path, all deliberate:
+ * Differences from the old Supabase code, all deliberate:
  * - A snooze link is claimed (marked used) in one statement before the snooze
- *   is applied, so two clicks at once can't both use it. (Supabase: check,
+ *   is applied, so two clicks at once can't both use it. (Before: check,
  *   apply, then mark used.)
  * - Pruning old settings history is one statement.
  */

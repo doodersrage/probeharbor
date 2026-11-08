@@ -14,10 +14,10 @@ const en = {
   jsonCaption: "Live feed payload shape consumed by the website after leaving the local network.",
   step3Title: "Step 3. Website fetch and display",
   step3Html:
-    "When you load the home page, server code retrieves each configured feed URL, parses probe keys, and renders stat cards. Signed-in users load feed and probe mappings from Supabase instead of defaults. Weather data follows a parallel path via OpenWeather using your optional city override.",
+    "When you load the home page, server code retrieves each configured feed URL, parses probe keys, and renders stat cards. Signed-in users load feed and probe mappings from Postgres instead of defaults. Weather data follows a parallel path via OpenWeather using your optional city override.",
   step4Title: "Step 4. Persisting history",
   step4Html:
-    'If you are authenticated, successful probe reads insert rows into Supabase with feed name, probe label, key, temperatures, humidity, and timestamp. Guests still see live data but do not append history. Learn more in <a class="text-link" href="/about/historical-data">historical data usage</a>.',
+    'If you are authenticated, successful probe reads insert rows into Postgres with feed name, probe label, key, temperatures, humidity, and timestamp. Guests still see live data but do not append history. Learn more in <a class="text-link" href="/about/historical-data">historical data usage</a>.',
   step5Title: "Step 5. Dashboard and export",
   step5Html:
     'The history table paginates those rows. CSV export streams the full set for admins and subscribers. Stripe webhooks maintain membership in the export-capable group. Account tools are described in <a class="text-link" href="/about/accounts-and-dashboard">accounts and dashboard</a>.',

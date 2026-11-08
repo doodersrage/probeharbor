@@ -1,9 +1,8 @@
 /**
  * Account emails the app sends itself (sign-in runs on Better Auth).
- * Supabase sent these from supabase/templates/ before.
  *
- * Links go to the existing landing route, /api/auth/confirm, so the email
- * URL format stays `...?token_hash=...&type=...` on both backends.
+ * Links go to the landing route /api/auth/confirm, in the same
+ * `...?token_hash=...&type=...` format the emails used before the move.
  */
 import { accountEmailMessages } from "../i18n/messages/app/email/account";
 import { ensureLocale } from "../i18n/catalog";

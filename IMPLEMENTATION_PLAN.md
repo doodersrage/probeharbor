@@ -5200,12 +5200,31 @@ Cloudflare email binding.
          - Docs: README, architecture, local-dev, deploy, `.env.example`.
          - Correction to 7a's note: the schema source is `db/migrations/`
            (`db:migrate`), not `supabase/migrations/`.
-         Left, each its own decision: the `supabase/` folder (old
-         migrations, email templates, CLI config; nothing reads it); the
-         unused `DB_BACKEND` and `SUPABASE_*` Worker secrets and
-         `SUPABASE_*` GitHub secrets (deleting them is a production
-         secrets change); pausing the Supabase project; the generated
-         "about" pages that still mention Supabase in prose.
+   - [x] **7c, leftovers (2026-11-07, owner: "cleanup the remaining stuff").**
+         - Privacy page: Neon is the database processor; sign-in runs in
+           the app; Google/GitHub/Discord listed for OAuth users; a note
+           that Supabase held the data until 2026-11-07 and that copy is
+           kept only until the project is deleted.
+         - About pages, all 5 languages: prose describes Neon + Better
+           Auth. `supabase-auth-flow` → `sign-in-flow`,
+           `supabase-history-inserts` → `history-inserts`, with 301s from
+           the old URLs in every language (src/lib/rebrand.ts). Checked
+           on a local preview: old URLs 301, new pages 200 with no
+           Supabase mention.
+         - Code comments that described Supabase as current are
+           rewritten; history notes kept in the past tense. Stripe's
+           `supabase_user_id` metadata key stays (existing subscriptions).
+         - Deleted: `supabase/` (old migrations, templates, CLI config),
+           unused `src/lib/pagedRows.ts` and `oauthCallbackErrors.ts`.
+         - Final Supabase backup before pausing:
+           `backups/probeharbor-20261107T235826Z.dump` (90 tables, local).
+         - **Owner to do (blocked for the agent by the permission
+           check):** delete Worker secrets `DB_BACKEND`, `SUPABASE_URL`,
+           `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`; delete GitHub
+           secrets `SUPABASE_URL`, `SUPABASE_ANON_KEY`,
+           `SUPABASE_SERVICE_ROLE_KEY` (keep `SUPABASE_E2E_TEST_*`, which
+           CI reads); pause the Supabase project `pjulkiuwwomgyzknytfg`.
+           Deleting the project stays a separate decision.
 
 ### Rollback
 

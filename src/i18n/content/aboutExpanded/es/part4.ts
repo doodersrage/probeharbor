@@ -32,8 +32,8 @@ export default {
   ],
 
   "group-membership-model": [
-    { html: 'Los usuarios pertenecen a uno o varios grupos guardados en Supabase: normalmente los usuarios registrados por defecto, los miembros de pago con acceso al CSV y los administradores que revisan los mensajes de contacto. Las rutas del servidor comprueban la pertenencia a un grupo antes de desbloquear la <a class="text-link" href="/about/stripe-csv-subscription">exportación CSV</a> o las herramientas del <a class="text-link" href="/about/admin-dashboard-features">panel de administración</a>, en lugar de repartir listas de correos permitidos por el código.' },
-    { alt: "Cuenta de usuario vinculada a los nodos de grupo de miembro y de administrador con indicadores de funciones", caption: "Las filas de grupo en Supabase determinan la exportación CSV, las funciones de facturación y el acceso a las rutas de administración." },
+    { html: 'Los usuarios pertenecen a uno o varios grupos guardados en la base de datos Postgres (Neon): normalmente los usuarios registrados por defecto, los miembros de pago con acceso al CSV y los administradores que revisan los mensajes de contacto. Las rutas del servidor comprueban la pertenencia a un grupo antes de desbloquear la <a class="text-link" href="/about/stripe-csv-subscription">exportación CSV</a> o las herramientas del <a class="text-link" href="/about/admin-dashboard-features">panel de administración</a>, en lugar de repartir listas de correos permitidos por el código.' },
+    { alt: "Cuenta de usuario vinculada a los nodos de grupo de miembro y de administrador con indicadores de funciones", caption: "Las filas de grupo en Postgres determinan la exportación CSV, las funciones de facturación y el acceso a las rutas de administración." },
     { text: "Grupos habituales" },
     { items: [
       "**default**: feeds y navegación por el historial con sesión iniciada.",
@@ -43,7 +43,7 @@ export default {
     { text: "Puntos de control" },
     { html: 'Comprueba los grupos en el middleware de Astro y en los manejadores de la API: <a class="text-link" href="/about/middleware-auth-patterns">patrones de middleware</a>. Los webhooks añaden el grupo member cuando el pago se completa y lo quitan al cancelar. Nunca te fíes de los grupos que declare el cliente.' },
     { text: "Base de la autenticación" },
-    { html: 'El flujo de registro de la <a class="text-link" href="/about/supabase-auth-flow">autenticación de Supabase</a> asigna el grupo por defecto. Las cookies de sesión llevan claims JWT que se leen durante el <a class="text-link" href="/about/cookie-session-lifecycle">ciclo de vida de la sesión</a>.' },
+    { html: 'El <a class="text-link" href="/about/sign-in-flow">flujo de inicio de sesión</a>, gestionado por Better Auth dentro de la propia app, asigna el grupo por defecto al registrarse. La sesión web es una cookie HttpOnly firmada que el servidor valida durante el <a class="text-link" href="/about/cookie-session-lifecycle">ciclo de vida de la sesión</a>; los grupos se consultan en el servidor, nunca se toman de lo que envíe el navegador.' },
   ],
 
   "display-preferences-deep-dive": [

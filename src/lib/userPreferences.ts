@@ -126,7 +126,7 @@ export function personalWeatherConfigFromPreferences(
 }
 
 export async function getUserPreferences(
-  /** Any user record with these fields (a full Supabase User fits). */
+  /** Any user record with these fields (a full app User fits). */
   user: Pick<User, "id" | "email" | "user_metadata"> | null | undefined,
 ): Promise<UserPreferences> {
   if (!user) {

@@ -8,10 +8,10 @@
  * booleans). Column names come from alertSettingsToRow or the cooldown field
  * list, and are checked against the real columns before use.
  *
- * Differences from the Supabase path, all deliberate:
+ * Differences from the old Supabase code, all deliberate:
  * - First load inserts the defaults with ON CONFLICT DO NOTHING, so two first
  *   loads can't overwrite settings the other just saved.
- * - markCooldown is one statement (Supabase: update, then upsert if the row
+ * - markCooldown is one statement (before: update, then upsert if the row
  *   was missing).
  */
 import { query } from "./client";
@@ -124,7 +124,7 @@ export async function markCooldown(userId: string, field: string, defaults: Reco
 
 /**
  * Compare-and-set: move `field` from `previous` to now. Same contract as the
- * Supabase path: only "skip" when another evaluation visibly stamped a newer
+ * old Supabase code: only "skip" when another evaluation visibly stamped a newer
  * time; any error lets the alert send (a duplicate beats a missed alert).
  */
 export async function claimCooldown(

@@ -119,7 +119,7 @@ export default {
     { text: "Ursachen auf der Hardware-Seite" },
     { html: '<a class="text-link" href="/about/firmware-watchdog-recovery">Watchdog-Neustarts</a> verursachen kurze Lücken. <a class="text-link" href="/about/dht22-read-errors-retries">DHT22-Fehler</a> lassen Schlüssel aus dem JSON verschwinden. Ethernet: <a class="text-link" href="/about/circuit-wiring-troubleshooting">Fehlersuche bei der Verdrahtung</a>.' },
     { text: "Verlauf und Live-Werte" },
-    { html: 'Diagramme können hinterherhinken, wenn keine Einträge mehr gespeichert werden, die Startseite aber noch live wirkt: Prüfe die <a class="text-link" href="/about/supabase-history-inserts">Verlaufseinträge</a> getrennt vom <a class="text-link" href="/about/home-page-probe-fetch">Abruf auf der Startseite</a>.' },
+    { html: 'Diagramme können hinterherhinken, wenn keine Einträge mehr gespeichert werden, die Startseite aber noch live wirkt: Prüfe die <a class="text-link" href="/about/history-inserts">Verlaufseinträge</a> getrennt vom <a class="text-link" href="/about/home-page-probe-fetch">Abruf auf der Startseite</a>.' },
   ],
 
   "configuring-temperature-feeds": [

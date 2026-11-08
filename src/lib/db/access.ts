@@ -4,7 +4,7 @@
  * every change is scoped to the household it belongs to; tokens and keys are
  * stored only as SHA-256 hashes (callers hash).
  *
- * Differences from the Supabase path, all deliberate:
+ * Differences from the old Supabase code, all deliberate:
  * - Resolving an API key finds it and stamps last_used_at in one statement.
  * - Marking an invite accepted only touches one not yet accepted.
  */

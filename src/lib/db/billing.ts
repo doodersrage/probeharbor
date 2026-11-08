@@ -66,7 +66,7 @@ export async function upsertSubscriptionRow(row: {
   }
 }
 
-/** sync_plan_group_membership, falling back to the older member-only function like the Supabase path. */
+/** sync_plan_group_membership, falling back to the older member-only function when that call fails. */
 export async function syncPlanGroup(userId: string, planTier: string, isActive: boolean): Promise<{ error: string | null }> {
   try {
     await query("select public.sync_plan_group_membership($1, $2, $3)", [userId, planTier, isActive]);
@@ -95,7 +95,7 @@ export async function findUserIdBySubscriptionId(subscriptionId: string): Promis
 
 /**
  * Record a webhook event id; alreadyProcessed when it was recorded before.
- * Any database error fails open (process the event) as on the Supabase path.
+ * Any database error fails open (process the event).
  */
 export async function claimWebhookEvent(eventId: string, eventType: string): Promise<{ alreadyProcessed: boolean }> {
   try {

@@ -1,7 +1,7 @@
 import type { DoorStateAtTime } from "./anomalyDetection";
 
 // Browser-safe: HistoryChart (a client island) imports this file, so it must
-// not import server code (Supabase clients, sensor reads). The database
+// not import server code (database access, sensor reads). The database
 // fetch lives in chartDoorBands.server.ts.
 
 /**

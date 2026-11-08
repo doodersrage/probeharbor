@@ -18,7 +18,7 @@ const ptBr: AccountsAndDashboardMessages = {
   account: {
     title: "Criação da conta",
     bodyHtml:
-      "O cadastro usa e-mail e senha via Supabase Auth. A redefinição de senha e (quando ativados no Supabase) provedores OAuth como Google, GitHub ou Discord ficam disponíveis na página de login. Novos usuários começam no plano Free com uma casa padrão.",
+      "O login é feito pelo Better Auth, executado dentro do próprio app: e-mail e senha, Google, GitHub ou Discord, além de app autenticador (TOTP), YubiKey OTP e passkeys. Os e-mails de confirmação e de redefinição de senha são enviados pelo app via Cloudflare Email. Novos usuários começam no plano Free com uma casa padrão.",
   },
   checklist: {
     title: "Checklist para começar",

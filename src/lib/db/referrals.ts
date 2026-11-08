@@ -3,10 +3,10 @@
  * referral_reward_days) live in user_profiles.app_metadata (migration 0002),
  * never in the user-facing `metadata`.
  *
- * Differences from the Supabase path, all deliberate:
+ * Differences from the old Supabase code, all deliberate:
  * - Rewarding a referrer claims the signup in one statement and adds the 7
  *   days in another single statement, so two subscription events at once
- *   can't reward twice or lose an increment (Supabase: read, then write).
+ *   can't reward twice or lose an increment (before: read, then write).
  * - Whether a new user was already referred is read from the database, not
  *   from the session's copy.
  */
@@ -88,7 +88,7 @@ export async function claimReferralReward(referredUserId: string): Promise<strin
 
 /**
  * referral_reward_days := min(current, 28) + 7, in one statement. Same
- * arithmetic as the Supabase path (referralRewardTrialDays caps the current
+ * arithmetic as referralRewardTrialDays (it caps the current
  * value at 28; anything not a positive number counts as 0).
  */
 export async function addReferralRewardDays(referrerUserId: string): Promise<void> {
