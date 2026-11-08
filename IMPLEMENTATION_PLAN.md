@@ -4758,10 +4758,44 @@ Cloudflare email binding.
          purpose). Close this in step 5: run the app with
          `DB_BACKEND=neon` against a Neon branch holding copied data and
          walk the main pages, ingest, alerts and jobs.
-   - [ ] Cross-household tests: every area added isolation tests for its
+   - [x] Cross-household tests: every area added isolation tests for its
          household-scoped reads and writes, but no single audit has
          checked that *every* path is covered. Do that audit before
-         step 6.
+         step 6. **Done 2026-11-08 (after step 6, so against production
+         code):** every exported function in `src/lib/db/*` (≈260) and every
+         API route, data page and Astro action, classified with its scoping
+         predicate or gate and the test that proves it. New tests in
+         `src/lib/isolationAudit.{alerts,readings,households,devices,accounts}.db.test.ts`
+         and `src/pages/api/isolationAudit.routes{A,B}.{test,db.test}.ts`
+         (≈150 tests); for a sample of queries, removing the scoping
+         predicate makes the matching test fail. Gaps found and fixed:
+         1. `POST /api/v1/pull-setup` saved through the key owner's
+            *preferred* household: a key for household A could replace
+            household B's pull feeds when A's owner was also in B. Now
+            saves into the key's household (`saveHouseholdPullSetup`).
+         2. Accepting an invite could demote the owner (e.g. an invite to
+            the owner's own address), leaving the household ownerless.
+            The upsert now keeps `owner`.
+         3. Viewers and alert-only members could set the Bay Buddy mood
+            (`PUT /api/bays/[bay_id]/mood`): now needs an editor.
+         4. Referrals: a user's own code counted (+7 Pro trial days), and
+            `/api/auth/oauth-done?new=1` let any existing account claim a
+            referral. Own codes are skipped; oauth-done needs an account
+            created in the last 10 minutes (`isLikelyNewUser`).
+         5. `/api/home/weather` sent a signed-in user's own station (name,
+            location) with a public cache header: now `private` + `Vary`.
+         Open product/privacy decisions (not changed): the public freeze
+         map's `?sparse=1` view lists cities with fewer than 3 households;
+         re-subscribing a freeze-alert email with a new place un-confirms
+         the old one; who may invite differs (action: owner; API: owner or
+         member) and re-invites change roles; API keys have no read-only
+         scope (a "metrics" key can create devices and replace the pull
+         setup); snooze/vacation are per user, so another household's
+         inbound webhook or Telegram can pause a member's alerts
+         everywhere; `/api/user/export` includes encrypted ingest keys in
+         device meta; status-subscription and Telegram secrets are compared
+         unhashed. Hardening ideas: expiry filters in SQL as well as in
+         callers; household checks inside the sensor/device-id helpers.
 4. **Login on Better Auth.** Email + password (accept existing bcrypt
    hashes, so passwords keep working), Google, GitHub, Discord, email
    confirm and reset through Cloudflare email, TOTP and WebAuthn per
