@@ -178,8 +178,12 @@ export async function upsertHouseholdMember(
 ): Promise<{ error: string | null }> {
   try {
     await query(
+      // An owner keeps the owner role: accepting an invite (e.g. one sent to
+      // the owner's own address) must never demote them and leave the
+      // household without an owner.
       `insert into public.household_members (household_id, user_id, role) values ($1, $2, $3)
-       on conflict (household_id, user_id) do update set role = excluded.role`,
+       on conflict (household_id, user_id) do update
+         set role = case when household_members.role = 'owner' then 'owner' else excluded.role end`,
       [householdId, userId, role],
     );
     return { error: null };
