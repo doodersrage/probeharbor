@@ -5,10 +5,37 @@ import { resolveSiteUrl } from "./schemaMarkup";
 import { ensureLocale } from "../i18n/catalog";
 import { isLocale, type Locale } from "../i18n/locales";
 import { statusEmailMessages } from "../i18n/messages/app/email/status";
+import { signWithAlertLinkSecret, verifyWithAlertLinkSecret } from "./alertAckTokens";
 
 function randomToken(): string {
   const bytes = crypto.getRandomValues(new Uint8Array(24));
   return [...bytes].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+async function sha256Hex(value: string): Promise<string> {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
+  return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+/**
+ * Link tokens are stored only as SHA-256 hashes, so the notifier can't rebuild
+ * a subscriber's old token. Unsubscribe links in status emails are therefore
+ * `<subscription id>.<HMAC>` signed with the alert-link secret (ALERT_ACK_SECRET,
+ * else CRON_SECRET; same as the other email unsubscribe links): valid until
+ * the subscriber unsubscribes (the row, and its id, go away) or the secret is
+ * rotated. Older emails carry a random token; that still works by its hash
+ * (or, before migration 0004, by the stored raw token).
+ */
+const SIGNED_UNSUBSCRIBE = /^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\.([0-9a-f]{64})$/i;
+
+function unsubscribePayload(id: string): string {
+  return `status-unsubscribe:${id.toLowerCase()}`;
+}
+
+/** `<id>.<sig>`, or null when no signing secret is configured. */
+export async function signedStatusUnsubscribeToken(id: string): Promise<string | null> {
+  const sig = await signWithAlertLinkSecret(unsubscribePayload(id));
+  return sig ? `${id}.${sig}` : null;
 }
 
 export function normalizeStatusEmail(email: string): string {
@@ -71,7 +98,7 @@ export async function subscribeToStatusUpdates(
   if (found?.confirmed_at) return { ok: true };
   const token = randomToken();
   try {
-    await neonStatus.writeStatusSubscriberToken(email, token);
+    await neonStatus.writeStatusSubscriberToken(email, await sha256Hex(token));
   } catch (writeError) {
     console.error("status subscribe write failed:", writeError instanceof Error ? writeError.message : writeError);
     return { ok: false, error: "Something went wrong. Please try again." };
@@ -89,7 +116,7 @@ export async function subscribeToStatusUpdates(
 export async function confirmStatusSubscription(
   token: string,
 ): Promise<{ ok: boolean; message: string }> {
-  return (await neonStatus.confirmStatusSubscriber(token))
+  return (await neonStatus.confirmStatusSubscriber(await sha256Hex(token), token))
     ? { ok: true, message: "You're subscribed to status updates." }
     : { ok: false, message: "Invalid or expired confirmation link." };
 }
@@ -97,14 +124,19 @@ export async function confirmStatusSubscription(
 export async function unsubscribeStatusSubscription(
   token: string,
 ): Promise<{ ok: boolean; message: string }> {
-  return (await neonStatus.deleteStatusSubscriber(token))
+  const signed = SIGNED_UNSUBSCRIBE.exec(token);
+  const removed = signed
+    ? (await verifyWithAlertLinkSecret(unsubscribePayload(signed[1]!), signed[2]!)) &&
+      (await neonStatus.deleteStatusSubscriberById(signed[1]!))
+    : await neonStatus.deleteStatusSubscriber(await sha256Hex(token), token);
+  return removed
     ? { ok: true, message: "You've been unsubscribed from status updates." }
     : { ok: false, message: "Invalid or already-used unsubscribe link." };
 }
 
 export type ConfirmedStatusSubscriber = {
+  id: string;
   email: string;
-  token: string;
   /** Subscriber language when the table stores one; English otherwise. */
   locale?: Locale;
 };
@@ -113,7 +145,7 @@ export async function listConfirmedStatusSubscribers(): Promise<
   ConfirmedStatusSubscriber[]
 > {
   // No locale column yet: add "locale" here once status_subscriptions stores one.
-  let data: Array<{ email: string; token: string; locale?: unknown }>;
+  let data: Array<{ id: string; email: string; locale?: unknown }>;
   try {
     data = await neonStatus.listConfirmedStatusSubscribers();
   } catch (error) {
@@ -122,10 +154,28 @@ export async function listConfirmedStatusSubscribers(): Promise<
   }
 
   return data.map((row) => ({
+    id: row.id,
     email: row.email,
-    token: row.token,
     ...(isLocale(row.locale) ? { locale: row.locale } : {}),
   }));
 }
 
-export { unsubscribeUrl as buildStatusUnsubscribeUrl };
+let warnedUnsigned = false;
+
+/**
+ * A working unsubscribe URL for one confirmed subscriber's email. Signed when
+ * the link secret is configured; otherwise (misconfigured deploy) a fresh
+ * random token whose hash replaces the subscriber's previous one, so this
+ * newest link works and earlier hashed links stop. Throws if that write fails.
+ */
+export async function statusUnsubscribeUrlFor(subscriber: { id: string }): Promise<string> {
+  const signed = await signedStatusUnsubscribeToken(subscriber.id);
+  if (signed) return unsubscribeUrl(signed);
+  if (!warnedUnsigned) {
+    warnedUnsigned = true;
+    console.warn("status-notify: no ALERT_ACK_SECRET/CRON_SECRET; issuing a fresh unsubscribe token per email");
+  }
+  const token = randomToken();
+  await neonStatus.rotateStatusSubscriberTokenHash(subscriber.id, await sha256Hex(token));
+  return unsubscribeUrl(token);
+}

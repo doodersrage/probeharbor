@@ -21,6 +21,7 @@ const keyRow = {
   household_id: "house-1",
   name: "Metrics key",
   key_prefix: "gtm_abc123",
+  scope: "read",
   created_at: "t",
   last_used_at: null,
   revoked_at: null,
@@ -64,9 +65,26 @@ describe("createHouseholdApiKey", () => {
       keyPrefix: result.plaintext?.slice(0, 10),
       keyHash: await sha256Hex(result.plaintext!),
       createdBy: "user-1",
+      // No scope given: read-only.
+      scope: "read",
     });
     // The plaintext key itself must never be persisted -- only its hash.
     expect(JSON.stringify(inserted)).not.toContain(result.plaintext);
+  });
+
+  it("passes a write scope through, and turns anything else into read", async () => {
+    const { createHouseholdApiKey } = await import("./apiKeys");
+
+    await createHouseholdApiKey({ householdId: "house-1", name: "w", createdBy: "user-1", scope: "write" });
+    await createHouseholdApiKey({ householdId: "house-1", name: "r", createdBy: "user-1", scope: "read" });
+    await createHouseholdApiKey({
+      householdId: "house-1",
+      name: "junk",
+      createdBy: "user-1",
+      scope: "admin" as unknown as "read",
+    });
+
+    expect(mockInsertApiKey.mock.calls.map((c) => (c[0] as { scope: string }).scope)).toEqual(["write", "read", "read"]);
   });
 
   it("reports the database error and returns no key on failure", async () => {
@@ -103,12 +121,12 @@ describe("resolveApiKey", () => {
   });
 
   it("looks the trimmed key up by its hash", async () => {
-    mockResolveApiKey.mockResolvedValue({ householdId: "house-1", keyId: "key-1" });
+    mockResolveApiKey.mockResolvedValue({ householdId: "house-1", keyId: "key-1", scope: "read" });
     const { resolveApiKey } = await import("./apiKeys");
 
     const result = await resolveApiKey("  gtm_sometoken ");
 
-    expect(result).toEqual({ householdId: "house-1", keyId: "key-1" });
+    expect(result).toEqual({ householdId: "house-1", keyId: "key-1", scope: "read" });
     expect(mockResolveApiKey).toHaveBeenCalledWith(await sha256Hex("gtm_sometoken"));
   });
 });

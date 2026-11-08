@@ -92,6 +92,11 @@ vi.mock("../../../lib/doorEvents", () => ({
   recordDoorSessionsIfJustClosed: (...a: unknown[]) => mockRecordDoorSessions(...a),
 }));
 
+const mockGetHouseholdAlertHold = vi.fn();
+vi.mock("../../../lib/db/householdHolds", () => ({
+  getHouseholdAlertHold: (...a: unknown[]) => mockGetHouseholdAlertHold(...a),
+}));
+
 const mockSendThresholdAlertsIfNeeded = vi.fn();
 vi.mock("../../../lib/alertNotifications", () => ({
   sendThresholdAlertsIfNeeded: (...a: unknown[]) => mockSendThresholdAlertsIfNeeded(...a),
@@ -132,6 +137,7 @@ const device = {
 };
 
 beforeEach(() => {
+  mockGetHouseholdAlertHold.mockReset().mockResolvedValue({ snoozeUntil: null, vacationUntil: null });
   mockCheckEdgeRateLimit.mockReset().mockResolvedValue(null);
   mockCheckIngestRateLimit.mockReset().mockReturnValue({ ok: true });
   mockReadJsonBodyWithLimit.mockReset().mockResolvedValue({
@@ -402,6 +408,21 @@ describe("POST /api/ingest/[deviceKey]", () => {
     expect(mockGetAlertSettingsForUser).toHaveBeenCalledTimes(2);
     expect(mockSendReadingWebhook).toHaveBeenCalledTimes(2);
     expect(mockSendThresholdAlertsIfNeeded).toHaveBeenCalledTimes(2);
+  });
+
+  it("reads the household's hold once and holds this household's alerts with it, not the reading webhook", async () => {
+    const until = new Date(Date.now() + 3600_000).toISOString();
+    mockGetHouseholdAlertHold.mockResolvedValueOnce({ snoozeUntil: until, vacationUntil: null });
+    mockListHouseholdMembers.mockResolvedValue({ members: [{ user_id: "user-a" }, { user_id: "user-b" }] });
+    mockGetAlertSettingsForUser.mockResolvedValue({ snoozeUntil: null, vacationUntil: null, readingWebhookUrl: "https://hooks.example.com/x" });
+    const { POST } = await import("./[deviceKey]");
+
+    await POST(makeContext({ headerKey: "good-key" }));
+
+    expect(mockGetHouseholdAlertHold).toHaveBeenCalledTimes(1);
+    expect(mockSendThresholdAlertsIfNeeded.mock.calls.map((call) => call[2].snoozeUntil)).toEqual([until, until]);
+    // The members' own settings object is left alone.
+    expect(mockSendReadingWebhook.mock.calls.every((call) => call[1].snoozeUntil === null)).toBe(true);
   });
 
   it("answers the device before alerts run when the Worker context is available", async () => {

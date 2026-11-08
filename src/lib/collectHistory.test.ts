@@ -13,6 +13,8 @@ vi.mock("./FetchTemps", () => ({
 const mockGetUserDevicesAsTempConfig = vi.fn();
 vi.mock("./devices", () => ({
   getUserDevicesAsTempConfig: (...a: unknown[]) => mockGetUserDevicesAsTempConfig(...a),
+  // The cron loads by household (getHouseholdDevicesAsTempConfig); one mock serves both.
+  getHouseholdDevicesAsTempConfig: (...a: unknown[]) => mockGetUserDevicesAsTempConfig(...a),
 }));
 
 const mockListAllHouseholdOwnerUserIds = vi.fn();
@@ -40,6 +42,11 @@ vi.mock("./notify", () => ({
   getAlertSettingsForUser: (...a: unknown[]) => mockGetAlertSettingsForUser(...a),
 }));
 
+const mockGetHouseholdAlertHold = vi.fn();
+vi.mock("./db/householdHolds", () => ({
+  getHouseholdAlertHold: (...a: unknown[]) => mockGetHouseholdAlertHold(...a),
+}));
+
 const mockCollectThermostatSnapshotsForAllHouseholds = vi.fn();
 vi.mock("./thermostatSnapshots", () => ({
   collectThermostatSnapshotsForAllHouseholds: (...a: unknown[]) =>
@@ -58,6 +65,7 @@ beforeEach(() => {
   mockMaybeSendDeviceHealthAlerts.mockReset();
   mockMaybeSendThresholdAlerts.mockReset();
   mockGetAlertSettingsForUser.mockReset().mockResolvedValue({});
+  mockGetHouseholdAlertHold.mockReset().mockResolvedValue({ snoozeUntil: null, vacationUntil: null });
   mockCollectThermostatSnapshotsForAllHouseholds
     .mockReset()
     .mockResolvedValue({ errors: [], warnings: [] });
@@ -233,6 +241,64 @@ describe("collectHistoryForAllUsers", () => {
     // Each member also gets the quiet-hours recap check.
     expect(mockMaybeSendQuietHoursSummary).toHaveBeenCalledTimes(2);
     expect(mockMaybeSendDeviceHealthAlerts).toHaveBeenCalledTimes(2);
+  });
+
+  it("reads each household's own hold once and applies it to that household's alerts only", async () => {
+    const until = new Date(Date.now() + 3600_000).toISOString();
+    mockListHouseholdIdsForCron.mockResolvedValue([
+      { householdId: "house-1", ownerUserId: "owner-1" },
+      { householdId: "house-2", ownerUserId: "owner-2" },
+    ]);
+    mockGetUserDevicesAsTempConfig
+      .mockResolvedValueOnce(baseConfig({ householdId: "house-1" }))
+      .mockResolvedValueOnce(baseConfig({ householdId: "house-2" }));
+    mockFetchTemps.mockResolvedValue([]);
+    // The same person belongs to both households; only house-1 is snoozed.
+    mockListHouseholdMembers.mockResolvedValue({ members: [{ user_id: "shared" }, { user_id: "other" }] });
+    mockGetHouseholdAlertHold.mockImplementation(async (id: string) =>
+      id === "house-1" ? { snoozeUntil: until, vacationUntil: null } : { snoozeUntil: null, vacationUntil: null },
+    );
+    mockGetAlertSettingsForUser.mockResolvedValue({ snoozeUntil: null, vacationUntil: null });
+    const { collectHistoryForAllUsers } = await import("./collectHistory");
+
+    await collectHistoryForAllUsers();
+
+    // Once per household, not per member.
+    expect(mockGetHouseholdAlertHold.mock.calls).toEqual([["house-1"], ["house-2"]]);
+    const thresholdHolds = mockMaybeSendThresholdAlerts.mock.calls.map((call) => [call[6], call[9]]);
+    expect(thresholdHolds).toEqual([
+      ["house-1", { snoozeUntil: until, vacationUntil: null }],
+      ["house-1", { snoozeUntil: until, vacationUntil: null }],
+      ["house-2", { snoozeUntil: null, vacationUntil: null }],
+      ["house-2", { snoozeUntil: null, vacationUntil: null }],
+    ]);
+    const rateSnooze = mockMaybeSendRateAndOutageAlerts.mock.calls.map((call) => [call[4], call[3].snoozeUntil]);
+    expect(rateSnooze).toEqual([
+      ["house-1", until],
+      ["house-1", until],
+      ["house-2", null],
+      ["house-2", null],
+    ]);
+    expect(mockMaybeSendDeviceHealthAlerts.mock.calls.map((call) => call[3].snoozeUntil)).toEqual([until, until, null, null]);
+    // The quiet-hours recap spans every household: the member's own settings only.
+    expect(mockMaybeSendQuietHoursSummary.mock.calls.every((call) => call[2].snoozeUntil === null)).toBe(true);
+  });
+
+  it("alerts without the hold when it can't be read", async () => {
+    mockListHouseholdIdsForCron.mockResolvedValue([{ householdId: "house-1", ownerUserId: "owner-1" }]);
+    mockGetUserDevicesAsTempConfig.mockResolvedValue(baseConfig());
+    mockFetchTemps.mockResolvedValue([]);
+    mockListHouseholdMembers.mockResolvedValue({ members: [{ user_id: "member-1" }] });
+    mockGetHouseholdAlertHold.mockRejectedValue(new Error("db down"));
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const { collectHistoryForAllUsers } = await import("./collectHistory");
+
+    const result = await collectHistoryForAllUsers();
+
+    expect(result.usersProcessed).toBe(1);
+    expect(mockMaybeSendThresholdAlerts.mock.calls[0]![9]).toBeNull();
+    expect(mockMaybeSendRateAndOutageAlerts).toHaveBeenCalledTimes(1);
+    errorSpy.mockRestore();
   });
 
   it("catches a thrown exception for one household without losing the others", async () => {

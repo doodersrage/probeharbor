@@ -66,7 +66,7 @@ const sampleFeed = {
 
 beforeEach(() => {
   mockCheckApiPlan.mockReset().mockResolvedValue({ ok: true, entitlements: { canCreateShareLinks: true, maxDevices: 24 } });
-  mockResolveApiKey.mockReset().mockResolvedValue({ householdId: "house-1" });
+  mockResolveApiKey.mockReset().mockResolvedValue({ householdId: "house-1", keyId: "key-1", scope: "write" });
   mockSanitizeTempFeeds.mockReset().mockImplementation((feeds: unknown) => feeds);
   mockSanitizeTempProbes.mockReset().mockImplementation((probes: unknown) => probes);
   mockSaveHouseholdPullSetup.mockReset().mockResolvedValue({
@@ -150,6 +150,19 @@ describe("POST /api/v1/pull-setup plan check", () => {
 
     expect(response.status).toBe(403);
     expect(await response.json()).toEqual({ ok: false, error: "API access needs a Pro plan" });
+    expect(mockSaveHouseholdPullSetup).not.toHaveBeenCalled();
+  });
+});
+
+describe("POST /api/v1/pull-setup key scope (write route)", () => {
+  it("refuses a read key with 403 and saves nothing", async () => {
+    mockResolveApiKey.mockResolvedValue({ householdId: "house-1", keyId: "key-1", scope: "read" });
+    const { POST } = await import("./pull-setup");
+
+    const response = await POST(makeContext({ body: { feeds: [sampleFeed] } }));
+
+    expect(response.status).toBe(403);
+    expect(await response.json()).toMatchObject({ ok: false, code: "insufficient_scope", required_scope: "write" });
     expect(mockSaveHouseholdPullSetup).not.toHaveBeenCalled();
   });
 });

@@ -6,6 +6,7 @@ import {
   createHouseholdApiKey,
   revokeHouseholdApiKey,
 } from "../../../lib/apiKeys";
+import { parseApiKeyScope } from "../../../lib/apiKeyScope";
 
 import {
   redirectUnlessManager,
@@ -49,10 +50,14 @@ export const POST: APIRoute = async (context) => {
   }
 
   const name = formData.get("name")?.toString() ?? apiMoreCommonMessages(apiLocale(context)).defaults.metricsKey;
+  // Only "read" or "write"; anything else (or nothing) is read-only. Only
+  // household managers reach this point (checked above), for either scope.
+  const scope = parseApiKeyScope(formData.get("scope")?.toString());
   const result = await createHouseholdApiKey({
     householdId: household.householdId,
     name,
     createdBy: user.id,
+    scope,
   });
   if (result.error || !result.plaintext) {
     return redirect(withQuery(redirectTo, { error: "1" }));

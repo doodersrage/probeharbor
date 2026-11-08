@@ -44,6 +44,9 @@ const ptBr: AlertsMessages = {
     stillSend: "Alertas de congelamento, vazamento, energia e sensor offline continuam sendo enviados.",
     resume: "Retomar alertas",
     endVacation: "Encerrar férias",
+    householdSnoozedUntil: "Uma integração adiou os alertas de rotina desta casa até {time}, para todos os membros.",
+    householdVacationUntil: "Uma integração colocou esta casa em modo férias até {time}: alertas de rotina ficam retidos para todos os membros.",
+    householdClearHint: "Para encerrar antes, envie clear_snooze ou clear_vacation pela integração.",
   },
   activity: {
     heading: "Atividade recente de alertas",

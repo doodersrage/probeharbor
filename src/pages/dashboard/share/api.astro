@@ -73,6 +73,13 @@ const showWebhookNudge =
               <label class="form-label" for="api-key-name">{t.name}</label>
               <input class="form-input" id="api-key-name" name="name" value={t.keyDefaultName} />
             </div>
+            <div class="form-field mb-0">
+              <label class="form-label" for="api-key-scope">{t.scopeLabel}</label>
+              <select class="form-input" id="api-key-scope" name="scope">
+                <option value="read" selected>{t.scopeRead}</option>
+                <option value="write">{t.scopeWrite}</option>
+              </select>
+            </div>
             <button class="btn-secondary" type="submit">{t.createKey}</button>
           </form>
           {apiKeys.length === 0 ? (
@@ -84,6 +91,7 @@ const showWebhookNudge =
                   <div>
                     <strong>{key.name}</strong>
                     <span class="text-sm text-[var(--color-text-muted)]"> · {key.key_prefix}…</span>
+                    <span class="text-sm text-[var(--color-text-muted)]"> · {key.scope === "write" ? t.scopeWriteBadge : t.scopeReadBadge}</span>
                   </div>
                   <form action="/api/api-keys" method="post">
                     <input type="hidden" name="action" value="revoke" />

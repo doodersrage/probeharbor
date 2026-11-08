@@ -1,10 +1,14 @@
 openapi: 3.1.0
 info:
   title: ProbeHarbor API
-  version: 1.4.1
+  version: 1.5.0
   description: |
     HTTP endpoints for device ingest, share links, metrics, devices CRUD, MQTT bridge, and inbound automations.
     Authenticated dashboard routes use Supabase session cookies; programmatic access uses API keys, which need the household owner's plan to include the API (Pro) at the time of each call.
+    API keys have a scope: `read` (metrics and the device list; the default for new keys) or `write`
+    (also creates devices, edits sensors, replaces the pull setup). Each `/api/v1` operation states the
+    scope it needs in `x-required-scope`; a read key on a write operation gets `403` with
+    `code: insufficient_scope`. Keys created before scopes existed are `write`.
 servers:
   - url: https://probeharbor.dev
 paths:
@@ -157,6 +161,8 @@ paths:
   /api/v1/devices:
     get:
       summary: List household devices (Pro API key)
+      description: Needs an API key with `read` or `write` scope.
+      x-required-scope: read
       security:
         - bearerAuth: []
       responses:
@@ -191,7 +197,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
         "403":
-          description: The household owner's current plan doesn't include the API (`API access needs a Pro plan`), e.g. after a downgrade
+          description: The household owner's current plan doesn't include the API (`API access needs a Pro plan`), e.g. after a downgrade. Read and write keys may both call this operation.
           content:
             application/json:
               schema:
@@ -202,6 +208,8 @@ paths:
           description: Devices could not be read
     post:
       summary: Create push device (Pro API key)
+      description: Needs an API key with `write` scope (the response includes the device's ingest key).
+      x-required-scope: write
       security:
         - bearerAuth: []
       requestBody:
@@ -248,17 +256,22 @@ paths:
         "403":
           description: |
             The household owner's current plan doesn't include the API (`API access needs a Pro plan`),
-            or the plan's push-device limit is reached (`code: device_limit`, same limit as the dashboard).
+            or the plan's push-device limit is reached (`code: device_limit`, same limit as the dashboard),
+            or the API key is read-only and this operation needs a `write` key (`code: insufficient_scope`).
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                anyOf:
+                  - $ref: "#/components/schemas/Error"
+                  - $ref: "#/components/schemas/InsufficientScopeError"
         "503":
           description: The plan couldn't be checked; try again
   /api/v1/devices/sensors-batch:
     post:
       summary: Batch-update sensor labels and visibility (Pro API key)
-      description: Sensor ids not in the key's household are skipped silently.
+      description: |
+        Needs an API key with `write` scope. Sensor ids not in the key's household are skipped silently.
+      x-required-scope: write
       security:
         - bearerAuth: []
       requestBody:
@@ -292,11 +305,15 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
         "403":
-          description: The household owner's current plan doesn't include the API (`API access needs a Pro plan`), e.g. after a downgrade
+          description: |
+            The household owner's current plan doesn't include the API (`API access needs a Pro plan`), e.g. after a downgrade,
+            or the API key is read-only and this operation needs a `write` key (`code: insufficient_scope`).
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                anyOf:
+                  - $ref: "#/components/schemas/Error"
+                  - $ref: "#/components/schemas/InsufficientScopeError"
         "503":
           description: The plan couldn't be checked; try again
         "500":
@@ -304,7 +321,10 @@ paths:
   /api/v1/pull-setup:
     post:
       summary: Save pull feeds and probe labels (Pro API key)
-      description: Replaces the household owner's pull-feed setup. Probes whose feedId isn't in `feeds` are dropped.
+      description: |
+        Needs an API key with `write` scope. Replaces the pull-feed setup of the key's household.
+        Probes whose feedId isn't in `feeds` are dropped.
+      x-required-scope: write
       security:
         - bearerAuth: []
       requestBody:
@@ -357,11 +377,15 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
         "403":
-          description: The household owner's current plan doesn't include the API (`API access needs a Pro plan`), e.g. after a downgrade
+          description: |
+            The household owner's current plan doesn't include the API (`API access needs a Pro plan`), e.g. after a downgrade,
+            or the API key is read-only and this operation needs a `write` key (`code: insufficient_scope`).
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                anyOf:
+                  - $ref: "#/components/schemas/Error"
+                  - $ref: "#/components/schemas/InsufficientScopeError"
         "503":
           description: The plan couldn't be checked; try again
         "404":
@@ -371,6 +395,8 @@ paths:
   /api/v1/metrics:
     get:
       summary: Prometheus metrics (Pro API key)
+      description: Needs an API key with `read` or `write` scope.
+      x-required-scope: read
       security:
         - bearerAuth: []
       responses:
@@ -387,7 +413,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
         "403":
-          description: The household owner's current plan doesn't include the API (`API access needs a Pro plan`), e.g. after a downgrade
+          description: The household owner's current plan doesn't include the API (`API access needs a Pro plan`), e.g. after a downgrade. Read and write keys may both call this operation.
           content:
             application/json:
               schema:
@@ -406,6 +432,14 @@ paths:
         (`X-ProbeHarbor-Signature: sha256=<hex HMAC of raw body>`, or the legacy
         `X-ThermalTrace-Signature`, `X-GarageTemp-Signature`, `X-Signature`) is
         still accepted for now. The action can also come from `?action=`.
+
+        `snooze` / `vacation` (and their clears) act on **this webhook's household
+        only**: they hold that household's routine alerts for all its members,
+        exactly like a member's own snooze / vacation (freeze, leak, power and
+        offline alerts still send). They don't change members' own alert
+        settings, and don't hold a member's alerts for their other households.
+        `snooze` takes 1-168 hours (default 24), `vacation` 1-90 days (default 7).
+        A new `snooze` / `vacation` replaces the household's previous end time.
       parameters:
         - name: token
           in: path
@@ -463,6 +497,21 @@ paths:
                     type: string
                   members:
                     type: integer
+                    description: |
+                      snooze / vacation / clears: how many members the household has
+                      (whose alerts for this household the hold affects)
+                  alertHold:
+                    type: object
+                    description: "`status` only: this household's hold set by the inbound webhook. Members' own snoozes aren't included."
+                    properties:
+                      snoozedUntil:
+                        type: [string, "null"]
+                        format: date-time
+                        description: When the household snooze ends; null when none is active
+                      vacationUntil:
+                        type: [string, "null"]
+                        format: date-time
+                        description: When the household vacation ends; null when none is active
                   message:
                     type: string
         "400":
@@ -620,6 +669,23 @@ components:
       properties:
         error:
           type: string
+    InsufficientScopeError:
+      type: object
+      description: A read-only API key called an operation that needs a `write` key.
+      required: [error, code, required_scope]
+      properties:
+        ok:
+          type: boolean
+          const: false
+          description: Present on operations whose other errors also carry `ok`.
+        error:
+          type: string
+        code:
+          type: string
+          const: insufficient_scope
+        required_scope:
+          type: string
+          enum: [read, write]
     RejectedReading:
       type: object
       required: [key, kind, value, reason]
@@ -637,3 +703,6 @@ components:
     bearerAuth:
       type: http
       scheme: bearer
+      description: |
+        A dashboard API key (`gtm_…`, Dashboard → Share → API). Scope `read` (default) or `write`;
+        see each operation's `x-required-scope`.

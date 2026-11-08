@@ -13,7 +13,8 @@ import AlertSetupNudge from "../components/dashboard/AlertSetupNudge.astro";
 import DashboardStoryCard from "../components/dashboard/DashboardStoryCard.astro";
 import GarageRiskStatusCard from "../components/dashboard/GarageRiskStatusCard.astro";
 import AlertPauseNotice from "../components/alerts/AlertPauseNotice.astro";
-import { formatAlertPauseUntil, getAlertPauseState } from "../lib/alertSnooze";
+import { formatAlertPauseUntil, getAlertPauseState, withHouseholdHold } from "../lib/alertSnooze";
+import { loadHouseholdAlertHold } from "../lib/alertSnoozeTokens";
 import { computeGarageRiskStatus } from "../lib/garageRiskStatus";
 import { getAuthFromCookies } from "../lib/auth";
 import {
@@ -259,6 +260,7 @@ const [
   householdDevicesResult,
   householdRole,
   latestResult,
+  householdHold,
 ] = await Promise.all([
   evidencePromise,
   household.householdId && !onboardingDismissed
@@ -277,6 +279,8 @@ const [
     : household.householdId
       ? fetchLatestSensorValuesResult(household.householdId)
       : Promise.resolve({ rows: [], error: null } as Awaited<ReturnType<typeof fetchLatestSensorValuesResult>>),
+  // This household's own snooze / vacation (inbound webhook); null if none or unreadable.
+  household.householdId ? loadHouseholdAlertHold(household.householdId) : Promise.resolve(null),
 ]);
 
 const latest = latestResult.rows;
@@ -314,7 +318,10 @@ const realLatest = realReadingRows(latest, devices);
 const demoDevices = devices.filter((d) => isDemoDevice(d));
 const hasAlertsEnabled = alertSettings.enabled;
 // Snooze / vacation: routine alerts are held (display only, see alertSnooze).
-const alertPause = alertSettings.enabled ? getAlertPauseState(alertSettings) : null;
+// The member's own pause, or this household's (inbound webhook) if it ends later.
+const alertPause = alertSettings.enabled
+  ? getAlertPauseState(withHouseholdHold(alertSettings, householdHold))
+  : null;
 const hasEmailAlerts =
   alertSettings.enabled &&
   alertSettings.channelEmail &&
@@ -1026,7 +1033,7 @@ const onboardingProps = {
           <a href="/about/debugging-stale-readings" class="text-link">{t.stale.debugGuide}</a>
         </div>
       )}
-      <AlertPauseNotice settings={alertSettings} canEdit={canEdit} redirect="/dashboard" />
+      <AlertPauseNotice settings={alertSettings} householdHold={householdHold} canEdit={canEdit} redirect="/dashboard" />
       {/* Nothing to acknowledge or check before the first device. */}
       {hasDevices && (
         <OverviewQuickActions
@@ -1871,7 +1878,18 @@ const onboardingProps = {
           var anyLeft = false;
           box.querySelectorAll<HTMLElement>("[data-alert-pause-kind]").forEach(function (line) {
             var kind = line.getAttribute("data-alert-pause-kind");
-            var active = kind === "snooze" ? data.snoozeActive : kind === "vacation" ? data.vacationActive : true;
+            var active =
+              kind === "snooze"
+                ? data.snoozeActive
+                : kind === "vacation"
+                  ? data.vacationActive
+                  : kind === "household_snooze"
+                    ? data.householdSnoozeActive
+                    : kind === "household_vacation"
+                      ? data.householdVacationActive
+                      : kind === "household_hint"
+                        ? data.householdSnoozeActive || data.householdVacationActive
+                        : true;
             var show = active !== false;
             line.hidden = !show;
             if (show) anyLeft = true;

@@ -1,5 +1,10 @@
 import * as neonExtras from "./db/alertExtras";
-import { snoozeUntilFromHours, vacationUntilFromDays } from "./alertSnooze";
+import * as householdHolds from "./db/householdHolds";
+import {
+  type HouseholdAlertHold,
+  snoozeUntilFromHours,
+  vacationUntilFromDays,
+} from "./alertSnooze";
 import { getAlertSettingsForUser, saveAlertSettingsForUser } from "./notify";
 import type { Locale } from "../i18n/locales";
 import { plural } from "../i18n/format";
@@ -86,6 +91,11 @@ async function householdMembers(householdId: string): Promise<Array<{ user_id: s
   return (await neonExtras.householdMemberIds(householdId)).map((user_id) => ({ user_id }));
 }
 
+/**
+ * Account-wide: sets each member's own snooze, which holds their alerts for
+ * every household they belong to. Not for integrations acting for one
+ * household (the inbound webhook); those use applyHouseholdSnooze.
+ */
 export async function applySnoozeForHouseholdMembers(
   householdId: string,
   hours: number,
@@ -104,6 +114,11 @@ export async function applySnoozeForHouseholdMembers(
   return count;
 }
 
+/**
+ * Account-wide, like applySnoozeForHouseholdMembers: for a user putting their
+ * own households on vacation (portfolio vacation). Integrations use
+ * applyHouseholdVacation.
+ */
 export async function applyVacationForHouseholdMembers(
   householdId: string,
   days: number,
@@ -152,6 +167,51 @@ export async function clearVacationForHouseholdMembers(householdId: string): Pro
     count += 1;
   }
   return count;
+}
+
+// ---- household holds (inbound webhook) ---------------------------------------
+//
+// Set on the household, not on its members' accounts: they hold this
+// household's routine alerts only (see withHouseholdHold in alertSnooze.ts).
+// Each returns the household's member count (whose alerts for it are held),
+// 0 if the household no longer exists.
+
+export async function applyHouseholdSnooze(householdId: string, hours: number): Promise<number> {
+  return (await householdHolds.setHouseholdSnoozeUntil(householdId, snoozeUntilFromHours(hours))) ?? 0;
+}
+
+export async function applyHouseholdVacation(householdId: string, days: number): Promise<number> {
+  return (await householdHolds.setHouseholdVacationUntil(householdId, vacationUntilFromDays(days))) ?? 0;
+}
+
+export async function clearHouseholdSnooze(householdId: string): Promise<number> {
+  return (await householdHolds.setHouseholdSnoozeUntil(householdId, null)) ?? 0;
+}
+
+export async function clearHouseholdVacation(householdId: string): Promise<number> {
+  return (await householdHolds.setHouseholdVacationUntil(householdId, null)) ?? 0;
+}
+
+/** The household's hold columns as stored (expired values included). Throws on a database error. */
+export function getHouseholdAlertHold(householdId: string): Promise<HouseholdAlertHold> {
+  return householdHolds.getHouseholdAlertHold(householdId);
+}
+
+/**
+ * The hold for alert evaluation and display; null when it can't be read, so
+ * alerts go out as if there were none (an unwanted routine alert beats a
+ * missed one).
+ */
+export async function loadHouseholdAlertHold(householdId: string): Promise<HouseholdAlertHold | null> {
+  try {
+    return await householdHolds.getHouseholdAlertHold(householdId);
+  } catch (error) {
+    console.error(
+      `Household alert hold for ${householdId} unreadable; treating it as none:`,
+      error instanceof Error ? error.message : error,
+    );
+    return null;
+  }
 }
 
 export { sha256Hex };

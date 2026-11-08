@@ -8,7 +8,7 @@ vi.mock("./appStatus", () => ({
 const mockListSubscribers = vi.fn();
 vi.mock("./statusSubscriptions", () => ({
   listConfirmedStatusSubscribers: (...args: unknown[]) => mockListSubscribers(...args),
-  buildStatusUnsubscribeUrl: (token: string) => `https://example.com/unsub?token=${token}`,
+  statusUnsubscribeUrlFor: async (s: { id: string }) => `https://example.com/unsub?token=${s.id}.sig`,
 }));
 
 const mockSendEmail = vi.fn();
@@ -87,8 +87,8 @@ describe("checkAndNotifyStatusSubscribers", () => {
     mockFetchSummary.mockResolvedValue({ healthy: false });
     mockRead.mockResolvedValue(true);
     mockListSubscribers.mockResolvedValue([
-      { email: "a@example.com", token: "ta" },
-      { email: "b@example.com", token: "tb" },
+      { id: "ta", email: "a@example.com" },
+      { id: "tb", email: "b@example.com" },
     ]);
 
     const { checkAndNotifyStatusSubscribers } = await import("./statusNotify");
@@ -98,6 +98,9 @@ describe("checkAndNotifyStatusSubscribers", () => {
     expect(result.healthy).toBe(false);
     expect(result.sent).toBe(2);
     expect(mockSendEmail).toHaveBeenCalledTimes(2);
+    // Each email carries that subscriber's own unsubscribe link.
+    expect(String(mockSendEmail.mock.calls[0]![3].html)).toContain("https://example.com/unsub?token=ta.sig");
+    expect(String(mockSendEmail.mock.calls[1]![3].html)).toContain("https://example.com/unsub?token=tb.sig");
     expect(mockWrite).toHaveBeenCalledWith(false);
   });
 
@@ -105,8 +108,8 @@ describe("checkAndNotifyStatusSubscribers", () => {
     mockFetchSummary.mockResolvedValue({ healthy: true });
     mockRead.mockResolvedValue(false);
     mockListSubscribers.mockResolvedValue([
-      { email: "fails@example.com", token: "tf" },
-      { email: "ok@example.com", token: "to" },
+      { id: "tf", email: "fails@example.com" },
+      { id: "to", email: "ok@example.com" },
     ]);
     mockSendEmail
       .mockRejectedValueOnce(new Error("mailer down"))

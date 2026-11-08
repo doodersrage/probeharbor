@@ -44,6 +44,9 @@ const fr: AlertsMessages = {
     stillSend: "Les alertes de gel, de fuite, de coupure de courant et de capteur hors ligne sont toujours envoyées.",
     resume: "Reprendre les alertes",
     endVacation: "Terminer les vacances",
+    householdSnoozedUntil: "Une intégration a mis en pause les alertes de routine de ce foyer jusqu’à {time}, pour tous ses membres.",
+    householdVacationUntil: "Une intégration a mis ce foyer en mode vacances jusqu’à {time} : les alertes de routine sont retenues pour tous ses membres.",
+    householdClearHint: "Pour y mettre fin plus tôt, envoyez clear_snooze ou clear_vacation depuis l’intégration.",
   },
   activity: {
     heading: "Activité récente des alertes",

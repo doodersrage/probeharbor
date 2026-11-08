@@ -64,6 +64,9 @@ const es: AlertSettingsMessages = {
     botToken: "Token del bot",
     chatId: "ID del chat (necesario para los comandos)",
     webhookSecret: "Secreto del webhook (opcional)",
+    webhookSecretSaved:
+      "Hay un secreto guardado. No se vuelve a mostrar: escribe uno nuevo para reemplazarlo o deja el campo vacío para conservarlo.",
+    webhookSecretReplacePlaceholder: "Escribe un secreto nuevo para reemplazarlo",
     telegramHintHtml:
       "Usa <code>setWebhook</code> de Telegram con <code>secret_token</code> para que Telegram envíe <code>X-Telegram-Bot-Api-Secret-Token</code> (no se acepta el parámetro <code>?secret=</code>). Guarda un ID de chat arriba: los comandos solo funcionan desde ese chat (/status [nombre], /snooze [horas], /vacation [días]).",
     incomingWebhookUrl: "URL del webhook entrante",

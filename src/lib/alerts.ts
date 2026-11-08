@@ -1,6 +1,7 @@
 import type { AlertRule } from "./alertRules";
 import { parseAlertPlaybooks, type AlertPlaybookStep } from "./alertPlaybooks";
 import { parseSpaceChannelRouting, type SpaceChannelRouting } from "./spaceChannelRouting";
+import { storedTelegramCommandSecret } from "./telegramCommandSecret";
 import {
   parseThresholdSensorScope,
   type ThresholdSensorScope,
@@ -180,6 +181,10 @@ export type AlertSettings = {
   escalationEnabled: boolean;
   escalationMinutes: number;
   alertTemplates: Record<string, { title?: string; body?: string }>;
+  /**
+   * As loaded: `sha256:<hex>` (or, before migration 0004, legacy plaintext).
+   * A newly entered plaintext secret is hashed by alertSettingsToRow on save.
+   */
   telegramCommandSecret: string | null;
   lastEscalationAt: string | null;
   readingWebhookUrl: string | null;
@@ -1030,7 +1035,8 @@ export function serializeAlertSettings(settings: AlertSettings): Record<string, 
     escalation_enabled: settings.escalationEnabled,
     escalation_minutes: settings.escalationMinutes,
     alert_templates: settings.alertTemplates,
-    telegram_command_secret: settings.telegramCommandSecret,
+    // Stored hashed (sha256:<hex>); see telegramCommandSecret.ts.
+    telegram_command_secret: storedTelegramCommandSecret(settings.telegramCommandSecret),
     last_escalation_at: settings.lastEscalationAt,
     reading_webhook_url: settings.readingWebhookUrl,
     reading_webhook_secret: settings.readingWebhookSecret,

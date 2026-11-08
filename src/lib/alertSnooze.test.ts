@@ -6,6 +6,7 @@ import {
   isVacationActive,
   shouldSuppressForSnoozeOrVacation,
   snoozeUntilFromHours,
+  withHouseholdHold,
 } from "./alertSnooze";
 import { DEFAULT_ALERT_SETTINGS } from "./alerts";
 
@@ -101,5 +102,43 @@ describe("formatAlertPauseUntil", () => {
 
   it("falls back to labelled UTC for an invalid zone", () => {
     expect(formatAlertPauseUntil("2026-11-05T21:00:00.000Z", "en", "Not/AZone")).toMatch(/9:00 PM UTC/);
+  });
+});
+
+describe("withHouseholdHold", () => {
+  const now = Date.parse("2026-11-07T12:00:00Z");
+  const at = (hours: number) => new Date(now + hours * 3600_000).toISOString();
+  const own = { ...DEFAULT_ALERT_SETTINGS };
+
+  it("returns the member's settings unchanged with no or an expired household hold", () => {
+    expect(withHouseholdHold(own, null, now)).toBe(own);
+    expect(withHouseholdHold(own, { snoozeUntil: null, vacationUntil: null }, now)).toBe(own);
+    expect(withHouseholdHold(own, { snoozeUntil: at(-1), vacationUntil: at(-2) }, now)).toBe(own);
+  });
+
+  it("an active household hold holds exactly the kinds the member's own would", () => {
+    const snoozed = withHouseholdHold(own, { snoozeUntil: at(3), vacationUntil: null }, now);
+    expect(snoozed.snoozeUntil).toBe(at(3));
+    expect(own.snoozeUntil).toBeNull(); // never mutates the member's settings
+    const away = withHouseholdHold(own, { snoozeUntil: null, vacationUntil: at(48) }, now);
+    expect(away.vacationUntil).toBe(at(48));
+    for (const kind of ["threshold", "flood", "power", "outage", "rate", "battery", "recovery", "forecast", "rule"] as const) {
+      const ownSnooze = { ...own, snoozeUntil: at(3) };
+      const ownVacation = { ...own, vacationUntil: at(48) };
+      // Compared at the real clock: shift both by the same offset.
+      const shift = (iso: string | null) => (iso ? new Date(Date.parse(iso) - now + Date.now()).toISOString() : null);
+      const h = (s: typeof own) => ({ ...s, snoozeUntil: shift(s.snoozeUntil), vacationUntil: shift(s.vacationUntil) });
+      expect(shouldSuppressForSnoozeOrVacation(h(snoozed), kind)).toBe(shouldSuppressForSnoozeOrVacation(h(ownSnooze), kind));
+      expect(shouldSuppressForSnoozeOrVacation(h(away), kind)).toBe(shouldSuppressForSnoozeOrVacation(h(ownVacation), kind));
+    }
+  });
+
+  it("keeps whichever active pause ends later", () => {
+    const longOwn = { ...own, snoozeUntil: at(10), vacationUntil: at(1) };
+    const merged = withHouseholdHold(longOwn, { snoozeUntil: at(2), vacationUntil: at(5) }, now);
+    expect(merged.snoozeUntil).toBe(at(10));
+    expect(merged.vacationUntil).toBe(at(5));
+    const expiredOwn = { ...own, snoozeUntil: at(-1) };
+    expect(withHouseholdHold(expiredOwn, { snoozeUntil: at(2), vacationUntil: null }, now).snoozeUntil).toBe(at(2));
   });
 });

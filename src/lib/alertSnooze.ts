@@ -93,6 +93,46 @@ export function formatAlertPauseUntil(iso: string, locale: Locale, timeZone: str
   }
 }
 
+/**
+ * A snooze / vacation set on one household (its inbound webhook) rather than
+ * on a member's account. ISO end times, or null.
+ */
+export type HouseholdAlertHold = {
+  snoozeUntil: string | null;
+  vacationUntil: string | null;
+};
+
+function laterActiveEnd(own: string | null, household: string | null, now: number): string | null {
+  if (!isSnoozeActive({ snoozeUntil: household }, now)) return own;
+  if (isSnoozeActive({ snoozeUntil: own }, now) && Date.parse(own as string) >= Date.parse(household as string)) {
+    return own;
+  }
+  return household;
+}
+
+/**
+ * The member's settings as they apply to alerts for one household: their own
+ * snooze / vacation, or the household's hold when that is active and ends
+ * later. The household hold then goes through exactly the same rules as the
+ * member's own (shouldSuppressForSnoozeOrVacation: which kinds are held, what
+ * still sends, quiet hours after).
+ *
+ * Evaluation only: never save the result. It would copy one household's hold
+ * into the member's account and hold their other households' alerts too.
+ * Returns `settings` itself when the household has no active hold.
+ */
+export function withHouseholdHold<T extends Pick<AlertSettings, "snoozeUntil" | "vacationUntil">>(
+  settings: T,
+  hold: HouseholdAlertHold | null | undefined,
+  now = Date.now(),
+): T {
+  if (!hold) return settings;
+  const snoozeUntil = laterActiveEnd(settings.snoozeUntil, hold.snoozeUntil, now);
+  const vacationUntil = laterActiveEnd(settings.vacationUntil, hold.vacationUntil, now);
+  if (snoozeUntil === settings.snoozeUntil && vacationUntil === settings.vacationUntil) return settings;
+  return { ...settings, snoozeUntil, vacationUntil };
+}
+
 export function shouldSuppressForSnoozeOrVacation(
   settings: AlertSettings,
   kind: NotifyKind | undefined,

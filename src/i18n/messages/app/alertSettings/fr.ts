@@ -64,6 +64,9 @@ const fr: AlertSettingsMessages = {
     botToken: "Jeton du bot",
     chatId: "ID de discussion (requis pour les commandes)",
     webhookSecret: "Secret du webhook (facultatif)",
+    webhookSecretSaved:
+      "Un secret est enregistré. Il n’est plus affiché : saisissez-en un nouveau pour le remplacer, ou laissez ce champ vide pour le conserver.",
+    webhookSecretReplacePlaceholder: "Saisissez un nouveau secret pour le remplacer",
     telegramHintHtml:
       "Utilisez <code>setWebhook</code> de Telegram avec <code>secret_token</code> pour que Telegram envoie <code>X-Telegram-Bot-Api-Secret-Token</code> (le paramètre <code>?secret=</code> n’est pas accepté). Enregistrez un ID de discussion ci-dessus : les commandes ne fonctionnent que depuis cette discussion (/status [nom], /snooze [heures], /vacation [jours]).",
     incomingWebhookUrl: "URL du webhook entrant",

@@ -5,11 +5,13 @@ import {
 } from "../../../lib/inboundWebhooks";
 import { verifyInboundRequest } from "../../../lib/inboundSigning";
 import {
-  applySnoozeForHouseholdMembers,
-  applyVacationForHouseholdMembers,
-  clearSnoozeForHouseholdMembers,
-  clearVacationForHouseholdMembers,
+  applyHouseholdSnooze,
+  applyHouseholdVacation,
+  clearHouseholdSnooze,
+  clearHouseholdVacation,
+  getHouseholdAlertHold,
 } from "../../../lib/alertSnoozeTokens";
+import { isSnoozeActive } from "../../../lib/alertSnooze";
 import { listHouseholdDevices } from "../../../lib/devices";
 import { fetchLatestSensorValues } from "../../../lib/sensorReadings";
 import { recordHouseholdActivity } from "../../../lib/householdActivity";
@@ -65,9 +67,13 @@ export const POST: APIRoute = async ({ params, request }) => {
       ? body.action
       : new URL(request.url).searchParams.get("action");
 
+  // Snooze / vacation hold this household's routine alerts (for all its
+  // members), not the members' alerts for their other households: they are
+  // stored on the household, never on a member's account. `members` is how
+  // many people's alerts for this household that affects.
   if (action === "snooze") {
     const hours = Number(body.hours ?? 24);
-    const count = await applySnoozeForHouseholdMembers(
+    const count = await applyHouseholdSnooze(
       resolved.householdId,
       Number.isFinite(hours) ? hours : 24,
     );
@@ -83,7 +89,7 @@ export const POST: APIRoute = async ({ params, request }) => {
 
   if (action === "vacation") {
     const days = Number(body.days ?? 7);
-    const count = await applyVacationForHouseholdMembers(
+    const count = await applyHouseholdVacation(
       resolved.householdId,
       Number.isFinite(days) ? days : 7,
     );
@@ -98,14 +104,14 @@ export const POST: APIRoute = async ({ params, request }) => {
   }
 
   if (action === "clear_snooze") {
-    const count = await clearSnoozeForHouseholdMembers(resolved.householdId);
+    const count = await clearHouseholdSnooze(resolved.householdId);
     return new Response(JSON.stringify({ ok: true, action: "clear_snooze", members: count }), {
       headers: { "Content-Type": "application/json" },
     });
   }
 
   if (action === "clear_vacation") {
-    const count = await clearVacationForHouseholdMembers(resolved.householdId);
+    const count = await clearHouseholdVacation(resolved.householdId);
     return new Response(JSON.stringify({ ok: true, action: "clear_vacation", members: count }), {
       headers: { "Content-Type": "application/json" },
     });
@@ -114,6 +120,9 @@ export const POST: APIRoute = async ({ params, request }) => {
   if (action === "status") {
     const { devices } = await listHouseholdDevices(resolved.householdId);
     const sensors = await fetchLatestSensorValues(resolved.householdId);
+    const hold = await getHouseholdAlertHold(resolved.householdId);
+    const activeEnd = (until: string | null) =>
+      isSnoozeActive({ snoozeUntil: until }) ? new Date(Date.parse(until as string)).toISOString() : null;
     const temps = sensors.filter(
       (s) => s.sensor.kind === "temperature" && s.value_num != null,
     );
@@ -123,6 +132,12 @@ export const POST: APIRoute = async ({ params, request }) => {
         action: "status",
         deviceCount: devices.length,
         sensorCount: sensors.length,
+        // This household's hold set through the inbound webhook (ISO end time
+        // while active, else null). Members' own snoozes aren't shown here.
+        alertHold: {
+          snoozedUntil: activeEnd(hold.snoozeUntil),
+          vacationUntil: activeEnd(hold.vacationUntil),
+        },
         temperatures: temps.slice(0, 8).map((s) => ({
           label: s.sensor.label,
           value: s.value_num,

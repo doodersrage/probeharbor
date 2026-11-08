@@ -250,6 +250,10 @@ const mqttCurl = `curl -X POST "${siteUrl}/api/ingest/mqtt" \\
       <pre class="text-xs overflow-x-auto mb-3 p-4 rounded-lg bg-[var(--color-surface-muted)]"><code>{metricsCurl}</code></pre>
       <p class="mb-0 text-sm text-[var(--color-text-muted)]">
         Related: <code>GET/POST /api/v1/devices</code> with the same Bearer key (list / create push devices).
+        Keys are read-only (<code>read</code>, the default) or read-write (<code>write</code>), chosen when you create them.
+        <code>GET /api/v1/metrics</code> and <code>GET /api/v1/devices</code> accept either; <code>POST /api/v1/devices</code>,
+        <code>POST /api/v1/devices/sensors-batch</code> and <code>POST /api/v1/pull-setup</code> need a write key, and a read-only
+        key gets <code>403</code> with <code>"code": "insufficient_scope"</code>. Keys created before scopes existed are write keys.
         Every <code>/api/v1</code> call checks the household owner's current plan: without Pro it returns
         <code>403</code> <code>&#123; "error": "API access needs a Pro plan" &#125;</code>, and creating a device past
         the plan's limit returns <code>403</code> with <code>"code": "device_limit"</code>.

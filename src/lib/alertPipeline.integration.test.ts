@@ -48,6 +48,7 @@ vi.mock("./db/readings", async (orig) => h.wrap("readings", await orig()));
 vi.mock("./db/devices", async (orig) => h.wrap("devices", await orig()));
 vi.mock("./db/ingest", async (orig) => h.wrap("ingest", await orig()));
 vi.mock("./db/households", async (orig) => h.wrap("households", await orig()));
+vi.mock("./db/householdHolds", async (orig) => h.wrap("householdHolds", await orig()));
 vi.mock("./db/admin", async (orig) => h.wrap("admin", await orig()));
 vi.mock("./db/emailJobs", async (orig) => h.wrap("emailJobs", await orig()));
 vi.mock("./db/billing", async (orig) => h.wrap("billing", await orig()));
@@ -373,6 +374,16 @@ function installFakes() {
       members: db.table("household_members").filter((member) => member.household_id === householdId),
       error: null,
     }),
+  } as Record<string, Fn>;
+
+  f.householdHolds = {
+    getHouseholdAlertHold: async (householdId: string) => {
+      const row = db.table("households").find((household) => household.id === householdId);
+      return {
+        snoozeUntil: (row?.alerts_snoozed_until as string | undefined) ?? null,
+        vacationUntil: (row?.alerts_vacation_until as string | undefined) ?? null,
+      };
+    },
   } as Record<string, Fn>;
 
   f.admin = {

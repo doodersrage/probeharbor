@@ -1,6 +1,7 @@
 import type { APIRoute } from "astro";
 import { checkApiPlan } from "../../../lib/apiPlan";
 import { resolveApiKey } from "../../../lib/apiKeys";
+import { apiKeyScopeDenied } from "../../../lib/apiKeyScope";
 import { buildPrometheusText } from "../../../lib/prometheusMetrics";
 
 export const GET: APIRoute = async ({ request }) => {
@@ -20,6 +21,9 @@ export const GET: APIRoute = async ({ request }) => {
       headers: { "Content-Type": "application/json" },
     });
   }
+  // Scope: see API_KEY_ROUTE_SCOPES (read keys get 403 on write routes).
+  const denied = apiKeyScopeDenied(resolved, "GET /api/v1/metrics");
+  if (denied) return denied;
 
   const plan = await checkApiPlan(resolved.householdId);
   if (!plan.ok) {

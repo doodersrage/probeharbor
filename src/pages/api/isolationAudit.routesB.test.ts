@@ -78,6 +78,13 @@ vi.mock("../../lib/db/remaining", () => ({
   userByTelegramSecret: (...a: unknown[]) => mockUserByTelegramSecret(...a),
   setDigestOptIn: (...a: unknown[]) => mockSetDigestOptIn(...a),
 }));
+const mockGetHouseholdAlertHold = vi.fn(async (_householdId: string) => ({ snoozeUntil: null, vacationUntil: null }));
+const mockSetHouseholdSnoozeUntil = vi.fn(async (_householdId: string, _until: string | null) => 1);
+vi.mock("../../lib/db/householdHolds", () => ({
+  getHouseholdAlertHold: (householdId: string) => mockGetHouseholdAlertHold(householdId),
+  setHouseholdSnoozeUntil: (householdId: string, until: string | null) => mockSetHouseholdSnoozeUntil(householdId, until),
+  setHouseholdVacationUntil: vi.fn(async () => 1),
+}));
 vi.mock("../../lib/userRecords", () => ({
   getUserRecord: async () => ({ id: "u", user_metadata: {} }),
 }));
@@ -231,7 +238,7 @@ describe("pucks/claim: view-only members can't claim a bay", () => {
 // ---- v1 API key ---------------------------------------------------------------
 describe("v1/devices/sensors-batch: only the key's household's sensors", () => {
   it("skips a sensor id from another household and lists only the key's household", async () => {
-    mockResolveApiKey.mockResolvedValue({ householdId: OURS, keyId: "k1" });
+    mockResolveApiKey.mockResolvedValue({ householdId: OURS, keyId: "k1", scope: "write" });
     mockCheckApiPlan.mockResolvedValue({ ok: true, entitlements: {} });
     mockUpdateDeviceSensor.mockResolvedValue({ error: null });
     const { POST } = await import("./v1/devices/sensors-batch");
@@ -256,6 +263,17 @@ describe("inbound/[token]: acts on the token's household only", () => {
     expect(mockListHouseholdDevices).toHaveBeenCalledWith(THEIRS);
     expect(mockFetchLatestSensorValues).toHaveBeenCalledWith(THEIRS);
     expect(mockFetchLatestSensorValues).not.toHaveBeenCalledWith(OURS);
+    expect(mockGetHouseholdAlertHold).toHaveBeenCalledWith(THEIRS);
+    expect(mockGetHouseholdAlertHold).not.toHaveBeenCalledWith(OURS);
+  });
+
+  it("snooze sets the resolved webhook's household hold, never a body household or members' settings", async () => {
+    const { POST } = await import("./inbound/[token]");
+    const ctx = { ...jsonCtx("/api/inbound/gtw_x", { action: "snooze", hours: 2, household_id: OURS }), params: { token: "gtw_x" } };
+    const res = await POST(ctx as unknown as APIContext);
+    expect(res.status).toBe(200);
+    expect(mockSetHouseholdSnoozeUntil).toHaveBeenCalledTimes(1);
+    expect(mockSetHouseholdSnoozeUntil.mock.calls[0]![0]).toBe(THEIRS);
   });
 });
 
@@ -370,6 +388,8 @@ describe("user/pull-setup/bulk and user/dashboard-snapshot", () => {
     expect(mockListHouseholdDevices).toHaveBeenCalledWith(OURS);
     expect(mockFetchLatestSensorValues).toHaveBeenCalledWith(OURS);
     expect(mockListHouseholdDevices).not.toHaveBeenCalledWith(THEIRS);
+    expect(mockGetHouseholdAlertHold).toHaveBeenCalledWith(OURS);
+    expect(mockGetHouseholdAlertHold).not.toHaveBeenCalledWith(THEIRS);
   });
 });
 

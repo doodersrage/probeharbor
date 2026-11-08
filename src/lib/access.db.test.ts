@@ -85,7 +85,7 @@ describe("API keys (Neon)", () => {
     expect(key).toMatchObject({ household_id: a.home, name: "Metrics key", last_used_at: null });
     expect(await sql("select 1 from public.api_keys where key_hash = $1", [plaintext])).toEqual([]); // stored hashed
 
-    await expect(resolveApiKey(plaintext!)).resolves.toEqual({ householdId: a.home, keyId: key!.id });
+    await expect(resolveApiKey(plaintext!)).resolves.toEqual({ householdId: a.home, keyId: key!.id, scope: "read" });
     expect((await listHouseholdApiKeys(a.home))[0]?.last_used_at).not.toBeNull();
 
     await revokeHouseholdApiKey(a.home, key!.id);

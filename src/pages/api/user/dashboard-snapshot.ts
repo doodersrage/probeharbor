@@ -15,7 +15,9 @@ import {
   getAlertPauseState,
   isSnoozeActive,
   isVacationActive,
+  withHouseholdHold,
 } from "../../../lib/alertSnooze";
+import { loadHouseholdAlertHold } from "../../../lib/alertSnoozeTokens";
 import { fetchWeatherForUser } from "../../../lib/weatherContext";
 import { overviewCardsMessages } from "../../../i18n/messages/app/overviewCards";
 import { apiCommonMessages, apiLocale } from "../../../i18n/messages/app/api/common";
@@ -127,7 +129,11 @@ export const GET: APIRoute = async ({ cookies, locals }) => {
     useCelsius: getDisplayPreferencesFromMetadata(user).useCelsius,
   }, locale, overviewCardsMessages(locale).garageRisk);
 
-  const alertPause = alertSettings.enabled ? getAlertPauseState(alertSettings) : null;
+  // This household's own hold (inbound webhook), shown next to the member's own pause.
+  const householdHold = householdId ? await loadHouseholdAlertHold(householdId) : null;
+  const alertPause = alertSettings.enabled
+    ? getAlertPauseState(withHouseholdHold(alertSettings, householdHold))
+    : null;
 
   const body = {
     at: new Date().toISOString(),
@@ -157,7 +163,10 @@ export const GET: APIRoute = async ({ cookies, locals }) => {
     vacationActive: isVacationActive(alertSettings),
     snoozeUntil: alertSettings.snoozeUntil,
     vacationUntil: alertSettings.vacationUntil,
-    /** When routine alerts resume (snooze/vacation), formatted; null when not paused. */
+    /** This household's snooze / vacation set by its inbound webhook (for all members). */
+    householdSnoozeActive: isSnoozeActive({ snoozeUntil: householdHold?.snoozeUntil ?? null }),
+    householdVacationActive: isVacationActive({ vacationUntil: householdHold?.vacationUntil ?? null }),
+    /** When routine alerts resume (own or household snooze/vacation, whichever is later), formatted; null when not paused. */
     alertsPausedUntilLabel: alertPause
       ? formatAlertPauseUntil(alertPause.until, locale, alertSettings.quietHoursTimezone)
       : null,

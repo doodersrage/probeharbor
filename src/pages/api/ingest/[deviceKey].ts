@@ -292,6 +292,12 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
           fetchAlertSensorValues,
         } = await import("../../../lib/alertNotifications");
 
+        const { withHouseholdHold } = await import("../../../lib/alertSnooze");
+        const { loadHouseholdAlertHold } = await import("../../../lib/alertSnoozeTokens");
+        // The household's own snooze / vacation (inbound webhook), read once:
+        // held like each member's own, for this household's alerts only.
+        const householdHold = await loadHouseholdAlertHold(device.household_id);
+
         const devices = await listHouseholdDevices(device.household_id);
         // Skips demo (simulated) feeds in the same household: they never alert.
         const latest = await fetchAlertSensorValues(device.household_id);
@@ -303,6 +309,8 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
           try {
             // Alerts go out in each member's account language.
             const locale = localeFromMetadata(member.userMetadata);
+            // Evaluation only, never saved (see withHouseholdHold).
+            const settings = withHouseholdHold(member.settings, householdHold);
             const weatherCityId =
               typeof member.userMetadata?.weather_city_id === "string"
                 ? member.userMetadata.weather_city_id.trim()
@@ -310,18 +318,18 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
             await sendThresholdAlertsIfNeeded(
               member.userId,
               member.email,
-              member.settings,
+              settings,
               readings,
               device.household_id,
               { weatherCityId, latestSensors: latest, useCelsius: member.userMetadata?.use_celsius === true },
               locale,
             );
-            await sendFloodAlertsIfNeeded(member.userId, member.email, member.settings, floodReadings, locale);
+            await sendFloodAlertsIfNeeded(member.userId, member.email, settings, floodReadings, locale);
             await maybeSendRuleAlerts(
               member.userId,
               member.email,
               devices.devices,
-              member.settings,
+              settings,
               readings,
               device.household_id,
               locale,

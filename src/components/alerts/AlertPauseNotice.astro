@@ -3,9 +3,13 @@
  * "Routine alerts snoozed until … · Resume alerts". Display only: it reads
  * snooze/vacation from alert settings and posts the existing clear actions to
  * /api/user/alert-snooze. It does not change which alerts send.
+ *
+ * `householdHold` is the current household's own snooze / vacation, set by
+ * its inbound webhook for everyone in it. It is shown on its own lines with no
+ * resume button (the member's clear actions don't touch it).
  */
 import type { AlertSettings } from "../../lib/alerts";
-import { formatAlertPauseUntil, getAlertPauseState } from "../../lib/alertSnooze";
+import { formatAlertPauseUntil, getAlertPauseState, type HouseholdAlertHold } from "../../lib/alertSnooze";
 import { fmt, getLocale } from "../../i18n";
 import { alertsMessages } from "../../i18n/messages/app/alerts";
 
@@ -16,9 +20,10 @@ interface Props {
   redirect: string;
   /** Row inside the Overview status card, or a plain paragraph. */
   variant?: "row" | "inline";
+  householdHold?: HouseholdAlertHold | null;
 }
 
-const { settings, canEdit, redirect, variant = "row" } = Astro.props;
+const { settings, canEdit, redirect, variant = "row", householdHold = null } = Astro.props;
 const locale = getLocale(Astro);
 const t = alertsMessages(locale).pause;
 // With alerts off entirely there is nothing to resume; the Off state says enough.
@@ -40,8 +45,21 @@ const lines = pause
       },
     ].filter((line): line is { text: string; kind: string; action: string; label: string } => Boolean(line))
   : [];
+const householdPause = settings.enabled && householdHold ? getAlertPauseState(householdHold) : null;
+const householdLines = householdPause
+  ? [
+      householdPause.snoozeUntil && {
+        text: fmt(t.householdSnoozedUntil, { time: when(householdPause.snoozeUntil) }),
+        kind: "household_snooze",
+      },
+      householdPause.vacationUntil && {
+        text: fmt(t.householdVacationUntil, { time: when(householdPause.vacationUntil) }),
+        kind: "household_vacation",
+      },
+    ].filter((line): line is { text: string; kind: string } => Boolean(line))
+  : [];
 ---
-{lines.length > 0 && (
+{(lines.length > 0 || householdLines.length > 0) && (
   <div
     class:list={[variant === "row" ? "garage-risk-row" : "alert-pause-inline", "alert-pause-notice"]}
     role="status"
@@ -62,6 +80,12 @@ const lines = pause
         )}
       </p>
     ))}
+    {householdLines.map((line) => (
+      <p class="m-0" data-alert-pause-kind={line.kind}>{line.text}</p>
+    ))}
+    {householdLines.length > 0 && (
+      <p class="m-0 text-sm text-[var(--color-text-muted)]" data-alert-pause-kind="household_hint">{t.householdClearHint}</p>
+    )}
     <p class="m-0 text-sm text-[var(--color-text-muted)]">{t.stillSend}</p>
   </div>
 )}

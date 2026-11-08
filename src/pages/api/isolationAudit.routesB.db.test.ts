@@ -41,7 +41,8 @@ async function home(email: string) {
 async function apiKeyFor(householdId: string, createdBy: string): Promise<string> {
   const key = `gtm_${"ab".repeat(32)}`;
   await sql(
-    "insert into public.api_keys (household_id, name, key_prefix, key_hash, created_by) values ($1, 'Metrics key', $2, $3, $4)",
+    // pull-setup needs a write key (new keys default to read-only).
+    "insert into public.api_keys (household_id, name, key_prefix, key_hash, created_by, scope) values ($1, 'Metrics key', $2, $3, $4, 'write')",
     [householdId, key.slice(0, 10), createHash("sha256").update(key).digest("hex"), createdBy],
   );
   return key;

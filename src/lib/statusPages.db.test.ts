@@ -5,7 +5,19 @@ vi.mock("./runtimeEnv", () => ({
   getRuntimeEnv: () => undefined,
   hasRuntimeEnv: () => false,
 }));
-vi.mock("./mailer", () => ({ sendEmail: async () => {} }));
+const sent = vi.hoisted(() => [] as string[]);
+vi.mock("./mailer", () => ({
+  sendEmail: async (_to: string, _subject: string, text: string) => {
+    sent.push(text);
+  },
+}));
+
+/** The token in the latest confirm email (the database holds only its hash). */
+function lastEmailedToken(): string {
+  const token = /token=([0-9a-f]{48})/.exec(sent.at(-1) ?? "")?.[1];
+  if (!token) throw new Error("no confirm link emailed");
+  return token;
+}
 
 import { readLastKnownHealthy, writeLastKnownHealthy } from "./db/statusPages";
 import {
@@ -65,28 +77,38 @@ describe("household status pages (Neon)", () => {
 describe("status email subscriptions (Neon)", () => {
   it("subscribe → confirm → listed; re-subscribing a confirmed address keeps its link; unsubscribe removes it", async () => {
     await expect(subscribeToStatusUpdates(" Ops@Example.com ")).resolves.toEqual({ ok: true });
-    const [row] = await sql<{ token: string; email: string }>("select token, email from public.status_subscriptions");
+    const token = lastEmailedToken();
+    const [row] = await sql<{ id: string; token: string | null; token_hash: string; email: string }>(
+      "select id, token, token_hash, email from public.status_subscriptions",
+    );
     expect(row?.email).toBe("ops@example.com");
+    expect(row?.token).toBeNull(); // no plaintext stored
+    expect(row?.token_hash).toMatch(/^[0-9a-f]{64}$/);
+    expect(row?.token_hash).not.toBe(token);
     expect(await listConfirmedStatusSubscribers()).toEqual([]);
 
-    expect((await confirmStatusSubscription(row!.token)).ok).toBe(true);
-    expect(await listConfirmedStatusSubscribers()).toEqual([{ email: "ops@example.com", token: row!.token }]);
+    expect((await confirmStatusSubscription(row!.token_hash)).ok).toBe(false); // the stored hash isn't a link
+    expect((await confirmStatusSubscription(token)).ok).toBe(true);
+    expect(await listConfirmedStatusSubscribers()).toEqual([{ id: row!.id, email: "ops@example.com" }]);
 
+    const emails = sent.length;
     await subscribeToStatusUpdates("ops@example.com");
-    expect((await listConfirmedStatusSubscribers())[0]?.token).toBe(row!.token);
+    expect(sent.length).toBe(emails); // confirmed: no new email, link unchanged
+    expect(await sql("select token_hash from public.status_subscriptions")).toEqual([{ token_hash: row!.token_hash }]);
 
-    expect((await unsubscribeStatusSubscription(row!.token)).ok).toBe(true);
+    expect((await unsubscribeStatusSubscription(token)).ok).toBe(true);
     expect(await listConfirmedStatusSubscribers()).toEqual([]);
-    expect((await unsubscribeStatusSubscription(row!.token)).ok).toBe(false);
+    expect((await unsubscribeStatusSubscription(token)).ok).toBe(false);
   });
 
   it("an unconfirmed address gets a new link on re-subscribe; two at once leave one row", async () => {
     await subscribeToStatusUpdates("new@example.com");
-    const [first] = await sql<{ token: string }>("select token from public.status_subscriptions");
+    const first = lastEmailedToken();
     await Promise.all([subscribeToStatusUpdates("new@example.com"), subscribeToStatusUpdates("new@example.com")]);
-    const rows = await sql<{ token: string }>("select token from public.status_subscriptions");
-    expect(rows).toHaveLength(1);
-    expect(rows[0]?.token).not.toBe(first?.token);
+    const rows = await sql<{ token: string | null }>("select token from public.status_subscriptions");
+    expect(rows).toEqual([{ token: null }]);
+    expect((await confirmStatusSubscription(first)).ok).toBe(false); // replaced
+    expect((await confirmStatusSubscription(lastEmailedToken())).ok).toBe(true);
     expect((await confirmStatusSubscription("nope")).ok).toBe(false);
   });
 });

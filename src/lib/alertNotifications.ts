@@ -143,7 +143,8 @@ import {
 import { fetchForecastMinTempForConfig, fetchWeatherSnapshotForConfig } from "./weatherContext";
 import { personalWeatherConfigFromMetadata } from "./personalWeatherStations";
 import { fetchNwsAlerts, hasFreezeRelatedNwsAlert } from "./nwsAlerts";
-import { buildSnoozeUrl } from "./alertSnoozeTokens";
+import { buildSnoozeUrl, loadHouseholdAlertHold } from "./alertSnoozeTokens";
+import { type HouseholdAlertHold, withHouseholdHold } from "./alertSnooze";
 import { buildSiteUrl } from "./siteUrl";
 import { persistDoorSessions, readDoorSessions } from "./doorEvents";
 import type { StuckSensor } from "./stuckSensors";
@@ -755,9 +756,18 @@ export async function maybeSendThresholdAlerts(
   devices?: DeviceWithSensors[],
   /** Recipient language; defaults to the account language in `userMetadata`. */
   locale: Locale = localeFromMetadata(userMetadata),
+  /**
+   * The household's own snooze / vacation (inbound webhook). Callers looping
+   * over members pass it, loaded once per household; when omitted it is read
+   * here. null: none (or unreadable).
+   */
+  householdHold?: HouseholdAlertHold | null,
 ): Promise<void> {
   await ensureLocale(locale, ["app"]);
-  const settings = await getAlertSettingsForUser(userId, userMetadata);
+  const hold =
+    householdHold !== undefined ? householdHold : householdId ? await loadHouseholdAlertHold(householdId) : null;
+  // Held like the member's own snooze / vacation, for this household only.
+  const settings = withHouseholdHold(await getAlertSettingsForUser(userId, userMetadata), hold);
   // Demo (simulated) feeds never alert: drop them before anything is read.
   const real = excludeDemoFeeds(feeds, probes);
   const realFeeds = real.feeds;

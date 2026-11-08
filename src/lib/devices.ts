@@ -144,6 +144,20 @@ export function devicesToTempConfig(devices: DeviceWithSensors[]): {
   return { feeds, probes };
 }
 
+/**
+ * One household's devices as feed/probe config, for jobs that already know
+ * the household (the history cron). Never goes through a member's preferred
+ * household, which can be a different one.
+ */
+export async function getHouseholdDevicesAsTempConfig(householdId: string) {
+  const listed = await listHouseholdDevices(householdId);
+  if (listed.error) {
+    return { householdId, devices: [] as DeviceWithSensors[], feeds: [], probes: [], error: listed.error };
+  }
+  const { feeds, probes } = devicesToTempConfig(listed.devices);
+  return { householdId, devices: listed.devices, feeds, probes, error: null as string | null };
+}
+
 export async function getUserDevicesAsTempConfig(userId: string, email?: string | null) {
   // Auto-migrate leftover user_temp_feeds / user_temp_probes into pull devices.
   try {

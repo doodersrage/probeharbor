@@ -8,13 +8,13 @@
  * - Resolving an API key finds it and stamps last_used_at in one statement.
  * - Marking an invite accepted only touches one not yet accepted.
  */
-import type { ApiKeyRow } from "../apiKeys";
+import type { ApiKeyRow, ApiKeyScope } from "../apiKeys";
 import type { HouseholdInvite, PendingInvite } from "../householdInvites";
 import { query } from "./client";
 
 const message = (error: unknown) => (error instanceof Error ? error.message : String(error));
 const INVITE_COLUMNS = "id, household_id, email, invited_by, expires_at, accepted_at, created_at, role";
-const KEY_COLUMNS = "id, household_id, name, key_prefix, created_at, last_used_at, revoked_at";
+const KEY_COLUMNS = "id, household_id, name, key_prefix, scope, created_at, last_used_at, revoked_at";
 
 // ---- invites ----------------------------------------------------------------
 
@@ -123,12 +123,13 @@ export async function insertApiKey(row: {
   keyPrefix: string;
   keyHash: string;
   createdBy: string;
+  scope: ApiKeyScope;
 }): Promise<{ key: ApiKeyRow | null; error: string | null }> {
   try {
     const [key] = await query<ApiKeyRow>(
-      `insert into public.api_keys (household_id, name, key_prefix, key_hash, created_by)
-       values ($1, $2, $3, $4, $5) returning ${KEY_COLUMNS}`,
-      [row.householdId, row.name, row.keyPrefix, row.keyHash, row.createdBy],
+      `insert into public.api_keys (household_id, name, key_prefix, key_hash, created_by, scope)
+       values ($1, $2, $3, $4, $5, $6) returning ${KEY_COLUMNS}`,
+      [row.householdId, row.name, row.keyPrefix, row.keyHash, row.createdBy, row.scope],
     );
     return key ? { key, error: null } : { key: null, error: "Failed to create key" };
   } catch (error) {
@@ -145,15 +146,19 @@ export async function revokeApiKey(householdId: string, keyId: string): Promise<
   }
 }
 
-/** The household of an active key (and stamp its use), or null. */
-export async function resolveApiKey(keyHash: string): Promise<{ householdId: string; keyId: string } | null> {
+/** The household and scope of an active key (and stamp its use), or null. Anything but 'write' is read. */
+export async function resolveApiKey(
+  keyHash: string,
+): Promise<{ householdId: string; keyId: string; scope: ApiKeyScope } | null> {
   try {
-    const [row] = await query<{ id: string; household_id: string }>(
+    const [row] = await query<{ id: string; household_id: string; scope: string }>(
       `update public.api_keys set last_used_at = now()
-       where key_hash = $1 and revoked_at is null returning id, household_id`,
+       where key_hash = $1 and revoked_at is null returning id, household_id, scope`,
       [keyHash],
     );
-    return row ? { householdId: row.household_id, keyId: row.id } : null;
+    return row
+      ? { householdId: row.household_id, keyId: row.id, scope: row.scope === "write" ? "write" : "read" }
+      : null;
   } catch {
     return null;
   }

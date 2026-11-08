@@ -8,6 +8,7 @@ import {
   type AlertSettingsHistoryMessages,
 } from "../i18n/messages/app/alertSettings/history";
 import { displayDeltaInputValue, displayTempInputValue } from "./temperatureFormat";
+import { storedTelegramCommandSecret } from "./telegramCommandSecret";
 
 /**
  * Alert settings history: each save keeps the version it replaced, with a
@@ -61,6 +62,11 @@ function shown(value: unknown, t: AlertSettingsHistoryMessages, locale: Locale):
   return String(value);
 }
 
+/** The Telegram secret compares in its stored (hashed) form: re-entering the same secret isn't a change. */
+function comparable(key: keyof AlertSettings, value: unknown): unknown {
+  return key === "telegramCommandSecret" ? storedTelegramCommandSecret((value as string | null) ?? null) : value;
+}
+
 /** What changed between two versions, in plain words. Values of secrets stay hidden. */
 export function describeAlertSettingsChanges(
   before: AlertSettings,
@@ -72,8 +78,8 @@ export function describeAlertSettingsChanges(
   let unnamed = 0;
   for (const key of Object.keys(after) as Array<keyof AlertSettings>) {
     if (isStateKey(key)) continue;
-    const a = before[key];
-    const b = after[key];
+    const a = comparable(key, before[key]);
+    const b = comparable(key, after[key]);
     if (JSON.stringify(a ?? null) === JSON.stringify(b ?? null)) continue;
     const label = t.labels[key];
     if (!label) {
@@ -138,6 +144,12 @@ export function historyChangeInDisplayUnit(line: string, locale: Locale, useCels
   return line;
 }
 
+/**
+ * The snapshot a history entry keeps. Built by alertSettingsToRow, so the
+ * Telegram command secret is in its hashed form (never plaintext); restoring
+ * an entry puts that hash back, i.e. the secret that was set then works
+ * again. Rows written before this change are scrubbed by migration 0004.
+ */
 function configRow(settings: AlertSettings): Record<string, unknown> {
   return Object.fromEntries(
     Object.entries(alertSettingsToRow(settings)).filter(

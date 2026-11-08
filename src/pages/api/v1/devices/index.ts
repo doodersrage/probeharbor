@@ -1,6 +1,7 @@
 import type { APIRoute } from "astro";
 import { checkApiPlan } from "../../../../lib/apiPlan";
 import { resolveApiKey } from "../../../../lib/apiKeys";
+import { apiKeyScopeDenied } from "../../../../lib/apiKeyScope";
 import {
   createPushDevice,
   listHouseholdDevices,
@@ -38,6 +39,9 @@ export const GET: APIRoute = async ({ request }) => {
       headers: { "Content-Type": "application/json" },
     });
   }
+  // Scope: see API_KEY_ROUTE_SCOPES (read keys get 403 on write routes).
+  const denied = apiKeyScopeDenied(resolved, "GET /api/v1/devices");
+  if (denied) return denied;
 
   const plan = await checkApiPlan(resolved.householdId);
   if (!plan.ok) {
@@ -85,6 +89,9 @@ export const POST: APIRoute = async ({ request }) => {
       headers: { "Content-Type": "application/json" },
     });
   }
+  // Scope: see API_KEY_ROUTE_SCOPES (read keys get 403 on write routes).
+  const denied = apiKeyScopeDenied(resolved, "POST /api/v1/devices");
+  if (denied) return denied;
 
   const plan = await checkApiPlan(resolved.householdId);
   if (!plan.ok) {

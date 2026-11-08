@@ -95,3 +95,16 @@ describe("GET /api/v1/metrics plan check", () => {
     expect(mockBuildPrometheusText).not.toHaveBeenCalled();
   });
 });
+
+describe("GET /api/v1/metrics key scope (read route)", () => {
+  it.each(["read", "write"])("a %s key gets metrics", async (scope) => {
+    mockResolveApiKey.mockResolvedValue({ householdId: "house-1", keyId: "key-1", scope });
+    mockBuildPrometheusText.mockResolvedValue("probeharbor_temp_f 42\n");
+    const { GET } = await import("./metrics");
+
+    const response = await GET(makeContext("Bearer gtm_good-key"));
+
+    expect(response.status).toBe(200);
+    expect(mockBuildPrometheusText).toHaveBeenCalledWith("house-1");
+  });
+});

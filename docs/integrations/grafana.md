@@ -13,7 +13,7 @@ Authorization: Bearer <api-key>
 
 ## Grafana
 
-1. Create an API key under **Dashboard → Share**  
+1. Create an API key under **Dashboard → Share → API**. Read-only is enough for metrics (and the safer choice).  
 2. Add a Prometheus data source (or use Infinity / scrape) pointing at the metrics URL with the Bearer header  
 3. Import the dashboard JSON:
 

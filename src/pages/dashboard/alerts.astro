@@ -30,6 +30,7 @@ import {
 } from "../../lib/households";
 import { listHouseholdDevices } from "../../lib/devices";
 import { getTenantNotifySettings } from "../../lib/tenantRelay";
+import { loadHouseholdAlertHold } from "../../lib/alertSnoozeTokens";
 import { historyChangeInDisplayUnit, listAlertSettingsHistory } from "../../lib/alertSettingsHistory";
 import { fmt, formatDateTime, getLocale } from "../../i18n";
 import { alertsMessages } from "../../i18n/messages/app/alerts";
@@ -88,6 +89,7 @@ const [
   devicesResult,
   tenantNotify,
   deliveryEvents,
+  householdHold,
 ] =
   await Promise.all([
     getAlertSettingsForUser(user.id, user.user_metadata as Record<string, unknown>),
@@ -105,6 +107,8 @@ const [
       ? getTenantNotifySettings(household.householdId)
       : Promise.resolve({ email: null, name: null }),
     listRecentAlertEvents(user.id, 100),
+    // This household's own snooze / vacation (inbound webhook); null if none or unreadable.
+    household.householdId ? loadHouseholdAlertHold(household.householdId) : Promise.resolve(null),
   ]);
 const channelDelivery = summarizeChannelDelivery(deliveryEvents);
 
@@ -294,6 +298,7 @@ const referralRewardDays = Number(
         </p>
         <AlertPauseNotice
           settings={alertSettings}
+          householdHold={householdHold}
           canEdit={canEdit}
           redirect="/dashboard/alerts?tab=activity"
           variant="inline"

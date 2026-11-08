@@ -6,8 +6,8 @@ import { resolveSiteUrl } from "./schemaMarkup";
 import type { Locale } from "../i18n/locales";
 import { statusEmailMessages } from "../i18n/messages/app/email/status";
 import {
-  buildStatusUnsubscribeUrl,
   listConfirmedStatusSubscribers,
+  statusUnsubscribeUrlFor,
 } from "./statusSubscriptions";
 
 async function readLastKnownHealthy(): Promise<boolean | null | undefined> {
@@ -25,7 +25,7 @@ async function writeLastKnownHealthy(healthy: boolean): Promise<void> {
 
 async function sendStatusChangeEmail(
   to: string,
-  token: string,
+  unsubscribeUrl: string,
   healthy: boolean,
   locale: Locale = "en",
 ): Promise<void> {
@@ -39,7 +39,7 @@ async function sendStatusChangeEmail(
       cta: { label: t.cta, url: `${siteUrl}/system-status` },
       secondaryCta: {
         label: t.unsubscribe,
-        url: buildStatusUnsubscribeUrl(token),
+        url: unsubscribeUrl,
       },
       tone: healthy ? "success" : "alert",
       footerNote: t.footerNote,
@@ -98,7 +98,7 @@ export async function checkAndNotifyStatusSubscribers(): Promise<StatusNotifyRes
     try {
       await sendStatusChangeEmail(
         subscriber.email,
-        subscriber.token,
+        await statusUnsubscribeUrlFor(subscriber),
         summary.healthy,
         subscriber.locale ?? "en",
       );

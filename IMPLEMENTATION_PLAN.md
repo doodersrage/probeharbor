@@ -4784,18 +4784,33 @@ Cloudflare email binding.
             created in the last 10 minutes (`isLikelyNewUser`).
          5. `/api/home/weather` sent a signed-in user's own station (name,
             location) with a public cache header: now `private` + `Vary`.
-         Open product/privacy decisions (not changed): the public freeze
-         map's `?sparse=1` view lists cities with fewer than 3 households;
-         re-subscribing a freeze-alert email with a new place un-confirms
-         the old one; who may invite differs (action: owner; API: owner or
-         member) and re-invites change roles; API keys have no read-only
-         scope (a "metrics" key can create devices and replace the pull
-         setup); snooze/vacation are per user, so another household's
-         inbound webhook or Telegram can pause a member's alerts
-         everywhere; `/api/user/export` includes encrypted ingest keys in
-         device meta; status-subscription and Telegram secrets are compared
-         unhashed. Hardening ideas: expiry filters in SQL as well as in
-         callers; household checks inside the sensor/device-id helpers.
+         Follow-ups, all fixed 2026-11-08 on the owner's "fix all of them":
+         - Freeze map: no figures, coordinates or custom place names for
+           cities under 3 households; `?sparse=1` removed (`9466912`).
+         - Freeze alerts: a confirmed subscription isn't paused by a new
+           sign-up; a signed 7-day "switch place" link instead (`9356e2b`).
+         - Invites: owner or editor invite on both paths; rename, remove
+           and role changes owner-only; re-invites keep roles, explicit
+           Change role control (`21efce9`).
+         - Export: encrypted ingest keys left out (`ec2cf21`).
+         - Migration 0003 (applied to production 2026-11-08 01:52 UTC after
+           backup `probeharbor-20261108T015158Z.dump`): API key scopes (read
+           routes: metrics, list devices; write: create device,
+           sensors-batch, pull-setup; existing keys write, new keys read);
+           inbound-webhook snooze/vacation hold only that household
+           (`households.alerts_*_until`), members' own holds unchanged;
+           status-page subscription tokens and the Telegram command secret
+           stored and matched as SHA-256 (signed unsubscribe links).
+         - Migration 0004 (after the deploy): hashes the remaining
+           plaintext tokens/secrets, incl. alert-settings history.
+           `db:migrate --up-to NNNN` added for this kind of ordering.
+         - Found on the way: the history cron loaded each household through
+           its owner's preferred household, so an owner who was also in
+           another household had their own never checked. Now by household.
+         Still open (smaller): Telegram secret can't be cleared once set;
+         no dashboard control to lift a household hold (it expires or the
+         integration clears it); expiry filters in SQL as well as callers;
+         household checks inside sensor/device-id helpers.
 4. **Login on Better Auth.** Email + password (accept existing bcrypt
    hashes, so passwords keep working), Google, GitHub, Discord, email
    confirm and reset through Cloudflare email, TOTP and WebAuthn per

@@ -1,4 +1,7 @@
+import { type ApiKeyScope, parseApiKeyScope } from "./apiKeyScope";
 import * as neonAccess from "./db/access";
+
+export type { ApiKeyScope } from "./apiKeyScope";
 
 async function sha256Hex(value: string): Promise<string> {
   const digest = await crypto.subtle.digest(
@@ -20,6 +23,8 @@ export type ApiKeyRow = {
   household_id: string;
   name: string;
   key_prefix: string;
+  /** "read" (metrics, device list) or "write" (also changes devices and setup). */
+  scope: ApiKeyScope;
   created_at: string;
   last_used_at: string | null;
   revoked_at: string | null;
@@ -35,6 +40,8 @@ export async function createHouseholdApiKey(input: {
   householdId: string;
   name: string;
   createdBy: string;
+  /** Defaults to read-only. */
+  scope?: ApiKeyScope;
 }): Promise<{ plaintext: string | null; key: ApiKeyRow | null; error: string | null }> {
   const plaintext = randomApiKey();
   const key_hash = await sha256Hex(plaintext);
@@ -45,6 +52,7 @@ export async function createHouseholdApiKey(input: {
     keyPrefix: key_prefix,
     keyHash: key_hash,
     createdBy: input.createdBy,
+    scope: parseApiKeyScope(input.scope),
   });
   return created.key ? { plaintext, key: created.key, error: null } : { plaintext: null, key: null, error: created.error };
 }
@@ -58,7 +66,7 @@ export async function revokeHouseholdApiKey(
 
 export async function resolveApiKey(
   bearer: string,
-): Promise<{ householdId: string; keyId: string } | null> {
+): Promise<{ householdId: string; keyId: string; scope: ApiKeyScope } | null> {
   const token = bearer.trim();
   if (!token.startsWith("gtm_")) return null;
   const key_hash = await sha256Hex(token);

@@ -1,4 +1,13 @@
+import { createHash } from "node:crypto";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+const sha = (v: string) => createHash("sha256").update(v).digest("hex");
+
+const env = vi.hoisted(() => ({ values: {} as Record<string, string | undefined> }));
+vi.mock("./runtimeEnv", () => ({
+  getRuntimeEnv: (key: string) => env.values[key],
+  hasRuntimeEnv: (key: string) => Boolean(env.values[key]),
+}));
 
 const mockSendEmail = vi.fn();
 vi.mock("./mailer", () => ({
@@ -10,6 +19,8 @@ const db = vi.hoisted(() => ({
   writeStatusSubscriberToken: vi.fn(),
   confirmStatusSubscriber: vi.fn(),
   deleteStatusSubscriber: vi.fn(),
+  deleteStatusSubscriberById: vi.fn(),
+  rotateStatusSubscriberTokenHash: vi.fn(),
   listConfirmedStatusSubscribers: vi.fn(),
 }));
 vi.mock("./db/statusPages", () => db);
@@ -18,6 +29,7 @@ beforeEach(() => {
   mockSendEmail.mockReset().mockResolvedValue(undefined);
   for (const fn of Object.values(db)) fn.mockReset();
   db.writeStatusSubscriberToken.mockResolvedValue(undefined);
+  env.values = { CRON_SECRET: "test-cron-secret" };
 });
 
 afterEach(() => {
@@ -41,12 +53,14 @@ describe("subscribeToStatusUpdates", () => {
 
     expect(result.ok).toBe(true);
     expect(db.findStatusSubscriber).toHaveBeenCalledWith("new@example.com");
-    const [email, token] = db.writeStatusSubscriberToken.mock.calls[0]!;
+    const [email, stored] = db.writeStatusSubscriberToken.mock.calls[0]!;
     expect(email).toBe("new@example.com");
-    expect(token).toMatch(/^[0-9a-f]{48}$/);
     expect(mockSendEmail).toHaveBeenCalledTimes(1);
     expect(mockSendEmail.mock.calls[0][0]).toBe("new@example.com");
-    expect(mockSendEmail.mock.calls[0][2]).toContain(`token=${token}`);
+    const token = /token=([0-9a-f]{48})/.exec(mockSendEmail.mock.calls[0][2])?.[1];
+    expect(token).toBeTruthy();
+    // Only the hash is written; the emailed token itself is never stored.
+    expect(stored).toBe(sha(token!));
   });
 
   it("re-sends confirmation for an existing unconfirmed subscriber", async () => {
@@ -113,7 +127,8 @@ describe("confirmStatusSubscription", () => {
     const { confirmStatusSubscription } = await import("./statusSubscriptions");
     const result = await confirmStatusSubscription("tok123");
     expect(result).toEqual({ ok: true, message: "You're subscribed to status updates." });
-    expect(db.confirmStatusSubscriber).toHaveBeenCalledWith("tok123");
+    // By hash, with the raw token for rows migration 0004 hasn't hashed yet.
+    expect(db.confirmStatusSubscriber).toHaveBeenCalledWith(sha("tok123"), "tok123");
   });
 });
 
@@ -123,7 +138,28 @@ describe("unsubscribeStatusSubscription", () => {
     const { unsubscribeStatusSubscription } = await import("./statusSubscriptions");
     const result = await unsubscribeStatusSubscription("tok123");
     expect(result.ok).toBe(true);
-    expect(db.deleteStatusSubscriber).toHaveBeenCalledWith("tok123");
+    expect(db.deleteStatusSubscriber).toHaveBeenCalledWith(sha("tok123"), "tok123");
+  });
+
+  it("a signed link removes exactly its subscription; a forged or unsigned-env one does nothing", async () => {
+    db.deleteStatusSubscriberById.mockResolvedValue(true);
+    const { signedStatusUnsubscribeToken, unsubscribeStatusSubscription } = await import("./statusSubscriptions");
+    const id = "6f1c2c1e-7a55-4b39-9a0e-0c1d2e3f4a5b";
+    const signed = await signedStatusUnsubscribeToken(id);
+    expect(signed).toMatch(new RegExp(`^${id}\\.[0-9a-f]{64}$`));
+
+    expect((await unsubscribeStatusSubscription(signed!)).ok).toBe(true);
+    expect(db.deleteStatusSubscriberById).toHaveBeenCalledWith(id);
+    expect(db.deleteStatusSubscriber).not.toHaveBeenCalled();
+
+    db.deleteStatusSubscriberById.mockClear();
+    const otherId = "00000000-0000-4000-8000-000000000000";
+    expect((await unsubscribeStatusSubscription(`${otherId}.${signed!.split(".")[1]}`)).ok).toBe(false);
+    expect(db.deleteStatusSubscriberById).not.toHaveBeenCalled();
+
+    env.values = {};
+    expect((await unsubscribeStatusSubscription(signed!)).ok).toBe(false);
+    expect(await signedStatusUnsubscribeToken(id)).toBeNull();
   });
 
   it("rejects an unknown token", async () => {
@@ -136,11 +172,11 @@ describe("unsubscribeStatusSubscription", () => {
 
 describe("listConfirmedStatusSubscribers", () => {
   it("returns confirmed subscribers", async () => {
-    db.listConfirmedStatusSubscribers.mockResolvedValue([{ email: "a@example.com", token: "t1" }]);
+    db.listConfirmedStatusSubscribers.mockResolvedValue([{ id: "s1", email: "a@example.com" }]);
 
     const { listConfirmedStatusSubscribers } = await import("./statusSubscriptions");
     const result = await listConfirmedStatusSubscribers();
-    expect(result).toEqual([{ email: "a@example.com", token: "t1" }]);
+    expect(result).toEqual([{ id: "s1", email: "a@example.com" }]);
   });
 
   it("returns an empty list on error rather than throwing", async () => {
@@ -149,5 +185,25 @@ describe("listConfirmedStatusSubscribers", () => {
     const { listConfirmedStatusSubscribers } = await import("./statusSubscriptions");
     const result = await listConfirmedStatusSubscribers();
     expect(result).toEqual([]);
+  });
+});
+
+describe("statusUnsubscribeUrlFor", () => {
+  it("signs the subscription id when the link secret is set (nothing written)", async () => {
+    const { statusUnsubscribeUrlFor } = await import("./statusSubscriptions");
+    const url = await statusUnsubscribeUrlFor({ id: "6f1c2c1e-7a55-4b39-9a0e-0c1d2e3f4a5b" });
+    expect(url).toMatch(/\/api\/status\/unsubscribe\?token=6f1c2c1e-7a55-4b39-9a0e-0c1d2e3f4a5b\.[0-9a-f]{64}$/);
+    expect(db.rotateStatusSubscriberTokenHash).not.toHaveBeenCalled();
+  });
+
+  it("without a secret, issues a fresh token and stores only its hash", async () => {
+    env.values = {};
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    db.rotateStatusSubscriberTokenHash.mockResolvedValue(undefined);
+    const { statusUnsubscribeUrlFor } = await import("./statusSubscriptions");
+    const url = await statusUnsubscribeUrlFor({ id: "s1" });
+    const token = /token=([0-9a-f]{48})$/.exec(url)?.[1];
+    expect(token).toBeTruthy();
+    expect(db.rotateStatusSubscriberTokenHash).toHaveBeenCalledWith("s1", sha(token!));
   });
 });

@@ -13,15 +13,26 @@ vi.mock("../../../lib/inboundSigning", () => ({
   verifyInboundRequest: (...a: unknown[]) => mockVerifyInboundRequest(...a),
 }));
 
-const mockApplySnoozeForHouseholdMembers = vi.fn();
-const mockApplyVacationForHouseholdMembers = vi.fn();
-const mockClearSnoozeForHouseholdMembers = vi.fn();
-const mockClearVacationForHouseholdMembers = vi.fn();
+// The household-level hold: the members' own (account-wide) snooze helpers
+// must not be used, so they are mocked to fail the test if called.
+const mockApplyHouseholdSnooze = vi.fn();
+const mockApplyHouseholdVacation = vi.fn();
+const mockClearHouseholdSnooze = vi.fn();
+const mockClearHouseholdVacation = vi.fn();
+const mockGetHouseholdAlertHold = vi.fn();
+const memberWide = () => {
+  throw new Error("inbound webhook must not change members' own alert settings");
+};
 vi.mock("../../../lib/alertSnoozeTokens", () => ({
-  applySnoozeForHouseholdMembers: (...a: unknown[]) => mockApplySnoozeForHouseholdMembers(...a),
-  applyVacationForHouseholdMembers: (...a: unknown[]) => mockApplyVacationForHouseholdMembers(...a),
-  clearSnoozeForHouseholdMembers: (...a: unknown[]) => mockClearSnoozeForHouseholdMembers(...a),
-  clearVacationForHouseholdMembers: (...a: unknown[]) => mockClearVacationForHouseholdMembers(...a),
+  applyHouseholdSnooze: (...a: unknown[]) => mockApplyHouseholdSnooze(...a),
+  applyHouseholdVacation: (...a: unknown[]) => mockApplyHouseholdVacation(...a),
+  clearHouseholdSnooze: (...a: unknown[]) => mockClearHouseholdSnooze(...a),
+  clearHouseholdVacation: (...a: unknown[]) => mockClearHouseholdVacation(...a),
+  getHouseholdAlertHold: (...a: unknown[]) => mockGetHouseholdAlertHold(...a),
+  applySnoozeForHouseholdMembers: memberWide,
+  applyVacationForHouseholdMembers: memberWide,
+  clearSnoozeForHouseholdMembers: memberWide,
+  clearVacationForHouseholdMembers: memberWide,
 }));
 
 const mockListHouseholdDevices = vi.fn();
@@ -61,10 +72,11 @@ beforeEach(() => {
   });
   mockVerifyInboundRequest.mockReset().mockResolvedValue({ ok: true, format: "v2" });
   mockRecordInboundSignatureFormat.mockReset().mockResolvedValue(undefined);
-  mockApplySnoozeForHouseholdMembers.mockReset().mockResolvedValue(2);
-  mockApplyVacationForHouseholdMembers.mockReset().mockResolvedValue(2);
-  mockClearSnoozeForHouseholdMembers.mockReset().mockResolvedValue(2);
-  mockClearVacationForHouseholdMembers.mockReset().mockResolvedValue(2);
+  mockApplyHouseholdSnooze.mockReset().mockResolvedValue(2);
+  mockApplyHouseholdVacation.mockReset().mockResolvedValue(2);
+  mockClearHouseholdSnooze.mockReset().mockResolvedValue(2);
+  mockClearHouseholdVacation.mockReset().mockResolvedValue(2);
+  mockGetHouseholdAlertHold.mockReset().mockResolvedValue({ snoozeUntil: null, vacationUntil: null });
   mockListHouseholdDevices.mockReset().mockResolvedValue({ devices: [{ id: "d1" }] });
   mockFetchLatestSensorValues.mockReset().mockResolvedValue([]);
   mockRecordHouseholdActivity.mockReset().mockResolvedValue(undefined);
@@ -97,7 +109,7 @@ describe("POST /api/inbound/[token]", () => {
 
     expect(response.status).toBe(401);
     expect(await response.json()).toEqual({ error: "Invalid signature" });
-    expect(mockApplyVacationForHouseholdMembers).not.toHaveBeenCalled();
+    expect(mockApplyHouseholdVacation).not.toHaveBeenCalled();
     expect(mockRecordInboundSignatureFormat).not.toHaveBeenCalled();
   });
 
@@ -109,7 +121,7 @@ describe("POST /api/inbound/[token]", () => {
 
     expect(response.status).toBe(401);
     expect(((await response.json()) as { error: string }).error).toMatch(/^Stale timestamp/);
-    expect(mockApplyVacationForHouseholdMembers).not.toHaveBeenCalled();
+    expect(mockApplyHouseholdVacation).not.toHaveBeenCalled();
   });
 
   it("verifies the raw body and request headers, then records the format used", async () => {
@@ -130,7 +142,7 @@ describe("POST /api/inbound/[token]", () => {
     const response = await POST(context);
     const json = await response.json();
 
-    expect(mockApplySnoozeForHouseholdMembers).toHaveBeenCalledWith("house-1", 12);
+    expect(mockApplyHouseholdSnooze).toHaveBeenCalledWith("house-1", 12);
     expect(mockRecordHouseholdActivity).toHaveBeenCalledWith({
       householdId: "house-1",
       action: "inbound_snooze",
@@ -145,7 +157,7 @@ describe("POST /api/inbound/[token]", () => {
 
     await POST(context);
 
-    expect(mockApplySnoozeForHouseholdMembers).toHaveBeenCalledWith("house-1", 24);
+    expect(mockApplyHouseholdSnooze).toHaveBeenCalledWith("house-1", 24);
   });
 
   it("applies vacation mode", async () => {
@@ -154,7 +166,7 @@ describe("POST /api/inbound/[token]", () => {
 
     const json = await (await POST(context)).json();
 
-    expect(mockApplyVacationForHouseholdMembers).toHaveBeenCalledWith("house-1", 5);
+    expect(mockApplyHouseholdVacation).toHaveBeenCalledWith("house-1", 5);
     expect(json).toEqual({ ok: true, action: "vacation", members: 2 });
   });
 
@@ -164,7 +176,7 @@ describe("POST /api/inbound/[token]", () => {
 
     const json = await (await POST(context)).json();
 
-    expect(mockClearSnoozeForHouseholdMembers).toHaveBeenCalledWith("house-1");
+    expect(mockClearHouseholdSnooze).toHaveBeenCalledWith("house-1");
     expect(json).toEqual({ ok: true, action: "clear_snooze", members: 2 });
   });
 
@@ -174,7 +186,7 @@ describe("POST /api/inbound/[token]", () => {
 
     const json = await (await POST(context)).json();
 
-    expect(mockClearVacationForHouseholdMembers).toHaveBeenCalledWith("house-1");
+    expect(mockClearHouseholdVacation).toHaveBeenCalledWith("house-1");
     expect(json).toEqual({ ok: true, action: "clear_vacation", members: 2 });
   });
 
@@ -192,6 +204,21 @@ describe("POST /api/inbound/[token]", () => {
     expect(json.temperatures).toEqual([
       { label: "Garage", value: 40, unit: "F", recorded_at: "2024-01-01" },
     ]);
+    expect(json.alertHold).toEqual({ snoozedUntil: null, vacationUntil: null });
+  });
+
+  it("status reports this household's active hold; an expired one reads as null", async () => {
+    const until = new Date(Date.now() + 3600_000).toISOString();
+    mockGetHouseholdAlertHold.mockResolvedValue({
+      snoozeUntil: until,
+      vacationUntil: new Date(Date.now() - 60_000).toISOString(),
+    });
+    const { POST } = await import("./[token]");
+
+    const json = (await (await POST(makeContext({ body: '{"action":"status"}' }))).json()) as Record<string, unknown>;
+
+    expect(mockGetHouseholdAlertHold).toHaveBeenCalledWith("house-1");
+    expect(json.alertHold).toEqual({ snoozedUntil: until, vacationUntil: null });
   });
 
   it("reads the action from the query string when the JSON body has none", async () => {
@@ -200,7 +227,7 @@ describe("POST /api/inbound/[token]", () => {
 
     await POST(context);
 
-    expect(mockClearSnoozeForHouseholdMembers).toHaveBeenCalled();
+    expect(mockClearHouseholdSnooze).toHaveBeenCalled();
   });
 
   it("returns a help message for an unrecognized action", async () => {

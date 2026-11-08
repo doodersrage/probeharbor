@@ -64,6 +64,9 @@ const ptBr: AlertSettingsMessages = {
     botToken: "Token do bot",
     chatId: "ID do chat (necessário para comandos)",
     webhookSecret: "Segredo do webhook (opcional)",
+    webhookSecretSaved:
+      "Há um segredo salvo. Ele não é exibido novamente: digite um novo para substituí-lo ou deixe o campo vazio para mantê-lo.",
+    webhookSecretReplacePlaceholder: "Digite um novo segredo para substituí-lo",
     telegramHintHtml:
       "Use o <code>setWebhook</code> do Telegram com <code>secret_token</code> para que o Telegram envie <code>X-Telegram-Bot-Api-Secret-Token</code> (o parâmetro <code>?secret=</code> não é aceito). Salve um ID de chat acima: os comandos só funcionam a partir desse chat (/status [nome], /snooze [horas], /vacation [dias]).",
     incomingWebhookUrl: "URL do webhook de entrada",

@@ -29,9 +29,11 @@ Machine-readable contract:
 | `GET` | `/api/user/door-events` | Session cookie | Door openings: the latest `limit` (default 12, max 50), or with `from` / `to` (`YYYY-MM-DD` in your browser's time zone, or ISO timestamps) the openings that started in that range, newest first (`limit` default 100, max 500; adds `range` and `truncated`). Also `live_sessions` for the last 24 h |
 | `GET` | `/api/door-events/export.csv` | Session cookie (CSV plan) | Door openings with temperature and humidity at open and close (`from`, `to`, `days`, `door`); UTC times |
 | `POST` | `/api/devices/reveal-ingest-key` | Session cookie | Recover encrypted push ingest key (rate-limited; audited) |
-| `GET` | `/api/v1/metrics` | Bearer API key | Prometheus text exposition |
-| `GET` | `/api/v1/devices` | Bearer API key | List household devices |
-| `POST` | `/api/v1/devices` | Bearer API key | Create push device |
+| `GET` | `/api/v1/metrics` | Bearer API key (`read`) | Prometheus text exposition |
+| `GET` | `/api/v1/devices` | Bearer API key (`read`) | List household devices |
+| `POST` | `/api/v1/devices` | Bearer API key (`write`) | Create push device (returns its ingest key) |
+| `POST` | `/api/v1/devices/sensors-batch` | Bearer API key (`write`) | Rename / hide sensors |
+| `POST` | `/api/v1/pull-setup` | Bearer API key (`write`) | Replace the household's pull feeds + probe labels |
 | `POST` | `/api/inbound/{token}` | Token + HMAC signature (timestamped V2 recommended) | Snooze / vacation / status actions |
 | `GET` | `/api/share/{token}/readings` | Share token | Public JSON readings (Free family live; Pro expands scopes) |
 | `POST` | `/api/pucks/register` | Companion session | Register claim-puck secret |
@@ -41,6 +43,21 @@ Machine-readable contract:
 | `PUT` | `/api/bays/{bay_id}/mood` | Companion session | Override mood (demo / test) |
 
 Bearer API keys need the household owner's plan to include the API (Pro) **at the time of each call**. After a downgrade, `/api/v1/*` returns `403` `{"error": "API access needs a Pro plan"}`; creating a device past the plan's limit returns `403` with `"code": "device_limit"`. Device ingest keys keep working.
+
+### API key scopes
+
+Each API key is **read-only** (`read`, the default when you create one) or **read and write** (`write`). You pick it when creating the key, and the key list on Dashboard → Share → API shows each key's scope. Only the household owner and editors (full members) can create keys, of either scope.
+
+- `read`: `GET /api/v1/metrics`, `GET /api/v1/devices`. Use this for Prometheus, Grafana, Home Assistant scrapes.
+- `write`: everything `read` can do, plus `POST /api/v1/devices`, `POST /api/v1/devices/sensors-batch`, `POST /api/v1/pull-setup`.
+
+A read-only key on a write endpoint gets `403`:
+
+```json
+{"error": "This API key is read-only. Create a key with write access (Dashboard → Share → API) to use this endpoint.", "code": "insufficient_scope", "required_scope": "write"}
+```
+
+(plus `"ok": false` on `sensors-batch` and `pull-setup`, whose other errors carry it too) and the header `WWW-Authenticate: Bearer error="insufficient_scope", scope="write"`. Keys created before scopes existed are `write`, so they keep working as before. A key's scope can't be changed; create a new key and revoke the old one.
 
 ## Claim puck
 
@@ -53,7 +70,7 @@ Flow: `register` → `claim/start` → device `CHALLENGE` + button → `claim/fi
 ## Create an API key (Pro)
 
 1. Sign in → **Dashboard → Share**  
-2. Create an API key; copy it once  
+2. Create an API key (read-only unless you need the write endpoints); copy it once  
 3. Call:
 
 ```bash

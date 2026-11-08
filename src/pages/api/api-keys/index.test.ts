@@ -123,6 +123,7 @@ describe("POST /api/api-keys", () => {
       householdId: "house-1",
       name: "CI key",
       createdBy: "user-1",
+      scope: "read",
     });
     expect(mockRecordHouseholdActivity).toHaveBeenCalledWith({
       householdId: "house-1",
@@ -142,6 +143,30 @@ describe("POST /api/api-keys", () => {
     expect(mockCreateHouseholdApiKey).toHaveBeenCalledWith(
       expect.objectContaining({ name: "Metrics key" }),
     );
+  });
+
+  it.each([
+    [undefined, "read"],
+    ["read", "read"],
+    ["write", "write"],
+    ["admin", "read"],
+    ["", "read"],
+  ])("scope field %o creates a %s key", async (field, expected) => {
+    const { POST } = await import("./index");
+
+    await POST(makeContext(field === undefined ? { name: "k" } : { name: "k", scope: field }));
+
+    expect(mockCreateHouseholdApiKey).toHaveBeenCalledWith(expect.objectContaining({ scope: expected }));
+  });
+
+  it("a non-manager can't create a write key", async () => {
+    mockRequireHouseholdManager.mockResolvedValue({ ok: false, error: "manager_required" });
+    const { POST } = await import("./index");
+
+    const response = await POST(makeContext({ name: "k", scope: "write" }));
+
+    expect(response.headers.get("Location")).toBe("/dashboard/share?error=manager_required");
+    expect(mockCreateHouseholdApiKey).not.toHaveBeenCalled();
   });
 
   it("redirects with an error when key creation fails", async () => {

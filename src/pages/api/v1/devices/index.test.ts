@@ -42,7 +42,7 @@ function makeContext(
 
 beforeEach(() => {
   mockCheckApiPlan.mockReset().mockResolvedValue({ ok: true, entitlements: { canCreateShareLinks: true, maxDevices: 24 } });
-  mockResolveApiKey.mockReset().mockResolvedValue({ householdId: "house-1" });
+  mockResolveApiKey.mockReset().mockResolvedValue({ householdId: "house-1", keyId: "key-1", scope: "write" });
   mockListHouseholdDevices.mockReset().mockResolvedValue({
     devices: [
       {
@@ -229,5 +229,40 @@ describe("/api/v1/devices plan checks", () => {
 
     expect(response.status).toBe(503);
     expect(mockCreatePushDevice).not.toHaveBeenCalled();
+  });
+});
+
+describe("/api/v1/devices key scope", () => {
+  it("GET (read route) lists devices for a read key", async () => {
+    mockResolveApiKey.mockResolvedValue({ householdId: "house-1", keyId: "key-1", scope: "read" });
+    const { GET } = await import("./index");
+
+    const response = await GET(makeContext());
+
+    expect(response.status).toBe(200);
+    expect(mockListHouseholdDevices).toHaveBeenCalledWith("house-1");
+  });
+
+  it.each([{ scope: "read" }, {}])("POST (write route) refuses %o with 403 before creating anything", async (extra) => {
+    mockResolveApiKey.mockResolvedValue({ householdId: "house-1", keyId: "key-1", ...extra });
+    const { POST } = await import("./index");
+
+    const response = await POST(makeContext({ method: "POST", body: { name: "x" } }));
+
+    expect(response.status).toBe(403);
+    expect(response.headers.get("WWW-Authenticate")).toBe('Bearer error="insufficient_scope", scope="write"');
+    expect(await response.json()).toMatchObject({ code: "insufficient_scope", required_scope: "write" });
+    expect(mockCheckApiPlan).not.toHaveBeenCalled();
+    expect(mockCreatePushDevice).not.toHaveBeenCalled();
+    expect(mockPersistEncryptedIngestKey).not.toHaveBeenCalled();
+  });
+
+  it("POST creates a device for a write key", async () => {
+    const { POST } = await import("./index");
+
+    const response = await POST(makeContext({ method: "POST", body: { name: "x" } }));
+
+    expect(response.status).toBe(201);
+    expect(mockCreatePushDevice).toHaveBeenCalled();
   });
 });

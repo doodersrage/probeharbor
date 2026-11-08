@@ -44,6 +44,9 @@ const de: AlertsMessages = {
     stillSend: "Frost-, Leck-, Strom- und Offline-Alarme werden weiterhin gesendet.",
     resume: "Alarme fortsetzen",
     endVacation: "Urlaub beenden",
+    householdSnoozedUntil: "Eine Integration hat die Routinealarme dieses Haushalts bis {time} pausiert, für alle Mitglieder.",
+    householdVacationUntil: "Eine Integration hat diesen Haushalt bis {time} in den Urlaubsmodus versetzt: Routinealarme werden für alle Mitglieder zurückgehalten.",
+    householdClearHint: "Zum vorzeitigen Beenden clear_snooze oder clear_vacation aus der Integration senden.",
   },
   activity: {
     heading: "Letzte Alarmaktivität",

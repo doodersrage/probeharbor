@@ -47,6 +47,10 @@ const en = {
     stillSend: "Freeze, leak, power and offline alerts still send.",
     resume: "Resume alerts",
     endVacation: "End vacation",
+    /** Set on the household by its inbound webhook (an integration), for everyone in it. */
+    householdSnoozedUntil: "An integration snoozed this household's routine alerts until {time}, for everyone in it.",
+    householdVacationUntil: "An integration put this household in vacation mode until {time}: routine alerts are held for everyone in it.",
+    householdClearHint: "To end it early, send clear_snooze or clear_vacation from the integration.",
   },
   activity: {
     heading: "Recent alert activity",

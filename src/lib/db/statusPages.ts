@@ -91,21 +91,29 @@ export async function findStatusSubscriber(email: string): Promise<{ id: string;
   return row ?? null;
 }
 
-/** New or rotated token for an unconfirmed address (a confirmed one keeps its row). Throws on failure. */
-export async function writeStatusSubscriberToken(email: string, token: string): Promise<void> {
+/**
+ * Tokens in confirm and (pre-HMAC) unsubscribe links are stored only as their
+ * SHA-256 hex (`token_hash`). Rows created before that kept the raw token in
+ * `token`; migration 0004 hashes those and clears `token`. Until it has run,
+ * lookups also match the raw column.
+ */
+
+/** New or rotated confirm token (hash only) for an unconfirmed address; a confirmed one keeps its row. Throws on failure. */
+export async function writeStatusSubscriberToken(email: string, tokenHash: string): Promise<void> {
   await query(
-    `insert into public.status_subscriptions (email, token) values ($1, $2)
-     on conflict (email) do update set token = excluded.token
+    `insert into public.status_subscriptions (email, token, token_hash) values ($1, null, $2)
+     on conflict (email) do update set token = null, token_hash = excluded.token_hash
        where public.status_subscriptions.confirmed_at is null`,
-    [email, token],
+    [email, tokenHash],
   );
 }
 
-export async function confirmStatusSubscriber(token: string): Promise<boolean> {
+export async function confirmStatusSubscriber(tokenHash: string, legacyRaw: string): Promise<boolean> {
   try {
     const rows = await query(
-      "update public.status_subscriptions set confirmed_at = coalesce(confirmed_at, now()) where token = $1 returning id",
-      [token],
+      `update public.status_subscriptions set confirmed_at = coalesce(confirmed_at, now())
+       where token_hash = $1 or token = $2 returning id`,
+      [tokenHash, legacyRaw],
     );
     return rows.length > 0;
   } catch {
@@ -113,19 +121,41 @@ export async function confirmStatusSubscriber(token: string): Promise<boolean> {
   }
 }
 
-export async function deleteStatusSubscriber(token: string): Promise<boolean> {
+export async function deleteStatusSubscriber(tokenHash: string, legacyRaw: string): Promise<boolean> {
   try {
-    const rows = await query("delete from public.status_subscriptions where token = $1 returning id", [token]);
+    const rows = await query(
+      "delete from public.status_subscriptions where token_hash = $1 or token = $2 returning id",
+      [tokenHash, legacyRaw],
+    );
     return rows.length > 0;
   } catch {
     return false;
   }
 }
 
-/** Throws on failure. */
-export function listConfirmedStatusSubscribers(): Promise<Array<{ email: string; token: string }>> {
+/** For a signed unsubscribe link (the signature is checked by the caller). */
+export async function deleteStatusSubscriberById(id: string): Promise<boolean> {
+  try {
+    const rows = await query("delete from public.status_subscriptions where id = $1 returning id", [id]);
+    return rows.length > 0;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Only when no link-signing secret is configured: give a subscriber a fresh
+ * unsubscribe token (hash stored). Replaces the previous hashed token; a
+ * legacy raw `token` is left for 0004. Throws on failure.
+ */
+export async function rotateStatusSubscriberTokenHash(id: string, tokenHash: string): Promise<void> {
+  await query("update public.status_subscriptions set token_hash = $2 where id = $1", [id, tokenHash]);
+}
+
+/** Throws on failure. No tokens: unsubscribe links are signed per send. */
+export function listConfirmedStatusSubscribers(): Promise<Array<{ id: string; email: string }>> {
   return query(
-    "select email, token from public.status_subscriptions where confirmed_at is not null order by created_at, id",
+    "select id, email from public.status_subscriptions where confirmed_at is not null order by created_at, id",
   );
 }
 

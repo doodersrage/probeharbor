@@ -1,7 +1,7 @@
 import { getUserRecord } from "./userRecords";
 import { localeFromMetadata } from "../i18n/userLocale";
 import { fetchTemps } from "./FetchTemps";
-import { getUserDevicesAsTempConfig } from "./devices";
+import { getHouseholdDevicesAsTempConfig, getUserDevicesAsTempConfig } from "./devices";
 import {
   listAllHouseholdOwnerUserIds,
   listHouseholdIdsForCron,
@@ -14,6 +14,8 @@ import {
   maybeSendThresholdAlerts,
 } from "./alertNotifications";
 import { getAlertSettingsForUser } from "./notify";
+import { withHouseholdHold } from "./alertSnooze";
+import { loadHouseholdAlertHold } from "./alertSnoozeTokens";
 import { collectThermostatSnapshotsForAllHouseholds } from "./thermostatSnapshots";
 import { findStuckSensors, type StuckSensor } from "./stuckSensors";
 import type { Locale } from "../i18n/locales";
@@ -129,16 +131,14 @@ export async function collectHistoryForAllUsers(): Promise<{
       // Account deleted after the household list was read: nothing to collect,
       // and looking it up would try to recreate a household for a missing user.
       if (!authUser) continue;
-      const config = await getUserDevicesAsTempConfig(ownerUserId, authUser.email);
+      // This household's devices. (Going through the owner, as before, used
+      // their *preferred* household: an owner who was also in another
+      // household got that one checked twice and their own never.)
+      const config = await getHouseholdDevicesAsTempConfig(householdId);
 
       if (config.error) {
         errors.push(`${ownerUserId}: ${config.error}`);
         continue;
-      }
-
-      // Force household from cron list (owner preferred devices)
-      if (config.householdId !== householdId && householdId) {
-        // Still collect using owner's device config for this household id
       }
 
       const visibleProbes = config.probes.filter((probe) => probe.visible);
@@ -146,7 +146,7 @@ export async function collectHistoryForAllUsers(): Promise<{
         feeds: config.feeds,
         probes: visibleProbes,
         devices: config.devices,
-        householdId: config.householdId || householdId,
+        householdId: householdId,
         saveToDatabase: true,
         userId: ownerUserId,
         userEmail: authUser?.email,
@@ -166,7 +166,12 @@ export async function collectHistoryForAllUsers(): Promise<{
         return pending;
       };
 
-      const members = await listHouseholdMembers(config.householdId || householdId);
+      const alertHouseholdId = householdId;
+      // This household's own snooze / vacation (inbound webhook), read once
+      // for all its members. It holds alerts for this household only.
+      const householdHold = alertHouseholdId ? await loadHouseholdAlertHold(alertHouseholdId) : null;
+
+      const members = await listHouseholdMembers(alertHouseholdId);
       for (const member of members.members) {
         // Isolate each member so one failure can't skip the rest of the household.
         try {
@@ -183,32 +188,37 @@ export async function collectHistoryForAllUsers(): Promise<{
             config.feeds,
             config.probes,
             results,
-            config.householdId || householdId,
+            householdId,
             config.devices,
             memberLocale,
+            householdHold,
           );
 
           const settings = await getAlertSettingsForUser(
             member.user_id,
             memberUser?.user_metadata as Record<string, unknown> | undefined,
           );
+          // For this household's alerts only; never saved (see withHouseholdHold).
+          const householdSettings = withHouseholdHold(settings, householdHold);
           await maybeSendRateAndOutageAlerts(
             member.user_id,
             memberUser?.email,
             config.devices,
-            settings,
-            config.householdId || householdId,
+            householdSettings,
+            householdId,
             undefined,
             memberLocale,
             { useCelsius: memberUser?.user_metadata?.use_celsius === true },
           );
-          // One recap of what quiet hours held, right after they end.
+          // One recap of what quiet hours held, right after they end. It covers
+          // the member's alerts from every household, so only their own
+          // snooze / vacation applies to it, not this household's hold.
           await maybeSendQuietHoursSummary(member.user_id, memberUser?.email, settings, memberLocale);
           await maybeSendDeviceHealthAlerts(
             member.user_id,
             memberUser?.email,
             config.devices,
-            settings,
+            householdSettings,
             undefined,
             await stuckFor(memberLocale),
             memberLocale,

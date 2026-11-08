@@ -41,7 +41,7 @@ If you set a webhook secret in ProbeHarbor, verify `X-Signature` (HMAC-SHA256 he
 
 ## Inbound (HA → ProbeHarbor)
 
-Pro inbound tokens can snooze alerts, toggle vacation, or report status. The HACS integration wraps `POST /api/inbound/{token}` with signing. See also [HTTP API](/api/) and [ingest/home-assistant](/ingest/home-assistant).
+Pro inbound tokens can snooze alerts, toggle vacation, or report status for the token's household (snooze and vacation hold that household's routine alerts for all its members, not their other households; see [Inbound snooze](/integrations/automation#inbound-snooze)). The HACS integration wraps `POST /api/inbound/{token}` with signing. See also [HTTP API](/api/) and [ingest/home-assistant](/ingest/home-assistant).
 
 ## Indoor temperature (Ecobee / any thermostat)
 

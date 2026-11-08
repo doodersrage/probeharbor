@@ -5,6 +5,7 @@
  * opt-in.
  */
 import { query } from "./client";
+import { hashTelegramCommandSecret } from "../telegramCommandSecret";
 
 const message = (error: unknown) => (error instanceof Error ? error.message : String(error));
 
@@ -93,12 +94,20 @@ export async function stampPortfolioAlert(userId: string): Promise<void> {
 
 // ---- Telegram, contact form, digest opt-in --------------------------------------
 
-/** The user whose Telegram command secret this is (exactly one), else null. */
+/**
+ * The user whose Telegram command secret this is (exactly one), else null.
+ * Rows store `sha256:<hex>` of the secret; rows saved before migration 0004
+ * may still hold it in plaintext. A stored hash sent as the secret matches
+ * neither branch (the plaintext branch skips hashed rows).
+ */
 export async function userByTelegramSecret(secret: string): Promise<string | null> {
   try {
     const rows = await query<{ user_id: string }>(
-      "select user_id from public.alert_settings where telegram_command_secret = $1 limit 2",
-      [secret],
+      `select user_id from public.alert_settings
+       where telegram_command_secret = $1
+          or (telegram_command_secret = $2 and telegram_command_secret not like 'sha256:%')
+       limit 2`,
+      [hashTelegramCommandSecret(secret), secret],
     );
     return rows.length === 1 ? rows[0]!.user_id : null;
   } catch {

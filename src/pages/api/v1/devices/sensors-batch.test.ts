@@ -42,7 +42,7 @@ const sensor = {
 
 beforeEach(() => {
   mockCheckApiPlan.mockReset().mockResolvedValue({ ok: true, entitlements: { canCreateShareLinks: true, maxDevices: 24 } });
-  mockResolveApiKey.mockReset().mockResolvedValue({ householdId: "house-1" });
+  mockResolveApiKey.mockReset().mockResolvedValue({ householdId: "house-1", keyId: "key-1", scope: "write" });
   mockListHouseholdDevices.mockReset().mockResolvedValue({
     devices: [{ id: "d1", sensors: [sensor] }],
   });
@@ -144,5 +144,28 @@ describe("POST /api/v1/devices/sensors-batch plan check", () => {
     expect(response.status).toBe(403);
     expect(await response.json()).toEqual({ ok: false, error: "API access needs a Pro plan" });
     expect(mockUpdateDeviceSensor).not.toHaveBeenCalled();
+  });
+});
+
+describe("POST /api/v1/devices/sensors-batch key scope (write route)", () => {
+  it("refuses a read key with 403 and changes nothing", async () => {
+    mockResolveApiKey.mockResolvedValue({ householdId: "house-1", keyId: "key-1", scope: "read" });
+    const { POST } = await import("./sensors-batch");
+
+    const response = await POST(makeContext({ sensors: [{ id: "s1", label: "New" }] }));
+
+    expect(response.status).toBe(403);
+    expect(await response.json()).toMatchObject({ ok: false, code: "insufficient_scope", required_scope: "write" });
+    expect(mockListHouseholdDevices).not.toHaveBeenCalled();
+    expect(mockUpdateDeviceSensor).not.toHaveBeenCalled();
+  });
+
+  it("updates sensors for a write key", async () => {
+    const { POST } = await import("./sensors-batch");
+
+    const response = await POST(makeContext({ sensors: [{ id: "s1", label: "New" }] }));
+
+    expect(response.status).toBe(200);
+    expect(mockUpdateDeviceSensor).toHaveBeenCalled();
   });
 });

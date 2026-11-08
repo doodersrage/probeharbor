@@ -29,7 +29,7 @@ Runs in production at [probeharbor.dev](https://probeharbor.dev) with 15-minute 
 
 ProbeHarbor connects probes in a garage, workshop, attic, or similar space, compares them with outdoor weather, keeps history you can chart and export, and alerts you when something goes wrong — freeze risk, a wet leak sensor, humidity spikes, silent feeds, or a custom rule you define.
 
-**Pull** HTTPS JSON from a local probe server, or **push** from ESP/Arduino to a per-device ingest URL. Households share devices, invite family (including read-only viewers), and publish a free family live share link — Pro adds expanded share scopes, metrics API keys, and automation webhooks.
+**Pull** HTTPS JSON from a local probe server, or **push** from ESP/Arduino to a per-device ingest URL. Households share devices, invite family (including read-only viewers), and publish a free family live share link — Pro adds expanded share scopes, metrics API keys (read-only by default, or read-write), and automation webhooks.
 
 ## Features
 

@@ -44,6 +44,9 @@ const es: AlertsMessages = {
     stillSend: "Las alertas de helada, fugas, corte de luz y sensor desconectado se siguen enviando.",
     resume: "Reanudar alertas",
     endVacation: "Terminar vacaciones",
+    householdSnoozedUntil: "Una integración pospuso las alertas rutinarias de este hogar hasta {time}, para todos sus miembros.",
+    householdVacationUntil: "Una integración puso este hogar en modo vacaciones hasta {time}: las alertas rutinarias quedan en espera para todos sus miembros.",
+    householdClearHint: "Para terminarlo antes, envía clear_snooze o clear_vacation desde la integración.",
   },
   activity: {
     heading: "Actividad reciente de alertas",
