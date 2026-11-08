@@ -4811,10 +4811,27 @@ Cloudflare email binding.
          - Found on the way: the history cron loaded each household through
            its owner's preferred household, so an owner who was also in
            another household had their own never checked. Now by household.
-         Still open (smaller): Telegram secret can't be cleared once set;
-         no dashboard control to lift a household hold (it expires or the
-         integration clears it); expiry filters in SQL as well as callers;
-         household checks inside sensor/device-id helpers.
+         Smaller follow-ups, done 2026-11-08 (owner: "fix the risks"):
+         - Dashboard "Resume alerts" for a household hold (editors/owners,
+           session household only; `POST /api/user/household-alert-hold`),
+           and a "Remove the saved secret" option for the Telegram secret.
+         - Expiry/used/revoked checks in SQL as well as callers: invites
+           (+ a flags-only state lookup so the invite page keeps its
+           expired/accepted messages), share links, chart shares, claims
+           packs, pending puck claims; a second API-key revoke keeps the
+           first time.
+         - Household checks inside the sensor/device helpers (readings,
+           doors, ingest, places, devices, legacy probes, puck bind); a
+           reading or door batch naming another household's sensor is
+           refused whole and logged. If a threshold check ever runs without
+           a household, freeze alerts skip the dwell wait (alert) instead of
+           being dropped.
+         - Checked on production (read-only): no member snoozes left over
+           from the old inbound behaviour (none active, no inbound pauses in
+           90 days). The empty ownerless household from September is still
+           there (deleting it was blocked for the agent; owner to run).
+         Not verifiable here: a real end-to-end freeze "switch place"
+         email, status-page email and Telegram message (owner to try once).
 4. **Login on Better Auth.** Email + password (accept existing bcrypt
    hashes, so passwords keep working), Google, GitHub, Discord, email
    confirm and reset through Cloudflare email, TOTP and WebAuthn per

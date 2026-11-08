@@ -45,7 +45,7 @@ describe("recordDoorSessions", () => {
 
     await recordDoorSessions("hh-1", [{ id: "door-1", label: "Garage door" }], NOW);
 
-    expect(mockFetchRecentBoolReadings).toHaveBeenCalledWith("door-1", "2026-10-28T12:00:00.000Z");
+    expect(mockFetchRecentBoolReadings).toHaveBeenCalledWith("hh-1", "door-1", "2026-10-28T12:00:00.000Z");
     expect(mockInsertDoorSessions).toHaveBeenCalledWith([
       {
         household_id: "hh-1",
@@ -124,7 +124,7 @@ describe("recordDoorSessions", () => {
 
     await recordDoorSessions("hh-1", [{ id: "door-1", label: "Garage door" }], NOW);
 
-    expect(mockFindOpenStartBefore).toHaveBeenCalledWith("door-1", "2026-10-28T12:00:00Z");
+    expect(mockFindOpenStartBefore).toHaveBeenCalledWith("hh-1", "door-1", "2026-10-28T12:00:00Z");
     expect(mockInsertDoorSessions).toHaveBeenCalledWith([
       expect.objectContaining({
         opened_at: "2026-10-26T08:00:00+00:00",
@@ -178,7 +178,7 @@ describe("recordDoorSessions", () => {
 
       await recordDoorSessionsIfJustClosed("hh-1", [{ id: "door-1", label: "Garage door" }], "2026-10-29T10:20:00Z");
 
-      expect(mockLastDoorStateBefore).toHaveBeenCalledWith("door-1", "2026-10-29T10:20:00Z");
+      expect(mockLastDoorStateBefore).toHaveBeenCalledWith("hh-1", "door-1", "2026-10-29T10:20:00Z");
       expect(savedRows()).toHaveLength(1);
     });
 

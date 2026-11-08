@@ -125,12 +125,14 @@ export async function insertClaimsPack(row: {
   }
 }
 
+/** A live pack only: not revoked, and not past its expiry (no expiry = no limit). Callers check both again. */
 export async function findClaimsPack(
   token: string,
 ): Promise<{ pack_data: unknown; expires_at: string | null; revoked_at: string | null } | null> {
   try {
     const [row] = await query<{ pack_data: unknown; expires_at: string | null; revoked_at: string | null }>(
-      "select pack_data, expires_at, revoked_at from public.claims_pack_exports where token = $1",
+      `select pack_data, expires_at, revoked_at from public.claims_pack_exports
+       where token = $1 and revoked_at is null and (expires_at is null or expires_at >= now())`,
       [token],
     );
     return row ?? null;

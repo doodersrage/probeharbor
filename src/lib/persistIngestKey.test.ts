@@ -19,11 +19,12 @@ describe("persistEncryptedIngestKey", () => {
   it("encrypts the raw key and stores it on the device meta", async () => {
     const { persistEncryptedIngestKey } = await import("./persistIngestKey");
 
-    await persistEncryptedIngestKey("device-1", "raw-key-value");
+    await persistEncryptedIngestKey("house-1", "device-1", "raw-key-value");
 
     expect(mockEncryptIngestKeyForStorage).toHaveBeenCalledWith("raw-key-value");
     // Storing the key is not a reading: last_seen_at must stay empty.
     expect(mockUpdateDeviceMeta).toHaveBeenCalledWith(
+      "house-1",
       "device-1",
       { ingest_key_enc: "encrypted-value" },
       { touchLastSeen: false },
@@ -34,7 +35,7 @@ describe("persistEncryptedIngestKey", () => {
     mockEncryptIngestKeyForStorage.mockResolvedValue(null);
     const { persistEncryptedIngestKey } = await import("./persistIngestKey");
 
-    await persistEncryptedIngestKey("device-1", "raw-key-value");
+    await persistEncryptedIngestKey("house-1", "device-1", "raw-key-value");
 
     expect(mockUpdateDeviceMeta).not.toHaveBeenCalled();
   });

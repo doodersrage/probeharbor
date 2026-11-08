@@ -181,7 +181,7 @@ describe("getFreezeDwellSamples", () => {
     readings.getRecentNumericReadingSamples.mockResolvedValue([{ at: "2024-01-01T11:40:00Z", tempF: 30 }]);
     const { getFreezeDwellSamples } = await import("./sensorReadings");
 
-    const result = await getFreezeDwellSamples("sensor-1", "2024-01-01T11:30:00.000Z");
+    const result = await getFreezeDwellSamples("house-1", "sensor-1", "2024-01-01T11:30:00.000Z");
 
     expect(result).toEqual([
       { at: "2024-01-01T11:20:00Z", tempF: 31 },
@@ -189,11 +189,12 @@ describe("getFreezeDwellSamples", () => {
     ]);
     // The anchor is looked for in the 24 hours before the cutoff.
     expect(readings.getDwellAnchor).toHaveBeenCalledWith(
+      "house-1",
       "sensor-1",
       "2023-12-31T11:30:00.000Z",
       "2024-01-01T11:30:00.000Z",
     );
-    expect(readings.getRecentNumericReadingSamples).toHaveBeenCalledWith("sensor-1", "2024-01-01T11:30:00.000Z");
+    expect(readings.getRecentNumericReadingSamples).toHaveBeenCalledWith("house-1", "sensor-1", "2024-01-01T11:30:00.000Z");
   });
 });
 

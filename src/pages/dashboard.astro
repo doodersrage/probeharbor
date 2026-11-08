@@ -666,7 +666,7 @@ const feedUptime = computeFeedUptimePct(feedHealth.statuses);
 const airQualityOverview = buildAirQualityOverview(
   latest,
   locale,
-  showInsights ? await loadPressureTrends(latest) : {},
+  showInsights && household.householdId ? await loadPressureTrends(household.householdId, latest) : {},
 );
 const rssiOverview = buildRssiOverview(
   devices,

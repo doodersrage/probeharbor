@@ -45,9 +45,10 @@ export async function buildFreezeAlertContext(input: {
 
   if (input.coldestSensorId) {
     const since1h = new Date(Date.now() - 60 * 60 * 1000).toISOString();
-    const samples = await getRecentNumericReadingSamples(input.coldestSensorId, since1h).catch(
-      () => [],
-    );
+    // Readings are read within the household only; without one there is no trend.
+    const samples = input.householdId
+      ? await getRecentNumericReadingSamples(input.householdId, input.coldestSensorId, since1h).catch(() => [])
+      : [];
 
     const forecast = input.weatherCityId
       ? await fetchForecastMinTemp(input.weatherCityId, input.settings.forecastHoursAhead).catch(

@@ -1,7 +1,8 @@
 /**
  * Neon versions of the door-history queries in doorEvents.ts,
  * doorEventReport.ts and chartDoorBands.server.ts. Door sessions are scoped by household; door
- * readings by sensor (callers pass the household's own sensors).
+ * readings by sensor and household (a sensor id from another household reads
+ * as no data). Session inserts refuse a sensor outside the row's household.
  *
  * Differences from the old Supabase code, all deliberate:
  * - Session saves rely on the unique index door_open_events_session_key
@@ -22,42 +23,75 @@ export async function savedSessionKeysSince(
   );
 }
 
-/** Insert sessions; ones already saved (same household, label, opened_at) are skipped. Throws on failure. */
+/**
+ * Insert sessions; ones already saved (same household, label, opened_at) are
+ * skipped. One statement, all or nothing: a row whose sensor_id is not a
+ * sensor of that row's household (null sensor_id is allowed) stores nothing
+ * and throws. Throws on failure.
+ */
 export async function insertDoorSessions(rows: DoorEventInsert[]): Promise<void> {
   if (rows.length === 0) return;
-  await query(
-    `insert into public.door_open_events (household_id, sensor_id, label, opened_at, closed_at, duration_ms)
-     select r.household_id, r.sensor_id, r.label, r.opened_at, r.closed_at, r.duration_ms
-     from jsonb_to_recordset($1::jsonb) as r(household_id uuid, sensor_id uuid, label text,
-          opened_at timestamptz, closed_at timestamptz, duration_ms bigint)
-     on conflict (household_id, label, opened_at) do nothing`,
+  const [result] = await query<{ rejected: number; rejected_sensor_ids: string[] | null }>(
+    `with input as (
+       select r.household_id, r.sensor_id, r.label, r.opened_at, r.closed_at, r.duration_ms
+       from jsonb_to_recordset($1::jsonb) as r(household_id uuid, sensor_id uuid, label text,
+            opened_at timestamptz, closed_at timestamptz, duration_ms bigint)
+     ), bad as (
+       select i.sensor_id from input i
+       where i.sensor_id is not null and not exists (
+         select 1 from public.device_sensors s join public.devices d on d.id = s.device_id
+         where s.id = i.sensor_id and d.household_id = i.household_id)
+     ), ins as (
+       insert into public.door_open_events (household_id, sensor_id, label, opened_at, closed_at, duration_ms)
+       select household_id, sensor_id, label, opened_at, closed_at, duration_ms from input
+       where not exists (select 1 from bad)
+       on conflict (household_id, label, opened_at) do nothing
+       returning 1
+     )
+     select (select count(*) from bad)::int as rejected,
+            (select array_agg(distinct sensor_id) from bad) as rejected_sensor_ids`,
     [JSON.stringify(rows)],
   );
+  if (result && result.rejected > 0) {
+    const ids = (result.rejected_sensor_ids ?? []).slice(0, 5).join(", ");
+    console.error(
+      `insertDoorSessions: ${result.rejected} of ${rows.length} session(s) name a sensor outside their household (${ids}); batch not stored`,
+    );
+    throw new Error("door session names a sensor outside its household");
+  }
 }
 
 /** First "open" reading after the last "closed" one before `beforeIso` (see findOpenStartBefore). Throws on failure. */
-export async function findOpenStartBefore(sensorId: string, beforeIso: string): Promise<string | null> {
+export async function findOpenStartBefore(
+  householdId: string,
+  sensorId: string,
+  beforeIso: string,
+): Promise<string | null> {
   const [row] = await query<{ recorded_at: string }>(
     `select r.recorded_at from public.sensor_readings r
-     where r.sensor_id = $1 and r.value_bool = true and r.recorded_at < $2
+     where r.sensor_id = $1 and r.household_id = $3 and r.value_bool = true and r.recorded_at < $2
        and r.recorded_at > coalesce((
          select c.recorded_at from public.sensor_readings c
-         where c.sensor_id = $1 and c.value_bool = false and c.recorded_at < $2
+         where c.sensor_id = $1 and c.household_id = $3 and c.value_bool = false and c.recorded_at < $2
          order by c.recorded_at desc limit 1
        ), '-infinity'::timestamptz)
      order by r.recorded_at limit 1`,
-    [sensorId, beforeIso],
+    [sensorId, beforeIso, householdId],
   );
   return row?.recorded_at ?? null;
 }
 
 /** Last reported door state before `beforeIso`; null when none. Throws on failure. */
-export async function lastDoorStateBefore(sensorId: string, beforeIso: string): Promise<boolean | null> {
+export async function lastDoorStateBefore(
+  householdId: string,
+  sensorId: string,
+  beforeIso: string,
+): Promise<boolean | null> {
   const [row] = await query<{ value_bool: boolean }>(
     `select value_bool from public.sensor_readings
-     where sensor_id = $1 and value_bool is not null and recorded_at < $2
+     where sensor_id = $1 and household_id = $3 and value_bool is not null and recorded_at < $2
      order by recorded_at desc, id desc limit 1`,
-    [sensorId, beforeIso],
+    [sensorId, beforeIso, householdId],
   );
   return typeof row?.value_bool === "boolean" ? row.value_bool : null;
 }

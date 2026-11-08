@@ -83,7 +83,7 @@ describe("POST /api/v1/devices/sensors-batch", () => {
       makeContext({ sensors: [{ id: "s1", label: "New label", visible: false }] }),
     );
 
-    expect(mockUpdateDeviceSensor).toHaveBeenCalledWith("s1", "d1", {
+    expect(mockUpdateDeviceSensor).toHaveBeenCalledWith("house-1", "s1", "d1", {
       key: "temp",
       label: "New label",
       kind: "temperature",
@@ -101,6 +101,7 @@ describe("POST /api/v1/devices/sensors-batch", () => {
     await POST(makeContext({ sensors: [{ id: "s1", visible: false }] }));
 
     expect(mockUpdateDeviceSensor).toHaveBeenCalledWith(
+      "house-1",
       "s1",
       "d1",
       expect.objectContaining({ label: "Old", visible: false }),
@@ -117,6 +118,7 @@ describe("POST /api/v1/devices/sensors-batch", () => {
     expect(response.status).toBe(200);
     expect(mockUpdateDeviceSensor).toHaveBeenCalledTimes(1);
     expect(mockUpdateDeviceSensor).toHaveBeenCalledWith(
+      "house-1",
       "s1",
       "d1",
       expect.objectContaining({ label: "Old" }),

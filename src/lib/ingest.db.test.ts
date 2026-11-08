@@ -166,7 +166,7 @@ describe("ingest helpers on Neon", () => {
   it("parallel ingest counts are not lost", async () => {
     const dev = await pushDevice("a@example.com");
     const day = new Date().toISOString().slice(0, 10);
-    await Promise.all(Array.from({ length: 20 }, (_, i) => recordIngestStat(dev.deviceId, i % 4 !== 0)));
+    await Promise.all(Array.from({ length: 20 }, (_, i) => recordIngestStat(dev.householdId, dev.deviceId, i % 4 !== 0)));
     const [row] = await sql<{ success_count: number; error_count: number }>(
       "select success_count, error_count from public.ingest_stats where device_id = $1 and day = $2",
       [dev.deviceId, day],
@@ -176,8 +176,8 @@ describe("ingest helpers on Neon", () => {
 
   it("finds the device with its sensors in sort order; a duplicate key finds nothing", async () => {
     const dev = await pushDevice("a@example.com");
-    await upsertDeviceSensor(dev.deviceId, "b", "B", "humidity");
-    await upsertDeviceSensor(dev.deviceId, "a", "A", "temperature", "F");
+    await upsertDeviceSensor(dev.householdId, dev.deviceId, "b", "B", "humidity");
+    await upsertDeviceSensor(dev.householdId, dev.deviceId, "a", "A", "temperature", "F");
     await sql("update public.device_sensors set sort_order = case key when 'a' then 1 else 2 end where device_id = $1", [
       dev.deviceId,
     ]);
@@ -200,8 +200,8 @@ describe("ingest helpers on Neon", () => {
 
   it("corrects a temperature sensor first saved as °C to °F", async () => {
     const dev = await pushDevice("a@example.com");
-    await upsertDeviceSensor(dev.deviceId, "t", "T", "temperature", "C");
-    const result = await upsertDeviceSensor(dev.deviceId, "t", "T", "temperature", "F");
+    await upsertDeviceSensor(dev.householdId, dev.deviceId, "t", "T", "temperature", "C");
+    const result = await upsertDeviceSensor(dev.householdId, dev.deviceId, "t", "T", "temperature", "F");
     expect(result.sensor?.unit).toBe("F");
     const [row] = await sql<{ unit: string }>("select unit from public.device_sensors where device_id = $1", [dev.deviceId]);
     expect(row?.unit).toBe("F");
@@ -209,8 +209,8 @@ describe("ingest helpers on Neon", () => {
 
   it("a non-temperature sensor keeps the unit it was saved with", async () => {
     const dev = await pushDevice("a@example.com");
-    await upsertDeviceSensor(dev.deviceId, "h", "H", "humidity", "%");
-    const result = await upsertDeviceSensor(dev.deviceId, "h", "H", "humidity", "F");
+    await upsertDeviceSensor(dev.householdId, dev.deviceId, "h", "H", "humidity", "%");
+    const result = await upsertDeviceSensor(dev.householdId, dev.deviceId, "h", "H", "humidity", "F");
     expect(result.sensor?.unit).toBe("%");
     const [row] = await sql<{ unit: string }>("select unit from public.device_sensors where device_id = $1", [dev.deviceId]);
     expect(row?.unit).toBe("%");
@@ -219,29 +219,32 @@ describe("ingest helpers on Neon", () => {
   it("device meta that isn't an object yet (column is not null) is replaced, not merged into", async () => {
     const dev = await pushDevice("a@example.com");
     await sql(`update public.devices set meta = '[]'::jsonb, last_seen_at = null where id = $1`, [dev.deviceId]);
-    await updateDeviceMeta(dev.deviceId, { firmware: "1.2.0" }, { touchLastSeen: false });
+    await updateDeviceMeta(dev.householdId, dev.deviceId, { firmware: "1.2.0" }, { touchLastSeen: false });
     const [row] = await sql<{ meta: unknown; last_seen_at: unknown }>("select meta, last_seen_at from public.devices where id = $1", [dev.deviceId]);
     expect(row?.meta).toEqual({ firmware: "1.2.0" });
     expect(row?.last_seen_at).toBeNull();
   });
 
   it("a failing batch stores nothing", async () => {
+    const errors = vi.spyOn(console, "error").mockImplementation(() => {});
     const dev = await pushDevice("a@example.com");
-    const { sensor } = await upsertDeviceSensor(dev.deviceId, "t", "T", "temperature", "F");
+    const { sensor } = await upsertDeviceSensor(dev.householdId, dev.deviceId, "t", "T", "temperature", "F");
     const result = await insertSensorReadings([
       { sensor_id: sensor!.id, household_id: dev.householdId, value_num: 40 },
       { sensor_id: "00000000-0000-4000-8000-000000000000", household_id: dev.householdId, value_num: 41 },
     ]);
-    expect(result.error).toMatch(/sensor_readings/);
+    // An unknown sensor is not a sensor of this household: the batch is refused before the insert.
+    expect(result.error).toMatch(/outside its household/);
     const [n] = await sql<{ n: number }>("select count(*) as n from public.sensor_readings");
     expect(n?.n).toBe(0);
+    errors.mockRestore();
   });
 
   it("the admin list shows every device's counts", async () => {
     const a = await pushDevice("a@example.com");
     const b = await pushDevice("b@example.com");
-    await recordIngestStat(a.deviceId, true);
-    await recordIngestStat(b.deviceId, false);
+    await recordIngestStat(a.householdId, a.deviceId, true);
+    await recordIngestStat(b.householdId, b.deviceId, false);
     const rows = await listRecentIngestStatsAdmin();
     expect(rows.map((r) => [r.device_id, r.success_count, r.error_count]).sort()).toEqual(
       [

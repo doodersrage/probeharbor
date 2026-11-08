@@ -50,6 +50,7 @@ export function classifyAlertDelivery(
 
 /** Freeze messages the pipeline should have produced by now (dwell + grace). */
 async function overdueFreezeMessages(
+  householdId: string,
   settings: AlertSettings,
   latest: LatestSensorRow[],
   nowMs: number,
@@ -64,7 +65,7 @@ async function overdueFreezeMessages(
   );
   if (cold.length === 0) return [];
   const pairs = await Promise.all(
-    cold.map(async (reading) => [reading.sensorId!, await getFreezeDwellSamples(reading.sensorId!, cutoffIso)] as const),
+    cold.map(async (reading) => [reading.sensorId!, await getFreezeDwellSamples(householdId, reading.sensorId!, cutoffIso)] as const),
   );
 
   return evaluateAlerts({ ...settings, freezeDwellMinutes: dwellMinutes }, cold, {
@@ -115,7 +116,7 @@ export async function runAlertDeliveryWatchdog(nowMs = Date.now()): Promise<{
           }
           checked += 1;
 
-          const overdue = await overdueFreezeMessages(settings, latest, nowMs);
+          const overdue = await overdueFreezeMessages(householdId, settings, latest, nowMs);
           if (overdue.length === 0) continue;
 
           const verdict = classifyAlertDelivery(await listRecentAlertEvents(member.user_id, 50), nowMs);

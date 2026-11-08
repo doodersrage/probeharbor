@@ -69,7 +69,7 @@ describe("job-run log (Neon)", () => {
 describe("raw reading retention (Neon)", () => {
   it("rolls old readings into hourly rows, deletes only those, keeps recent ones", async () => {
     const h = await home("a@example.com");
-    const t = (await upsertDeviceSensor(h.deviceId, "t", "Bay", "temperature", "F")).sensor!.id;
+    const t = (await upsertDeviceSensor(h.householdId, h.deviceId, "t", "Bay", "temperature", "F")).sensor!.id;
     await sql(
       `insert into public.sensor_readings (sensor_id, household_id, recorded_at, value_num) values
        ($1, $2, date_trunc('hour', now() - interval '100 days') + interval '5 minutes', 30),
@@ -91,9 +91,9 @@ describe("raw reading retention (Neon)", () => {
 describe("stuck sensors (Neon)", () => {
   it("flags a probe repeating one value for a day, not one that varies or one with too few samples", async () => {
     const h = await home("a@example.com");
-    const stuck = (await upsertDeviceSensor(h.deviceId, "stuck", "Stuck", "temperature", "F")).sensor!.id;
-    const live = (await upsertDeviceSensor(h.deviceId, "live", "Live", "temperature", "F")).sensor!.id;
-    const sparse = (await upsertDeviceSensor(h.deviceId, "sparse", "Sparse", "temperature", "F")).sensor!.id;
+    const stuck = (await upsertDeviceSensor(h.householdId, h.deviceId, "stuck", "Stuck", "temperature", "F")).sensor!.id;
+    const live = (await upsertDeviceSensor(h.householdId, h.deviceId, "live", "Live", "temperature", "F")).sensor!.id;
+    const sparse = (await upsertDeviceSensor(h.householdId, h.deviceId, "sparse", "Sparse", "temperature", "F")).sensor!.id;
     await series(stuck, h.householdId, 30, 30, () => 41);
     await series(live, h.householdId, 30, 30, (i) => 41 + i);
     await sql(

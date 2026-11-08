@@ -176,12 +176,13 @@ describe("buildFreezeAlertContext", () => {
 
     const result = await buildFreezeAlertContext({
       settings: settings({ forecastHoursAhead: 12 }),
+      householdId: "house-1",
       coldestTempF: 30,
       coldestSensorId: "sensor-1",
       weatherCityId: "123",
     });
 
-    expect(mockGetRecentNumericReadingSamples).toHaveBeenCalledWith("sensor-1", expect.any(String));
+    expect(mockGetRecentNumericReadingSamples).toHaveBeenCalledWith("house-1", "sensor-1", expect.any(String));
     expect(mockFetchForecastMinTemp).toHaveBeenCalledWith("123", 12);
     expect(mockBuildThermalRunway).toHaveBeenCalledWith({
       currentTempF: 30,

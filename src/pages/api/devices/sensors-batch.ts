@@ -45,7 +45,8 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
     });
   }
 
-  const { devices } = await listHouseholdDevices(householdEditorCtx(editor).householdId);
+  const { householdId } = householdEditorCtx(editor);
+  const { devices } = await listHouseholdDevices(householdId);
   const sensorById = new Map(
     devices.flatMap((device) =>
       device.sensors.map((sensor) => [sensor.id, { sensor, deviceId: device.id }] as const),
@@ -59,7 +60,7 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
     if (!id || !label) continue;
     const match = sensorById.get(id);
     if (!match) continue;
-    const result = await updateDeviceSensor(id, match.deviceId, {
+    const result = await updateDeviceSensor(householdId, id, match.deviceId, {
       key: match.sensor.key,
       label,
       kind: match.sensor.kind,

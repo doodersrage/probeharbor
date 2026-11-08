@@ -112,10 +112,10 @@ function settingsRow(userId: unknown): Row | undefined {
 }
 
 /** Readings of one sensor, oldest first, matching `keep`. */
-function readingsOf(sensorId: string, keep: (row: Row) => boolean): Row[] {
+function readingsOf(householdId: string, sensorId: string, keep: (row: Row) => boolean): Row[] {
   return db
     .table("sensor_readings")
-    .filter((row) => row.sensor_id === sensorId && keep(row))
+    .filter((row) => row.sensor_id === sensorId && row.household_id === householdId && keep(row))
     .sort((a, b) => ms(a.recorded_at) - ms(b.recorded_at));
 }
 
@@ -280,31 +280,33 @@ function installFakes() {
   } as Record<string, Fn>;
 
   f.readings = {
-    getRecentNumericReadings: async (sensorId: string, sinceIso: string) =>
-      readingsOf(sensorId, (r) => ms(r.recorded_at) >= ms(sinceIso) && r.value_num != null).map((r) => r.value_num),
-    getRecentNumericReadingSamples: async (sensorId: string, sinceIso: string) =>
-      readingsOf(sensorId, (r) => ms(r.recorded_at) >= ms(sinceIso) && r.value_num != null).map((r) => ({
+    getRecentNumericReadings: async (householdId: string, sensorId: string, sinceIso: string) =>
+      readingsOf(householdId, sensorId, (r) => ms(r.recorded_at) >= ms(sinceIso) && r.value_num != null).map((r) => r.value_num),
+    getRecentNumericReadingSamples: async (householdId: string, sensorId: string, sinceIso: string) =>
+      readingsOf(householdId, sensorId, (r) => ms(r.recorded_at) >= ms(sinceIso) && r.value_num != null).map((r) => ({
         at: r.recorded_at,
         tempF: r.value_num,
       })),
-    getNumericReadingInWindow: async (sensorId: string, notBeforeIso: string, atOrBeforeIso: string) => {
+    getNumericReadingInWindow: async (householdId: string, sensorId: string, notBeforeIso: string, atOrBeforeIso: string) => {
       const row = readingsOf(
+        householdId,
         sensorId,
         (r) => ms(r.recorded_at) >= ms(notBeforeIso) && ms(r.recorded_at) <= ms(atOrBeforeIso),
       ).at(-1);
       return row && typeof row.value_num === "number" ? { value: row.value_num, at: row.recorded_at } : null;
     },
-    hasNumericReadingAboveSince: async (sensorId: string, sinceIso: string, thresholdF: number) =>
-      readingsOf(sensorId, (r) => ms(r.recorded_at) >= ms(sinceIso) && Number(r.value_num) > thresholdF).length > 0,
-    getDwellAnchor: async (sensorId: string, anchorSinceIso: string, cutoffIso: string) =>
+    hasNumericReadingAboveSince: async (householdId: string, sensorId: string, sinceIso: string, thresholdF: number) =>
+      readingsOf(householdId, sensorId, (r) => ms(r.recorded_at) >= ms(sinceIso) && Number(r.value_num) > thresholdF).length > 0,
+    getDwellAnchor: async (householdId: string, sensorId: string, anchorSinceIso: string, cutoffIso: string) =>
       readingsOf(
+        householdId,
         sensorId,
         (r) => ms(r.recorded_at) >= ms(anchorSinceIso) && ms(r.recorded_at) < ms(cutoffIso) && r.value_num != null,
       )
         .slice(-1)
         .map((r) => ({ at: r.recorded_at, tempF: r.value_num })),
-    fetchRecentBoolReadings: async (sensorId: string, sinceIso: string) =>
-      readingsOf(sensorId, (r) => ms(r.recorded_at) >= ms(sinceIso) && r.value_bool != null).map((r) => ({
+    fetchRecentBoolReadings: async (householdId: string, sensorId: string, sinceIso: string) =>
+      readingsOf(householdId, sensorId, (r) => ms(r.recorded_at) >= ms(sinceIso) && r.value_bool != null).map((r) => ({
         value: r.value_bool,
         recordedAt: r.recorded_at,
       })),
@@ -316,7 +318,7 @@ function installFakes() {
       const rows = [];
       for (const device of db.table("devices").filter((d) => d.household_id === householdId && d.enabled)) {
         for (const sensor of sensorsOf(device.id).filter((s) => s.visible)) {
-          const latest = readingsOf(String(sensor.id), () => true).at(-1);
+          const latest = readingsOf(householdId, String(sensor.id), () => true).at(-1);
           if (!latest) continue;
           const offset = typeof sensor.offset_num === "number" ? sensor.offset_num : 0;
           const numeric = sensor.kind === "temperature" || sensor.kind === "humidity";

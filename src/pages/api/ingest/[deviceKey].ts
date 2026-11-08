@@ -79,7 +79,7 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
     success: boolean,
   ): Promise<Response> => {
     try {
-      await recordIngestStat(device.id, success);
+      await recordIngestStat(device.household_id, device.id, success);
     } catch (statError) {
       console.error("Ingest stat failed:", statError);
     }
@@ -100,6 +100,7 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
   const payload = body.payload;
   const interpreted = interpretIngestPayload(payload, device.name);
   const sensorSync = await ensureDiscoveredPushSensors(
+    device.household_id,
     device.id,
     interpreted.discovered,
     device.sensors,
@@ -134,7 +135,7 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
     const sensor =
       known && !needsUnitFix
         ? { sensor: known, error: null }
-        : await upsertDeviceSensor(device.id, reading.key, reading.label, reading.kind, reading.unit);
+        : await upsertDeviceSensor(device.household_id, device.id, reading.key, reading.label, reading.kind, reading.unit);
     if (!sensor.sensor) {
       sensorFailures += 1;
       console.error(`Ingest for device ${device.id}: sensor ${reading.key} (${reading.kind}) not saved:`, sensor.error);
@@ -206,11 +207,12 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
 
   if (Object.keys(metaPatch).length > 0) {
     await updateDeviceMeta(
+      device.household_id,
       device.id,
       enrichDeviceMetaHistories(device.meta, metaPatch, recordedAt),
     );
   } else {
-    await touchDeviceLastSeen(device.id);
+    await touchDeviceLastSeen(device.household_id, device.id);
   }
 
   // Door history is saved for every household, not only those with alert rules.

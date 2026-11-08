@@ -297,7 +297,7 @@ describe("POST /api/devices", () => {
       expect.any(String),
     );
     expect(mockSetSecretFlash).toHaveBeenCalledWith(context.cookies, "ingest_key", expect.any(String));
-    expect(mockPersistEncryptedIngestKey).toHaveBeenCalledWith("d1", expect.any(String));
+    expect(mockPersistEncryptedIngestKey).toHaveBeenCalledWith("house-1", "d1", expect.any(String));
     expect(context.redirect).toHaveBeenCalledWith("/dashboard/devices?key_rotated=1");
   });
 
@@ -393,7 +393,7 @@ describe("POST /api/devices", () => {
 
     await POST(context);
 
-    expect(mockUpdateDeviceSensor).toHaveBeenCalledWith("s1", "d1", {
+    expect(mockUpdateDeviceSensor).toHaveBeenCalledWith("house-1", "s1", "d1", {
       key: "temp",
       label: "Garage",
       kind: "generic",
@@ -437,7 +437,7 @@ describe("POST /api/devices", () => {
 
     await POST(context);
 
-    expect(mockDeleteDeviceSensor).toHaveBeenCalledWith("s1", "d1");
+    expect(mockDeleteDeviceSensor).toHaveBeenCalledWith("house-1", "s1", "d1");
     expect(context.redirect).toHaveBeenCalledWith("/dashboard/devices?sensor_deleted=1");
   });
 
@@ -518,7 +518,7 @@ describe("POST /api/devices", () => {
     await POST(context);
 
     expect(mockUpdateDeviceSensor).toHaveBeenCalledTimes(1);
-    expect(mockUpdateDeviceSensor).toHaveBeenCalledWith("s1", "d1", {
+    expect(mockUpdateDeviceSensor).toHaveBeenCalledWith("house-1", "s1", "d1", {
       key: "temp1",
       label: "Garage pipe",
       kind: "temperature",
@@ -538,7 +538,7 @@ describe("POST /api/devices", () => {
 
     await POST(context);
 
-    expect(mockDeleteDeviceSensor).toHaveBeenCalledWith("s2", "d1");
+    expect(mockDeleteDeviceSensor).toHaveBeenCalledWith("house-1", "s2", "d1");
     expect(mockUpdateDeviceSensor).not.toHaveBeenCalled();
     expect(context.redirect).toHaveBeenCalledWith("/dashboard/devices?sensor_deleted=1");
   });

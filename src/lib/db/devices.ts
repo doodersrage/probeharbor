@@ -138,19 +138,31 @@ export async function updateDeviceDetails(
   }
 }
 
-/** Callers have checked `deviceId` belongs to the household; the sensor must belong to the device. */
+/** Changes nothing unless the sensor belongs to the device and the device to the household. */
 export async function updateDeviceSensor(
+  householdId: string,
   sensorId: string,
   deviceId: string,
   patch: { key: string; label: string; kind: SensorKind; unit: string | null; offsetNum: number; visible?: boolean },
 ): Promise<{ error: string | null }> {
   try {
     await query(
-      `update public.device_sensors
+      `update public.device_sensors s
        set key = $3, label = $4, kind = $5, unit = $6, offset_num = $7,
-           visible = coalesce($8::boolean, visible)
-       where id = $1 and device_id = $2`,
-      [sensorId, deviceId, patch.key, patch.label, patch.kind, patch.unit, patch.offsetNum, patch.visible ?? null],
+           visible = coalesce($8::boolean, s.visible)
+       from public.devices d
+       where s.id = $1 and s.device_id = $2 and d.id = s.device_id and d.household_id = $9`,
+      [
+        sensorId,
+        deviceId,
+        patch.key,
+        patch.label,
+        patch.kind,
+        patch.unit,
+        patch.offsetNum,
+        patch.visible ?? null,
+        householdId,
+      ],
     );
     return { error: null };
   } catch (error) {
@@ -158,9 +170,18 @@ export async function updateDeviceSensor(
   }
 }
 
-export async function deleteDeviceSensor(sensorId: string, deviceId: string): Promise<{ error: string | null }> {
+/** Deletes nothing unless the sensor belongs to the device and the device to the household. */
+export async function deleteDeviceSensor(
+  householdId: string,
+  sensorId: string,
+  deviceId: string,
+): Promise<{ error: string | null }> {
   try {
-    await query("delete from public.device_sensors where id = $1 and device_id = $2", [sensorId, deviceId]);
+    await query(
+      `delete from public.device_sensors s using public.devices d
+       where s.id = $1 and s.device_id = $2 and d.id = s.device_id and d.household_id = $3`,
+      [sensorId, deviceId, householdId],
+    );
     return { error: null };
   } catch (error) {
     return { error: message(error) };

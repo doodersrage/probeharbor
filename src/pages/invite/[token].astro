@@ -2,7 +2,7 @@
 import { getHouseholdFields } from "../../lib/householdRecord";
 import Layout from "../../layouts/Layout.astro";
 import { getAuthFromCookies } from "../../lib/auth";
-import { getInviteByToken } from "../../lib/householdInvites";
+import { getInviteByToken, getInviteTokenState } from "../../lib/householdInvites";
 import { getHouseholdErrorMessage } from "../../lib/householdErrors";
 import { fmt, getLocale } from "../../i18n";
 import { authHandoffMessages } from "../../i18n/messages/app/auth/handoff";
@@ -15,7 +15,10 @@ if (!token) {
   return Astro.redirect("/");
 }
 
+// Only a usable invite comes back; for a used or expired link the state
+// lookup says which (no email or role), so the right message still shows.
 const invite = await getInviteByToken(token);
+const linkState = invite ? null : await getInviteTokenState(token);
 const { session, user } = await getAuthFromCookies(Astro.cookies);
 
 let householdName = t.aHousehold;
@@ -24,8 +27,8 @@ if (invite) {
   householdName = (data?.name as string | undefined) ?? householdName;
 }
 
-const expired = invite ? Date.parse(invite.expires_at) < Date.now() : false;
-const alreadyAccepted = Boolean(invite?.accepted_at);
+const expired = invite ? Date.parse(invite.expires_at) < Date.now() : Boolean(linkState?.expired);
+const alreadyAccepted = invite ? Boolean(invite.accepted_at) : Boolean(linkState?.accepted);
 const rawError = Astro.url.searchParams.get("error");
 const acceptError = getHouseholdErrorMessage(rawError, locale);
 const isEmailMismatch =
@@ -44,15 +47,15 @@ const invitedParts = (invite?.email ? t.invitedAs : t.invited).split(/(\{househo
   <div class="mx-auto w-full max-w-lg px-4 py-12 sm:px-6">
     <section class="card">
       <h1 class="card-title">{t.heading}</h1>
-      {!invite ? (
-        <p>{t.invalid}</p>
-      ) : expired ? (
+      {expired ? (
         <p>{t.expired}</p>
       ) : alreadyAccepted ? (
         <p>
           {t.alreadyAccepted}{" "}
           <a class="text-link" href="/dashboard/household">{t.openHousehold}</a>
         </p>
+      ) : !invite ? (
+        <p>{t.invalid}</p>
       ) : (
         <>
           <p class="card-subtitle">

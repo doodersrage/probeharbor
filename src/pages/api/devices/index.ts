@@ -209,7 +209,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     }
 
     setSecretFlash(cookies, FLASH_INGEST_KEY, rawKey);
-    await persistEncryptedIngestKey(deviceId, rawKey);
+    await persistEncryptedIngestKey(householdId, deviceId, rawKey);
     return redirect(withQuery(redirectTo, { key_rotated: "1" }));
   }
 
@@ -284,7 +284,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
       return redirect(withQuery(redirectTo, { error: "1" }));
     }
 
-    const result = await updateDeviceSensor(sensorId, deviceId, {
+    const result = await updateDeviceSensor(householdId, sensorId, deviceId, {
       key,
       label,
       kind,
@@ -313,7 +313,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
       return redirect(withQuery(redirectTo, { error: "1" }));
     }
 
-    await deleteDeviceSensor(sensorId, deviceId);
+    await deleteDeviceSensor(householdId, sensorId, deviceId);
     return redirect(withQuery(redirectTo, { sensor_deleted: "1" }));
   }
 
@@ -341,7 +341,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     const deleteId = formData.get("delete_sensor_id")?.toString();
     if (deleteId) {
       if (!device.sensors.some((s) => s.id === deleteId)) return redirect(withQuery(redirectTo, { error: "1" }));
-      await deleteDeviceSensor(deleteId, deviceId);
+      await deleteDeviceSensor(householdId, deleteId, deviceId);
       return redirect(withQuery(redirectTo, { sensor_deleted: "1" }));
     }
 
@@ -363,7 +363,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
         visible === sensor.visible &&
         (Number.isFinite(offsetNum) ? offsetNum : 0) === (sensor.offset_num ?? 0);
       if (unchanged) continue;
-      const result = await updateDeviceSensor(sensor.id, deviceId, {
+      const result = await updateDeviceSensor(householdId, sensor.id, deviceId, {
         key,
         label,
         kind,
@@ -429,7 +429,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   }
 
   setSecretFlash(cookies, FLASH_INGEST_KEY, rawKey);
-  await persistEncryptedIngestKey(device.id, rawKey);
+  await persistEncryptedIngestKey(householdId, device.id, rawKey);
   return redirect(
     withQuery(redirectTo, {
       device_created: "1",

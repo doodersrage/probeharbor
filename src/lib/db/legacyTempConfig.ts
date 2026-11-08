@@ -63,17 +63,25 @@ export async function updatePullDevice(
   );
 }
 
-/** Temperature + humidity sensors for one probe; existing ones are kept. Returns true if any was added. */
+/**
+ * Temperature + humidity sensors for one probe on a device of the household;
+ * existing ones are kept, and nothing is added to a device outside the
+ * household. Returns true if any was added.
+ */
 export async function ensureProbeSensors(
+  householdId: string,
   deviceId: string,
   probe: { key: string; label: string; visible: boolean },
   sortOrder: number,
 ): Promise<boolean> {
   const rows = await query(
     `insert into public.device_sensors (device_id, key, label, kind, unit, visible, sort_order)
-     values ($1, $2, $3, 'temperature', 'F', $5, $6), ($1, $2, $4, 'humidity', '%', $5, $6)
+     select d.id, $2::text, v.label, v.kind, v.unit, $5::boolean, $6::int
+     from public.devices d
+     cross join (values ($3::text, 'temperature', 'F'), ($4::text, 'humidity', '%')) as v(label, kind, unit)
+     where d.id = $1 and d.household_id = $7
      on conflict (device_id, key, kind) do nothing returning id`,
-    [deviceId, probe.key, probe.label, `${probe.label} humidity`, probe.visible, sortOrder],
+    [deviceId, probe.key, probe.label, `${probe.label} humidity`, probe.visible, sortOrder, householdId],
   );
   return rows.length > 0;
 }

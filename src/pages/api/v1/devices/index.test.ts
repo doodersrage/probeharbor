@@ -144,7 +144,7 @@ describe("POST /api/v1/devices", () => {
       expect.any(String),
       expect.any(String),
     );
-    expect(mockPersistEncryptedIngestKey).toHaveBeenCalledWith("new-1", expect.any(String));
+    expect(mockPersistEncryptedIngestKey).toHaveBeenCalledWith("house-1", "new-1", expect.any(String));
     expect(response.status).toBe(201);
     expect(json.device).toEqual({ id: "new-1", name: "API device" });
     expect(typeof json.ingest_key).toBe("string");

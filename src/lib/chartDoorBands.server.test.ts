@@ -55,7 +55,7 @@ describe("fetchChartDoorBands", () => {
 
     const result = await fetchChartDoorBands("hh-1", "2026-10-22T12:00:00Z", "2026-10-29T12:00:00Z", sensors, NOW);
 
-    expect(mockReadDoorSessions).toHaveBeenCalledWith(sensors[0], "2026-10-28T12:00:00.000Z");
+    expect(mockReadDoorSessions).toHaveBeenCalledWith("hh-1", sensors[0], "2026-10-28T12:00:00.000Z");
     expect(result.bands).toEqual([{ label: "Garage door", openedAt: "2026-10-26T11:30:00Z", closedAt: null }]);
   });
 

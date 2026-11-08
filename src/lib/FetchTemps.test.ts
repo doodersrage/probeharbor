@@ -250,8 +250,9 @@ describe("fetchTemps", () => {
       probes,
     );
     expect(mockInsertSensorReadings).toHaveBeenCalled();
-    expect(mockTouchDeviceLastSeen).toHaveBeenCalledWith("a");
+    expect(mockTouchDeviceLastSeen).toHaveBeenCalledWith("h1", "a");
     expect(mockUpdateDeviceMeta).toHaveBeenCalledWith(
+      "h1",
       "a",
       expect.objectContaining({
         battery_pct: 90,
@@ -309,7 +310,7 @@ describe("fetchTemps", () => {
       sendAlerts: false,
     });
 
-    expect(mockTouchDeviceLastSeen).toHaveBeenCalledWith("a");
+    expect(mockTouchDeviceLastSeen).toHaveBeenCalledWith("h1", "a");
     expect(mockUpdateDeviceMeta).not.toHaveBeenCalled();
   });
 

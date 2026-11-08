@@ -35,8 +35,8 @@ async function setup(email: string, deviceName: string) {
     "insert into public.devices (household_id, name, source) values ($1, $2, 'push') returning id",
     [householdId, deviceName],
   );
-  const temp = (await upsertDeviceSensor(d!.id, "0", "Bay", "temperature", "F")).sensor!.id;
-  const hum = (await upsertDeviceSensor(d!.id, "0", "Bay humidity", "humidity", "%")).sensor!.id;
+  const temp = (await upsertDeviceSensor(householdId, d!.id, "0", "Bay", "temperature", "F")).sensor!.id;
+  const hum = (await upsertDeviceSensor(householdId, d!.id, "0", "Bay humidity", "humidity", "%")).sensor!.id;
   return { userId, householdId, deviceId: d!.id, temp, hum };
 }
 
@@ -70,6 +70,7 @@ describe("History table (Neon)", () => {
   it("filters by device, probe and time", async () => {
     const a = await setup("a@example.com", "Garage");
     const shed = await upsertDeviceSensor(
+      a.householdId,
       (await sql<{ id: string }>("insert into public.devices (household_id, name, source) values ($1, 'Shed', 'push') returning id", [a.householdId]))[0]!.id,
       "7",
       "Shed probe",

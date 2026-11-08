@@ -95,7 +95,7 @@ export const GET: APIRoute = async ({ cookies, url, locals }) => {
   for (const device of devices) {
     for (const sensor of device.sensors) {
       if (sensor.kind !== "door") continue;
-      const readings = await fetchRecentBoolReadings(sensor.id, doorSince);
+      const readings = await fetchRecentBoolReadings(household.householdId, sensor.id, doorSince);
       liveSessions.push(
         ...computeDoorOpenSessions(
           readings.map((r) => ({

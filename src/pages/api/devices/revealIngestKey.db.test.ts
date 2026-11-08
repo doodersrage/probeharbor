@@ -91,7 +91,7 @@ async function deviceWithKey(userId: string, key: string) {
   const [{ household_id }] = await sql<{ household_id: string }>("select household_id from public.household_members where user_id = $1", [userId]);
   const { device, error } = await createPushDevice(household_id!, "Garage probe", "hash-" + key, key.slice(0, 8));
   expect(error).toBeNull();
-  await persistEncryptedIngestKey(device!.id, key);
+  await persistEncryptedIngestKey(household_id!, device!.id, key);
   return device!.id;
 }
 const revealFor = (browser: Browser, deviceId: string) => reveal(ctx(browser, "/api/devices/reveal-ingest-key", {}, { device_id: deviceId }));

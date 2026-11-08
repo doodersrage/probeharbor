@@ -88,6 +88,27 @@ describe("devices.ts: SQL refuses another household's device (isolation audit)",
     expect((await sql("select id from public.device_sensors order by id")).length).toBe(2);
   });
 
+  it("updateDeviceSensor / deleteDeviceSensor: another household's device + sensor under A's household change nothing", async () => {
+    const a = await home("a@example.com");
+    const b = await home("b@example.com");
+    const theirs = await device(b.home);
+    const theirSensor = await sensor(theirs, "t");
+    const patch = { key: "x", label: "Hijacked", kind: "humidity" as const, unit: "%", offsetNum: 5 };
+    await expect(devices.updateDeviceSensor(a.home, theirSensor, theirs, patch)).resolves.toEqual({ error: null });
+    await expect(devices.deleteDeviceSensor(a.home, theirSensor, theirs)).resolves.toEqual({ error: null });
+    expect(await sql("select key, label, kind, unit, offset_num from public.device_sensors where id = $1", [theirSensor])).toEqual([
+      { key: "t", label: "t", kind: "temperature", unit: "F", offset_num: 0 },
+    ]);
+
+    // B's own household still can.
+    await devices.updateDeviceSensor(b.home, theirSensor, theirs, { ...patch, visible: false });
+    expect(await sql("select label, visible from public.device_sensors where id = $1", [theirSensor])).toEqual([
+      { label: "Hijacked", visible: false },
+    ]);
+    await devices.deleteDeviceSensor(b.home, theirSensor, theirs);
+    await expect(sql("select 1 from public.device_sensors where id = $1", [theirSensor])).resolves.toEqual([]);
+  });
+
   it("savePullDevicesForHousehold never updates or deletes another household's pull device with the same URL", async () => {
     const a = await home("a@example.com");
     const b = await home("b@example.com");
@@ -138,6 +159,24 @@ describe("legacyTempConfig.ts: per user / per household (isolation audit)", () =
     await expect(legacy.usersWithLegacyFeeds()).resolves.toEqual([b.id]);
   });
 
+  it("ensureProbeSensors adds nothing to another household's device", async () => {
+    const a = await home("a@example.com");
+    const b = await home("b@example.com");
+    const theirs = await device(b.home, "pull_url", "Theirs");
+    const probe = { key: "0", label: "Bay", visible: true };
+    await expect(legacy.ensureProbeSensors(a.home, theirs, probe, 0)).resolves.toBe(false);
+    await expect(sql("select 1 from public.device_sensors where device_id = $1", [theirs])).resolves.toEqual([]);
+
+    await expect(legacy.ensureProbeSensors(b.home, theirs, probe, 2)).resolves.toBe(true);
+    expect(
+      await sql("select key, label, kind, unit, visible, sort_order from public.device_sensors where device_id = $1 order by kind", [theirs]),
+    ).toEqual([
+      { key: "0", label: "Bay humidity", kind: "humidity", unit: "%", visible: true, sort_order: 2 },
+      { key: "0", label: "Bay", kind: "temperature", unit: "F", visible: true, sort_order: 2 },
+    ]);
+    await expect(legacy.ensureProbeSensors(b.home, theirs, probe, 2)).resolves.toBe(false); // already there
+  });
+
   it("updatePullDevice leaves another household's device alone", async () => {
     const a = await home("a@example.com");
     const b = await home("b@example.com");
@@ -161,6 +200,23 @@ describe("pucks.ts: SQL scoped to the household (isolation audit)", () => {
 
     await expect(pucks.bindClaimedBay(DEVICE, b.home, "bay-1", "ab".repeat(16), "Theirs")).resolves.toBe("gone");
     await expect(pucks.getPuck(DEVICE)).resolves.toMatchObject({ household_id: a.home, bay_id: null, space_name: null });
+  });
+
+  it("bindClaimedBay with the wrong household leaves the pending claim for the real owner", async () => {
+    const a = await home("a@example.com");
+    const b = await home("b@example.com");
+    await pucks.registerPuck(DEVICE, "a".repeat(64), a.home, a.id);
+    const expires = new Date(Date.now() + 60_000).toISOString();
+    await pucks.savePendingClaim(DEVICE, "bay-1", "ab".repeat(16), expires);
+
+    await expect(pucks.bindClaimedBay(DEVICE, b.home, "bay-1", "ab".repeat(16), "Theirs")).resolves.toBe("gone");
+    await expect(pucks.getPendingClaim(DEVICE)).resolves.toMatchObject({ bay_id: "bay-1", nonce_hex: "ab".repeat(16) });
+
+    await expect(pucks.bindClaimedBay(DEVICE, a.home, "bay-1", "ab".repeat(16), "Garage")).resolves.toBe("ok");
+    await expect(pucks.getPendingClaim(DEVICE)).resolves.toBeNull();
+    await expect(pucks.getPuck(DEVICE)).resolves.toMatchObject({ household_id: a.home, bay_id: "bay-1", space_name: "Garage" });
+    // Used once: a replay is "gone".
+    await expect(pucks.bindClaimedBay(DEVICE, a.home, "bay-1", "ab".repeat(16), "Garage")).resolves.toBe("gone");
   });
 
   it("bayPuck and setMoodOverride only see the household's own bay", async () => {

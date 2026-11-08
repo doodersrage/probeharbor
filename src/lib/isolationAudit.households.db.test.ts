@@ -26,7 +26,7 @@ import { oldReadings, setSignatureFormat } from "./db/householdTools";
 import { insertHouseholdWithOwner, upsertHouseholdMember } from "./db/households";
 import { findChartShare, insertChartShare } from "./db/shareLinks";
 import { createHistorySavedView, listHistorySavedViews } from "./historySavedViews";
-import { acceptHouseholdInvite, createHouseholdInvite, getInviteByToken } from "./householdInvites";
+import { acceptHouseholdInvite, createHouseholdInvite, getInviteByToken, getInviteTokenState } from "./householdInvites";
 import {
   addHouseholdMemberByUserId,
   countOwnedHouseholds,
@@ -174,7 +174,10 @@ describe("isolation audit: invites", () => {
     const stranger = await userWithHome("stranger@example.com");
     const { token, invite } = await createHouseholdInvite(a.home, "guest@example.com", a.id, 7, "viewer");
     expect((await acceptHouseholdInvite(token!, guest.id, "guest@example.com")).error).toBeNull();
-    const acceptedAt = (await getInviteByToken(token!))?.accepted_at;
+    const acceptedAtOf = async (id: string) =>
+      (await sql<{ accepted_at: Date | null }>("select accepted_at from public.household_invites where id = $1", [id]))[0]?.accepted_at;
+    const acceptedAt = await acceptedAtOf(invite!.id);
+    expect(acceptedAt).not.toBeNull();
 
     await acceptHouseholdInvite(token!, stranger.id, "stranger@example.com");
     await expect(isUserInHousehold(stranger.id, a.home)).resolves.toBe(false);
@@ -182,7 +185,7 @@ describe("isolation audit: invites", () => {
     // markInviteAccepted only stamps an invite not yet accepted.
     await new Promise((r) => setTimeout(r, 5));
     await markInviteAccepted(invite!.id);
-    expect((await getInviteByToken(token!))?.accepted_at).toEqual(acceptedAt);
+    expect(await acceptedAtOf(invite!.id)).toEqual(acceptedAt);
   });
 
   it("markInviteAccepted touches only the named invite, not another household's", async () => {
@@ -191,7 +194,9 @@ describe("isolation audit: invites", () => {
     const ia = await createHouseholdInvite(a.home, "x@example.com", a.id);
     const ib = await createHouseholdInvite(b.home, "x@example.com", b.id);
     await markInviteAccepted(ia.invite!.id);
-    expect((await getInviteByToken(ia.token!))?.accepted_at).not.toBeNull();
+    // Accepted: no longer returned as usable, and the state says why.
+    await expect(getInviteByToken(ia.token!)).resolves.toBeNull();
+    await expect(getInviteTokenState(ia.token!)).resolves.toEqual({ householdId: a.home, accepted: true, expired: false });
     expect((await getInviteByToken(ib.token!))?.accepted_at).toBeNull();
   });
 

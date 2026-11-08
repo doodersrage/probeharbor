@@ -132,6 +132,7 @@ describe("GET /api/user/door-events", () => {
 
     expect(mockFetchRecentBoolReadings).toHaveBeenCalledTimes(1);
     expect(mockFetchRecentBoolReadings).toHaveBeenCalledWith(
+      "house-1",
       "door-sensor",
       expect.any(String),
     );

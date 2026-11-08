@@ -171,7 +171,7 @@ export async function migrateLegacyTempTablesToDevices(
         await neonLegacy.updatePullDevice(household.householdId, deviceId, feed, index, sanitizeJsonRoot(feed.jsonRoot));
       }
       for (const [probeIndex, probe] of probes.filter((p) => p.feedId === feed.id).entries()) {
-        if (await neonLegacy.ensureProbeSensors(deviceId, probe, probeIndex)) ensured += 1;
+        if (await neonLegacy.ensureProbeSensors(household.householdId, deviceId, probe, probeIndex)) ensured += 1;
       }
     }
     await neonLegacy.clearLegacy(userId);

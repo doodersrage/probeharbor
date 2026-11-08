@@ -4,6 +4,7 @@ const mockInsertInvite = vi.fn();
 const mockReissueInvite = vi.fn();
 const mockListPendingInvites = vi.fn();
 const mockFindInviteByTokenKeys = vi.fn();
+const mockFindInviteStateByTokenKeys = vi.fn();
 const mockMarkInviteAccepted = vi.fn();
 const mockRevokeInvite = vi.fn();
 vi.mock("./db/access", () => ({
@@ -11,6 +12,7 @@ vi.mock("./db/access", () => ({
   reissueInvite: (...a: unknown[]) => mockReissueInvite(...a),
   listPendingInvites: (...a: unknown[]) => mockListPendingInvites(...a),
   findInviteByTokenKeys: (...a: unknown[]) => mockFindInviteByTokenKeys(...a),
+  findInviteStateByTokenKeys: (...a: unknown[]) => mockFindInviteStateByTokenKeys(...a),
   markInviteAccepted: (...a: unknown[]) => mockMarkInviteAccepted(...a),
   revokeInvite: (...a: unknown[]) => mockRevokeInvite(...a),
 }));
@@ -36,6 +38,7 @@ beforeEach(() => {
   mockReissueInvite.mockReset();
   mockListPendingInvites.mockReset();
   mockFindInviteByTokenKeys.mockReset().mockResolvedValue(null);
+  mockFindInviteStateByTokenKeys.mockReset().mockResolvedValue(null);
   mockMarkInviteAccepted.mockReset().mockResolvedValue(undefined);
   mockRevokeInvite.mockReset();
   mockJoinHouseholdFromInvite.mockReset().mockResolvedValue({ added: true, error: null });
@@ -171,6 +174,22 @@ describe("getInviteByToken", () => {
   });
 });
 
+describe("getInviteTokenState", () => {
+  it("returns only the flags and household, looked up by the token's hash", async () => {
+    mockFindInviteStateByTokenKeys.mockResolvedValue({ household_id: "house-1", accepted: false, expired: true });
+    const { getInviteTokenState, inviteTokenLookupKeys } = await import("./householdInvites");
+
+    await expect(getInviteTokenState(" tok ")).resolves.toEqual({ householdId: "house-1", accepted: false, expired: true });
+    expect(mockFindInviteStateByTokenKeys).toHaveBeenCalledWith(await inviteTokenLookupKeys("tok"));
+  });
+
+  it("returns null for an unknown link", async () => {
+    const { getInviteTokenState } = await import("./householdInvites");
+
+    await expect(getInviteTokenState("missing")).resolves.toBeNull();
+  });
+});
+
 describe("acceptHouseholdInvite", () => {
   function invite(overrides: Partial<Record<string, unknown>> = {}) {
     return {
@@ -196,22 +215,51 @@ describe("acceptHouseholdInvite", () => {
   });
 
   it("short-circuits successfully when the invite was already accepted", async () => {
-    mockFindInviteByTokenKeys.mockResolvedValue(invite({ accepted_at: "2020-02-01T00:00:00.000Z" }));
+    // The lookup returns only usable invites; the state lookup says it was accepted.
+    mockFindInviteStateByTokenKeys.mockResolvedValue({ household_id: "house-1", accepted: true, expired: false });
     const { acceptHouseholdInvite } = await import("./householdInvites");
 
     const result = await acceptHouseholdInvite("tok", "user-1", "member@example.com");
 
     expect(result).toEqual({ householdId: "house-1", error: null });
     expect(mockJoinHouseholdFromInvite).not.toHaveBeenCalled();
+    expect(mockMarkInviteAccepted).not.toHaveBeenCalled();
+  });
+
+  it("already accepted wins over expired, as before", async () => {
+    mockFindInviteStateByTokenKeys.mockResolvedValue({ household_id: "house-1", accepted: true, expired: true });
+    const { acceptHouseholdInvite } = await import("./householdInvites");
+
+    await expect(acceptHouseholdInvite("tok", "user-1", "member@example.com")).resolves.toEqual({
+      householdId: "house-1",
+      error: null,
+    });
   });
 
   it("rejects an expired invite", async () => {
-    mockFindInviteByTokenKeys.mockResolvedValue(invite({ expires_at: "2000-01-01T00:00:00.000Z" }));
+    mockFindInviteStateByTokenKeys.mockResolvedValue({ household_id: "house-1", accepted: false, expired: true });
     const { acceptHouseholdInvite } = await import("./householdInvites");
 
     const result = await acceptHouseholdInvite("tok", "user-1", "member@example.com");
 
     expect(result).toEqual({ householdId: null, error: "Invite expired" });
+    expect(mockJoinHouseholdFromInvite).not.toHaveBeenCalled();
+  });
+
+  it("still refuses an accepted or expired row if the lookup ever returned one (second layer)", async () => {
+    const { acceptHouseholdInvite } = await import("./householdInvites");
+
+    mockFindInviteByTokenKeys.mockResolvedValue(invite({ accepted_at: "2020-02-01T00:00:00.000Z" }));
+    await expect(acceptHouseholdInvite("tok", "user-1", "member@example.com")).resolves.toEqual({
+      householdId: "house-1",
+      error: null,
+    });
+    mockFindInviteByTokenKeys.mockResolvedValue(invite({ expires_at: "2000-01-01T00:00:00.000Z" }));
+    await expect(acceptHouseholdInvite("tok", "user-1", "member@example.com")).resolves.toEqual({
+      householdId: null,
+      error: "Invite expired",
+    });
+    expect(mockJoinHouseholdFromInvite).not.toHaveBeenCalled();
   });
 
   it("requires the signed-in email to match the invited email", async () => {

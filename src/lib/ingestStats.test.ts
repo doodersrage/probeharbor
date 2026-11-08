@@ -25,11 +25,11 @@ describe("recordIngestStat", () => {
   it("records against today's UTC day", async () => {
     const { recordIngestStat } = await import("./ingestStats");
 
-    await recordIngestStat("device-1", true);
-    await recordIngestStat("device-1", false);
+    await recordIngestStat("house-1", "device-1", true);
+    await recordIngestStat("house-1", "device-1", false);
 
-    expect(mockRecord).toHaveBeenNthCalledWith(1, "device-1", true, "2024-06-15");
-    expect(mockRecord).toHaveBeenNthCalledWith(2, "device-1", false, "2024-06-15");
+    expect(mockRecord).toHaveBeenNthCalledWith(1, "house-1", "device-1", true, "2024-06-15");
+    expect(mockRecord).toHaveBeenNthCalledWith(2, "house-1", "device-1", false, "2024-06-15");
   });
 });
 

@@ -561,7 +561,7 @@ export const server = {
       const kindRaw = input.kind ?? "generic";
       const kind = isSensorKind(kindRaw) ? kindRaw : ("generic" as const);
       const offsetNum = Number.parseFloat(input.offset_num ?? "0");
-      const result = await updateDeviceSensor(input.sensor_id, input.device_id, {
+      const result = await updateDeviceSensor(householdId, input.sensor_id, input.device_id, {
         key: input.key.trim(),
         label: input.label.trim(),
         kind,
@@ -597,6 +597,7 @@ export const server = {
       const kindRaw = input.kind ?? "generic";
       const kind = isSensorKind(kindRaw) ? kindRaw : ("generic" as const);
       const result = await upsertDeviceSensor(
+        householdId,
         input.device_id,
         input.key.trim(),
         input.label.trim(),
@@ -628,6 +629,7 @@ export const server = {
       }
       const label = input.label?.trim() || "Probe";
       const temp = await upsertDeviceSensor(
+        householdId,
         input.device_id,
         input.key.trim(),
         label,
@@ -638,6 +640,7 @@ export const server = {
         throw new ActionError({ code: "BAD_REQUEST", message: temp.error });
       }
       const humidity = await upsertDeviceSensor(
+        householdId,
         input.device_id,
         input.key.trim(),
         `${label} humidity`,
@@ -666,7 +669,7 @@ export const server = {
       if (!owned.devices.some((d) => d.id === input.device_id)) {
         throw new ActionError({ code: "FORBIDDEN", message: t.deviceNotFound });
       }
-      const result = await deleteDeviceSensor(input.sensor_id, input.device_id);
+      const result = await deleteDeviceSensor(householdId, input.sensor_id, input.device_id);
       if (result.error) {
         throw new ActionError({ code: "BAD_REQUEST", message: result.error });
       }

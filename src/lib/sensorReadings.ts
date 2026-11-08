@@ -83,11 +83,17 @@ export function buildReadingRowsFromTempResults(
   return rows;
 }
 
+/*
+ * Per-sensor reads take the household too: a sensor id from another
+ * household reads as no data (checked in SQL, see db/readings).
+ */
+
 export async function getRecentNumericReadings(
+  householdId: string,
   sensorId: string,
   sinceIso: string,
 ): Promise<number[]> {
-  return neonReadings.getRecentNumericReadings(sensorId, sinceIso);
+  return neonReadings.getRecentNumericReadings(householdId, sensorId, sinceIso);
 }
 
 /**
@@ -95,27 +101,30 @@ export async function getRecentNumericReadings(
  * One row; used for "change over the last N hours" comparisons.
  */
 export async function getNumericReadingInWindow(
+  householdId: string,
   sensorId: string,
   notBeforeIso: string,
   atOrBeforeIso: string,
 ): Promise<{ value: number; at: string } | null> {
-  return neonReadings.getNumericReadingInWindow(sensorId, notBeforeIso, atOrBeforeIso);
+  return neonReadings.getNumericReadingInWindow(householdId, sensorId, notBeforeIso, atOrBeforeIso);
 }
 
 /** True when the sensor reported a value above `thresholdF` at or after `sinceIso` (one-row probe). */
 export async function hasNumericReadingAboveSince(
+  householdId: string,
   sensorId: string,
   sinceIso: string,
   thresholdF: number,
 ): Promise<boolean> {
-  return neonReadings.hasNumericReadingAboveSince(sensorId, sinceIso, thresholdF);
+  return neonReadings.hasNumericReadingAboveSince(householdId, sensorId, sinceIso, thresholdF);
 }
 
 export async function getRecentNumericReadingSamples(
+  householdId: string,
   sensorId: string,
   sinceIso: string,
 ): Promise<Array<{ at: string; tempF: number }>> {
-  return neonReadings.getRecentNumericReadingSamples(sensorId, sinceIso);
+  return neonReadings.getRecentNumericReadingSamples(householdId, sensorId, sinceIso);
 }
 
 /** Anchor lookback: how far back to look for the last reading before a dwell window. */
@@ -127,6 +136,7 @@ const DWELL_ANCHOR_LOOKBACK_MS = 24 * 60 * 60 * 1000;
  * when the window opened, however often the device reports.
  */
 export async function getFreezeDwellSamples(
+  householdId: string,
   sensorId: string,
   cutoffIso: string,
 ): Promise<Array<{ at: string; tempF: number }>> {
@@ -134,17 +144,18 @@ export async function getFreezeDwellSamples(
     Date.parse(cutoffIso) - DWELL_ANCHOR_LOOKBACK_MS,
   ).toISOString();
   const [anchor, window] = await Promise.all([
-    neonReadings.getDwellAnchor(sensorId, anchorSinceIso, cutoffIso),
-    getRecentNumericReadingSamples(sensorId, cutoffIso),
+    neonReadings.getDwellAnchor(householdId, sensorId, anchorSinceIso, cutoffIso),
+    getRecentNumericReadingSamples(householdId, sensorId, cutoffIso),
   ]);
   return [...anchor, ...window];
 }
 
 export async function fetchRecentBoolReadings(
+  householdId: string,
   sensorId: string,
   sinceIso: string,
 ): Promise<Array<{ value: boolean; recordedAt: string }>> {
-  return neonReadings.fetchRecentBoolReadings(sensorId, sinceIso);
+  return neonReadings.fetchRecentBoolReadings(householdId, sensorId, sinceIso);
 }
 
 export type LatestSensorRow = {

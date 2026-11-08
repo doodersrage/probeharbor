@@ -15,6 +15,7 @@ export type DiscoveredPushSensor = {
 
 /** Create push-device sensor rows for newly seen ingest keys; never rename existing sensors. */
 export async function ensureDiscoveredPushSensors(
+  householdId: string,
   deviceId: string,
   discovered: DiscoveredPushSensor[],
   existing: DeviceSensor[] = [],
@@ -26,6 +27,7 @@ export async function ensureDiscoveredPushSensors(
     if (item.withHumiditySibling) {
       if (!existingKeys.has(`${item.key}::temperature`)) {
         const temp = await upsertDeviceSensor(
+          householdId,
           deviceId,
           item.key,
           item.label,
@@ -40,6 +42,7 @@ export async function ensureDiscoveredPushSensors(
       }
       if (!existingKeys.has(`${item.key}::humidity`)) {
         const humidity = await upsertDeviceSensor(
+          householdId,
           deviceId,
           item.key,
           `${item.label} humidity`,
@@ -58,6 +61,7 @@ export async function ensureDiscoveredPushSensors(
     if (existingKeys.has(`${item.key}::${item.kind}`)) continue;
 
     const sensor = await upsertDeviceSensor(
+      householdId,
       deviceId,
       item.key,
       item.label,

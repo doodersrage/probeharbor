@@ -84,7 +84,11 @@ export async function getPendingClaim(
   }
 }
 
-/** Use up the pending claim and bind the bay. "gone" when the claim was already used. */
+/**
+ * Use up the pending claim and bind the bay, in one statement. "gone" when
+ * the claim was already used or expired, or the puck isn't this household's
+ * (then the pending claim is left as it was).
+ */
 export async function bindClaimedBay(
   deviceId: string,
   householdId: string,
@@ -94,9 +98,14 @@ export async function bindClaimedBay(
 ): Promise<"ok" | "gone" | { error: string }> {
   try {
     const rows = await query(
-      `with consumed as (
+      `with target as (
+         -- The household's own puck, locked so the bind below can't miss it.
+         select device_id from public.pucks where device_id = $1 and household_id = $2 for update
+       ), consumed as (
+         -- Consumed only when the bind will happen: a wrong household leaves the claim pending.
          delete from public.puck_claim_pending
-         where device_id = $1 and bay_id = $3 and nonce_hex = $4
+         where device_id = $1 and bay_id = $3 and nonce_hex = $4 and expires_at >= now()
+           and exists (select 1 from target)
          returning device_id
        )
        update public.pucks set bay_id = $3, space_name = $5, updated_at = now(),

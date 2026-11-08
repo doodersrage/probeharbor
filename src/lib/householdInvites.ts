@@ -114,10 +114,23 @@ export async function listPendingInvites(
   return neonAccess.listPendingInvites(householdId);
 }
 
+/** The invite this link opens, only while it is usable (not accepted, not expired). */
 export async function getInviteByToken(
   token: string,
 ): Promise<HouseholdInvite | null> {
   return neonAccess.findInviteByTokenKeys(await inviteTokenLookupKeys(token.trim()));
+}
+
+/**
+ * Why a link that `getInviteByToken` refused isn't usable, so the page can
+ * say "expired" or "already accepted" rather than "not found". Flags and the
+ * household id only; null for an unknown link.
+ */
+export async function getInviteTokenState(
+  token: string,
+): Promise<{ householdId: string; accepted: boolean; expired: boolean } | null> {
+  const state = await neonAccess.findInviteStateByTokenKeys(await inviteTokenLookupKeys(token.trim()));
+  return state ? { householdId: state.household_id, accepted: state.accepted, expired: state.expired } : null;
 }
 
 export async function acceptHouseholdInvite(
@@ -127,8 +140,14 @@ export async function acceptHouseholdInvite(
 ): Promise<{ householdId: string | null; error: string | null }> {
   const invite = await getInviteByToken(token);
   if (!invite) {
+    // Not usable: say why, in the same order as the checks below.
+    const state = await getInviteTokenState(token);
+    if (state?.accepted) return { householdId: state.householdId, error: null };
+    if (state?.expired) return { householdId: null, error: "Invite expired" };
     return { householdId: null, error: "Invite not found" };
   }
+
+  // The lookup already excludes these; checked again in case it ever doesn't.
 
   if (invite.accepted_at) {
     return { householdId: invite.household_id, error: null };

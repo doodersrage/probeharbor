@@ -157,7 +157,7 @@ beforeEach(() => {
   mockParseTempFeedPayload.mockReset().mockReturnValue({});
   mockLabelForPushSensorKey.mockReset().mockReturnValue(null);
   mockUpsertDeviceSensor.mockReset().mockImplementation(
-    async (_deviceId: string, key: string, _label: string, kind: string) => ({
+    async (_householdId: string, _deviceId: string, key: string, _label: string, kind: string) => ({
       sensor: { id: `${kind}-${key}` },
       error: null,
     }),
@@ -221,7 +221,10 @@ describe("POST /api/ingest/[deviceKey]", () => {
     const body = await response.json();
 
     expect(mockFindDeviceByIngestKeyHash).toHaveBeenCalled();
+    // Every device/sensor write names the key's own household.
+    expect(mockEnsureDiscoveredPushSensors.mock.calls[0]?.slice(0, 2)).toEqual(["house-1", "device-1"]);
     expect(mockUpsertDeviceSensor).toHaveBeenCalled();
+    expect(mockUpsertDeviceSensor.mock.calls.every((c) => c[0] === "house-1" && c[1] === "device-1")).toBe(true);
     expect(mockInsertSensorReadings).toHaveBeenCalledWith(
       expect.arrayContaining([
         expect.objectContaining({
@@ -235,8 +238,8 @@ describe("POST /api/ingest/[deviceKey]", () => {
         }),
       ]),
     );
-    expect(mockTouchDeviceLastSeen).toHaveBeenCalledWith("device-1");
-    expect(mockRecordIngestStat).toHaveBeenCalledWith("device-1", true);
+    expect(mockTouchDeviceLastSeen).toHaveBeenCalledWith("house-1", "device-1");
+    expect(mockRecordIngestStat).toHaveBeenCalledWith("house-1", "device-1", true);
     expect(response.status).toBe(200);
     expect(body).toEqual({ ok: true, readings: 2, sensors_created: 0 });
   });
@@ -280,7 +283,7 @@ describe("POST /api/ingest/[deviceKey]", () => {
       rejected: [{ key: "temp1", kind: "temperature", value: 185, reason: "sensor_fault" }],
     });
     expect(mockInsertSensorReadings).not.toHaveBeenCalled();
-    expect(mockRecordIngestStat).toHaveBeenCalledWith("device-1", false);
+    expect(mockRecordIngestStat).toHaveBeenCalledWith("house-1", "device-1", false);
   });
 
   it("hides the database error from the device when storing fails", async () => {
@@ -294,7 +297,7 @@ describe("POST /api/ingest/[deviceKey]", () => {
     expect(response.status).toBe(500);
     expect(text).toBe(JSON.stringify({ error: "Could not store readings. Try again." }));
     expect(text).not.toContain("sensor_readings");
-    expect(mockRecordIngestStat).toHaveBeenCalledWith("device-1", false);
+    expect(mockRecordIngestStat).toHaveBeenCalledWith("house-1", "device-1", false);
   });
 
   it("answers 500, not 'no sensor values', when no sensor could be saved", async () => {
@@ -319,7 +322,7 @@ describe("POST /api/ingest/[deviceKey]", () => {
     await POST(makeContext({ headerKey: "good-key" }));
 
     expect(mockUpdateDeviceMeta).not.toHaveBeenCalled();
-    expect(mockTouchDeviceLastSeen).toHaveBeenCalledWith("device-1");
+    expect(mockTouchDeviceLastSeen).toHaveBeenCalledWith("house-1", "device-1");
   });
 
   it("records numeric-string battery and rssi values", async () => {
@@ -390,7 +393,7 @@ describe("POST /api/ingest/[deviceKey]", () => {
     await POST(makeContext({ headerKey: "good-key" }));
 
     expect(mockUpsertDeviceSensor).toHaveBeenCalledTimes(1);
-    expect(mockUpsertDeviceSensor).toHaveBeenCalledWith("device-1", "0", expect.any(String), "temperature", "F");
+    expect(mockUpsertDeviceSensor).toHaveBeenCalledWith("house-1", "device-1", "0", expect.any(String), "temperature", "F");
   });
 
   it("looks up each household member once for webhooks and alerts together", async () => {
@@ -509,6 +512,7 @@ describe("POST /api/ingest/[deviceKey]", () => {
     await POST(makeContext({ headerKey: "good-key" }));
 
     expect(mockUpdateDeviceMeta).toHaveBeenCalledWith(
+      "house-1",
       "device-1",
       expect.objectContaining({ report_interval_s: 600, report_intervals_s: [600] }),
     );

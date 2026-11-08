@@ -27,7 +27,7 @@ import {
   setActiveHouseholdForUser,
   updateHouseholdName,
 } from "./households";
-import { acceptHouseholdInvite, createHouseholdInvite, getInviteByToken } from "./householdInvites";
+import { acceptHouseholdInvite, createHouseholdInvite, getInviteByToken, getInviteTokenState } from "./householdInvites";
 
 const db = useTestDatabase();
 const sql = async <T = Record<string, unknown>>(text: string, params: unknown[] = []) =>
@@ -268,7 +268,8 @@ describe("invites never change an existing member's role (Neon)", () => {
     });
 
     await expect(roleOf(guest.id, owner.home)).resolves.toBe(current);
-    expect((await getInviteByToken(token!))?.accepted_at).toBeTruthy();
+    await expect(getInviteByToken(token!)).resolves.toBeNull(); // used up
+    await expect(getInviteTokenState(token!)).resolves.toMatchObject({ accepted: true });
     await expect(getUserHouseholdId(guest.id)).resolves.toBe(owner.home);
     const rows = await sql("select 1 from public.household_members where household_id = $1 and user_id = $2", [
       owner.home,

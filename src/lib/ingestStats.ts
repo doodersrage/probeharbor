@@ -4,11 +4,13 @@ function todayUtc(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
+/** Counts only for a device of `householdId` (checked in SQL). */
 export async function recordIngestStat(
+  householdId: string,
   deviceId: string,
   success: boolean,
 ): Promise<void> {
-  return neonIngest.recordIngestStat(deviceId, success, todayUtc());
+  return neonIngest.recordIngestStat(householdId, deviceId, success, todayUtc());
 }
 
 export type IngestStatRow = {

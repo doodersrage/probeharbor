@@ -8,6 +8,7 @@ vi.mock("./runtimeEnv", () => ({
 
 import { archiveOldReadings } from "./archiveHistory";
 import { createClaimsPackExport, getClaimsPackExportByToken, revokeClaimsPackExport } from "./claimsPackExports";
+import { findClaimsPack } from "./db/householdTools";
 import { createHistorySavedView, deleteHistorySavedView, listHistorySavedViews } from "./historySavedViews";
 import { createInboundWebhook, listInboundWebhooks, resolveInboundWebhook, revokeInboundWebhook } from "./inboundWebhooks";
 
@@ -55,6 +56,21 @@ describe("claims-pack exports (Neon)", () => {
     await revokeClaimsPackExport(b.home, token!);
     await expect(getClaimsPackExportByToken(token!)).resolves.not.toBeNull();
     await revokeClaimsPackExport(a.home, token!);
+    await expect(getClaimsPackExportByToken(token!)).resolves.toBeNull();
+    await expect(findClaimsPack(token!)).resolves.toBeNull(); // the query itself skips revoked packs
+  });
+
+  it("the token lookup skips expired packs itself; no expiry means no limit", async () => {
+    const a = await home("a@example.com");
+    const pack = { rangeFrom: "2026-01-01T00:00:00Z", rangeTo: "2026-02-01T00:00:00Z", householdName: "Home" } as never;
+    const { token } = await createClaimsPackExport(a.home, pack, a.id);
+    await expect(findClaimsPack(token!)).resolves.toMatchObject({ revoked_at: null });
+
+    await sql("update public.claims_pack_exports set expires_at = null where token = $1", [token]);
+    await expect(findClaimsPack(token!)).resolves.toMatchObject({ expires_at: null });
+
+    await sql("update public.claims_pack_exports set expires_at = now() - interval '1 minute' where token = $1", [token]);
+    await expect(findClaimsPack(token!)).resolves.toBeNull();
     await expect(getClaimsPackExportByToken(token!)).resolves.toBeNull();
   });
 });

@@ -67,7 +67,7 @@ export const POST: APIRoute = async ({ request }) => {
     const match = sensorById.get(id);
     if (!match) continue;
     const label = (typeof row.label === "string" ? row.label.trim() : "") || match.sensor.label;
-    const result = await updateDeviceSensor(id, match.deviceId, {
+    const result = await updateDeviceSensor(resolved.householdId, id, match.deviceId, {
       key: match.sensor.key,
       label,
       kind: match.sensor.kind,

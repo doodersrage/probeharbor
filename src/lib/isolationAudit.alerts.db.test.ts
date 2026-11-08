@@ -263,8 +263,8 @@ describe("jobs: per-sensor and per-user lookups", () => {
           householdId,
         ])
       )[0]!.id;
-    const sa = (await upsertDeviceSensor(await device(a.householdId), "t", "T", "temperature", "F")).sensor!.id;
-    const sb = (await upsertDeviceSensor(await device(b.householdId), "t", "T", "temperature", "F")).sensor!.id;
+    const sa = (await upsertDeviceSensor(a.householdId, await device(a.householdId), "t", "T", "temperature", "F")).sensor!.id;
+    const sb = (await upsertDeviceSensor(b.householdId, await device(b.householdId), "t", "T", "temperature", "F")).sensor!.id;
     await sql(
       `insert into public.sensor_readings (sensor_id, household_id, recorded_at, value_num)
        select $1, $2, now() - (g || ' minutes')::interval, 70 + g from generate_series(1, 10) g`,

@@ -188,22 +188,25 @@ export async function getUserDevicesAsTempConfig(userId: string, email?: string 
   };
 }
 
-export async function touchDeviceLastSeen(deviceId: string): Promise<void> {
-  return neonIngest.touchDeviceLastSeen(deviceId);
+/** Only a device of `householdId` (checked in SQL). */
+export async function touchDeviceLastSeen(householdId: string, deviceId: string): Promise<void> {
+  return neonIngest.touchDeviceLastSeen(householdId, deviceId);
 }
 
 /**
  * Merge into devices.meta. By default this also stamps last_seen_at, because
  * callers are reporting a reading; pass touchLastSeen: false for bookkeeping
  * writes (storing the encrypted ingest key) so a new device still reads as
- * "never seen" until its first upload.
+ * "never seen" until its first upload. Only a device of `householdId` is
+ * changed (checked in SQL).
  */
 export async function updateDeviceMeta(
+  householdId: string,
   deviceId: string,
   patch: Record<string, unknown>,
   options: { touchLastSeen?: boolean } = {},
 ): Promise<void> {
-  return neonIngest.updateDeviceMeta(deviceId, patch, options.touchLastSeen !== false);
+  return neonIngest.updateDeviceMeta(householdId, deviceId, patch, options.touchLastSeen !== false);
 }
 
 export async function findDeviceByIngestKeyHash(
@@ -285,7 +288,9 @@ export async function rotatePushDeviceKey(
   return neonDevices.rotatePushDeviceKey(householdId, deviceId, ingestKeyHash, ingestKeyPrefix);
 }
 
+/** Changes nothing unless the sensor is on the device and the device in the household (checked in SQL). */
 export async function updateDeviceSensor(
+  householdId: string,
   sensorId: string,
   deviceId: string,
   patch: {
@@ -297,7 +302,7 @@ export async function updateDeviceSensor(
     visible?: boolean;
   },
 ): Promise<{ error: string | null }> {
-  return neonDevices.updateDeviceSensor(sensorId, deviceId, {
+  return neonDevices.updateDeviceSensor(householdId, sensorId, deviceId, {
     key: patch.key,
     label: patch.label,
     kind: patch.kind,
@@ -307,21 +312,25 @@ export async function updateDeviceSensor(
   });
 }
 
+/** Deletes nothing unless the sensor is on the device and the device in the household (checked in SQL). */
 export async function deleteDeviceSensor(
+  householdId: string,
   sensorId: string,
   deviceId: string,
 ): Promise<{ error: string | null }> {
-  return neonDevices.deleteDeviceSensor(sensorId, deviceId);
+  return neonDevices.deleteDeviceSensor(householdId, sensorId, deviceId);
 }
 
+/** Existing or new sensor on a device of `householdId`; an error for a device outside it. */
 export async function upsertDeviceSensor(
+  householdId: string,
   deviceId: string,
   key: string,
   label: string,
   kind: SensorKind,
   unit?: string | null,
 ): Promise<{ sensor: DeviceSensor | null; error: string | null }> {
-  return neonIngest.upsertDeviceSensor(deviceId, key, label, kind, unit);
+  return neonIngest.upsertDeviceSensor(householdId, deviceId, key, label, kind, unit);
 }
 
 export async function savePullDevicesForHousehold(

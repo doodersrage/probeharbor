@@ -36,7 +36,7 @@ describe("ensureDiscoveredPushSensors", () => {
   it("does nothing for an empty discovery list", async () => {
     const { ensureDiscoveredPushSensors } = await import("./pushSensorDiscovery");
 
-    const result = await ensureDiscoveredPushSensors("device-1", []);
+    const result = await ensureDiscoveredPushSensors("house-1", "device-1", []);
 
     expect(result).toEqual({ created: 0, error: null });
     expect(mockUpsertDeviceSensor).not.toHaveBeenCalled();
@@ -45,11 +45,11 @@ describe("ensureDiscoveredPushSensors", () => {
   it("creates a new sensor using the explicit unit when given", async () => {
     const { ensureDiscoveredPushSensors } = await import("./pushSensorDiscovery");
 
-    const result = await ensureDiscoveredPushSensors("device-1", [
+    const result = await ensureDiscoveredPushSensors("house-1", "device-1", [
       { key: "0", label: "Probe 0", kind: "temp" as never, unit: "C" },
     ]);
 
-    expect(mockUpsertDeviceSensor).toHaveBeenCalledWith("device-1", "0", "Probe 0", "temp", "C");
+    expect(mockUpsertDeviceSensor).toHaveBeenCalledWith("house-1", "device-1", "0", "Probe 0", "temp", "C");
     expect(mockDefaultUnitForKind).not.toHaveBeenCalled();
     expect(result).toEqual({ created: 1, error: null });
   });
@@ -57,12 +57,13 @@ describe("ensureDiscoveredPushSensors", () => {
   it("falls back to defaultUnitForKind when no unit is given", async () => {
     const { ensureDiscoveredPushSensors } = await import("./pushSensorDiscovery");
 
-    await ensureDiscoveredPushSensors("device-1", [
+    await ensureDiscoveredPushSensors("house-1", "device-1", [
       { key: "0", label: "Probe 0", kind: "temp" as never },
     ]);
 
     expect(mockDefaultUnitForKind).toHaveBeenCalledWith("temp");
     expect(mockUpsertDeviceSensor).toHaveBeenCalledWith(
+      "house-1",
       "device-1",
       "0",
       "Probe 0",
@@ -75,6 +76,7 @@ describe("ensureDiscoveredPushSensors", () => {
     const { ensureDiscoveredPushSensors } = await import("./pushSensorDiscovery");
 
     const result = await ensureDiscoveredPushSensors(
+      "house-1",
       "device-1",
       [{ key: "0", label: "Probe 0", kind: "temp" as never }],
       [sensor({ key: "0", kind: "temp" as never })],
@@ -88,7 +90,7 @@ describe("ensureDiscoveredPushSensors", () => {
     mockUpsertDeviceSensor.mockResolvedValueOnce({ sensor: null, error: "insert failed" });
     const { ensureDiscoveredPushSensors } = await import("./pushSensorDiscovery");
 
-    const result = await ensureDiscoveredPushSensors("device-1", [
+    const result = await ensureDiscoveredPushSensors("house-1", "device-1", [
       { key: "0", label: "Probe 0", kind: "temp" as never },
       { key: "1", label: "Probe 1", kind: "temp" as never },
     ]);
@@ -101,7 +103,7 @@ describe("ensureDiscoveredPushSensors", () => {
     mockUpsertDeviceSensor.mockResolvedValueOnce({ sensor: null, error: null });
     const { ensureDiscoveredPushSensors } = await import("./pushSensorDiscovery");
 
-    const result = await ensureDiscoveredPushSensors("device-1", [
+    const result = await ensureDiscoveredPushSensors("house-1", "device-1", [
       { key: "0", label: "Probe 0", kind: "temp" as never },
     ]);
 
@@ -116,10 +118,11 @@ describe("ensureDiscoveredPushSensors", () => {
     it("creates both the temperature and humidity rows when neither exists", async () => {
       const { ensureDiscoveredPushSensors } = await import("./pushSensorDiscovery");
 
-      const result = await ensureDiscoveredPushSensors("device-1", discovered);
+      const result = await ensureDiscoveredPushSensors("house-1", "device-1", discovered);
 
       expect(mockUpsertDeviceSensor).toHaveBeenNthCalledWith(
         1,
+        "house-1",
         "device-1",
         "0",
         "Probe 0",
@@ -128,6 +131,7 @@ describe("ensureDiscoveredPushSensors", () => {
       );
       expect(mockUpsertDeviceSensor).toHaveBeenNthCalledWith(
         2,
+        "house-1",
         "device-1",
         "0",
         "Probe 0 humidity",
@@ -141,6 +145,7 @@ describe("ensureDiscoveredPushSensors", () => {
       const { ensureDiscoveredPushSensors } = await import("./pushSensorDiscovery");
 
       const result = await ensureDiscoveredPushSensors(
+        "house-1",
         "device-1",
         discovered,
         [sensor({ key: "0", kind: "temperature" })],
@@ -148,6 +153,7 @@ describe("ensureDiscoveredPushSensors", () => {
 
       expect(mockUpsertDeviceSensor).toHaveBeenCalledTimes(1);
       expect(mockUpsertDeviceSensor).toHaveBeenCalledWith(
+        "house-1",
         "device-1",
         "0",
         "Probe 0 humidity",
@@ -161,6 +167,7 @@ describe("ensureDiscoveredPushSensors", () => {
       const { ensureDiscoveredPushSensors } = await import("./pushSensorDiscovery");
 
       const result = await ensureDiscoveredPushSensors(
+        "house-1",
         "device-1",
         discovered,
         [sensor({ key: "0", kind: "humidity" })],
@@ -168,6 +175,7 @@ describe("ensureDiscoveredPushSensors", () => {
 
       expect(mockUpsertDeviceSensor).toHaveBeenCalledTimes(1);
       expect(mockUpsertDeviceSensor).toHaveBeenCalledWith(
+        "house-1",
         "device-1",
         "0",
         "Probe 0",
@@ -181,7 +189,7 @@ describe("ensureDiscoveredPushSensors", () => {
       mockUpsertDeviceSensor.mockResolvedValueOnce({ sensor: null, error: "temp failed" });
       const { ensureDiscoveredPushSensors } = await import("./pushSensorDiscovery");
 
-      const result = await ensureDiscoveredPushSensors("device-1", discovered);
+      const result = await ensureDiscoveredPushSensors("house-1", "device-1", discovered);
 
       expect(result).toEqual({ created: 0, error: "temp failed" });
       expect(mockUpsertDeviceSensor).toHaveBeenCalledTimes(1);
@@ -193,7 +201,7 @@ describe("ensureDiscoveredPushSensors", () => {
         .mockResolvedValueOnce({ sensor: null, error: "humidity failed" });
       const { ensureDiscoveredPushSensors } = await import("./pushSensorDiscovery");
 
-      const result = await ensureDiscoveredPushSensors("device-1", discovered);
+      const result = await ensureDiscoveredPushSensors("house-1", "device-1", discovered);
 
       expect(result).toEqual({ created: 1, error: "humidity failed" });
     });

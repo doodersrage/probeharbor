@@ -89,7 +89,7 @@ describe("POST /api/devices/sensors-batch", () => {
 
     const response = await POST(makeContext({ sensors: [{ id: "s1", label: "New label" }] }));
 
-    expect(mockUpdateDeviceSensor).toHaveBeenCalledWith("s1", "d1", {
+    expect(mockUpdateDeviceSensor).toHaveBeenCalledWith("house-1", "s1", "d1", {
       key: "temp",
       label: "New label",
       kind: "temperature",

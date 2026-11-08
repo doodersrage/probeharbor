@@ -125,10 +125,11 @@ export async function fetchTemps(
 
       for (const result of results) {
         if (!result.error) {
-          await touchDeviceLastSeen(result.id);
+          await touchDeviceLastSeen(householdId, result.id);
           if (result.deviceMeta && Object.keys(result.deviceMeta).length > 0) {
             const existing = devices.find((device) => device.id === result.id);
             await updateDeviceMeta(
+              householdId,
               result.id,
               enrichDeviceMetaHistories(existing?.meta, result.deviceMeta),
             );

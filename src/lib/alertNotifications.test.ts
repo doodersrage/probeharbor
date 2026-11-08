@@ -322,11 +322,21 @@ describe("sendThresholdAlertsIfNeeded after \"I'm on it\"", () => {
     mockListRecentAlertEvents.mockResolvedValue([{ kind: "threshold", acknowledged_at: ackedAt }]);
     const { sendThresholdAlertsIfNeeded } = await import("./alertNotifications");
 
-    await sendThresholdAlertsIfNeeded("user-1", "a@example.com", settings, withSensor);
+    await sendThresholdAlertsIfNeeded("user-1", "a@example.com", settings, withSensor, "house-1");
 
-    expect(mockHasNumericReadingAboveSince).toHaveBeenCalledWith("s1", ackedAt, settings.freezeThresholdF);
+    expect(mockHasNumericReadingAboveSince).toHaveBeenCalledWith("house-1", "s1", ackedAt, settings.freezeThresholdF);
     expect(sentTemperatureAlerts()).toHaveLength(0);
     expect(mockMarkCooldown).not.toHaveBeenCalled();
+  });
+
+  it("never suppresses without a household (readings can't be looked up)", async () => {
+    mockListRecentAlertEvents.mockResolvedValue([{ kind: "threshold", acknowledged_at: ackedAt }]);
+    const { sendThresholdAlertsIfNeeded } = await import("./alertNotifications");
+
+    await sendThresholdAlertsIfNeeded("user-1", "a@example.com", settings, withSensor);
+
+    expect(mockHasNumericReadingAboveSince).not.toHaveBeenCalled();
+    expect(sentTemperatureAlerts()).toHaveLength(1);
   });
 
   it("alerts again once the sensor recovered above the threshold and dropped back", async () => {
@@ -334,8 +344,9 @@ describe("sendThresholdAlertsIfNeeded after \"I'm on it\"", () => {
     mockHasNumericReadingAboveSince.mockResolvedValue(true);
     const { sendThresholdAlertsIfNeeded } = await import("./alertNotifications");
 
-    await sendThresholdAlertsIfNeeded("user-1", "a@example.com", settings, withSensor);
+    await sendThresholdAlertsIfNeeded("user-1", "a@example.com", settings, withSensor, "house-1");
 
+    expect(mockHasNumericReadingAboveSince).toHaveBeenCalled();
     expect(sentTemperatureAlerts()).toHaveLength(1);
   });
 
@@ -679,6 +690,26 @@ describe("freeze alerts are claimed too", () => {
 
     expect(mockNotifyUser.mock.calls.some((call) => call[3]?.kind === "threshold")).toBe(false);
     expect(mockClaimCooldown).toHaveBeenCalledWith("user-1", "last_alert_sent_at", null);
+  });
+});
+
+describe("freeze dwell without a household", () => {
+  it("still sends the freeze alert (no dwell wait) instead of silently dropping it", async () => {
+    mockClaimCooldown.mockResolvedValue({ claimed: true, claimedAt: "2026-01-02T00:00:00.000Z" });
+    mockNotifyUser.mockClear();
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const { sendThresholdAlertsIfNeeded } = await import("./alertNotifications");
+
+    await sendThresholdAlertsIfNeeded(
+      "user-1",
+      "a@example.com",
+      { ...DEFAULT_ALERT_SETTINGS, enabled: true, freezeThresholdF: 34, freezeDwellMinutes: 30 },
+      [{ label: "Garage pipe", tempf: 20, humidity: null, sensorId: "s-1" }],
+    );
+
+    expect(mockNotifyUser.mock.calls.some((call) => call[3]?.kind === "threshold")).toBe(true);
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining("no household for the freeze dwell check"));
+    warn.mockRestore();
   });
 });
 

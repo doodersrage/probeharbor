@@ -125,9 +125,22 @@ export async function householdSensorKind(householdId: string, sensorId: string)
   return row?.kind ?? null;
 }
 
+/**
+ * Set (or clear, with null) the household's indoor reference sensor. Only a
+ * sensor of one of the household's devices is stored; otherwise nothing
+ * changes and an error is returned.
+ */
 export async function setIndoorReference(householdId: string, sensorId: string | null): Promise<{ error: string | null }> {
   try {
-    await query("update public.households set indoor_reference_sensor_id = $2 where id = $1", [householdId, sensorId]);
+    const rows = await query(
+      `update public.households set indoor_reference_sensor_id = $2::uuid
+       where id = $1 and ($2::uuid is null or exists (
+         select 1 from public.device_sensors s join public.devices d on d.id = s.device_id
+         where s.id = $2::uuid and d.household_id = $1))
+       returning id`,
+      [householdId, sensorId],
+    );
+    if (rows.length === 0) return { error: "Sensor not found in this household." };
     return { error: null };
   } catch (error) {
     return { error: message(error) };

@@ -80,6 +80,26 @@ describe("share links (Neon)", () => {
     await expect(resolveShareToken(await sha256Hex("share-token-dddd"), null)).resolves.toBeNull();
   });
 
+  it("an expired link isn't returned by the lookup itself (hash or legacy raw); no expiry means no limit", async () => {
+    const a = await owner("a@example.com");
+    const row = await link(a.home, a.id, "share-token-gggg");
+    const hash = await sha256Hex("share-token-gggg");
+    await expect(resolveShareToken(hash, null)).resolves.toMatchObject({ household_id: a.home, expires_at: null });
+    await sql("update public.share_links set expires_at = now() + interval '1 day' where id = $1", [row.id]);
+    await expect(resolveShareToken(hash, null)).resolves.toMatchObject({ household_id: a.home });
+    await sql("update public.share_links set expires_at = now() - interval '1 minute' where id = $1", [row.id]);
+    await expect(resolveShareToken(hash, null)).resolves.toBeNull();
+
+    const raw = "b".repeat(48);
+    await sql("insert into public.share_links (token, household_id, scope, expires_at) values ($1, $2, 'live', now() + interval '1 day')", [
+      raw,
+      a.home,
+    ]);
+    await expect(resolveShareToken(await sha256Hex(raw), raw)).resolves.toMatchObject({ household_id: a.home });
+    await sql("update public.share_links set expires_at = now() - interval '1 minute' where token = $1", [raw]);
+    await expect(resolveShareToken(await sha256Hex(raw), raw)).resolves.toBeNull();
+  });
+
   it("counts live links per household", async () => {
     const a = await owner("a@example.com");
     const b = await owner("b@example.com");
@@ -114,5 +134,17 @@ describe("chart image shares (Neon)", () => {
     ).resolves.toEqual({ error: null });
     await expect(findChartShare("chart-tok")).resolves.toMatchObject({ r2_key: "chart-shares/chart-tok.png", title: "Week" });
     await expect(findChartShare("nope")).resolves.toBeNull();
+  });
+
+  it("the lookup itself skips an expired share", async () => {
+    const a = await owner("a@example.com");
+    await insertChartShare({
+      token: "chart-old",
+      user_id: a.id,
+      r2_key: "chart-shares/chart-old.png",
+      title: null,
+      expires_at: new Date(Date.now() - 60_000).toISOString(),
+    });
+    await expect(findChartShare("chart-old")).resolves.toBeNull();
   });
 });

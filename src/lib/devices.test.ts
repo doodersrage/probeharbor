@@ -145,7 +145,7 @@ describe("updateDeviceSensor", () => {
     neonDevices.updateDeviceSensor.mockResolvedValue({ error: null });
     const { updateDeviceSensor } = await import("./devices");
 
-    await updateDeviceSensor("s1", "d1", {
+    await updateDeviceSensor("house-1", "s1", "d1", {
       key: "temp1",
       label: "Bay",
       kind: "temperature",
@@ -154,6 +154,7 @@ describe("updateDeviceSensor", () => {
 
     // TEMP_OFFSET_MAX_F is 10 -- an absurd input offset must be clamped, not stored raw.
     expect(neonDevices.updateDeviceSensor).toHaveBeenCalledWith(
+      "house-1",
       "s1",
       "d1",
       expect.objectContaining({ offsetNum: 10, unit: null }),
@@ -164,9 +165,9 @@ describe("updateDeviceSensor", () => {
     neonDevices.updateDeviceSensor.mockResolvedValue({ error: null });
     const { updateDeviceSensor } = await import("./devices");
 
-    await updateDeviceSensor("s1", "d1", { key: "temp1", label: "Bay", kind: "temperature" });
+    await updateDeviceSensor("house-1", "s1", "d1", { key: "temp1", label: "Bay", kind: "temperature" });
 
-    expect(neonDevices.updateDeviceSensor.mock.calls[0]?.[2]?.visible).toBeUndefined();
+    expect(neonDevices.updateDeviceSensor.mock.calls[0]?.[3]?.visible).toBeUndefined();
   });
 });
 
@@ -199,9 +200,9 @@ describe("updateDeviceDetails", () => {
 describe("updateDeviceMeta", () => {
   it("stamps last_seen_at for readings but not for bookkeeping writes", async () => {
     const { updateDeviceMeta } = await import("./devices");
-    await updateDeviceMeta("d1", { ingest_key_enc: "x" });
-    await updateDeviceMeta("d1", { ingest_key_enc: "x" }, { touchLastSeen: false });
-    expect(neonIngest.updateDeviceMeta).toHaveBeenNthCalledWith(1, "d1", { ingest_key_enc: "x" }, true);
-    expect(neonIngest.updateDeviceMeta).toHaveBeenNthCalledWith(2, "d1", { ingest_key_enc: "x" }, false);
+    await updateDeviceMeta("house-1", "d1", { ingest_key_enc: "x" });
+    await updateDeviceMeta("house-1", "d1", { ingest_key_enc: "x" }, { touchLastSeen: false });
+    expect(neonIngest.updateDeviceMeta).toHaveBeenNthCalledWith(1, "house-1", "d1", { ingest_key_enc: "x" }, true);
+    expect(neonIngest.updateDeviceMeta).toHaveBeenNthCalledWith(2, "house-1", "d1", { ingest_key_enc: "x" }, false);
   });
 });

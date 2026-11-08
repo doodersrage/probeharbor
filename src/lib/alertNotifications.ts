@@ -306,6 +306,7 @@ async function latestThresholdAlertAcknowledged(userId: string): Promise<boolean
  */
 async function acknowledgedFreezeStillOngoing(
   userId: string,
+  householdId: string | null | undefined,
   settings: AlertSettings,
   readings: AlertReading[],
   messages: string[],
@@ -327,11 +328,12 @@ async function acknowledgedFreezeStillOngoing(
       readingIncludedInThresholdAlerts(settings.thresholdSensorScope, reading) &&
       reading.tempf <= freezeThresholdForReading(settings, reading),
   );
-  if (freezing.length === 0 || freezing.some((reading) => !reading.sensorId)) return false;
+  // No household: readings can't be looked up, so never suppress.
+  if (!householdId || freezing.length === 0 || freezing.some((reading) => !reading.sensorId)) return false;
   try {
     const recovered = await Promise.all(
       freezing.map((reading) =>
-        hasNumericReadingAboveSince(reading.sensorId!, ackedAt, freezeThresholdForReading(settings, reading)),
+        hasNumericReadingAboveSince(householdId, reading.sensorId!, ackedAt, freezeThresholdForReading(settings, reading)),
       ),
     );
     return !recovered.some(Boolean);
@@ -360,7 +362,8 @@ export async function sendThresholdAlertsIfNeeded(
 
   let dwellSamplesBySensorId: Record<string, Array<{ at: string; tempF: number }>> =
     {};
-  if (settings.freezeDwellMinutes > 0) {
+  // Readings are only read within the household (every caller passes one).
+  if (settings.freezeDwellMinutes > 0 && householdId) {
     const cutoffIso = new Date(
       Date.now() - settings.freezeDwellMinutes * 60 * 1000,
     ).toISOString();
@@ -373,14 +376,22 @@ export async function sendThresholdAlertsIfNeeded(
     ];
     const pairs = await Promise.all(
       sensorIds.map(async (sensorId) => {
-        const samples = await getFreezeDwellSamples(sensorId, cutoffIso);
+        const samples = await getFreezeDwellSamples(householdId, sensorId, cutoffIso);
         return [sensorId, samples] as const;
       }),
     );
     dwellSamplesBySensorId = Object.fromEntries(pairs);
   }
 
-  const details = evaluateAlertDetails(settings, readings, { dwellSamplesBySensorId });
+  // Without a household the dwell history can't be read (readings are only
+  // read within one). Never let that silence a freeze alert: alert without
+  // the dwell wait and say so. Every caller passes a household today.
+  let evalSettings = settings;
+  if (settings.freezeDwellMinutes > 0 && !householdId) {
+    console.warn("threshold alerts: no household for the freeze dwell check; alerting without the dwell wait");
+    evalSettings = { ...settings, freezeDwellMinutes: 0 };
+  }
+  const details = evaluateAlertDetails(evalSettings, readings, { dwellSamplesBySensorId });
   const messages = details.map((detail) => formatThresholdAlertDetail(detail, locale, display));
   const title = thresholdAlertTitle(details, locale, display);
   const inScope = readings.filter((reading) =>
@@ -438,7 +449,7 @@ export async function sendThresholdAlertsIfNeeded(
   if (await cooldownBlocks(userId, "threshold", settings.lastAlertSentAt)) return;
   // A failed delivery skips the cooldown so it retries, but not on every reading.
   if (await recentFailedAttempt(userId, "threshold")) return;
-  if (await acknowledgedFreezeStillOngoing(userId, settings, readings, messages, dwellSamplesBySensorId)) {
+  if (await acknowledgedFreezeStillOngoing(userId, householdId, settings, readings, messages, dwellSamplesBySensorId)) {
     return;
   }
 
@@ -650,9 +661,9 @@ export async function maybeSendRunwayAlert(
   if (currentTempF <= settings.freezeThresholdF) return;
 
   const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-  const indoorSamples = await getRecentNumericReadingSamples(coldest.sensor.id, since).catch(
-    () => [],
-  );
+  const indoorSamples = householdId
+    ? await getRecentNumericReadingSamples(householdId, coldest.sensor.id, since).catch(() => [])
+    : [];
 
   let outdoorPast: ReturnType<typeof outdoorPointsFromHourly> = [];
   let outdoorForecast: ReturnType<typeof outdoorPointsFromHourly> = [];
@@ -872,7 +883,7 @@ async function buildRuleContext(
         sensorIdByLabel.set(sensor.label, sensor.id);
         // True start even for a door open since before the 24 h window,
         // so "open longer than N minutes" measures the whole opening.
-        const sessions = await readDoorSessions({ id: sensor.id, label: sensor.label }, doorSince);
+        const sessions = await readDoorSessions(householdId, { id: sensor.id, label: sensor.label }, doorSince);
         doorOpenSessions.push(...sessions);
       }
     }
@@ -888,8 +899,8 @@ async function buildRuleContext(
   const rateDrops: RuleEvalContext["rateDrops"] = [];
   for (const device of devices) {
     for (const sensor of device.sensors) {
-      if (sensor.kind !== "temperature" || !sensor.visible) continue;
-      const values = await getRecentNumericReadings(sensor.id, since);
+      if (sensor.kind !== "temperature" || !sensor.visible || !householdId) continue;
+      const values = await getRecentNumericReadings(householdId, sensor.id, since);
       if (values.length < 2) continue;
       const drop = values[0]! - values[values.length - 1]!;
       if (drop > 0) {
@@ -1091,8 +1102,8 @@ export async function maybeSendRateAndOutageAlerts(
 
   for (const device of devices) {
     for (const sensor of device.sensors) {
-      if (sensor.kind !== "temperature" || !sensor.visible) continue;
-      const values = await getRecentNumericReadings(sensor.id, since);
+      if (sensor.kind !== "temperature" || !sensor.visible || !householdId) continue;
+      const values = await getRecentNumericReadings(householdId, sensor.id, since);
       const msg = evaluateRateChange(settings, sensor.label, values, locale, display);
       if (msg) rateMessages.push(msg);
     }

@@ -9,6 +9,10 @@
  * getRecentNumericReadingSamples were not paged in the old Supabase code, so a
  * window with more than 1000 rows (a 7-day window on a sensor reporting
  * every few minutes) got the oldest 1000. Here they get the newest rows.
+ *
+ * Every per-sensor read also filters on the household (sensor_readings has its
+ * own household_id), so a sensor id from another household reads as no data.
+ * The sensor index narrows the rows first; the extra predicate costs nothing.
  */
 import { isDemoDevice } from "../demoFeed";
 import type { DeviceSensor } from "../devices";
@@ -25,13 +29,13 @@ const message = (error: unknown) => (error instanceof Error ? error.message : St
 type NumericRow = { value_num: number; recorded_at: string };
 
 /** Numeric readings since `sinceIso`, oldest first, newest MAX_SERIES_ROWS kept. */
-async function numericSeries(sensorId: string, sinceIso: string): Promise<NumericRow[]> {
+async function numericSeries(householdId: string, sensorId: string, sinceIso: string): Promise<NumericRow[]> {
   const rows = await query<NumericRow>(
     `select value_num, recorded_at from public.sensor_readings
-     where sensor_id = $1 and recorded_at >= $2 and value_num is not null
+     where sensor_id = $1 and household_id = $3 and recorded_at >= $2 and value_num is not null
      order by recorded_at desc, id desc
      limit ${MAX_SERIES_ROWS}`,
-    [sensorId, sinceIso],
+    [sensorId, sinceIso, householdId],
   );
   if (rows.length === MAX_SERIES_ROWS) {
     console.warn(`numeric series for ${sensorId}: row cap hit; oldest readings not included`);
@@ -39,9 +43,13 @@ async function numericSeries(sensorId: string, sinceIso: string): Promise<Numeri
   return rows.reverse();
 }
 
-export async function getRecentNumericReadings(sensorId: string, sinceIso: string): Promise<number[]> {
+export async function getRecentNumericReadings(
+  householdId: string,
+  sensorId: string,
+  sinceIso: string,
+): Promise<number[]> {
   try {
-    return (await numericSeries(sensorId, sinceIso)).map((r) => r.value_num);
+    return (await numericSeries(householdId, sensorId, sinceIso)).map((r) => r.value_num);
   } catch (error) {
     console.error("getRecentNumericReadings failed:", message(error));
     return []; // a failed read is an empty list
@@ -49,11 +57,12 @@ export async function getRecentNumericReadings(sensorId: string, sinceIso: strin
 }
 
 export async function getRecentNumericReadingSamples(
+  householdId: string,
   sensorId: string,
   sinceIso: string,
 ): Promise<Array<{ at: string; tempF: number }>> {
   try {
-    return (await numericSeries(sensorId, sinceIso)).map((r) => ({ at: r.recorded_at, tempF: r.value_num }));
+    return (await numericSeries(householdId, sensorId, sinceIso)).map((r) => ({ at: r.recorded_at, tempF: r.value_num }));
   } catch (error) {
     console.error("getRecentNumericReadingSamples failed:", message(error));
     return [];
@@ -61,6 +70,7 @@ export async function getRecentNumericReadingSamples(
 }
 
 export async function getNumericReadingInWindow(
+  householdId: string,
   sensorId: string,
   notBeforeIso: string,
   atOrBeforeIso: string,
@@ -68,9 +78,9 @@ export async function getNumericReadingInWindow(
   try {
     const [row] = await query<NumericRow>(
       `select value_num, recorded_at from public.sensor_readings
-       where sensor_id = $1 and recorded_at >= $2 and recorded_at <= $3
+       where sensor_id = $1 and household_id = $4 and recorded_at >= $2 and recorded_at <= $3
        order by recorded_at desc, id desc limit 1`,
-      [sensorId, notBeforeIso, atOrBeforeIso],
+      [sensorId, notBeforeIso, atOrBeforeIso, householdId],
     );
     // The newest row in the window wins even if its value is null; then this returns null.
     return row && typeof row.value_num === "number" ? { value: row.value_num, at: row.recorded_at } : null;
@@ -79,11 +89,17 @@ export async function getNumericReadingInWindow(
   }
 }
 
-export async function hasNumericReadingAboveSince(sensorId: string, sinceIso: string, thresholdF: number): Promise<boolean> {
+export async function hasNumericReadingAboveSince(
+  householdId: string,
+  sensorId: string,
+  sinceIso: string,
+  thresholdF: number,
+): Promise<boolean> {
   try {
     const rows = await query(
-      "select 1 from public.sensor_readings where sensor_id = $1 and recorded_at >= $2 and value_num > $3 limit 1",
-      [sensorId, sinceIso, thresholdF],
+      `select 1 from public.sensor_readings
+       where sensor_id = $1 and household_id = $4 and recorded_at >= $2 and value_num > $3 limit 1`,
+      [sensorId, sinceIso, thresholdF, householdId],
     );
     return rows.length > 0;
   } catch {
@@ -93,6 +109,7 @@ export async function hasNumericReadingAboveSince(sensorId: string, sinceIso: st
 
 /** The last numeric reading in [anchorSinceIso, cutoffIso), or none. */
 export async function getDwellAnchor(
+  householdId: string,
   sensorId: string,
   anchorSinceIso: string,
   cutoffIso: string,
@@ -100,9 +117,10 @@ export async function getDwellAnchor(
   try {
     const rows = await query<NumericRow>(
       `select value_num, recorded_at from public.sensor_readings
-       where sensor_id = $1 and recorded_at >= $2 and recorded_at < $3 and value_num is not null
+       where sensor_id = $1 and household_id = $4 and recorded_at >= $2 and recorded_at < $3
+         and value_num is not null
        order by recorded_at desc, id desc limit 1`,
-      [sensorId, anchorSinceIso, cutoffIso],
+      [sensorId, anchorSinceIso, cutoffIso, householdId],
     );
     return rows.map((r) => ({ at: r.recorded_at, tempF: r.value_num }));
   } catch {
@@ -111,16 +129,17 @@ export async function getDwellAnchor(
 }
 
 export async function fetchRecentBoolReadings(
+  householdId: string,
   sensorId: string,
   sinceIso: string,
 ): Promise<Array<{ value: boolean; recordedAt: string }>> {
   try {
     const rows = await query<{ value_bool: boolean; recorded_at: string }>(
       `select value_bool, recorded_at from public.sensor_readings
-       where sensor_id = $1 and recorded_at >= $2 and value_bool is not null
+       where sensor_id = $1 and household_id = $3 and recorded_at >= $2 and value_bool is not null
        order by recorded_at desc, id desc
        limit ${MAX_SERIES_ROWS}`,
-      [sensorId, sinceIso],
+      [sensorId, sinceIso, householdId],
     );
     if (rows.length === MAX_SERIES_ROWS) {
       console.warn(`fetchRecentBoolReadings(${sensorId}): row cap hit; oldest readings not included`);

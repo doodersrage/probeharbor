@@ -63,9 +63,9 @@ describe("device lists (Neon)", () => {
     const d1 = await pushDevice(a, "One");
     await pushDevice(a, "Two");
     const other = await pushDevice(b, "Theirs");
-    await upsertDeviceSensor(d1.id, "t", "T", "temperature", "F");
-    await upsertDeviceSensor(d1.id, "h", "H", "humidity", "%");
-    await upsertDeviceSensor(other.id, "x", "X", "door");
+    await upsertDeviceSensor(d1.household_id, d1.id, "t", "T", "temperature", "F");
+    await upsertDeviceSensor(d1.household_id, d1.id, "h", "H", "humidity", "%");
+    await upsertDeviceSensor(other.household_id, other.id, "x", "X", "door");
     await sql("update public.device_sensors set sort_order = case key when 'h' then 0 else 1 end where device_id = $1", [
       d1.id,
     ]);
@@ -140,16 +140,16 @@ describe("sensor edits stay on their device (Neon)", () => {
     const a = await household("a@example.com");
     const d1 = await pushDevice(a, "One");
     const d2 = await pushDevice(a, "Two");
-    const { sensor: s1 } = await upsertDeviceSensor(d1.id, "t", "T", "temperature", "F");
-    const { sensor: s2 } = await upsertDeviceSensor(d2.id, "t", "T", "temperature", "F");
+    const { sensor: s1 } = await upsertDeviceSensor(d1.household_id, d1.id, "t", "T", "temperature", "F");
+    const { sensor: s2 } = await upsertDeviceSensor(d2.household_id, d2.id, "t", "T", "temperature", "F");
 
     // s2 named with d1: no change.
-    await updateDeviceSensor(s2!.id, d1.id, { key: "t", label: "Hacked", kind: "temperature" });
-    await deleteDeviceSensor(s2!.id, d1.id);
+    await updateDeviceSensor(a, s2!.id, d1.id, { key: "t", label: "Hacked", kind: "temperature" });
+    await deleteDeviceSensor(a, s2!.id, d1.id);
     const [still] = await sql<{ label: string }>("select label from public.device_sensors where id = $1", [s2!.id]);
     expect(still?.label).toBe("T");
 
-    await updateDeviceSensor(s1!.id, d1.id, {
+    await updateDeviceSensor(a, s1!.id, d1.id, {
       key: "t",
       label: "Pipe",
       kind: "temperature",
@@ -164,16 +164,16 @@ describe("sensor edits stay on their device (Neon)", () => {
     expect(edited).toMatchObject({ label: "Pipe", visible: false });
     expect(Math.abs(edited!.offset_num)).toBeLessThan(999); // clamped, as on the Supabase path
 
-    await deleteDeviceSensor(s1!.id, d1.id);
+    await deleteDeviceSensor(a, s1!.id, d1.id);
     expect(await sql("select 1 from public.device_sensors where id = $1", [s1!.id])).toEqual([]);
   });
 
   it("replacing a sensor moves its readings; refusals come back as the same codes", async () => {
     const a = await household("a@example.com");
     const d = await pushDevice(a);
-    const { sensor: oldS } = await upsertDeviceSensor(d.id, "old", "Old", "temperature", "F");
-    const { sensor: newS } = await upsertDeviceSensor(d.id, "new", "New", "temperature", "F");
-    const { sensor: hum } = await upsertDeviceSensor(d.id, "h", "H", "humidity", "%");
+    const { sensor: oldS } = await upsertDeviceSensor(d.household_id, d.id, "old", "Old", "temperature", "F");
+    const { sensor: newS } = await upsertDeviceSensor(d.household_id, d.id, "new", "New", "temperature", "F");
+    const { sensor: hum } = await upsertDeviceSensor(d.household_id, d.id, "h", "H", "humidity", "%");
     await addReading(oldS!.id, a, 40);
     await addReading(oldS!.id, a, 41);
 
@@ -196,8 +196,8 @@ describe("moving a device between households (Neon)", () => {
     const b = await household("b@example.com");
     const moving = await pushDevice(a, "Moving");
     const staying = await pushDevice(a, "Staying");
-    const { sensor: ms } = await upsertDeviceSensor(moving.id, "t", "T", "temperature", "F");
-    const { sensor: ss } = await upsertDeviceSensor(staying.id, "t", "T", "temperature", "F");
+    const { sensor: ms } = await upsertDeviceSensor(moving.household_id, moving.id, "t", "T", "temperature", "F");
+    const { sensor: ss } = await upsertDeviceSensor(staying.household_id, staying.id, "t", "T", "temperature", "F");
     await addReading(ms!.id, a, 40);
     await addReading(ss!.id, a, 50);
 
@@ -217,9 +217,9 @@ describe("moving a device between households (Neon)", () => {
     const b = await household("b@example.com");
     const moving = await pushDevice(a, "Moving");
     const staying = await pushDevice(a, "Staying");
-    const { sensor: temp } = await upsertDeviceSensor(moving.id, "t", "T", "temperature", "F");
-    const { sensor: door } = await upsertDeviceSensor(moving.id, "d", "Garage door", "door", "");
-    const { sensor: other } = await upsertDeviceSensor(staying.id, "t", "T", "temperature", "F");
+    const { sensor: temp } = await upsertDeviceSensor(moving.household_id, moving.id, "t", "T", "temperature", "F");
+    const { sensor: door } = await upsertDeviceSensor(moving.household_id, moving.id, "d", "Garage door", "door", "");
+    const { sensor: other } = await upsertDeviceSensor(staying.household_id, staying.id, "t", "T", "temperature", "F");
     for (const id of [temp!.id, other!.id]) {
       await sql(
         `insert into public.sensor_reading_rollups (sensor_id, household_id, bucket_start, avg_num, sample_count)
@@ -252,8 +252,8 @@ describe("moving a device between households (Neon)", () => {
     const b = await household("b@example.com");
     const moving = await pushDevice(a, "Moving");
     const theirs = await pushDevice(b, "Theirs");
-    const { sensor: door } = await upsertDeviceSensor(moving.id, "d", "Garage door", "door", "");
-    const { sensor: theirDoor } = await upsertDeviceSensor(theirs.id, "d", "Garage door", "door", "");
+    const { sensor: door } = await upsertDeviceSensor(moving.household_id, moving.id, "d", "Garage door", "door", "");
+    const { sensor: theirDoor } = await upsertDeviceSensor(theirs.household_id, theirs.id, "d", "Garage door", "door", "");
     const [{ at }] = await sql<{ at: string }>("select (now() - interval '2 days')::text as at");
     await sql("insert into public.door_open_events (household_id, sensor_id, label, opened_at) values ($1, $2, 'Garage door', $3::timestamptz)", [a, door!.id, at]);
     await sql("insert into public.door_open_events (household_id, sensor_id, label, opened_at) values ($1, $2, 'Garage door', now() - interval '1 day')", [a, door!.id]);
@@ -273,7 +273,7 @@ describe("moving a device between households (Neon)", () => {
     const b = await household("b@example.com");
     const c = await household("c@example.com");
     const theirs = await pushDevice(b, "Theirs");
-    const { sensor } = await upsertDeviceSensor(theirs.id, "t", "T", "temperature", "F");
+    const { sensor } = await upsertDeviceSensor(theirs.household_id, theirs.id, "t", "T", "temperature", "F");
     await addReading(sensor!.id, b, 40);
 
     expect((await transferDeviceToHousehold(theirs.id, a, c)).error).toBeTruthy();

@@ -139,6 +139,7 @@ export function pressureTendency(
  * per pressure sensor, at most 4.
  */
 export async function loadPressureTrends(
+  householdId: string,
   latest: LatestSensorRow[],
 ): Promise<Record<string, PressureTrend | null>> {
   const pressure = latest
@@ -149,6 +150,7 @@ export async function loadPressureTrends(
       const latestMs = Date.parse(row.recorded_at);
       if (!Number.isFinite(latestMs)) return [row.sensor.id, null] as const;
       const before = await getNumericReadingInWindow(
+        householdId,
         row.sensor.id,
         new Date(latestMs - PRESSURE_TREND_MS - PRESSURE_TREND_SLACK_MS).toISOString(),
         new Date(latestMs - PRESSURE_TREND_MS).toISOString(),
@@ -203,8 +205,8 @@ export async function loadDoorSessions24h(
 
   const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
   const batches = await Promise.all(
-    doorSensors.map(async ({ sensor }) => {
-      const readings = await fetchRecentBoolReadings(sensor.id, since);
+    doorSensors.map(async ({ device, sensor }) => {
+      const readings = await fetchRecentBoolReadings(device.household_id, sensor.id, since);
       return computeDoorOpenSessions(
         readings.map((r) => ({
           label: sensor.label,
@@ -340,22 +342,22 @@ export async function loadFloodLevelOverview(
 ): Promise<FloodLevelOverview> {
   const since = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
   const floodSensors = devices.flatMap((d) =>
-    d.sensors.filter((s) => s.kind === "flood").map((s) => ({ label: s.label, id: s.id })),
+    d.sensors.filter((s) => s.kind === "flood").map((s) => ({ label: s.label, id: s.id, householdId: d.household_id })),
   );
   const levelSensors = devices.flatMap((d) =>
-    d.sensors.filter((s) => s.kind === "level").map((s) => ({ label: s.label, id: s.id })),
+    d.sensors.filter((s) => s.kind === "level").map((s) => ({ label: s.label, id: s.id, householdId: d.household_id })),
   );
 
   const [floodBatches, levelBatches] = await Promise.all([
     Promise.all(
       floodSensors.map(async (sensor) => {
-        const readings = await fetchRecentBoolReadings(sensor.id, since);
+        const readings = await fetchRecentBoolReadings(sensor.householdId, sensor.id, since);
         return { sensor, readings };
       }),
     ),
     Promise.all(
       levelSensors.map(async (sensor) => {
-        const samples = await getRecentNumericReadingSamples(sensor.id, since);
+        const samples = await getRecentNumericReadingSamples(sensor.householdId, sensor.id, since);
         return { sensor, samples };
       }),
     ),
@@ -413,14 +415,14 @@ export async function loadEnergyOverview(
   devices: DeviceWithSensors[],
 ): Promise<EnergyOverview | null> {
   const energySensors = devices.flatMap((d) =>
-    d.sensors.filter((s) => s.kind === "energy").map((s) => ({ label: s.label, id: s.id })),
+    d.sensors.filter((s) => s.kind === "energy").map((s) => ({ label: s.label, id: s.id, householdId: d.household_id })),
   );
   if (energySensors.length === 0) return null;
 
   const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
   const batches = await Promise.all(
     energySensors.map(async (sensor) => {
-      const samples = await getRecentNumericReadingSamples(sensor.id, since);
+      const samples = await getRecentNumericReadingSamples(sensor.householdId, sensor.id, since);
       return { sensor, samples };
     }),
   );
@@ -649,14 +651,14 @@ async function loadBoolSessions24h(
   const sensors = devices.flatMap((device) =>
     device.sensors
       .filter((sensor) => sensor.kind === kind)
-      .map((sensor) => ({ sensor })),
+      .map((sensor) => ({ sensor, householdId: device.household_id })),
   );
   if (sensors.length === 0) return [];
 
   const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
   const batches = await Promise.all(
-    sensors.map(async ({ sensor }) => {
-      const readings = await fetchRecentBoolReadings(sensor.id, since);
+    sensors.map(async ({ sensor, householdId }) => {
+      const readings = await fetchRecentBoolReadings(householdId, sensor.id, since);
       return computeDoorOpenSessions(
         readings.map((r) => ({
           label: sensor.label,

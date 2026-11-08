@@ -16,6 +16,8 @@ import {
   startPuckClaim,
 } from "./pucks";
 
+import { bindClaimedBay } from "./db/pucks";
+
 const db = useTestDatabase();
 const sql = async <T = Record<string, unknown>>(text: string, params: unknown[] = []) =>
   (await db.client().query(text, params)).rows as T[];
@@ -78,6 +80,19 @@ describe("puck claims and moods (Neon)", () => {
     await expect(finishPuckClaim(input)).resolves.toEqual({ ok: true, bayId: "bay-1", spaceName: "Garage" });
     await expect(finishPuckClaim(input)).resolves.toMatchObject({ ok: false, error: "no_pending" });
     await expect(getPuck(DEVICE)).resolves.toMatchObject({ bay_id: "bay-1", space_name: "Garage" });
+  });
+
+  it("an expired claim is refused as expired, and the bind step itself won't use it", async () => {
+    const a = await home("a@example.com");
+    await registerPuck({ deviceId: DEVICE, secretHex: SECRET, householdId: a.home, createdBy: a.id });
+    const good = await claim(a.home);
+    await sql("update public.puck_claim_pending set expires_at = now() - interval '1 minute' where device_id = $1", [DEVICE]);
+    const input = { deviceId: DEVICE, bayId: "bay-1", nonceHex: good.nonceHex, responseHex: good.responseHex, spaceName: "Garage", householdId: a.home };
+    await expect(finishPuckClaim(input)).resolves.toMatchObject({ ok: false, error: "expired" });
+    // Straight to the bind (as if the expiry passed between check and bind): nothing is bound or used up.
+    await expect(bindClaimedBay(DEVICE, a.home, "bay-1", good.nonceHex, "Garage")).resolves.toBe("gone");
+    await expect(getPuck(DEVICE)).resolves.toMatchObject({ bay_id: null });
+    expect(await sql("select 1 from public.puck_claim_pending where device_id = $1", [DEVICE])).toHaveLength(1);
   });
 
   it("the same valid response sent twice at once binds only once", async () => {

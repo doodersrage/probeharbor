@@ -11,10 +11,13 @@ import {
   acceptHouseholdInvite,
   createHouseholdInvite,
   getInviteByToken,
+  getInviteTokenState,
+  inviteTokenLookupKeys,
   listPendingInvites,
   reissueHouseholdInvite,
   revokeHouseholdInvite,
 } from "./householdInvites";
+import { findInviteByTokenKeys, findInviteStateByTokenKeys } from "./db/access";
 import { getUserHouseholdRole } from "./households";
 
 const db = useTestDatabase();
@@ -44,8 +47,34 @@ describe("household invites (Neon)", () => {
       error: null,
     });
     await expect(getUserHouseholdRole(guest.id, a.home)).resolves.toBe("viewer");
-    expect((await getInviteByToken(token!))?.accepted_at).not.toBeNull();
+    await expect(getInviteByToken(token!)).resolves.toBeNull(); // used up
+    await expect(getInviteTokenState(token!)).resolves.toEqual({ householdId: a.home, accepted: true, expired: false });
     expect((await listPendingInvites(a.home)).invites).toEqual([]);
+    // Clicking the link again still lands the guest in the household, as before.
+    await expect(acceptHouseholdInvite(token!, guest.id, "guest@example.com")).resolves.toEqual({
+      householdId: a.home,
+      error: null,
+    });
+  });
+
+  it("the token lookup returns only a usable invite; the state lookup says why not, without the invite's details", async () => {
+    const a = await owner("owner@example.com");
+    const { invite, token } = await createHouseholdInvite(a.home, "guest@example.com", a.id);
+    const keys = await inviteTokenLookupKeys(token!);
+    await expect(findInviteByTokenKeys(keys)).resolves.toMatchObject({ id: invite!.id, email: "guest@example.com" });
+    await expect(findInviteStateByTokenKeys(keys)).resolves.toEqual({ household_id: a.home, accepted: false, expired: false });
+
+    await sql("update public.household_invites set expires_at = now() - interval '1 minute' where id = $1", [invite!.id]);
+    await expect(findInviteByTokenKeys(keys)).resolves.toBeNull();
+    await expect(findInviteStateByTokenKeys(keys)).resolves.toEqual({ household_id: a.home, accepted: false, expired: true });
+
+    await sql("update public.household_invites set expires_at = now() + interval '1 day', accepted_at = now() where id = $1", [
+      invite!.id,
+    ]);
+    await expect(findInviteByTokenKeys(keys)).resolves.toBeNull();
+    await expect(findInviteStateByTokenKeys(keys)).resolves.toEqual({ household_id: a.home, accepted: true, expired: false });
+
+    await expect(findInviteStateByTokenKeys(await inviteTokenLookupKeys("0".repeat(48)))).resolves.toBeNull();
   });
 
   it("expired links are refused; a reissued link replaces the old one", async () => {
@@ -54,6 +83,9 @@ describe("household invites (Neon)", () => {
     const first = await createHouseholdInvite(a.home, "guest@example.com", a.id);
     await sql("update public.household_invites set expires_at = now() - interval '1 minute' where id = $1", [first.invite!.id]);
     expect((await acceptHouseholdInvite(first.token!, guest.id, "guest@example.com")).error).toBe("Invite expired");
+    await expect(getInviteByToken(first.token!)).resolves.toBeNull();
+    await expect(getInviteTokenState(first.token!)).resolves.toEqual({ householdId: a.home, accepted: false, expired: true });
+    await expect(getUserHouseholdRole(guest.id, a.home)).resolves.toBeNull();
 
     const again = await reissueHouseholdInvite(a.home, first.invite!.id);
     expect(again.error).toBeNull();
@@ -91,6 +123,19 @@ describe("API keys (Neon)", () => {
     await revokeHouseholdApiKey(a.home, key!.id);
     await expect(resolveApiKey(plaintext!)).resolves.toBeNull();
     expect(await listHouseholdApiKeys(a.home)).toEqual([]);
+  });
+
+  it("revoking a key again keeps the first revoke time", async () => {
+    const a = await owner("a@example.com");
+    const { key } = await createHouseholdApiKey({ householdId: a.home, name: "k", createdBy: a.id });
+    const revokedAt = async () =>
+      (await sql<{ revoked_at: Date | null }>("select revoked_at from public.api_keys where id = $1", [key!.id]))[0]?.revoked_at;
+    await revokeHouseholdApiKey(a.home, key!.id);
+    const first = await revokedAt();
+    expect(first).not.toBeNull();
+    await new Promise((r) => setTimeout(r, 5));
+    await expect(revokeHouseholdApiKey(a.home, key!.id)).resolves.toEqual({ error: null });
+    expect(await revokedAt()).toEqual(first);
   });
 
   it("another household can't revoke or see the key; garbage doesn't resolve", async () => {

@@ -85,16 +85,23 @@ export async function insertShareLink(row: {
 
 export type ResolvedShare = { id: string; household_id: string; scope: string; label: string | null; expires_at: string | null };
 
-/** By hash; a pre-hash raw token is only tried when `legacyRaw` is given. Throws on failure. */
+/** Not past its expiry (no expiry = no limit). The caller checks again. */
+const SHARE_UNEXPIRED = "(expires_at is null or expires_at >= now())";
+
+/**
+ * By hash; a pre-hash raw token is only tried when `legacyRaw` is given.
+ * Only an unexpired link. Throws on failure.
+ */
 export async function resolveShareToken(tokenHash: string, legacyRaw: string | null): Promise<ResolvedShare | null> {
   const [byHash] = await query<ResolvedShare>(
-    "select id, household_id, scope, label, expires_at from public.share_links where token_hash = $1",
+    `select id, household_id, scope, label, expires_at from public.share_links
+     where token_hash = $1 and ${SHARE_UNEXPIRED}`,
     [tokenHash],
   );
   if (byHash || !legacyRaw) return byHash ?? null;
   const [byRaw] = await query<ResolvedShare>(
     `select id, household_id, scope, label, expires_at from public.share_links
-     where token = $1 and token_hash is null`,
+     where token = $1 and token_hash is null and ${SHARE_UNEXPIRED}`,
     [legacyRaw],
   );
   return byRaw ?? null;
@@ -120,10 +127,11 @@ export async function insertChartShare(row: {
   }
 }
 
+/** An unexpired chart share only. The caller checks again. */
 export async function findChartShare(token: string): Promise<{ r2_key: string; title: string | null; expires_at: string } | null> {
   try {
     const [row] = await query<{ r2_key: string; title: string | null; expires_at: string }>(
-      "select r2_key, title, expires_at from public.chart_share_tokens where token = $1",
+      "select r2_key, title, expires_at from public.chart_share_tokens where token = $1 and expires_at >= now()",
       [token],
     );
     return row ?? null;

@@ -143,7 +143,7 @@ export const POST: APIRoute = async ({ request }) => {
     });
   }
 
-  await persistEncryptedIngestKey(result.device.id, rawKey);
+  await persistEncryptedIngestKey(resolved.householdId, result.device.id, rawKey);
 
   return new Response(
     JSON.stringify({

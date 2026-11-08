@@ -41,7 +41,7 @@ export async function fetchChartDoorBands(
     for (const sensor of doorSensors) {
       try {
         // Includes a door open since before the 24 h window (true start).
-        const sessions = await readDoorSessions(sensor, since);
+        const sessions = await readDoorSessions(householdId, sensor, since);
         for (const session of sessions) {
           if (!session.stillOpen) continue;
           bands.push({ label: session.label, openedAt: session.openedAt, closedAt: null });

@@ -31,8 +31,8 @@ async function homeWithDoor(email: string, label = "Side door") {
     "insert into public.devices (household_id, name, source) values ($1, 'Garage', 'push') returning id",
     [householdId],
   );
-  const door = (await upsertDeviceSensor(d!.id, "door1", label, "door")).sensor!;
-  const temp = (await upsertDeviceSensor(d!.id, "t", "Bay", "temperature", "F")).sensor!;
+  const door = (await upsertDeviceSensor(householdId, d!.id, "door1", label, "door")).sensor!;
+  const temp = (await upsertDeviceSensor(householdId, d!.id, "t", "Bay", "temperature", "F")).sensor!;
   return { householdId, deviceId: d!.id, door, temp };
 }
 
@@ -83,11 +83,11 @@ describe("door sessions saved at ingest (Neon)", () => {
     await state(h.door.id, h.householdId, ago(200), true);
     await state(h.door.id, h.householdId, ago(100), true);
 
-    const start = await findOpenStartBefore(h.door.id, ago(50));
+    const start = await findOpenStartBefore(h.householdId, h.door.id, ago(50));
     expect(Math.abs(Date.parse(start!) - (Date.now() - 200 * 60_000))).toBeLessThan(5_000);
-    await expect(lastDoorStateBefore(h.door.id, ago(250))).resolves.toBe(false);
-    await expect(lastDoorStateBefore(h.door.id, ago(50))).resolves.toBe(true);
-    await expect(lastDoorStateBefore(h.door.id, ago(400))).resolves.toBeNull();
+    await expect(lastDoorStateBefore(h.householdId, h.door.id, ago(250))).resolves.toBe(false);
+    await expect(lastDoorStateBefore(h.householdId, h.door.id, ago(50))).resolves.toBe(true);
+    await expect(lastDoorStateBefore(h.householdId, h.door.id, ago(400))).resolves.toBeNull();
   });
 });
 

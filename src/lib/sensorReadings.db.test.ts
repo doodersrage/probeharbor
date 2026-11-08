@@ -41,7 +41,8 @@ async function device(householdId: string, name: string, extra: { enabled?: bool
 }
 
 async function sensor(deviceId: string, key: string, kind: "temperature" | "humidity" | "door" = "temperature") {
-  return (await upsertDeviceSensor(deviceId, key, key, kind, kind === "temperature" ? "F" : null)).sensor!.id;
+  const [d] = await sql<{ household_id: string }>("select household_id from public.devices where id = $1", [deviceId]);
+  return (await upsertDeviceSensor(d!.household_id, deviceId, key, key, kind, kind === "temperature" ? "F" : null)).sensor!.id;
 }
 
 async function reading(sensorId: string, householdId: string, at: string, value: number | boolean | null) {
@@ -104,11 +105,11 @@ describe("reading series (Neon)", () => {
        select $1, $2, now() - (g || ' minutes')::interval, g from generate_series(1, 1500) g`,
       [s, a],
     );
-    const samples = await getRecentNumericReadingSamples(s, minutesAgo(2000));
+    const samples = await getRecentNumericReadingSamples(a, s, minutesAgo(2000));
     expect(samples).toHaveLength(1500);
     expect(samples[0]?.tempF).toBe(1500); // oldest
     expect(samples.at(-1)?.tempF).toBe(1); // newest
-    expect(await getRecentNumericReadings(s, minutesAgo(100))).toHaveLength(99);
+    expect(await getRecentNumericReadings(a, s, minutesAgo(100))).toHaveLength(99);
   });
 
   it("past the cap it keeps the newest rows, never the oldest", async () => {
@@ -120,7 +121,7 @@ describe("reading series (Neon)", () => {
       [s, a, MAX_SERIES_ROWS + 50],
     );
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
-    const samples = await getRecentNumericReadingSamples(s, minutesAgo(24 * 60));
+    const samples = await getRecentNumericReadingSamples(a, s, minutesAgo(24 * 60));
     expect(samples).toHaveLength(MAX_SERIES_ROWS);
     expect(samples.at(-1)?.tempF).toBe(1);
     expect(samples[0]?.tempF).toBe(MAX_SERIES_ROWS);
@@ -135,10 +136,10 @@ describe("reading series (Neon)", () => {
     await reading(s, a, minutesAgo(120), 31);
     await reading(s, a, minutesAgo(30), 36);
 
-    await expect(getNumericReadingInWindow(s, minutesAgo(200), minutesAgo(100))).resolves.toMatchObject({ value: 31 });
-    await expect(getNumericReadingInWindow(s, minutesAgo(90), minutesAgo(60))).resolves.toBeNull();
-    await expect(hasNumericReadingAboveSince(s, minutesAgo(60), 35)).resolves.toBe(true);
-    await expect(hasNumericReadingAboveSince(s, minutesAgo(60), 36)).resolves.toBe(false);
+    await expect(getNumericReadingInWindow(a, s, minutesAgo(200), minutesAgo(100))).resolves.toMatchObject({ value: 31 });
+    await expect(getNumericReadingInWindow(a, s, minutesAgo(90), minutesAgo(60))).resolves.toBeNull();
+    await expect(hasNumericReadingAboveSince(a, s, minutesAgo(60), 35)).resolves.toBe(true);
+    await expect(hasNumericReadingAboveSince(a, s, minutesAgo(60), 36)).resolves.toBe(false);
   });
 
   it("freeze dwell: the last reading before the window, then the window", async () => {
@@ -149,7 +150,7 @@ describe("reading series (Neon)", () => {
     await reading(s, a, minutesAgo(50), 30);
     await reading(s, a, minutesAgo(10), 29);
 
-    const samples = await getFreezeDwellSamples(s, minutesAgo(60));
+    const samples = await getFreezeDwellSamples(a, s, minutesAgo(60));
     expect(samples.map((x) => x.tempF)).toEqual([31, 30, 29]);
   });
 
@@ -159,6 +160,6 @@ describe("reading series (Neon)", () => {
     await reading(s, a, minutesAgo(30), true);
     await reading(s, a, minutesAgo(20), null);
     await reading(s, a, minutesAgo(10), false);
-    expect((await fetchRecentBoolReadings(s, minutesAgo(60))).map((r) => r.value)).toEqual([true, false]);
+    expect((await fetchRecentBoolReadings(a, s, minutesAgo(60))).map((r) => r.value)).toEqual([true, false]);
   });
 });

@@ -7,6 +7,9 @@
  * Differences from the old Supabase code, all deliberate:
  * - Resolving an API key finds it and stamps last_used_at in one statement.
  * - Marking an invite accepted only touches one not yet accepted.
+ * - An invite lookup returns only a usable (pending, unexpired) invite; the
+ *   reason a link isn't usable comes from a separate flags-only lookup.
+ * - Revoking a key again keeps the first revoke time.
  */
 import type { ApiKeyRow, ApiKeyScope } from "../apiKeys";
 import type { HouseholdInvite, PendingInvite } from "../householdInvites";
@@ -71,13 +74,35 @@ export async function listPendingInvites(householdId: string): Promise<{ invites
   }
 }
 
+/** A usable invite only: not yet accepted and not expired. Callers check both again. */
 export async function findInviteByTokenKeys(keys: string[]): Promise<HouseholdInvite | null> {
   try {
     const [invite] = await query<HouseholdInvite>(
-      "select * from public.household_invites where token = any($1::text[]) limit 1",
+      `select * from public.household_invites
+       where token = any($1::text[]) and accepted_at is null and expires_at >= now() limit 1`,
       [keys],
     );
     return invite ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Why a link isn't usable, for the message only ("expired" vs "already
+ * joined" vs "not found"): two flags and the household, never the invite's
+ * email, role or id. Null when no invite has this token.
+ */
+export async function findInviteStateByTokenKeys(
+  keys: string[],
+): Promise<{ household_id: string; accepted: boolean; expired: boolean } | null> {
+  try {
+    const [row] = await query<{ household_id: string; accepted: boolean; expired: boolean }>(
+      `select household_id, accepted_at is not null as accepted, expires_at < now() as expired
+       from public.household_invites where token = any($1::text[]) limit 1`,
+      [keys],
+    );
+    return row ?? null;
   } catch {
     return null;
   }
@@ -139,7 +164,8 @@ export async function insertApiKey(row: {
 
 export async function revokeApiKey(householdId: string, keyId: string): Promise<{ error: string | null }> {
   try {
-    await query("update public.api_keys set revoked_at = now() where id = $1 and household_id = $2", [keyId, householdId]);
+    await query(`update public.api_keys set revoked_at = now()
+       where id = $1 and household_id = $2 and revoked_at is null`, [keyId, householdId]);
     return { error: null };
   } catch (error) {
     return { error: message(error) };

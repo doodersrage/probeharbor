@@ -81,9 +81,13 @@ const DOOR_SESSION_LOOKBACK_MS = 24 * 60 * 60 * 1000;
  * queries; null when there's no earlier open reading (raw readings are
  * kept 90 days).
  */
-export async function findOpenStartBefore(sensorId: string, beforeIso: string): Promise<string | null> {
+export async function findOpenStartBefore(
+  householdId: string,
+  sensorId: string,
+  beforeIso: string,
+): Promise<string | null> {
   try {
-    return await neonDoors.findOpenStartBefore(sensorId, beforeIso);
+    return await neonDoors.findOpenStartBefore(householdId, sensorId, beforeIso);
   } catch (error) {
     throw new Error(`door open-start lookup failed: ${error instanceof Error ? error.message : error}`);
   }
@@ -95,12 +99,13 @@ export async function findOpenStartBefore(sensorId: string, beforeIso: string): 
  * opened (possibly days earlier), not at the window edge or not at all.
  */
 export async function readDoorSessions(
+  householdId: string,
   sensor: { id: string; label: string },
   sinceIso: string,
 ): Promise<DoorOpenSession[]> {
-  const readings = await fetchRecentBoolReadings(sensor.id, sinceIso);
+  const readings = await fetchRecentBoolReadings(householdId, sensor.id, sinceIso);
   if (readings[0]?.value === true) {
-    const start = await findOpenStartBefore(sensor.id, readings[0].recordedAt);
+    const start = await findOpenStartBefore(householdId, sensor.id, readings[0].recordedAt);
     if (start) readings.unshift({ value: true, recordedAt: start });
   }
   return computeDoorOpenSessions(
@@ -128,15 +133,19 @@ export async function recordDoorSessions(
   const sensorIdByLabel = new Map<string, string>();
   for (const sensor of sensors) {
     sensorIdByLabel.set(sensor.label, sensor.id);
-    sessions.push(...(await readDoorSessions(sensor, since)));
+    sessions.push(...(await readDoorSessions(householdId, sensor, since)));
   }
   await persistDoorSessions(householdId, sessions, sensorIdByLabel);
 }
 
 /** The door's last reported state before `beforeIso` (true = open); null when there is none. */
-export async function lastDoorStateBefore(sensorId: string, beforeIso: string): Promise<boolean | null> {
+export async function lastDoorStateBefore(
+  householdId: string,
+  sensorId: string,
+  beforeIso: string,
+): Promise<boolean | null> {
   try {
-    return await neonDoors.lastDoorStateBefore(sensorId, beforeIso);
+    return await neonDoors.lastDoorStateBefore(householdId, sensorId, beforeIso);
   } catch (error) {
     throw new Error(`last door state lookup failed: ${error instanceof Error ? error.message : error}`);
   }
@@ -156,7 +165,7 @@ export async function recordDoorSessionsIfJustClosed(
   const justClosed: Array<{ id: string; label: string }> = [];
   for (const sensor of sensors) {
     // Unknown (lookup returned nothing) still records, so a first close isn't lost.
-    if ((await lastDoorStateBefore(sensor.id, closedAt)) !== false) justClosed.push(sensor);
+    if ((await lastDoorStateBefore(householdId, sensor.id, closedAt)) !== false) justClosed.push(sensor);
   }
   if (justClosed.length > 0) await recordDoorSessions(householdId, justClosed);
 }
