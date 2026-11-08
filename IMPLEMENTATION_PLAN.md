@@ -5218,7 +5218,12 @@ Cloudflare email binding.
            unused `src/lib/pagedRows.ts` and `oauthCallbackErrors.ts`.
          - Final Supabase backup before pausing:
            `backups/probeharbor-20261107T235826Z.dump` (90 tables, local).
-         - **Owner to do (blocked for the agent by the permission
+         - Done by the owner, checked 2026-11-07: the Worker secrets and
+           GitHub secrets below are deleted (only `SUPABASE_E2E_TEST_*`
+           remain on GitHub; site still 200). Project pause: still
+           ACTIVE_HEALTHY when checked right after; confirm in the
+           dashboard.
+         - **Was owner to do (blocked for the agent by the permission
            check):** delete Worker secrets `DB_BACKEND`, `SUPABASE_URL`,
            `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`; delete GitHub
            secrets `SUPABASE_URL`, `SUPABASE_ANON_KEY`,
