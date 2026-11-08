@@ -4828,8 +4828,8 @@ Cloudflare email binding.
            being dropped.
          - Checked on production (read-only): no member snoozes left over
            from the old inbound behaviour (none active, no inbound pauses in
-           90 days). The empty ownerless household from September is still
-           there (deleting it was blocked for the agent; owner to run).
+           90 days). The empty ownerless household from September was
+           deleted by the owner (guarded delete; 0 ownerless left).
          Not verifiable here: a real end-to-end freeze "switch place"
          email, status-page email and Telegram message (owner to try once).
 4. **Login on Better Auth.** Email + password (accept existing bcrypt
