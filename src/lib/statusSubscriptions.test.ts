@@ -9,6 +9,18 @@ vi.mock("./runtimeEnv", () => ({
   hasRuntimeEnv: (key: string) => Boolean(env.values[key]),
 }));
 
+// The link secret is read from the build env (import.meta.env) before the
+// runtime env mocked above, and CI sets CRON_SECRET there: clear it so each
+// test decides whether a secret exists.
+beforeEach(() => {
+  vi.stubEnv("ALERT_ACK_SECRET", "");
+  vi.stubEnv("CRON_SECRET", "");
+});
+afterEach(() => {
+  vi.unstubAllEnvs();
+});
+
+
 const mockSendEmail = vi.fn();
 vi.mock("./mailer", () => ({
   sendEmail: (...args: unknown[]) => mockSendEmail(...args),

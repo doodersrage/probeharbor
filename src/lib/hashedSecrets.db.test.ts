@@ -8,7 +8,7 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import type { APIContext } from "astro";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { insertTestUser, useTestDatabase } from "../test/db";
 
 const env = vi.hoisted(() => ({ values: {} as Record<string, string | undefined> }));
@@ -16,6 +16,18 @@ vi.mock("./runtimeEnv", () => ({
   getRuntimeEnv: (key: string) => env.values[key],
   hasRuntimeEnv: (key: string) => Boolean(env.values[key]),
 }));
+
+// The link secret is read from the build env (import.meta.env) before the
+// runtime env mocked above, and CI sets CRON_SECRET there: clear it so each
+// test decides whether a secret exists.
+beforeEach(() => {
+  vi.stubEnv("ALERT_ACK_SECRET", "");
+  vi.stubEnv("CRON_SECRET", "");
+});
+afterEach(() => {
+  vi.unstubAllEnvs();
+});
+
 const sent = vi.hoisted(() => [] as Array<{ to: string; text: string }>);
 vi.mock("./mailer", () => ({
   sendEmail: async (to: string, _subject: string, text: string) => {
