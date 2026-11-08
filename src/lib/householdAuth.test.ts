@@ -3,6 +3,8 @@ import type { HouseholdRole } from "./households";
 
 const mockGetUserHouseholdId = vi.fn();
 const mockGetUserHouseholdRole = vi.fn();
+const mockGetOwnedHouseholdId = vi.fn();
+const mockGetOrCreateHouseholdForUser = vi.fn();
 
 vi.mock("./households", async (importOriginal) => {
   const actual = await importOriginal<typeof import("./households")>();
@@ -10,12 +12,16 @@ vi.mock("./households", async (importOriginal) => {
     ...actual,
     getUserHouseholdId: (...args: unknown[]) => mockGetUserHouseholdId(...args),
     getUserHouseholdRole: (...args: unknown[]) => mockGetUserHouseholdRole(...args),
+    getOwnedHouseholdId: (...args: unknown[]) => mockGetOwnedHouseholdId(...args),
+    getOrCreateHouseholdForUser: (...args: unknown[]) => mockGetOrCreateHouseholdForUser(...args),
   };
 });
 
 beforeEach(() => {
   mockGetUserHouseholdId.mockReset();
   mockGetUserHouseholdRole.mockReset();
+  mockGetOwnedHouseholdId.mockReset().mockResolvedValue(null);
+  mockGetOrCreateHouseholdForUser.mockReset().mockResolvedValue({ householdId: "active-1", error: null });
 });
 
 function setup(householdId: string | null, role: HouseholdRole | null) {
@@ -202,5 +208,47 @@ describe("householdManagerCtx / householdEditorCtx", () => {
   it("householdEditorCtx throws when not ok", async () => {
     const { householdEditorCtx } = await import("./householdAuth");
     expect(() => householdEditorCtx({ ok: false, error: "viewer" })).toThrow("viewer");
+  });
+});
+
+describe("getHouseholdPeopleAccess", () => {
+  it("targets the owned household and checks the role there, not in the active one", async () => {
+    mockGetOwnedHouseholdId.mockResolvedValue("own-1");
+    mockGetUserHouseholdRole.mockImplementation(async (_u: string, h: string) => (h === "own-1" ? "owner" : "viewer"));
+    const { getHouseholdPeopleAccess } = await import("./householdAuth");
+
+    expect(await getHouseholdPeopleAccess("user-1", "a@b.com")).toEqual({
+      householdId: "own-1",
+      ownedId: "own-1",
+      role: "owner",
+      canInvite: true,
+      canManageMembers: true,
+    });
+    expect(mockGetOrCreateHouseholdForUser).not.toHaveBeenCalled();
+  });
+
+  it.each<[HouseholdRole, boolean]>([
+    ["member", true],
+    ["viewer", false],
+    ["alert_only", false],
+    ["property_manager", false],
+  ])("falls back to the active household; a %s may invite: %s, never remove or change roles", async (role, invite) => {
+    mockGetUserHouseholdRole.mockResolvedValue(role);
+    const { getHouseholdPeopleAccess } = await import("./householdAuth");
+
+    const access = await getHouseholdPeopleAccess("user-1", "a@b.com");
+
+    expect(access).toEqual({ householdId: "active-1", ownedId: null, role, canInvite: invite, canManageMembers: false });
+    expect(mockGetUserHouseholdRole).toHaveBeenCalledWith("user-1", "active-1");
+  });
+
+  it("denies everything without a household", async () => {
+    mockGetOrCreateHouseholdForUser.mockResolvedValue({ householdId: "", error: "db down" });
+    const { getHouseholdPeopleAccess } = await import("./householdAuth");
+
+    const access = await getHouseholdPeopleAccess("user-1");
+
+    expect(access).toMatchObject({ householdId: null, role: null, canInvite: false, canManageMembers: false });
+    expect(mockGetUserHouseholdRole).not.toHaveBeenCalled();
   });
 });

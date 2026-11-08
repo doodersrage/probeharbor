@@ -103,6 +103,26 @@ export function canManageHousehold(role: HouseholdRole | null): boolean {
   return role === "owner" || role === "member";
 }
 
+/**
+ * Sending, resending and cancelling invites: the owner and editors
+ * (`member`), the same people who manage share links and billing
+ * integrations (`canManageHousehold`). Viewers, alert-only members and
+ * property managers can't invite. Both invite paths (the
+ * `inviteHouseholdMember` action and `POST /api/household`) use this.
+ */
+export function canInviteToHousehold(role: HouseholdRole | null): boolean {
+  return canManageHousehold(role);
+}
+
+/**
+ * Removing members and changing their roles: the owner only. Editors can
+ * invite but can't remove or demote other members (the household page only
+ * shows these controls to the owner).
+ */
+export function canManageHouseholdMembers(role: HouseholdRole | null): boolean {
+  return role === "owner";
+}
+
 export function canViewAlerts(role: HouseholdRole | null): boolean {
   return role != null;
 }
@@ -130,6 +150,32 @@ export async function addHouseholdMemberByUserId(
   role: HouseholdRole = "member",
 ): Promise<{ error: string | null }> {
   return neon.upsertHouseholdMember(householdId, userId, role);
+}
+
+/**
+ * Join a household from an accepted invite. A person who already belongs
+ * keeps their current role: accepting a re-invite never changes it (use
+ * `changeHouseholdMemberRole` for that). `added` is false when they were
+ * already a member.
+ */
+export async function joinHouseholdFromInvite(
+  householdId: string,
+  userId: string,
+  role: Exclude<HouseholdRole, "owner">,
+): Promise<{ added: boolean; error: string | null }> {
+  return neon.insertHouseholdMemberIfAbsent(householdId, userId, role);
+}
+
+/**
+ * Explicit role change by the owner (the caller checks
+ * `canManageHouseholdMembers`). Never changes or grants `owner`.
+ */
+export async function changeHouseholdMemberRole(
+  householdId: string,
+  userId: string,
+  role: Exclude<HouseholdRole, "owner">,
+): Promise<{ error: string | null }> {
+  return neon.updateHouseholdMemberRole(householdId, userId, role);
 }
 
 export async function removeHouseholdMember(

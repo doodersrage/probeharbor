@@ -5,6 +5,7 @@ const en = {
   notices: {
     invited: "Invite email sent.",
     removed: "Member removed.",
+    roleChanged: "Role updated.",
     saved: "Household updated.",
     switched: "Active household switched.",
     joined: "You joined the household.",
@@ -24,6 +25,8 @@ const en = {
   members: {
     heading: "Members",
     remove: "Remove",
+    changeRole: "Change role",
+    roleFor: "Role for {email}",
     confirmRemove: "Remove this member from the household?",
     confirmLeave: "Leave this household? You will lose access to its shared devices and history.",
     leaveBody: "You are a member of this household. Leaving removes your access to its devices and history.",
@@ -41,9 +44,10 @@ const en = {
     roleAlertOnly: "Alert only (notifications, read-only)",
     portfolioHintHtml:
       '<a class="text-link" href="/pricing#portfolio">Portfolio</a> adds property-manager logins for on-site staff (no billing access).',
+    existingMemberHint: "Inviting someone who’s already a member doesn’t change their role. The owner can change roles under Members.",
     submit: "Send invite link",
     invitesHeading: "Invites",
-    ownerOnly: "Only the household owner can send invites.",
+    managersOnly: "Only the household owner and editors can send invites.",
   },
   newInviteLink: {
     heading: "Invite link",
@@ -132,6 +136,9 @@ const en = {
     property_limit:
       "You've reached the owned-property limit for your plan. Upgrade to unlock more households.",
     portfolio_required: "Property-manager invites require the Portfolio plan.",
+    owner_required: "Only the household owner can remove members or change their roles.",
+    cannot_change_owner: "The household owner’s role can’t be changed.",
+    not_a_member: "That person isn’t a member of this household.",
   },
   /** formatHouseholdActivityAction (src/lib/householdActivityLabels.ts), keyed by action. */
   actions: {

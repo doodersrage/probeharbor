@@ -41,7 +41,7 @@ import { createHouseholdApiKey, listHouseholdApiKeys } from "./apiKeys";
 import { storedShareTokenFields } from "./shareLinkTokens";
 import { insertShareLink } from "./shareLinksStore";
 import { createStatusPageToken, listStatusPageTokens } from "./statusPage";
-import { subscribeToStatusUpdates, unsubscribeStatusSubscription } from "./statusSubscriptions";
+import { unsubscribeStatusSubscription } from "./statusSubscriptions";
 
 const db = useTestDatabase();
 const sql = async <T = Record<string, unknown>>(text: string, params: unknown[] = []) =>
@@ -143,10 +143,12 @@ describe("isolation audit: households", () => {
     await expect(getUserHouseholdRole(a.id, a.home)).resolves.toBe("owner");
   });
 
-  // Fixed 2026-11-08 (audit gap): accepting an invite upserts the membership with
+  // Fixed 2026-11-08 (audit gap): accepting an invite upserted the membership with
   //   on conflict (household_id, user_id) do update set role = excluded.role
   // (src/lib/db/households.ts upsertHouseholdMember), and acceptHouseholdInvite
-  // (src/lib/householdInvites.ts) never checks the current role. An invite
+  // (src/lib/householdInvites.ts) never checked the current role. Accepting now
+  // inserts only when absent (insertHouseholdMemberIfAbsent), so no existing
+  // member's role changes (households.db.test.ts). An invite
   // addressed to the owner's own email (created by the owner by mistake, or by
   // any full member — canManageHousehold allows members to invite) turns the
   // owner into a viewer when they click it. The household is then ownerless:
@@ -348,11 +350,10 @@ describe("isolation audit: status pages and subscriptions", () => {
   });
 
   it("unsubscribing with one token removes only that subscriber", async () => {
-    await subscribeToStatusUpdates("one@example.com");
-    await subscribeToStatusUpdates("two@example.com");
-    const rows = await sql<{ email: string; token: string }>("select email, token from public.status_subscriptions order by email");
+    // Tokens are stored hashed: seed legacy raw tokens (pre-0004 rows) to drive the link.
+    await sql("insert into public.status_subscriptions (email, token) values ('one@example.com', 'tok-one'), ('two@example.com', 'tok-two')");
     expect((await unsubscribeStatusSubscription("not-a-token")).ok).toBe(false);
-    expect((await unsubscribeStatusSubscription(rows[0]!.token)).ok).toBe(true);
+    expect((await unsubscribeStatusSubscription("tok-one")).ok).toBe(true);
     expect(await sql("select email from public.status_subscriptions")).toEqual([{ email: "two@example.com" }]);
   });
 });

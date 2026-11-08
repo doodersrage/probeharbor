@@ -15,10 +15,10 @@ vi.mock("./db/access", () => ({
   revokeInvite: (...a: unknown[]) => mockRevokeInvite(...a),
 }));
 
-const mockAddHouseholdMemberByUserId = vi.fn();
+const mockJoinHouseholdFromInvite = vi.fn();
 const mockSetActiveHouseholdForUser = vi.fn();
 vi.mock("./households", () => ({
-  addHouseholdMemberByUserId: (...a: unknown[]) => mockAddHouseholdMemberByUserId(...a),
+  joinHouseholdFromInvite: (...a: unknown[]) => mockJoinHouseholdFromInvite(...a),
   setActiveHouseholdForUser: (...a: unknown[]) => mockSetActiveHouseholdForUser(...a),
 }));
 
@@ -38,7 +38,7 @@ beforeEach(() => {
   mockFindInviteByTokenKeys.mockReset().mockResolvedValue(null);
   mockMarkInviteAccepted.mockReset().mockResolvedValue(undefined);
   mockRevokeInvite.mockReset();
-  mockAddHouseholdMemberByUserId.mockReset().mockResolvedValue({ error: null });
+  mockJoinHouseholdFromInvite.mockReset().mockResolvedValue({ added: true, error: null });
   mockSetActiveHouseholdForUser.mockReset().mockResolvedValue({ error: null });
   mockSendEmail.mockReset().mockResolvedValue(undefined);
 });
@@ -202,7 +202,7 @@ describe("acceptHouseholdInvite", () => {
     const result = await acceptHouseholdInvite("tok", "user-1", "member@example.com");
 
     expect(result).toEqual({ householdId: "house-1", error: null });
-    expect(mockAddHouseholdMemberByUserId).not.toHaveBeenCalled();
+    expect(mockJoinHouseholdFromInvite).not.toHaveBeenCalled();
   });
 
   it("rejects an expired invite", async () => {
@@ -224,7 +224,7 @@ describe("acceptHouseholdInvite", () => {
       householdId: null,
       error: "Sign in with the invited email address to accept",
     });
-    expect(mockAddHouseholdMemberByUserId).not.toHaveBeenCalled();
+    expect(mockJoinHouseholdFromInvite).not.toHaveBeenCalled();
   });
 
   it("rejects when there is no signed-in email at all", async () => {
@@ -253,7 +253,7 @@ describe("acceptHouseholdInvite", () => {
 
       await acceptHouseholdInvite("tok", "user-1", "member@example.com");
 
-      expect(mockAddHouseholdMemberByUserId).toHaveBeenCalledWith("house-1", "user-1", role);
+      expect(mockJoinHouseholdFromInvite).toHaveBeenCalledWith("house-1", "user-1", role);
     },
   );
 
@@ -263,12 +263,12 @@ describe("acceptHouseholdInvite", () => {
 
     await acceptHouseholdInvite("tok", "user-1", "member@example.com");
 
-    expect(mockAddHouseholdMemberByUserId).toHaveBeenCalledWith("house-1", "user-1", "member");
+    expect(mockJoinHouseholdFromInvite).toHaveBeenCalledWith("house-1", "user-1", "member");
   });
 
-  it("propagates an error from addHouseholdMemberByUserId without activating the household", async () => {
+  it("propagates an error from joinHouseholdFromInvite without activating the household", async () => {
     mockFindInviteByTokenKeys.mockResolvedValue(invite());
-    mockAddHouseholdMemberByUserId.mockResolvedValue({ error: "already at device limit" });
+    mockJoinHouseholdFromInvite.mockResolvedValue({ error: "already at device limit" });
     const { acceptHouseholdInvite } = await import("./householdInvites");
 
     const result = await acceptHouseholdInvite("tok", "user-1", "member@example.com");
@@ -276,6 +276,21 @@ describe("acceptHouseholdInvite", () => {
     expect(result).toEqual({ householdId: null, error: "already at device limit" });
     expect(mockSetActiveHouseholdForUser).not.toHaveBeenCalled();
     expect(mockMarkInviteAccepted).not.toHaveBeenCalled();
+  });
+
+  it("accepts a re-invite for an existing member without touching their role", async () => {
+    // joinHouseholdFromInvite inserts only when absent (db test proves the role
+    // stays); accepting still succeeds, switches to the household and uses up the link.
+    mockFindInviteByTokenKeys.mockResolvedValue(invite({ role: "viewer" }));
+    mockJoinHouseholdFromInvite.mockResolvedValue({ added: false, error: null });
+    const { acceptHouseholdInvite } = await import("./householdInvites");
+
+    const result = await acceptHouseholdInvite("tok", "user-1", "member@example.com");
+
+    expect(result).toEqual({ householdId: "house-1", error: null });
+    expect(mockJoinHouseholdFromInvite).toHaveBeenCalledWith("house-1", "user-1", "viewer");
+    expect(mockSetActiveHouseholdForUser).toHaveBeenCalledWith("user-1", "house-1");
+    expect(mockMarkInviteAccepted).toHaveBeenCalledWith("invite-1");
   });
 
   it("activates the household and marks the invite accepted on success", async () => {

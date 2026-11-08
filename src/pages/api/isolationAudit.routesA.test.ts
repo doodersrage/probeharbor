@@ -71,6 +71,9 @@ vi.mock("../../lib/households", async (importOriginal) => {
   return {
     canEditHousehold: real.canEditHousehold,
     canManageHousehold: real.canManageHousehold,
+    canInviteToHousehold: real.canInviteToHousehold,
+    canManageHouseholdMembers: real.canManageHouseholdMembers,
+    changeHouseholdMemberRole: vi.fn(),
     getOrCreateHouseholdForUser: m.getOrCreateHouseholdForUser,
     getUserHouseholdId: m.getUserHouseholdId,
     getUserHouseholdRole: m.getUserHouseholdRole,
@@ -325,9 +328,18 @@ describe("GET /api/devices/ingest-status", () => {
 
 describe("POST /api/household manage actions", () => {
   it("removes a member from the household the caller manages, not one named in the form", async () => {
+    roles({ "house-a": "owner" }); // removing members is owner-only
     const { POST } = await import("./household/index");
     await POST(formContext({ action: "remove", user_id: "user-9", household_id: "house-b" }));
     expect(m.removeHouseholdMember).toHaveBeenCalledWith("house-a", "user-9");
+  });
+
+  it("an editor (member) can't remove members", async () => {
+    const { POST } = await import("./household/index");
+    const ctx = formContext({ action: "remove", user_id: "user-9" });
+    await POST(ctx);
+    expect(ctx.redirect).toHaveBeenCalledWith("/dashboard/household?error=owner_required");
+    expect(m.removeHouseholdMember).not.toHaveBeenCalled();
   });
 
   it("revokes an invite only within the household the caller manages", async () => {

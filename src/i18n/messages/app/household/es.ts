@@ -6,6 +6,7 @@ const es: HouseholdMessages = {
   notices: {
     invited: "Invitación enviada por correo.",
     removed: "Miembro eliminado.",
+    roleChanged: "Rol actualizado.",
     saved: "Hogar actualizado.",
     switched: "Hogar activo cambiado.",
     joined: "Te uniste al hogar.",
@@ -25,6 +26,8 @@ const es: HouseholdMessages = {
   members: {
     heading: "Miembros",
     remove: "Quitar",
+    changeRole: "Cambiar rol",
+    roleFor: "Rol de {email}",
     confirmRemove: "¿Quitar a este miembro del hogar?",
     confirmLeave: "¿Salir de este hogar? Perderás el acceso a sus dispositivos compartidos y a su historial.",
     leaveBody: "Eres miembro de este hogar. Si sales, perderás el acceso a sus dispositivos y a su historial.",
@@ -42,9 +45,10 @@ const es: HouseholdMessages = {
     roleAlertOnly: "Solo alertas (notificaciones, solo lectura)",
     portfolioHintHtml:
       '<a class="text-link" href="/pricing#portfolio">Portfolio</a> añade accesos de administrador de propiedad para el personal in situ (sin acceso a la facturación).',
+    existingMemberHint: "Invitar a alguien que ya es miembro no cambia su rol. El propietario puede cambiar los roles en Miembros.",
     submit: "Enviar enlace de invitación",
     invitesHeading: "Invitaciones",
-    ownerOnly: "Solo el propietario del hogar puede enviar invitaciones.",
+    managersOnly: "Solo el propietario y los editores del hogar pueden enviar invitaciones.",
   },
   newInviteLink: {
     heading: "Enlace de invitación",
@@ -135,6 +139,9 @@ const es: HouseholdMessages = {
     property_limit:
       "Alcanzaste el límite de propiedades propias de tu plan. Mejora tu plan para tener más hogares.",
     portfolio_required: "Las invitaciones de administrador de propiedad requieren el plan Portfolio.",
+    owner_required: "Solo el propietario del hogar puede quitar miembros o cambiar sus roles.",
+    cannot_change_owner: "No se puede cambiar el rol del propietario del hogar.",
+    not_a_member: "Esa persona no es miembro de este hogar.",
   },
   actions: {
     ingest_key_revealed: "Clave de ingesta mostrada",

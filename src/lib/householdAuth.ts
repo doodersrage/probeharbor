@@ -1,6 +1,10 @@
 import {
   canEditHousehold,
+  canInviteToHousehold,
   canManageHousehold,
+  canManageHouseholdMembers,
+  getOrCreateHouseholdForUser,
+  getOwnedHouseholdId,
   getUserHouseholdId,
   getUserHouseholdRole,
   type HouseholdRole,
@@ -46,6 +50,44 @@ export async function requireHouseholdManager(
     return { ok: false, error: "manager_required" };
   }
   return { ok: true, ctx };
+}
+
+export type HouseholdPeopleAccess = {
+  /** The household the household page shows and these actions target. */
+  householdId: string | null;
+  /** The household the user owns, if any (when set, it is `householdId`). */
+  ownedId: string | null;
+  role: HouseholdRole | null;
+  /** Send, resend and cancel invites (owner or editor). */
+  canInvite: boolean;
+  /** Remove members and change their roles (owner only). */
+  canManageMembers: boolean;
+};
+
+/**
+ * Who may invite and manage people, and in which household. The one check
+ * shared by the `inviteHouseholdMember` action, `POST /api/household` and the
+ * household page.
+ *
+ * The target is the household the user owns, else their active one (the
+ * household page shows the same one). The role is checked in that household,
+ * not the active one: an owner whose active household is someone else's
+ * still manages theirs.
+ */
+export async function getHouseholdPeopleAccess(
+  userId: string,
+  email?: string | null,
+): Promise<HouseholdPeopleAccess> {
+  const ownedId = await getOwnedHouseholdId(userId);
+  const householdId = ownedId ?? ((await getOrCreateHouseholdForUser(userId, email)).householdId || null);
+  const role = householdId ? await getUserHouseholdRole(userId, householdId) : null;
+  return {
+    householdId,
+    ownedId,
+    role,
+    canInvite: canInviteToHousehold(role),
+    canManageMembers: canManageHouseholdMembers(role),
+  };
 }
 
 function safeRedirectBase(redirectTo: string): string {

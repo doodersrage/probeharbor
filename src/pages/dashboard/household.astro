@@ -11,7 +11,9 @@ import {
   listHouseholdMembers,
   listUserHouseholds,
   getUserHouseholdRole,
+  canInviteToHousehold,
   canManageHousehold,
+  canManageHouseholdMembers,
 } from "../../lib/households";
 import { listPendingInvites } from "../../lib/householdInvites";
 import { consumeSecretFlash, FLASH_INVITE_LINK } from "../../lib/secretFlash";
@@ -102,6 +104,7 @@ const errorMessage = getHouseholdErrorMessage(errorCode, locale);
 const NOTICE_PARAMS = [
   ["invited", t.notices.invited],
   ["removed", t.notices.removed],
+  ["role_changed", t.notices.roleChanged],
   ["saved", t.notices.saved],
   ["switched", t.notices.switched],
   ["joined", t.notices.joined],
@@ -118,6 +121,9 @@ const manageRole = manageId
   ? await getUserHouseholdRole(user.id, manageId)
   : null;
 const canManage = canManageHousehold(manageRole);
+// Same rules POST /api/household and the invite action enforce.
+const canInvite = canInviteToHousehold(manageRole);
+const canManageMembers = canManageHouseholdMembers(manageRole);
 // Shown once: only the invite token's hash is stored.
 const newInviteLink = canManage ? consumeSecretFlash(Astro.cookies, FLASH_INVITE_LINK) : null;
 const activeMembership = householdsResult.households.find(
@@ -214,17 +220,39 @@ const digestError = Astro.url.searchParams.get("digest_error");
                 {householdRoleLabel(member.role, locale)}
               </span>
             </div>
-            {member.role !== "owner" && ownedId === manageId && (
-              <form
-                action="/api/household"
-                method="post"
-                onsubmit={`return confirm(${JSON.stringify(t.members.confirmRemove)});`}
-              >
-                <input type="hidden" name="action" value="remove" />
-                <input type="hidden" name="user_id" value={member.user_id} />
-                <input type="hidden" name="redirect" value="/dashboard/household" />
-                <button class="btn-ghost" type="submit">{t.members.remove}</button>
-              </form>
+            {member.role !== "owner" && canManageMembers && (
+              <div class="flex flex-wrap items-center gap-2">
+                {/* The only way to change a member's role: accepting another invite keeps it. */}
+                <form action="/api/household" method="post" class="flex flex-wrap items-center gap-2">
+                  <input type="hidden" name="action" value="change_role" />
+                  <input type="hidden" name="user_id" value={member.user_id} />
+                  <input type="hidden" name="redirect" value="/dashboard/household" />
+                  <select
+                    class="form-input w-auto"
+                    name="role"
+                    aria-label={fmt(t.members.roleFor, { email: member.email })}
+                  >
+                    {(["member", "property_manager", "viewer", "alert_only"] as const)
+                      .filter((role) => role !== "property_manager" || canInvitePropertyManager || member.role === role)
+                      .map((role) => (
+                        <option value={role} selected={member.role === role}>
+                          {householdRoleLabel(role, locale)}
+                        </option>
+                      ))}
+                  </select>
+                  <button class="btn-secondary" type="submit">{t.members.changeRole}</button>
+                </form>
+                <form
+                  action="/api/household"
+                  method="post"
+                  onsubmit={`return confirm(${JSON.stringify(t.members.confirmRemove)});`}
+                >
+                  <input type="hidden" name="action" value="remove" />
+                  <input type="hidden" name="user_id" value={member.user_id} />
+                  <input type="hidden" name="redirect" value="/dashboard/household" />
+                  <button class="btn-ghost" type="submit">{t.members.remove}</button>
+                </form>
+              </div>
             )}
           </li>
         ))}
@@ -247,7 +275,7 @@ const digestError = Astro.url.searchParams.get("digest_error");
       )}
     </DashboardCard>
 
-    {canManage ? (
+    {canInvite ? (
       <DashboardCard>
         <form method="POST" id="household-invite-form" data-invite-form>
           <input type="hidden" name="action" value="invite" />
@@ -277,6 +305,7 @@ const digestError = Astro.url.searchParams.get("digest_error");
             {!canInvitePropertyManager && (
               <p class="form-hint mb-0 mt-2" set:html={t.invite.portfolioHintHtml} />
             )}
+            <p class="form-hint mb-0 mt-2">{t.invite.existingMemberHint}</p>
           </div>
           <button class="btn-primary" type="submit" id="invite-submit">{t.invite.submit}</button>
         </form>
@@ -285,7 +314,7 @@ const digestError = Astro.url.searchParams.get("digest_error");
       <DashboardCard>
         <h2 class="card-title">{t.invite.invitesHeading}</h2>
         <p class="mb-0 text-sm text-[var(--color-text-muted)]">
-          {t.invite.ownerOnly}
+          {t.invite.managersOnly}
         </p>
       </DashboardCard>
     )}
@@ -308,7 +337,7 @@ const digestError = Astro.url.searchParams.get("digest_error");
       </DashboardCard>
     )}
 
-    {canManage && (invitesResult.invites ?? []).length > 0 && (
+    {canInvite && (invitesResult.invites ?? []).length > 0 && (
       <DashboardCard>
         <h2 class="card-title">{t.pending.heading}</h2>
         <p class="text-sm text-[var(--color-text-muted)]">{t.pending.linkHidden}</p>

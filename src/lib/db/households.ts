@@ -192,6 +192,54 @@ export async function upsertHouseholdMember(
   }
 }
 
+/**
+ * Add a member only if they don't belong yet. An existing member's role (owner
+ * or not) is left as it is. Used when accepting invites.
+ */
+export async function insertHouseholdMemberIfAbsent(
+  householdId: string,
+  userId: string,
+  role: Exclude<HouseholdRole, "owner">,
+): Promise<{ added: boolean; error: string | null }> {
+  try {
+    const rows = await query(
+      `insert into public.household_members (household_id, user_id, role) values ($1, $2, $3)
+       on conflict (household_id, user_id) do nothing
+       returning user_id`,
+      [householdId, userId, role],
+    );
+    return { added: rows.length > 0, error: null };
+  } catch (error) {
+    return { added: false, error: message(error) };
+  }
+}
+
+/**
+ * Change a non-owner member's role. The owner's row is never touched and
+ * nobody is made owner here. Returns `not_a_member` when there is no such
+ * member and `cannot_change_owner` for the owner.
+ */
+export async function updateHouseholdMemberRole(
+  householdId: string,
+  userId: string,
+  role: Exclude<HouseholdRole, "owner">,
+): Promise<{ error: string | null }> {
+  if ((role as string) === "owner") return { error: "cannot_change_owner" };
+  try {
+    const rows = await query(
+      `update public.household_members set role = $3
+       where household_id = $1 and user_id = $2 and role <> 'owner'
+       returning user_id`,
+      [householdId, userId, role],
+    );
+    if (rows.length > 0) return { error: null };
+    const current = await getUserHouseholdRole(userId, householdId);
+    return { error: current === "owner" ? "cannot_change_owner" : "not_a_member" };
+  } catch (error) {
+    return { error: message(error) };
+  }
+}
+
 export async function removeHouseholdMember(householdId: string, userId: string): Promise<{ error: string | null }> {
   try {
     const role = await getUserHouseholdRole(userId, householdId);

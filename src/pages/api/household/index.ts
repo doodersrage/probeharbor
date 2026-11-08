@@ -3,9 +3,8 @@ import type { APIRoute } from "astro";
 import { getAuthFromRequest } from "../../../lib/auth";
 import {
   canManageHousehold,
+  changeHouseholdMemberRole,
   countOwnedHouseholds,
-  getOwnedHouseholdId,
-  getUserHouseholdRole,
   getOrCreateHouseholdForUser,
   leaveHousehold,
   listHouseholdMembers,
@@ -16,6 +15,7 @@ import {
   createAdditionalHouseholdForUser,
 } from "../../../lib/households";
 import { getUserEntitlements } from "../../../lib/entitlements";
+import { getHouseholdPeopleAccess } from "../../../lib/householdAuth";
 import {
   createHouseholdInvite,
   listPendingInvites,
@@ -142,18 +142,32 @@ export const POST: APIRoute = async (context) => {
     return redirect(withQuery(redirectTo, { property_created: "1" }));
   }
 
-  const ownedId = await getOwnedHouseholdId(user.id);
-  const household = await getOrCreateHouseholdForUser(user.id, user.email);
-  const manageId = ownedId ?? household.householdId;
+  // The household these actions target (the one the household page shows)
+  // and the role there, not in the active one: an owner whose active
+  // household is someone else's, where they only view, still manages theirs.
+  const access = await getHouseholdPeopleAccess(user.id, user.email);
+  const { ownedId } = access;
+  const manageId = access.householdId;
 
   if (!manageId) {
     return redirect(withQuery(redirectTo, { error: "1" }));
   }
 
-  // Check the role in the household these actions target (the one the
-  // household page shows), not the active one: an owner whose active
-  // household is someone else's, where they only view, still manages theirs.
-  if (!canManageHousehold(await getUserHouseholdRole(user.id, manageId))) {
+  if (!canManageHousehold(access.role)) {
+    return redirect(withQuery(redirectTo, { error: "manager_required" }));
+  }
+
+  // Renaming the household, removing members and changing roles: owner only
+  // (same rule as the page and the renameHousehold action).
+  if ((action === "rename" || action === "remove" || action === "change_role") && !access.canManageMembers) {
+    return redirect(withQuery(redirectTo, { error: "owner_required" }));
+  }
+  // Every other action below is about invites (send, resend, cancel; any
+  // unknown action falls through to "send"): owner or editor, the same
+  // check the inviteHouseholdMember action uses. Implied by
+  // canManageHousehold today; kept explicit so the invite paths can't drift.
+  const isInviteAction = !["rename", "freeze_map", "remove", "change_role"].includes(action);
+  if (isInviteAction && !access.canInvite) {
     return redirect(withQuery(redirectTo, { error: "manager_required" }));
   }
 
@@ -197,6 +211,29 @@ export const POST: APIRoute = async (context) => {
       return redirect(withQuery(redirectTo, { error: result.error }));
     }
     return redirect(withQuery(redirectTo, { removed: "1" }));
+  }
+
+  if (action === "change_role") {
+    // The only way to change an existing member's role: accepting a new
+    // invite keeps the role they have.
+    const memberUserId = formData.get("user_id")?.toString();
+    const role = parseHouseholdInviteRole(formData.get("role")?.toString());
+    if (!memberUserId || !role) {
+      return redirect(withQuery(redirectTo, { error: "1" }));
+    }
+    if (role === "property_manager") {
+      const entitlements = await getUserEntitlements(user.id);
+      if (entitlements.tier !== "portfolio" && entitlements.tier !== "admin") {
+        return redirect(withQuery(redirectTo, { error: "portfolio_required" }));
+      }
+    }
+    const result = await changeHouseholdMemberRole(manageId, memberUserId, role);
+    if (result.error) {
+      const code =
+        result.error === "cannot_change_owner" || result.error === "not_a_member" ? result.error : "1";
+      return redirect(withQuery(redirectTo, { error: code }));
+    }
+    return redirect(withQuery(redirectTo, { role_changed: "1" }));
   }
 
   if (action === "revoke_invite") {

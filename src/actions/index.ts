@@ -24,6 +24,7 @@ import {
 } from "../lib/alertSnooze";
 import { getUserEntitlements } from "../lib/entitlements";
 import {
+  getHouseholdPeopleAccess,
   householdEditorCtx,
   requireHouseholdEditor,
 } from "../lib/householdAuth";
@@ -31,7 +32,6 @@ import { recordHouseholdActivity } from "../lib/householdActivity";
 import { recordAlertSettingsChange } from "../lib/alertSettingsHistory";
 import {
   getOwnedHouseholdId,
-  getOrCreateHouseholdForUser,
   getUserHouseholdId,
   updateHouseholdName,
 } from "../lib/households";
@@ -326,15 +326,14 @@ export const server = {
       const locale = apiLocale(context);
       const t = apiMoreActionsMessages(locale);
       const { user } = await requireAuthed(context.cookies, locale);
-      // Targets the household the user owns (checked below), so the role in
-      // the active household doesn't matter here.
-      const ownedId = await getOwnedHouseholdId(user.id);
-      const household = await getOrCreateHouseholdForUser(user.id, user.email);
-      const manageId = ownedId ?? household.householdId;
-      if (!manageId || !ownedId || ownedId !== manageId) {
+      // Same check and target household as POST /api/household: the owned
+      // household (else the active one), owner or editor there.
+      const access = await getHouseholdPeopleAccess(user.id, user.email);
+      const manageId = access.householdId;
+      if (!manageId || !access.canInvite) {
         throw new ActionError({
           code: "FORBIDDEN",
-          message: t.ownerOnlyInvite,
+          message: t.managersOnlyInvite,
         });
       }
 

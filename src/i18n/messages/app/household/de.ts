@@ -6,6 +6,7 @@ const de: HouseholdMessages = {
   notices: {
     invited: "Einladung per E-Mail gesendet.",
     removed: "Mitglied entfernt.",
+    roleChanged: "Rolle geändert.",
     saved: "Haushalt aktualisiert.",
     switched: "Aktiver Haushalt gewechselt.",
     joined: "Du bist dem Haushalt beigetreten.",
@@ -25,6 +26,8 @@ const de: HouseholdMessages = {
   members: {
     heading: "Mitglieder",
     remove: "Entfernen",
+    changeRole: "Rolle ändern",
+    roleFor: "Rolle für {email}",
     confirmRemove: "Dieses Mitglied aus dem Haushalt entfernen?",
     confirmLeave: "Diesen Haushalt verlassen? Du verlierst den Zugriff auf seine geteilten Geräte und seinen Verlauf.",
     leaveBody: "Du bist Mitglied dieses Haushalts. Wenn du ihn verlässt, verlierst du den Zugriff auf seine Geräte und seinen Verlauf.",
@@ -42,9 +45,10 @@ const de: HouseholdMessages = {
     roleAlertOnly: "Nur Alarme (Benachrichtigungen, nur lesen)",
     portfolioHintHtml:
       '<a class="text-link" href="/pricing#portfolio">Portfolio</a> bietet Objektverwalter-Zugänge für Personal vor Ort (ohne Zugriff auf die Abrechnung).',
+    existingMemberHint: "Eine Einladung an jemanden, der schon Mitglied ist, ändert seine Rolle nicht. Der Eigentümer kann Rollen unter Mitglieder ändern.",
     submit: "Einladungslink senden",
     invitesHeading: "Einladungen",
-    ownerOnly: "Nur der Eigentümer des Haushalts kann Einladungen senden.",
+    managersOnly: "Nur der Eigentümer und Bearbeiter des Haushalts können Einladungen senden.",
   },
   newInviteLink: {
     heading: "Einladungslink",
@@ -135,6 +139,9 @@ const de: HouseholdMessages = {
     property_limit:
       "Du hast die Grenze für eigene Objekte in deinem Tarif erreicht. Wechsle den Tarif für weitere Haushalte.",
     portfolio_required: "Einladungen für Objektverwalter erfordern den Tarif Portfolio.",
+    owner_required: "Nur der Eigentümer des Haushalts kann Mitglieder entfernen oder ihre Rollen ändern.",
+    cannot_change_owner: "Die Rolle des Eigentümers kann nicht geändert werden.",
+    not_a_member: "Diese Person ist kein Mitglied dieses Haushalts.",
   },
   actions: {
     ingest_key_revealed: "Ingest-Schlüssel angezeigt",

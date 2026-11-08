@@ -6,6 +6,7 @@ const ptBr: HouseholdMessages = {
   notices: {
     invited: "Convite enviado por e-mail.",
     removed: "Membro removido.",
+    roleChanged: "Função atualizada.",
     saved: "Casa atualizada.",
     switched: "Casa ativa alterada.",
     joined: "Você entrou na casa.",
@@ -25,6 +26,8 @@ const ptBr: HouseholdMessages = {
   members: {
     heading: "Membros",
     remove: "Remover",
+    changeRole: "Alterar função",
+    roleFor: "Função de {email}",
     confirmRemove: "Remover este membro da casa?",
     confirmLeave: "Sair desta casa? Você perderá o acesso aos dispositivos compartilhados e ao histórico dela.",
     leaveBody: "Você é membro desta casa. Ao sair, você perde o acesso aos dispositivos e ao histórico dela.",
@@ -42,9 +45,10 @@ const ptBr: HouseholdMessages = {
     roleAlertOnly: "Somente alertas (notificações, somente leitura)",
     portfolioHintHtml:
       '<a class="text-link" href="/pricing#portfolio">Portfolio</a> adiciona acessos de administrador do imóvel para a equipe no local (sem acesso ao faturamento).',
+    existingMemberHint: "Convidar alguém que já é membro não muda a função dessa pessoa. O proprietário pode alterar funções em Membros.",
     submit: "Enviar link de convite",
     invitesHeading: "Convites",
-    ownerOnly: "Somente o proprietário da casa pode enviar convites.",
+    managersOnly: "Somente o proprietário e os editores da casa podem enviar convites.",
   },
   newInviteLink: {
     heading: "Link do convite",
@@ -135,6 +139,9 @@ const ptBr: HouseholdMessages = {
     property_limit:
       "Você atingiu o limite de imóveis próprios do seu plano. Faça upgrade para ter mais casas.",
     portfolio_required: "Convites de administrador do imóvel exigem o plano Portfolio.",
+    owner_required: "Somente o proprietário da casa pode remover membros ou alterar suas funções.",
+    cannot_change_owner: "A função do proprietário da casa não pode ser alterada.",
+    not_a_member: "Essa pessoa não é membro desta casa.",
   },
   actions: {
     ingest_key_revealed: "Chave de ingestão exibida",

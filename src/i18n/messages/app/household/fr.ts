@@ -6,6 +6,7 @@ const fr: HouseholdMessages = {
   notices: {
     invited: "Invitation envoyée par e-mail.",
     removed: "Membre retiré.",
+    roleChanged: "Rôle mis à jour.",
     saved: "Foyer mis à jour.",
     switched: "Foyer actif modifié.",
     joined: "Vous avez rejoint le foyer.",
@@ -25,6 +26,8 @@ const fr: HouseholdMessages = {
   members: {
     heading: "Membres",
     remove: "Retirer",
+    changeRole: "Changer le rôle",
+    roleFor: "Rôle de {email}",
     confirmRemove: "Retirer ce membre du foyer ?",
     confirmLeave: "Quitter ce foyer ? Vous perdrez l’accès à ses appareils partagés et à son historique.",
     leaveBody: "Vous êtes membre de ce foyer. En le quittant, vous perdez l’accès à ses appareils et à son historique.",
@@ -42,9 +45,10 @@ const fr: HouseholdMessages = {
     roleAlertOnly: "Alertes uniquement (notifications, lecture seule)",
     portfolioHintHtml:
       '<a class="text-link" href="/pricing#portfolio">Portfolio</a> ajoute des accès gestionnaire du bien pour le personnel sur place (sans accès à la facturation).',
+    existingMemberHint: "Inviter quelqu’un qui est déjà membre ne change pas son rôle. Le propriétaire peut changer les rôles dans Membres.",
     submit: "Envoyer le lien d’invitation",
     invitesHeading: "Invitations",
-    ownerOnly: "Seul le propriétaire du foyer peut envoyer des invitations.",
+    managersOnly: "Seuls le propriétaire et les éditeurs du foyer peuvent envoyer des invitations.",
   },
   newInviteLink: {
     heading: "Lien d’invitation",
@@ -135,6 +139,9 @@ const fr: HouseholdMessages = {
     property_limit:
       "Vous avez atteint la limite de biens en propre de votre offre. Passez à une offre supérieure pour ajouter des foyers.",
     portfolio_required: "Les invitations de gestionnaire du bien nécessitent l’offre Portfolio.",
+    owner_required: "Seul le propriétaire du foyer peut retirer des membres ou changer leurs rôles.",
+    cannot_change_owner: "Le rôle du propriétaire du foyer ne peut pas être modifié.",
+    not_a_member: "Cette personne n’est pas membre de ce foyer.",
   },
   actions: {
     ingest_key_revealed: "Clé d’ingestion affichée",

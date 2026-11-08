@@ -9,6 +9,7 @@ vi.mock("./runtimeEnv", () => ({
 import { insertHouseholdWithOwner } from "./db/households";
 import {
   addHouseholdMemberByUserId,
+  changeHouseholdMemberRole,
   countOwnedHouseholds,
   createAdditionalHouseholdForUser,
   getOrCreateHouseholdForUser,
@@ -16,6 +17,7 @@ import {
   getUserHouseholdId,
   getUserHouseholdRole,
   isUserInHousehold,
+  joinHouseholdFromInvite,
   leaveHousehold,
   listAllHouseholdOwnerUserIds,
   listHouseholdIdsForCron,
@@ -25,6 +27,7 @@ import {
   setActiveHouseholdForUser,
   updateHouseholdName,
 } from "./households";
+import { acceptHouseholdInvite, createHouseholdInvite, getInviteByToken } from "./householdInvites";
 
 const db = useTestDatabase();
 const sql = async <T = Record<string, unknown>>(text: string, params: unknown[] = []) =>
@@ -242,5 +245,85 @@ describe("cron and admin lists (Neon)", () => {
     expect(cron.find((r) => r.householdId === second.householdId)?.ownerUserId).toBe(a.id);
 
     expect((await listAllHouseholdOwnerUserIds()).sort()).toEqual([a.id, b.id].sort());
+  });
+});
+
+describe("invites never change an existing member's role (Neon)", () => {
+  const roleOf = async (userId: string, householdId: string) => getUserHouseholdRole(userId, householdId);
+
+  it.each([
+    ["member", "viewer"],
+    ["viewer", "member"],
+    ["alert_only", "member"],
+    ["property_manager", "viewer"],
+  ] as const)("a %s who accepts a %s re-invite keeps their role", async (current, invited) => {
+    const owner = await userWithHome("owner@example.com");
+    const guest = await userWithHome("guest@example.com");
+    await addHouseholdMemberByUserId(owner.home, guest.id, current);
+    const { token } = await createHouseholdInvite(owner.home, "guest@example.com", owner.id, 7, invited);
+
+    await expect(acceptHouseholdInvite(token!, guest.id, "guest@example.com")).resolves.toEqual({
+      householdId: owner.home,
+      error: null,
+    });
+
+    await expect(roleOf(guest.id, owner.home)).resolves.toBe(current);
+    expect((await getInviteByToken(token!))?.accepted_at).toBeTruthy();
+    await expect(getUserHouseholdId(guest.id)).resolves.toBe(owner.home);
+    const rows = await sql("select 1 from public.household_members where household_id = $1 and user_id = $2", [
+      owner.home,
+      guest.id,
+    ]);
+    expect(rows).toHaveLength(1);
+  });
+
+  it("a brand-new invitee joins with the invite's role", async () => {
+    const owner = await userWithHome("owner@example.com");
+    const guest = await userWithHome("guest@example.com");
+    const { token } = await createHouseholdInvite(owner.home, "guest@example.com", owner.id, 7, "alert_only");
+
+    await expect(acceptHouseholdInvite(token!, guest.id, "guest@example.com")).resolves.toEqual({
+      householdId: owner.home,
+      error: null,
+    });
+
+    await expect(roleOf(guest.id, owner.home)).resolves.toBe("alert_only");
+    await expect(getUserHouseholdId(guest.id)).resolves.toBe(owner.home);
+  });
+
+  it("joinHouseholdFromInvite reports whether it added anyone and never touches an existing row", async () => {
+    const owner = await userWithHome("owner@example.com");
+    const guest = await userWithHome("guest@example.com");
+    await expect(joinHouseholdFromInvite(owner.home, guest.id, "viewer")).resolves.toEqual({ added: true, error: null });
+    await expect(joinHouseholdFromInvite(owner.home, guest.id, "member")).resolves.toEqual({ added: false, error: null });
+    await expect(joinHouseholdFromInvite(owner.home, owner.id, "viewer")).resolves.toEqual({ added: false, error: null });
+    await expect(roleOf(guest.id, owner.home)).resolves.toBe("viewer");
+    await expect(roleOf(owner.id, owner.home)).resolves.toBe("owner");
+  });
+});
+
+describe("changeHouseholdMemberRole (Neon)", () => {
+  it("changes a non-owner member's role in that household only", async () => {
+    const a = await userWithHome("a@example.com");
+    const b = await userWithHome("b@example.com");
+    const c = await userWithHome("c@example.com");
+    await addHouseholdMemberByUserId(a.home, c.id, "member");
+    await addHouseholdMemberByUserId(b.home, c.id, "member");
+
+    await expect(changeHouseholdMemberRole(a.home, c.id, "viewer")).resolves.toEqual({ error: null });
+
+    await expect(getUserHouseholdRole(c.id, a.home)).resolves.toBe("viewer");
+    await expect(getUserHouseholdRole(c.id, b.home)).resolves.toBe("member");
+  });
+
+  it("never changes the owner's role, and doesn't add non-members", async () => {
+    const a = await userWithHome("a@example.com");
+    const stranger = await userWithHome("stranger@example.com");
+
+    await expect(changeHouseholdMemberRole(a.home, a.id, "viewer")).resolves.toEqual({ error: "cannot_change_owner" });
+    await expect(getUserHouseholdRole(a.id, a.home)).resolves.toBe("owner");
+
+    await expect(changeHouseholdMemberRole(a.home, stranger.id, "member")).resolves.toEqual({ error: "not_a_member" });
+    await expect(isUserInHousehold(stranger.id, a.home)).resolves.toBe(false);
   });
 });

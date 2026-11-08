@@ -1,5 +1,5 @@
 import * as neonAccess from "./db/access";
-import { addHouseholdMemberByUserId, setActiveHouseholdForUser } from "./households";
+import { joinHouseholdFromInvite, setActiveHouseholdForUser } from "./households";
 import { ensureLocale } from "../i18n/catalog";
 import { fmt } from "../i18n/format";
 import type { Locale } from "../i18n/locales";
@@ -154,11 +154,10 @@ export async function acceptHouseholdInvite(
     invite.role === "property_manager"
       ? invite.role
       : "member";
-  const add = await addHouseholdMemberByUserId(
-    invite.household_id,
-    userId,
-    role,
-  );
+  // Someone who already belongs keeps their role (an owner stays owner, an
+  // editor isn't demoted, a viewer isn't promoted). Only the owner's
+  // explicit "Change role" changes it.
+  const add = await joinHouseholdFromInvite(invite.household_id, userId, role);
   if (add.error) {
     return { householdId: null, error: add.error };
   }

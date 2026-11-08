@@ -19,7 +19,7 @@ const de: ApiMoreActionsMessages = {
   vacationUntil: "Urlaub bis {date}.",
   snoozeCleared: "Pause aufgehoben.",
   vacationEnded: "Urlaub beendet.",
-  ownerOnlyInvite: "Nur der Eigentümer des Haushalts kann Einladungen senden.",
+  managersOnlyInvite: "Nur der Eigentümer und Bearbeiter des Haushalts können Einladungen senden.",
   portfolioRequired: "Einladungen für Hausverwaltungen erfordern den Portfolio-Tarif.",
   inviteFailed: "Einladung konnte nicht erstellt werden.",
   inviteSent: "Einladung an {email} gesendet.",

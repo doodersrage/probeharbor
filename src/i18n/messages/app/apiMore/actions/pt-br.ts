@@ -19,7 +19,7 @@ const ptBr: ApiMoreActionsMessages = {
   vacationUntil: "Em férias até {date}.",
   snoozeCleared: "Adiamento cancelado.",
   vacationEnded: "Férias encerradas.",
-  ownerOnlyInvite: "Só o proprietário da casa pode enviar convites.",
+  managersOnlyInvite: "Somente o proprietário e os editores da casa podem enviar convites.",
   portfolioRequired: "Convites para administradores de imóveis exigem o plano Portfolio.",
   inviteFailed: "Não foi possível criar o convite.",
   inviteSent: "Convite enviado para {email}.",

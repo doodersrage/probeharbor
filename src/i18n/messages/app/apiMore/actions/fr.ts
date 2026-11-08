@@ -19,7 +19,7 @@ const fr: ApiMoreActionsMessages = {
   vacationUntil: "En vacances jusqu’au {date}.",
   snoozeCleared: "Pause annulée.",
   vacationEnded: "Vacances terminées.",
-  ownerOnlyInvite: "Seul le propriétaire du foyer peut envoyer des invitations.",
+  managersOnlyInvite: "Seuls le propriétaire et les éditeurs du foyer peuvent envoyer des invitations.",
   portfolioRequired: "Les invitations de gestionnaire immobilier nécessitent l’offre Portfolio.",
   inviteFailed: "Impossible de créer l’invitation.",
   inviteSent: "Invitation envoyée à {email}.",

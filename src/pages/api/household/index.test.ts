@@ -17,9 +17,18 @@ const mockSetActiveHouseholdForUser = vi.fn();
 const mockUpdateHouseholdName = vi.fn();
 const mockCreateAdditionalHouseholdForUser = vi.fn();
 const mockGetUserHouseholdRole = vi.fn();
+const mockChangeHouseholdMemberRole = vi.fn();
 vi.mock("../../../lib/households", async (importOriginal) => ({
   canManageHousehold: (await importOriginal<typeof import("../../../lib/households")>())
     .canManageHousehold,
+  canInviteToHousehold: (await importOriginal<typeof import("../../../lib/households")>())
+    .canInviteToHousehold,
+  canManageHouseholdMembers: (await importOriginal<typeof import("../../../lib/households")>())
+    .canManageHouseholdMembers,
+  canEditHousehold: (await importOriginal<typeof import("../../../lib/households")>())
+    .canEditHousehold,
+  changeHouseholdMemberRole: (...a: unknown[]) => mockChangeHouseholdMemberRole(...a),
+  getUserHouseholdId: vi.fn(),
   getUserHouseholdRole: (...a: unknown[]) => mockGetUserHouseholdRole(...a),
   countOwnedHouseholds: (...a: unknown[]) => mockCountOwnedHouseholds(...a),
   getOwnedHouseholdId: (...a: unknown[]) => mockGetOwnedHouseholdId(...a),
@@ -72,8 +81,10 @@ vi.mock("../../../lib/indoorReference", () => ({
   getIndoorReferenceSensorId: (...a: unknown[]) => mockGetIndoorReferenceSensorId(...a),
 }));
 
+// The real shared check (getHouseholdPeopleAccess), over the mocked households module.
 const mockRequireHouseholdManager = vi.fn();
-vi.mock("../../../lib/householdAuth", () => ({
+vi.mock("../../../lib/householdAuth", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../../../lib/householdAuth")>()),
   requireHouseholdManager: (...a: unknown[]) => mockRequireHouseholdManager(...a),
 }));
 
@@ -160,6 +171,7 @@ beforeEach(() => {
   mockUpdateHouseholdName.mockReset().mockResolvedValue(undefined);
   mockUpdateHouseholdFreezeMapSettings.mockReset().mockResolvedValue({ error: null });
   mockRemoveHouseholdMember.mockReset().mockResolvedValue({ error: null });
+  mockChangeHouseholdMemberRole.mockReset().mockResolvedValue({ error: null });
   mockRevokeHouseholdInvite.mockReset().mockResolvedValue({ error: null });
   mockParseHouseholdInviteRole.mockReset().mockReturnValue("member");
   mockCreateHouseholdInvite.mockReset().mockResolvedValue({
@@ -519,6 +531,121 @@ describe("POST /api/household", () => {
     await POST(context);
 
     expect(mockSendInviteEmail).not.toHaveBeenCalled();
+    expect(context.redirect).toHaveBeenCalledWith("/dashboard/household?error=1");
+  });
+});
+
+describe("POST /api/household: who may invite and manage members", () => {
+  // A user who owns no household and acts in their active one (house-1).
+  function actAs(role: string) {
+    mockGetOwnedHouseholdId.mockResolvedValue(null);
+    mockGetUserHouseholdRole.mockResolvedValue(role);
+  }
+
+  it("lets an editor (member) send, resend and cancel invites", async () => {
+    actAs("member");
+    const { POST } = await import("./index");
+
+    const invite = makePostContext({ action: "invite", email: "new@example.com" });
+    await POST(invite);
+    expect(mockCreateHouseholdInvite).toHaveBeenCalledWith("house-1", "new@example.com", "user-1", 7, "member");
+    expect(invite.redirect).toHaveBeenCalledWith("/dashboard/household?invited=1");
+
+    const resend = makePostContext({ action: "resend_invite", invite_id: "inv-1" });
+    await POST(resend);
+    expect(resend.redirect).toHaveBeenCalledWith("/dashboard/household?invite_resent=1");
+
+    const revoke = makePostContext({ action: "revoke_invite", invite_id: "inv-1" });
+    await POST(revoke);
+    expect(revoke.redirect).toHaveBeenCalledWith("/dashboard/household?invite_revoked=1");
+  });
+
+  it.each(["viewer", "alert_only", "property_manager"])("blocks a %s from every invite action", async (role) => {
+    actAs(role);
+    const { POST } = await import("./index");
+
+    for (const fields of <Array<Record<string, string>>>[
+      { action: "invite", email: "new@example.com" },
+      { email: "new@example.com" },
+      { action: "resend_invite", invite_id: "inv-1" },
+      { action: "revoke_invite", invite_id: "inv-1" },
+    ]) {
+      const context = makePostContext(fields);
+      await POST(context);
+      expect(context.redirect).toHaveBeenCalledWith("/dashboard/household?error=manager_required");
+    }
+    expect(mockCreateHouseholdInvite).not.toHaveBeenCalled();
+    expect(mockReissueHouseholdInvite).not.toHaveBeenCalled();
+    expect(mockRevokeHouseholdInvite).not.toHaveBeenCalled();
+  });
+
+  it.each(["member", "viewer", "alert_only", "property_manager"])(
+    "doesn't let a %s rename the household, remove members or change roles",
+    async (role) => {
+      actAs(role);
+      const { POST } = await import("./index");
+
+      const remove = makePostContext({ action: "remove", user_id: "user-2" });
+      await POST(remove);
+      const change = makePostContext({ action: "change_role", user_id: "user-2", role: "viewer" });
+      await POST(change);
+
+      const rename = makePostContext({ action: "rename", name: "Taken over" });
+      await POST(rename);
+
+      const expected = role === "member" ? "owner_required" : "manager_required";
+      expect(remove.redirect).toHaveBeenCalledWith(`/dashboard/household?error=${expected}`);
+      expect(change.redirect).toHaveBeenCalledWith(`/dashboard/household?error=${expected}`);
+      expect(rename.redirect).toHaveBeenCalledWith(`/dashboard/household?error=${expected}`);
+      expect(mockRemoveHouseholdMember).not.toHaveBeenCalled();
+      expect(mockChangeHouseholdMemberRole).not.toHaveBeenCalled();
+      expect(mockUpdateHouseholdName).not.toHaveBeenCalled();
+    },
+  );
+
+  it("lets the owner change a member's role", async () => {
+    mockParseHouseholdInviteRole.mockReturnValue("viewer");
+    const { POST } = await import("./index");
+    const context = makePostContext({ action: "change_role", user_id: "user-2", role: "viewer" });
+
+    await POST(context);
+
+    expect(mockParseHouseholdInviteRole).toHaveBeenCalledWith("viewer");
+    expect(mockChangeHouseholdMemberRole).toHaveBeenCalledWith("house-1", "user-2", "viewer");
+    expect(context.redirect).toHaveBeenCalledWith("/dashboard/household?role_changed=1");
+  });
+
+  it("rejects an invalid role, and property manager without Portfolio", async () => {
+    const { POST } = await import("./index");
+    mockParseHouseholdInviteRole.mockReturnValue(null);
+    const bad = makePostContext({ action: "change_role", user_id: "user-2", role: "owner" });
+    await POST(bad);
+    expect(bad.redirect).toHaveBeenCalledWith("/dashboard/household?error=1");
+
+    mockParseHouseholdInviteRole.mockReturnValue("property_manager");
+    const pm = makePostContext({ action: "change_role", user_id: "user-2", role: "property_manager" });
+    await POST(pm);
+    expect(pm.redirect).toHaveBeenCalledWith("/dashboard/household?error=portfolio_required");
+    expect(mockChangeHouseholdMemberRole).not.toHaveBeenCalled();
+  });
+
+  it.each(["cannot_change_owner", "not_a_member"])("shows %s when the change is refused", async (code) => {
+    mockChangeHouseholdMemberRole.mockResolvedValue({ error: code });
+    const { POST } = await import("./index");
+    const context = makePostContext({ action: "change_role", user_id: "user-2", role: "member" });
+
+    await POST(context);
+
+    expect(context.redirect).toHaveBeenCalledWith(`/dashboard/household?error=${code}`);
+  });
+
+  it("doesn't leak a database error message for a failed role change", async () => {
+    mockChangeHouseholdMemberRole.mockResolvedValue({ error: "connection refused at 10.0.0.5" });
+    const { POST } = await import("./index");
+    const context = makePostContext({ action: "change_role", user_id: "user-2", role: "member" });
+
+    await POST(context);
+
     expect(context.redirect).toHaveBeenCalledWith("/dashboard/household?error=1");
   });
 });

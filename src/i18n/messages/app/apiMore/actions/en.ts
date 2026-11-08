@@ -18,7 +18,7 @@ const en = {
   vacationUntil: "Vacation until {date}.",
   snoozeCleared: "Snooze cleared.",
   vacationEnded: "Vacation ended.",
-  ownerOnlyInvite: "Only the household owner can send invites.",
+  managersOnlyInvite: "Only the household owner and editors can send invites.",
   portfolioRequired: "Property-manager invites require the Portfolio plan.",
   inviteFailed: "Could not create invite.",
   inviteSent: "Invite sent to {email}.",
