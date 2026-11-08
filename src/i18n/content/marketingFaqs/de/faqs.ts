@@ -163,7 +163,7 @@ export default {
     },
     {
       question: "Wie viele Haushalte braucht es, bis meine Stadt echte Daten zeigt?",
-      answer: `Eine Stadt erscheint auf der Standardkarte, sobald mindestens 3 teilnehmende Haushalte mit einem aktiven Temperaturfühler im selben Snapshot-Zeitfenster beitragen. Städte mit zu wenigen Daten (unter dieser Grenze) sind standardmäßig ausgeblendet, lassen sich aber über den Schalter für dünn besetzte Städte einblenden. Solange noch keine Stadt die Grenze erreicht, zeigt die Seite eine klar gekennzeichnete Beispielvorschau.`,
+      answer: `Eine Stadt erscheint auf der Standardkarte, sobald mindestens 3 teilnehmende Haushalte mit einem aktiven Temperaturfühler im selben Snapshot-Zeitfenster beitragen. Städte unter dieser Grenze zeigen nie Temperaturen, Trends oder Frostrisiko-Anteile, weil diese Zahlen bei so wenigen Haushalten die Messwerte eines Nachbarn verraten würden; sie erscheinen nur mit Namen und Haushaltszahl, bis genug Haushalte mitmachen. Solange noch keine Stadt die Grenze erreicht, zeigt die Seite eine klar gekennzeichnete Beispielvorschau.`,
     },
     {
       question: "Ich habe nur einen Fühler – zählt das?",

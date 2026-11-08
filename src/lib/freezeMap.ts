@@ -1,4 +1,5 @@
 import * as neonPlaces from "./db/places";
+import { FREEZE_MAP_SAMPLE_FLOOR } from "./freezeMapSeed";
 import { fetchLatestSensorValues } from "./sensorReadings";
 import {
   freezeMapAggregateKey,
@@ -19,7 +20,39 @@ export type FreezeMapSnapshot = {
   lon: number | null;
   /** True when falling back to illustrative seed cities (not live opt-ins). */
   isSeed?: boolean;
+  /**
+   * True when this snapshot had fewer than FREEZE_MAP_SAMPLE_FLOOR households.
+   * Its temperatures, freeze-risk count, and coordinates are withheld
+   * (null / 0) because with so few homes they would expose a neighbor's
+   * readings. `freeze_risk_count` is 0 here only as a placeholder: it is not
+   * a measured "no households at risk".
+   */
+  belowFloor?: boolean;
 };
+
+/**
+ * Strip every reading-derived figure from a snapshot taken while its city had
+ * fewer than `floor` households. The city label and household count stay, so
+ * the page can say "not enough homes yet" without revealing anyone's numbers.
+ */
+export function redactBelowFloorSnapshot(
+  row: FreezeMapSnapshot,
+  floor = FREEZE_MAP_SAMPLE_FLOOR,
+): FreezeMapSnapshot {
+  if (row.sample_count >= floor) return row;
+  return {
+    ...row,
+    // The name too: it's one household's own place name. Only a preset city
+    // keeps its standard name; a custom location gets none ("").
+    city_label: /^\d+$/.test(row.city_id) ? (getWeatherPresetLabel(row.city_id) ?? "") : "",
+    avg_temp_f: null,
+    min_temp_f: null,
+    freeze_risk_count: 0,
+    lat: null,
+    lon: null,
+    belowFloor: true,
+  };
+}
 
 export type FreezeMapHouseholdSettings = {
   optIn: boolean;
@@ -179,6 +212,11 @@ export async function pruneFreezeMapSnapshots(
   return neonPlaces.pruneSnapshots(cutoff);
 }
 
+/**
+ * The newest capture batch, coldest first. Cities below the sample floor come
+ * back redacted (see `redactBelowFloorSnapshot`), sorted after every listed
+ * city by label so their order can't hint at their temperatures.
+ */
 export async function listLatestFreezeMapSnapshots(): Promise<FreezeMapSnapshot[]> {
   let data: Awaited<ReturnType<typeof neonPlaces.recentSnapshots>>;
   try {
@@ -192,12 +230,20 @@ export async function listLatestFreezeMapSnapshots(): Promise<FreezeMapSnapshot[
     ? data.filter((row) => row.captured_at === latestCapture)
     : data;
 
-  return [...batch].sort(
-    (a, b) => (a.avg_temp_f ?? 999) - (b.avg_temp_f ?? 999),
-  ) as FreezeMapSnapshot[];
+  return batch
+    .map((row) => redactBelowFloorSnapshot(row))
+    .sort(
+      (a, b) =>
+        (a.avg_temp_f ?? 999) - (b.avg_temp_f ?? 999) ||
+        a.city_label.localeCompare(b.city_label),
+    );
 }
 
-/** Last N avg temps per city for sparklines (oldest → newest). */
+/**
+ * Last N avg temps per city for sparklines (oldest → newest). Only snapshots
+ * whose own household count met the sample floor are used: a point captured
+ * while the city had one or two homes would expose those homes' readings.
+ */
 export async function listFreezeMapSparklines(
   limitPoints = 7,
 ): Promise<Map<string, number[]>> {
@@ -211,6 +257,7 @@ export async function listFreezeMapSparklines(
 
   for (const row of data) {
     if (row.avg_temp_f == null) continue;
+    if (!(row.sample_count >= FREEZE_MAP_SAMPLE_FLOOR)) continue;
     const list = map.get(row.city_id) ?? [];
     if (list.length >= limitPoints) continue;
     list.push(row.avg_temp_f);

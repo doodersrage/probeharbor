@@ -35,7 +35,6 @@ const { user } = await getAuthFromCookies(Astro.cookies);
 const locale = getLocale(Astro);
 const t = freezeMapMessages(locale);
 const clientText = t.client;
-const showSparse = Astro.url.searchParams.get("sparse") === "1";
 const [liveSnapshots, liveSparklines, optInCount] = await Promise.all([
   listLatestFreezeMapSnapshots(),
   listFreezeMapSparklines(7),
@@ -46,9 +45,12 @@ const snapshots = resolved.snapshots;
 const sparklines = resolved.sparklines;
 const isSeed = resolved.isSeed;
 const approaching = resolved.approaching.slice(0, 6);
-const visible = showSparse
-  ? snapshots
-  : snapshots.filter((row) => row.sample_count >= FREEZE_MAP_SAMPLE_FLOOR);
+// Cities below the floor never list numbers (they'd expose a neighbor's
+// readings); they appear only by name and household count under Momentum.
+// The old `?sparse=1` view is gone and the parameter is ignored.
+const visible = snapshots.filter(
+  (row) => !row.belowFloor && row.sample_count >= FREEZE_MAP_SAMPLE_FLOOR,
+);
 const sparseHidden = snapshots.length - visible.length;
 const capturedAt = isSeed ? null : (snapshots[0]?.captured_at ?? null);
 const captureAge = formatFreezeMapAge(capturedAt, locale);
@@ -209,17 +211,13 @@ function trendDeltaLabel(values: number[]): string {
       </section>
     )}
 
-    <section class="card">
-      <p class="mb-0 text-sm">
-        {showSparse ? (
-          <a class="text-link" href="/freeze-map">{fmt(t.hideSparse, { floor: FREEZE_MAP_SAMPLE_FLOOR })}</a>
-        ) : (
-          <a class="text-link" href="/freeze-map?sparse=1">
-            {t.showSparse}{sparseHidden > 0 ? plural(t.hiddenCount, sparseHidden, locale) : ""}
-          </a>
-        )}
-      </p>
-    </section>
+    {sparseHidden > 0 && (
+      <section class="card">
+        <p class="mb-0 text-sm text-[var(--color-text-muted)]">
+          {plural(t.sparsePrivate, sparseHidden, locale, { floor: FREEZE_MAP_SAMPLE_FLOOR })}
+        </p>
+      </section>
+    )}
 
     {mapPins.length > 0 && (
       <section class="card">
@@ -313,7 +311,7 @@ function trendDeltaLabel(values: number[]): string {
     <section class="card">
       {visible.length === 0 ? (
         <p class="mb-0 text-[var(--color-text-muted)]">
-          {t.noSamples}{!showSparse && sparseHidden > 0 ? t.noSamplesFloor : ""}.
+          {t.noSamples}{sparseHidden > 0 ? t.noSamplesFloor : ""}.
           {user ? t.noSamplesUser : t.noSamplesGuest}
         </p>
       ) : (
@@ -339,7 +337,6 @@ function trendDeltaLabel(values: number[]): string {
                     row.sample_count > 0
                       ? Math.round((row.freeze_risk_count / row.sample_count) * 100)
                       : 0;
-                  const sparse = row.sample_count < FREEZE_MAP_SAMPLE_FLOOR;
                   const spark = sparklines.get(row.city_id) ?? [];
                   const path = sparkPath(spark);
                   const delta = trendDeltaLabel(spark);
@@ -347,11 +344,6 @@ function trendDeltaLabel(values: number[]): string {
                     <tr>
                       <td>
                         <strong>{row.city_label}</strong>
-                        {sparse && (
-                          <span class="block text-xs text-[var(--color-text-muted)]">
-                            {t.sparse}
-                          </span>
-                        )}
                       </td>
                       <td>
                         {path ? (

@@ -2,7 +2,7 @@ import type { FreezeMapSnapshot } from "./freezeMap";
 import { getWeatherPresetCoords } from "./weatherCityCoords";
 import { getWeatherPresetLabel } from "./weatherCities";
 
-/** Cities below this sample count are hidden unless `?sparse=1`. */
+/** Cities below this household count never show readings on any public view. */
 export const FREEZE_MAP_SAMPLE_FLOOR = 3;
 
 type SeedCity = {
@@ -164,7 +164,9 @@ export function resolveFreezeMapDisplay(
   approaching: FreezeMapSnapshot[];
 } {
   const approaching = [...snapshots]
-    .filter((row) => row.sample_count > 0 && row.sample_count < sampleFloor)
+    // Unnamed rows are private custom locations: counted in the "private"
+    // note, never listed by themselves.
+    .filter((row) => row.sample_count > 0 && row.sample_count < sampleFloor && row.city_label !== "")
     .sort(
       (a, b) =>
         b.sample_count - a.sample_count ||

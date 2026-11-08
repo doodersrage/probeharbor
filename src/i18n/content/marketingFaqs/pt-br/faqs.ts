@@ -163,7 +163,7 @@ export default {
     },
     {
       question: "Quantas casas são necessárias para a minha cidade mostrar dados reais?",
-      answer: `Uma cidade aparece no mapa padrão quando pelo menos 3 casas participantes com uma sonda de temperatura ativa contribuem na mesma janela de snapshot. Cidades com poucos dados (abaixo desse mínimo) ficam ocultas por padrão, mas podem ser exibidas com a opção de cidades esparsas. Enquanto nenhuma cidade atinge o mínimo, a página mostra uma prévia de exemplo claramente identificada.`,
+      answer: `Uma cidade aparece no mapa padrão quando pelo menos 3 casas participantes com uma sonda de temperatura ativa contribuem na mesma janela de snapshot. Cidades abaixo desse mínimo nunca mostram temperaturas, tendências nem percentuais de risco de congelamento, porque com tão poucas casas esses números revelariam as leituras de um vizinho; elas aparecem apenas com o nome e o número de casas até que casas suficientes participem. Enquanto nenhuma cidade atinge o mínimo, a página mostra uma prévia de exemplo claramente identificada.`,
     },
     {
       question: "E se eu tiver só uma sonda: ela conta?",

@@ -163,7 +163,7 @@ export default {
     },
     {
       question: "¿Cuántos hogares hacen falta para que mi ciudad muestre datos reales?",
-      answer: `Una ciudad aparece en el mapa predeterminado cuando al menos 3 hogares participantes con una sonda de temperatura activa contribuyen en la misma ventana de instantánea. Las ciudades con pocos datos (por debajo de ese mínimo) se ocultan por defecto, pero pueden mostrarse con el selector de ciudades dispersas. Hasta que alguna ciudad alcance el mínimo, la página muestra una vista previa de ejemplo claramente etiquetada.`,
+      answer: `Una ciudad aparece en el mapa predeterminado cuando al menos 3 hogares participantes con una sonda de temperatura activa contribuyen en la misma ventana de instantánea. Las ciudades por debajo de ese mínimo nunca muestran temperaturas, tendencias ni porcentajes de riesgo, porque con tan pocos hogares esas cifras revelarían las lecturas de un vecino; solo aparecen con su nombre y número de hogares hasta que se unan suficientes hogares. Hasta que alguna ciudad alcance el mínimo, la página muestra una vista previa de ejemplo claramente etiquetada.`,
     },
     {
       question: "Si solo tengo una sonda, ¿cuenta?",

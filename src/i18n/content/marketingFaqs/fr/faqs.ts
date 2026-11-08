@@ -164,7 +164,7 @@ export default {
     },
     {
       question: "Combien de foyers faut-il pour que ma ville affiche de vraies données ?",
-      answer: `Une ville apparaît sur la carte par défaut dès qu’au moins 3 foyers participants dotés d’une sonde de température active contribuent dans la même fenêtre d’instantané. Les villes peu représentées (sous ce seuil) sont masquées par défaut, mais peuvent être affichées avec le sélecteur des villes clairsemées. Tant qu’aucune ville n’atteint ce seuil, la page affiche un aperçu d’exemple clairement signalé.`,
+      answer: `Une ville apparaît sur la carte par défaut dès qu’au moins 3 foyers participants dotés d’une sonde de température active contribuent dans la même fenêtre d’instantané. Les villes sous ce seuil n’affichent jamais de températures, de tendances ni de part de risque de gel : avec si peu de foyers, ces chiffres révéleraient les relevés d’un voisin. Elles n’apparaissent qu’avec leur nom et leur nombre de foyers jusqu’à ce que suffisamment de foyers participent. Tant qu’aucune ville n’atteint ce seuil, la page affiche un aperçu d’exemple clairement signalé.`,
     },
     {
       question: "Je n’ai qu’une sonde : est-ce que ça compte ?",

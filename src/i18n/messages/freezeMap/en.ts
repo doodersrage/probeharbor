@@ -27,8 +27,8 @@ const en = {
   linkOptIn: "Opt in",
   linkCreate: "Create an account to contribute",
   liveNotice: {
-    one: "Live opt-in aggregates · {count} household contributing · cities need {floor}+ samples to list by default",
-    other: "Live opt-in aggregates · {count} households contributing · cities need {floor}+ samples to list by default",
+    one: "Live opt-in aggregates · {count} household contributing · cities need {floor}+ households to show readings",
+    other: "Live opt-in aggregates · {count} households contributing · cities need {floor}+ households to show readings",
   },
   lastSnapshot: " · Last snapshot {label}",
   liveOptOut: ". Opt out anytime under Household.",
@@ -49,11 +49,9 @@ const en = {
     one: "{count} household",
     other: "{count} households",
   },
-  hideSparse: "Hide sparse cities (<{floor} households)",
-  showSparse: "Show sparse cities",
-  hiddenCount: {
-    one: " ({count} hidden)",
-    other: " ({count} hidden)",
+  sparsePrivate: {
+    one: "{count} city has fewer than {floor} households, so its readings stay private until more homes join. It’s listed under Momentum with its household count only.",
+    other: "{count} cities have fewer than {floor} households, so their readings stay private until more homes join. They’re listed under Momentum with their household counts only.",
   },
   mapTitle: "Map",
   mapSubtitle:
@@ -71,7 +69,6 @@ const en = {
   thMin: "Min °F",
   thRisk: "Freeze-risk share",
   thRiskNote: "% of households ≤34°F",
-  sparse: "Sparse",
   needsSnapshots: "Needs more snapshots",
   riskOf: "({risk} of {total})",
   trendNoHistory: "No history yet",

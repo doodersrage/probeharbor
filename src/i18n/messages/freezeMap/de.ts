@@ -23,8 +23,8 @@ const de: FreezeMapMessages = {
   linkOptIn: "Mitmachen",
   linkCreate: "Erstelle ein Konto, um beizutragen",
   liveNotice: {
-    one: "Live-Daten der Teilnehmer · {count} Haushalt trägt bei · Städte brauchen {floor}+ Messwerte, um standardmäßig gelistet zu werden",
-    other: "Live-Daten der Teilnehmer · {count} Haushalte tragen bei · Städte brauchen {floor}+ Messwerte, um standardmäßig gelistet zu werden",
+    one: "Live-Daten der Teilnehmer · {count} Haushalt trägt bei · Städte brauchen {floor}+ Haushalte, bevor Messwerte angezeigt werden",
+    other: "Live-Daten der Teilnehmer · {count} Haushalte tragen bei · Städte brauchen {floor}+ Haushalte, bevor Messwerte angezeigt werden",
   },
   lastSnapshot: " · Letzter Stand {label}",
   liveOptOut: ". Abmelden jederzeit unter Household.",
@@ -45,11 +45,9 @@ const de: FreezeMapMessages = {
     one: "{count} Haushalt",
     other: "{count} Haushalte",
   },
-  hideSparse: "Städte mit wenigen Daten ausblenden (<{floor} Haushalte)",
-  showSparse: "Städte mit wenigen Daten anzeigen",
-  hiddenCount: {
-    one: " ({count} ausgeblendet)",
-    other: " ({count} ausgeblendet)",
+  sparsePrivate: {
+    one: "{count} Stadt hat weniger als {floor} Haushalte, daher bleiben ihre Messwerte privat, bis mehr Haushalte mitmachen. Sie steht unter Fortschritt nur mit ihrer Haushaltszahl.",
+    other: "{count} Städte haben weniger als {floor} Haushalte, daher bleiben ihre Messwerte privat, bis mehr Haushalte mitmachen. Sie stehen unter Fortschritt nur mit ihrer Haushaltszahl.",
   },
   mapTitle: "Karte",
   mapSubtitle:
@@ -67,7 +65,6 @@ const de: FreezeMapMessages = {
   thMin: "Min. °F",
   thRisk: "Anteil mit Frostrisiko",
   thRiskNote: "% der Haushalte bei ≤1 °C (34 °F)",
-  sparse: "Wenige Daten",
   needsSnapshots: "Braucht mehr Datenpunkte",
   riskOf: "({risk} von {total})",
   trendNoHistory: "Noch kein Verlauf",

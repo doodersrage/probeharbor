@@ -23,8 +23,8 @@ const ptBr: FreezeMapMessages = {
   linkOptIn: "Participar",
   linkCreate: "Crie uma conta para contribuir",
   liveNotice: {
-    one: "Dados agregados ao vivo · {count} domicílio contribuindo · cidades precisam de {floor}+ amostras para aparecer por padrão",
-    other: "Dados agregados ao vivo · {count} domicílios contribuindo · cidades precisam de {floor}+ amostras para aparecer por padrão",
+    one: "Dados agregados ao vivo · {count} domicílio contribuindo · cidades precisam de {floor}+ domicílios para mostrar leituras",
+    other: "Dados agregados ao vivo · {count} domicílios contribuindo · cidades precisam de {floor}+ domicílios para mostrar leituras",
   },
   lastSnapshot: " · Último retrato {label}",
   liveOptOut: ". Saia quando quiser pelo Household.",
@@ -45,11 +45,9 @@ const ptBr: FreezeMapMessages = {
     one: "{count} domicílio",
     other: "{count} domicílios",
   },
-  hideSparse: "Ocultar cidades com poucos dados (<{floor} domicílios)",
-  showSparse: "Mostrar cidades com poucos dados",
-  hiddenCount: {
-    one: " ({count} oculta)",
-    other: " ({count} ocultas)",
+  sparsePrivate: {
+    one: "{count} cidade tem menos de {floor} domicílios, então suas leituras ficam privadas até que mais domicílios participem. Ela aparece em Progresso apenas com o número de domicílios.",
+    other: "{count} cidades têm menos de {floor} domicílios, então suas leituras ficam privadas até que mais domicílios participem. Elas aparecem em Progresso apenas com o número de domicílios.",
   },
   mapTitle: "Mapa",
   mapSubtitle:
@@ -67,7 +65,6 @@ const ptBr: FreezeMapMessages = {
   thMin: "Mín. °F",
   thRisk: "Parcela em risco",
   thRiskNote: "% dos domicílios a ≤1 °C (34 °F)",
-  sparse: "Poucos dados",
   needsSnapshots: "Faltam retratos",
   riskOf: "({risk} de {total})",
   trendNoHistory: "Ainda sem histórico",

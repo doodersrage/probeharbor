@@ -174,7 +174,7 @@ export const marketingFaqs = {
     {
       question: "How many households does it take before my city shows real data?",
       answer:
-        `A city appears on the default map once at least ${FREEZE_MAP_SAMPLE_FLOOR} opted-in households with a live temperature probe contribute in the same snapshot window. Sparse cities (below that floor) are hidden by default but can be shown with the sparse toggle. Until any city meets the floor, the page shows a clearly labeled sample preview.`,
+        `A city appears on the default map once at least ${FREEZE_MAP_SAMPLE_FLOOR} opted-in households with a live temperature probe contribute in the same snapshot window. Cities below that floor never show temperatures, trends, or freeze-risk shares, because with so few homes those numbers would reveal a neighbor’s readings; they appear only by name and household count until enough homes join. Until any city meets the floor, the page shows a clearly labeled sample preview.`,
     },
     {
       question: "What if I only have one probe: does that count?",

@@ -23,8 +23,8 @@ const fr: FreezeMapMessages = {
   linkOptIn: "Participer",
   linkCreate: "Créez un compte pour contribuer",
   liveNotice: {
-    one: "Agrégats en direct des participants · {count} foyer contributeur · une ville doit compter {floor}+ relevés pour figurer par défaut",
-    other: "Agrégats en direct des participants · {count} foyers contributeurs · une ville doit compter {floor}+ relevés pour figurer par défaut",
+    one: "Agrégats en direct des participants · {count} foyer contributeur · une ville doit compter {floor}+ foyers pour afficher des relevés",
+    other: "Agrégats en direct des participants · {count} foyers contributeurs · une ville doit compter {floor}+ foyers pour afficher des relevés",
   },
   lastSnapshot: " · Dernier relevé {label}",
   liveOptOut: ". Désinscription à tout moment dans Household.",
@@ -45,11 +45,9 @@ const fr: FreezeMapMessages = {
     one: "{count} foyer",
     other: "{count} foyers",
   },
-  hideSparse: "Masquer les villes peu fournies (<{floor} foyers)",
-  showSparse: "Afficher les villes peu fournies",
-  hiddenCount: {
-    one: " ({count} masquée)",
-    other: " ({count} masquées)",
+  sparsePrivate: {
+    one: "{count} ville compte moins de {floor} foyers : ses relevés restent privés jusqu’à ce que d’autres foyers participent. Elle figure dans Progression avec son seul nombre de foyers.",
+    other: "{count} villes comptent moins de {floor} foyers : leurs relevés restent privés jusqu’à ce que d’autres foyers participent. Elles figurent dans Progression avec leur seul nombre de foyers.",
   },
   mapTitle: "Carte",
   mapSubtitle:
@@ -67,7 +65,6 @@ const fr: FreezeMapMessages = {
   thMin: "Min. °F",
   thRisk: "Part à risque de gel",
   thRiskNote: "% des foyers à ≤1 °C (34 °F)",
-  sparse: "Peu fournie",
   needsSnapshots: "Relevés insuffisants",
   riskOf: "({risk} sur {total})",
   trendNoHistory: "Pas encore d’historique",
