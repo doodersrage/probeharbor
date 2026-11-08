@@ -14,6 +14,13 @@ const fr: ApiMorePublicFormsMessages = {
     tooMany: "Trop de tentatives. Réessayez dans quelques minutes.",
     verificationFailed: "La vérification a échoué. Veuillez réessayer.",
     genericError: "Une erreur s’est produite. Veuillez réessayer.",
+    move: {
+      confirmTitle: "Changer les alertes gel ?",
+      confirmBody: "Les e-mails d’alerte gel de cette adresse concerneront {place} au lieu du lieu actuel.",
+      button: "Changer les alertes",
+      invalidTitle: "Lien non valide",
+      invalidBodyHtml: "<p>Ce lien a expiré, a été modifié, ou les alertes ont été désactivées. Vos alertes gel actuelles ne changent pas.</p>",
+    },
     unsubscribe: {
       forecastLink: "Prévisions de gel des canalisations",
       invalidTitle: "Lien non valide",

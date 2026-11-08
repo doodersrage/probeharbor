@@ -16,12 +16,18 @@ const db = vi.hoisted(() => ({
   rows: [] as Record<string, unknown>[],
   existing: null as Record<string, unknown> | null,
   writes: [] as Array<{ email: string; label: string; lat: number; lon: number; token: string }>,
+  moves: [] as Array<{ id: string; label: string; lat: number; lon: number }>,
   alerted: [] as Array<{ id: string; night: string }>,
 }));
 vi.mock("./db/freezeSubscriptions", () => ({
   findByEmail: async () => db.existing,
   writeUnconfirmed: async (email: string, label: string, lat: number, lon: number, token: string) => {
     db.writes.push({ email, label, lat, lon, token });
+    return true;
+  },
+  moveConfirmed: async (id: string, label: string, lat: number, lon: number) => {
+    db.moves.push({ id, label, lat, lon });
+    return true;
   },
   listConfirmed: async () => db.rows,
   markAlerted: async (id: string, night: string) => {
@@ -30,8 +36,12 @@ vi.mock("./db/freezeSubscriptions", () => ({
 }));
 
 import {
+  applyFreezeAlertMove,
   buildFreezeAlertEmail,
   decideFreezeAlert,
+  freezeAlertMoveUrl,
+  MOVE_LINK_TTL_MS,
+  readFreezeAlertMove,
   roundCoordinate,
   sendFreezeAlerts,
   subscribeToFreezeAlerts,
@@ -60,7 +70,10 @@ beforeEach(() => {
   db.rows = [];
   db.existing = null;
   db.writes = [];
+  db.moves = [];
   db.alerted = [];
+  vi.unstubAllEnvs();
+  vi.stubEnv("ALERT_ACK_SECRET", "unit-test-alert-link-secret");
 });
 
 describe("decideFreezeAlert", () => {
@@ -160,11 +173,73 @@ describe("subscribeToFreezeAlerts", () => {
     expect(mockSendEmail).not.toHaveBeenCalled();
   });
 
-  it("requires re-confirmation when the location changes", async () => {
-    db.existing = { id: "s1", confirmed_at: "2026-11-01T00:00:00Z", lat: 37.54, lon: -77.44 };
+  it("never changes or pauses a confirmed subscriber; emails a signed link for the new place instead", async () => {
+    db.existing = { id: "s1", confirmed_at: "2026-11-01T00:00:00Z", place_label: "Richmond, VA", lat: 37.54, lon: -77.44 };
+    const result = await subscribeToFreezeAlerts({ email: "me@example.com", lat: 44.98, lon: -93.27, label: "Minneapolis, MN" });
+    // Same answer a brand-new address gets.
+    expect(result).toEqual({ ok: true });
+    expect(db.writes).toHaveLength(0);
+    expect(db.moves).toHaveLength(0);
+    expect(mockSendEmail).toHaveBeenCalledTimes(1);
+    const [to, subject, text] = mockSendEmail.mock.calls[0]!;
+    expect(to).toBe("me@example.com");
+    expect(subject).toBe("Switch freeze alerts to Minneapolis, MN?");
+    expect(text).toContain("Richmond, VA");
+    expect(text).toMatch(/https:\/\/probeharbor\.dev\/api\/freeze-alerts\/move\?\S+/);
+  });
+
+  it("sends no move link (and no unsigned fallback) when no signing secret is set", async () => {
+    vi.stubEnv("ALERT_ACK_SECRET", "");
+    vi.stubEnv("CRON_SECRET", "");
+    db.existing = { id: "s1", confirmed_at: "2026-11-01T00:00:00Z", place_label: "Richmond, VA", lat: 37.54, lon: -77.44 };
+    const result = await subscribeToFreezeAlerts({ email: "me@example.com", lat: 44.98, lon: -93.27, label: "Minneapolis, MN" });
+    expect(result).toEqual({ ok: true });
+    expect(db.writes).toHaveLength(0);
+    expect(mockSendEmail).not.toHaveBeenCalled();
+  });
+
+  it("an unconfirmed address is replaced and re-sent a confirmation, as before", async () => {
+    db.existing = { id: "s1", confirmed_at: null, place_label: "Richmond, VA", lat: 37.54, lon: -77.44 };
     await subscribeToFreezeAlerts({ email: "me@example.com", lat: 44.98, lon: -93.27, label: "Minneapolis, MN" });
     expect(db.writes[0]).toMatchObject({ email: "me@example.com", lat: 44.98, lon: -93.27, label: "Minneapolis, MN" });
-    expect(mockSendEmail).toHaveBeenCalledTimes(1);
+    expect(mockSendEmail).toHaveBeenCalledWith("me@example.com", "Confirm freeze alerts for Minneapolis, MN", expect.any(String), expect.anything());
+  });
+});
+
+describe("freeze alert move links", () => {
+  const NOW = Date.parse("2026-11-07T12:00:00Z");
+  const place = { label: "Minneapolis, MN", lat: 44.98, lon: -93.27 };
+  const linkParams = async () => new URL((await freezeAlertMoveUrl("s1", place, NOW))!).searchParams;
+
+  it("round-trips and applies the signed place", async () => {
+    const params = await linkParams();
+    expect(Number(params.get("exp"))).toBe(NOW + MOVE_LINK_TTL_MS);
+    await expect(readFreezeAlertMove(params, NOW + 1000)).resolves.toMatchObject({ id: "s1", ...place });
+    await expect(applyFreezeAlertMove(params, NOW + 1000)).resolves.toEqual({ ok: true });
+    expect(db.moves).toEqual([{ id: "s1", ...place }]);
+  });
+
+  it("rejects tampered, expired, wrongly-signed and incomplete links without touching the row", async () => {
+    const params = await linkParams();
+    for (const [key, value] of [
+      ["label", "Elsewhere"],
+      ["lat", "45.00"],
+      ["lon", "-93.00"],
+      ["sid", "s2"],
+      ["exp", String(NOW + 2 * MOVE_LINK_TTL_MS)],
+      ["sig", "0".repeat(64)],
+    ] as const) {
+      const tampered = new URLSearchParams(params);
+      tampered.set(key, value);
+      await expect(applyFreezeAlertMove(tampered, NOW)).resolves.toEqual({ ok: false });
+    }
+    const missing = new URLSearchParams(params);
+    missing.delete("sig");
+    await expect(applyFreezeAlertMove(missing, NOW)).resolves.toEqual({ ok: false });
+    await expect(applyFreezeAlertMove(params, NOW + MOVE_LINK_TTL_MS + 1)).resolves.toEqual({ ok: false });
+    vi.stubEnv("ALERT_ACK_SECRET", "a-different-secret");
+    await expect(applyFreezeAlertMove(params, NOW)).resolves.toEqual({ ok: false });
+    expect(db.moves).toHaveLength(0);
   });
 });
 

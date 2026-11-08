@@ -12,6 +12,17 @@ const fr: AlertJobsMessages = {
         "Vous recevez ce message parce que quelqu’un a saisi cette adresse sur la prévision de gel des canalisations de ProbeHarbor.",
       subject: "Confirmez les alertes gel pour {place}",
     },
+    move: {
+      eyebrow: "Alertes gel",
+      title: "Passer vos alertes gel à {place} ?",
+      intro: "Cette adresse reçoit déjà des alertes gel pour {current}. Quelqu’un vient de demander de les recevoir pour {place} à la place.",
+      keep: "Rien ne change tant que vous ne cliquez pas ci-dessous. Vos alertes pour {current} continuent comme d’habitude.",
+      ignore: "Si vous n’avez rien demandé, ignorez ce message. Le lien cesse de fonctionner après 7 jours.",
+      cta: "Changer mes alertes gel",
+      footerNote:
+        "Vous recevez ce message parce que quelqu’un a saisi cette adresse sur la prévision de gel des canalisations de ProbeHarbor.",
+      subject: "Passer les alertes gel à {place} ?",
+    },
     errors: {
       invalidEmail: "Saisissez une adresse e-mail valide.",
       pickLocation: "Choisissez d’abord un lieu.",

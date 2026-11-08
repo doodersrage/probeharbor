@@ -14,6 +14,13 @@ const de: ApiMorePublicFormsMessages = {
     tooMany: "Zu viele Versuche. Versuche es in ein paar Minuten erneut.",
     verificationFailed: "Überprüfung fehlgeschlagen. Bitte versuche es erneut.",
     genericError: "Etwas ist schiefgelaufen. Bitte versuche es erneut.",
+    move: {
+      confirmTitle: "Frostwarnungen umstellen?",
+      confirmBody: "Frostwarnungen an diese Adresse gelten dann für {place} statt für den bisherigen Ort.",
+      button: "Warnungen umstellen",
+      invalidTitle: "Link ungültig",
+      invalidBodyHtml: "<p>Dieser Link ist abgelaufen, wurde verändert oder die Warnungen wurden abbestellt. Deine aktuellen Frostwarnungen bleiben unverändert.</p>",
+    },
     unsubscribe: {
       forecastLink: "Frostprognose für Rohrleitungen",
       invalidTitle: "Link ungültig",

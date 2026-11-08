@@ -17,7 +17,11 @@ vi.mock("../../../lib/statusSubscribeLimits", () => ({
 const mockSubscribe = vi.fn();
 const mockConfirm = vi.fn();
 const mockUnsubscribe = vi.fn();
+const mockReadMove = vi.fn();
+const mockApplyMove = vi.fn();
 vi.mock("../../../lib/freezeAlerts", () => ({
+  readFreezeAlertMove: (...a: unknown[]) => mockReadMove(...a),
+  applyFreezeAlertMove: (...a: unknown[]) => mockApplyMove(...a),
   subscribeToFreezeAlerts: (...a: unknown[]) => mockSubscribe(...a),
   confirmFreezeAlerts: (...a: unknown[]) => mockConfirm(...a),
   unsubscribeFreezeAlerts: (...a: unknown[]) => mockUnsubscribe(...a),
@@ -26,6 +30,7 @@ vi.mock("../../../lib/freezeAlerts", () => ({
 import { POST as subscribe } from "./subscribe";
 import { GET as confirm } from "./confirm";
 import { GET as unsubscribeGet, POST as unsubscribePost } from "./unsubscribe";
+import { GET as moveGet, POST as movePost } from "./move";
 
 function formContext(fields: Record<string, string>): APIContext {
   const form = new FormData();
@@ -39,7 +44,7 @@ function formContext(fields: Record<string, string>): APIContext {
 function urlContext(path: string): APIContext {
   return {
     url: new URL(`https://probeharbor.dev${path}`),
-    redirect: (to: string) => new Response(null, { status: 302, headers: { Location: to } }),
+    redirect: (to: string, status = 302) => new Response(null, { status, headers: { Location: to } }),
   } as unknown as APIContext;
 }
 
@@ -51,6 +56,8 @@ beforeEach(() => {
   mockSubscribe.mockReset().mockResolvedValue({ ok: true });
   mockConfirm.mockReset().mockResolvedValue({ ok: true });
   mockUnsubscribe.mockReset().mockResolvedValue({ ok: true });
+  mockReadMove.mockReset().mockResolvedValue({ id: "s1", label: "Minneapolis <MN>", lat: 44.98, lon: -93.27, exp: 1 });
+  mockApplyMove.mockReset().mockResolvedValue({ ok: true });
 });
 
 describe("POST /api/freeze-alerts/subscribe", () => {
@@ -104,5 +111,36 @@ describe("confirm and unsubscribe", () => {
     const res = await unsubscribePost(urlContext("/api/freeze-alerts/unsubscribe?token=abc"));
     expect(res.status).toBe(200);
     expect(mockUnsubscribe).toHaveBeenCalledWith("abc");
+  });
+});
+
+describe("move link (switch a confirmed subscription to a new place)", () => {
+  const link = "/api/freeze-alerts/move?sid=s1&lat=44.98&lon=-93.27&label=Minneapolis&exp=1&sig=abc";
+
+  it("GET only shows a button for a valid link, so link scanners can't move anyone's alerts", async () => {
+    const res = await moveGet(urlContext(link));
+    expect(res.status).toBe(200);
+    const html = await res.text();
+    expect(html).toContain('method="post"');
+    expect(html).toContain("Minneapolis &lt;MN&gt;");
+    expect(html).toContain("sig=abc");
+    expect(mockApplyMove).not.toHaveBeenCalled();
+  });
+
+  it("GET says the link is invalid when it doesn't verify", async () => {
+    mockReadMove.mockResolvedValue(null);
+    const res = await moveGet(urlContext(link));
+    expect(res.status).toBe(400);
+    expect(await res.text()).not.toContain('method="post"');
+  });
+
+  it("POST applies the move and lands on the forecast page; a bad link changes nothing", async () => {
+    const res = await movePost(urlContext(link));
+    expect(res.status).toBe(303);
+    expect(res.headers.get("Location")).toBe("/pipe-freeze-forecast?alerts=confirmed");
+    expect((mockApplyMove.mock.calls[0]![0] as URLSearchParams).get("sig")).toBe("abc");
+    mockApplyMove.mockResolvedValue({ ok: false });
+    const bad = await movePost(urlContext(link));
+    expect(bad.status).toBe(404);
   });
 });

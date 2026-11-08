@@ -12,6 +12,17 @@ const ptBr: AlertJobsMessages = {
         "Você está recebendo isto porque alguém informou este endereço na previsão de congelamento de canos da ProbeHarbor.",
       subject: "Confirme os alertas de congelamento para {place}",
     },
+    move: {
+      eyebrow: "Alertas de congelamento",
+      title: "Mudar seus alertas de congelamento para {place}?",
+      intro: "Este endereço já recebe alertas de congelamento para {current}. Alguém acabou de pedir para enviá-los para {place} em vez disso.",
+      keep: "Nada muda até você clicar abaixo. Seus alertas para {current} continuam chegando normalmente.",
+      ignore: "Se você não pediu isso, ignore esta mensagem. O link deixa de funcionar depois de 7 dias.",
+      cta: "Mudar meus alertas de congelamento",
+      footerNote:
+        "Você está recebendo isto porque alguém informou este endereço na previsão de congelamento de canos da ProbeHarbor.",
+      subject: "Mudar os alertas de congelamento para {place}?",
+    },
     errors: {
       invalidEmail: "Informe um endereço de e-mail válido.",
       pickLocation: "Escolha um local primeiro.",

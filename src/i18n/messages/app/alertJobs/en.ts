@@ -17,6 +17,17 @@ const en = {
         "You're receiving this because someone entered this address on the ProbeHarbor pipe freeze forecast.",
       subject: "Confirm freeze alerts for {place}",
     },
+    move: {
+      eyebrow: "Freeze alerts",
+      title: "Switch your freeze alerts to {place}?",
+      intro: "This address already gets freeze alerts for {current}. Someone just asked to send them for {place} instead.",
+      keep: "Nothing changes until you click below. Your alerts for {current} keep coming as usual.",
+      ignore: "If you didn't ask for this, ignore this message. The link stops working after 7 days.",
+      cta: "Switch my freeze alerts",
+      footerNote:
+        "You're receiving this because someone entered this address on the ProbeHarbor pipe freeze forecast.",
+      subject: "Switch freeze alerts to {place}?",
+    },
     errors: {
       invalidEmail: "Enter a valid email address.",
       pickLocation: "Pick a location first.",

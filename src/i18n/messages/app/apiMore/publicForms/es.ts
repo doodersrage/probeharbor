@@ -14,6 +14,13 @@ const es: ApiMorePublicFormsMessages = {
     tooMany: "Demasiados intentos. Vuelve a intentarlo en unos minutos.",
     verificationFailed: "La verificación ha fallado. Inténtalo de nuevo.",
     genericError: "Algo salió mal. Inténtalo de nuevo.",
+    move: {
+      confirmTitle: "¿Cambiar las alertas de congelación?",
+      confirmBody: "Los correos de alertas de congelación de esta dirección se enviarán para {place} en lugar del lugar actual.",
+      button: "Cambiar alertas",
+      invalidTitle: "Enlace no válido",
+      invalidBodyHtml: "<p>Este enlace caducó, se modificó o las alertas se dieron de baja. Tus alertas de congelación actuales no cambian.</p>",
+    },
     unsubscribe: {
       forecastLink: "Pronóstico de congelación de tuberías",
       invalidTitle: "Enlace no válido",

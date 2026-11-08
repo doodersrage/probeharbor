@@ -12,6 +12,17 @@ const es: AlertJobsMessages = {
         "Recibes este correo porque alguien introdujo esta dirección en el pronóstico de congelación de tuberías de ProbeHarbor.",
       subject: "Confirma las alertas de congelación para {place}",
     },
+    move: {
+      eyebrow: "Alertas de congelación",
+      title: "¿Cambiar tus alertas de congelación a {place}?",
+      intro: "Esta dirección ya recibe alertas de congelación para {current}. Alguien acaba de pedir que se envíen para {place} en su lugar.",
+      keep: "No cambia nada hasta que hagas clic abajo. Tus alertas para {current} siguen llegando como siempre.",
+      ignore: "Si no lo pediste, ignora este mensaje. El enlace deja de funcionar después de 7 días.",
+      cta: "Cambiar mis alertas de congelación",
+      footerNote:
+        "Recibes este correo porque alguien introdujo esta dirección en el pronóstico de congelación de tuberías de ProbeHarbor.",
+      subject: "¿Cambiar las alertas de congelación a {place}?",
+    },
     errors: {
       invalidEmail: "Introduce una dirección de correo válida.",
       pickLocation: "Primero elige una ubicación.",

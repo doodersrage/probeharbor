@@ -12,6 +12,17 @@ const de: AlertJobsMessages = {
         "Du erhältst diese E-Mail, weil jemand diese Adresse in der Rohrfrost-Vorhersage von ProbeHarbor eingegeben hat.",
       subject: "Frostwarnungen für {place} bestätigen",
     },
+    move: {
+      eyebrow: "Frostwarnungen",
+      title: "Frostwarnungen auf {place} umstellen?",
+      intro: "Diese Adresse bekommt schon Frostwarnungen für {current}. Gerade hat jemand gebeten, sie stattdessen für {place} zu schicken.",
+      keep: "Nichts ändert sich, bis du unten klickst. Deine Warnungen für {current} kommen weiter wie gewohnt.",
+      ignore: "Wenn du das nicht angefordert hast, ignoriere diese Nachricht. Der Link funktioniert nach 7 Tagen nicht mehr.",
+      cta: "Frostwarnungen umstellen",
+      footerNote:
+        "Du erhältst diese E-Mail, weil jemand diese Adresse in der Rohrfrost-Vorhersage von ProbeHarbor eingegeben hat.",
+      subject: "Frostwarnungen auf {place} umstellen?",
+    },
     errors: {
       invalidEmail: "Gib eine gültige E-Mail-Adresse ein.",
       pickLocation: "Wähle zuerst einen Ort.",
