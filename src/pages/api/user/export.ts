@@ -56,7 +56,7 @@ export const GET: APIRoute = async ({ request, cookies, locals }) => {
         label: s.label,
         kind: s.kind,
       })),
-      meta: d.meta,
+      meta: exportableMeta(d.meta),
     })),
   };
 
@@ -67,3 +67,10 @@ export const GET: APIRoute = async ({ request, cookies, locals }) => {
     },
   });
 };
+
+/** Device meta without secrets: the encrypted ingest key stays on the server. */
+function exportableMeta(meta: unknown): unknown {
+  if (!meta || typeof meta !== "object" || Array.isArray(meta)) return meta;
+  const { ingest_key_enc: _secret, ...rest } = meta as Record<string, unknown>;
+  return rest;
+}

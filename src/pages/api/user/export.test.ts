@@ -66,7 +66,7 @@ beforeEach(() => {
         source: "push",
         space: "garage",
         sensors: [{ key: "0", label: "North", kind: "temperature" }],
-        meta: { rssi: -50 },
+        meta: { rssi: -50, ingest_key_enc: "v1:secret-ciphertext" },
       },
     ],
   });
