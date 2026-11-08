@@ -71,7 +71,10 @@ export const GET: APIRoute = async ({ url, cookies, clientAddress, locals }) => 
     status: 200,
     headers: {
       "Content-Type": "application/json",
-      "Cache-Control": "public, max-age=60, stale-while-revalidate=300",
+      // A signed-in user's own station (name, location) must never sit in a
+      // shared cache; anonymous city weather can.
+      "Cache-Control": user ? "private, max-age=60" : "public, max-age=60, stale-while-revalidate=300",
+      Vary: "Cookie",
     },
   });
 };

@@ -1,6 +1,7 @@
 import type { APIRoute } from "astro";
 import { getAuthFromRequest } from "../../../../lib/auth";
 import { getOrCreateHouseholdForUser } from "../../../../lib/households";
+import { householdEditorCtx, requireHouseholdEditor } from "../../../../lib/householdAuth";
 import { isBayMood } from "../../../../lib/bayMood";
 import {
   resolveBayMoodForHousehold,
@@ -70,14 +71,15 @@ export const PUT: APIRoute = async ({ params, request, cookies, locals }) => {
     return json(400, { error: "bad_mood" });
   }
 
-  const household = await getOrCreateHouseholdForUser(user.id, user.email);
-  if (household.error || !household.householdId) {
-    return json(500, { error: household.error ?? "household" });
+  // Changing the mood is a write: view-only and alert-only members can't.
+  const editor = await requireHouseholdEditor(user.id);
+  if (!editor.ok) {
+    return json(editor.error === "No household" ? 500 : 403, { error: editor.error === "No household" ? "household" : tc.viewOnly });
   }
 
   const result = await setBayMoodOverride({
     bayId,
-    householdId: household.householdId,
+    householdId: householdEditorCtx(editor).householdId,
     mood,
   });
   if (!result.ok) {

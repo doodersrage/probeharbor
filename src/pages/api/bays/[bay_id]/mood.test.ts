@@ -11,6 +11,13 @@ vi.mock("../../../../lib/households", () => ({
   getOrCreateHouseholdForUser: (...a: unknown[]) => mockGetOrCreateHouseholdForUser(...a),
 }));
 
+// PUT is a write: the editor check (real rules tested in householdAuth.test.ts).
+const mockRequireHouseholdEditor = vi.fn();
+vi.mock("../../../../lib/householdAuth", () => ({
+  requireHouseholdEditor: (...a: unknown[]) => mockRequireHouseholdEditor(...a),
+  householdEditorCtx: (editor: { ctx: unknown }) => editor.ctx,
+}));
+
 const mockIsBayMood = vi.fn();
 vi.mock("../../../../lib/bayMood", () => ({
   isBayMood: (...a: unknown[]) => mockIsBayMood(...a),
@@ -43,6 +50,7 @@ beforeEach(() => {
     user: { id: "user-1", email: "user@example.com" },
   });
   mockGetOrCreateHouseholdForUser.mockReset().mockResolvedValue({ householdId: "house-1", error: null });
+  mockRequireHouseholdEditor.mockReset().mockResolvedValue({ ok: true, ctx: { householdId: "house-1", role: "owner" } });
   mockIsBayMood.mockReset().mockReturnValue(true);
   mockResolveBayMoodForHousehold.mockReset().mockResolvedValue({
     ok: true,
@@ -141,13 +149,23 @@ describe("PUT /api/bays/[bay_id]/mood", () => {
     expect(mockIsBayMood).toHaveBeenCalledWith("happy");
   });
 
-  it("returns 500 when the household lookup fails", async () => {
-    mockGetOrCreateHouseholdForUser.mockResolvedValue({ householdId: null, error: "boom" });
+  it("returns 500 when the caller has no household", async () => {
+    mockRequireHouseholdEditor.mockResolvedValue({ ok: false, error: "No household" });
     const { PUT } = await import("./mood");
 
     const response = await PUT(makeContext({ body: { mood: "happy" } }));
 
     expect(response.status).toBe(500);
+  });
+
+  it("refuses a view-only member without writing", async () => {
+    mockRequireHouseholdEditor.mockResolvedValue({ ok: false, error: "viewer" });
+    const { PUT } = await import("./mood");
+
+    const response = await PUT(makeContext({ body: { mood: "happy" } }));
+
+    expect(response.status).toBe(403);
+    expect(mockSetBayMoodOverride).not.toHaveBeenCalled();
   });
 
   it("returns the mapped error status when setting the override fails", async () => {
