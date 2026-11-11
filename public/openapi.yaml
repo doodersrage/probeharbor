@@ -424,14 +424,14 @@ paths:
     post:
       summary: Inbound webhook actions (Zapier / Home Assistant)
       description: |
-        Every request must be signed with the webhook's signing secret.
-        Recommended (rejects replays): `X-ProbeHarbor-Timestamp` (Unix seconds)
-        and `X-ProbeHarbor-Signature-V2: sha256=<hex HMAC-SHA256 of "<timestamp>.<raw body>">`;
-        timestamps more than 5 minutes off are rejected. If the V2 header is
-        present, only V2 is checked. The older body-only signature
-        (`X-ProbeHarbor-Signature: sha256=<hex HMAC of raw body>`, or the legacy
-        `X-ThermalTrace-Signature`, `X-GarageTemp-Signature`, `X-Signature`) is
-        still accepted for now. The action can also come from `?action=`.
+        Every request must be signed with the webhook's signing secret:
+        `X-ProbeHarbor-Timestamp` (Unix seconds) and
+        `X-ProbeHarbor-Signature-V2: sha256=<hex HMAC-SHA256 of "<timestamp>.<raw body>">`;
+        timestamps more than 5 minutes off are rejected. The older body-only
+        signature (`X-ProbeHarbor-Signature`, `X-ThermalTrace-Signature`,
+        `X-GarageTemp-Signature`, `X-Signature`) is no longer accepted (since
+        2026-11-11); a request sending only that gets `401` with an error
+        starting `Signature V2 required`. The action can also come from `?action=`.
 
         `snooze` / `vacation` (and their clears) act on **this webhook's household
         only**: they hold that household's routine alerts for all its members,
@@ -454,18 +454,12 @@ paths:
             enum: [snooze, vacation, clear_snooze, clear_vacation, status]
         - name: X-ProbeHarbor-Timestamp
           in: header
-          required: false
+          required: true
           schema:
             type: string
         - name: X-ProbeHarbor-Signature-V2
           in: header
-          required: false
-          schema:
-            type: string
-        - name: X-ProbeHarbor-Signature
-          in: header
-          required: false
-          description: Body-only signature (older format)
+          required: true
           schema:
             type: string
       requestBody:

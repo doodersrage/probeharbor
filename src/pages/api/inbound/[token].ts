@@ -45,14 +45,16 @@ export const POST: APIRoute = async ({ params, request }) => {
     const error =
       verification.reason === "stale_timestamp"
         ? "Stale timestamp (X-ProbeHarbor-Timestamp must be within 5 minutes)"
-        : "Invalid signature";
+        : verification.reason === "v2_required"
+          ? "Signature V2 required: send X-ProbeHarbor-Timestamp and X-ProbeHarbor-Signature-V2 (body-only signatures are no longer accepted)"
+          : "Invalid signature";
     return new Response(JSON.stringify({ error }), {
       status: 401,
       headers: { "Content-Type": "application/json" },
     });
   }
-  // Tells the owner which webhooks still send body-only signatures before
-  // timestamps become required.
+  // Records that the webhook was used and how it was signed (v2 only since
+  // 2026-11-11).
   await recordInboundSignatureFormat(resolved.webhookId, verification.format);
 
   let body: Record<string, unknown> = {};

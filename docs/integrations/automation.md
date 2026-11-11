@@ -25,7 +25,7 @@ Verify the signature when a webhook secret is set. Prefer the timestamped `X-Pro
 
 ## Inbound snooze
 
-`POST /api/inbound/{token}` with `{"action":"snooze","hours":24}`, signed with `X-ProbeHarbor-Timestamp` and `X-ProbeHarbor-Signature-V2` ([how](/integrations/webhooks#signing-inbound-calls)). The body-only `X-ProbeHarbor-Signature` still works for now.
+`POST /api/inbound/{token}` with `{"action":"snooze","hours":24}`, signed with `X-ProbeHarbor-Timestamp` and `X-ProbeHarbor-Signature-V2` ([how](/integrations/webhooks#signing-inbound-calls)). Body-only signatures are no longer accepted (since 2026-11-11).
 
 Actions: `snooze` (`hours`, 1-168, default 24), `vacation` (`days`, 1-90, default 7), `clear_snooze`, `clear_vacation`, `status`.
 

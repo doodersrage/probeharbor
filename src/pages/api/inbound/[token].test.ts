@@ -124,15 +124,27 @@ describe("POST /api/inbound/[token]", () => {
     expect(mockApplyHouseholdVacation).not.toHaveBeenCalled();
   });
 
+  it("tells a body-only caller that the v2 signature is required, and does not act", async () => {
+    mockVerifyInboundRequest.mockResolvedValue({ ok: false, reason: "v2_required" });
+    const { POST } = await import("./[token]");
+
+    const response = await POST(makeContext({ body: '{"action":"snooze","hours":2}' }));
+
+    expect(response.status).toBe(401);
+    expect(((await response.json()) as { error: string }).error).toMatch(/^Signature V2 required/);
+    expect(mockApplyHouseholdSnooze).not.toHaveBeenCalled();
+    expect(mockRecordInboundSignatureFormat).not.toHaveBeenCalled();
+  });
+
   it("verifies the raw body and request headers, then records the format used", async () => {
-    mockVerifyInboundRequest.mockResolvedValue({ ok: true, format: "legacy" });
+    mockVerifyInboundRequest.mockResolvedValue({ ok: true, format: "v2" });
     const { POST } = await import("./[token]");
     const body = '{"action":"snooze","hours":2}';
 
     await POST(makeContext({ body }));
 
     expect(mockVerifyInboundRequest).toHaveBeenCalledWith("secret", body, expect.any(Headers));
-    expect(mockRecordInboundSignatureFormat).toHaveBeenCalledWith("wh-1", "legacy");
+    expect(mockRecordInboundSignatureFormat).toHaveBeenCalledWith("wh-1", "v2");
   });
 
   it("applies a snooze and records activity", async () => {

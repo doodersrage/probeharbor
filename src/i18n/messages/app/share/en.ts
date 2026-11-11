@@ -111,7 +111,7 @@ const en = {
       'Let Home Assistant or Zapier POST to ProbeHarbor. Actions: <code>snooze</code>, <code>vacation</code>, <code>clear_snooze</code>, <code>clear_vacation</code>, <code>status</code>. Example: <code>{"action":"snooze","hours":24}</code> to <code>POST /api/inbound/&lt;token&gt;</code>. Snooze and vacation hold this household’s routine alerts for everyone in it (freeze, leak, power and offline alerts still send), not members’ alerts for their other households.',
     inboundViewOnly: "View-only: cannot create or revoke inbound webhooks.",
     newWebhookUrl: "New webhook URL (copy now):",
-    signingSecret: "Signing secret (for X-ProbeHarbor-Signature, copy now):",
+    signingSecret: "Signing secret (for X-ProbeHarbor-Signature-V2, copy now):",
     copyUrl: "Copy URL",
     inboundDefaultName: "HA automation",
     createInbound: "Create inbound webhook",

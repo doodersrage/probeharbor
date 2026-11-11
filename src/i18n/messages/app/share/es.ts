@@ -107,7 +107,7 @@ const es: ShareMessages = {
       'Permite que Home Assistant o Zapier envíen POST a ProbeHarbor. Acciones: <code>snooze</code>, <code>vacation</code>, <code>clear_snooze</code>, <code>clear_vacation</code>, <code>status</code>. Ejemplo: <code>{"action":"snooze","hours":24}</code> a <code>POST /api/inbound/&lt;token&gt;</code>. Posponer y vacaciones retienen las alertas rutinarias de este hogar para todos sus miembros (las de helada, fugas, corte de luz y sensor desconectado se siguen enviando), no las de sus otros hogares.',
     inboundViewOnly: "Solo lectura: no puedes crear ni revocar webhooks entrantes.",
     newWebhookUrl: "URL del nuevo webhook (cópiala ahora):",
-    signingSecret: "Secreto de firma (para X-ProbeHarbor-Signature, cópialo ahora):",
+    signingSecret: "Secreto de firma (para X-ProbeHarbor-Signature-V2, cópialo ahora):",
     copyUrl: "Copiar URL",
     inboundDefaultName: "Automatización de HA",
     createInbound: "Crear webhook entrante",

@@ -3,7 +3,6 @@ import {
   pickInboundSignatureHeader,
   randomSigningSecret,
   verifyInboundRequest,
-  verifyInboundSignature,
 } from "./inboundSigning";
 import { timestampedSignatureHeaders } from "./webhookSigning";
 
@@ -43,52 +42,6 @@ describe("pickInboundSignatureHeader", () => {
     expect(pickInboundSignatureHeader(new Headers({ "X-Signature": "generic" }))).toBe(
       "generic",
     );
-  });
-});
-
-describe("verifyInboundSignature", () => {
-  it("accepts a correctly signed body", async () => {
-    const secret = "shh-its-a-secret";
-    const body = '{"action":"snooze","hours":12}';
-    const sig = await hmacHex(secret, body);
-    expect(await verifyInboundSignature(secret, body, `sha256=${sig}`)).toBe(true);
-  });
-
-  it("rejects a body with a mismatched signature", async () => {
-    const secret = "shh-its-a-secret";
-    const body = '{"action":"snooze","hours":12}';
-    const sig = await hmacHex(secret, body);
-    expect(
-      await verifyInboundSignature(secret, body + "tampered", `sha256=${sig}`),
-    ).toBe(false);
-  });
-
-  it("rejects when signed with the wrong secret", async () => {
-    const body = '{"action":"vacation","days":3}';
-    const sig = await hmacHex("wrong-secret", body);
-    expect(
-      await verifyInboundSignature("shh-its-a-secret", body, `sha256=${sig}`),
-    ).toBe(false);
-  });
-
-  it("rejects a missing signature header when a secret is configured", async () => {
-    expect(
-      await verifyInboundSignature("shh-its-a-secret", "{}", null),
-    ).toBe(false);
-  });
-
-  it("rejects when no signing secret is configured (fail closed)", async () => {
-    expect(await verifyInboundSignature(null, "{}", null)).toBe(false);
-    expect(await verifyInboundSignature(undefined, "{}", "sha256=whatever")).toBe(
-      false,
-    );
-  });
-
-  it("generated secrets round-trip through the verifier", async () => {
-    const secret = randomSigningSecret();
-    const body = "hello world";
-    const sig = await hmacHex(secret, body);
-    expect(await verifyInboundSignature(secret, body, sig)).toBe(true);
   });
 });
 
@@ -159,15 +112,23 @@ describe("verifyInboundRequest", () => {
     expect((await verifyInboundRequest(secret, body, headers, now)).ok).toBe(false);
   });
 
-  it("still accepts a legacy body-only signature and reports it as legacy", async () => {
-    const headers = new Headers({ "X-ProbeHarbor-Signature": `sha256=${await hmacHex(secret, body)}` });
-    expect(await verifyInboundRequest(secret, body, headers, now)).toEqual({ ok: true, format: "legacy" });
+  it("rejects a correct body-only signature, in every legacy header, as v2_required", async () => {
+    const sig = await hmacHex(secret, body);
+    for (const name of ["X-ProbeHarbor-Signature", "X-ThermalTrace-Signature", "X-GarageTemp-Signature", "X-Signature"]) {
+      const headers = new Headers({ [name]: `sha256=${sig}` });
+      expect(await verifyInboundRequest(secret, body, headers, now)).toEqual({ ok: false, reason: "v2_required" });
+    }
   });
 
-  it("fails closed without a secret, in either format", async () => {
+  it("generated secrets round-trip through the verifier", async () => {
+    const generated = randomSigningSecret();
+    const headers = await v2Headers(now, body, generated);
+    expect(await verifyInboundRequest(generated, body, headers, now)).toEqual({ ok: true, format: "v2" });
+  });
+
+  it("fails closed without a secret", async () => {
     expect((await verifyInboundRequest(null, body, await v2Headers(now), now)).ok).toBe(false);
-    const legacy = new Headers({ "X-Signature": await hmacHex(secret, body) });
-    expect((await verifyInboundRequest(" ", body, legacy, now)).ok).toBe(false);
+    expect((await verifyInboundRequest(" ", body, await v2Headers(now), now)).ok).toBe(false);
   });
 
   it("rejects a request with no signature at all", async () => {

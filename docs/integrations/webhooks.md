@@ -62,18 +62,19 @@ When a signing secret is set, requests include `X-ProbeHarbor-Signature` (and th
 
 ## Signing inbound calls
 
-`POST /api/inbound/{token}` accepts the same v2 scheme, and it's the recommended format:
+`POST /api/inbound/{token}` requires the same v2 scheme:
 
 ```http
 X-ProbeHarbor-Timestamp: <current Unix seconds>
 X-ProbeHarbor-Signature-V2: sha256=<hex HMAC-SHA256 of "<timestamp>.<raw body>">
 ```
 
-Requests more than 5 minutes old (or ahead) are rejected with `401`. If the v2
-header is present, it alone is checked. The older body-only
-`X-ProbeHarbor-Signature` is still accepted for now, but a copy of such a
-request can be replayed, so switch to v2. Body-only signatures may stop being
-accepted in a future release, with notice.
+Requests more than 5 minutes old (or ahead) are rejected with `401`. Since
+2026-11-11 the older body-only signature (`X-ProbeHarbor-Signature`,
+`X-ThermalTrace-Signature`, `X-GarageTemp-Signature`, `X-Signature`) is no
+longer accepted, because a copy of such a request could be replayed. A request
+that sends only a body-only signature gets `401` with an error starting
+`Signature V2 required`. The HACS integration signs with v2 from v1.2.0.
 
 ## Home Assistant
 

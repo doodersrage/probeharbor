@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { escapeHtml } from "./htmlEscape";
-import { verifyInboundSignature } from "./inboundSigning";
+import { verifyInboundRequest } from "./inboundSigning";
+import { timestampedSignatureHeaders } from "./webhookSigning";
 
 describe("escapeHtml", () => {
   it("escapes markup", () => {
@@ -10,9 +11,10 @@ describe("escapeHtml", () => {
   });
 });
 
-describe("verifyInboundSignature", () => {
+describe("verifyInboundRequest", () => {
   it("rejects missing signing secret (fail closed)", async () => {
-    expect(await verifyInboundSignature(null, "{}", "abc")).toBe(false);
-    expect(await verifyInboundSignature("", "{}", "abc")).toBe(false);
+    const headers = new Headers(await timestampedSignatureHeaders("abc", "{}", Date.now()));
+    expect((await verifyInboundRequest(null, "{}", headers)).ok).toBe(false);
+    expect((await verifyInboundRequest("", "{}", headers)).ok).toBe(false);
   });
 });
