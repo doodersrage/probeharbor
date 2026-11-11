@@ -535,7 +535,7 @@ The detailed increment log follows the Milestone 0 audit below. Summary:
 | 2 Alerts | Done for the audit gaps | 2.1–2.7, D1–D8, D7b | Property name in alert titles (deferred) |
 | 3 Setup / hardware | Code done; hardware tests open | 3.1–3.3 | Physical tests in `firmware/probeharbor-probe/HARDWARE-TESTS.md` |
 | 4 Operations | Partial | 4.1–4.4 | Restore rehearsal; migration check in CI (decision) |
-| 5 Security | Mostly done | S1–S8, rate limiting; legacy raw-token lookups removed and inbound V2 required (2026-11-11) | Re-hash copied bcrypt passwords on sign-in |
+| 5 Security | Done for the audit gaps | S1–S8, rate limiting; legacy raw-token lookups removed, inbound V2 required, copied bcrypt passwords re-hashed on sign-in (2026-11-11) | Watch the bcrypt count fall; optionally drop `bcryptjs` once it's 0 |
 | 6 Dashboard | Done | 6.1–6.9, local-day date filters | — |
 | 7 Integrations | Spec done | 7.1–7.4, HA v1.2.0 (V2 signing), inbound V2 required (2026-11-11) | — |
 | 8 Polish | Mostly done | 8.1–8.3, dashboard axe (0 violations) | Billing e2e |
@@ -5085,8 +5085,9 @@ Cloudflare email binding.
      each sign-in method on a Neon branch with copied data (step 5),
      real-provider OAuth (needs the Google/Discord setup in 4d), passkeys
      in a real browser, and the Android release (4f).
-   - [ ] Follow-up: re-hash a copied bcrypt password to Better Auth's
-         default after its first successful sign-in.
+   - [x] Follow-up: re-hash a copied bcrypt password to Better Auth's
+         default after its first successful sign-in. Done 2026-11-11, see
+         "Copied bcrypt passwords re-hashed on sign-in" at the end.
 5. **Copy rehearsal.** Script that copies all app data plus users
    (`auth.users`, `auth.identities`, MFA factors) into Better Auth's
    tables, keeping IDs. Run against a fresh Neon branch until clean.
@@ -5394,4 +5395,41 @@ raw tokens. So "clear the raw share/status tokens" needed no data change.
   `E2E_BETTER_AUTH_SECRET`, CI only) and the e2e re-run passed.
 - Compatibility: breaking only for an inbound caller that signs body-only.
   None exists in production today; HACS v1.2.0+ sends V2.
+
+------------------------------------------------------------------------
+
+## Copied bcrypt passwords re-hashed on sign-in (2026-11-11)
+
+**Status: Implemented and verified locally. No migration. Deploys on push.**
+
+Before (production, read-only): all 8 password accounts still had the bcrypt
+hash copied from Supabase (`$2a$`).
+
+- [x] `createBetterAuth`'s password check: when a bcrypt hash verifies,
+      `upgradeCopiedPasswordHash` stores Better Auth's default hash
+      (scrypt). The update matches the old hash
+      (`where "providerId" = 'credential' and password = $old`), so it
+      runs once and a password changed meanwhile wins. Best effort: a
+      failure is logged (no hash or password in the log) and the sign-in
+      still succeeds. A wrong password changes nothing.
+- Applies wherever Better Auth checks a password (sign-in, and the
+  password re-checks in settings), always after a correct password.
+- Cost: one extra scrypt hash and one UPDATE, once per account.
+- Evidence: `betterAuthConfig.db.test.ts` +2 (wrong password keeps the
+  bcrypt hash; right one replaces it with a non-bcrypt hash that verifies;
+  the next sign-in works and doesn't rewrite it; a changed hash isn't
+  overwritten; a database error returns false instead of throwing).
+  Mutation: upgrade call disabled → the re-hash test fails. `pnpm test`
+  459 files / 3573 tests; `pnpm test:db` 51 files / 400 tests (own
+  throwaway Postgres 18.6); typecheck 0 errors / 0 warnings; lint 55
+  warnings (baseline); build OK.
+- Not verified live: needs a real sign-in by a password user. After a few
+  weeks, re-run the count (read-only):
+  `select count(*) from auth_accounts where "providerId" = 'credential' and password ~ '^\$2[aby]\$';`
+  Accounts nobody signs in to keep bcrypt, which still works; `bcryptjs`
+  can only go once that count is 0 (or those users reset their password).
+- Note for local db tests: another local project's Postgres may already
+  use port 55432. The harness only creates and drops its own
+  `probeharbor_test_*` database, and the migrations create no roles, so a
+  run against it left nothing behind (checked), but use a free port.
 
