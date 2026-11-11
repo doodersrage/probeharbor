@@ -157,12 +157,13 @@ describe("getInviteByToken", () => {
     expect((await inviteTokenLookupKeys("some-new-token"))[0]).toMatch(/^[0-9a-f]{64}$/);
   });
 
-  it("still matches pre-hash 48-hex links raw, but never a stored hash", async () => {
+  it("never looks a token up raw (pre-hash links have expired), nor a stored hash", async () => {
     const { inviteTokenLookupKeys } = await import("./householdInvites");
-    const legacy = "ab".repeat(24);
-    const keys = await inviteTokenLookupKeys(legacy);
-    expect(keys).toHaveLength(2);
-    expect(keys[1]).toBe(legacy);
+    const token = "ab".repeat(24);
+    const keys = await inviteTokenLookupKeys(token);
+    expect(keys).toHaveLength(1);
+    expect(keys[0]).toMatch(/^[0-9a-f]{64}$/);
+    expect(keys).not.toContain(token);
     const storedHash = keys[0];
     expect(await inviteTokenLookupKeys(storedHash)).not.toContain(storedHash);
   });

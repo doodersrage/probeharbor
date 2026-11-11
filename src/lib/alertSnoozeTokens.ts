@@ -22,19 +22,12 @@ async function sha256Hex(value: string): Promise<string> {
 
 /**
  * Snooze links carry a random token; the database stores only its SHA-256
- * hash, so a database read can't be turned into working snooze links.
- *
- * Links sent before 2026-10-28 stored the raw 32-hex token. Those still match
- * until they expire (7 days). Only that exact legacy shape is looked up raw,
- * so a stored 64-hex hash pasted in as a token matches nothing.
- * After 2026-11-05 the legacy branch can be removed.
+ * hash, so a database read can't be turned into working snooze links, and a
+ * stored hash pasted in as a token matches nothing. (Links from before
+ * 2026-10-28 stored the raw token; all of them expired by 2026-11-04.)
  */
-const LEGACY_RAW_TOKEN = /^[0-9a-f]{32}$/;
-
 export async function snoozeTokenLookupKeys(token: string): Promise<string[]> {
-  const keys = [await sha256Hex(token)];
-  if (LEGACY_RAW_TOKEN.test(token)) keys.push(token);
-  return keys;
+  return [await sha256Hex(token)];
 }
 
 type SnoozeTokenRow = {

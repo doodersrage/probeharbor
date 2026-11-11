@@ -86,10 +86,10 @@ describe("createSnoozeToken", () => {
 });
 
 describe("snoozeTokenLookupKeys", () => {
-  it("looks up a link token by its hash, plus raw for pre-hash 32-hex links", async () => {
+  it("looks up a link token by its hash only, never raw", async () => {
     const { snoozeTokenLookupKeys, sha256Hex } = await import("./alertSnoozeTokens");
-    const legacy = "0123456789abcdef0123456789abcdef";
-    expect(await snoozeTokenLookupKeys(legacy)).toEqual([await sha256Hex(legacy), legacy]);
+    const token = "0123456789abcdef0123456789abcdef";
+    expect(await snoozeTokenLookupKeys(token)).toEqual([await sha256Hex(token)]);
   });
 
   it("does not let a stored hash be used as a token", async () => {

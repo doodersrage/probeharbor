@@ -52,19 +52,12 @@ async function sha256Hex(value: string): Promise<string> {
 /**
  * Invite links carry a random token; the database stores only its SHA-256
  * hash, so the link is shown once (email + the inviter's page) and "Resend"
- * issues a new one.
- *
- * Invites created before 2026-10-28 stored the raw 48-hex token. Those still
- * match until they expire (7 days). Only that exact legacy shape is looked up
- * raw, so a stored 64-hex hash used as a token matches nothing.
- * After 2026-11-05 the legacy branch can be removed.
+ * issues a new one. A stored hash used as a token matches nothing. (Invites
+ * from before 2026-10-28 stored the raw token; all of them expired by
+ * 2026-11-04.)
  */
-const LEGACY_RAW_TOKEN = /^[0-9a-f]{48}$/;
-
 export async function inviteTokenLookupKeys(token: string): Promise<string[]> {
-  const keys = [await sha256Hex(token)];
-  if (LEGACY_RAW_TOKEN.test(token)) keys.push(token);
-  return keys;
+  return [await sha256Hex(token)];
 }
 
 /** Pending-invite fields safe to render; never includes the token. */
