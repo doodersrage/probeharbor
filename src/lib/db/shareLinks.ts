@@ -88,23 +88,14 @@ export type ResolvedShare = { id: string; household_id: string; scope: string; l
 /** Not past its expiry (no expiry = no limit). The caller checks again. */
 const SHARE_UNEXPIRED = "(expires_at is null or expires_at >= now())";
 
-/**
- * By hash; a pre-hash raw token is only tried when `legacyRaw` is given.
- * Only an unexpired link. Throws on failure.
- */
-export async function resolveShareToken(tokenHash: string, legacyRaw: string | null): Promise<ResolvedShare | null> {
+/** By hash only. Only an unexpired link. Throws on failure. */
+export async function resolveShareToken(tokenHash: string): Promise<ResolvedShare | null> {
   const [byHash] = await query<ResolvedShare>(
     `select id, household_id, scope, label, expires_at from public.share_links
      where token_hash = $1 and ${SHARE_UNEXPIRED}`,
     [tokenHash],
   );
-  if (byHash || !legacyRaw) return byHash ?? null;
-  const [byRaw] = await query<ResolvedShare>(
-    `select id, household_id, scope, label, expires_at from public.share_links
-     where token = $1 and token_hash is null and ${SHARE_UNEXPIRED}`,
-    [legacyRaw],
-  );
-  return byRaw ?? null;
+  return byHash ?? null;
 }
 
 // ---- chart image shares -----------------------------------------------------

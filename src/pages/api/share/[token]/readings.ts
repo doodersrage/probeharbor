@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import { resolveShareToken } from "../../../../lib/shareLinksStore";
-import { LEGACY_RAW_SHARE_TOKEN, sha256Hex } from "../../../../lib/shareLinkTokens";
+import { sha256Hex } from "../../../../lib/shareLinkTokens";
 import { checkEdgeRateLimit } from "../../../../lib/edgeRateLimit";
 import { fetchLatestSensorValues } from "../../../../lib/sensorReadings";
 import { listHouseholdDevices } from "../../../../lib/devices";
@@ -15,12 +15,7 @@ import { apiLocale } from "../../../../i18n/messages/app/apiMore/common";
 import { apiMorePublicFormsMessages } from "../../../../i18n/messages/app/apiMore/publicForms";
 
 async function resolveShare(token: string) {
-  // Rows the previous code created after the migration but before this
-  // deploy have no hash yet. Only the old 48-hex shape is tried raw.
-  const data = await resolveShareToken(
-    await sha256Hex(token),
-    LEGACY_RAW_SHARE_TOKEN.test(token) ? token : null,
-  );
+  const data = await resolveShareToken(await sha256Hex(token));
   if (!data) return null;
   if (data.expires_at && Date.parse(data.expires_at) < Date.now()) return null;
   return data;

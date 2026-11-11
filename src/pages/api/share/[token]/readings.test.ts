@@ -223,20 +223,20 @@ describe("GET /api/share/[token]/readings", () => {
 
       expect(response.status).toBe(200);
       expect(mockResolveShareToken).toHaveBeenCalledTimes(1);
-      expect(mockResolveShareToken).toHaveBeenCalledWith(await hash("some-token"), null);
+      expect(mockResolveShareToken).toHaveBeenCalledWith(await hash("some-token"));
     });
 
-    it("also asks for a raw match only for the old 48-hex shape", async () => {
+    it("never asks for a raw match, even for the old 48-hex shape", async () => {
       const legacy = "ab".repeat(24);
       const { GET } = await import("./readings");
 
       const response = await GET(makeContext({ token: legacy }));
 
       expect(response.status).toBe(200);
-      expect(mockResolveShareToken).toHaveBeenCalledWith(await hash(legacy), legacy);
+      expect(mockResolveShareToken).toHaveBeenCalledWith(await hash(legacy));
     });
 
-    it("returns 404 without a raw lookup for other shapes (e.g. a stored hash)", async () => {
+    it("returns 404 for a token whose hash matches nothing (e.g. a stored hash)", async () => {
       mockResolveShareToken.mockResolvedValue(null);
       const stored = "cd".repeat(32);
       const { GET } = await import("./readings");
@@ -244,7 +244,7 @@ describe("GET /api/share/[token]/readings", () => {
       const response = await GET(makeContext({ token: stored }));
 
       expect(response.status).toBe(404);
-      expect(mockResolveShareToken).toHaveBeenCalledWith(await hash(stored), null);
+      expect(mockResolveShareToken).toHaveBeenCalledWith(await hash(stored));
     });
   });
 

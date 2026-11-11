@@ -17,10 +17,9 @@ async function sha256Hex(value: string): Promise<string> {
 /**
  * Status-page links carry a random token; only its SHA-256 hash is stored
  * (`token_hash`, migration 20261028140000), so a new link is shown once and
- * "Regenerate" replaces it. Pages created earlier still have their raw
- * `token` and keep showing it until a later cleanup clears it.
+ * "Regenerate" replaces it. Pages are looked up by hash only (as of
+ * 2026-11-11 no row holds a raw token).
  */
-const LEGACY_RAW_TOKEN = /^[0-9a-f]{36}$/;
 
 export type StatusPageToken = {
   id: string;
@@ -70,9 +69,7 @@ export async function revokeStatusPageToken(
 export async function resolveStatusPageToken(
   token: string,
 ): Promise<{ householdId: string } | null> {
-  // Pages created before hashing have no token_hash; only the old 36-hex
-  // shape is tried as a raw token.
-  return neonStatus.resolveStatusPage(await sha256Hex(token), LEGACY_RAW_TOKEN.test(token) ? token : null);
+  return neonStatus.resolveStatusPage(await sha256Hex(token));
 }
 
 export async function buildStatusPageSnapshot(householdId: string) {

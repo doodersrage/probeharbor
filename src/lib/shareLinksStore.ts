@@ -60,10 +60,7 @@ export async function insertShareLink(row: {
 
 export type ResolvedShare = neonShare.ResolvedShare;
 
-/**
- * The link for a public token: by hash, or (for links made before hashing)
- * by the raw token when `legacyRaw` is given. Null on no match or error.
- */
-export async function resolveShareToken(tokenHash: string, legacyRaw: string | null): Promise<ResolvedShare | null> {
-  return neonShare.resolveShareToken(tokenHash, legacyRaw).catch(() => null);
+/** The link for a public token, by its hash. Null on no match or error. */
+export async function resolveShareToken(tokenHash: string): Promise<ResolvedShare | null> {
+  return neonShare.resolveShareToken(tokenHash).catch(() => null);
 }

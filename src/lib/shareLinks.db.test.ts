@@ -44,21 +44,19 @@ describe("share links (Neon)", () => {
     const a = await owner("a@example.com");
     const row = await link(a.home, a.id, "share-token-aaaa");
     expect(row.token).toBeNull();
-    await expect(resolveShareToken(await sha256Hex("share-token-aaaa"), null)).resolves.toMatchObject({
+    await expect(resolveShareToken(await sha256Hex("share-token-aaaa"))).resolves.toMatchObject({
       household_id: a.home,
       scope: "live",
     });
-    await expect(resolveShareToken(await sha256Hex("wrong"), null)).resolves.toBeNull();
+    await expect(resolveShareToken(await sha256Hex("wrong"))).resolves.toBeNull();
   });
 
-  it("a pre-hash link only resolves by raw token when asked, and not once hashed", async () => {
+  it("a row holding only a raw token (no hash) is never matched", async () => {
     const a = await owner("a@example.com");
     const raw = "a".repeat(48);
     await sql("insert into public.share_links (token, household_id, scope) values ($1, $2, 'live')", [raw, a.home]);
-    await expect(resolveShareToken(await sha256Hex(raw), null)).resolves.toBeNull();
-    await expect(resolveShareToken(await sha256Hex(raw), raw)).resolves.toMatchObject({ household_id: a.home });
-    await sql("update public.share_links set token_hash = 'x' where token = $1", [raw]);
-    await expect(resolveShareToken(await sha256Hex(raw), raw)).resolves.toBeNull();
+    await expect(resolveShareToken(await sha256Hex(raw))).resolves.toBeNull();
+    await expect(resolveShareToken(raw)).resolves.toBeNull();
   });
 
   it("another household can't find, regenerate, revoke or list the link", async () => {
@@ -70,34 +68,25 @@ describe("share links (Neon)", () => {
     expect((await replaceShareLinkToken(b.home, row.id, await storedShareTokenFields("hijack-token-cccc"))).error).toBeTruthy();
     await deleteShareLink(b.home, row.id);
     expect((await listShareLinks(b.home)).links).toEqual([]);
-    await expect(resolveShareToken(await sha256Hex("share-token-bbbb"), null)).resolves.toMatchObject({ household_id: a.home });
+    await expect(resolveShareToken(await sha256Hex("share-token-bbbb"))).resolves.toMatchObject({ household_id: a.home });
 
     // The owner can regenerate: the old token stops working.
     expect((await replaceShareLinkToken(a.home, row.id, await storedShareTokenFields("share-token-dddd"))).error).toBeNull();
-    await expect(resolveShareToken(await sha256Hex("share-token-bbbb"), null)).resolves.toBeNull();
-    await expect(resolveShareToken(await sha256Hex("share-token-dddd"), null)).resolves.toMatchObject({ household_id: a.home });
+    await expect(resolveShareToken(await sha256Hex("share-token-bbbb"))).resolves.toBeNull();
+    await expect(resolveShareToken(await sha256Hex("share-token-dddd"))).resolves.toMatchObject({ household_id: a.home });
     await deleteShareLink(a.home, row.id);
-    await expect(resolveShareToken(await sha256Hex("share-token-dddd"), null)).resolves.toBeNull();
+    await expect(resolveShareToken(await sha256Hex("share-token-dddd"))).resolves.toBeNull();
   });
 
-  it("an expired link isn't returned by the lookup itself (hash or legacy raw); no expiry means no limit", async () => {
+  it("an expired link isn't returned by the lookup itself; no expiry means no limit", async () => {
     const a = await owner("a@example.com");
     const row = await link(a.home, a.id, "share-token-gggg");
     const hash = await sha256Hex("share-token-gggg");
-    await expect(resolveShareToken(hash, null)).resolves.toMatchObject({ household_id: a.home, expires_at: null });
+    await expect(resolveShareToken(hash)).resolves.toMatchObject({ household_id: a.home, expires_at: null });
     await sql("update public.share_links set expires_at = now() + interval '1 day' where id = $1", [row.id]);
-    await expect(resolveShareToken(hash, null)).resolves.toMatchObject({ household_id: a.home });
+    await expect(resolveShareToken(hash)).resolves.toMatchObject({ household_id: a.home });
     await sql("update public.share_links set expires_at = now() - interval '1 minute' where id = $1", [row.id]);
-    await expect(resolveShareToken(hash, null)).resolves.toBeNull();
-
-    const raw = "b".repeat(48);
-    await sql("insert into public.share_links (token, household_id, scope, expires_at) values ($1, $2, 'live', now() + interval '1 day')", [
-      raw,
-      a.home,
-    ]);
-    await expect(resolveShareToken(await sha256Hex(raw), raw)).resolves.toMatchObject({ household_id: a.home });
-    await sql("update public.share_links set expires_at = now() - interval '1 minute' where token = $1", [raw]);
-    await expect(resolveShareToken(await sha256Hex(raw), raw)).resolves.toBeNull();
+    await expect(resolveShareToken(hash)).resolves.toBeNull();
   });
 
   it("counts live links per household", async () => {

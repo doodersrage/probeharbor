@@ -2,12 +2,9 @@
  * Share-link tokens (`/share/<token>`, `/embed/<token>`,
  * `/api/share/<token>/readings`). Only a SHA-256 hash and the last 4
  * characters are stored (migration 20261028150000), so a new link is shown
- * once and "Regenerate" replaces it. Links created earlier still have their
- * raw `token` until a later cleanup clears it.
+ * once and "Regenerate" replaces it. Links are looked up by hash only (as of
+ * 2026-11-11 no row holds a raw token).
  */
-
-/** Old links are 48 hex characters; only that shape is ever matched raw. */
-export const LEGACY_RAW_SHARE_TOKEN = /^[0-9a-f]{48}$/;
 
 export function randomShareToken(): string {
   const bytes = crypto.getRandomValues(new Uint8Array(24));

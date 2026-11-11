@@ -124,13 +124,10 @@ describe("status notifier state (Neon)", () => {
 });
 
 describe("status links from before hashing (Neon)", () => {
-  it("an old 36-character link still opens its page until revoked; other shapes don't fall back", async () => {
+  it("a row holding only a raw token (no hash) no longer opens a page", async () => {
     const a = await home("a@example.com");
     const raw = "0123456789abcdef0123456789abcdef0123";
     await sql("insert into public.status_page_tokens (household_id, token, token_hash) values ($1, $2, null)", [a, raw]);
-    await expect(resolveStatusPageToken(raw)).resolves.toEqual({ householdId: a });
-    await expect(resolveStatusPageToken(raw.toUpperCase())).resolves.toBeNull();
-    await sql("update public.status_page_tokens set revoked_at = now() where token = $1", [raw]);
     await expect(resolveStatusPageToken(raw)).resolves.toBeNull();
   });
 });

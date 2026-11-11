@@ -60,21 +60,14 @@ export async function revokeStatusPage(householdId: string, id: string): Promise
   }
 }
 
-/** Active page by hash, or (pre-hash rows) by raw token when `legacyRaw` is given. */
-export async function resolveStatusPage(tokenHash: string, legacyRaw: string | null): Promise<{ householdId: string } | null> {
+/** Active (not revoked) page by token hash. */
+export async function resolveStatusPage(tokenHash: string): Promise<{ householdId: string } | null> {
   try {
     const [byHash] = await query<{ household_id: string }>(
       "select household_id from public.status_page_tokens where token_hash = $1 and revoked_at is null",
       [tokenHash],
     );
-    if (byHash) return { householdId: byHash.household_id };
-    if (!legacyRaw) return null;
-    const [byRaw] = await query<{ household_id: string }>(
-      `select household_id from public.status_page_tokens
-       where token = $1 and token_hash is null and revoked_at is null`,
-      [legacyRaw],
-    );
-    return byRaw ? { householdId: byRaw.household_id } : null;
+    return byHash ? { householdId: byHash.household_id } : null;
   } catch {
     return null;
   }

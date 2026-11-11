@@ -125,25 +125,25 @@ describe("resolveStatusPageToken", () => {
     const { resolveStatusPageToken } = await import("./statusPage");
 
     expect(await resolveStatusPageToken("tok")).toEqual({ householdId: "house-1" });
-    expect(db.resolveStatusPage).toHaveBeenCalledWith(await sha256("tok"), null);
+    expect(db.resolveStatusPage).toHaveBeenCalledWith(await sha256("tok"));
   });
 
-  it("also offers the raw token only for the old 36-hex shape", async () => {
+  it("never offers a raw lookup, even for the old 36-hex shape", async () => {
     const legacy = "ab".repeat(18);
-    db.resolveStatusPage.mockResolvedValue({ householdId: "house-2" });
+    db.resolveStatusPage.mockResolvedValue(null);
     const { resolveStatusPageToken } = await import("./statusPage");
 
-    expect(await resolveStatusPageToken(legacy)).toEqual({ householdId: "house-2" });
-    expect(db.resolveStatusPage).toHaveBeenCalledWith(await sha256(legacy), legacy);
+    expect(await resolveStatusPageToken(legacy)).toBeNull();
+    expect(db.resolveStatusPage).toHaveBeenCalledWith(await sha256(legacy));
   });
 
-  it("does not offer a raw lookup for a 64-hex value (e.g. a stored hash)", async () => {
+  it("looks a 64-hex value (e.g. a stored hash) up only by its own hash", async () => {
     db.resolveStatusPage.mockResolvedValue(null);
     const { resolveStatusPageToken } = await import("./statusPage");
     const hashLike = "cd".repeat(32);
 
     expect(await resolveStatusPageToken(hashLike)).toBeNull();
-    expect(db.resolveStatusPage).toHaveBeenCalledWith(await sha256(hashLike), null);
+    expect(db.resolveStatusPage).toHaveBeenCalledWith(await sha256(hashLike));
   });
 });
 
