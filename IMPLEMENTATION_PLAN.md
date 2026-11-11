@@ -525,7 +525,7 @@ At the end of each milestone, provide:
 7.  **Next recommendation:** one next milestone or tightly scoped task,
     justified by the remaining evidence.
 
-## Current status (updated 2026-10-28)
+## Current status (updated 2026-11-11)
 
 The detailed increment log follows the Milestone 0 audit below. Summary:
 
@@ -535,13 +535,15 @@ The detailed increment log follows the Milestone 0 audit below. Summary:
 | 2 Alerts | Done for the audit gaps | 2.1–2.7, D1–D8, D7b | Property name in alert titles (deferred) |
 | 3 Setup / hardware | Code done; hardware tests open | 3.1–3.3 | Physical tests in `firmware/probeharbor-probe/HARDWARE-TESTS.md` |
 | 4 Operations | Partial | 4.1–4.4 | Restore rehearsal; migration check in CI (decision) |
-| 5 Security | Mostly done | S1–S8, rate limiting | Clear old raw share/status tokens (~2026-11-04); remove legacy snooze/invite branches (after 2026-11-05); require webhook V2 (after the usage query) |
+| 5 Security | Mostly done | S1–S8, rate limiting; legacy raw-token lookups removed and inbound V2 required (2026-11-11) | Re-hash copied bcrypt passwords on sign-in |
 | 6 Dashboard | Done | 6.1–6.9, local-day date filters | — |
-| 7 Integrations | Spec done | 7.1–7.4, HA v1.2.0 (V2 signing) | Require V2 on inbound (~2026-11-11) |
+| 7 Integrations | Spec done | 7.1–7.4, HA v1.2.0 (V2 signing), inbound V2 required (2026-11-11) | — |
 | 8 Polish | Mostly done | 8.1–8.3, dashboard axe (0 violations) | Billing e2e |
 
-**Operational must-do:** production is on the Supabase Free plan (no
-backups). Run `pnpm db:backup` weekly, or move to a paid plan.
+**Operational must-do:** production has been on Neon (+ Better Auth) since
+2026-11-07; Supabase is paused. Keep running `pnpm db:backup` (reads
+`DATABASE_URL_UNPOOLED`) weekly until Neon's own restore window for this
+plan has been checked and written down here.
 
 ## Start here
 
@@ -5337,3 +5339,45 @@ secrets are pushed only at step 6.
   schema, empty). Harmless; can be turned off in the Neon console.
 - Better Auth on Workers: confirm the Postgres connection approach works
   under Workers' request limits in step 3's spike.
+
+------------------------------------------------------------------------
+
+## Dated security follow-ups closed (2026-11-11)
+
+**Status: Implemented and verified locally. No migration. Deploys on push.**
+
+Production checks first (read-only transaction on Neon, 2026-11-11):
+`inbound_webhooks`: 1 row, created 2026-11-04, never used
+(`last_signature_format` null). `share_links`: 1 row, no raw token, none
+without a hash. `status_page_tokens`: 0 rows. `status_subscriptions`: no
+raw tokens. So "clear the raw share/status tokens" needed no data change.
+
+- [x] Snooze (S4) and invite (S5) links are looked up by hash only. Every
+      pre-hash link expired by 2026-11-04 (the hashing shipped 2026-10-28,
+      links last 7 days).
+- [x] Share links (S7) and status pages (S6) are looked up by hash only:
+      `resolveShareToken(hash)`, `resolveStatusPage(hash)`. The raw
+      fallback only matched rows with no hash, and production has none.
+      The `token` columns stay (nullable, always null now); dropping them is
+      a separate migration if wanted.
+- [x] Inbound webhooks (S3 step 2) accept only `X-ProbeHarbor-Timestamp` +
+      `X-ProbeHarbor-Signature-V2`. A body-only signature (any of the four
+      old headers) gets `401` "Signature V2 required: …" so a caller on
+      HACS v1.1.0 learns what to change. `verifyInboundSignature` (body-only)
+      is removed. Docs: `webhooks.md`, `automation.md`, `/docs/api`,
+      OpenAPI (V2 headers now `required: true`, body-only header dropped);
+      the Share page's signing-secret label names the V2 header (5 locales).
+      Outbound webhooks are unchanged (still send both formats).
+- Evidence: `pnpm test` 459 files / 3573 tests passed; `pnpm test:db`
+  (throwaway local Postgres 18.6) 51 files / 398 tests passed; typecheck
+  0 errors / 0 warnings; lint 55 warnings (baseline, none new); build OK;
+  `openapiIngestContract.test.ts` passed. Tests changed: body-only
+  signatures in every legacy header → `v2_required`; route returns the V2
+  message and does nothing; raw-token rows never match share/status
+  lookups; snooze/invite lookups are hash-only.
+- Not verified: a live inbound call (the one production webhook has never
+  been used); production behaviour after deploy beyond the post-deploy
+  checks below.
+- Compatibility: breaking only for an inbound caller that signs body-only.
+  None exists in production today; HACS v1.2.0+ sends V2.
+
