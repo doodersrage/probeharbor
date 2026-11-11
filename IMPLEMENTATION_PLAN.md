@@ -5400,7 +5400,10 @@ raw tokens. So "clear the raw share/status tokens" needed no data change.
 
 ## Copied bcrypt passwords re-hashed on sign-in (2026-11-11)
 
-**Status: Implemented and verified locally. No migration. Deploys on push.**
+**Status: Deployed 2026-11-11 (Deploy run 43110749443, `8632692`). No
+migration.** After deploy: `pnpm ops:smoke` passed, 47 readings in 5 min,
+0 `server_errors` in 15 min; bcrypt accounts still 8 (no password sign-in
+yet).
 
 Before (production, read-only): all 8 password accounts still had the bcrypt
 hash copied from Supabase (`$2a$`).
