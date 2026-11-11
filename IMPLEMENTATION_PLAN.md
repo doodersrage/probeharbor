@@ -5344,7 +5344,8 @@ secrets are pushed only at step 6.
 
 ## Dated security follow-ups closed (2026-11-11)
 
-**Status: Implemented and verified locally. No migration. Deploys on push.**
+**Status: Deployed 2026-11-11 22:08 UTC (Deploy run 43108785758, `8afd746`).
+No migration.**
 
 Production checks first (read-only transaction on Neon, 2026-11-11):
 `inbound_webhooks`: 1 row, created 2026-11-04, never used
@@ -5375,9 +5376,22 @@ raw tokens. So "clear the raw share/status tokens" needed no data change.
   signatures in every legacy header → `v2_required`; route returns the V2
   message and does nothing; raw-token rows never match share/status
   lookups; snooze/invite lookups are hash-only.
-- Not verified: a live inbound call (the one production webhook has never
-  been used); production behaviour after deploy beyond the post-deploy
-  checks below.
+- After deploy (production): `pnpm ops:smoke` passed (783 sitemap URLs);
+  unknown 48-hex share token → 404; unknown 36-hex status page → 302 to
+  `/`; unknown 48-hex invite → "invite invalid" page; snooze GET with an
+  unknown token → confirm page (no side effect); inbound body-only call
+  with an unknown token → 401 `Invalid webhook`. 84 readings in the 10 min
+  after the deploy, 0 `server_errors` in the 30 min around it.
+- Not verified live: the `Signature V2 required` 401 needs a real webhook
+  token (stored hashed; the one production webhook has never been used).
+  Covered by unit tests.
+- CI incident on the way: the first CI run (`beb9f61`) stayed queued
+  during a GitHub Actions incident; `8afd746` (empty commit) re-triggered
+  it. Its e2e job then failed: the Neon dev branch's `neondb_owner`
+  password had changed, so `E2E_DATABASE_URL` (GitHub) and
+  `DATABASE_URL_DEV_UNPOOLED` (local) were stale. Owner reset it; the
+  secrets were re-synced with `pnpm setup:e2e-github-secrets` (new random
+  `E2E_BETTER_AUTH_SECRET`, CI only) and the e2e re-run passed.
 - Compatibility: breaking only for an inbound caller that signs body-only.
   None exists in production today; HACS v1.2.0+ sends V2.
 
