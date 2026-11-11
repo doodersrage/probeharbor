@@ -33,6 +33,29 @@ export async function verifyStoredPassword({ hash, password }: { hash: string; p
   return verifyPassword({ hash, password });
 }
 
+type Queryable = { query: (text: string, params?: unknown[]) => Promise<unknown> };
+
+/**
+ * After a copied bcrypt password verifies, store Better Auth's default hash
+ * instead, so the bcrypt path is only ever used once per account. The update
+ * matches the old hash, so it runs once and a concurrent password change
+ * wins. Best effort: a failure is logged and never blocks the sign-in.
+ */
+export async function upgradeCopiedPasswordHash(database: unknown, oldHash: string, password: string): Promise<boolean> {
+  try {
+    const newHash = await hashPassword(password);
+    const result = (await (database as Queryable).query(
+      `update public.auth_accounts set password = $1, "updatedAt" = now()
+        where "providerId" = 'credential' and password = $2`,
+      [newHash, oldHash],
+    )) as { rowCount?: number | null };
+    return (result.rowCount ?? 0) > 0;
+  } catch (error) {
+    console.error("auth: could not upgrade a copied password hash", error instanceof Error ? error.message : String(error));
+    return false;
+  }
+}
+
 export type AuthEmail = { email: string; url: string; token: string };
 
 export type BetterAuthDeps = {
@@ -83,7 +106,14 @@ export function createBetterAuth(deps: BetterAuthDeps) {
       enabled: true,
       requireEmailVerification: true,
       minPasswordLength: MIN_PASSWORD_LENGTH,
-      password: { hash: hashPassword, verify: verifyStoredPassword },
+      password: {
+        hash: hashPassword,
+        verify: async (input) => {
+          const ok = await verifyStoredPassword(input);
+          if (ok && BCRYPT_PREFIX.test(input.hash)) await upgradeCopiedPasswordHash(deps.database, input.hash, input.password);
+          return ok;
+        },
+      },
       sendResetPassword: async ({ user, url, token }) => deps.sendResetPassword({ email: user.email, url, token }),
       revokeSessionsOnPasswordReset: true,
     },

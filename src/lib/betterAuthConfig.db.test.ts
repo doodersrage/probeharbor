@@ -2,7 +2,7 @@ import bcrypt from "bcryptjs";
 import pg from "pg";
 import { afterAll, describe, expect, it } from "vitest";
 import { testDatabaseUrl, useTestDatabase } from "../test/db";
-import { type AuthEmail, createBetterAuth, verifyStoredPassword } from "./betterAuthConfig";
+import { type AuthEmail, createBetterAuth, upgradeCopiedPasswordHash, verifyStoredPassword } from "./betterAuthConfig";
 
 const db = useTestDatabase();
 const sql = async <T = Record<string, unknown>>(text: string, params: unknown[] = []) =>
@@ -58,6 +58,53 @@ describe("Better Auth on the baseline tables", () => {
     const session = await auth.api.getSession({ headers: new Headers({ authorization: `Bearer ${ok.token}` }) });
     expect(session?.user.id).toBe(u!.id);
     await expect(auth.api.getSession({ headers: new Headers({ authorization: "Bearer not-a-token" }) })).resolves.toBeNull();
+  });
+
+  it("a copied bcrypt password is re-hashed on its first good sign-in, not on a wrong one, and still works after", async () => {
+    const [u] = await sql<{ id: string }>(
+      `insert into public.auth_users (name, email, "emailVerified") values ('Old', 'rehash@example.com', true) returning id`,
+    );
+    const copied = bcrypt.hashSync("supabase-era-password", 4);
+    await sql(
+      `insert into public.auth_accounts ("accountId", "providerId", "userId", password, "updatedAt")
+       values ($1::text, 'credential', $1::uuid, $2, now())`,
+      [u!.id, copied],
+    );
+    const stored = async () =>
+      (await sql<{ password: string }>(`select password from public.auth_accounts where "userId" = $1`, [u!.id]))[0]!.password;
+
+    await expect(auth.api.signInEmail({ body: { email: "rehash@example.com", password: "wrong-password" } })).rejects.toThrow();
+    expect(await stored()).toBe(copied);
+
+    await auth.api.signInEmail({ body: { email: "rehash@example.com", password: "supabase-era-password" } });
+    const upgraded = await stored();
+    expect(upgraded).not.toBe(copied);
+    expect(upgraded).not.toMatch(/^\$2[aby]\$/);
+    await expect(verifyStoredPassword({ hash: upgraded, password: "supabase-era-password" })).resolves.toBe(true);
+
+    const again = await auth.api.signInEmail({ body: { email: "rehash@example.com", password: "supabase-era-password" } });
+    expect(again.user.id).toBe(u!.id);
+    expect(await stored()).toBe(upgraded);
+    await expect(auth.api.signInEmail({ body: { email: "rehash@example.com", password: "wrong-password" } })).rejects.toThrow();
+  });
+});
+
+describe("upgradeCopiedPasswordHash", () => {
+  it("only replaces the exact old hash (a changed password wins) and never throws", async () => {
+    const [u] = await sql<{ id: string }>(
+      `insert into public.auth_users (name, email, "emailVerified") values ('Race', 'race@example.com', true) returning id`,
+    );
+    await sql(
+      `insert into public.auth_accounts ("accountId", "providerId", "userId", password, "updatedAt")
+       values ($1::text, 'credential', $1::uuid, 'changed-meanwhile', now())`,
+      [u!.id],
+    );
+    await expect(upgradeCopiedPasswordHash(pool, bcrypt.hashSync("x-password", 4), "x-password")).resolves.toBe(false);
+    expect((await sql<{ password: string }>(`select password from public.auth_accounts where "userId" = $1`, [u!.id]))[0]!.password).toBe(
+      "changed-meanwhile",
+    );
+    const broken = { query: async () => { throw new Error("db down"); } };
+    await expect(upgradeCopiedPasswordHash(broken, "$2a$04$x", "x-password")).resolves.toBe(false);
   });
 });
 
