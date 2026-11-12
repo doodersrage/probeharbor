@@ -10,7 +10,9 @@ Copy/paste into a new topic on [community.home-assistant.io](https://community.h
 
 ---
 
-Hi all — we run [ProbeHarbor](https://probeharbor.dev), a hosted dashboard for ESP/Arduino probes in garages, workshops, attics, and crawlspaces — freeze and leak alerts, history, and household sharing. We shipped an **official HACS custom integration** and wanted to share it here.
+Hi all. I built [ProbeHarbor](https://probeharbor.dev), a hosted dashboard for ESP/Arduino probes in garages, workshops, attics, and crawlspaces: freeze and leak alerts, history, and household sharing. The integration is now in the **default HACS store**, so I wanted to share it here.
+
+The reason it exists: a Home Assistant automation can't warn you about the power cut or internet outage that takes Home Assistant offline, and that's often the same event that lets a garage or crawlspace get cold. ProbeHarbor sends the alert from off-site, including when your readings stop arriving.
 
 ### What it does
 
@@ -21,9 +23,8 @@ Hi all — we run [ProbeHarbor](https://probeharbor.dev), a hosted dashboard for
 
 ### Install
 
-1. HACS → Integrations → Custom repositories → add  
-   `https://github.com/doodersrage/probeharbor-home-assistant`
-2. Install **ProbeHarbor**, restart HA
+1. Open HACS, search for **ProbeHarbor**, and select **Download**
+2. Restart Home Assistant
 3. Create a **family live** share link at [probeharbor.dev](https://probeharbor.dev) (Free includes one; Pro adds broader scopes)
 4. Settings → Devices & services → Add integration → ProbeHarbor → paste token
 
@@ -60,8 +61,10 @@ automation:
 - Integrations hub: https://probeharbor.dev/integrations
 - OpenAPI: https://probeharbor.dev/openapi.yaml
 
-Happy to answer setup questions in this thread. If you try it, we'd love feedback on entity naming and poll interval defaults.
+The free plan covers two devices with email, push, and chat alerts; SMS is on Pro. The server code is public on GitHub (source-available, FSL-1.1) and the firmware and sketches are MIT.
+
+Happy to answer setup questions in this thread. If you try it, I'd love feedback on entity naming and poll interval defaults.
 
 ---
 
-*Note for maintainers:* default HACS store submission is in progress ([#11756](https://github.com/hacs/default/pull/11756)); until merged, use the custom repository URL above.
+*Note for maintainers:* the integration was merged into the default HACS store on 2026-11-09 ([hacs/default#11756](https://github.com/hacs/default/pull/11756)). The integration's domain is still `thermaltrace`, so services are `thermaltrace.*`.
