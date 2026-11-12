@@ -100,8 +100,10 @@ the run. Run `pnpm db:pending` first to list what isn't applied yet.
 
 ## Rollback and recovery
 
-Restores have **not been rehearsed** for this project. Treat this section as
-the procedure to follow and test, not as proof that it works.
+**Rehearsed:** restoring a `pnpm db:backup` dump (2026-11-11, see below).
+**Not rehearsed:** a Worker rollback, a Neon point-in-time restore, and R2.
+Treat those parts as the procedure to follow and test, not as proof that they
+work.
 
 ### Roll back the code (Workers)
 
@@ -158,6 +160,24 @@ pg_restore --no-owner --no-privileges --dbname "<connection string of the new pr
 ```
 
 Restoring loses everything written after the dump.
+
+**Rehearsal (2026-11-11), into a throwaway local Postgres 18.6:** a fresh
+`pnpm db:backup` (3.5 MB) restored with the command above in under a second,
+0 errors. All 57 public tables matched production row for row, except
+`sensor_readings`, where the only difference was the readings posted after the
+dump started (every production row up to the dump's newest id was present).
+11 users and 8 password logins came back. To check a restore the same way,
+count rows per table on both sides:
+
+```sql
+-- run on the restored database, then run its output on both databases
+select string_agg(format('select %L t, count(*) n from public.%I', table_name, table_name), ' union all ')
+  from information_schema.tables where table_schema = 'public' and table_type = 'BASE TABLE';
+```
+
+Run it on production inside `begin read only; … rollback;`. Not covered by
+the rehearsal: restoring into Neon itself and pointing the Worker at it
+(`DATABASE_URL`, `pnpm secrets:push`), and signing in against a restored copy.
 
 ### Other state
 

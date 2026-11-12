@@ -534,7 +534,7 @@ The detailed increment log follows the Milestone 0 audit below. Summary:
 | 1 Sensor data | Done for the audit gaps | 1.1–1.8, D5, D6 (cleanup sizing: all zero) | — |
 | 2 Alerts | Done for the audit gaps | 2.1–2.7, D1–D8, D7b | Property name in alert titles (deferred) |
 | 3 Setup / hardware | Code done; hardware tests open | 3.1–3.3 | Physical tests in `firmware/probeharbor-probe/HARDWARE-TESTS.md` |
-| 4 Operations | Partial | 4.1–4.4 | Restore rehearsal; migration check in CI (decision) |
+| 4 Operations | Partial | 4.1–4.4; dump restore rehearsed (2026-11-11) | Neon restore window (owner: console); restore into Neon + Worker switch not rehearsed; migration check in CI (decision) |
 | 5 Security | Done for the audit gaps | S1–S8, rate limiting; legacy raw-token lookups removed, inbound V2 required, copied bcrypt passwords re-hashed on sign-in (2026-11-11) | Watch the bcrypt count fall; optionally drop `bcryptjs` once it's 0 |
 | 6 Dashboard | Done | 6.1–6.9, local-day date filters | — |
 | 7 Integrations | Spec done | 7.1–7.4, HA v1.2.0 (V2 signing), inbound V2 required (2026-11-11) | — |
@@ -5498,4 +5498,27 @@ Problems (verified in code and on the board):
 - Open: a long S3 run (one Wi-Fi drop and lost replies seen); `TT sensor problem` on a C3; the same
   bounded read for SHT31/BME280 (their libraries return NaN rather than hang, so
   they already fail cleanly).
+
+------------------------------------------------------------------------
+
+## Milestone 4: database restore rehearsed (2026-11-11)
+
+**Status: Done for the dump path. No code change.**
+
+- [x] Fresh `pnpm db:backup`: `backups/probeharbor-20261112T012657Z.dump`
+      (3.5 MB, pg_dump 18.6, read-only on production).
+- [x] Restored with `pg_restore --no-owner --no-privileges` into an empty
+      database on a throwaway local Postgres 18.6 (scratch dir, own port;
+      removed afterwards): 0.5 s, 0 errors.
+- [x] Row counts, all 57 public tables, restored vs production (production
+      read inside `begin read only`): 56 identical; `sensor_readings` 202 380
+      vs 202 387. Production rows with `id <=` the restore's max id: 202 380,
+      exactly; the rest were recorded from 01:27:11 UTC, after the dump began
+      (01:26:57). Restored: 11 users, 8 password logins.
+- [x] `docs/guide/deploy.md`: what's rehearsed and what isn't, plus the
+      per-table count check.
+- Not rehearsed: restoring into Neon and switching the Worker to it; a
+  signed-in session against a restored copy; a Worker code rollback; Neon's
+  own point-in-time restore (its window on this plan still needs reading
+  from the Neon console, owner).
 
