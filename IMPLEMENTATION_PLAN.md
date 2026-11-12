@@ -534,7 +534,7 @@ The detailed increment log follows the Milestone 0 audit below. Summary:
 | 1 Sensor data | Done for the audit gaps | 1.1–1.8, D5, D6 (cleanup sizing: all zero) | — |
 | 2 Alerts | Done for the audit gaps | 2.1–2.7, D1–D8, D7b | Property name in alert titles (deferred) |
 | 3 Setup / hardware | Code done; hardware tests open | 3.1–3.3 | Physical tests in `firmware/probeharbor-probe/HARDWARE-TESTS.md` |
-| 4 Operations | Partial | 4.1–4.4; dump restore rehearsed; warn-only migration check in CI (2026-11-11) | Owner: apply 0005 to production + create `ci_migration_check` + secret; Neon restore window (console); restore into Neon + Worker switch not rehearsed |
+| 4 Operations | Partial | 4.1–4.4; dump restore rehearsed; warn-only migration check in CI, live (2026-11-11) | Neon restore window and storage limit (owner: console); restore into Neon + Worker switch not rehearsed |
 | 5 Security | Done for the audit gaps | S1–S8, rate limiting; legacy raw-token lookups removed, inbound V2 required, copied bcrypt passwords re-hashed on sign-in (2026-11-11) | Watch the bcrypt count fall; optionally drop `bcryptjs` once it's 0 |
 | 6 Dashboard | Done | 6.1–6.9, local-day date filters | — |
 | 7 Integrations | Spec done | 7.1–7.4, HA v1.2.0 (V2 signing), inbound V2 required (2026-11-11) | — |
@@ -5629,10 +5629,15 @@ would gain a lookup. Revisit when someone has a second property.
       against `MIGRATION_CHECK_DATABASE_URL`; a warning annotation when
       something is pending, never a failure; a notice and skip while the
       secret is missing. Setup in `docs/guide/deploy.md`.
-- [ ] **Owner, production:** `pnpm db:backup`, `pnpm db:migrate` (applies
-      0005), then create `ci_migration_check` and the GitHub secret
-      (commands in `docs/guide/deploy.md`). Until then CI only prints the
-      notice and `db:pending` lists 0005.
+- [x] **Production (done by the owner, 2026-11-11):** 0005 applied
+      (`schema_migrations` lists 0001–0005); `ci_migration_check` created
+      with a generated password, never printed (an earlier password pasted
+      into the chat was not used); secret `MIGRATION_CHECK_DATABASE_URL`
+      set. Checked read-only: the role can log in, isn't superuser, can't
+      create roles or databases or bypass RLS, and is a member of
+      `migration_reader` only. CI's `migrations` job, re-run with the
+      secret: "Target: MIGRATION_CHECK_DATABASE_URL (ep-misty-forest…)",
+      "Applied: 5. Pending: none."
 - [x] Flaky test fixed: `freezeSubscriptions.db.test.ts` "tampered sid"
       replaced the id's last character with "0", which is a no-op for ids
       ending in "0" (1 in 16), so the real link was used and the test
