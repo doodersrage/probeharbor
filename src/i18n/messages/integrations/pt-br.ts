@@ -17,7 +17,7 @@ const ptBr: IntegrationsMessages = {
     lede: "Alertas hospedados de congelamento e de alagamento/vazamento, além de histórico, para sondas ESP/Arduino, com Home Assistant, Matter / SmartThings, Node-RED, Influx, métricas Prometheus, contexto do termostato e automações por webhook opcionais. Os guias abaixo ficam no probeharbor.dev; as explicações detalhadas de payload/Grafana ficam no site de documentação para desenvolvedores e vêm sinalizadas quando levam você para fora.",
     dashboardShare: "Dashboard → Share",
     startFree: "Comece grátis",
-    hacsStatus: "Integração personalizada oficial do HACS: envio para a loja padrão em andamento.",
+    hacsStatus: "Integração oficial do HACS, disponível na loja padrão do HACS.",
     devDocsHtml: 'Procurando esquemas OpenAPI ou detalhes do JSON do dashboard do Grafana? A <a class="text-link" href="{devDocsUrl}" target="_blank" rel="noreferrer">documentação para desenvolvedores (GitHub Pages)</a> abre em uma nova aba. Veja também: <a class="text-link" href="/integrations/influx">Influx / Telegraf</a>, <a class="text-link" href="/integrations/node-red">Node-RED</a>, <a class="text-link" href="/integrations/automation">IFTTT / n8n</a>.',
     learnMore: "Saiba mais",
     more: "Mais",
@@ -40,7 +40,7 @@ const ptBr: IntegrationsMessages = {
     hacsRepo: "Repositório HACS no GitHub",
     vsDiyMqtt: "vs MQTT caseiro",
     statusHtml:
-      'Instale hoje como repositório personalizado do HACS. O <a class="text-link" href="https://github.com/hacs/default/pull/11756" target="_blank" rel="noreferrer">PR #11756 da loja padrão</a> está em análise. <a class="text-link" href="https://github.com/doodersrage/probeharbor/blob/main/docs/community/home-assistant-forum-post.md" target="_blank" rel="noreferrer">Rascunho do post no fórum</a>',
+      'Disponível na loja padrão do HACS: procure <strong>ProbeHarbor</strong> no HACS. <a class="text-link" href="https://github.com/doodersrage/probeharbor/blob/main/docs/community/home-assistant-forum-post.md" target="_blank" rel="noreferrer">Rascunho do post no fórum</a>',
     addsTitle: "O que ele acrescenta a uma instalação do Home Assistant",
     addsItemsHtml: [
       "<strong>Um alerta quando a casa fica em silêncio.</strong> Se as leituras pararem por um número definido de horas, o ProbeHarbor avisa você. Silêncio no inverno geralmente significa que a energia ou a internet caiu, e o aquecimento pode ter caído junto.",
@@ -51,9 +51,9 @@ const ptBr: IntegrationsMessages = {
     addsFootHtml:
       'Dois sentidos, use um ou os dois: envie entidades do Home Assistant para o ProbeHarbor e tenha alertas externos (o YAML é gerado com a sua chave em <a class="text-link" href="/dashboard/devices">Dashboard → Devices</a> quando você escolhe Home Assistant) e traga as sondas do ProbeHarbor para o Home Assistant como entidades com a integração HACS abaixo. Contexto: <a class="text-link" href="/answers/home-assistant-freeze-alert">como configurar um alerta de congelamento no Home Assistant</a> e <a class="text-link" href="/answers/wifi-freeze-alarm-power-outage">o que acontece numa queda de energia</a>.',
     installTitle: "Instalar pelo HACS",
-    installStep1Html: "No Home Assistant: <strong>HACS → Integrations → ⋮ → Custom repositories</strong>",
-    installStep2Html: 'Adicione o repositório <code class="text-xs break-all">{repo}</code> (categoria: Integration)',
-    installStep3Html: "Instale o <strong>ProbeHarbor</strong> e reinicie o Home Assistant",
+    installStep1Html: "No Home Assistant, abra o <strong>HACS</strong> e procure <strong>ProbeHarbor</strong>",
+    installStep2Html: 'Abra a integração e escolha <strong>Download</strong> (repositório: <code class="text-xs break-all">{repo}</code>)',
+    installStep3Html: "Reinicie o Home Assistant",
     installStep4Html: "<strong>Settings → Devices &amp; services → Add integration → ProbeHarbor</strong>",
     installStep5Html:
       'Crie um link de compartilhamento <strong>ao vivo</strong> em <a class="text-link" href="/dashboard/share/links">Dashboard → Share</a> (o Free inclui um link ao vivo para a família; o Pro acrescenta histórico/métricas e links que nunca expiram) e cole o token de <code>/share/YOUR_TOKEN</code>',

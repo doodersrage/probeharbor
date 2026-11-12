@@ -17,7 +17,7 @@ const fr: IntegrationsMessages = {
     lede: "Alertes gel et inondation/fuite hébergées, plus l’historique, pour vos sondes ESP/Arduino, avec en option Home Assistant, Matter / SmartThings, Node-RED, Influx, métriques Prometheus, contexte du thermostat et automatisations par webhook. Les guides ci-dessous restent sur probeharbor.dev ; les fiches détaillées sur les payloads et Grafana se trouvent sur le site de documentation développeur et sont signalées quand elles y renvoient.",
     dashboardShare: "Dashboard → Share",
     startFree: "Commencer gratuitement",
-    hacsStatus: "Intégration personnalisée HACS officielle : soumission au store par défaut en cours.",
+    hacsStatus: "Intégration HACS officielle, disponible dans le store par défaut de HACS.",
     devDocsHtml: 'Vous cherchez les schémas OpenAPI ou le détail du JSON des tableaux de bord Grafana ? La <a class="text-link" href="{devDocsUrl}" target="_blank" rel="noreferrer">documentation développeur (GitHub Pages)</a> s’ouvre dans un nouvel onglet. Voir aussi : <a class="text-link" href="/integrations/influx">Influx / Telegraf</a>, <a class="text-link" href="/integrations/node-red">Node-RED</a>, <a class="text-link" href="/integrations/automation">IFTTT / n8n</a>.',
     learnMore: "En savoir plus",
     more: "Plus",
@@ -40,7 +40,7 @@ const fr: IntegrationsMessages = {
     hacsRepo: "Dépôt HACS sur GitHub",
     vsDiyMqtt: "vs MQTT maison",
     statusHtml:
-      'Installez-le dès aujourd’hui comme dépôt personnalisé HACS. La <a class="text-link" href="https://github.com/hacs/default/pull/11756" target="_blank" rel="noreferrer">PR #11756 pour le store par défaut</a> est en cours de relecture. <a class="text-link" href="https://github.com/doodersrage/probeharbor/blob/main/docs/community/home-assistant-forum-post.md" target="_blank" rel="noreferrer">Brouillon de message pour le forum</a>',
+      'Disponible dans le store par défaut de HACS : cherchez <strong>ProbeHarbor</strong> dans HACS. <a class="text-link" href="https://github.com/doodersrage/probeharbor/blob/main/docs/community/home-assistant-forum-post.md" target="_blank" rel="noreferrer">Brouillon de message pour le forum</a>',
     addsTitle: "Ce que cela apporte à une installation Home Assistant",
     addsItemsHtml: [
       "<strong>Une alerte quand la maison devient silencieuse.</strong> Si les relevés s’arrêtent pendant un nombre d’heures défini, ProbeHarbor vous prévient. En hiver, le silence signifie généralement une coupure de courant ou d’internet, et le chauffage peut être coupé lui aussi.",
@@ -51,9 +51,9 @@ const fr: IntegrationsMessages = {
     addsFootHtml:
       'Deux sens, utilisez l’un, l’autre ou les deux : envoyez des entités de Home Assistant vers ProbeHarbor pour les alertes externes (le YAML est généré avec votre clé dans <a class="text-link" href="/dashboard/devices">Dashboard → Devices</a> quand vous choisissez Home Assistant), et récupérez les sondes ProbeHarbor dans Home Assistant sous forme d’entités grâce à l’intégration HACS ci-dessous. Pour aller plus loin : <a class="text-link" href="/answers/home-assistant-freeze-alert">configurer une alerte gel dans Home Assistant</a> et <a class="text-link" href="/answers/wifi-freeze-alarm-power-outage">ce qui se passe lors d’une coupure de courant</a>.',
     installTitle: "Installation via HACS",
-    installStep1Html: "Dans Home Assistant : <strong>HACS → Integrations → ⋮ → Custom repositories</strong>",
-    installStep2Html: 'Ajoutez le dépôt <code class="text-xs break-all">{repo}</code> (catégorie : Integration)',
-    installStep3Html: "Installez <strong>ProbeHarbor</strong> et redémarrez Home Assistant",
+    installStep1Html: "Dans Home Assistant, ouvrez <strong>HACS</strong> et cherchez <strong>ProbeHarbor</strong>",
+    installStep2Html: 'Ouvrez-la et choisissez <strong>Download</strong> (dépôt : <code class="text-xs break-all">{repo}</code>)',
+    installStep3Html: "Redémarrez Home Assistant",
     installStep4Html: "<strong>Settings → Devices &amp; services → Add integration → ProbeHarbor</strong>",
     installStep5Html:
       'Créez un lien de partage <strong>live</strong> dans <a class="text-link" href="/dashboard/share/links">Dashboard → Share</a> (Free inclut un lien live familial ; Pro ajoute l’historique/les métriques et les liens sans expiration) et collez le jeton issu de <code>/share/YOUR_TOKEN</code>',

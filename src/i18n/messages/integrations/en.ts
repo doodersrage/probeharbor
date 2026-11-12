@@ -21,7 +21,7 @@ const en = {
     lede: "Hosted freeze and flood/leak alerts plus history for ESP/Arduino probes, with optional Home Assistant, Matter / SmartThings, Node-RED, Influx, Prometheus metrics, thermostat context, and webhook automations. Guides below stay on probeharbor.dev; deep payload/Grafana write-ups live on the developer docs site and are labeled when they leave.",
     dashboardShare: "Dashboard → Share",
     startFree: "Start free",
-    hacsStatus: "Official HACS custom integration: default store submission in progress.",
+    hacsStatus: "Official HACS integration, listed in the default HACS store.",
     devDocsHtml: 'Looking for OpenAPI schemas or Grafana dashboard JSON details? <a class="text-link" href="{devDocsUrl}" target="_blank" rel="noreferrer">Developer docs (GitHub Pages)</a> open in a new tab. Also: <a class="text-link" href="/integrations/influx">Influx / Telegraf</a>, <a class="text-link" href="/integrations/node-red">Node-RED</a>, <a class="text-link" href="/integrations/automation">IFTTT / n8n</a>.',
     learnMore: "Learn more",
     more: "More",
@@ -44,7 +44,7 @@ const en = {
     hacsRepo: "HACS repo on GitHub",
     vsDiyMqtt: "vs DIY MQTT",
     statusHtml:
-      'Install as a HACS custom repository today. <a class="text-link" href="https://github.com/hacs/default/pull/11756" target="_blank" rel="noreferrer">default store PR #11756</a> is in review. <a class="text-link" href="https://github.com/doodersrage/probeharbor/blob/main/docs/community/home-assistant-forum-post.md" target="_blank" rel="noreferrer">Forum post draft</a>',
+      'Listed in the default HACS store: search for <strong>ProbeHarbor</strong> in HACS. <a class="text-link" href="https://github.com/doodersrage/probeharbor/blob/main/docs/community/home-assistant-forum-post.md" target="_blank" rel="noreferrer">Forum post draft</a>',
     addsTitle: "What it adds to a Home Assistant setup",
     addsItemsHtml: [
       "<strong>An alert when the house goes quiet.</strong> If readings stop for a set number of hours, ProbeHarbor tells you. Silence in winter usually means the power or internet is out, and the heat may be out with it.",
@@ -55,9 +55,9 @@ const en = {
     addsFootHtml:
       'Two directions, use either or both: push entities from Home Assistant to ProbeHarbor for off-site alerts (YAML is generated with your key under <a class="text-link" href="/dashboard/devices">Dashboard → Devices</a> when you pick Home Assistant), and pull ProbeHarbor probes into Home Assistant as entities with the HACS integration below. Background: <a class="text-link" href="/answers/home-assistant-freeze-alert">setting up a freeze alert in Home Assistant</a> and <a class="text-link" href="/answers/wifi-freeze-alarm-power-outage">what happens in a power outage</a>.',
     installTitle: "Install via HACS",
-    installStep1Html: "In Home Assistant: <strong>HACS → Integrations → ⋮ → Custom repositories</strong>",
-    installStep2Html: 'Add repository <code class="text-xs break-all">{repo}</code> (category: Integration)',
-    installStep3Html: "Install <strong>ProbeHarbor</strong> and restart Home Assistant",
+    installStep1Html: "In Home Assistant, open <strong>HACS</strong> and search for <strong>ProbeHarbor</strong>",
+    installStep2Html: 'Open it and select <strong>Download</strong> (repository: <code class="text-xs break-all">{repo}</code>)',
+    installStep3Html: "Restart Home Assistant",
     installStep4Html: "<strong>Settings → Devices &amp; services → Add integration → ProbeHarbor</strong>",
     installStep5Html:
       'Create a <strong>live</strong> share link under <a class="text-link" href="/dashboard/share/links">Dashboard → Share</a> (Free includes one family live link; Pro adds history/metrics and never-expire) and paste the token from <code>/share/YOUR_TOKEN</code>',

@@ -188,8 +188,8 @@ export const HACS_BADGE_CUSTOM =
 export const HACS_BADGE_DEFAULT =
   "https://img.shields.io/badge/HACS-Default-41BDF5.svg?style=for-the-badge";
 
-/** Use Default badge after hacs/default PR merges; Custom until then. */
-export const HACS_BADGE_URL = HACS_BADGE_CUSTOM;
+/** hacs/default#11756 merged 2026-11-09: the integration is in the default HACS store. */
+export const HACS_BADGE_URL = HACS_BADGE_DEFAULT;
 
 export const HACS_DOCS_URL = HA_DEV_DOCS_INTEGRATIONS;
 

@@ -8,8 +8,8 @@ ProbeHarbor ships an **official [HACS custom integration](https://github.com/doo
 
 ## HACS (recommended)
 
-1. HACS → Integrations → Custom repositories → add `https://github.com/doodersrage/probeharbor-home-assistant`
-2. Install **ProbeHarbor** and restart Home Assistant
+1. In Home Assistant, open HACS and search for **ProbeHarbor** (it is in the default HACS store; repository: `https://github.com/doodersrage/probeharbor-home-assistant`)
+2. Select **Download**, then restart Home Assistant
 3. Create a **family live** share link under Dashboard → Share (Free includes one; Pro adds history/metrics scopes)
 4. Add integration → paste share token from `/share/YOUR_TOKEN`
 

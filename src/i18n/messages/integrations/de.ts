@@ -17,7 +17,7 @@ const de: IntegrationsMessages = {
     lede: "Gehostete Frost- und Wasser-/Leckalarme samt Verlauf für ESP-/Arduino-Sensoren, optional mit Home Assistant, Matter / SmartThings, Node-RED, Influx, Prometheus-Metriken, Thermostatdaten und Webhook-Automationen. Die Anleitungen unten bleiben auf probeharbor.dev; ausführliche Payload- und Grafana-Beschreibungen liegen auf der Entwicklerdoku-Seite und sind gekennzeichnet, wenn sie dorthin führen.",
     dashboardShare: "Dashboard → Share",
     startFree: "Kostenlos starten",
-    hacsStatus: "Offizielle HACS-Custom-Integration: Aufnahme in den Standard-Store läuft.",
+    hacsStatus: "Offizielle HACS-Integration, im Standard-Store von HACS gelistet.",
     devDocsHtml: 'Suchst du OpenAPI-Schemas oder Details zum Grafana-Dashboard-JSON? Die <a class="text-link" href="{devDocsUrl}" target="_blank" rel="noreferrer">Entwicklerdoku (GitHub Pages)</a> öffnet sich in einem neuen Tab. Außerdem: <a class="text-link" href="/integrations/influx">Influx / Telegraf</a>, <a class="text-link" href="/integrations/node-red">Node-RED</a>, <a class="text-link" href="/integrations/automation">IFTTT / n8n</a>.',
     learnMore: "Mehr erfahren",
     more: "Mehr",
@@ -40,7 +40,7 @@ const de: IntegrationsMessages = {
     hacsRepo: "HACS-Repo auf GitHub",
     vsDiyMqtt: "vs. DIY-MQTT",
     statusHtml:
-      'Schon heute als HACS-Custom-Repository installierbar. Der <a class="text-link" href="https://github.com/hacs/default/pull/11756" target="_blank" rel="noreferrer">Standard-Store-PR #11756</a> ist in Prüfung. <a class="text-link" href="https://github.com/doodersrage/probeharbor/blob/main/docs/community/home-assistant-forum-post.md" target="_blank" rel="noreferrer">Entwurf des Forenbeitrags</a>',
+      'Im Standard-Store von HACS gelistet: Suche in HACS nach <strong>ProbeHarbor</strong>. <a class="text-link" href="https://github.com/doodersrage/probeharbor/blob/main/docs/community/home-assistant-forum-post.md" target="_blank" rel="noreferrer">Entwurf des Forenbeitrags</a>',
     addsTitle: "Was es deinem Home-Assistant-Setup hinzufügt",
     addsItemsHtml: [
       "<strong>Ein Alarm, wenn es im Haus still wird.</strong> Bleiben Messwerte eine festgelegte Anzahl Stunden aus, sagt ProbeHarbor dir Bescheid. Stille im Winter heißt meist, dass Strom oder Internet weg sind – und die Heizung womöglich auch.",
@@ -51,9 +51,9 @@ const de: IntegrationsMessages = {
     addsFootHtml:
       'Zwei Richtungen, einzeln oder kombiniert: Sende Entitäten aus Home Assistant an ProbeHarbor für externe Alarme (das YAML wird mit deinem Schlüssel unter <a class="text-link" href="/dashboard/devices">Dashboard → Devices</a> erzeugt, wenn du Home Assistant auswählst), und hol ProbeHarbor-Sensoren mit der HACS-Integration unten als Entitäten in Home Assistant. Hintergrund: <a class="text-link" href="/answers/home-assistant-freeze-alert">Frostalarm in Home Assistant einrichten</a> und <a class="text-link" href="/answers/wifi-freeze-alarm-power-outage">was bei einem Stromausfall passiert</a>.',
     installTitle: "Installation über HACS",
-    installStep1Html: "In Home Assistant: <strong>HACS → Integrations → ⋮ → Custom repositories</strong>",
-    installStep2Html: 'Repository <code class="text-xs break-all">{repo}</code> hinzufügen (Kategorie: Integration)',
-    installStep3Html: "<strong>ProbeHarbor</strong> installieren und Home Assistant neu starten",
+    installStep1Html: "Öffne in Home Assistant <strong>HACS</strong> und suche nach <strong>ProbeHarbor</strong>",
+    installStep2Html: 'Öffne den Eintrag und wähle <strong>Download</strong> (Repository: <code class="text-xs break-all">{repo}</code>)',
+    installStep3Html: "Home Assistant neu starten",
     installStep4Html: "<strong>Settings → Devices &amp; services → Add integration → ProbeHarbor</strong>",
     installStep5Html:
       'Erstelle unter <a class="text-link" href="/dashboard/share/links">Dashboard → Share</a> einen <strong>Live</strong>-Freigabelink (Free enthält einen Familien-Livelink; Pro ergänzt Verlauf/Metriken und Links ohne Ablaufdatum) und füge das Token aus <code>/share/YOUR_TOKEN</code> ein',

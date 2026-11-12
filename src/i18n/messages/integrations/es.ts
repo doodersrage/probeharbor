@@ -17,7 +17,7 @@ const es: IntegrationsMessages = {
     lede: "Alertas alojadas de heladas e inundaciones/fugas, más historial, para sondas ESP/Arduino, con Home Assistant, Matter / SmartThings, Node-RED, Influx, métricas de Prometheus, contexto del termostato y automatizaciones por webhook opcionales. Las guías de abajo están en probeharbor.dev; los análisis detallados de payloads y Grafana viven en el sitio de documentación para desarrolladores y se indican cuando salen del sitio.",
     dashboardShare: "Dashboard → Share",
     startFree: "Empieza gratis",
-    hacsStatus: "Integración personalizada oficial de HACS: solicitud para la tienda predeterminada en curso.",
+    hacsStatus: "Integración oficial de HACS, disponible en la tienda predeterminada de HACS.",
     devDocsHtml: '¿Buscas esquemas OpenAPI o detalles del JSON del dashboard de Grafana? La <a class="text-link" href="{devDocsUrl}" target="_blank" rel="noreferrer">documentación para desarrolladores (GitHub Pages)</a> se abre en una pestaña nueva. Además: <a class="text-link" href="/integrations/influx">Influx / Telegraf</a>, <a class="text-link" href="/integrations/node-red">Node-RED</a>, <a class="text-link" href="/integrations/automation">IFTTT / n8n</a>.',
     learnMore: "Más información",
     more: "Más",
@@ -40,7 +40,7 @@ const es: IntegrationsMessages = {
     hacsRepo: "Repositorio HACS en GitHub",
     vsDiyMqtt: "vs MQTT casero",
     statusHtml:
-      'Instálala hoy como repositorio personalizado de HACS. El <a class="text-link" href="https://github.com/hacs/default/pull/11756" target="_blank" rel="noreferrer">PR #11756 para la tienda predeterminada</a> está en revisión. <a class="text-link" href="https://github.com/doodersrage/probeharbor/blob/main/docs/community/home-assistant-forum-post.md" target="_blank" rel="noreferrer">Borrador del post para el foro</a>',
+      'Disponible en la tienda predeterminada de HACS: busca <strong>ProbeHarbor</strong> en HACS. <a class="text-link" href="https://github.com/doodersrage/probeharbor/blob/main/docs/community/home-assistant-forum-post.md" target="_blank" rel="noreferrer">Borrador del post para el foro</a>',
     addsTitle: "Lo que aporta a una instalación de Home Assistant",
     addsItemsHtml: [
       "<strong>Una alerta cuando la casa se queda en silencio.</strong> Si las lecturas se detienen durante un número de horas que tú defines, ProbeHarbor te avisa. En invierno, el silencio suele significar que se cortó la luz o internet, y puede que la calefacción también.",
@@ -51,9 +51,9 @@ const es: IntegrationsMessages = {
     addsFootHtml:
       'Dos direcciones, usa una o ambas: envía entidades de Home Assistant a ProbeHarbor para recibir alertas externas (el YAML se genera con tu clave en <a class="text-link" href="/dashboard/devices">Dashboard → Devices</a> cuando eliges Home Assistant), e importa las sondas de ProbeHarbor en Home Assistant como entidades con la integración HACS de abajo. Contexto: <a class="text-link" href="/answers/home-assistant-freeze-alert">cómo configurar una alerta de heladas en Home Assistant</a> y <a class="text-link" href="/answers/wifi-freeze-alarm-power-outage">qué pasa durante un corte de luz</a>.',
     installTitle: "Instalar con HACS",
-    installStep1Html: "En Home Assistant: <strong>HACS → Integrations → ⋮ → Custom repositories</strong>",
-    installStep2Html: 'Añade el repositorio <code class="text-xs break-all">{repo}</code> (categoría: Integration)',
-    installStep3Html: "Instala <strong>ProbeHarbor</strong> y reinicia Home Assistant",
+    installStep1Html: "En Home Assistant, abre <strong>HACS</strong> y busca <strong>ProbeHarbor</strong>",
+    installStep2Html: 'Ábrela y elige <strong>Download</strong> (repositorio: <code class="text-xs break-all">{repo}</code>)',
+    installStep3Html: "Reinicia Home Assistant",
     installStep4Html: "<strong>Settings → Devices &amp; services → Add integration → ProbeHarbor</strong>",
     installStep5Html:
       'Crea un enlace para compartir <strong>en vivo</strong> en <a class="text-link" href="/dashboard/share/links">Dashboard → Share</a> (Free incluye un enlace familiar en vivo; Pro añade historial/métricas y enlaces sin caducidad) y pega el token de <code>/share/YOUR_TOKEN</code>',

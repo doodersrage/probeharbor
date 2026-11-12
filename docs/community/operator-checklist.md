@@ -34,8 +34,7 @@ Tasks only **you** can complete — everything else in the HACS/integration pass
 
 ## Waiting on HACS maintainers
 
-- [ ] **[hacs/default#11756](https://github.com/hacs/default/pull/11756)**: resubmitted 2026-10-09 as `doodersrage/probeharbor-home-assistant`, all checks green. On 2026-10-21 a reviewer (frenck) requested five fixes and moved it to draft. They're fixed in integration v1.3.0 (2026-11-06). Next: mark the PR ready and reply to the review, which the reviewer asked for. It replaces #10550 (filed 2026-09-01), which hacs-bot closed after the repo rename because its description still linked the old name. Don't push to the PR branch or comment unless a maintainer asks; any change makes the bot re-check the PR and can close it.
-- After merge: flip `HACS_BADGE_URL` in `src/lib/integrationsHub.ts` from Custom → Default badge
+- [x] **[hacs/default#11756](https://github.com/hacs/default/pull/11756)**: merged 2026-11-09; the integration is in the default HACS store. `HACS_BADGE_URL` now uses the Default badge.
 
 ## Growth (copy/paste ready)
 
