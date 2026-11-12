@@ -12,7 +12,7 @@ const ptBr: AboutMessages = {
   breadcrumbHome: "Início",
   breadcrumbAbout: "Sobre",
   kicker: "Sobre",
-  lede: "Guias open source sobre sondas, alertas de congelamento e alagamento, firmware e a stack por trás do ProbeHarbor. Prefere uma lista mais curta? Comece pela central de guias.",
+  lede: "Guias sobre sondas, alertas de congelamento e alagamento, firmware e a stack por trás do ProbeHarbor. Prefere uma lista mais curta? Comece pela central de guias.",
   startFree: "Comece grátis",
   guidesHub: "Central de guias",
   findTitle: "Encontre um guia",
@@ -23,7 +23,7 @@ const ptBr: AboutMessages = {
     lede: "Veja a temperatura e a umidade mudarem zona por zona conforme o sol, o ar externo e a ventilação variam, igualzinho ao feed JSON ao vivo.",
   },
   repos: {
-    title: "Repositórios open source",
+    title: "Repositórios de código",
     subtitleHtml:
       'Projetos que você pode inspecionar, fazer fork ou adaptar para a sua montagem. Integrações programáticas começam pela <a class="text-link" href="/docs/api">API HTTP</a> e pelo <a class="text-link" href="/openapi.yaml">openapi.yaml</a>.',
     firmware: "Sketch Arduino e firmware dos sensores",
@@ -45,7 +45,7 @@ const ptBr: AboutMessages = {
     {
       question: "O ProbeHarbor é open source?",
       answer:
-        "Sim: os repositórios da aplicação e do firmware estão linkados nesta central para você inspecionar, fazer fork ou adaptar a stack.",
+        "O firmware e os sketches de exemplo são open source (MIT). A aplicação tem código-fonte disponível sob a FSL-1.1: você pode ler, executar, hospedar e modificar, mas não oferecê-la como serviço concorrente; cada versão passa a ser Apache-2.0 após dois anos. Os repositórios estão linkados nesta central.",
     },
     {
       question: "Onde o ProbeHarbor roda?",

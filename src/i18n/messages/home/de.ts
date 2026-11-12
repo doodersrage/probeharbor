@@ -11,7 +11,7 @@ const de: HomeMessages = {
     "ProbeHarbor Live-Telemetrie: Sensorkurven mit Luftfeuchte, Taupunkt, Frostalarmen und Wassermeldern",
   breadcrumbHome: "Start",
   brandDefinition:
-    "ProbeHarbor überwacht Temperatur- und Lecksensoren in Garagen, Werkstätten, Dachböden, Kriechkellern und Hallen – mit Live-Diagrammen, Verlauf sowie Frost-, Leck- und Hitzealarmen. Open Source, mit kostenlosem Tarif.",
+    "ProbeHarbor überwacht Temperatur- und Lecksensoren in Garagen, Werkstätten, Dachböden, Kriechkellern und Hallen – mit Live-Diagrammen, Verlauf sowie Frost-, Leck- und Hitzealarmen. Quellcode einsehbar, mit kostenlosem Tarif.",
   hero: {
     promise: "Wisse Bescheid, bevor deine Rohre einfrieren oder deine Garage unter Wasser steht.",
     openDashboard: "Dashboard öffnen",
@@ -105,7 +105,7 @@ const de: HomeMessages = {
     hub: "Zur Anleitungsübersicht",
   },
   ossHtml:
-    'Open-Source-Dashboard und Beispiel-Sketches für Sensoren. <a class="text-link" href="https://github.com/doodersrage/probeharbor" target="_blank" rel="noreferrer">Quellcode auf GitHub ansehen</a>.',
+    'Dashboard mit einsehbarem Quellcode und MIT-lizenzierte Beispiel-Sketches für Sensoren. <a class="text-link" href="https://github.com/doodersrage/probeharbor" target="_blank" rel="noreferrer">Quellcode auf GitHub ansehen</a>.',
   faqLede:
     "Klare Antworten für alle, die Fühler und Nässekontakte verkabeln und Frost- oder Wasseralarme einrichten.",
 };

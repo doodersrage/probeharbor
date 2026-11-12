@@ -251,7 +251,7 @@ export default {
       "Você quer sondas em vários pontos (canos, lado da porta, porão) sem comprar um sensor de US$ 149 ou mais para cada um",
       "Você quer contatos de vazamento molhado/seco e alertas de congelamento na mesma conta",
       "Você já usa Home Assistant, ESPHome ou MQTT e quer que as leituras circulem nos dois sentidos",
-      "Você quer avisos de congelamento pela previsão, uma estimativa do tempo até congelar ou software de código aberto que você pode inspecionar",
+      "Você quer avisos de congelamento pela previsão, uma estimativa do tempo até congelar ou software cujo código-fonte você pode inspecionar",
     ],
     whenOther: [
       "Você quer um sensor pronto, sem solda, gravação de firmware ou configuração além do Wi‑Fi",
@@ -306,7 +306,7 @@ export default {
     seoTitle: "Alternativa à YoLink para alertas de cano congelado",
     headline: "ProbeHarbor vs sensores de temperatura YoLink",
     description:
-      "YoLink vs ProbeHarbor: um kit com hub de US$ 59,99, sensores a pilha prontos e SMS, ou sondas DIY no cano com software de código aberto.",
+      "YoLink vs ProbeHarbor: um kit com hub de US$ 59,99, sensores a pilha prontos e SMS, ou sondas DIY no cano com software de código-fonte disponível.",
     summary:
       "A YoLink é a escolha mais fácil, e muitas vezes mais barata, em sensores prontos: um hub e dois sensores a pilha custam US$ 59,99 e alertam por push, e-mail e SMS. O ProbeHarbor é para quem quer uma sonda presa ao cano, sem hub, com hardware próprio ou com as leituras num sistema aberto.",
     lede:
@@ -314,7 +314,7 @@ export default {
     whenProbeHarbor: [
       "Você quer uma sonda à prova d’água presa ao próprio cano em vez de um sensor de ambiente na parede",
       "Você já usa Home Assistant, ESPHome ou MQTT e quer mais um destino, não mais um hub",
-      "Você quer software de código aberto, uma API HTTP para enviar dados de qualquer placa e nenhum hardware do fabricante",
+      "Você quer software de código-fonte disponível, uma API HTTP para enviar dados de qualquer placa e nenhum hardware do fabricante",
       "Você quer avisos de congelamento pela previsão e uma estimativa do tempo até congelar, além dos alertas por limite",
     ],
     whenOther: [
@@ -353,7 +353,7 @@ export default {
       {
         question: "Por que escolher o ProbeHarbor em vez da YoLink?",
         answer:
-          "Pela posição da sonda e pela abertura: uma sonda à prova d’água no cano mais frio, várias sondas numa só placa, contatos de vazamento na mesma conta e software de código aberto que recebe leituras de qualquer dispositivo capaz de enviar uma requisição HTTPS.",
+          "Pela posição da sonda e pela abertura: uma sonda à prova d’água no cano mais frio, várias sondas numa só placa, contatos de vazamento na mesma conta e software de código-fonte disponível que recebe leituras de qualquer dispositivo capaz de enviar uma requisição HTTPS.",
       },
     ],
     sources: {

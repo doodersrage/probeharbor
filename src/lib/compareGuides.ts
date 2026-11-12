@@ -293,7 +293,7 @@ export const compareGuides: CompareGuide[] = [
       "You want probes in several spots (pipes, door side, crawlspace) without buying a $149+ sensor for each",
       "You want wet/dry leak contacts and freeze alerts on one account",
       "You already run Home Assistant, ESPHome, or MQTT and want readings to flow both ways",
-      "You want forecast freeze warnings, a time-to-freeze estimate, or open-source software you can inspect",
+      "You want forecast freeze warnings, a time-to-freeze estimate, or software whose source you can inspect",
     ],
     whenOther: [
       "You want a finished sensor with no soldering, flashing, or setup beyond Wi‑Fi",
@@ -350,7 +350,7 @@ export const compareGuides: CompareGuide[] = [
     seoTitle: "YoLink alternative for pipe freeze alerts",
     headline: "ProbeHarbor vs YoLink temperature sensors",
     description:
-      "YoLink vs ProbeHarbor for freeze alerts: a $59.99 hub kit with finished battery sensors and SMS, or DIY probes on the pipe with open-source software.",
+      "YoLink vs ProbeHarbor for freeze alerts: a $59.99 hub kit with finished battery sensors and SMS, or DIY probes on the pipe with source-available software.",
     competitor: "YoLink",
     summary:
       "YoLink is the easier and often cheaper choice for finished sensors: a hub and two battery sensors cost $59.99 and alert by push, email, and SMS. ProbeHarbor fits if you want a probe taped to the pipe, no hub, your own hardware, or readings in an open system.",
@@ -359,7 +359,7 @@ export const compareGuides: CompareGuide[] = [
     whenProbeHarbor: [
       "You want a waterproof probe taped to the pipe itself rather than a room sensor on the wall",
       "You already run Home Assistant, ESPHome, or MQTT and want one more destination, not another hub",
-      "You want open-source software, an HTTP API you can post to from any board, and no vendor hardware",
+      "You want source-available software, an HTTP API you can post to from any board, and no vendor hardware",
       "You want forecast freeze warnings and a time-to-freeze estimate alongside threshold alerts",
     ],
     whenOther: [
@@ -398,7 +398,7 @@ export const compareGuides: CompareGuide[] = [
       {
         question: "Why choose ProbeHarbor over YoLink?",
         answer:
-          "For the probe placement and the openness: a waterproof probe on the coldest pipe, several probes on one board, leak contacts on the same account, and open-source software that takes readings from any device that can send an HTTPS request.",
+          "For the probe placement and the openness: a waterproof probe on the coldest pipe, several probes on one board, leak contacts on the same account, and source-available software that takes readings from any device that can send an HTTPS request.",
       },
     ],
     sources: {

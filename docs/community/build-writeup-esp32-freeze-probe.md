@@ -27,7 +27,7 @@ Before posting:
 
 Pipes in an unheated garage or crawlspace freeze on long cold nights, usually when it is around 20°F or colder outside, and the first sign is often water on the floor after the thaw. This build puts a waterproof temperature probe directly on the pipe and sends an email when it gets close to freezing, so there is time to close a door, restart a heater, or open a faucet.
 
-The probe posts readings to ProbeHarbor, an open-source (MIT) dashboard I wrote for this. The free plan covers two devices with email alerts. The firmware is a plain HTTPS POST, so you can point it at your own server instead if you prefer.
+The probe posts readings to ProbeHarbor, a source-available dashboard I wrote for this (the probe firmware itself is MIT). The free plan covers two devices with email alerts. The firmware is a plain HTTPS POST, so you can point it at your own server instead if you prefer.
 
 ## Parts
 
@@ -102,4 +102,4 @@ The server stores the reading, compares it with your threshold, and estimates ho
 ## Source
 
 - Sketches for ESP32, Pico W, Teensy, STM32, and more: https://github.com/doodersrage/probeharbor/tree/main/sketches
-- Server and dashboard (MIT): https://github.com/doodersrage/probeharbor
+- Server and dashboard (FSL-1.1, source-available): https://github.com/doodersrage/probeharbor

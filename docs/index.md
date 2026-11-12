@@ -4,7 +4,7 @@ title: ProbeHarbor Docs
 hero:
   name: ProbeHarbor
   text: Developer documentation
-  tagline: Push ingest, HTTP API, sensor sketches, deploy notes, and integrations for the open-source environmental monitoring dashboard.
+  tagline: Push ingest, HTTP API, sensor sketches, deploy notes, and integrations for the source-available environmental monitoring dashboard.
   image:
     src: https://probeharbor.dev/og-dashboard.jpg
     alt: ProbeHarbor live telemetry graph with humidity and dew point

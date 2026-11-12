@@ -12,7 +12,7 @@ const de: AboutMessages = {
   breadcrumbHome: "Start",
   breadcrumbAbout: "Über uns",
   kicker: "Über uns",
-  lede: "Open-Source-Anleitungen zu Fühlern, Frost- und Wasseralarmen, Firmware und dem Stack hinter ProbeHarbor. Lieber eine kürzere Liste? Starte im Anleitungs-Hub.",
+  lede: "Anleitungen zu Fühlern, Frost- und Wasseralarmen, Firmware und dem Stack hinter ProbeHarbor. Lieber eine kürzere Liste? Starte im Anleitungs-Hub.",
   startFree: "Kostenlos starten",
   guidesHub: "Anleitungs-Hub",
   findTitle: "Anleitung finden",
@@ -23,7 +23,7 @@ const de: AboutMessages = {
     lede: "Sieh zu, wie sich Temperatur und Luftfeuchte Zone für Zone verändern, wenn Sonneneinstrahlung, Außenluft und Luftzug wechseln – genau wie im Live-JSON-Feed.",
   },
   repos: {
-    title: "Open-Source-Repositories",
+    title: "Quellcode-Repositories",
     subtitleHtml:
       'Projekte, die du dir ansehen, forken oder für deinen eigenen Aufbau anpassen kannst. Programmatische Integrationen beginnen mit der <a class="text-link" href="/docs/api">HTTP-API</a> und <a class="text-link" href="/openapi.yaml">openapi.yaml</a>.',
     firmware: "Arduino-Sketch und Sensor-Firmware",
@@ -45,7 +45,7 @@ const de: AboutMessages = {
     {
       question: "Ist ProbeHarbor Open Source?",
       answer:
-        "Ja: Die Repositories für Anwendung und Firmware sind von diesem Hub aus verlinkt, damit du den Stack ansehen, forken oder anpassen kannst.",
+        "Firmware und Beispiel-Sketches sind Open Source (MIT). Die Anwendung ist unter FSL-1.1 quelltextoffen: Du darfst sie lesen, betreiben, selbst hosten und ändern, aber nicht als konkurrierenden Dienst anbieten; jede Version wird nach zwei Jahren Apache-2.0. Die Repositories sind von diesem Hub aus verlinkt.",
     },
     {
       question: "Wo läuft ProbeHarbor?",

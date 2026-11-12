@@ -16,7 +16,7 @@ const en = {
   scenarios: "Scenarios",
   whyTitle: "Why this is on the main site",
   whyCopy:
-    "Open-source projects often hide launch blurbs in private notes. We publish ours so anyone. including you: can help spread the word without inventing messaging from scratch. If you find a post that matches a template here, that’s expected: the founder (and hopefully the community) is using the same kit.",
+    "Most projects hide launch blurbs in private notes. We publish ours so anyone. including you: can help spread the word without inventing messaging from scratch. If you find a post that matches a template here, that’s expected: the founder (and hopefully the community) is using the same kit.",
   whyNote:
     "Please don’t spam. Prefer communities where DIY probes, Home Assistant, or cold-weather home maintenance are on-topic, and edit the blurbs so they fit the thread.",
   redditTitle: "Reddit / forums",

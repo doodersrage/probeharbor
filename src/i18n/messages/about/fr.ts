@@ -12,7 +12,7 @@ const fr: AboutMessages = {
   breadcrumbHome: "Accueil",
   breadcrumbAbout: "À propos",
   kicker: "À propos",
-  lede: "Des guides open source sur les sondes, les alertes gel et inondation, le firmware et la pile technique de ProbeHarbor. Vous préférez une liste plus courte ? Commencez par le hub des guides.",
+  lede: "Des guides sur les sondes, les alertes gel et inondation, le firmware et la pile technique de ProbeHarbor. Vous préférez une liste plus courte ? Commencez par le hub des guides.",
   startFree: "Commencer gratuitement",
   guidesHub: "Hub des guides",
   findTitle: "Trouver un guide",
@@ -23,7 +23,7 @@ const fr: AboutMessages = {
     lede: "Observez la température et l’humidité évoluer zone par zone selon l’ensoleillement, l’air extérieur et la circulation d’air, comme dans le flux JSON en direct.",
   },
   repos: {
-    title: "Dépôts open source",
+    title: "Dépôts de code source",
     subtitleHtml:
       'Des projets à examiner, forker ou adapter à votre propre montage. Pour les intégrations programmatiques, commencez par l’<a class="text-link" href="/docs/api">API HTTP</a> et <a class="text-link" href="/openapi.yaml">openapi.yaml</a>.',
     firmware: "Sketch Arduino et firmware des capteurs",
@@ -45,7 +45,7 @@ const fr: AboutMessages = {
     {
       question: "ProbeHarbor est-il open source ?",
       answer:
-        "Oui : les dépôts de l’application et du firmware sont liés depuis ce hub, pour que vous puissiez examiner, forker ou adapter la pile.",
+        "Le firmware et les sketches d’exemple sont open source (MIT). L’application est à code source consultable sous FSL-1.1 : vous pouvez la lire, l’exécuter, l’héberger vous-même et la modifier, mais pas la proposer comme service concurrent ; chaque version passe sous Apache-2.0 au bout de deux ans. Les dépôts sont liés depuis ce hub.",
     },
     {
       question: "Où ProbeHarbor est-il hébergé ?",

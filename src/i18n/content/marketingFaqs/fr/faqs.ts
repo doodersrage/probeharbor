@@ -5,7 +5,7 @@ export default {
   home: [
     {
       question: "Qu’est-ce que ProbeHarbor ?",
-      answer: `ProbeHarbor, la surveillance open source du gel et des fuites pour garages, ateliers et combles : ingestion ESP/Arduino, courbes en direct et alertes. Montez votre matériel avec un ESP32, un Pico W ou un Arduino ; ProbeHarbor s’occupe du tableau de bord hébergé, de l’historique et des alertes pour votre foyer.`,
+      answer: `ProbeHarbor, la surveillance du gel et des fuites, au code source consultable, pour garages, ateliers et combles : ingestion ESP/Arduino, courbes en direct et alertes. Montez votre matériel avec un ESP32, un Pico W ou un Arduino ; ProbeHarbor s’occupe du tableau de bord hébergé, de l’historique et des alertes pour votre foyer.`,
     },
     {
       question: "Comment connecter des capteurs ESP32, Pico W ou Arduino ?",

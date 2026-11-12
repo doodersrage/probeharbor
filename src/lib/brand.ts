@@ -13,4 +13,4 @@ export const BRAND_TAGLINE = `Track, log, and analyze sensors in ${BRAND_SPACES}
 export const META_DESCRIPTION_MAX_LENGTH = 160;
 /** Definition-first for SEO/AEO meta defaults. */
 export const BRAND_DESCRIPTION =
-  "ProbeHarbor is open-source freeze and flood monitoring for garages, workshops, attics, crawlspaces, and shops: ESP/Arduino ingest, live curves, and alerts.";
+  "ProbeHarbor is source-available freeze and flood monitoring for garages, workshops, attics, crawlspaces, and shops: ESP/Arduino ingest, live curves, and alerts.";

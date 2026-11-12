@@ -26,7 +26,7 @@ For r/HomeImprovement, r/Plumbing, r/homeowners, and local-city subreddits durin
 
 For r/homeassistant, r/esp32, and the ESPHome Discord. These readers want the sensor version, so lead with that and mention the alerts as the zero-setup option.
 
-> I built ProbeHarbor, an open-source freeze and leak monitor for garages, crawlspaces, and shops: an ESP32 + DS18B20 (about $25 in parts) or any temperature sensor already in Home Assistant posts readings, and it alerts you before the space hits your freeze threshold. There's a HACS integration (under review for the default store) and the server is open source.
+> I built ProbeHarbor, a source-available freeze and leak monitor for garages, crawlspaces, and shops: an ESP32 + DS18B20 (about $25 in parts) or any temperature sensor already in Home Assistant posts readings, and it alerts you before the space hits your freeze threshold. There's a HACS integration (under review for the default store) and the server source is public (FSL-1.1).
 >
 > For the ESP32 side there's a web flasher (probeharbor.dev/flash): plug the board into USB, install from Chrome or Edge, and send it Wi-Fi and a device key over the same cable. No Arduino IDE. It auto-detects DS18B20s, a DHT22, or an I²C BME280/SHT31/AHT20, and can also report a leak contact, door switch, and battery. The firmware is open source if you want to change it.
 >

@@ -34,7 +34,7 @@ export const GET: APIRoute = ({ site }) => {
   // Plain facts first: answer engines quote the top of this file.
   const body = `# ${BRAND_NAME}
 
-> ${BRAND_NAME} is a hosted dashboard that sends freeze, leak, and heat alerts from temperature and water sensors in garages, crawlspaces, attics, workshops, cabins, and other unheated spaces. The software is open source (MIT); there is a free plan with no credit card.
+> ${BRAND_NAME} is a hosted dashboard that sends freeze, leak, and heat alerts from temperature and water sensors in garages, crawlspaces, attics, workshops, cabins, and other unheated spaces. The software is source-available (FSL-1.1, becomes Apache-2.0 after two years) and the device firmware is MIT; there is a free plan with no credit card.
 
 ## Key facts
 

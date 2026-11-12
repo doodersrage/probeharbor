@@ -11,7 +11,7 @@ const fr: HomeMessages = {
     "Graphique de télémétrie en direct ProbeHarbor : courbes des sondes avec humidité, point de rosée, alertes de gel et contacts d’inondation",
   breadcrumbHome: "Accueil",
   brandDefinition:
-    "ProbeHarbor surveille les capteurs de température et de fuite dans les garages, ateliers, combles, vides sanitaires et hangars, avec graphiques en direct, historique et alertes de gel, de fuite et de chaleur. Open source, avec une offre gratuite.",
+    "ProbeHarbor surveille les capteurs de température et de fuite dans les garages, ateliers, combles, vides sanitaires et hangars, avec graphiques en direct, historique et alertes de gel, de fuite et de chaleur. Code source consultable, avec une offre gratuite.",
   hero: {
     promise: "Soyez prévenu avant que vos tuyaux ne gèlent ou que votre garage ne soit inondé.",
     openDashboard: "Ouvrir le tableau de bord",
@@ -105,7 +105,7 @@ const fr: HomeMessages = {
     hub: "Ouvrir le centre des guides",
   },
   ossHtml:
-    'Tableau de bord open source et exemples de sketches pour capteurs. <a class="text-link" href="https://github.com/doodersrage/probeharbor" target="_blank" rel="noreferrer">Voir le code sur GitHub</a>.',
+    'Tableau de bord au code source consultable et exemples de sketches sous licence MIT pour capteurs. <a class="text-link" href="https://github.com/doodersrage/probeharbor" target="_blank" rel="noreferrer">Voir le code sur GitHub</a>.',
   faqLede:
     "Des réponses claires pour ceux qui câblent des sondes et des contacts d’humidité, et règlent des alertes de gel ou d’inondation.",
 };

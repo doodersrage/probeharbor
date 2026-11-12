@@ -11,7 +11,7 @@ const ptBr: HomeMessages = {
     "Gráfico de telemetria ao vivo do ProbeHarbor: curvas das sondas com umidade, ponto de orvalho, alertas de congelamento e contatos de alagamento",
   breadcrumbHome: "Início",
   brandDefinition:
-    "O ProbeHarbor monitora sensores de temperatura e vazamento em garagens, oficinas, sótãos, porões e galpões, com gráficos ao vivo, histórico e alertas de congelamento, vazamento e calor. Open source, com plano gratuito.",
+    "O ProbeHarbor monitora sensores de temperatura e vazamento em garagens, oficinas, sótãos, porões e galpões, com gráficos ao vivo, histórico e alertas de congelamento, vazamento e calor. Código-fonte disponível, com plano gratuito.",
   hero: {
     promise: "Saiba antes que seus canos congelem ou sua garagem alague.",
     openDashboard: "Abrir o painel",
@@ -105,7 +105,7 @@ const ptBr: HomeMessages = {
     hub: "Abrir a central de guias",
   },
   ossHtml:
-    'Painel open source e sketches de exemplo para sensores. <a class="text-link" href="https://github.com/doodersrage/probeharbor" target="_blank" rel="noreferrer">Ver o código no GitHub</a>.',
+    'Painel com código-fonte disponível e sketches de exemplo com licença MIT para sensores. <a class="text-link" href="https://github.com/doodersrage/probeharbor" target="_blank" rel="noreferrer">Ver o código no GitHub</a>.',
   faqLede:
     "Respostas diretas para quem liga sondas e contatos de umidade e configura alertas de congelamento ou alagamento.",
 };

@@ -11,7 +11,7 @@ const en = {
   breadcrumbHome: "Home",
   breadcrumbAbout: "About",
   kicker: "About",
-  lede: "Open-source guides on probes, freeze/flood alerts, firmware, and the stack behind ProbeHarbor. Prefer a shorter list? Start on the guides hub.",
+  lede: "Guides on probes, freeze/flood alerts, firmware, and the stack behind ProbeHarbor. Prefer a shorter list? Start on the guides hub.",
   startFree: "Start free",
   guidesHub: "Guides hub",
   findTitle: "Find a guide",
@@ -22,7 +22,7 @@ const en = {
     lede: "Watch temperature and humidity shift as sun load, outdoor air, and airflow change conditions zone by zone, just like the live JSON feed.",
   },
   repos: {
-    title: "Open-source repositories",
+    title: "Source repositories",
     subtitleHtml:
       'Projects you can inspect, fork, or adapt for your own build. Programmatic integrations start with the <a class="text-link" href="/docs/api">HTTP API</a> and <a class="text-link" href="/openapi.yaml">openapi.yaml</a>.',
     firmware: "Arduino sketch and sensor firmware",
@@ -44,7 +44,7 @@ const en = {
     {
       question: "Is ProbeHarbor open source?",
       answer:
-        "Yes: application and firmware-related repos are linked from this hub so you can inspect, fork, or adapt the stack.",
+        "The firmware and sample sketches are open source (MIT). The application is source-available under FSL-1.1: you can read, run, self-host, and modify it, but not offer it as a competing service, and each version becomes Apache-2.0 after two years. The repos are linked from this hub.",
     },
     {
       question: "Where does ProbeHarbor run?",

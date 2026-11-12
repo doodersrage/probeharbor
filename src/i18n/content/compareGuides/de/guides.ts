@@ -251,7 +251,7 @@ export default {
       "Du willst Fühler an mehreren Stellen (Leitungen, Türseite, Kriechkeller), ohne für jede einen Sensor ab 149 US$ zu kaufen",
       "Du willst Nass/Trocken-Leckkontakte und Frostalarme in einem Konto",
       "Du nutzt schon Home Assistant, ESPHome oder MQTT und willst Messwerte in beide Richtungen austauschen",
-      "Du willst Frostwarnungen per Prognose, eine Schätzung der Zeit bis zum Frost oder Open-Source-Software, die du prüfen kannst",
+      "Du willst Frostwarnungen per Prognose, eine Schätzung der Zeit bis zum Frost oder Software, deren Quellcode du prüfen kannst",
     ],
     whenOther: [
       "Du willst einen fertigen Sensor ohne Löten, Flashen oder Einrichtung außer WLAN",
@@ -306,7 +306,7 @@ export default {
     seoTitle: "YoLink-Alternative für Frostalarme an Leitungen",
     headline: "ProbeHarbor vs. YoLink-Temperatursensoren",
     description:
-      "YoLink vs. ProbeHarbor: ein Hub-Set für 59,99 US$ mit fertigen Batteriesensoren und SMS oder Eigenbaufühler direkt am Rohr mit Open-Source-Software.",
+      "YoLink vs. ProbeHarbor: ein Hub-Set für 59,99 US$ mit fertigen Batteriesensoren und SMS oder Eigenbaufühler direkt am Rohr mit quelltextoffener Software.",
     summary:
       "YoLink ist bei fertigen Sensoren die einfachere und oft günstigere Wahl: Ein Hub mit zwei Batteriesensoren kostet 59,99 US$ und alarmiert per Push, E-Mail und SMS. ProbeHarbor passt, wenn du einen Fühler direkt am Rohr, keinen Hub, eigene Hardware oder Messwerte in einem offenen System willst.",
     lede:
@@ -314,7 +314,7 @@ export default {
     whenProbeHarbor: [
       "Du willst einen wasserdichten Fühler direkt am Rohr statt eines Raumsensors an der Wand",
       "Du nutzt schon Home Assistant, ESPHome oder MQTT und willst ein weiteres Ziel, keinen weiteren Hub",
-      "Du willst Open-Source-Software, eine HTTP-API, an die jedes Board senden kann, und keine Herstellerhardware",
+      "Du willst quelltextoffene Software, eine HTTP-API, an die jedes Board senden kann, und keine Herstellerhardware",
       "Du willst neben Schwellenwertalarmen auch Frostwarnungen per Prognose und eine Schätzung der Zeit bis zum Frost",
     ],
     whenOther: [
@@ -353,7 +353,7 @@ export default {
       {
         question: "Warum ProbeHarbor statt YoLink?",
         answer:
-          "Wegen der Fühlerposition und der Offenheit: ein wasserdichter Fühler an der kältesten Leitung, mehrere Fühler an einem Board, Leckkontakte im selben Konto und Open-Source-Software, die Messwerte von jedem Gerät annimmt, das eine HTTPS-Anfrage senden kann.",
+          "Wegen der Fühlerposition und der Offenheit: ein wasserdichter Fühler an der kältesten Leitung, mehrere Fühler an einem Board, Leckkontakte im selben Konto und quelltextoffene Software, die Messwerte von jedem Gerät annimmt, das eine HTTPS-Anfrage senden kann.",
       },
     ],
     sources: {

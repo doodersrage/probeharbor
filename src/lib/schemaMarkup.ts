@@ -303,5 +303,5 @@ export function getSiteSchemas(options: {
 
 /** Short definition-style blurb for AEO (answer engines). */
 export function getBrandDefinition(): string {
-  return `${SITE_NAME} watches temperature and leak sensors in ${BRAND_SPACES}, with live charts, history, and freeze, leak, and heat alerts. Open source, with a free plan.`;
+  return `${SITE_NAME} watches temperature and leak sensors in ${BRAND_SPACES}, with live charts, history, and freeze, leak, and heat alerts. Source available, with a free plan.`;
 }

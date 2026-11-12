@@ -251,7 +251,7 @@ export default {
       "Vous voulez des sondes à plusieurs endroits (canalisations, côté porte, vide sanitaire) sans acheter un capteur à 149 $ US ou plus pour chacun",
       "Vous voulez des contacts de fuite humide/sec et des alertes gel sur un même compte",
       "Vous utilisez déjà Home Assistant, ESPHome ou MQTT et voulez que les relevés circulent dans les deux sens",
-      "Vous voulez des alertes de gel prévisionnelles, une estimation du délai avant le gel ou un logiciel open source que vous pouvez examiner",
+      "Vous voulez des alertes de gel prévisionnelles, une estimation du délai avant le gel ou un logiciel dont vous pouvez examiner le code source",
     ],
     whenOther: [
       "Vous voulez un capteur prêt à l’emploi, sans soudure, sans flashage, sans autre réglage que le Wi‑Fi",
@@ -306,7 +306,7 @@ export default {
     seoTitle: "Alternative à YoLink pour les alertes de gel des canalisations",
     headline: "ProbeHarbor vs capteurs de température YoLink",
     description:
-      "YoLink vs ProbeHarbor : un kit hub à 59,99 $ US avec capteurs sur pile et SMS, ou des sondes maison sur la canalisation avec un logiciel open source.",
+      "YoLink vs ProbeHarbor : un kit hub à 59,99 $ US avec capteurs sur pile et SMS, ou des sondes maison sur la canalisation avec un logiciel au code source consultable.",
     summary:
       "YoLink est le choix le plus simple, et souvent le moins cher, en capteurs prêts à l’emploi : un hub et deux capteurs sur pile coûtent 59,99 $ US et alertent par push, e-mail et SMS. ProbeHarbor convient si vous voulez une sonde scotchée sur le tuyau, pas de hub, votre propre matériel ou des relevés dans un système ouvert.",
     lede:
@@ -314,7 +314,7 @@ export default {
     whenProbeHarbor: [
       "Vous voulez une sonde étanche scotchée sur le tuyau lui-même plutôt qu’un capteur d’ambiance au mur",
       "Vous utilisez déjà Home Assistant, ESPHome ou MQTT et voulez une destination de plus, pas un hub de plus",
-      "Vous voulez un logiciel open source, une API HTTP accessible depuis n’importe quelle carte et aucun matériel du fabricant",
+      "Vous voulez un logiciel au code source consultable, une API HTTP accessible depuis n’importe quelle carte et aucun matériel du fabricant",
       "Vous voulez des alertes de gel prévisionnelles et une estimation du délai avant le gel en plus des alertes de seuil",
     ],
     whenOther: [
@@ -353,7 +353,7 @@ export default {
       {
         question: "Pourquoi choisir ProbeHarbor plutôt que YoLink ?",
         answer:
-          "Pour l’emplacement de la sonde et l’ouverture : une sonde étanche sur la canalisation la plus froide, plusieurs sondes sur une seule carte, des contacts de fuite sur le même compte et un logiciel open source qui accepte les relevés de tout appareil capable d’envoyer une requête HTTPS.",
+          "Pour l’emplacement de la sonde et l’ouverture : une sonde étanche sur la canalisation la plus froide, plusieurs sondes sur une seule carte, des contacts de fuite sur le même compte et un logiciel au code source consultable qui accepte les relevés de tout appareil capable d’envoyer une requête HTTPS.",
       },
     ],
     sources: {

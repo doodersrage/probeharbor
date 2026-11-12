@@ -10,7 +10,7 @@ const en = {
     "ProbeHarbor live telemetry graph: probe curves with humidity, dew point, freeze alerts, and flood/wet contacts",
   breadcrumbHome: "Home",
   brandDefinition:
-    "ProbeHarbor watches temperature and leak sensors in garages, workshops, attics, crawlspaces, and shops, with live charts, history, and freeze, leak, and heat alerts. Open source, with a free plan.",
+    "ProbeHarbor watches temperature and leak sensors in garages, workshops, attics, crawlspaces, and shops, with live charts, history, and freeze, leak, and heat alerts. Source available, with a free plan.",
   hero: {
     promise: "Know before your pipes freeze or your garage floods.",
     openDashboard: "Open dashboard",
@@ -104,7 +104,7 @@ const en = {
     hub: "Open the guides hub",
   },
   ossHtml:
-    'Open-source dashboard and sample sensor sketches. <a class="text-link" href="https://github.com/doodersrage/probeharbor" target="_blank" rel="noreferrer">View source on GitHub</a>.',
+    'Source-available dashboard and MIT-licensed sample sensor sketches. <a class="text-link" href="https://github.com/doodersrage/probeharbor" target="_blank" rel="noreferrer">View source on GitHub</a>.',
   faqLede: "Straight answers for homeowners wiring probes, wet contacts, and setting freeze or flood alerts.",
 };
 

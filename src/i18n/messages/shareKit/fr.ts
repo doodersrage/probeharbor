@@ -17,7 +17,7 @@ const fr: ShareKitMessages = {
   scenarios: "Scénarios",
   whyTitle: "Pourquoi c’est sur le site principal",
   whyCopy:
-    "Les projets open source cachent souvent leurs textes de lancement dans des notes privées. Nous publions les nôtres pour que tout le monde, vous compris, puisse aider à faire connaître le projet sans réinventer le message. Si vous tombez sur un post qui ressemble à un modèle d’ici, c’est normal : le fondateur (et, espérons-le, la communauté) utilise le même kit.",
+    "La plupart des projets cachent leurs textes de lancement dans des notes privées. Nous publions les nôtres pour que tout le monde, vous compris, puisse aider à faire connaître le projet sans réinventer le message. Si vous tombez sur un post qui ressemble à un modèle d’ici, c’est normal : le fondateur (et, espérons-le, la communauté) utilise le même kit.",
   whyNote:
     "Merci de ne pas spammer. Privilégiez les communautés où les sondes DIY, Home Assistant ou l’entretien de la maison par temps froid sont dans le sujet, et adaptez les textes à la discussion.",
   redditTitle: "Reddit / forums",

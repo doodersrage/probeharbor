@@ -4,7 +4,7 @@ export default {
   home: [
     {
       question: "Was ist ProbeHarbor?",
-      answer: `ProbeHarbor ist Open-Source-Frost- und Wasserüberwachung für Garagen, Werkstätten und Dachböden: ESP/Arduino-Anbindung, Live-Kurven und Alarme. Du baust mit ESP32, Pico W oder Arduino; ProbeHarbor übernimmt das gehostete Dashboard, den Verlauf und die Alarme für deinen Haushalt.`,
+      answer: `ProbeHarbor ist quelltextoffene Frost- und Wasserüberwachung für Garagen, Werkstätten und Dachböden: ESP/Arduino-Anbindung, Live-Kurven und Alarme. Du baust mit ESP32, Pico W oder Arduino; ProbeHarbor übernimmt das gehostete Dashboard, den Verlauf und die Alarme für deinen Haushalt.`,
     },
     {
       question: "Wie verbinde ich ESP32-, Pico-W- oder Arduino-Sensoren?",

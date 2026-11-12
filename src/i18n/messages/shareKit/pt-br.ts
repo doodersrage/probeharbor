@@ -17,7 +17,7 @@ const ptBr: ShareKitMessages = {
   scenarios: "Cenários",
   whyTitle: "Por que isto está no site principal",
   whyCopy:
-    "Projetos open source costumam esconder os textos de lançamento em notas privadas. Nós publicamos os nossos para que qualquer pessoa, inclusive você, possa ajudar a divulgar sem inventar a mensagem do zero. Se você encontrar um post igual a um modelo daqui, é de se esperar: o fundador (e, tomara, a comunidade) usa o mesmo kit.",
+    "A maioria dos projetos costuma esconder os textos de lançamento em notas privadas. Nós publicamos os nossos para que qualquer pessoa, inclusive você, possa ajudar a divulgar sem inventar a mensagem do zero. Se você encontrar um post igual a um modelo daqui, é de se esperar: o fundador (e, tomara, a comunidade) usa o mesmo kit.",
   whyNote:
     "Por favor, não faça spam. Prefira comunidades em que sondas DIY, Home Assistant ou manutenção da casa no frio sejam assunto, e adapte os textos à conversa.",
   redditTitle: "Reddit / fóruns",

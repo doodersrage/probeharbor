@@ -17,7 +17,7 @@ const de: ShareKitMessages = {
   scenarios: "Szenarien",
   whyTitle: "Warum das auf der Hauptseite steht",
   whyCopy:
-    "Open-Source-Projekte verstecken Launch-Texte oft in privaten Notizen. Wir veröffentlichen unsere, damit jede und jeder – auch du – beim Weitersagen helfen kann, ohne sich die Botschaft neu ausdenken zu müssen. Wenn du einen Post findest, der einer Vorlage hier entspricht, ist das so gewollt: Der Gründer (und hoffentlich die Community) nutzt dasselbe Kit.",
+    "Die meisten Projekte verstecken Launch-Texte oft in privaten Notizen. Wir veröffentlichen unsere, damit jede und jeder – auch du – beim Weitersagen helfen kann, ohne sich die Botschaft neu ausdenken zu müssen. Wenn du einen Post findest, der einer Vorlage hier entspricht, ist das so gewollt: Der Gründer (und hoffentlich die Community) nutzt dasselbe Kit.",
   whyNote:
     "Bitte kein Spam. Bevorzuge Communitys, in denen DIY-Fühler, Home Assistant oder die Instandhaltung des Hauses im Winter zum Thema passen, und pass die Texte an den Thread an.",
   redditTitle: "Reddit / Foren",
