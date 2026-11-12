@@ -538,7 +538,7 @@ The detailed increment log follows the Milestone 0 audit below. Summary:
 | 5 Security | Done for the audit gaps | S1–S8, rate limiting; legacy raw-token lookups removed, inbound V2 required, copied bcrypt passwords re-hashed on sign-in (2026-11-11) | Watch the bcrypt count fall; optionally drop `bcryptjs` once it's 0 |
 | 6 Dashboard | Done | 6.1–6.9, local-day date filters | — |
 | 7 Integrations | Spec done | 7.1–7.4, HA v1.2.0 (V2 signing), inbound V2 required (2026-11-11) | — |
-| 8 Polish | Mostly done | 8.1–8.3, dashboard axe (0 violations) | Billing e2e |
+| 8 Polish | Mostly done | 8.1–8.3, dashboard axe (0 violations), billing lifecycle db test (2026-11-11) | **Billing bug: a late older Stripe event can restore paid access (decision)**; past_due policy (decision) |
 
 **Operational must-do:** production has been on Neon (+ Better Auth) since
 2026-11-07; Supabase is paused. Keep running `pnpm db:backup` (reads
@@ -5559,4 +5559,42 @@ succeeds. Two tables only grew: `job_runs` (~25k rows since August) and
 - Evidence: `pnpm test` 459 files / 3577 tests; `pnpm test:db` 51 files /
   402 tests (own throwaway Postgres); typecheck 0 / 0; lint 55 warnings
   (baseline); build OK. Not checked signed in on a real page.
+
+------------------------------------------------------------------------
+
+## Billing lifecycle test, and a late-event bug it found (2026-11-11)
+
+**Status: Test added (`src/pages/api/stripe/webhook.db.test.ts`). Bug open,
+needs the owner's go-ahead (billing behaviour).**
+
+The test signs real Stripe events with Stripe's test-header helper, sends them
+through `POST /api/stripe/webhook` (real signature check, real subscription
+code, local Postgres) and reads `getUserEntitlements` after each step.
+
+- [x] free → member (created) → pro (updated, price change) → member
+      (downgrade) → free (past_due) → member (active again) → free
+      (deleted; row `canceled`). All as expected.
+- [x] A forged signature: 400, nothing changes. The same event id twice:
+      the second is acknowledged as a duplicate and not applied again.
+- [ ] **Bug:** an older `customer.subscription.updated` (active) delivered
+      after `customer.subscription.deleted` sets the row back to active and
+      restores the paid plan. Each event overwrites the stored state, and
+      Stripe doesn't guarantee order (a retried event arrives after later
+      ones). Recorded as `it.fails`, so CI stays green until it's fixed.
+      Suggested fix: on each subscription event, read the subscription
+      from Stripe (`subscriptions.retrieve`) and store that, as
+      `checkout.session.completed` already does; a failed read returns 500
+      and Stripe retries. Alternative: keep the last applied
+      `event.created` per subscription and ignore older events (migration).
+- Policy as tested (decision, not a bug): `past_due` (a failed renewal)
+  removes paid access at once; only `active`/`trialing` count.
+- Not covered: `checkout.session.completed` (it calls Stripe), real Stripe
+  test-mode checkout in a browser (the existing e2e only checks the
+  redirect to checkout.stripe.com).
+
+## Alert titles with the property name: still deferred (2026-11-11)
+
+Checked first (read-only): every one of the 11 users belongs to exactly one
+property (11 households). The name would never show, and each alert send
+would gain a lookup. Revisit when someone has a second property.
 
