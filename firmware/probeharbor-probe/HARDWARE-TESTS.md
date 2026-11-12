@@ -123,8 +123,18 @@ from `/flash`: `TT sensor: AHT20 on I2C (SDA 8, SCL 9)`, `TT firmware 1.2.6`,
 HTTP client's "connection lost" on the first post after joining Wi-Fi (the server
 logged no error). A plain ESP32 was posting with the same device key at the time, so
 the S3's later posts can't be told apart in production; a reading at 19:34:52
-(75.4°F / 50.7%) is most likely the S3's retry. Still open: a clean S3 run on its own
-device key; the `TT sensor problem` path on a C3 (compiled only).
+(75.4°F / 50.7%) is most likely the S3's retry.
+
+On its own device key ("ESP32-S3 Test", 19:38 ET): the serial log showed
+`TT post -5 probes=1` twice, each after `ssl_client … (-76)` (the TLS read of the
+reply failed), then `TT waiting for wifi`. Production had both readings (74.83°F at
+19:40:15, 74.70°F at 19:41:03; ingest stats 2 successes, 0 errors): **`-5` here means
+the reply was lost, not the reading.** The board rejoined Wi-Fi by itself and posted
+every 60 s from 19:43 (RSSI -63 dBm), with one 119 s gap for the Wi-Fi drop.
+Opening the S3's native USB port resets it (`USB_UART_CHIP_RESET`), so each serial
+read restarts the probe. Still open: a long run on the S3 (the dropped replies and
+the Wi-Fi drop may point to power or the radio link); the `TT sensor problem` path
+on a C3 (compiled only).
 
 **SHT31: verified on a plain ESP32 (reported 2026-11-04), firmware 1.2.3
 installed from `/flash`.** Temperature and humidity showed on the device page.

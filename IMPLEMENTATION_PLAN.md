@@ -5487,9 +5487,15 @@ Problems (verified in code and on the board):
   - The release images (1.2.6) themselves are compile-checked only; the ESP32-C3
     path is compiled only. `pnpm test` 459 files / 3574 tests; typecheck 0 / 0;
     lint 55 warnings (baseline); build OK.
-- Open: a clean S3 run on its own device key (a plain ESP32 shared the key);
-  the flasher ignores negative post codes (`TT post -5`) and ends with the generic
-  "no reading" text instead of `postUnreachable`; `TT sensor problem` on a C3; the same
+- [x] S3 on its own device key: readings in production every 60 s; its `TT post -5`
+      lines were replies lost after the reading was stored (see `HARDWARE-TESTS.md`).
+- [x] Flasher: negative post codes (`TT post -5`, the HTTP client's own errors)
+      used to be ignored, so the page ended with the generic "no reading" text. Now
+      they show `status.postConnectionLost` ("connection dropped while sending
+      (error {code}) … keeps retrying; weak Wi-Fi or unsteady power"), 5 locales.
+      E2E (`e2e/flasher.spec.ts`) +2: `post -5`, and the 1.2.6
+      `TT nothing sent: AHT20 found but not reading` line. Local run: 13/13 passed.
+- Open: a long S3 run (one Wi-Fi drop and lost replies seen); `TT sensor problem` on a C3; the same
   bounded read for SHT31/BME280 (their libraries return NaN rather than hang, so
   they already fail cleanly).
 
