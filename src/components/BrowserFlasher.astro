@@ -209,7 +209,8 @@ const untestedLabel = hardwareMessages(locale).statusLabels["built-in"];
               line.startsWith("TT wifi failed") ||
               line.startsWith("TT key rejected") ||
               line.startsWith("TT config error") ||
-              line.startsWith("TT no probe")
+              line.startsWith("TT no probe") ||
+              line.startsWith("TT nothing sent")
             ) {
               outcome = "failed";
               status.textContent = flasherFailureMessage(line, text);

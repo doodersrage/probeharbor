@@ -41,7 +41,7 @@ export default {
     hardware: "ESP32 + AHT20 por I²C",
     path: "Instalador web (sin código)",
     notes:
-      "Se detecta automáticamente al arrancar. Probado en un ESP32-S3 (SDA 8, SCL 9). En un ESP32 clásico se conecta igual que el BME280 y el SHT31 (SDA 21, SCL 22).",
+      "Se detecta automáticamente al arrancar. Probado en un ESP32-S3 (SDA 8, SCL 9) y en un ESP32 clásico, conectado igual que el BME280 y el SHT31 (SDA 21, SCL 22).",
     links: [flash],
   },
   "esp32-door": {

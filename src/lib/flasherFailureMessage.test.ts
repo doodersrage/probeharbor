@@ -11,6 +11,7 @@ const WIFI = "TT wifi failed: check the network name and password (2.4 GHz only)
 const KEY = "TT key rejected: copy the device key again from Dashboard → Devices";
 const CONFIG = "TT config error: network name and device key are required";
 const PROBE = "TT no probe: check the wiring (DS18B20 or DHT22 data on GPIO 4, 4.7k pull-up to 3.3V)";
+const NOT_READING = "TT nothing sent: AHT20 found but not reading";
 
 describe("flasherFailureMessage", () => {
   it("uses the page language for each known failure", () => {
@@ -25,12 +26,22 @@ describe("flasherFailureMessage", () => {
     expect(flasherFailureMessage(PROBE, en.status)).not.toContain("{pin}");
   });
 
-  it("every locale has all four failure messages", () => {
+  it("names the I2C sensor that was found but gave no reading (firmware 1.2.6+), not the DS18B20 hint", () => {
+    expect(flasherFailureMessage(NOT_READING, en.status)).toBe(
+      "Found the AHT20 but couldn't read it: check its 3.3V, GND, SDA and SCL wires, then try again.",
+    );
+    expect(flasherFailureMessage(NOT_READING, de.status)).toMatch(/^AHT20 gefunden/);
+    expect(flasherFailureMessage(NOT_READING, en.status)).not.toContain("DS18B20");
+    expect(flasherFailureMessage(NOT_READING, {})).toBe("Nothing sent: AHT20 found but not reading");
+  });
+
+  it("every locale has all five failure messages", () => {
     for (const messages of [en, de, es, fr, ptBr]) {
-      for (const key of ["wifiFailed", "keyRejected", "configError", "noProbe"] as const) {
+      for (const key of ["wifiFailed", "keyRejected", "configError", "noProbe", "sensorNotReading"] as const) {
         expect(messages.status[key]).toBeTruthy();
       }
       expect(messages.status.noProbe).toContain("{pin}");
+      expect(messages.status.sensorNotReading).toContain("{sensor}");
     }
   });
 

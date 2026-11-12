@@ -51,6 +51,7 @@ const ptBr: BrowserFlasherMessages = {
     keyRejected: "Chave rejeitada: copie de novo a chave do dispositivo em Dashboard → Devices.",
     configError: "A placa não aceitou as configurações. Preencha o nome da rede e a chave do dispositivo e envie de novo.",
     noProbe: "Nenhuma sonda encontrada: confira a ligação (dados do DS18B20 ou DHT22 no GPIO {pin}, pull-up de 4,7 kΩ para 3,3 V).",
+    sensorNotReading: "O {sensor} foi encontrado, mas não deu leitura: confira os fios de 3,3 V, GND, SDA e SCL e tente de novo.",
     postUnreachable: "A placa está no Wi‑Fi, mas não conseguiu alcançar o ProbeHarbor. Ela continua tentando; confira se esta rede permite HTTPS de saída (algumas redes de convidados bloqueiam).",
     postRejected: "O ProbeHarbor respondeu {code} à leitura da placa. Ela continua tentando; se continuar assim, veja o status do sistema ou tente de novo em alguns minutos.",
     noReading:

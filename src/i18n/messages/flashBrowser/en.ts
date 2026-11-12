@@ -46,6 +46,7 @@ const en = {
     keyRejected: "Key rejected: copy the device key again from Dashboard → Devices.",
     configError: "The board didn't accept the settings. Fill in the network name and device key, then send again.",
     noProbe: "No probe found: check the wiring (DS18B20 or DHT22 data on GPIO {pin}, 4.7kΩ pull-up to 3.3V).",
+    sensorNotReading: "Found the {sensor} but couldn't read it: check its 3.3V, GND, SDA and SCL wires, then try again.",
     postUnreachable: "The board is on Wi‑Fi but couldn't reach ProbeHarbor. It keeps retrying; check that this network allows outgoing HTTPS (some guest networks block it).",
     postRejected: "ProbeHarbor answered {code} to the board's reading. It keeps retrying; if this stays, check System status or try again in a few minutes.",
     noReading:

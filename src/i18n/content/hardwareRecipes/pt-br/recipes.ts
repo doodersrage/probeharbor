@@ -41,7 +41,7 @@ export default {
     hardware: "ESP32 + AHT20 via I²C",
     path: "Gravador web (sem código)",
     notes:
-      "Detectado automaticamente na inicialização. Testado em um ESP32-S3 (SDA 8, SCL 9). Em um ESP32 clássico, é ligado como o BME280 e o SHT31 (SDA 21, SCL 22).",
+      "Detectado automaticamente na inicialização. Testado em um ESP32-S3 (SDA 8, SCL 9) e em um ESP32 clássico, ligado como o BME280 e o SHT31 (SDA 21, SCL 22).",
     links: [flash],
   },
   "esp32-door": {

@@ -41,7 +41,7 @@ export default {
     hardware: "ESP32 + AHT20 en I²C",
     path: "Outil de flashage web (sans code)",
     notes:
-      "Détecté automatiquement au démarrage. Testé sur un ESP32-S3 (SDA 8, SCL 9). Sur un ESP32 classique, il se câble comme le BME280 et le SHT31 (SDA 21, SCL 22).",
+      "Détecté automatiquement au démarrage. Testé sur un ESP32-S3 (SDA 8, SCL 9) et sur un ESP32 classique, câblé comme le BME280 et le SHT31 (SDA 21, SCL 22).",
     links: [flash],
   },
   "esp32-door": {

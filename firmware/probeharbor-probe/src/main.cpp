@@ -18,6 +18,10 @@
  *     or AHT20 (0x38) → temp_air, humidity_air (+ pressure_air for BME280).
  *     On the ESP32 build, if nothing answers on the default pins at boot, the
  *     Adafruit Feather pins are tried too (HUZZAH32, ESP32 Feather V2).
+ *     A sensor that is found but won't give a reading prints
+ *     "TT sensor problem: <name> found but not reading: <why>…" and, if nothing
+ *     else was read, "TT nothing sent: <name> found but not reading" (not the
+ *     DS18B20/DHT hint).
  *   - Leak contact (wet pulls LEAK_PIN to GND) → leak1, door reed switch
  *     (closed pulls DOOR_PIN to GND) → door1 (true = open), battery through
  *     a 1:1 divider on BATTERY_PIN → battery_pct. These three can't be
@@ -40,7 +44,7 @@
 #include <Wire.h>
 
 #ifndef FIRMWARE_VERSION
-#define FIRMWARE_VERSION "1.2.5"
+#define FIRMWARE_VERSION "1.2.6"
 #endif
 /*
  * The flasher talks to whichever USB port the board is plugged into. On the
@@ -223,9 +227,55 @@ static void detectAirAtBoot() {
 #endif
 }
 
+// Why the last I2C reading failed, for the serial log (set by readAir).
+char airProblem[80] = "";
+
+/**
+ * One AHT20 measurement, read directly instead of through Adafruit_AHTX0's
+ * getEvent(): that waits for the busy bit with no time limit, and a failed
+ * status read looks busy (0xFF), so a sensor that stops answering froze the
+ * whole probe. Here the wait is bounded, and each failure says what went wrong.
+ */
+static bool readAht20(float& tempC, float& humidity) {
+  const uint8_t addr = 0x38;
+  Wire.beginTransmission(addr);
+  Wire.write(0xAC);  // trigger measurement
+  Wire.write(0x33);
+  Wire.write(0x00);
+  if (Wire.endTransmission() != 0) {
+    snprintf(airProblem, sizeof(airProblem), "no answer to the measure command");
+    return false;
+  }
+  uint8_t d[6] = {0};
+  unsigned long start = millis();
+  delay(80);  // a measurement takes about 75 ms
+  for (;;) {
+    if (Wire.requestFrom(addr, (uint8_t)6) != 6) {
+      snprintf(airProblem, sizeof(airProblem), "no data after the measure command");
+      return false;
+    }
+    for (uint8_t i = 0; i < 6; i++) d[i] = Wire.read();
+    if (!(d[0] & 0x80)) break;  // not busy: data is ready
+    if (millis() - start > 500) {
+      snprintf(airProblem, sizeof(airProblem), "stuck busy (status 0x%02X)", d[0]);
+      return false;
+    }
+    delay(20);
+  }
+  uint32_t rawH = ((uint32_t)d[1] << 12) | ((uint32_t)d[2] << 4) | (d[3] >> 4);
+  uint32_t rawT = ((uint32_t)(d[3] & 0x0F) << 16) | ((uint32_t)d[4] << 8) | d[5];
+  humidity = rawH * 100.0f / 1048576.0f;
+  tempC = rawT * 200.0f / 1048576.0f - 50.0f;
+  if (!(d[0] & 0x08)) {
+    snprintf(airProblem, sizeof(airProblem), "not calibrated (status 0x%02X, %.1f C, %.1f%%)", d[0], tempC, humidity);
+  }
+  return true;
+}
+
 /** Read the I2C sensor; NaN pressure when the sensor has none. False drops it so it is re-detected. */
 static bool readAir(float& tempC, float& humidity, float& pressureHpa) {
   pressureHpa = NAN;
+  airProblem[0] = '\0';
   if (air == AIR_SHT31) {
     tempC = sht31.readTemperature();
     humidity = sht31.readHumidity();
@@ -234,15 +284,16 @@ static bool readAir(float& tempC, float& humidity, float& pressureHpa) {
     humidity = bme.readHumidity();
     pressureHpa = bme.readPressure() / 100.0f;
   } else if (air == AIR_AHT20) {
-    sensors_event_t h, t;
-    if (!aht.getEvent(&h, &t)) return false;
-    tempC = t.temperature;
-    humidity = h.relative_humidity;
+    if (!readAht20(tempC, humidity)) return false;
   } else {
     return false;
   }
-  return !isnan(tempC) && !isnan(humidity) && humidity >= 0.0f && humidity <= 100.0f &&
-         tempC > -40.0f && tempC < 85.0f;
+  bool ok = !isnan(tempC) && !isnan(humidity) && humidity >= 0.0f && humidity <= 100.0f &&
+            tempC > -40.0f && tempC < 85.0f;
+  if (!ok && airProblem[0] == '\0') {
+    snprintf(airProblem, sizeof(airProblem), "impossible values (%.1f C, %.1f%%)", tempC, humidity);
+  }
+  return ok;
 }
 
 // Contacts and battery the user said are wired (see the header comment).
@@ -428,7 +479,20 @@ void postReadings() {
   if (air == AIR_NONE) detectAir();
   float airC = NAN, airRh = NAN, airHpa = NAN;
   bool airOk = air != AIR_NONE && readAir(airC, airRh, airHpa);
-  if (air != AIR_NONE && !airOk) air = AIR_NONE;  // re-detect next time
+  if (air != AIR_NONE && !airOk) {
+    delay(100);  // one retry: a single bad read shouldn't drop a working sensor
+    airOk = readAir(airC, airRh, airHpa);
+  }
+  const char* airNames[] = {"", "SHT31", "BME280", "AHT20"};
+  const char* failedAir = (air != AIR_NONE && !airOk) ? airNames[air] : nullptr;
+  bool airFailed = failedAir != nullptr;
+  if (airFailed) {
+    Console.printf("TT sensor problem: %s found but not reading: %s. Check its 3.3V, GND, SDA %d and SCL %d wires\n",
+                   failedAir, airProblem[0] ? airProblem : "no reading", i2cSda, i2cScl);
+    air = AIR_NONE;  // re-detect next time
+  } else if (airOk && airProblem[0]) {
+    Console.printf("TT sensor problem: reading sent, but %s\n", airProblem);
+  }
   bool otherSensors = airOk || optLeak || optDoor;
 
   if (sent == 0) {
@@ -488,7 +552,11 @@ void postReadings() {
   }
 
   if (sent == 0) {
-    Console.println("TT no probe: check the wiring (DS18B20 or DHT22 data on GPIO " + String(ONE_WIRE_PIN) + ", 4.7k pull-up to 3.3V)");
+    if (airFailed) {
+      Console.printf("TT nothing sent: %s found but not reading\n", failedAir);
+    } else {
+      Console.println("TT no probe: check the wiring (DS18B20 or DHT22 data on GPIO " + String(ONE_WIRE_PIN) + ", 4.7k pull-up to 3.3V)");
+    }
     return;
   }
   // The dashboard compares this with /flash's current version to offer updates.

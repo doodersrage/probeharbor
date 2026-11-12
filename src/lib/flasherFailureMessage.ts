@@ -13,5 +13,10 @@ export function flasherFailureMessage(line: string, text: Record<string, string 
     const pin = /GPIO (\d+)/.exec(line)?.[1] ?? "4";
     return text.noProbe ? text.noProbe.replace("{pin}", pin) : own;
   }
+  if (line.startsWith("TT nothing sent")) {
+    // firmware 1.2.6+: "TT nothing sent: AHT20 found but not reading"
+    const sensor = /^TT nothing sent: (\S+) found/.exec(line)?.[1];
+    return sensor && text.sensorNotReading ? text.sensorNotReading.replace("{sensor}", sensor) : own;
+  }
   return own;
 }

@@ -41,7 +41,7 @@ export default {
     hardware: "ESP32 + AHT20 per I²C",
     path: "Web-Flasher (ohne Code)",
     notes:
-      "Wird beim Start automatisch erkannt. Getestet auf einem ESP32-S3 (SDA 8, SCL 9). Auf einem klassischen ESP32 wird er wie BME280 und SHT31 verkabelt (SDA 21, SCL 22).",
+      "Wird beim Start automatisch erkannt. Getestet auf einem ESP32-S3 (SDA 8, SCL 9) und auf einem klassischen ESP32, verkabelt wie BME280 und SHT31 (SDA 21, SCL 22).",
     links: [flash],
   },
   "esp32-door": {

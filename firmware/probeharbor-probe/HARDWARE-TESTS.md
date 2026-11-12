@@ -1,4 +1,4 @@
-# Hardware tests still open (firmware 1.2.5)
+# Hardware tests still open (firmware 1.2.6)
 
 Verified so far, on a plain ESP32: browser flash → USB settings → Wi-Fi → first
 reading, with a DS18B20 (1.0.1), a DHT22 (1.1.1), a BME280 on I2C (1.2.2:
@@ -7,11 +7,12 @@ temperature and humidity). The door reed switch (1.2.2) works too, and so does p
 right away on a door change (1.2.3). On an ESP32-S3 (1.2.4, native USB port): browser
 flash → USB settings → Wi-Fi → first reading with an AHT20 on I2C.
 On an ESP32-C3 (1.2.5, native USB port): the same path with a DHT22 on GPIO 4.
+An AHT20 on a plain ESP32 (1.2.5 from `/flash`, then the 1.2.6 reading code).
 Everything else below has only been compiled.
 
 Keep the board on USB with the serial console open in `/flash` (or any serial
 monitor at 115200 baud). Lines starting `TT` are the ones to watch. Write the
-result and the firmware line (`TT … 1.2.5`) next to each test.
+result and the firmware line (`TT … 1.2.6`) next to each test.
 
 ## Parts to order
 
@@ -93,7 +94,27 @@ printed `TT sensor: AHT20 on I2C (SDA 8, SCL 9)` and `TT post 200 probes=1`. The
 dashboard showed temperature and humidity: 77.3°F / 55%, next to an existing indoor
 probe in the same room reading 74.8°F / 57%. The AHT20 sat next to a computer, which
 explains it reading warmer. This is a rough check against another sensor, not a
-calibrated reference. Not checked yet: an AHT20 on a plain ESP32.
+calibrated reference.
+
+**AHT20 on a plain ESP32: verified (2026-11-11).** ESP32-D0WD-V3, SDA 21 / SCL 22.
+Firmware 1.2.5 installed from `/flash`: `TT sensor: AHT20 on I2C (SDA 21, SCL 22)`,
+`TT wifi ok`, `TT post 200 probes=1`, reading 74.5°F / 54.4% in production. Then the
+1.2.6 reading code (flashed as `1.2.6-diag` with `pio run -t upload`; Wi-Fi and key
+kept): `TT post 200 probes=1` every minute, 74.4–75.2°F / 53.5–54.4% in production,
+the same as the library read just before.
+
+**A sensor that stops answering (2026-11-11, ESP32-S3, AHT20 on SDA 8 / SCL 9).**
+The S3 posted every minute until 03:39 ET, then went silent with no errors. After a
+power cycle, 1.2.5 printed `TT sensor: AHT20 …` then `TT no probe … GPIO 4`, which
+pointed at the wrong sensor. The 1.2.6 reading code printed
+`TT sensor problem: AHT20 found but not reading: no data after the measure command`
+every minute and kept running: the sensor ACKed writes but every I2C read failed
+(`i2cRead returned Error -1`, also hidden in the library's boot check). The same
+AHT20 works on the plain ESP32 above, so the fault is the S3's SDA/SCL connection.
+Up to 1.2.5, the library's unbounded busy-wait could freeze the probe on such a
+sensor, which fits the silent stop at 03:39 (not proven). Still open: the S3 rewired
+and posting again; the `TT sensor problem` path on a plain ESP32 and a C3 (compiled
+only).
 
 **SHT31: verified on a plain ESP32 (reported 2026-11-04), firmware 1.2.3
 installed from `/flash`.** Temperature and humidity showed on the device page.

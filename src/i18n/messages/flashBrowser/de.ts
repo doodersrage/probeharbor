@@ -51,6 +51,7 @@ const de: BrowserFlasherMessages = {
     keyRejected: "Schlüssel abgelehnt: Kopiere den Geräteschlüssel erneut unter Dashboard → Devices.",
     configError: "Das Board hat die Einstellungen nicht angenommen. Trag Netzwerkname und Geräteschlüssel ein und sende sie erneut.",
     noProbe: "Kein Fühler gefunden: Prüfe die Verkabelung (DS18B20- oder DHT22-Daten an GPIO {pin}, 4,7-kΩ-Pull-up an 3,3 V).",
+    sensorNotReading: "{sensor} gefunden, aber nicht lesbar: Prüfe die Leitungen 3,3 V, GND, SDA und SCL und versuche es erneut.",
     postUnreachable: "Das Board ist im WLAN, erreicht ProbeHarbor aber nicht. Es versucht es weiter; prüfe, ob dieses Netzwerk ausgehendes HTTPS erlaubt (manche Gastnetze sperren es).",
     postRejected: "ProbeHarbor hat auf die Messung des Boards mit {code} geantwortet. Es versucht es weiter; bleibt es dabei, sieh im Systemstatus nach oder versuch es in ein paar Minuten noch einmal.",
     noReading:

@@ -92,7 +92,7 @@ export const HARDWARE_RECIPES: HardwareRecipe[] = [
     goals: ["freeze", "humidity"],
     status: "verified",
     noCode: true,
-    notes: "Found automatically at boot. Run on an ESP32-S3 (SDA 8, SCL 9). On a classic ESP32 it's wired like the BME280 and SHT31 (SDA 21, SCL 22).",
+    notes: "Found automatically at boot. Run on an ESP32-S3 (SDA 8, SCL 9) and on a classic ESP32, wired like the BME280 and SHT31 (SDA 21, SCL 22).",
     links: [flash],
   },
   {
