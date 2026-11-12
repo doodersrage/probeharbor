@@ -5440,8 +5440,10 @@ hash copied from Supabase (`$2a$`).
 
 ## Firmware 1.2.6: an I2C sensor that won't read can't freeze the probe (2026-11-11)
 
-**Status: Implemented; reading code verified on hardware (plain ESP32, ESP32-S3).
-`/flash` images rebuilt as 1.2.6. Deploys on push.**
+**Status: Deployed 2026-11-11 (Deploy run 43126081720, `a0eab4a`); reading code
+verified on hardware (plain ESP32, ESP32-S3). After deploy: live
+`/firmware/manifest.json` is 1.2.6, all three live images byte-identical to the
+repo, `/flash` carries the new message, `pnpm ops:smoke` passed, 0 server errors.**
 
 Found from the user's ESP32-S3 ("House ESP32-S3"): it posted an AHT20 every minute
 until 03:39 ET, then went silent with no errors. After a power cycle 1.2.5 printed
