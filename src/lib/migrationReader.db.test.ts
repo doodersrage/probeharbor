@@ -8,11 +8,13 @@ import { testDatabaseUrl, useTestDatabase } from "../test/db";
 
 const db = useTestDatabase();
 const LOGIN = "ci_migration_check_test";
+// CI's Postgres requires a password (SCRAM); a random one per run.
+const PASSWORD = `pw_${crypto.randomUUID().replace(/-/g, "")}`;
 
 async function asReader<T>(run: (c: pg.Client) => Promise<T>): Promise<T> {
   const url = new URL(testDatabaseUrl(process.env.PROBEHARBOR_TEST_DB!));
   url.username = LOGIN;
-  url.password = "";
+  url.password = PASSWORD;
   const c = new pg.Client({ connectionString: url.toString() });
   await c.connect();
   try {
@@ -29,7 +31,7 @@ afterAll(async () => {
 describe("migration_reader (0005)", () => {
   it("reads schema_migrations, and nothing else; writes nothing", async () => {
     await db.client().query(`drop role if exists ${LOGIN}`);
-    await db.client().query(`create role ${LOGIN} login in role migration_reader`);
+    await db.client().query(`create role ${LOGIN} login password '${PASSWORD}' in role migration_reader`);
     await db.client().query("insert into public.schema_migrations (version, checksum) values ('0001_baseline', 'abc')");
 
     await expect(asReader((c) => c.query("select version, checksum from public.schema_migrations"))).resolves.toMatchObject({
