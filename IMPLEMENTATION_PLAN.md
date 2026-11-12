@@ -534,11 +534,11 @@ The detailed increment log follows the Milestone 0 audit below. Summary:
 | 1 Sensor data | Done for the audit gaps | 1.1–1.8, D5, D6 (cleanup sizing: all zero) | — |
 | 2 Alerts | Done for the audit gaps | 2.1–2.7, D1–D8, D7b | Property name in alert titles (deferred) |
 | 3 Setup / hardware | Code done; hardware tests open | 3.1–3.3 | Physical tests in `firmware/probeharbor-probe/HARDWARE-TESTS.md` |
-| 4 Operations | Partial | 4.1–4.4; dump restore rehearsed (2026-11-11) | Neon restore window (owner: console); restore into Neon + Worker switch not rehearsed; migration check in CI (decision) |
+| 4 Operations | Partial | 4.1–4.4; dump restore rehearsed; warn-only migration check in CI (2026-11-11) | Owner: apply 0005 to production + create `ci_migration_check` + secret; Neon restore window (console); restore into Neon + Worker switch not rehearsed |
 | 5 Security | Done for the audit gaps | S1–S8, rate limiting; legacy raw-token lookups removed, inbound V2 required, copied bcrypt passwords re-hashed on sign-in (2026-11-11) | Watch the bcrypt count fall; optionally drop `bcryptjs` once it's 0 |
 | 6 Dashboard | Done | 6.1–6.9, local-day date filters | — |
 | 7 Integrations | Spec done | 7.1–7.4, HA v1.2.0 (V2 signing), inbound V2 required (2026-11-11) | — |
-| 8 Polish | Mostly done | 8.1–8.3, dashboard axe (0 violations), billing lifecycle db test (2026-11-11) | **Billing bug: a late older Stripe event can restore paid access (decision)**; past_due policy (decision) |
+| 8 Polish | Mostly done | 8.1–8.3, dashboard axe (0 violations), billing lifecycle db test and late-event fix (2026-11-11) | past_due policy (decision) |
 
 **Operational must-do:** production has been on Neon (+ Better Auth) since
 2026-11-07; Supabase is paused. Keep running `pnpm db:backup` (reads
@@ -5576,7 +5576,7 @@ code, local Postgres) and reads `getUserEntitlements` after each step.
       (deleted; row `canceled`). All as expected.
 - [x] A forged signature: 400, nothing changes. The same event id twice:
       the second is acknowledged as a duplicate and not applied again.
-- [ ] **Bug:** an older `customer.subscription.updated` (active) delivered
+- [x] **Bug (fixed the same day, see below):** an older `customer.subscription.updated` (active) delivered
       after `customer.subscription.deleted` sets the row back to active and
       restores the paid plan. Each event overwrites the stored state, and
       Stripe doesn't guarantee order (a retried event arrives after later
@@ -5597,4 +5597,51 @@ code, local Postgres) and reads `getUserEntitlements` after each step.
 Checked first (read-only): every one of the 11 users belongs to exactly one
 property (11 households). The name would never show, and each alert send
 would gain a lookup. Revisit when someone has a second property.
+
+------------------------------------------------------------------------
+
+## Billing late-event fix, CI migration check, and a flaky test (2026-11-11)
+
+**Status: Code implemented and verified locally; deploys on push. Migration
+0005 applied to the Neon dev branch only. Production steps are the owner's
+(the agent's production migration was refused by the permission check).**
+
+- [x] Stripe webhook: on `customer.subscription.created/updated/deleted`
+      the route stores the subscription as Stripe has it now
+      (`subscriptions.retrieve`), not the event's copy, so a late older
+      event can't restore paid access. A failed read throws: the event is
+      released and the route answers 500, so Stripe retries. A subscription
+      Stripe no longer has (404 / `resource_missing`) falls back to the
+      event's copy. Same key and permission as the existing checkout read.
+      `webhook.test.ts` +3 (current state stored; Stripe down → 500 +
+      release; 404 → event copy). `webhook.db.test.ts`: the late-event
+      case now passes (was `it.fails`); a stand-in answers the reads with
+      each test's latest state. Mutation: storing the event's copy again
+      fails the late-event test.
+- [x] Migration `0005_migration_reader_role.sql`: `migration_reader`
+      (NOLOGIN) may read `public.schema_migrations` only (grant + RLS
+      policy); creates the table if missing (test databases). Undo SQL in
+      the header. `migrationReader.db.test.ts`: a login role in it reads
+      `schema_migrations`, gets "permission denied" on `auth_users` and
+      `sensor_readings` and on inserts. Applied to the dev branch
+      (`db:migrate --check`: none pending).
+- [x] CI job `migrations` (push to `main` only): `db-migrate.mjs --check`
+      against `MIGRATION_CHECK_DATABASE_URL`; a warning annotation when
+      something is pending, never a failure; a notice and skip while the
+      secret is missing. Setup in `docs/guide/deploy.md`.
+- [ ] **Owner, production:** `pnpm db:backup`, `pnpm db:migrate` (applies
+      0005), then create `ci_migration_check` and the GitHub secret
+      (commands in `docs/guide/deploy.md`). Until then CI only prints the
+      notice and `db:pending` lists 0005.
+- [x] Flaky test fixed: `freezeSubscriptions.db.test.ts` "tampered sid"
+      replaced the id's last character with "0", which is a no-op for ids
+      ending in "0" (1 in 16), so the real link was used and the test
+      failed. Seen 2 of ~17 runs; after the fix 12 of 12 passed.
+- `bcryptjs` stays: all 8 copied bcrypt hashes are still there (none of
+  those users has signed in with a password since the re-hash). Removing
+  it would lock them out until they reset their password. Remove when the
+  count query returns 0.
+- Evidence: `pnpm test` 459 files / 3580 tests; `pnpm test:db` 53 files /
+  406 tests (own throwaway Postgres); typecheck 0 / 0; lint 55 warnings
+  (baseline); build OK.
 
