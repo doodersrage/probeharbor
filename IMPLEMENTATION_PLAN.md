@@ -5436,3 +5436,54 @@ hash copied from Supabase (`$2a$`).
   `probeharbor_test_*` database, and the migrations create no roles, so a
   run against it left nothing behind (checked), but use a free port.
 
+------------------------------------------------------------------------
+
+## Firmware 1.2.6: an I2C sensor that won't read can't freeze the probe (2026-11-11)
+
+**Status: Implemented; reading code verified on hardware (plain ESP32, ESP32-S3).
+`/flash` images rebuilt as 1.2.6. Deploys on push.**
+
+Found from the user's ESP32-S3 ("House ESP32-S3"): it posted an AHT20 every minute
+until 03:39 ET, then went silent with no errors. After a power cycle 1.2.5 printed
+`TT sensor: AHT20 …` followed by `TT no probe … DS18B20 or DHT22 … GPIO 4`.
+
+Problems (verified in code and on the board):
+- `Adafruit_AHTX0::getEvent` waits for the busy bit with no limit, and a failed
+  status read returns 0xFF (busy), so a sensor that stops answering can hang
+  `loop()` for good. Fits the silent stop at 03:39; not proven.
+- The same 0xFF also has the "calibrated" bit set, so detection passed even though
+  the first read already failed (`i2cRead returned Error -1` at boot).
+- A found-but-unreadable I2C sensor ended in the DS18B20/DHT22 "GPIO 4" hint.
+
+- [x] `readAht20()` in `main.cpp` reads the AHT20 directly: trigger, 80 ms, then
+      poll the status for at most 500 ms. Each failure names its cause (no answer,
+      no data, stuck busy, not calibrated, impossible values). Detection still
+      uses the library's `begin()`.
+- [x] One retry before an I2C sensor is dropped (re-detected next cycle).
+- [x] New lines: `TT sensor problem: <name> found but not reading: <why>. Check its
+      3.3V, GND, SDA n and SCL n wires`, and, when nothing else was read,
+      `TT nothing sent: <name> found but not reading` instead of `TT no probe`.
+      Neither starts with `TT sensor: `, which the flasher reads as a working sensor.
+- [x] Flasher: `TT nothing sent` ends the wait as a failure with the new
+      `status.sensorNotReading` ("Found the {sensor} but couldn't read it…"), in
+      5 locales. `flasherFailureMessage.test.ts` +1 (and the locale check).
+- [x] Version 1.2.6; `/flash` images and manifest rebuilt
+      (`PIO=… node scripts/build-firmware.mjs`, all three builds succeeded).
+- [x] `/hardware` AHT20 card and `HARDWARE-TESTS.md`: AHT20 on a plain ESP32
+      verified; the S3 diagnosis recorded.
+- Evidence (hardware, real boards, built as `1.2.6-diag`, flashed with
+  `pio run -t upload`, Wi-Fi and key kept):
+  - ESP32-S3 (MAC …d0:0c), AHT20 on SDA 8 / SCL 9: every minute
+    `TT sensor problem: AHT20 found but not reading: no data after the measure
+    command` and `TT nothing sent…`; no freeze over 3 cycles.
+  - Same AHT20 on a plain ESP32-D0WD-V3, SDA 21 / SCL 22: `TT post 200 probes=1`
+    every minute; production 74.4–75.2°F / 53.5–54.4%, matching the 1.2.5 library
+    read just before (74.5°F / 54.4%). So the sensor is fine; the S3's SDA/SCL
+    connection is the fault.
+  - The release images (1.2.6) themselves are compile-checked only; the ESP32-C3
+    path is compiled only. `pnpm test` 459 files / 3574 tests; typecheck 0 / 0;
+    lint 55 warnings (baseline); build OK.
+- Open: the S3 rewired and posting again; `TT sensor problem` on a C3; the same
+  bounded read for SHT31/BME280 (their libraries return NaN rather than hang, so
+  they already fail cleanly).
+
