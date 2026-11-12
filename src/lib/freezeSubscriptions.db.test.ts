@@ -118,7 +118,7 @@ describe("freeze alert sign-up (Neon)", () => {
 
     // A tampered link does nothing.
     const link = lastMoveLink("sam@example.com");
-    for (const [key, value] of [["lat", "33.75"], ["label", "Atlanta"], ["sid", before!.id.replace(/.$/, "0")], ["sig", "f".repeat(64)]]) {
+    for (const [key, value] of [["lat", "33.75"], ["label", "Atlanta"], ["sid", before!.id.replace(/.$/, (last) => (last === "0" ? "1" : "0"))], ["sig", "f".repeat(64)]]) {
       const tampered = new URLSearchParams(link);
       tampered.set(key!, value!);
       await expect(applyFreezeAlertMove(tampered)).resolves.toEqual({ ok: false });
