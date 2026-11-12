@@ -198,6 +198,12 @@ const untestedLabel = hardwareMessages(locale).statusLabels["built-in"];
             } else if (line.startsWith("TT post failed")) {
               postProblem = text.postUnreachable ?? "";
               status.textContent = postProblem;
+            } else if (/^TT post -\d+ /.test(line)) {
+              // The HTTP client's own errors (e.g. -5, connection lost). The
+              // reading may still have arrived; the board keeps retrying either way.
+              const code = /^TT post (-\d+)/.exec(line)?.[1] ?? "";
+              postProblem = (text.postConnectionLost ?? "").replace("{code}", code);
+              status.textContent = postProblem;
             } else if (/^TT post \d{3} /.test(line)) {
               // 401/403 are followed by "TT key rejected", handled below.
               const code = line.slice("TT post ".length, "TT post ".length + 3);

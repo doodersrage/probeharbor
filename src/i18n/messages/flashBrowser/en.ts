@@ -48,6 +48,7 @@ const en = {
     noProbe: "No probe found: check the wiring (DS18B20 or DHT22 data on GPIO {pin}, 4.7kΩ pull-up to 3.3V).",
     sensorNotReading: "Found the {sensor} but couldn't read it: check its 3.3V, GND, SDA and SCL wires, then try again.",
     postUnreachable: "The board is on Wi‑Fi but couldn't reach ProbeHarbor. It keeps retrying; check that this network allows outgoing HTTPS (some guest networks block it).",
+    postConnectionLost: "The board's connection to ProbeHarbor dropped while sending (error {code}). It keeps retrying; a weak Wi‑Fi signal or an unsteady power supply can cause this.",
     postRejected: "ProbeHarbor answered {code} to the board's reading. It keeps retrying; if this stays, check System status or try again in a few minutes.",
     noReading:
       "The board has the settings but no reading arrived yet. Check the sensor wiring (data to GPIO 4, 4.7kΩ to 3.3V), then try again.",

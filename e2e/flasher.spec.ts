@@ -15,6 +15,8 @@ type BoardMode =
   | "no-probe"
   | "post-unreachable"
   | "post-500"
+  | "post-lost"
+  | "sensor-not-reading"
   | "post-recovers";
 
 const DEVICE_KEY = "0123456789abcdef0123456789abcdef0123456789abcdef";
@@ -67,6 +69,16 @@ function installFakeBoard(mode: BoardMode) {
             say("TT post failed: could not open connection", 700);
           } else if (mode === "post-500") {
             say("TT post 500 probes=1", 700);
+          } else if (mode === "post-lost") {
+            // firmware 1.2.6 on an S3 with a flaky link: the HTTP client's -5
+            say("TT post -5 probes=1", 700);
+          } else if (mode === "sensor-not-reading") {
+            say("TT sensor: AHT20 on I2C (SDA 8, SCL 9)", 600);
+            say(
+              "TT sensor problem: AHT20 found but not reading: no data after the measure command. Check its 3.3V, GND, SDA 8 and SCL 9 wires",
+              650,
+            );
+            say("TT nothing sent: AHT20 found but not reading", 700);
           } else if (mode === "post-recovers") {
             // The firmware retries; a later upload can still succeed.
             say("TT post failed: could not open connection", 700);
@@ -162,6 +174,7 @@ test.describe("browser flasher", () => {
     ["wifi-fail", /Wi.Fi failed: check the network name and password/],
     ["bad-key", /Key rejected: copy the device key again/],
     ["no-probe", /No probe found: check the wiring \(DS18B20 or DHT22 data on GPIO 4/],
+    ["sensor-not-reading", /^Found the AHT20 but couldn't read it: check its 3\.3V, GND, SDA and SCL wires/],
   ] as const) {
     test(`reports a ${mode} board`, async ({ page }) => {
       const board = await sendSettings(page, mode);
@@ -176,6 +189,7 @@ test.describe("browser flasher", () => {
   for (const [mode, message] of [
     ["post-unreachable", /couldn't reach ProbeHarbor.*outgoing HTTPS/],
     ["post-500", /ProbeHarbor answered 500 to the board's reading/],
+    ["post-lost", /connection to ProbeHarbor dropped while sending \(error -5\)/],
   ] as const) {
     test(`explains a failed first upload (${mode})`, async ({ page }) => {
       await page.addInitScript(installFakeBoard, mode);

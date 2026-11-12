@@ -42,6 +42,7 @@ describe("flasherFailureMessage", () => {
       }
       expect(messages.status.noProbe).toContain("{pin}");
       expect(messages.status.sensorNotReading).toContain("{sensor}");
+      expect(messages.status.postConnectionLost).toContain("{code}");
     }
   });
 

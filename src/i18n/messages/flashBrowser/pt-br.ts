@@ -53,6 +53,7 @@ const ptBr: BrowserFlasherMessages = {
     noProbe: "Nenhuma sonda encontrada: confira a ligação (dados do DS18B20 ou DHT22 no GPIO {pin}, pull-up de 4,7 kΩ para 3,3 V).",
     sensorNotReading: "O {sensor} foi encontrado, mas não deu leitura: confira os fios de 3,3 V, GND, SDA e SCL e tente de novo.",
     postUnreachable: "A placa está no Wi‑Fi, mas não conseguiu alcançar o ProbeHarbor. Ela continua tentando; confira se esta rede permite HTTPS de saída (algumas redes de convidados bloqueiam).",
+    postConnectionLost: "A conexão da placa com o ProbeHarbor caiu durante o envio (erro {code}). Ela continua tentando; um sinal de Wi‑Fi fraco ou uma alimentação instável podem causar isso.",
     postRejected: "O ProbeHarbor respondeu {code} à leitura da placa. Ela continua tentando; se continuar assim, veja o status do sistema ou tente de novo em alguns minutos.",
     noReading:
       "A placa recebeu as configurações, mas nenhuma leitura chegou ainda. Confira a ligação do sensor (dados no GPIO 4, 4,7 kΩ para 3,3 V) e tente de novo.",

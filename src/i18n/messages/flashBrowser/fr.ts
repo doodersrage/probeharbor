@@ -53,6 +53,7 @@ const fr: BrowserFlasherMessages = {
     noProbe: "Aucune sonde trouvée : vérifiez le câblage (données du DS18B20 ou DHT22 sur GPIO {pin}, résistance de tirage de 4,7 kΩ vers 3,3 V).",
     sensorNotReading: "{sensor} détecté, mais illisible : vérifiez les fils 3,3 V, GND, SDA et SCL, puis réessayez.",
     postUnreachable: "La carte est sur le Wi‑Fi mais n’a pas pu joindre ProbeHarbor. Elle continue d’essayer ; vérifiez que ce réseau autorise le HTTPS sortant (certains réseaux invités le bloquent).",
+    postConnectionLost: "La connexion de la carte à ProbeHarbor a été coupée pendant l’envoi (erreur {code}). Elle continue d’essayer ; un signal Wi‑Fi faible ou une alimentation instable peut en être la cause.",
     postRejected: "ProbeHarbor a répondu {code} à la mesure de la carte. Elle continue d’essayer ; si cela persiste, consultez l’état du système ou réessayez dans quelques minutes.",
     noReading:
       "La carte a reçu les réglages, mais aucun relevé n’est encore arrivé. Vérifiez le câblage du capteur (données sur GPIO 4, 4,7 kΩ vers le 3,3 V), puis réessayez.",
