@@ -54,6 +54,36 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm typecheck
 
+  # Warns (never fails CI) when production has migrations this commit expects
+  # but nobody has applied yet. Connects as a role that can read only
+  # public.schema_migrations (migration 0005). Skipped until the secret exists,
+  # and on pull requests (no secrets there).
+  migrations:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 9
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          check-latest: true
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Pending migrations on production (warning only)
+        env:
+          MIGRATION_CHECK_DATABASE_URL: ${{ secrets.MIGRATION_CHECK_DATABASE_URL }}
+        run: |
+          if [ -z "$MIGRATION_CHECK_DATABASE_URL" ]; then
+            echo "::notice::MIGRATION_CHECK_DATABASE_URL isn't set; skipping the pending-migration check."
+            exit 0
+          fi
+          if ! node scripts/db-migrate.mjs --check --url-env MIGRATION_CHECK_DATABASE_URL; then
+            echo "::warning::Production has pending migrations (or the check failed). Apply them with pnpm db:migrate before relying on code that needs them."
+          fi
+
   lint:
     runs-on: ubuntu-latest
     steps:

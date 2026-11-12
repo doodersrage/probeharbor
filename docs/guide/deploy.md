@@ -97,6 +97,21 @@ the run. Run `pnpm db:pending` first to list what isn't applied yet.
   production (exit 1 if any). It's read-only.
 - After applying, run the read-only check from the migration's entry in
   `IMPLEMENTATION_PLAN.md` when there is one (e.g. backfill counts).
+- CI's `migrations` job runs the same check against production on every
+  push to `main` and adds a **warning** (never a failure) when something is
+  pending. It connects as `ci_migration_check`, a role that can read only
+  `public.schema_migrations` (migration 0005). One-time setup, after
+  applying 0005 to production:
+
+  ```bash
+  # as the owner, on production; PASSWORD is a long random value
+  psql "$DATABASE_URL_UNPOOLED" -c "CREATE ROLE ci_migration_check LOGIN PASSWORD '<PASSWORD>' IN ROLE migration_reader"
+  # the same direct (unpooled) URL with that user and password:
+  gh secret set MIGRATION_CHECK_DATABASE_URL   # paste postgresql://ci_migration_check:<PASSWORD>@<host>/<db>?sslmode=require
+  ```
+
+  Without the secret the job only prints a notice. To revoke: delete the
+  secret and `DROP ROLE ci_migration_check`.
 
 ## Rollback and recovery
 
