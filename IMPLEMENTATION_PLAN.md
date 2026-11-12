@@ -538,7 +538,7 @@ The detailed increment log follows the Milestone 0 audit below. Summary:
 | 5 Security | Done for the audit gaps | S1–S8, rate limiting; legacy raw-token lookups removed, inbound V2 required, copied bcrypt passwords re-hashed on sign-in (2026-11-11) | Watch the bcrypt count fall; optionally drop `bcryptjs` once it's 0 |
 | 6 Dashboard | Done | 6.1–6.9, local-day date filters | — |
 | 7 Integrations | Spec done | 7.1–7.4, HA v1.2.0 (V2 signing), inbound V2 required (2026-11-11) | — |
-| 8 Polish | Mostly done | 8.1–8.3, dashboard axe (0 violations), billing lifecycle db test and late-event fix (2026-11-11) | past_due policy (decision) |
+| 8 Polish | Mostly done | 8.1–8.3, dashboard axe (0 violations), billing lifecycle db test, late-event fix, past_due keeps access (2026-11-11) | A "payment failed, update your card" notice for past_due users |
 
 **Operational must-do:** production has been on Neon (+ Better Auth) since
 2026-11-07; Supabase is paused. Keep running `pnpm db:backup` (reads
@@ -5586,8 +5586,8 @@ code, local Postgres) and reads `getUserEntitlements` after each step.
       `checkout.session.completed` already does; a failed read returns 500
       and Stripe retries. Alternative: keep the last applied
       `event.created` per subscription and ignore older events (migration).
-- Policy as tested (decision, not a bug): `past_due` (a failed renewal)
-  removes paid access at once; only `active`/`trialing` count.
+- Policy as first tested: `past_due` removed paid access at once. Changed
+  the same day by owner decision, see "past_due keeps access" below.
 - Not covered: `checkout.session.completed` (it calls Stripe), real Stripe
   test-mode checkout in a browser (the existing e2e only checks the
   redirect to checkout.stripe.com).
@@ -5644,4 +5644,33 @@ would gain a lookup. Revisit when someone has a second property.
 - Evidence: `pnpm test` 459 files / 3580 tests; `pnpm test:db` 53 files /
   406 tests (own throwaway Postgres); typecheck 0 / 0; lint 55 warnings
   (baseline); build OK.
+
+------------------------------------------------------------------------
+
+## past_due keeps access while Stripe retries (owner decision, 2026-11-11)
+
+**Status: Implemented and verified locally. No migration. Deploys on push.**
+
+Owner's choice: a failed renewal keeps the paid plan while Stripe retries the
+card; access ends when Stripe gives up.
+
+- [x] `isActiveSubscriptionStatus` (`src/lib/stripe.ts`): active, trialing
+      **and past_due**. `unpaid`, `incomplete(_expired)`, `paused` and
+      `canceled` don't count. Every caller means "Stripe is still billing
+      this", so the one helper changed. Side effects, both fixes:
+      - checkout: a past_due customer goes to the billing portal instead of
+        starting a second subscription (double billing);
+      - account deletion: a past_due subscription is canceled too, so Stripe
+        stops retrying the card of a deleted account.
+      - The pricing and plans cards show "manage billing" for past_due.
+- Evidence: `stripe.test.ts` (past_due active; unpaid, incomplete,
+  incomplete_expired, paused, canceled not), `accountLifecycle.test.ts` +1,
+  `checkout.test.ts` +1, `webhook.db.test.ts` lifecycle: past_due keeps
+  member, unpaid → free, active again → member. `pnpm test` 3582;
+  `pnpm test:db` 406 (Postgres with SCRAM like CI); typecheck 0; lint 55.
+- Depends on Stripe's settings: what happens after the last retry
+  (cancel, or mark unpaid) is set in the Stripe dashboard (Billing →
+  Revenue recovery). Both end access here. Not checked from this repo.
+- Follow-up: tell past_due users that the payment failed and link the
+  billing portal (no such notice exists today).
 
