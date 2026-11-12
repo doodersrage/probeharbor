@@ -63,6 +63,7 @@ const passwordUpdated = Astro.url.searchParams.get("password") === "updated";
 const signOutAllFailed = Astro.url.searchParams.get("signout_all") === "failed";
 const deleteError = Astro.url.searchParams.get("delete_error");
 const retentionSaved = Astro.url.searchParams.get("retention_saved");
+const retentionError = Astro.url.searchParams.get("retention_error");
 const tenantSaved = Astro.url.searchParams.get("tenant_saved");
 const tenantError = Astro.url.searchParams.get("tenant_error");
 const pinnedSaved = Astro.url.searchParams.get("pinned_saved");
@@ -164,6 +165,7 @@ const planLabel =
       tierLabel={planLabel}
       canCustomizeRetention={entitlements.historyDays >= 90}
       retentionSaved={Boolean(retentionSaved)}
+      retentionError={Boolean(retentionError)}
     />
 
     <PwaInstallCard />

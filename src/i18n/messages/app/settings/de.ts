@@ -16,6 +16,7 @@ const de: SettingsMessages = {
     tipsHidden: "Tipps zu Begleit-Apps in der Übersicht ausgeblendet.",
     tipsReset: "Tipps zu Begleit-Apps werden in der Übersicht wieder angezeigt.",
     retentionSaved: "Aufbewahrungseinstellung gespeichert.",
+    retentionError: "Die Aufbewahrungseinstellung konnte nicht gespeichert werden. Die bisherige Einstellung gilt weiter; versuche es erneut.",
     tenantSaved: "Mieterkontakt gespeichert.",
     tenantError: "Mieterkontakt konnte nicht gespeichert werden.",
   },

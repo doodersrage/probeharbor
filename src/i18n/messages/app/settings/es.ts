@@ -16,6 +16,7 @@ const es: SettingsMessages = {
     tipsHidden: "Consejos de apps complementarias ocultos en Resumen.",
     tipsReset: "Los consejos de apps complementarias vuelven a mostrarse en Resumen.",
     retentionSaved: "Preferencia de conservación guardada.",
+    retentionError: "No se pudo guardar la preferencia de conservación. Se mantiene el ajuste anterior; inténtalo de nuevo.",
     tenantSaved: "Contacto del inquilino guardado.",
     tenantError: "No se pudo guardar el contacto del inquilino.",
   },

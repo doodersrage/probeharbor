@@ -16,6 +16,7 @@ const fr: SettingsMessages = {
     tipsHidden: "Conseils sur les applis compagnons masqués dans la vue d’ensemble.",
     tipsReset: "Conseils sur les applis compagnons de nouveau affichés dans la vue d’ensemble.",
     retentionSaved: "Préférence de conservation enregistrée.",
+    retentionError: "Impossible d’enregistrer la préférence de conservation. Le réglage précédent reste en place ; réessayez.",
     tenantSaved: "Contact du locataire enregistré.",
     tenantError: "Impossible d’enregistrer le contact du locataire.",
   },

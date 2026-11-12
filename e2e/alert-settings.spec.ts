@@ -105,3 +105,14 @@ test.describe("dashboard overview", () => {
     await expect(page.locator("#status")).toBeVisible();
   });
 });
+
+test.describe("settings notices", () => {
+  test("a failed retention save is shown, not swallowed", async ({ page }) => {
+    test.skip(!getE2ECredentials(), "Set E2E_TEST_EMAIL and E2E_TEST_PASSWORD");
+
+    await signIn(page, "/dashboard/settings?retention_error=1");
+    await expect(page.locator("#data-export").getByRole("alert")).toContainText(
+      "Could not save the retention preference",
+    );
+  });
+});

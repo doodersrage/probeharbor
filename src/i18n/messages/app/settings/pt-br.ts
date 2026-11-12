@@ -16,6 +16,7 @@ const ptBr: SettingsMessages = {
     tipsHidden: "Dicas de apps complementares ocultas na Visão geral.",
     tipsReset: "As dicas de apps complementares voltaram a aparecer na Visão geral.",
     retentionSaved: "Preferência de retenção salva.",
+    retentionError: "Não foi possível salvar a preferência de retenção. A configuração anterior continua valendo; tente de novo.",
     tenantSaved: "Contato do inquilino salvo.",
     tenantError: "Não foi possível salvar o contato do inquilino.",
   },

@@ -16,6 +16,7 @@ const en = {
     tipsHidden: "Companion tips hidden on Overview.",
     tipsReset: "Companion tips shown on Overview again.",
     retentionSaved: "Retention preference saved.",
+    retentionError: "Could not save the retention preference. Your previous setting is unchanged; try again.",
     tenantSaved: "Tenant contact saved.",
     tenantError: "Could not save tenant contact.",
   },

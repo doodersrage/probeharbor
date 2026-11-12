@@ -16,10 +16,18 @@ interface Props {
   canCustomizeRetention: boolean;
   /** `?retention_saved=1` after the form posts back here. */
   retentionSaved?: boolean;
+  /** `?retention_error=1` when saving failed (the old setting stays). */
+  retentionError?: boolean;
 }
 
-const { dataRetentionDays, historyDays, tierLabel, canCustomizeRetention, retentionSaved = false } =
-  Astro.props;
+const {
+  dataRetentionDays,
+  historyDays,
+  tierLabel,
+  canCustomizeRetention,
+  retentionSaved = false,
+  retentionError = false,
+} = Astro.props;
 const maxCustomDays = historyDays >= 365 ? 730 : historyDays;
 const locale = getLocale(Astro);
 const messages = settingsMessages(locale);
@@ -41,6 +49,9 @@ function retentionLabel(days: number): string {
 
   {retentionSaved && (
     <p class="alert-success mt-0 mb-3" role="status">{messages.notices.retentionSaved}</p>
+  )}
+  {retentionError && (
+    <p class="alert-warning mt-0 mb-3" role="alert">{messages.notices.retentionError}</p>
   )}
 
   <h3 class="text-base font-semibold mb-2">{t.retentionHeading}</h3>
