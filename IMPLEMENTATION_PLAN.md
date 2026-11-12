@@ -4099,8 +4099,8 @@ worktrees, one commit per item, merged and re-checked together.
 - Decided (owner, 2026-11-05): `forecast`, `runway`, `nws` and `stuck` are
   safety kinds too (the first three are already "critical" for quiet hours
   and expire after a day; stuck closes on recovery).
-- Open: rule-check panel still reads °F; device calibration offset has no
-  unit; retention save errors aren't shown; the failing-channel row and
+- Open: ~~rule-check panel still reads °F; device calibration offset has no
+  unit; retention save errors aren't shown~~ (done 2026-11-11, see the end); the failing-channel row and
   claims link don't update on soft refresh; portfolio health and public
   share pages keep the fixed 2 h staleness.
 
@@ -5521,4 +5521,42 @@ Problems (verified in code and on the board):
   signed-in session against a restored copy; a Worker code rollback; Neon's
   own point-in-time restore (its window on this plan still needs reading
   from the Neon console, owner).
+
+------------------------------------------------------------------------
+
+## Growth housekeeping and three dashboard fixes (2026-11-11)
+
+**Status: Implemented and verified locally. No migration. Deploys on push.**
+
+Production sizing first (read-only): database 85 MB; `sensor_readings` 54 MB
+(24 MB heap, 29 MB indexes, all three indexes in use), ~15k rows/day, oldest
+2026-08-25, so the 90-day raw retention starts deleting around 2026-11-23.
+Steady state at today's rate is roughly 1.35M raw rows (~350 MB with
+indexes, estimated from 270 bytes/row): check that against the Neon plan's
+storage limit (owner). `sensor-retention` runs daily at 03:00 UTC and
+succeeds. Two tables only grew: `job_runs` (~25k rows since August) and
+`alert_snooze_tokens` (12 641 of 13 988 expired).
+
+- [x] Housekeeping, daily with retention (`runHousekeeping`, job
+      `housekeeping`, ops notice on failure): job runs older than 30 days
+      (every reader looks back 24 h or at the latest 50 runs) and snooze
+      links 30+ days past expiry (an old link says "expired" for a month,
+      then "invalid"). At most 5000 rows per table per run. Readings are
+      never touched. `jobs.db.test.ts` +2.
+- [x] Settings → Data & export shows a failed retention save
+      (`?retention_error=1` was sent but never read). 5 locales; signed-in
+      e2e check added (runs in CI against the dev branch, not locally: the
+      local `.env` points at production).
+- [x] Rule check ("Check saved rules now") writes its sentences in the
+      viewer's °F/°C preference: temperatures (°F−32)×5/9, drops ×5/9;
+      matching is unchanged (still °F). Condition names in the panel follow
+      the preference too. `alertRules.test.ts` +1, `rule-check.test.ts` +1.
+- [x] Device page: the calibration offset shows its unit (°F for
+      temperature, which is how temperatures are stored; % for humidity;
+      otherwise the sensor's unit), in the field label and the summary
+      line; °C viewers get "1 °C is 1.8 °F". Saving is unchanged.
+      `sensorCalibration.test.ts` +1. 5 locales.
+- Evidence: `pnpm test` 459 files / 3577 tests; `pnpm test:db` 51 files /
+  402 tests (own throwaway Postgres); typecheck 0 / 0; lint 55 warnings
+  (baseline); build OK. Not checked signed in on a real page.
 
