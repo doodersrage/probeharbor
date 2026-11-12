@@ -5,7 +5,7 @@ const es: BrandMessages = {
   positioning: "Monitoreo de sensores para garajes y talleres",
   tagline: "Registra y analiza sensores en garajes, talleres, áticos, sótanos ventilados y naves.",
   description:
-    "ProbeHarbor es monitoreo de congelación e inundación de código abierto para garajes, talleres y áticos: ingesta ESP/Arduino, curvas en vivo y alertas.",
+    "ProbeHarbor es monitoreo de congelación e inundación con código fuente disponible para garajes, talleres y áticos: ingesta ESP/Arduino, curvas en vivo y alertas.",
 };
 
 export default es;

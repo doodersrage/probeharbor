@@ -4,7 +4,7 @@ export default {
   home: [
     {
       question: "¿Qué es ProbeHarbor?",
-      answer: `ProbeHarbor es monitoreo de congelación e inundación de código abierto para garajes, talleres y áticos: ingesta ESP/Arduino, curvas en vivo y alertas. Monta tu equipo con ESP32, Pico W o Arduino; ProbeHarbor se encarga del panel alojado, el historial y las alertas para tu hogar.`,
+      answer: `ProbeHarbor es monitoreo de congelación e inundación con código fuente disponible para garajes, talleres y áticos: ingesta ESP/Arduino, curvas en vivo y alertas. Monta tu equipo con ESP32, Pico W o Arduino; ProbeHarbor se encarga del panel alojado, el historial y las alertas para tu hogar.`,
     },
     {
       question: "¿Cómo conecto sensores ESP32, Pico W o Arduino?",

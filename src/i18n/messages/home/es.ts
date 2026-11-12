@@ -11,7 +11,7 @@ const es: HomeMessages = {
     "Gráfico de telemetría en vivo de ProbeHarbor: curvas de sondas con humedad, punto de rocío, alertas de congelación y contactos de inundación",
   breadcrumbHome: "Inicio",
   brandDefinition:
-    "ProbeHarbor vigila sensores de temperatura y fugas en garajes, talleres, áticos, sótanos ventilados y naves, con gráficos en vivo, historial y alertas de congelación, fugas y calor. Código abierto y con plan gratuito.",
+    "ProbeHarbor vigila sensores de temperatura y fugas en garajes, talleres, áticos, sótanos ventilados y naves, con gráficos en vivo, historial y alertas de congelación, fugas y calor. Código fuente disponible y con plan gratuito.",
   hero: {
     promise: "Entérate antes de que se congelen tus tuberías o se inunde tu garaje.",
     openDashboard: "Abrir el panel",
@@ -105,7 +105,7 @@ const es: HomeMessages = {
     hub: "Abrir el centro de guías",
   },
   ossHtml:
-    'Panel de código abierto y sketches de ejemplo para sensores. <a class="text-link" href="https://github.com/doodersrage/probeharbor" target="_blank" rel="noreferrer">Ver el código en GitHub</a>.',
+    'Panel con código fuente disponible y sketches de ejemplo con licencia MIT para sensores. <a class="text-link" href="https://github.com/doodersrage/probeharbor" target="_blank" rel="noreferrer">Ver el código en GitHub</a>.',
   faqLede:
     "Respuestas claras para quienes cablean sondas y contactos de humedad y configuran alertas de congelación o inundación.",
 };

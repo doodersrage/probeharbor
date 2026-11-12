@@ -17,7 +17,7 @@ const es: ShareKitMessages = {
   scenarios: "Casos",
   whyTitle: "Por qué está en la web principal",
   whyCopy:
-    "Los proyectos de código abierto suelen guardar sus textos de lanzamiento en notas privadas. Nosotros publicamos los nuestros para que cualquiera, tú incluido, pueda ayudar a correr la voz sin inventarse el mensaje desde cero. Si encuentras una publicación que coincide con una plantilla de aquí, es lo normal: el fundador (y ojalá la comunidad) usa el mismo kit.",
+    "La mayoría de los proyectos suele guardar sus textos de lanzamiento en notas privadas. Nosotros publicamos los nuestros para que cualquiera, tú incluido, pueda ayudar a correr la voz sin inventarse el mensaje desde cero. Si encuentras una publicación que coincide con una plantilla de aquí, es lo normal: el fundador (y ojalá la comunidad) usa el mismo kit.",
   whyNote:
     "Por favor, no hagas spam. Elige comunidades donde las sondas DIY, Home Assistant o el mantenimiento de la casa en invierno vengan al caso, y adapta los textos al hilo.",
   redditTitle: "Reddit / foros",

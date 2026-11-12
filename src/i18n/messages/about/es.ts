@@ -12,7 +12,7 @@ const es: AboutMessages = {
   breadcrumbHome: "Inicio",
   breadcrumbAbout: "Acerca de",
   kicker: "Acerca de",
-  lede: "Guías de código abierto sobre sondas, alertas de congelación e inundación, firmware y el stack de ProbeHarbor. ¿Prefieres una lista más corta? Empieza por el centro de guías.",
+  lede: "Guías sobre sondas, alertas de congelación e inundación, firmware y el stack de ProbeHarbor. ¿Prefieres una lista más corta? Empieza por el centro de guías.",
   startFree: "Empieza gratis",
   guidesHub: "Centro de guías",
   findTitle: "Busca una guía",
@@ -23,7 +23,7 @@ const es: AboutMessages = {
     lede: "Mira cómo cambian la temperatura y la humedad zona por zona cuando varían el sol, el aire exterior y la ventilación, igual que en el feed JSON en vivo.",
   },
   repos: {
-    title: "Repositorios de código abierto",
+    title: "Repositorios de código",
     subtitleHtml:
       'Proyectos que puedes revisar, bifurcar o adaptar a tu propio montaje. Las integraciones programáticas empiezan por la <a class="text-link" href="/docs/api">API HTTP</a> y <a class="text-link" href="/openapi.yaml">openapi.yaml</a>.',
     firmware: "Sketch de Arduino y firmware de los sensores",
@@ -45,7 +45,7 @@ const es: AboutMessages = {
     {
       question: "¿ProbeHarbor es de código abierto?",
       answer:
-        "Sí: desde este centro enlazamos los repositorios de la aplicación y del firmware para que puedas revisar, bifurcar o adaptar el stack.",
+        "El firmware y los sketches de ejemplo son de código abierto (MIT). La aplicación tiene el código fuente disponible bajo la FSL-1.1: puedes leerla, ejecutarla, alojarla tú mismo y modificarla, pero no ofrecerla como servicio de la competencia; cada versión pasa a Apache-2.0 a los dos años. Desde este centro enlazamos los repositorios.",
     },
     {
       question: "¿Dónde se ejecuta ProbeHarbor?",
