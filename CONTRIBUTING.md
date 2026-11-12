@@ -32,6 +32,7 @@ The **import-guard** suite (`src/lib/astroImportGuard.test.ts`) fails if an Astr
 - Keep the change focused; say **why** in the PR description
 - Prefer one-line commit messages in present tense (see `git log`)
 - Hardware / ingest bugs: include board, sensors, expected vs observed readings, and feed URLs when you have them
+- Licensing: contributions to `sketches/` and `firmware/` are MIT; everything else is FSL-1.1-ALv2 (see [LICENSE](./LICENSE))
 
 ## Where docs live
 

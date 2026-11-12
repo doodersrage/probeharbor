@@ -1,6 +1,6 @@
 # ProbeHarbor
 
-Open-source dashboard to **track, log, and analyze sensors in garages, workshops, attics, crawlspaces, and shops** — **Astro 7**, **Cloudflare Workers**, **Neon Postgres**, and **Stripe**.
+Source-available dashboard to **track, log, and analyze sensors in garages, workshops, attics, crawlspaces, and shops** — **Astro 7**, **Cloudflare Workers**, **Neon Postgres**, and **Stripe**.
 
 Runs in production at [probeharbor.dev](https://probeharbor.dev) with 15-minute history polling, CI, Playwright smoke, and `pnpm ops:smoke`.
 
@@ -9,7 +9,7 @@ Runs in production at [probeharbor.dev](https://probeharbor.dev) with 15-minute 
 [![Start free](https://img.shields.io/badge/start-free%20(no%20card)-22c55e)](https://probeharbor.dev/register?next=/dashboard/devices)
 [![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-0ea5e9)](https://probeharbor.dev/developers/)
 [![CI](https://github.com/doodersrage/probeharbor/actions/workflows/ci.yml/badge.svg)](https://github.com/doodersrage/probeharbor/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/license-MIT-slategray)](./LICENSE)
+[![License: FSL-1.1-ALv2](https://img.shields.io/badge/license-FSL--1.1--ALv2-slategray)](./LICENSE)
 
 | | |
 |---|---|
@@ -110,4 +110,8 @@ PRs should pass `pnpm test` and `pnpm typecheck`. CI also runs the Astro build a
 
 ## License
 
-[MIT](LICENSE). Contributions and forks welcome.
+The app is licensed under the [Functional Source License 1.1, ALv2 Future License](LICENSE) (FSL-1.1-ALv2). You can read, run, self-host, and modify it for anything except offering a competing commercial service. Each release becomes Apache-2.0 two years after it is published.
+
+The device-side code in [`sketches/`](sketches/LICENSE) and [`firmware/`](firmware/LICENSE) stays **MIT**, so you can copy it into your own projects freely. Code published before the license change (up to commit `cef39a7`) remains available under MIT.
+
+Contributions are welcome. By opening a PR you agree your contribution is licensed under the same terms as the directory it changes.
