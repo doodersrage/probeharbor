@@ -538,7 +538,7 @@ The detailed increment log follows the Milestone 0 audit below. Summary:
 | 5 Security | Done for the audit gaps | S1–S8, rate limiting; legacy raw-token lookups removed, inbound V2 required, copied bcrypt passwords re-hashed on sign-in (2026-11-11) | Watch the bcrypt count fall; optionally drop `bcryptjs` once it's 0 |
 | 6 Dashboard | Done | 6.1–6.9, local-day date filters | — |
 | 7 Integrations | Spec done | 7.1–7.4, HA v1.2.0 (V2 signing), inbound V2 required (2026-11-11) | — |
-| 8 Polish | Mostly done | 8.1–8.3, dashboard axe (0 violations), billing lifecycle db test, late-event fix, past_due keeps access (2026-11-11) | A "payment failed, update your card" notice for past_due users |
+| 8 Polish | Mostly done | 8.1–8.3, dashboard axe (0 violations), billing lifecycle db test, late-event fix, past_due keeps access (2026-11-11) | — |
 
 **Operational must-do:** production has been on Neon (+ Better Auth) since
 2026-11-07; Supabase is paused. Keep running `pnpm db:backup` (reads
@@ -5676,6 +5676,11 @@ card; access ends when Stripe gives up.
 - Depends on Stripe's settings: what happens after the last retry
   (cancel, or mark unpaid) is set in the Stripe dashboard (Billing →
   Revenue recovery). Both end access here. Not checked from this repo.
-- Follow-up: tell past_due users that the payment failed and link the
-  billing portal (no such notice exists today).
+- [x] Follow-up done the same day: every dashboard page shows the payer a
+      warning while their subscription is past_due ("Your last payment
+      didn't go through… update your payment method") with an "Update
+      payment method" button (POST `/api/stripe/portal`, the existing
+      billing portal). `DashboardShell.paymentFailed`, looked up alongside
+      the other shell queries; a failed lookup means no notice. 5 locales.
+      `dashboardShell.test.ts` +2. Not seen on a real past_due account.
 
