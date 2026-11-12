@@ -4,8 +4,10 @@
  * verified by the route, then written by the real subscription code. After
  * each step the test reads what the account is entitled to.
  *
- * No network: only subscription events are sent (checkout.session.completed
- * fetches the subscription from Stripe, so it isn't covered here).
+ * No network. The route reads each subscription's current state from Stripe
+ * (Stripe doesn't guarantee event order); here a stand-in, `stripeNow`, answers
+ * that read with the latest state each test has delivered. Signatures stay real.
+ * checkout.session.completed isn't covered.
  */
 import type { APIContext } from "astro";
 import Stripe from "stripe";
@@ -21,6 +23,25 @@ vi.mock("../../../lib/runtimeEnv", () => ({
   getRuntimeEnv: (key: string) => PRICES[key],
   hasRuntimeEnv: () => false,
 }));
+
+/** Subscription id → its state "at Stripe" right now. */
+const stripeNow = vi.hoisted(() => new Map<string, unknown>());
+vi.mock("../../../lib/stripe", async (orig) => {
+  const real = await orig<typeof import("../../../lib/stripe")>();
+  return {
+    ...real,
+    createStripeClient: () => ({
+      webhooks: real.createStripeClient().webhooks,
+      subscriptions: {
+        retrieve: async (id: string) => {
+          const current = stripeNow.get(id);
+          if (!current) throw Object.assign(new Error("No such subscription"), { statusCode: 404, code: "resource_missing" });
+          return current;
+        },
+      },
+    }),
+  };
+});
 
 import { getUserEntitlements } from "../../../lib/entitlements";
 import { POST } from "./webhook";
@@ -69,7 +90,16 @@ function subscriptionEvent(
   };
 }
 
-async function deliver(event: object): Promise<{ status: number; body: string }> {
+/**
+ * Send a signed event. By default Stripe's current state becomes the event's
+ * subscription (it was just changed); `stale` delivers an old event without
+ * changing what Stripe has now, like a late retry.
+ */
+async function deliver(
+  event: { data: { object: { id: string } } },
+  { stale = false }: { stale?: boolean } = {},
+): Promise<{ status: number; body: string }> {
+  if (!stale) stripeNow.set(event.data.object.id, event.data.object);
   const payload = JSON.stringify(event);
   const header = signer.webhooks.generateTestHeaderString({ payload, secret: SECRET });
   const request = new Request("https://example.com/api/stripe/webhook", {
@@ -136,10 +166,8 @@ describe("billing lifecycle through the Stripe webhook (Neon)", () => {
     expect(await tier(userId)).toBe("pro");
   });
 
-  // KNOWN BUG (2026-11-11): each event overwrites the stored state, so a late
-  // older event wins. `it.fails` records it; remove `.fails` with the fix
-  // (e.g. read the subscription from Stripe on each event). See the plan.
-  it.fails("an older 'active' event delivered after the cancellation does not bring paid access back", async () => {
+  // Was a bug until 2026-11-11: each event overwrote the stored state.
+  it("an older 'active' event delivered after the cancellation does not bring paid access back", async () => {
     const userId = await insertTestUser(db.client(), "late@example.com");
     const sub = { id: "sub_late", status: "active", price: "price_pro_test" };
     await deliver(subscriptionEvent("customer.subscription.created", userId, sub, { created: 1_760_000_100 }));
@@ -147,7 +175,7 @@ describe("billing lifecycle through the Stripe webhook (Neon)", () => {
     expect(await tier(userId)).toBe("free");
 
     // Stripe doesn't guarantee order: an update from before the cancellation arrives last.
-    await deliver(subscriptionEvent("customer.subscription.updated", userId, sub, { created: 1_760_000_200 }));
+    await deliver(subscriptionEvent("customer.subscription.updated", userId, sub, { created: 1_760_000_200 }), { stale: true });
     expect(await tier(userId)).toBe("free");
   });
 });

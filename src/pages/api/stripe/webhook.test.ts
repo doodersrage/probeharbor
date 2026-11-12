@@ -145,6 +145,7 @@ describe("POST /api/stripe/webhook", () => {
       metadata: { supabase_user_id: "user-1" },
       customer: "cus_1",
     };
+    mockSubscriptionsRetrieve.mockResolvedValue(subscription);
     mockConstructEvent.mockReturnValue({
       id: "evt_2",
       type: "customer.subscription.updated",
@@ -166,6 +167,48 @@ describe("POST /api/stripe/webhook", () => {
     expect(await response.json()).toEqual({ received: true });
   });
 
+  it("stores the subscription as Stripe has it now, not the event's (possibly older) copy", async () => {
+    const stale = { id: "sub_9", status: "active", metadata: { supabase_user_id: "user-9" }, customer: "cus_9" };
+    const current = { ...stale, status: "canceled" };
+    mockSubscriptionsRetrieve.mockResolvedValue(current);
+    mockConstructEvent.mockReturnValue({ id: "evt_9", type: "customer.subscription.updated", data: { object: stale } });
+    const { POST } = await import("./webhook");
+
+    const response = await POST(makePostContext("payload", { "stripe-signature": "sig" }));
+
+    expect(mockSubscriptionsRetrieve).toHaveBeenCalledWith("sub_9");
+    expect(mockUpsertUserSubscription).toHaveBeenCalledWith("user-9", current, "cus_9");
+    expect(response.status).toBe(200);
+  });
+
+  it("returns 500 and releases the event when Stripe can't be read, so Stripe retries", async () => {
+    mockSubscriptionsRetrieve.mockRejectedValue(Object.assign(new Error("Stripe unreachable"), { statusCode: 503 }));
+    mockConstructEvent.mockReturnValue({
+      id: "evt_10",
+      type: "customer.subscription.deleted",
+      data: { object: { id: "sub_10", metadata: { supabase_user_id: "user-10" }, customer: "cus_10" } },
+    });
+    const { POST } = await import("./webhook");
+
+    const response = await POST(makePostContext("payload", { "stripe-signature": "sig" }));
+
+    expect(response.status).toBe(500);
+    expect(mockReleaseStripeWebhookEvent).toHaveBeenCalledWith("evt_10");
+    expect(mockUpsertUserSubscription).not.toHaveBeenCalled();
+  });
+
+  it("falls back to the event's copy for a subscription Stripe no longer has", async () => {
+    const gone = { id: "sub_11", status: "canceled", metadata: { supabase_user_id: "user-11" }, customer: "cus_11" };
+    mockSubscriptionsRetrieve.mockRejectedValue(Object.assign(new Error("No such subscription"), { statusCode: 404, code: "resource_missing" }));
+    mockConstructEvent.mockReturnValue({ id: "evt_11", type: "customer.subscription.deleted", data: { object: gone } });
+    const { POST } = await import("./webhook");
+
+    const response = await POST(makePostContext("payload", { "stripe-signature": "sig" }));
+
+    expect(response.status).toBe(200);
+    expect(mockUpsertUserSubscription).toHaveBeenCalledWith("user-11", gone, "cus_11");
+  });
+
   it("releases the claim and returns 500 when the handler throws", async () => {
     mockConstructEvent.mockReturnValue({
       id: "evt_3",
@@ -178,6 +221,11 @@ describe("POST /api/stripe/webhook", () => {
         },
       },
     });
+    mockSubscriptionsRetrieve.mockImplementation(async (id: string) => ({
+      id,
+      metadata: { supabase_user_id: "user-1" },
+      customer: "cus_1",
+    }));
     mockUpsertUserSubscription.mockRejectedValue(new Error("db down"));
     const { POST } = await import("./webhook");
 

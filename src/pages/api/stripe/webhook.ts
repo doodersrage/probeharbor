@@ -61,10 +61,34 @@ async function handleCheckoutCompleted(
   }
 }
 
+function isMissingResource(error: unknown): boolean {
+  const e = error as { statusCode?: number; code?: string } | null;
+  return e?.statusCode === 404 || e?.code === "resource_missing";
+}
+
+/**
+ * Stripe doesn't guarantee event order, and a delivery that failed is retried
+ * later, after newer events. So an event's copy of the subscription can be older
+ * than what is already stored (an "active" update arriving after the
+ * cancellation would restore paid access). Store the subscription as Stripe has
+ * it now instead. If the read fails, this throws: the event is released and
+ * Stripe retries it. A subscription Stripe no longer has falls back to the
+ * event's copy.
+ */
+async function currentSubscription(fromEvent: Stripe.Subscription): Promise<Stripe.Subscription> {
+  try {
+    return await createStripeClient().subscriptions.retrieve(fromEvent.id);
+  } catch (error) {
+    if (isMissingResource(error)) return fromEvent;
+    throw error;
+  }
+}
+
 async function handleSubscriptionChange(
-  subscription: Stripe.Subscription,
+  fromEvent: Stripe.Subscription,
 ): Promise<void> {
-  let userId = getUserIdFromSubscription(subscription);
+  const subscription = await currentSubscription(fromEvent);
+  let userId = getUserIdFromSubscription(subscription) ?? getUserIdFromSubscription(fromEvent);
 
   if (!userId) {
     userId = await findUserIdByStripeSubscriptionId(subscription.id);
