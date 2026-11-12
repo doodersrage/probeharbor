@@ -5480,12 +5480,16 @@ Problems (verified in code and on the board):
     command` and `TT nothing sent…`; no freeze over 3 cycles.
   - Same AHT20 on a plain ESP32-D0WD-V3, SDA 21 / SCL 22: `TT post 200 probes=1`
     every minute; production 74.4–75.2°F / 53.5–54.4%, matching the 1.2.5 library
-    read just before (74.5°F / 54.4%). So the sensor is fine; the S3's SDA/SCL
-    connection is the fault.
+    read just before (74.5°F / 54.4%). So the sensor is fine; the fault was on the
+    S3: the user found a loose ground pin. After rewiring, the S3 on the release
+    1.2.6 image printed `TT post -5 probes=1` (sensor read; first post lost its
+    connection, no server error), see `HARDWARE-TESTS.md`.
   - The release images (1.2.6) themselves are compile-checked only; the ESP32-C3
     path is compiled only. `pnpm test` 459 files / 3574 tests; typecheck 0 / 0;
     lint 55 warnings (baseline); build OK.
-- Open: the S3 rewired and posting again; `TT sensor problem` on a C3; the same
+- Open: a clean S3 run on its own device key (a plain ESP32 shared the key);
+  the flasher ignores negative post codes (`TT post -5`) and ends with the generic
+  "no reading" text instead of `postUnreachable`; `TT sensor problem` on a C3; the same
   bounded read for SHT31/BME280 (their libraries return NaN rather than hang, so
   they already fail cleanly).
 

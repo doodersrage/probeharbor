@@ -110,11 +110,21 @@ pointed at the wrong sensor. The 1.2.6 reading code printed
 `TT sensor problem: AHT20 found but not reading: no data after the measure command`
 every minute and kept running: the sensor ACKed writes but every I2C read failed
 (`i2cRead returned Error -1`, also hidden in the library's boot check). The same
-AHT20 works on the plain ESP32 above, so the fault is the S3's SDA/SCL connection.
+AHT20 works on the plain ESP32 above, so the fault was on the S3 side: the user then
+found a **loose ground pin**, likely the cause.
 Up to 1.2.5, the library's unbounded busy-wait could freeze the probe on such a
-sensor, which fits the silent stop at 03:39 (not proven). Still open: the S3 rewired
-and posting again; the `TT sensor problem` path on a plain ESP32 and a C3 (compiled
-only).
+sensor, which fits the silent stop at 03:39 (not proven).
+
+**ESP32-S3 after rewiring, release 1.2.6 (2026-11-11).** The `/flash` S3 image
+(byte-identical to the live one) written over native USB (303a:1001). Writing the
+merged image at 0x0 also erases the settings partition, so settings were sent again
+from `/flash`: `TT sensor: AHT20 on I2C (SDA 8, SCL 9)`, `TT firmware 1.2.6`,
+`TT wifi ok`, `TT post -5 probes=1`. `probes=1` means the AHT20 read; `-5` is the
+HTTP client's "connection lost" on the first post after joining Wi-Fi (the server
+logged no error). A plain ESP32 was posting with the same device key at the time, so
+the S3's later posts can't be told apart in production; a reading at 19:34:52
+(75.4°F / 50.7%) is most likely the S3's retry. Still open: a clean S3 run on its own
+device key; the `TT sensor problem` path on a C3 (compiled only).
 
 **SHT31: verified on a plain ESP32 (reported 2026-11-04), firmware 1.2.3
 installed from `/flash`.** Temperature and humidity showed on the device page.
