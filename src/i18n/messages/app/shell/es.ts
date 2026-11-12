@@ -45,6 +45,10 @@ const es: ShellMessages = {
     switched: "Propiedad activa cambiada.",
     switchError: "No se pudo cambiar de propiedad. Inténtalo de nuevo.",
   },
+  billing: {
+    paymentFailed: "Tu último pago no se completó. Tu plan sigue activo mientras Stripe reintenta el cobro; actualiza tu método de pago para no perder las funciones de pago.",
+    updatePayment: "Actualizar método de pago",
+  },
   kiosk: {
     enter: "Modo quiosco",
     exit: "Salir del quiosco",

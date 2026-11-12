@@ -128,6 +128,10 @@ const en = {
     switched: "Active property switched.",
     switchError: "Could not switch property. Try again.",
   },
+  billing: {
+    paymentFailed: "Your last payment didn't go through. Your plan stays on while Stripe retries the card; update your payment method so paid features don't stop.",
+    updatePayment: "Update payment method",
+  },
   kiosk: {
     enter: "Kiosk mode",
     exit: "Exit kiosk",

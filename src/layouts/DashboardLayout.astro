@@ -115,6 +115,14 @@ const householdError = Astro.url.searchParams.get("household_error") === "1";
       {householdError && (
         <p class="alert-warning mt-0 mb-4" role="alert">{t.topbar.switchError}</p>
       )}
+      {shell.paymentFailed && (
+        <div class="alert-warning mt-0 mb-4" role="alert" data-payment-failed>
+          <p class="m-0">{t.billing.paymentFailed}</p>
+          <form action="/api/stripe/portal" method="post" class="mt-2 mb-0">
+            <button type="submit" class="btn-secondary btn-sm">{t.billing.updatePayment}</button>
+          </form>
+        </div>
+      )}
       <slot />
     </div>
   </div>

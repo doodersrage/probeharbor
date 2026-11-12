@@ -45,6 +45,10 @@ const de: ShellMessages = {
     switched: "Aktives Objekt gewechselt.",
     switchError: "Objekt konnte nicht gewechselt werden. Bitte versuch es noch einmal.",
   },
+  billing: {
+    paymentFailed: "Deine letzte Zahlung ist fehlgeschlagen. Dein Tarif bleibt aktiv, während Stripe die Karte erneut belastet; aktualisiere deine Zahlungsmethode, damit die bezahlten Funktionen nicht enden.",
+    updatePayment: "Zahlungsmethode aktualisieren",
+  },
   kiosk: {
     enter: "Kioskmodus",
     exit: "Kiosk beenden",

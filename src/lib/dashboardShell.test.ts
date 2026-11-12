@@ -11,6 +11,10 @@ const mockCountUnacknowledgedAlerts = vi.fn();
 const mockListUserHouseholds = vi.fn();
 const mockGetOrCreateHouseholdForUser = vi.fn();
 const mockFetchLatestSensorValues = vi.fn();
+const mockGetUserSubscription = vi.fn();
+vi.mock("./stripeSubscriptions", () => ({
+  getUserSubscription: (...a: unknown[]) => mockGetUserSubscription(...a),
+}));
 
 vi.mock("./auth", () => ({
   getAuthFromCookies: (...a: unknown[]) => mockGetAuthFromCookies(...a),
@@ -78,6 +82,28 @@ beforeEach(() => {
     { sensor_id: "s1", recorded_at: new Date().toISOString() },
   ]);
   mockLatestError = null;
+  mockGetUserSubscription.mockReset().mockResolvedValue(null);
+});
+
+describe("paymentFailed (past_due)", () => {
+  async function shellWith(subscription: unknown) {
+    mockGetAuthFromCookies.mockResolvedValue({ session: fakeSession(), user: fakeUser() });
+    if (subscription instanceof Error) mockGetUserSubscription.mockRejectedValue(subscription);
+    else mockGetUserSubscription.mockResolvedValue(subscription);
+    const { loadDashboardShell } = await import("./dashboardShell");
+    return (await loadDashboardShell({} as AstroCookies, { includeLiveLag: false }))!;
+  }
+
+  it("is set only while a renewal payment is failing", async () => {
+    expect((await shellWith({ status: "past_due" })).paymentFailed).toBe(true);
+    expect((await shellWith({ status: "active" })).paymentFailed).toBe(false);
+    expect((await shellWith({ status: "canceled" })).paymentFailed).toBe(false);
+    expect((await shellWith(null)).paymentFailed).toBe(false);
+  });
+
+  it("stays off (and the page still loads) when the subscription lookup fails", async () => {
+    expect((await shellWith(new Error("db down"))).paymentFailed).toBe(false);
+  });
 });
 
 describe("loadDashboardShell", () => {

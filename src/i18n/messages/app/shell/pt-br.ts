@@ -45,6 +45,10 @@ const ptBr: ShellMessages = {
     switched: "Imóvel ativo alterado.",
     switchError: "Não foi possível trocar de imóvel. Tente novamente.",
   },
+  billing: {
+    paymentFailed: "Seu último pagamento não foi concluído. Seu plano continua ativo enquanto a Stripe tenta cobrar o cartão de novo; atualize sua forma de pagamento para não perder os recursos pagos.",
+    updatePayment: "Atualizar forma de pagamento",
+  },
   kiosk: {
     enter: "Modo quiosque",
     exit: "Sair do quiosque",

@@ -45,6 +45,10 @@ const fr: ShellMessages = {
     switched: "Bien actif modifié.",
     switchError: "Impossible de changer de bien. Réessayez.",
   },
+  billing: {
+    paymentFailed: "Votre dernier paiement n’a pas abouti. Votre offre reste active pendant que Stripe réessaie la carte ; mettez à jour votre moyen de paiement pour ne pas perdre les fonctions payantes.",
+    updatePayment: "Mettre à jour le moyen de paiement",
+  },
   kiosk: {
     enter: "Mode kiosque",
     exit: "Quitter le kiosque",

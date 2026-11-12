@@ -15,6 +15,7 @@ import {
 } from "./sensorReadings";
 import { formatRelativeAge } from "./relativeTime";
 import { newestRecordedAt } from "./dashboardNav";
+import { getUserSubscription } from "./stripeSubscriptions";
 
 export type DashboardShell = {
   session: Session;
@@ -31,6 +32,12 @@ export type DashboardShell = {
   lastReadingAt: string | null;
   /** Present when live-lag was computed; reuse to avoid a second latest fetch. */
   latest: LatestSensorRow[] | null;
+  /**
+   * The renewal payment failed and Stripe is retrying (past_due): the plan is
+   * kept for now, so the dashboard asks for a working card. False when the
+   * lookup fails.
+   */
+  paymentFailed: boolean;
 };
 
 export type DashboardShellOptions = {
@@ -57,13 +64,14 @@ export async function loadDashboardShellForUser(
 ): Promise<DashboardShell> {
   const includeLiveLag = opts?.includeLiveLag ?? true;
 
-  const [isAdmin, entitlements, unackedAlerts, userHouseholds, household] =
+  const [isAdmin, entitlements, unackedAlerts, userHouseholds, household, subscription] =
     await Promise.all([
       isUserAdmin(user.id),
       getUserEntitlements(user.id),
       countUnacknowledgedAlerts(user.id),
       listUserHouseholds(user.id),
       getOrCreateHouseholdForUser(user.id, user.email),
+      getUserSubscription(user.id).catch(() => null),
     ]);
 
   const households = userHouseholds.households;
@@ -107,6 +115,7 @@ export async function loadDashboardShellForUser(
     activeHouseholdName,
     lastReadingAt,
     latest,
+    paymentFailed: subscription?.status === "past_due",
   };
 }
 
