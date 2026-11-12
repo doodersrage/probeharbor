@@ -97,6 +97,31 @@ const STATIC_PUBLIC_PATHS = [
   "/answers",
 ] as const;
 
+/**
+ * Pages whose /es, /fr, /de and /pt-br versions search engines may index.
+ *
+ * Every marketing page is translated and served to visitors, but publishing
+ * four translated copies of ~150 pages at once (2026-10-20) was followed by
+ * Google dropping indexed pages and impressions site-wide. Only this core set
+ * keeps indexable translations; the rest are noindex, follow, carry no
+ * hreflang, and stay out of the sitemap. Answers are included because their
+ * translations were already ranking (Search Console, Oct–Nov 2026).
+ */
+const INDEXED_TRANSLATION_STATIC_PATHS = [
+  "/",
+  "/pricing",
+  "/flash",
+  "/pipe-freeze-forecast",
+  "/freeze-time-calculator",
+  "/integrations/home-assistant",
+  "/answers",
+] as const;
+
+/** English paths whose translations are indexable (see INDEXED_TRANSLATION_STATIC_PATHS). */
+export function getIndexedTranslationPaths(): string[] {
+  return [...new Set([...INDEXED_TRANSLATION_STATIC_PATHS, ...answers.map((answer) => answer.path)])];
+}
+
 /** Pathnames for every public page that should appear in the XML sitemap. */
 export function getPublicSitemapPaths(): string[] {
   const aboutPaths = aboutPages

@@ -5,6 +5,7 @@ import {
   escapeXml,
   getPublicSitemapPathCount,
 } from "./sitemapXml";
+import { getIndexedTranslationPaths, getPublicSitemapPaths } from "./sitemapPages";
 
 describe("sitemapXml", () => {
   it("escapes XML entities", () => {
@@ -38,6 +39,25 @@ describe("sitemapXml", () => {
     // English-only pages get no locale copies or alternates.
     expect(xml).not.toContain("https://probeharbor.dev/es/privacy");
     expect(xml).toContain("<url><loc>https://probeharbor.dev/privacy</loc></url>");
+  });
+
+  it("lists translations only for the indexed core", () => {
+    const xml = buildSitemapUrlsetXml("https://probeharbor.dev");
+    expect(xml).toContain("<loc>https://probeharbor.dev/de/answers/garage-pipe-freeze-temperature</loc>");
+    expect(xml).toContain("<loc>https://probeharbor.dev/fr/integrations/home-assistant</loc>");
+    // Translated guides and comparisons are served but not listed.
+    expect(xml).not.toContain("https://probeharbor.dev/es/about/");
+    expect(xml).not.toContain("https://probeharbor.dev/de/compare/nest");
+    // Their English pages stay listed, without hreflang to the unlisted copies.
+    expect(xml).toContain("<url><loc>https://probeharbor.dev/compare/nest</loc></url>");
+    const locs = xml.match(/<loc>/g)?.length ?? 0;
+    const english = getPublicSitemapPathCount();
+    expect(locs - english).toBe(4 * getIndexedTranslationPaths().length);
+  });
+
+  it("only indexes translations of pages that exist in the sitemap", () => {
+    const sitemap = new Set(getPublicSitemapPaths());
+    for (const path of getIndexedTranslationPaths()) expect(sitemap.has(path)).toBe(true);
   });
 
   it("builds a sitemap index pointing at sitemap-0", () => {

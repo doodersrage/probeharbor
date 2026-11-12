@@ -1,4 +1,4 @@
-import { getPublicSitemapPaths } from "../lib/sitemapPages";
+import { getIndexedTranslationPaths, getPublicSitemapPaths } from "../lib/sitemapPages";
 import { DEFAULT_LOCALE, LOCALES, localizePath, type Locale } from "./locales";
 
 /**
@@ -55,9 +55,22 @@ export function isLocalizablePath(path: string): boolean {
   return isMarketingPath(path) || isAuthPagePath(path);
 }
 
-/** hreflang alternates for a marketing path (English first). */
+let indexedTranslations: Set<string> | null = null;
+
+/**
+ * Marketing path whose translations search engines may index. Other
+ * translated pages are served but noindex, with no hreflang or sitemap entry.
+ */
+export function hasIndexedTranslations(path: string): boolean {
+  if (!indexedTranslations) {
+    indexedTranslations = new Set(getIndexedTranslationPaths().filter((p) => isMarketingPath(p)));
+  }
+  return indexedTranslations.has(path);
+}
+
+/** hreflang alternates for a path with indexable translations (English first). */
 export function getAlternatePaths(path: string): Array<{ locale: Locale; path: string }> {
-  if (!isMarketingPath(path)) return [];
+  if (!hasIndexedTranslations(path)) return [];
   return LOCALES.map((locale) => ({ locale, path: localizePath(path, locale) }));
 }
 

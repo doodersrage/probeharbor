@@ -1,6 +1,6 @@
 import { getPublicSitemapPaths, getSitemapLastModified } from "./sitemapPages";
 import { LOCALE_META, TRANSLATED_LOCALES, localizePath } from "../i18n/locales";
-import { getAlternatePaths, isMarketingPath } from "../i18n/routes";
+import { getAlternatePaths, hasIndexedTranslations } from "../i18n/routes";
 
 const XML_HEADERS = {
   "Content-Type": "application/xml; charset=utf-8",
@@ -9,7 +9,8 @@ const XML_HEADERS = {
 
 /**
  * Build a urlset sitemap body for all public paths, plus /es, /fr, /de and
- * /pt-br versions of each translated page with hreflang alternates.
+ * /pt-br versions of the pages whose translations are indexable, with
+ * hreflang alternates.
  */
 export function buildSitemapUrlsetXml(site: string): string {
   const base = site.replace(/\/+$/, "");
@@ -32,7 +33,7 @@ export function buildSitemapUrlsetXml(site: string): string {
   const body = [
     ...paths.map((path) => entry(path, path)),
     ...TRANSLATED_LOCALES.flatMap((locale) =>
-      paths.filter(isMarketingPath).map((path) => entry(path, localizePath(path, locale))),
+      paths.filter(hasIndexedTranslations).map((path) => entry(path, localizePath(path, locale))),
     ),
   ].join("\n");
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n${body}\n</urlset>\n`;

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { localizePath, splitLocalePath } from "./locales";
-import { getAlternatePaths, isLocalizablePath, localizeHtmlLinks } from "./routes";
+import { getAlternatePaths, hasIndexedTranslations, isLocalizablePath, localizeHtmlLinks } from "./routes";
 import { mergeTranslation, translateList } from "./translate";
 
 describe("locale paths", () => {
@@ -25,6 +25,15 @@ describe("locale paths", () => {
     expect(isLocalizablePath("/dashboard")).toBe(false);
     expect(getAlternatePaths("/terms")).toEqual([]);
     expect(getAlternatePaths("/").map((a) => a.path)).toEqual(["/", "/es", "/fr", "/de", "/pt-br"]);
+  });
+
+  it("gives hreflang only to pages with indexable translations", () => {
+    expect(hasIndexedTranslations("/answers/garage-pipe-freeze-temperature")).toBe(true);
+    expect(hasIndexedTranslations("/compare/nest")).toBe(false);
+    expect(getAlternatePaths("/compare/nest")).toEqual([]);
+    // Still translated and linked in the visitor's language.
+    expect(isLocalizablePath("/compare/nest")).toBe(true);
+    expect(localizeHtmlLinks('<a href="/compare/nest">n</a>', "de")).toContain('href="/de/compare/nest"');
   });
 });
 
