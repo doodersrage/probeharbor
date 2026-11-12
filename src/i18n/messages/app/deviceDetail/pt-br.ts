@@ -80,6 +80,7 @@ const ptBr: DeviceDetailMessages = {
     unitPlaceholder: "Padrão do tipo",
     offset: "Ajuste de calibração",
     offsetHint: "Somado a cada leitura. As leituras brutas não mudam.",
+    offsetHintFahrenheit: "Os ajustes de temperatura são em °F: 1 °C equivale a 1,8 °F.",
     deleteConfirm: "Excluir o sensor \"{name}\" e o histórico dele?",
     deleteSensor: "Excluir sensor",
     saveSensors: "Salvar sensores",

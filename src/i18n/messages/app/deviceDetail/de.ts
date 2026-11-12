@@ -80,6 +80,7 @@ const de: DeviceDetailMessages = {
     unitPlaceholder: "Standard des Typs",
     offset: "Kalibrierkorrektur",
     offsetHint: "Wird zu jedem Messwert addiert. Die Rohwerte bleiben unverändert.",
+    offsetHintFahrenheit: "Temperatur-Offsets sind in °F: 1 °C entspricht 1,8 °F.",
     deleteConfirm: "Sensor „{name}“ und seinen Verlauf löschen?",
     deleteSensor: "Sensor löschen",
     saveSensors: "Sensoren speichern",

@@ -80,6 +80,7 @@ const es: DeviceDetailMessages = {
     unitPlaceholder: "Predeterminada del tipo",
     offset: "Ajuste de calibración",
     offsetHint: "Se suma a cada lectura. Las lecturas originales no cambian.",
+    offsetHintFahrenheit: "Los ajustes de temperatura van en °F: 1 °C equivale a 1,8 °F.",
     deleteConfirm: "¿Eliminar el sensor «{name}» y su historial?",
     deleteSensor: "Eliminar sensor",
     saveSensors: "Guardar sensores",

@@ -27,3 +27,16 @@ export function parseOffsetFormValue(raw: FormDataEntryValue | null): number {
   const n = Number.parseFloat(String(raw));
   return Number.isFinite(n) ? n : 0;
 }
+
+/**
+ * The unit a sensor's calibration offset is in: the unit its readings are
+ * stored in. Temperatures are stored in °F (°C payloads are converted at
+ * ingest), so a temperature offset is in °F whatever the display preference.
+ * Empty when the sensor has no unit.
+ */
+export function calibrationOffsetUnit(kind: string | null | undefined, unit: string | null | undefined): string {
+  if (kind === "temperature") return "°F";
+  if (kind === "humidity") return "%";
+  return unit?.trim() ?? "";
+}
+

@@ -79,6 +79,7 @@ const en = {
     unitPlaceholder: "Type default",
     offset: "Calibration offset",
     offsetHint: "Added to every reading. Raw readings stay unchanged.",
+    offsetHintFahrenheit: "Temperature offsets are in °F: 1 °C is 1.8 °F.",
     deleteConfirm: 'Delete sensor "{name}" and its history?',
     deleteSensor: "Delete sensor",
     saveSensors: "Save sensors",

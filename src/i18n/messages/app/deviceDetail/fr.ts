@@ -80,6 +80,7 @@ const fr: DeviceDetailMessages = {
     unitPlaceholder: "Par défaut du type",
     offset: "Décalage d’étalonnage",
     offsetHint: "Ajouté à chaque mesure. Les mesures brutes restent inchangées.",
+    offsetHintFahrenheit: "Les décalages de température sont en °F : 1 °C correspond à 1,8 °F.",
     deleteConfirm: "Supprimer le capteur « {name} » et son historique ?",
     deleteSensor: "Supprimer le capteur",
     saveSensors: "Enregistrer les capteurs",

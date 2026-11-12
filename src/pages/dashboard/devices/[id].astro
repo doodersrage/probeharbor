@@ -17,6 +17,7 @@ import { findStuckSensors } from "../../../lib/stuckSensors";
 import { formatBatteryEta, scoreDeviceHealth } from "../../../lib/deviceHealthScore";
 import { formatSensorValue, spaceSuggestions } from "../../../lib/deviceList";
 import { getDisplayPreferencesFromMetadata } from "../../../lib/userPreferences";
+import { calibrationOffsetUnit } from "../../../lib/sensorCalibration";
 import { firmwareUpdateAvailable, LATEST_FIRMWARE_VERSION } from "../../../lib/firmwareVersion";
 import { listIngestStatsForHousehold } from "../../../lib/ingestStats";
 import { ingestKeyVaultConfigured } from "../../../lib/ingestKeyVault";
@@ -115,6 +116,14 @@ const notice = params.get("device_saved")
               ? t.notices.saveError
               : null;
 const noticeIsError = Boolean(replaceError || params.get("error"));
+/** "+1.5°F", "-3%", "+20 ppm": a sensor's calibration offset in the unit it applies to. */
+function offsetWithUnit(sensor: { offset_num?: number | null; kind?: string | null; unit?: string | null }): string {
+  const offset = sensor.offset_num ?? 0;
+  const unit = calibrationOffsetUnit(sensor.kind, sensor.unit);
+  const shown = `${offset > 0 ? "+" : ""}${formatNumber(offset, locale, { maximumFractionDigits: 20, useGrouping: false })}`;
+  return unit === "" ? shown : unit.startsWith("°") || unit === "%" ? `${shown}${unit}` : `${shown} ${unit}`;
+}
+
 ---
 <DashboardLayout title={device.name} subtitle={device.space ? fmt(t.subtitleWithSpace, { space: device.space, source: sourceLabel }) : sourceLabel}>
   <div class="space-y-6 device-page">
@@ -247,7 +256,7 @@ const noticeIsError = Boolean(replaceError || params.get("error"));
                   <details class="device-sensor-more">
                     <summary class="text-sm text-[var(--color-text-muted)] cursor-pointer">
                       {t.sensors.moreJsonKey} <code>{sensor.key}</code>
-                      {(sensor.offset_num ?? 0) !== 0 && fmt(t.sensors.offsetSummary, { offset: `${(sensor.offset_num ?? 0) > 0 ? "+" : ""}${formatNumber(sensor.offset_num ?? 0, locale, { maximumFractionDigits: 20, useGrouping: false })}` })}
+                      {(sensor.offset_num ?? 0) !== 0 && fmt(t.sensors.offsetSummary, { offset: offsetWithUnit(sensor) })}
                     </summary>
                     <div class="device-sensor-more-grid">
                       <div class="form-field mb-0">
@@ -266,7 +275,9 @@ const noticeIsError = Boolean(replaceError || params.get("error"));
                         />
                       </div>
                       <div class="form-field mb-0">
-                        <label class="form-label" for={`offset-${sensor.id}`}>{t.sensors.offset}</label>
+                        <label class="form-label" for={`offset-${sensor.id}`}>
+                          {t.sensors.offset}{calibrationOffsetUnit(sensor.kind, sensor.unit) && ` (${calibrationOffsetUnit(sensor.kind, sensor.unit)})`}
+                        </label>
                         <input
                           class="form-input"
                           id={`offset-${sensor.id}`}
@@ -278,7 +289,10 @@ const noticeIsError = Boolean(replaceError || params.get("error"));
                           value={sensor.offset_num ?? 0}
                           disabled={!canEdit}
                         />
-                        <p class="form-hint mb-0">{t.sensors.offsetHint}</p>
+                        <p class="form-hint mb-0">
+                          {t.sensors.offsetHint}
+                          {useCelsius && sensor.kind === "temperature" && ` ${t.sensors.offsetHintFahrenheit}`}
+                        </p>
                       </div>
                       {canEdit && (
                         <button

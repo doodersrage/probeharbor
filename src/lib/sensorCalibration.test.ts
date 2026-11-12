@@ -66,3 +66,14 @@ describe("parseOffsetFormValue", () => {
     expect(parseOffsetFormValue(file)).toBe(0);
   });
 });
+
+describe("calibrationOffsetUnit", () => {
+  it("is the stored unit: °F for temperature, % for humidity, the sensor's own unit otherwise", async () => {
+    const { calibrationOffsetUnit } = await import("./sensorCalibration");
+    expect(calibrationOffsetUnit("temperature", "C")).toBe("°F");
+    expect(calibrationOffsetUnit("humidity", null)).toBe("%");
+    expect(calibrationOffsetUnit("co2", " ppm ")).toBe("ppm");
+    expect(calibrationOffsetUnit("pressure", null)).toBe("");
+  });
+});
+
