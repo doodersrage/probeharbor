@@ -14,9 +14,11 @@ import {
   closeAbandonedJobRuns,
   finishJobRun,
   listRecentJobRuns,
+  runHousekeeping,
   runSensorReadingRetention,
   startJobRun,
 } from "./jobRuns";
+import { pruneExpiredSnoozeTokens, pruneJobRuns } from "./db/jobs";
 import { findStuckSensors } from "./stuckSensors";
 
 const db = useTestDatabase();
@@ -63,6 +65,48 @@ describe("job-run log (Neon)", () => {
     expect(runs.find((r) => r.status === "error")?.detail).toMatchObject({ abandoned: true });
     expect(runs.find((r) => r.id === id)?.detail).toEqual({ ok: 3 });
     expect(await fetchLastSuccessfulCollectHistory()).toBeTruthy();
+  });
+});
+
+describe("housekeeping (Neon)", () => {
+  it("drops job runs older than 30 days and snooze links 30+ days past expiry; keeps the rest", async () => {
+    const { userId } = await home("hk@example.com");
+    await sql(
+      `insert into public.job_runs (job_name, status, started_at) values
+       ('collect-history', 'success', now() - interval '45 days'),
+       ('collect-history', 'success', now() - interval '31 days'),
+       ('collect-history', 'success', now() - interval '29 days'),
+       ('collect-history', 'success', now())`,
+    );
+    await sql(
+      `insert into public.alert_snooze_tokens (token, user_id, expires_at) values
+       ('old-expired', $1, now() - interval '40 days'),
+       ('recently-expired', $1, now() - interval '10 days'),
+       ('still-valid', $1, now() + interval '5 days')`,
+      [userId],
+    );
+
+    await expect(runHousekeeping()).resolves.toEqual({ jobRuns: 2, snoozeTokens: 1, error: null });
+    const ages = await sql<{ days: number }>(
+      "select floor(extract(epoch from now() - started_at) / 86400)::int as days from public.job_runs order by started_at",
+    );
+    expect(ages.map((r) => r.days)).toEqual([29, 0]);
+    const tokens = await sql<{ token: string }>("select token from public.alert_snooze_tokens order by token");
+    expect(tokens.map((r) => r.token)).toEqual(["recently-expired", "still-valid"]);
+
+    // A second run finds nothing more to delete.
+    await expect(runHousekeeping()).resolves.toEqual({ jobRuns: 0, snoozeTokens: 0, error: null });
+  });
+
+  it("deletes at most the batch size per run", async () => {
+    await sql(
+      `insert into public.job_runs (job_name, status, started_at)
+       select 'collect-history', 'success', now() - interval '60 days' from generate_series(1, 7)`,
+    );
+    const cutoff = new Date(Date.now() - 30 * 86_400_000).toISOString();
+    await expect(pruneJobRuns(cutoff, 5)).resolves.toBe(5);
+    await expect(pruneJobRuns(cutoff, 5)).resolves.toBe(2);
+    await expect(pruneExpiredSnoozeTokens(cutoff, 5)).resolves.toBe(0);
   });
 });
 

@@ -18,6 +18,7 @@ import { dripJobShouldFail, sendDripEmailsForAllUsers } from "./lib/dripEmails";
 import { sendFreezeAlerts } from "./lib/freezeAlerts";
 import {
   finishJobRun,
+  runHousekeeping,
   runSensorReadingRetention,
   shouldRunDailyRetention,
   startJobRun,
@@ -317,6 +318,17 @@ async function runHourlyMaintenanceJobs(env: WorkerEnv): Promise<void> {
             await notifyOps(
               "ProbeHarbor job failed: sensor-retention",
               formatJobFailureBody("sensor-retention", details),
+            );
+          }
+
+          // Old job-run log rows and long-expired snooze links (bounded per run).
+          const housekeepingJobId = await startJobRun("housekeeping");
+          const housekeeping = await runHousekeeping();
+          await finishJobRun(housekeepingJobId, housekeeping.error ? "error" : "success", housekeeping);
+          if (housekeeping.error) {
+            await notifyOps(
+              "ProbeHarbor job failed: housekeeping",
+              formatJobFailureBody("housekeeping", { message: housekeeping.error, ...housekeeping }),
             );
           }
         }

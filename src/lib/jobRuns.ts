@@ -105,3 +105,36 @@ export async function runSensorReadingRetention(
     return { rolledUp: 0, deleted: 0, error: error instanceof Error ? error.message : String(error) };
   }
 }
+
+/** Job-run log rows are kept this long; every reader looks back 24 hours or at the latest 50 runs. */
+export const JOB_RUN_KEEP_DAYS = 30;
+/**
+ * Snooze-link rows are kept this long after they expire, so an old link still
+ * says "expired" rather than "invalid" for a month.
+ */
+export const SNOOZE_TOKEN_KEEP_DAYS_AFTER_EXPIRY = 30;
+/** Rows deleted per table per daily run, so a backlog clears over a few days instead of in one big delete. */
+export const HOUSEKEEPING_BATCH = 5000;
+
+/**
+ * Daily cleanup of tables that otherwise only grow: old job-run log rows and
+ * long-expired snooze-link tokens. Bounded per run. Never touches readings
+ * (see runSensorReadingRetention).
+ */
+export async function runHousekeeping(now = new Date()): Promise<{
+  jobRuns: number;
+  snoozeTokens: number;
+  error: string | null;
+}> {
+  const daysAgo = (days: number) => new Date(now.getTime() - days * 24 * 60 * 60 * 1000).toISOString();
+  let jobRuns = 0;
+  let snoozeTokens = 0;
+  try {
+    jobRuns = await neonJobs.pruneJobRuns(daysAgo(JOB_RUN_KEEP_DAYS), HOUSEKEEPING_BATCH);
+    snoozeTokens = await neonJobs.pruneExpiredSnoozeTokens(daysAgo(SNOOZE_TOKEN_KEEP_DAYS_AFTER_EXPIRY), HOUSEKEEPING_BATCH);
+    return { jobRuns, snoozeTokens, error: null };
+  } catch (error) {
+    return { jobRuns, snoozeTokens, error: error instanceof Error ? error.message : String(error) };
+  }
+}
+

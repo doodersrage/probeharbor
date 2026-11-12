@@ -74,6 +74,34 @@ export async function rollUpAndPruneReadings(cutoffIso: string): Promise<{ rolle
   return row?.result ?? {};
 }
 
+// ---- housekeeping -----------------------------------------------------------
+
+/** Delete up to `limit` job-run log rows started before `beforeIso`. Returns how many. Throws on failure. */
+export async function pruneJobRuns(beforeIso: string, limit: number): Promise<number> {
+  const [row] = await query<{ n: number }>(
+    `with gone as (
+       delete from public.job_runs
+        where id in (select id from public.job_runs where started_at < $1 order by id limit $2)
+       returning 1)
+     select count(*)::int as n from gone`,
+    [beforeIso, limit],
+  );
+  return row?.n ?? 0;
+}
+
+/** Delete up to `limit` snooze-link rows that expired before `beforeIso`. Returns how many. Throws on failure. */
+export async function pruneExpiredSnoozeTokens(beforeIso: string, limit: number): Promise<number> {
+  const [row] = await query<{ n: number }>(
+    `with gone as (
+       delete from public.alert_snooze_tokens
+        where token in (select token from public.alert_snooze_tokens where expires_at < $1 limit $2)
+       returning 1)
+     select count(*)::int as n from gone`,
+    [beforeIso, limit],
+  );
+  return row?.n ?? 0;
+}
+
 // ---- stuck sensors ----------------------------------------------------------
 
 export type StuckFacts = {
