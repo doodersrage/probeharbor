@@ -9,7 +9,7 @@ const mockCancel = vi.fn().mockResolvedValue({});
 vi.mock("./stripe", () => ({
   createStripeClient: () => ({ subscriptions: { cancel: mockCancel } }),
   isActiveSubscriptionStatus: (status: string) =>
-    status === "active" || status === "trialing",
+    status === "active" || status === "trialing" || status === "past_due",
 }));
 
 const mockNotifyOps = vi.fn().mockResolvedValue(undefined);
@@ -85,6 +85,18 @@ describe("cancelStripeSubscriptionForDeletedAccount", () => {
     await cancelStripeSubscriptionForDeletedAccount("user-1");
 
     expect(mockCancel).toHaveBeenCalledWith("sub_trial");
+  });
+
+  it("cancels a past_due subscription, so Stripe stops retrying the card of a deleted account", async () => {
+    mockGetUserSubscription.mockResolvedValue({
+      stripe_subscription_id: "sub_past_due",
+      status: "past_due",
+    });
+    const { cancelStripeSubscriptionForDeletedAccount } = await import("./accountLifecycle");
+
+    await cancelStripeSubscriptionForDeletedAccount("user-1");
+
+    expect(mockCancel).toHaveBeenCalledWith("sub_past_due");
   });
 
   it("alerts ops instead of throwing when Stripe cancellation fails", async () => {

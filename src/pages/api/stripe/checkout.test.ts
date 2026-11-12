@@ -11,7 +11,7 @@ const mockBuildSiteUrl = vi.fn();
 vi.mock("../../../lib/stripe", () => ({
   createStripeClient: () => mockCreateStripeClient(),
   buildSiteUrl: (...a: unknown[]) => mockBuildSiteUrl(...a),
-  isActiveSubscriptionStatus: (status: string) => status === "active" || status === "trialing",
+  isActiveSubscriptionStatus: (status: string) => status === "active" || status === "trialing" || status === "past_due",
 }));
 
 const mockGetUserSubscription = vi.fn();
@@ -112,6 +112,22 @@ describe("POST /api/stripe/checkout", () => {
         }),
       }),
     );
+    expect(response.headers.get("Location")).toBe("https://billing.stripe.com/p/xyz");
+  });
+
+  it("sends a past_due subscriber to the portal too, never into a second subscription", async () => {
+    mockGetUserSubscription.mockResolvedValue({
+      stripe_customer_id: "cus_1",
+      stripe_subscription_id: "sub_1",
+      stripe_price_id: "price_member_monthly",
+      status: "past_due",
+    });
+    const { POST } = await import("./checkout");
+
+    const response = await POST(makeContext({ plan: "pro", interval: "monthly" }));
+
+    expect(mockSessionsCreate).not.toHaveBeenCalled();
+    expect(mockPortalCreate).toHaveBeenCalled();
     expect(response.headers.get("Location")).toBe("https://billing.stripe.com/p/xyz");
   });
 

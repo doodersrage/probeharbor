@@ -120,18 +120,22 @@ describe("buildSiteUrl", () => {
 });
 
 describe("isActiveSubscriptionStatus", () => {
-  it("treats active and trialing as active", async () => {
+  it("treats active, trialing and past_due (Stripe still retrying) as active", async () => {
     const { isActiveSubscriptionStatus } = await import("./stripe");
 
     expect(isActiveSubscriptionStatus("active")).toBe(true);
     expect(isActiveSubscriptionStatus("trialing")).toBe(true);
+    expect(isActiveSubscriptionStatus("past_due")).toBe(true);
   });
 
   it("treats other statuses as inactive", async () => {
     const { isActiveSubscriptionStatus } = await import("./stripe");
 
     expect(isActiveSubscriptionStatus("canceled")).toBe(false);
-    expect(isActiveSubscriptionStatus("past_due")).toBe(false);
+    expect(isActiveSubscriptionStatus("unpaid")).toBe(false);
+    expect(isActiveSubscriptionStatus("incomplete")).toBe(false);
+    expect(isActiveSubscriptionStatus("incomplete_expired")).toBe(false);
+    expect(isActiveSubscriptionStatus("paused")).toBe(false);
     expect(isActiveSubscriptionStatus("")).toBe(false);
   });
 });

@@ -114,7 +114,7 @@ async function deliver(
 const tier = async (userId: string) => (await getUserEntitlements(userId)).tier;
 
 describe("billing lifecycle through the Stripe webhook (Neon)", () => {
-  it("subscribe, upgrade, downgrade, failed payment, cancel: the plan follows each event", async () => {
+  it("subscribe, upgrade, downgrade, failed payment, retries exhausted, cancel: the plan follows each event", async () => {
     const userId = await insertTestUser(db.client(), "billing@example.com");
     const sub = { id: "sub_lifecycle_1", status: "active", price: "price_member_test" };
     expect(await tier(userId)).toBe("free");
@@ -128,8 +128,11 @@ describe("billing lifecycle through the Stripe webhook (Neon)", () => {
     await deliver(subscriptionEvent("customer.subscription.updated", userId, { ...sub, price: "price_member_test" }));
     expect(await tier(userId)).toBe("member");
 
-    // Current behaviour: past_due (a failed renewal) is not an active status, so access ends at once.
+    // A failed renewal (past_due) keeps the plan while Stripe retries the card...
     await deliver(subscriptionEvent("customer.subscription.updated", userId, { ...sub, status: "past_due", price: "price_member_test" }));
+    expect(await tier(userId)).toBe("member");
+    // ...and ends it when Stripe gives up (unpaid), until a payment succeeds.
+    await deliver(subscriptionEvent("customer.subscription.updated", userId, { ...sub, status: "unpaid", price: "price_member_test" }));
     expect(await tier(userId)).toBe("free");
 
     await deliver(subscriptionEvent("customer.subscription.updated", userId, { ...sub, status: "active", price: "price_member_test" }));
