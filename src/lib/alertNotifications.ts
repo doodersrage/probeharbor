@@ -970,6 +970,8 @@ export async function explainRulesForUser(
   householdId: string,
   devices: DeviceWithSensors[],
   locale: Locale = "en",
+  /** The viewer's display unit, for the sentences only. */
+  useCelsius = false,
 ): Promise<RuleCheckReport> {
   const latest = await fetchLatestSensorValues(householdId);
   const readings = buildAlertReadingsFromLatestSensors(latest);
@@ -984,7 +986,7 @@ export async function explainRulesForUser(
     checkedAt: new Date().toISOString(),
     alertsEnabled: settings.enabled,
     cooldownUntil,
-    rules: explainAlertRules(settings.alertRules, ctx, locale),
+    rules: explainAlertRules(settings.alertRules, ctx, locale, useCelsius),
   };
 }
 

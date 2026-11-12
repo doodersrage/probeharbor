@@ -1,6 +1,7 @@
 import { fmt as fill, formatNumber, plural } from "../i18n/format";
 import type { Locale } from "../i18n/locales";
 import { alertRulesMessages, type AlertRulesMessages } from "../i18n/messages/app/alertSettings/rules";
+import { tempUnitLabel, toDisplayDelta, toDisplayTemp } from "./temperatureFormat";
 
 export type AlertConditionType =
   | "temp_below"
@@ -113,19 +114,21 @@ function compareCheck(
   t: Text,
   locale: Locale,
   includes?: string,
+  /** Converts a stored value for the text only (e.g. °F → °C); matching uses the stored value. */
+  display: (value: number) => number = (value) => value,
 ): ConditionCheck {
   const scoped = items.filter((item) => matchesLabel(item.label, includes));
   if (scoped.length === 0) return { matched: false, detail: scopeNote(t, noun, includes) };
   const passes = (v: number) => (op === "<=" ? v <= threshold : v >= threshold);
-  const want = `${op === "<=" ? "≤" : "≥"} ${num(threshold, unit, locale)}`;
+  const want = `${op === "<=" ? "≤" : "≥"} ${num(display(threshold), unit, locale)}`;
   const hit = scoped.find((item) => passes(item.value));
-  if (hit) return { matched: true, detail: fill(t.compareHit, { label: hit.label, value: num(hit.value, unit, locale), want }) };
+  if (hit) return { matched: true, detail: fill(t.compareHit, { label: hit.label, value: num(display(hit.value), unit, locale), want }) };
   const closest = scoped.reduce((best, item) =>
     Math.abs(item.value - threshold) < Math.abs(best.value - threshold) ? item : best,
   );
   return {
     matched: false,
-    detail: fill(t.compareClosest, { label: closest.label, value: num(closest.value, unit, locale), want }),
+    detail: fill(t.compareClosest, { label: closest.label, value: num(display(closest.value), unit, locale), want }),
   };
 }
 
@@ -154,16 +157,27 @@ function numericKind(ctx: RuleEvalContext, kind: string): Candidate[] {
   return ctx.numericSensors.filter((s) => s.kind === kind);
 }
 
-export function explainCondition(condition: AlertCondition, ctx: RuleEvalContext, locale: Locale = "en"): ConditionCheck {
+/**
+ * Whether one condition holds, with a sentence saying why. `useCelsius` only
+ * changes the sentence (readings, thresholds and matching stay in °F).
+ */
+export function explainCondition(
+  condition: AlertCondition,
+  ctx: RuleEvalContext,
+  locale: Locale = "en",
+  useCelsius = false,
+): ConditionCheck {
   const t = alertRulesMessages(locale);
   const n = t.nouns;
   const inc = condition.labelIncludes;
   const temps = ctx.readings.map((r) => ({ label: r.label, value: r.tempf }));
+  const deg = tempUnitLabel(useCelsius);
+  const showTemp = (f: number) => toDisplayTemp(f, useCelsius);
   switch (condition.type) {
     case "temp_below":
-      return compareCheck(temps, "<=", condition.value ?? ctx.freezeThresholdF, "°F", n.temperatureProbe, t, locale, inc);
+      return compareCheck(temps, "<=", condition.value ?? ctx.freezeThresholdF, deg, n.temperatureProbe, t, locale, inc, showTemp);
     case "temp_above":
-      return compareCheck(temps, ">=", condition.value ?? HEAT_THRESHOLD_F, "°F", n.temperatureProbe, t, locale, inc);
+      return compareCheck(temps, ">=", condition.value ?? HEAT_THRESHOLD_F, deg, n.temperatureProbe, t, locale, inc, showTemp);
     case "humidity_above":
       return compareCheck(
         // Probes without humidity aren't candidates (never a 0% reading).
@@ -232,12 +246,13 @@ export function explainCondition(condition: AlertCondition, ctx: RuleEvalContext
       if (drops.length === 0) return { matched: false, detail: scopeNote(t, n.coolingProbe, inc) };
       const biggest = drops.reduce((best, r) => (r.dropF > best.dropF ? r : best));
       const matched = drops.some((r) => r.dropF >= threshold);
-      const drop = num(biggest.dropF, "°F", locale);
+      // A drop is a difference: ×5/9 for °C, no 32° offset.
+      const drop = num(toDisplayDelta(biggest.dropF, useCelsius), deg, locale);
       return {
         matched,
         detail: matched
           ? fill(t.rateDropped, { label: biggest.label, drop })
-          : fill(t.rateBiggest, { label: biggest.label, drop, threshold: num(threshold, "°F", locale) }),
+          : fill(t.rateBiggest, { label: biggest.label, drop, threshold: num(toDisplayDelta(threshold, useCelsius), deg, locale) }),
       };
     }
     case "outdoor_below": {
@@ -246,7 +261,17 @@ export function explainCondition(condition: AlertCondition, ctx: RuleEvalContext
       if (ctx.outdoorTempF == null || !Number.isFinite(ctx.outdoorTempF)) {
         return { matched: false, detail: t.outdoorUnknown };
       }
-      return compareCheck([{ label: t.outdoorLabel, value: ctx.outdoorTempF }], "<=", threshold, "°F", n.outdoorReading, t, locale);
+      return compareCheck(
+        [{ label: t.outdoorLabel, value: ctx.outdoorTempF }],
+        "<=",
+        threshold,
+        deg,
+        n.outdoorReading,
+        t,
+        locale,
+        undefined,
+        showTemp,
+      );
     }
     case "outage":
       return compareCheck(
@@ -269,10 +294,18 @@ function evaluateCondition(condition: AlertCondition, ctx: RuleEvalContext): boo
 }
 
 /** Every rule, matched or not, with the reason for each condition. */
-export function explainAlertRules(rules: AlertRule[], ctx: RuleEvalContext, locale: Locale = "en"): RuleExplanation[] {
+export function explainAlertRules(
+  rules: AlertRule[],
+  ctx: RuleEvalContext,
+  locale: Locale = "en",
+  useCelsius = false,
+): RuleExplanation[] {
   return rules.map((rule) => {
     const match = rule.match === "any" ? "any" : "all";
-    const conditions = (rule.all ?? []).map((condition) => ({ condition, ...explainCondition(condition, ctx, locale) }));
+    const conditions = (rule.all ?? []).map((condition) => ({
+      condition,
+      ...explainCondition(condition, ctx, locale, useCelsius),
+    }));
     const matched =
       rule.enabled &&
       conditions.length > 0 &&

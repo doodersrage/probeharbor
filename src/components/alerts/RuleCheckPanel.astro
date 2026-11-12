@@ -7,12 +7,18 @@ import { getLocale, LOCALE_META } from "../../i18n";
 import { ruleCheckMessages } from "../../i18n/messages/app/ruleCheck";
 import { conditionOptions } from "../../lib/alertRules";
 
+interface Props {
+  /** The viewer's display unit, for the condition names (the API's sentences follow it too). */
+  useCelsius?: boolean;
+}
+
+const { useCelsius = false } = Astro.props;
 const locale = getLocale(Astro);
 const t = ruleCheckMessages(locale);
 // English keeps the raw condition type names ("outdoor below") it always showed.
-// The check explains saved (°F) values from /api/user/rule-check, so labels say °F.
+// /api/user/rule-check writes its sentences in the viewer's °F/°C preference.
 const conditions =
-  locale === "en" ? {} : Object.fromEntries(conditionOptions(locale).map((o) => [o.value, o.label]));
+  locale === "en" ? {} : Object.fromEntries(conditionOptions(locale, useCelsius).map((o) => [o.value, o.label]));
 const client = { ...t.client, conditions, intl: LOCALE_META[locale].intl };
 ---
 <div

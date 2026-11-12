@@ -4,6 +4,7 @@ import { listHouseholdDevices } from "../../../lib/devices";
 import { getOrCreateHouseholdForUser } from "../../../lib/households";
 import { getAlertSettingsForUser } from "../../../lib/notify";
 import { explainRulesForUser } from "../../../lib/alertNotifications";
+import { getDisplayPreferencesFromMetadata } from "../../../lib/userPreferences";
 import { apiCommonMessages, apiLocale } from "../../../i18n/messages/app/api/common";
 import { apiUserMessages } from "../../../i18n/messages/app/api/user";
 
@@ -28,5 +29,6 @@ export const GET: APIRoute = async ({ cookies, locals }) => {
     getAlertSettingsForUser(user.id),
     listHouseholdDevices(household.householdId),
   ]);
-  return json(await explainRulesForUser(user.id, settings, household.householdId, devices, locale));
+  const { useCelsius } = getDisplayPreferencesFromMetadata(user);
+  return json(await explainRulesForUser(user.id, settings, household.householdId, devices, locale, useCelsius));
 };

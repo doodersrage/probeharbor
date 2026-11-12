@@ -318,6 +318,34 @@ describe("explainAlertRules", () => {
     expect(weather?.conditions[1]?.detail).toBe("Biggest: Garage pipe dropped 2°F in the last hour; needs 5°F.");
   });
 
+  it("writes the sentences in °C for a °C viewer, without changing what matches", () => {
+    const rules = [
+      { id: "c1", enabled: true, name: "Garage cold", all: [{ type: "temp_below" as const, labelIncludes: "garage" }] },
+      { id: "c2", enabled: true, name: "Below 40", all: [{ type: "temp_below" as const, value: 40 }] },
+      { id: "c3", enabled: true, name: "Cold out", all: [{ type: "outdoor_below" as const, value: 32 }, { type: "rate_drop" as const }] },
+    ];
+    const withOutdoor = { ...ctx, outdoorTempF: 30 };
+    const inF = explainAlertRules(rules, withOutdoor);
+    const inC = explainAlertRules(rules, withOutdoor, "en", true);
+
+    expect(inC.map((r) => r.matched)).toEqual(inF.map((r) => r.matched));
+    expect(inC.map((r) => r.conditions.map((c) => c.matched))).toEqual(inF.map((r) => r.conditions.map((c) => c.matched)));
+    // Temperatures: (°F − 32) × 5/9. 36 → 2.2, 34 → 1.1, 40 → 4.4, 30 → −1.1, 32 → 0.
+    expect(inC[0]?.conditions[0]?.detail).toBe("Closest: Garage pipe at 2.2°C; needs ≤ 1.1°C.");
+    expect(inC[1]?.conditions[0]?.detail).toBe("Garage pipe at 2.2°C (≤ 4.4°C).");
+    expect(inC[2]?.conditions[0]?.detail).toBe("Outdoor at -1.1°C (≤ 0°C).");
+    // A drop is a difference: × 5/9, no offset. 2 → 1.1, 5 → 2.8.
+    expect(inC[2]?.conditions[1]?.detail).toBe("Biggest: Garage pipe dropped 1.1°C in the last hour; needs 2.8°C.");
+    // Non-temperature units are untouched.
+    const [humid] = explainAlertRules(
+      [{ id: "h", enabled: true, name: "Damp", all: [{ type: "humidity_above", value: 45 }] }],
+      ctx,
+      "en",
+      true,
+    );
+    expect(humid?.conditions[0]?.detail).toBe("Garage pipe at 50% (≥ 45%).");
+  });
+
   it("explains conditions and matched rules in the user's language", async () => {
     await ensureLocale("de", ["app"]);
     const [result] = explainAlertRules(

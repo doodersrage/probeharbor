@@ -823,7 +823,7 @@ const heatThresholdShown = displayTempInputValue(HEAT_THRESHOLD_F, useCelsius);
       <button type="button" class="btn-secondary" id="add-alert-rule" data-unsaved-edit>{t.automation.addRule}</button>
       <button type="button" class="btn-secondary" id="add-heat-rule" data-unsaved-edit>{fmt(t.automation.addHeatRule, { threshold: heatThresholdShown, unit: tempUnit })}</button>
     </div>
-    <RuleCheckPanel />
+    <RuleCheckPanel useCelsius={useCelsius} />
 
     <h3 class="alert-settings-subheading">{t.automation.playbooks}</h3>
     <p class="form-hint mb-3">{t.automation.playbooksHint}</p>

@@ -15,8 +15,16 @@ describe("rule-check", () => {
     const { GET } = await import("./rule-check");
     const response = await GET({ cookies: {} } as unknown as APIContext);
     expect(response.status).toBe(200);
-    expect(mockExplain).toHaveBeenCalledWith("u1", { alertRules: [] }, "hh", [], "en");
+    expect(mockExplain).toHaveBeenCalledWith("u1", { alertRules: [] }, "hh", [], "en", false);
     expect(((await response.json()) as { alertsEnabled: boolean }).alertsEnabled).toBe(true);
+  });
+
+  it("writes the sentences in °C for a viewer who chose °C", async () => {
+    mockExplain.mockClear();
+    mockAuth.mockResolvedValue({ session: {}, user: { id: "u1", email: "a@b.c", user_metadata: { use_celsius: true } } });
+    const { GET } = await import("./rule-check");
+    await GET({ cookies: {} } as unknown as APIContext);
+    expect(mockExplain).toHaveBeenCalledWith("u1", { alertRules: [] }, "hh", [], "en", true);
   });
 
   it("401s when signed out", async () => {
