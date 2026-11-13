@@ -317,7 +317,8 @@ can't trip it. Compiled for ESP32, S3 and C3.
 `TT buffer: 3 reading(s) kept from before the restart`, `TT firmware
 1.3.1-test`, `TT restarted by watchdog…`, then the server said
 `"readings":8` (the 3 kept + the new one). Production 1.3.1 flashed after;
-posting every minute with no watchdog restart.
+posting every minute with no watchdog restart: a 30-minute serial log
+(14:28–14:58) had 30 × `TT post 200` and no restart or crash line.
 
 Still to do: a long run (a day) with no `TT restarted by watchdog`, the
 plain ESP32 and the C3, and a slow or stalled server (expect `TT post -1`,
