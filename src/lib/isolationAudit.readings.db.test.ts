@@ -1,5 +1,5 @@
 /**
- * Household-isolation audit (IMPLEMENTATION_PLAN.md, "Cross-household tests"):
+ * Household-isolation audit (IMPLEMENTATION_LOG.md, "Cross-household tests"):
  * src/lib/db/places.ts, history.ts, readings.ts, doors.ts, ingest.ts.
  *
  * One test per exported query that had no existing test proving another

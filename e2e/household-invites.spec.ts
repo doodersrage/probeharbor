@@ -2,7 +2,7 @@ import { test, expect, type Page } from "@playwright/test";
 import { getE2ECredentials, signIn } from "./helpers/auth";
 
 /**
- * Invite links are stored hashed (IMPLEMENTATION_PLAN.md S5): the link is
+ * Invite links are stored hashed (IMPLEMENTATION_LOG.md S5): the link is
  * shown once, pending invites have no copyable link, and Resend issues a new
  * link that replaces the old one.
  *

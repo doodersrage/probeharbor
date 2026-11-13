@@ -120,7 +120,7 @@ jobs:
       # Catches broken Astro imports (unit tests alone do not run Vite rollup).
       - run: pnpm build || (rm -rf node_modules/.vite && pnpm build)
 
-  # Neon move (IMPLEMENTATION_PLAN.md): SQL and access tests against a real
+  # Neon move (IMPLEMENTATION_LOG.md): SQL and access tests against a real
   # Postgres 18 with db/migrations applied. Postgres runs only inside this job.
   db:
     runs-on: ubuntu-latest

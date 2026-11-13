@@ -105,7 +105,7 @@ jobs:
             exit 0
           fi
           [ -z "$files" ] && { echo "::notice::Deploy skipped — no changes since $prev."; echo "skip=true" >> "$GITHUB_ENV"; exit 0; }
-          site_files="$(echo "$files" | grep -vxE 'IMPLEMENTATION_PLAN\.md|CLAUDE\.md|AGENTS\.md' || true)"
+          site_files="$(echo "$files" | grep -vxE 'IMPLEMENTATION_PLAN\.md|IMPLEMENTATION_LOG\.md|IMPROVEMENT_PLAN\.md|CLAUDE\.md|AGENTS\.md' || true)"
           if [ -z "$site_files" ]; then
             echo "::notice::Deploy skipped — only planning files changed since $prev."
             echo "skip=true" >> "$GITHUB_ENV"

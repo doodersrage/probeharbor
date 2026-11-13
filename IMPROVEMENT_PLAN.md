@@ -6,7 +6,7 @@
 
 The web app is in good shape; the biggest gaps were in the probe firmware and in operations. Sections are ordered by what to do first.
 
-The review was a static read of the repository at commit `10dccba`: code, firmware, CI, schema, and `IMPLEMENTATION_PLAN.md`. The status lines below come from the work done afterwards; evidence (tests run, hardware results) is in `IMPLEMENTATION_PLAN.md` and `firmware/probeharbor-probe/HARDWARE-TESTS.md`.
+The review was a static read of the repository at commit `10dccba`: code, firmware, CI, schema, and `IMPLEMENTATION_PLAN.md` (now `IMPLEMENTATION_LOG.md`). The status lines below come from the work done afterwards; evidence (tests run, hardware results) is in `IMPLEMENTATION_LOG.md` and `firmware/probeharbor-probe/HARDWARE-TESTS.md`.
 
 Status key: **Done**, **Partly done**, **Waiting on owner**, **Open**.
 
@@ -43,7 +43,7 @@ Status key: **Done**, **Partly done**, **Waiting on owner**, **Open**.
 2. **Stale names and instructions.** The Worker is still `garage-temp`, the bucket is `thermaltrace-history`, and `CLAUDE.md` and `CONTRIBUTING.md` still say to follow Supabase conventions.
    **Partly done:** the instructions now say Postgres (Neon). Renaming the Worker or the bucket is not a rename in place: a new Worker name deploys a second Worker (with its own cron triggers, so alerts could go out twice) and a bucket can't be renamed without copying its data. Leave both until there's a planned migration.
 3. **The plan file is a 323 KB log.** Split `IMPLEMENTATION_PLAN.md` into a short roadmap and an archive.
-   **Open.**
+   **Done.** The log moved to `IMPLEMENTATION_LOG.md` (history kept); `IMPLEMENTATION_PLAN.md` is now a short plan: status, decisions in force, open work.
 4. **Oversized files and loose lint.** `dashboard.astro` is 2,078 lines and `HistoryChart.tsx` is 1,680. The formatter is off in CI, there are 55 baseline lint warnings, and there is no coverage report.
    **Open.**
 

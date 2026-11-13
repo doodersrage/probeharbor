@@ -1,6 +1,6 @@
 /**
  * Database access: Neon Postgres (the app moved here from Supabase in
- * IMPLEMENTATION_PLAN.md steps 3-7).
+ * IMPLEMENTATION_LOG.md steps 3-7).
  *
  * Queries go to Neon over HTTP (@neondatabase/serverless), one request per
  * query, no connection to open: measured ~25-30 ms per query from a Worker

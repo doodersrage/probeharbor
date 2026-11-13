@@ -1,6 +1,6 @@
 /**
  * Household/user isolation audit for db/admin.ts, db/referrals.ts,
- * db/billing.ts, db/accounts.ts and db/userMetadata.ts (IMPLEMENTATION_PLAN:
+ * db/billing.ts, db/accounts.ts and db/userMetadata.ts (IMPLEMENTATION_LOG:
  * "Cross-household tests ... every path"). Each test proves that one user's
  * call can't read or change another user's or household's rows, that trusted
  * fields stay server-only, or that an admin-only path refuses non-admins.

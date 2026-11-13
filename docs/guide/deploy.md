@@ -68,7 +68,8 @@ The workflow:
   (which creates the tag on the deployed commit), with the commits since the
   previous app release as its notes.
 
-A push that changes only `IMPLEMENTATION_PLAN.md`, `CLAUDE.md` or `AGENTS.md`
+A push that changes only planning files (`IMPLEMENTATION_PLAN.md`,
+`IMPLEMENTATION_LOG.md`, `IMPROVEMENT_PLAN.md`), `CLAUDE.md` or `AGENTS.md`
 since the last app release doesn't deploy (a notice says so). Run the Deploy
 workflow by hand (`workflow_dispatch`) to force one.
 
@@ -96,7 +97,7 @@ the run. Run `pnpm db:pending` first to list what isn't applied yet.
 - Before pushing, `pnpm db:pending` lists migrations not yet applied to
   production (exit 1 if any). It's read-only.
 - After applying, run the read-only check from the migration's entry in
-  `IMPLEMENTATION_PLAN.md` when there is one (e.g. backfill counts).
+  `IMPLEMENTATION_LOG.md` when there is one (e.g. backfill counts).
 - CI's `migrations` job runs the same check against production on every
   push to `main` and adds a **warning** (never a failure) when something is
   pending. It connects as `ci_migration_check`, a role that can read only

@@ -51,7 +51,7 @@ a row the probe keeps posting unverified and reports `"tls":"unverified"`.
 Probes on 1.5.0 or later update themselves (an hour after boot, then
 daily; `noupdate` in the extras opts a probe out) from
 `public/firmware/ota.json`, a manifest signed with a key only the owner
-holds (design: `IMPLEMENTATION_PLAN.md`, "signed OTA updates + verified
+holds (design: `IMPLEMENTATION_LOG.md`, "signed OTA updates + verified
 TLS"). The update image is the app part of the image `/flash` serves, so
 there is nothing extra to build.
 

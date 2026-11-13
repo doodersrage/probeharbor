@@ -1,5 +1,5 @@
 /**
- * Household-isolation audit (IMPLEMENTATION_PLAN.md, "Cross-household
+ * Household-isolation audit (IMPLEMENTATION_LOG.md, "Cross-household
  * tests"): one test per exported query in src/lib/db/{households,
  * householdTools,access,shareLinks,statusPages}.ts that the module's own db
  * test didn't already prove can't reach another household's, user's or

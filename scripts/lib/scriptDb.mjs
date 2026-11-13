@@ -1,6 +1,6 @@
 /**
  * Database and sign-in helpers for the ops scripts (Neon Postgres + Better
- * Auth since the move off Supabase; see IMPLEMENTATION_PLAN.md step 7).
+ * Auth since the move off Supabase; see IMPLEMENTATION_LOG.md step 7).
  *
  * Plain Node, no app imports: the scripts can't load the app's TypeScript.
  * What they need from Better Auth is small and mirrored here:
