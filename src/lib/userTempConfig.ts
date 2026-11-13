@@ -1,12 +1,9 @@
 import type { User } from "./appUser";
-import * as neonLegacy from "./db/legacyTempConfig";
 import type { TempFeedConfig, TempProbeConfig } from "./tempFeedConfig";
 import {
   getDefaultTempFeeds,
-  getDefaultTempProbes,
   getLegacyTempProbes,
   normalizePullFeedUrl,
-  sanitizeJsonRoot,
   sanitizeTempFeeds,
   sanitizeTempProbes,
 } from "./tempFeedConfig";
@@ -14,205 +11,10 @@ import { discoverAndMergeFeedProbes } from "./feedDiscovery";
 
 export { normalizePullFeedUrl };
 
-const errorMessage = (error: unknown) => (error instanceof Error ? error.message : String(error));
-
 type TempConfigRow = {
   feeds: TempFeedConfig[];
   probes: TempProbeConfig[];
 };
-
-export async function fetchUserTempConfig(userId: string): Promise<{
-  feeds: TempFeedConfig[];
-  probes: TempProbeConfig[];
-  hasCustomConfig: boolean;
-  error: string | null;
-}> {
-  let feedRows: Awaited<ReturnType<typeof neonLegacy.legacyFeeds>>;
-  try {
-    feedRows = await neonLegacy.legacyFeeds(userId);
-  } catch (error) {
-    return {
-      feeds: getDefaultTempFeeds(),
-      probes: getDefaultTempProbes(),
-      hasCustomConfig: false,
-      error: errorMessage(error),
-    };
-  }
-
-  if (feedRows.length === 0) {
-    return {
-      feeds: getDefaultTempFeeds(),
-      probes: getDefaultTempProbes(),
-      hasCustomConfig: false,
-      error: null,
-    };
-  }
-
-  const feeds: TempFeedConfig[] = feedRows.map((row) => ({
-    id: row.feed_id,
-    name: row.name,
-    url: row.url,
-    enabled: row.enabled,
-    jsonRoot: "temp",
-  }));
-
-  let probeRows: Awaited<ReturnType<typeof neonLegacy.legacyProbes>>;
-  try {
-    probeRows = await neonLegacy.legacyProbes(userId);
-  } catch (error) {
-    return {
-      feeds,
-      probes: getDefaultTempProbes().filter((probe) =>
-        feeds.some((feed) => feed.id === probe.feedId),
-      ),
-      hasCustomConfig: true,
-      error: errorMessage(error),
-    };
-  }
-
-  const probes: TempProbeConfig[] = probeRows.map((row) => ({
-    id: row.probe_id,
-    feedId: row.feed_id,
-    key: row.probe_key,
-    label: row.label,
-    visible: row.visible,
-  }));
-
-  return {
-    feeds,
-    probes:
-      probes.length > 0
-        ? sanitizeTempProbes(probes, feeds)
-        : getDefaultTempProbes().filter((probe) =>
-            feeds.some((feed) => feed.id === probe.feedId),
-          ),
-    hasCustomConfig: true,
-    error: null,
-  };
-}
-
-/**
- * Idempotently copy user_temp_feeds / user_temp_probes into household pull devices,
- * then clear the legacy tables for that user.
- */
-export async function migrateLegacyTempTablesToDevices(
-  userId: string,
-  email?: string | null,
-): Promise<{
-  migratedFeeds: number;
-  createdDevices: number;
-  ensuredSensors: number;
-  cleared: boolean;
-  error: string | null;
-}> {
-  const stored = await fetchUserTempConfig(userId);
-  if (stored.error) {
-    return {
-      migratedFeeds: 0,
-      createdDevices: 0,
-      ensuredSensors: 0,
-      cleared: false,
-      error: stored.error,
-    };
-  }
-  if (!stored.hasCustomConfig) {
-    return {
-      migratedFeeds: 0,
-      createdDevices: 0,
-      ensuredSensors: 0,
-      cleared: false,
-      error: null,
-    };
-  }
-
-  const feeds = sanitizeTempFeeds(stored.feeds);
-  const probes = sanitizeTempProbes(stored.probes, feeds);
-
-  const { getOrCreateHouseholdForUser } = await import("./households");
-  const { listHouseholdDevices } = await import("./devices");
-  const household = await getOrCreateHouseholdForUser(userId, email);
-  if (!household.householdId) {
-    return {
-      migratedFeeds: feeds.length,
-      createdDevices: 0,
-      ensuredSensors: 0,
-      cleared: false,
-      error: household.error || "No household for user",
-    };
-  }
-
-  const existing = await listHouseholdDevices(household.householdId);
-  if (existing.error) {
-    return {
-      migratedFeeds: feeds.length,
-      createdDevices: 0,
-      ensuredSensors: 0,
-      cleared: false,
-      error: existing.error,
-    };
-  }
-
-  let created = 0;
-  let ensured = 0;
-  try {
-    const byUrl = new Map(
-      existing.devices
-        .filter((d) => d.source === "pull_url" && d.pull_url)
-        .map((d) => [normalizePullFeedUrl(d.pull_url!), d.id]),
-    );
-    for (const [index, feed] of feeds.entries()) {
-      const urlKey = normalizePullFeedUrl(feed.url);
-      let deviceId = byUrl.get(urlKey) ?? null;
-      if (!deviceId) {
-        deviceId = await neonLegacy.insertPullDevice(household.householdId, feed, index, sanitizeJsonRoot(feed.jsonRoot));
-        byUrl.set(urlKey, deviceId);
-        created += 1;
-      } else {
-        await neonLegacy.updatePullDevice(household.householdId, deviceId, feed, index, sanitizeJsonRoot(feed.jsonRoot));
-      }
-      for (const [probeIndex, probe] of probes.filter((p) => p.feedId === feed.id).entries()) {
-        if (await neonLegacy.ensureProbeSensors(household.householdId, deviceId, probe, probeIndex)) ensured += 1;
-      }
-    }
-    await neonLegacy.clearLegacy(userId);
-  } catch (error) {
-    return {
-      migratedFeeds: feeds.length,
-      createdDevices: created,
-      ensuredSensors: ensured,
-      cleared: false,
-      error: error instanceof Error ? error.message : String(error),
-    };
-  }
-  return { migratedFeeds: feeds.length, createdDevices: created, ensuredSensors: ensured, cleared: true, error: null };
-}
-
-/** Migrate every user that still has legacy feed rows (admin / one-shot). */
-export async function migrateAllLegacyTempTablesToDevices(): Promise<{
-  users: number;
-  cleared: number;
-  errors: string[];
-}> {
-  let userIds: string[];
-  try {
-    userIds = await neonLegacy.usersWithLegacyFeeds();
-  } catch (error) {
-    return { users: 0, cleared: 0, errors: [errorMessage(error)] };
-  }
-  let cleared = 0;
-  const errors: string[] = [];
-
-  for (const userId of userIds) {
-    const result = await migrateLegacyTempTablesToDevices(userId);
-    if (result.error) {
-      errors.push(`${userId}: ${result.error}`);
-      continue;
-    }
-    if (result.cleared) cleared += 1;
-  }
-
-  return { users: userIds.length, cleared, errors };
-}
 
 export async function saveUserTempConfig(
   userId: string,
@@ -243,9 +45,6 @@ export async function saveUserTempConfig(
     };
   }
 
-  // Drop any leftover legacy rows for this user.
-  await neonLegacy.clearLegacy(userId).catch(() => {});
-
   return { error: null };
 }
 
@@ -256,10 +55,6 @@ async function getCurrentTempConfig(userId: string): Promise<TempConfigRow> {
     return { feeds: fromDevices.feeds, probes: fromDevices.probes };
   }
 
-  const stored = await fetchUserTempConfig(userId);
-  if (stored.hasCustomConfig) {
-    return { feeds: stored.feeds, probes: stored.probes };
-  }
 
   return { feeds: [], probes: [] };
 }
@@ -347,9 +142,8 @@ export async function getUserTempConfig(user: Pick<User, "id" | "email" | "user_
   probes: TempProbeConfig[];
   error: string | null;
 }> {
-  // Prefer devices model; migrate leftover legacy table rows first.
-  await migrateLegacyTempTablesToDevices(user.id, user.email);
-
+  // Devices are the source of truth (the pre-device user_temp_* tables are
+  // retired: empty in production, nothing writes them).
   const { getUserDevicesAsTempConfig } = await import("./devices");
   const fromDevices = await getUserDevicesAsTempConfig(user.id, user.email);
   if (fromDevices.feeds.length > 0 || fromDevices.devices.length > 0) {
@@ -357,24 +151,6 @@ export async function getUserTempConfig(user: Pick<User, "id" | "email" | "user_
       feeds: fromDevices.feeds,
       probes: fromDevices.probes,
       error: fromDevices.error,
-    };
-  }
-
-  const stored = await fetchUserTempConfig(user.id);
-
-  if (stored.error) {
-    return {
-      feeds: stored.feeds,
-      probes: stored.probes,
-      error: stored.error,
-    };
-  }
-
-  if (stored.hasCustomConfig) {
-    return {
-      feeds: stored.feeds,
-      probes: stored.probes,
-      error: null,
     };
   }
 

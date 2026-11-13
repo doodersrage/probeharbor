@@ -1,7 +1,7 @@
 /**
  * Household / user isolation audit for the device-side Neon modules
  * (src/lib/db/devices.ts, deviceActions.ts, pucks.ts, thermostats.ts,
- * legacyTempConfig.ts, pushTokens.ts, remaining.ts).
+ * pushTokens.ts, remaining.ts).
  *
  * Each test calls the src/lib/db function directly (not the wrapper in
  * src/lib), so the SQL predicate itself is what is proved: another household
@@ -17,7 +17,6 @@ vi.mock("./runtimeEnv", () => ({
 }));
 
 import * as devices from "./db/devices";
-import * as legacy from "./db/legacyTempConfig";
 import * as pucks from "./db/pucks";
 import * as push from "./db/pushTokens";
 import * as remaining from "./db/remaining";
@@ -127,64 +126,6 @@ describe("devices.ts: SQL refuses another household's device (isolation audit)",
       { name: "Theirs", enabled: true, household_id: b.home },
     ]);
     expect(await sql("select 1 from public.device_sensors where id = $1", [theirSensor])).toHaveLength(1);
-  });
-});
-
-describe("legacyTempConfig.ts: per user / per household (isolation audit)", () => {
-  async function legacyRows(userId: string, url: string) {
-    await sql("insert into public.user_temp_feeds (user_id, feed_id, name, url, enabled, sort_order) values ($1, 'f1', 'Feed', $2, true, 0)", [
-      userId,
-      url,
-    ]);
-    await sql(
-      "insert into public.user_temp_probes (user_id, probe_id, feed_id, probe_key, label, visible, sort_order) values ($1, 'p0', 'f1', '0', 'Bay', true, 0)",
-      [userId],
-    );
-  }
-
-  it("legacyFeeds / legacyProbes read only the user's rows; clearLegacy removes only theirs", async () => {
-    const a = await home("a@example.com");
-    const b = await home("b@example.com");
-    await legacyRows(a.id, "https://a.example/feed");
-    await legacyRows(b.id, "https://b.example/feed");
-
-    expect((await legacy.legacyFeeds(a.id)).map((f) => f.url)).toEqual(["https://a.example/feed"]);
-    expect(await legacy.legacyProbes(a.id)).toHaveLength(1);
-
-    await legacy.clearLegacy(a.id);
-    await expect(legacy.legacyFeeds(a.id)).resolves.toEqual([]);
-    await expect(legacy.legacyProbes(a.id)).resolves.toEqual([]);
-    expect((await legacy.legacyFeeds(b.id)).map((f) => f.url)).toEqual(["https://b.example/feed"]);
-    expect(await legacy.legacyProbes(b.id)).toHaveLength(1);
-    await expect(legacy.usersWithLegacyFeeds()).resolves.toEqual([b.id]);
-  });
-
-  it("ensureProbeSensors adds nothing to another household's device", async () => {
-    const a = await home("a@example.com");
-    const b = await home("b@example.com");
-    const theirs = await device(b.home, "pull_url", "Theirs");
-    const probe = { key: "0", label: "Bay", visible: true };
-    await expect(legacy.ensureProbeSensors(a.home, theirs, probe, 0)).resolves.toBe(false);
-    await expect(sql("select 1 from public.device_sensors where device_id = $1", [theirs])).resolves.toEqual([]);
-
-    await expect(legacy.ensureProbeSensors(b.home, theirs, probe, 2)).resolves.toBe(true);
-    expect(
-      await sql("select key, label, kind, unit, visible, sort_order from public.device_sensors where device_id = $1 order by kind", [theirs]),
-    ).toEqual([
-      { key: "0", label: "Bay humidity", kind: "humidity", unit: "%", visible: true, sort_order: 2 },
-      { key: "0", label: "Bay", kind: "temperature", unit: "F", visible: true, sort_order: 2 },
-    ]);
-    await expect(legacy.ensureProbeSensors(b.home, theirs, probe, 2)).resolves.toBe(false); // already there
-  });
-
-  it("updatePullDevice leaves another household's device alone", async () => {
-    const a = await home("a@example.com");
-    const b = await home("b@example.com");
-    const theirs = await device(b.home, "pull_url", "Theirs");
-    await legacy.updatePullDevice(a.home, theirs, { name: "Hijacked", enabled: false }, 9, "x");
-    expect(await sql("select name, enabled, sort_order, meta from public.devices where id = $1", [theirs])).toEqual([
-      { name: "Theirs", enabled: true, sort_order: 0, meta: {} },
-    ]);
   });
 });
 

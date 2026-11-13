@@ -6102,3 +6102,21 @@ Plan:
   device and sensor per user/probe; only worth it if the history matters).
 - **R4 (migration, owner-approved):** after R1–R3 and a fresh backup, drop
   the three tables. Rollback: restore them from that backup.
+
+### R0 results and R2a (2026-11-13)
+
+- R0 (owner, production): `user_temp_feeds` 0 rows, `user_temp_probes` 0,
+  `garage_temps` 650 rows from 2 users. Date range and the "legacy-only
+  users" count not reported yet.
+- R1 not needed (nothing to move).
+- [x] R2a: nothing writes `user_temp_*` any more and production has none,
+  so the code that reads or clears them is gone: the per-request move in
+  `getUserDevicesAsTempConfig` (one query per readings call and per user
+  every 15 minutes), the fallback reads and the cleanup call in
+  `userTempConfig.ts`, and `src/lib/db/legacyTempConfig.ts` with its tests.
+  The older user-metadata config path stays. Tables stay until R4.
+  Evidence: `pnpm test` 3632 passed (obsolete migration tests replaced by
+  "lists devices, no legacy step"); `pnpm test:db` 52 files / 411 passed;
+  typecheck 0; lint 9 (all FetchWeather `any`).
+- [ ] R2b (`garage_temps` in the drip check and `ops-funnel.mjs`) and R3:
+  need the rest of R0 and the owner's decision on the 650 rows.

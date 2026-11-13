@@ -10,58 +10,25 @@ vi.mock("./households", () => ({
   getOrCreateHouseholdForUser: (...args: unknown[]) => mockGetOrCreateHouseholdForUser(...args),
 }));
 
-const mockMigrateLegacyTempTablesToDevices = vi.fn();
-vi.mock("./userTempConfig", () => ({
-  migrateLegacyTempTablesToDevices: (...args: unknown[]) =>
-    mockMigrateLegacyTempTablesToDevices(...args),
-}));
-
 beforeEach(() => {
   mockListHouseholdDevices.mockReset().mockResolvedValue({ devices: [], error: null });
   mockGetOrCreateHouseholdForUser.mockReset().mockResolvedValue({
     householdId: "house-1",
     error: null,
   });
-  mockMigrateLegacyTempTablesToDevices.mockReset().mockResolvedValue({
-    migratedFeeds: 0,
-    createdDevices: 0,
-  });
 });
 
 describe("getUserDevicesAsTempConfig", () => {
-  it("runs the legacy migration before ensuring/listing devices", async () => {
+  it("ensures the household and lists its devices (no legacy-table step)", async () => {
     const { getUserDevicesAsTempConfig } = await import("./devices");
 
     await getUserDevicesAsTempConfig("user-1", "user@example.com");
 
-    expect(mockMigrateLegacyTempTablesToDevices).toHaveBeenCalledWith(
-      "user-1",
-      "user@example.com",
-    );
     expect(mockGetOrCreateHouseholdForUser).toHaveBeenCalledWith(
       "user-1",
       "user@example.com",
     );
-    expect(mockMigrateLegacyTempTablesToDevices.mock.invocationCallOrder[0]).toBeLessThan(
-      mockListHouseholdDevices.mock.invocationCallOrder[0]!,
-    );
     expect(mockListHouseholdDevices).toHaveBeenCalledWith("house-1");
-  });
-
-  it("swallows a migration failure and still returns the household's devices", async () => {
-    mockMigrateLegacyTempTablesToDevices.mockRejectedValue(new Error("legacy migration boom"));
-    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-    const { getUserDevicesAsTempConfig } = await import("./devices");
-
-    const result = await getUserDevicesAsTempConfig("user-1");
-
-    expect(result.error).toBeNull();
-    expect(result.householdId).toBe("house-1");
-    expect(consoleErrorSpy).toHaveBeenCalledWith(
-      "Legacy temp-config migration failed:",
-      expect.any(Error),
-    );
-    consoleErrorSpy.mockRestore();
   });
 
   it("propagates a household-creation error with empty devices and the legacy defaults", async () => {
