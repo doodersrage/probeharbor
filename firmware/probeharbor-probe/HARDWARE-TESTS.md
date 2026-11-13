@@ -1,4 +1,4 @@
-# Hardware tests still open (firmware 1.2.7)
+# Hardware tests still open (firmware 1.3.0)
 
 Verified so far, on a plain ESP32: browser flash → USB settings → Wi-Fi → first
 reading, with a DS18B20 (1.0.1), a DHT22 (1.1.1), a BME280 on I2C (1.2.2:
@@ -12,7 +12,7 @@ Everything else below has only been compiled.
 
 Keep the board on USB with the serial console open in `/flash` (or any serial
 monitor at 115200 baud). Lines starting `TT` are the ones to watch. Write the
-result and the firmware line (`TT … 1.2.7`) next to each test.
+result and the firmware line (`TT … 1.3.0`) next to each test.
 
 ## Parts to order
 
@@ -220,7 +220,8 @@ then `TT post 200 probes=1` five times over about 4 minutes. With the key no
 longer in the path, a server that ignored the header would have answered
 400, so the 200s show the header path working against production. The board
 was left on 1.2.7.
-Not done: step 2 (dashboard, needs a signed-in check), steps 3–4 (need the
+Step 2 verified the same day: the owner saw the readings in the dashboard.
+Not done: steps 3–4 (need the
 Wi-Fi name and password to send `TTCFG`), and the plain ESP32 and C3.
 
 1. Build and upload 1.2.7 (`pio run -t upload` in this folder) to a board
@@ -234,3 +235,40 @@ Wi-Fi name and password to send `TTCFG`), and the plain ESP32 and C3.
    or in the portal: it is still trimmed to the bare key and posts 200.
 5. If 1–4 pass: `pnpm firmware:build`, commit the images and manifest, and
    note the date here.
+
+## 10. Buffered readings with their own time (1.3.0, source only)
+
+1.3.0 sets its clock over NTP, stamps each reading, and keeps it in a RAM
+buffer (240 readings, 4 hours) until the server answers 2xx. Readings go as
+`{"readings": [{..., "recorded_at": <unix s>}]}`, up to 30 per request.
+The buffer survives the probe's own restarts (the offline restart, a reset,
+a reflash) but not a power cut. A server that answers a batch with 400 (one
+from before 2026-11) gets plain readings, as before, until the next restart.
+Compiled for ESP32, S3 and C3.
+
+**Verified on an ESP32-S3 + AHT20 (2026-11-13):**
+
+- Boot, NTP: `TT firmware 1.3.0`, `TT wifi ok`, `TT clock set`.
+- Server unreachable (a test build pointed at a host the probe couldn't
+  reach): `TT post -1 probes=1 buffered=1`, then `=2`, `=3`, one a minute.
+- Reset during that outage: `TT buffer: 3 reading(s) kept from before the
+  restart`, the clock still set, then `buffered=4`, `=5`.
+- Reflash with the production build: `TT buffer: 6 reading(s) kept…`.
+- Against production as deployed then (a server without batch support):
+  `TT server didn't take timed readings: sending plain readings until
+  restart`, then `TT post 200 probes=1` each minute. No `TT post 400` is
+  printed, so `/flash` doesn't report a failure.
+
+**Still to do (needs the batch-capable server deployed):**
+
+1. Normal posting: expect `TT post 200 probes=1 buffered=0` each minute and
+   the readings in the dashboard at the probe's times.
+2. Outage: unplug the router (or block the probe) for 5 minutes. Expect
+   `TT offline: reading kept (N buffered)` or `TT post -1 … buffered=N`.
+   Restore it: one `TT post 200 … buffered=0`, and the dashboard history
+   shows a reading for each minute of the outage, not a gap.
+3. Power cut: unplug the probe for a minute. The buffer is lost (expected);
+   after boot, `TT clock set` comes only after Wi-Fi and NTP.
+4. The plain ESP32 and the C3.
+5. If 1–4 pass: `pnpm firmware:build` and commit the images (1.2.7's change
+   comes along).

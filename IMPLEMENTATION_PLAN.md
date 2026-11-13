@@ -5779,3 +5779,30 @@ skip duplicates in the app, no unique index.
 - [ ] SenML records carry their own time (`t`/`bt`); still ignored.
 - [ ] Firmware: NTP clock + ring buffer posting batches (1.1, device side;
       needs hardware testing).
+
+------------------------------------------------------------------------
+
+## Firmware 1.3.0 (source only): NTP clock and reading buffer (IMPROVEMENT_PLAN 1.1, device side, 2026-11-13)
+
+**Status: Compiled for all three boards; partly verified on an ESP32-S3.
+Batch delivery not verified: production doesn't accept batches until
+05b3b5d deploys (CI blocked on `E2E_DATABASE_URL`). `/flash` still serves 1.2.6.**
+
+- [x] `main.cpp`: `configTime` after Wi-Fi; readings stamped once the clock
+      is past 2025. A 240-slot buffer (4 h) in `.noinit` RAM (survives
+      `ESP.restart()`, not a power cut; validated at boot), oldest dropped
+      when full. Sent as `{"readings": [...]}` (≤30 per request, ≤4 requests
+      per send); a reading leaves the buffer only on 2xx (or a 400 naming
+      implausible values, or 413). 400 without `rejected` → plain readings
+      until restart, buffer cleared (older servers, wrong clock). Battery
+      moved to the device fields. Offline readings are taken and kept
+      instead of skipped.
+- [x] `.noinit` placement checked in all three ELFs (54 728 bytes).
+- [x] On the S3 (`HARDWARE-TESTS.md` test 10): clock, buffering during an
+      unreachable server, buffer kept across a reset and a reflash, and the
+      fallback against the current production server (200s, no `TT post
+      400` for `/flash` to misread).
+- Not tested: a batch accepted by a real server, the backlog flush and
+  lost-reply duplicates. A local mock server couldn't be used: the owner's
+  IoT devices are on a separate network.
+- [ ] After deploy: test 10 steps 1–4, then publish images.

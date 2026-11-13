@@ -28,6 +28,14 @@
  *     detected (an unwired pin reads "dry"/"open"), so they're reported only
  *     when enabled: a TTEXTRAS<TAB>leak,door,battery line over USB (sent
  *     by the flasher page before TTCFG) or the portal's "extras" box.
+ *
+ * Readings keep their time (1.3.0+). Once the clock is set over NTP, each
+ * reading is stamped and kept in a buffer until the server confirms it, then
+ * sent as {"readings": [{..., "recorded_at": <unix s>}]}. A Wi-Fi or server
+ * outage loses nothing until the buffer is full (BUFFER_SLOTS readings, then
+ * the oldest go first). The buffer survives the probe's own restarts but not
+ * a power cut. A server that answers 400 to a batch (one older than
+ * 2026-11) gets plain readings, as before 1.3.0, until the next restart.
  */
 #include <Adafruit_AHTX0.h>
 #include <Adafruit_BME280.h>
@@ -42,9 +50,11 @@
 #include <WiFiClientSecure.h>
 #include <WiFiManager.h>
 #include <Wire.h>
+#include <esp_attr.h>
+#include <time.h>
 
 #ifndef FIRMWARE_VERSION
-#define FIRMWARE_VERSION "1.2.7"
+#define FIRMWARE_VERSION "1.3.0"
 #endif
 /*
  * The flasher talks to whichever USB port the board is plugged into. On the
@@ -117,6 +127,16 @@ static const size_t MAX_EXTRAS_LEN = 40;
 // With another sensor already reporting, only look for a DHT every Nth post:
 // each DHT search blocks for several seconds.
 static const uint8_t DHT_RETRY_EVERY = 10;
+
+// Reading buffer: 240 readings is 4 hours at one a minute (~55 KB of RAM).
+static const uint16_t BUFFER_SLOTS = 240;
+static const size_t SLOT_BODY = 224;
+// Readings per request; the server takes up to 100 and 64 KB.
+static const uint16_t BATCH_MAX = 30;
+// Requests per send, so a long backlog can't hold up the loop for minutes.
+static const uint8_t BATCHES_PER_SEND = 4;
+// 2025-01-01: an earlier clock hasn't been set by NTP yet.
+static const time_t CLOCK_VALID_AFTER = 1735689600;
 
 OneWire oneWire(ONE_WIRE_PIN);
 DallasTemperature probes(&oneWire);
@@ -454,7 +474,169 @@ void checkResetButton() {
   }
 }
 
-void postReadings() {
+/**
+ * Readings not yet confirmed by the server. In .noinit RAM: not cleared at
+ * boot, so it survives ESP.restart() (the offline restart below) but not a
+ * power cut. Checked at boot; anything that doesn't look like ours is cleared.
+ */
+struct BufferedReading {
+  uint32_t t;               // Unix seconds
+  char body[SLOT_BODY];     // "\"temp1\":41.00,..." fields, each ending in ','
+};
+struct ReadingBuffer {
+  uint32_t magic;
+  uint16_t head;
+  uint16_t count;
+  BufferedReading slots[BUFFER_SLOTS];
+};
+static const uint32_t BUFFER_MAGIC = 0x50480130u ^ (uint32_t)sizeof(ReadingBuffer);
+__NOINIT_ATTR static ReadingBuffer rb;
+// A server that refused a batch with 400 gets plain readings until restart.
+bool plainOnly = false;
+bool clockAnnounced = false;
+
+static void bufferClear() {
+  rb.magic = BUFFER_MAGIC;
+  rb.head = 0;
+  rb.count = 0;
+}
+
+static void bufferCheckAtBoot() {
+  bool ok = rb.magic == BUFFER_MAGIC && rb.head < BUFFER_SLOTS && rb.count <= BUFFER_SLOTS;
+  for (uint16_t i = 0; ok && i < rb.count; i++) {
+    const BufferedReading& r = rb.slots[(rb.head + i) % BUFFER_SLOTS];
+    ok = r.t > (uint32_t)CLOCK_VALID_AFTER && memchr(r.body, 0, SLOT_BODY) != nullptr && r.body[0] == '"';
+  }
+  if (!ok) {
+    bufferClear();
+  } else if (rb.count > 0) {
+    Console.printf("TT buffer: %u reading(s) kept from before the restart\n", (unsigned)rb.count);
+  }
+}
+
+static bool clockValid() { return time(nullptr) > CLOCK_VALID_AFTER; }
+
+static void bufferPush(uint32_t t, const String& fields) {
+  if (fields.length() >= SLOT_BODY) return;  // can't happen with today's sensors
+  if (rb.count == BUFFER_SLOTS) {
+    rb.head = (rb.head + 1) % BUFFER_SLOTS;  // full: the oldest reading goes
+    rb.count--;
+  }
+  BufferedReading& slot = rb.slots[(rb.head + rb.count) % BUFFER_SLOTS];
+  slot.t = t;
+  memcpy(slot.body, fields.c_str(), fields.length() + 1);
+  rb.count++;
+}
+
+static void bufferDrop(uint16_t n) {
+  if (n > rb.count) n = rb.count;
+  rb.head = (rb.head + n) % BUFFER_SLOTS;
+  rb.count -= n;
+}
+
+static String deviceFields(int batteryPct) {
+  // The dashboard compares fw with /flash's current version to offer updates.
+  String out = "\"fw\":\"" FIRMWARE_VERSION "\",\"rssi\":" + String(WiFi.RSSI());
+  if (batteryPct >= 0) out += ",\"battery_pct\":" + String(batteryPct);
+  return out;
+}
+
+/** POST to ingest; returns the HTTP status, or a negative HTTPClient error. */
+static int postBody(const String& body, String* response = nullptr) {
+  // Same trust model as the sample sketches: TLS without certificate pinning.
+  WiFiClientSecure client;
+  client.setInsecure();
+  HTTPClient http;
+  http.setTimeout(15000);
+  // The key goes in a header, not the path, so it stays out of request URLs
+  // (proxy and server logs). `_` is the server's header-only placeholder;
+  // it has accepted X-Ingest-Key since 2026-09.
+  if (!http.begin(client, String("https://") + INGEST_HOST + "/api/ingest/_")) {
+    Console.println("TT post failed: could not open connection");
+    return -1000;
+  }
+  http.addHeader("Content-Type", "application/json");
+  http.addHeader("X-Ingest-Key", deviceKey);
+  int code = http.POST(body);
+  if (response != nullptr && code > 0) *response = http.getString();
+  http.end();
+  return code;
+}
+
+static void reportKeyProblem(int code) {
+  if (code == 401 || code == 403 || code == 404) {
+    Console.println("TT key rejected: copy the device key again from Dashboard → Devices");
+  }
+}
+
+/** The pre-1.3.0 request: one reading, stamped by the server. */
+static void postPlain(const String& fields, int batteryPct, uint8_t sent) {
+  int code = postBody("{" + fields + deviceFields(batteryPct) + "}");
+  if (code == -1000) return;
+  Console.printf("TT post %d probes=%u\n", code, (unsigned)sent);
+  reportKeyProblem(code);
+}
+
+/**
+ * Send buffered readings, oldest first, until the buffer is empty, a request
+ * fails, or BATCHES_PER_SEND requests have gone. A reading leaves the buffer
+ * only when the server has answered 2xx for it (or rejected it outright), so
+ * a lost reply means a resend, which the server skips as a duplicate.
+ * Returns false when the server refused batches (fall back to plain posts).
+ */
+static bool sendBuffer(int batteryPct, uint8_t sent) {
+  for (uint8_t round = 0; round < BATCHES_PER_SEND && rb.count > 0; round++) {
+    uint16_t n = rb.count < BATCH_MAX ? rb.count : BATCH_MAX;
+    String body = "{" + deviceFields(batteryPct) + ",\"readings\":[";
+    body.reserve(n * (SLOT_BODY + 32) + 96);
+    for (uint16_t i = 0; i < n; i++) {
+      const BufferedReading& r = rb.slots[(rb.head + i) % BUFFER_SLOTS];
+      if (i > 0) body += ",";
+      body += "{";
+      body += r.body;
+      body += "\"recorded_at\":" + String(r.t) + "}";
+    }
+    body += "]}";
+
+    String response;
+    int code = postBody(body, &response);
+    if (code == -1000) return true;
+    if (code >= 200 && code < 300) {
+      bufferDrop(n);
+      Console.printf("TT post %d probes=%u buffered=%u\n", code, (unsigned)sent, (unsigned)rb.count);
+      continue;
+    }
+    if (code == 400 && response.indexOf("\"rejected\":") >= 0) {
+      // Values the server says can't be real: resending won't help.
+      bufferDrop(n);
+      Console.printf("TT post %d probes=%u buffered=%u\n", code, (unsigned)sent, (unsigned)rb.count);
+      continue;
+    }
+    if (code == 400) {
+      // A server from before 2026-11 doesn't read batches, and a clock the
+      // server disagrees with is rejected too. Either way: plain readings.
+      // (Not printed as "TT post 400": the flasher would call that a failure.)
+      Console.println("TT server didn't take timed readings: sending plain readings until restart");
+      bufferClear();
+      return false;
+    }
+    if (code == 413) {
+      bufferDrop(n);  // can't succeed however often it's sent
+    }
+    // Key problems, rate limits, server errors, no connection: keep the
+    // readings and try again on the next send.
+    Console.printf("TT post %d probes=%u buffered=%u\n", code, (unsigned)sent, (unsigned)rb.count);
+    reportKeyProblem(code);
+    return true;
+  }
+  return true;
+}
+
+/**
+ * Read every sensor into JSON fields ("\"temp1\":41.00," ...). Returns how
+ * many sensors were read; the battery level (or -1) goes in batteryPct.
+ */
+uint8_t readSensors(String& body, int& batteryPct) {
   // Search the bus every time (a few ms) so a probe wired in, or added, after
   // boot is picked up without a reset -- unless a DHT is already answering.
   uint8_t found = 0;
@@ -465,7 +647,8 @@ void postReadings() {
     if (found > MAX_PROBES) found = MAX_PROBES;
   }
 
-  String body = "{";
+  body = "";
+  batteryPct = -1;
   uint8_t sent = 0;
   for (uint8_t i = 0; i < found; i++) {
     float c = probes.getTempCByIndex(i);
@@ -547,8 +730,7 @@ void postReadings() {
   if (optBattery) {
     // 1:1 divider, so the pin sees half the cell. Single-cell Li-ion: 3.3 V empty, 4.2 V full.
     int cellMv = (int)analogReadMilliVolts(BATTERY_PIN) * 2;
-    int pct = constrain((cellMv - 3300) * 100 / (4200 - 3300), 0, 100);
-    body += "\"battery_pct\":" + String(pct) + ",";
+    batteryPct = constrain((cellMv - 3300) * 100 / (4200 - 3300), 0, 100);
   }
 
   if (sent == 0) {
@@ -557,32 +739,33 @@ void postReadings() {
     } else {
       Console.println("TT no probe: check the wiring (DS18B20 or DHT22 data on GPIO " + String(ONE_WIRE_PIN) + ", 4.7k pull-up to 3.3V)");
     }
+  }
+  return sent;
+}
+
+/** Take a reading; send it, and anything buffered, when Wi-Fi is up. */
+void sampleAndSend() {
+  String fields;
+  int batteryPct = -1;
+  uint8_t sent = readSensors(fields, batteryPct);
+  bool timed = !plainOnly && clockValid();
+  if (sent > 0 && timed) bufferPush((uint32_t)time(nullptr), fields);
+
+  if (WiFi.status() != WL_CONNECTED) {
+    if (sent > 0) {
+      if (timed) {
+        Console.printf("TT offline: reading kept (%u buffered)\n", (unsigned)rb.count);
+      } else {
+        Console.println("TT waiting for wifi");
+      }
+    }
     return;
   }
-  // The dashboard compares this with /flash's current version to offer updates.
-  body += "\"fw\":\"" FIRMWARE_VERSION "\",\"rssi\":" + String(WiFi.RSSI()) + "}";
-
-  // Same trust model as the sample sketches: TLS without certificate pinning.
-  WiFiClientSecure client;
-  client.setInsecure();
-  HTTPClient http;
-  http.setTimeout(15000);
-  // The key goes in a header, not the path, so it stays out of request URLs
-  // (proxy and server logs). `_` is the server's header-only placeholder;
-  // it has accepted X-Ingest-Key since 2026-09.
-  if (!http.begin(client, String("https://") + INGEST_HOST + "/api/ingest/_")) {
-    Console.println("TT post failed: could not open connection");
-    return;
+  if (!plainOnly && rb.count > 0 && !sendBuffer(batteryPct, sent)) {
+    plainOnly = true;
+    timed = false;  // this reading went with the cleared buffer: send it plain
   }
-  http.addHeader("Content-Type", "application/json");
-  http.addHeader("X-Ingest-Key", deviceKey);
-  int code = http.POST(body);
-  http.end();
-
-  Console.printf("TT post %d probes=%u\n", code, (unsigned)sent);
-  if (code == 401 || code == 403 || code == 404) {
-    Console.println("TT key rejected: copy the device key again from Dashboard → Devices");
-  }
+  if (sent > 0 && !timed) postPlain(fields, batteryPct, sent);
 }
 
 void setup() {
@@ -595,6 +778,7 @@ void setup() {
   extrasParam.setValue(extras.c_str(), MAX_EXTRAS_LEN);
   Wire.begin(I2C_SDA_PIN, I2C_SCL_PIN);
   detectAirAtBoot();
+  bufferCheckAtBoot();
 
   Console.println();
   Console.println("TT firmware " FIRMWARE_VERSION);
@@ -611,6 +795,9 @@ void setup() {
   } else {
     Console.println("TT setup: send settings over USB, or join the ProbeHarbor-Setup Wi-Fi network");
   }
+  // After autoConnect, so the network stack is up. SNTP keeps retrying and
+  // re-syncs on its own; readings are only stamped once the clock is set.
+  configTime(0, 0, "pool.ntp.org", "time.cloudflare.com");
 }
 
 void loop() {
@@ -641,14 +828,20 @@ void loop() {
   postNow = false;
   lastPost = now == 0 ? 1 : now;
 
-  if (WiFi.status() != WL_CONNECTED) {
-    Console.println("TT waiting for wifi");
-    return;
+  if (!clockAnnounced && clockValid()) {
+    clockAnnounced = true;
+    Console.println("TT clock set");
   }
   if (deviceKey.isEmpty()) {
     Console.println("TT waiting for device key");
     return;
   }
-  postReadings();
+  if (WiFi.status() != WL_CONNECTED && !firstPostDone && !clockValid()) {
+    // Nothing to keep a reading with yet: don't spend the fast first-post
+    // retries measuring.
+    Console.println("TT waiting for wifi");
+    return;
+  }
+  sampleAndSend();
   firstPostDone = true;
 }
