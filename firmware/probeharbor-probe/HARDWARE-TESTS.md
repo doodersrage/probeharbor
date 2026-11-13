@@ -395,5 +395,11 @@ verified … posting without verification, retrying in a day`; the next post
 sent the 3 failed readings and the new one (`"readings":8`). `TTTEST
 tlsgood`: verified again. Production 1.5.0 afterwards: verified, posting.
 
-Still to do: the S3 and C3 on 1.5.0 with TLS; the 24-hour retry
-(not waited for).
+**Same test on the ESP32-S3 (2026-11-13, 17:01–17:07):** verified; with the
+wrong root two failures, fallback on the third, the 3 kept readings and
+the new one sent (`"readings":8`); real roots: verified again. The server
+(46e79f3 deployed) stored and then cleared this probe's `tls` flag during
+the test. Final production 1.5.0 flashed afterwards: `TT tls: server
+certificate verified`, posting 200.
+
+Still to do: the C3 on 1.5.0; the 24-hour retry (not waited for).

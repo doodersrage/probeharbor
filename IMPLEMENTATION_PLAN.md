@@ -6021,7 +6021,9 @@ production.**
 - [x] ESP32 hardware: verified; wrong root → 2 failures, fallback on the
       3rd, readings kept and sent; real roots → verified again (test 13).
 - Flash use with TLS + OTA: 82–85% of the 1.25 MB app slot.
-- [ ] Release 1.5.0: S3 (and C3 if available) on the final build, then
+- [x] S3 on the final build (2026-11-13): TLS test passed; production 1.5.0
+      verified and posting.
+- [ ] Release 1.5.0: C3 not tested on any 1.5.0 build. Then
       `pnpm firmware:build`, `pnpm firmware:sign --rollout 10`.
 - [x] F3 (TLS part, 2026-11-13): ingest stores `meta.tls = "unverified"`
       when a probe sends it and clears it (null) on its next post without
