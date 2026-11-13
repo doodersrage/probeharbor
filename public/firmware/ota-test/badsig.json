@@ -7,8 +7,8 @@
       "url": "/firmware/ota-test/probeharbor-probe-esp32s3.bin?v=1.4.1",
       "offset": 65536,
       "size": 1063696,
-      "sha256": "1aa3b9745675b8fa0be9c12dbcecaaf83608ca58b20e2006d3792171925d3cc6",
-      "sig": "MEUCIBm/9zfJfIjQlgc2LjVsA0vX9ap5pu6RaqNnvyMAxQXyAiEAhF5OLIxW0xc3vt3fArYakGF+GhAB3Mm3nPI5A4w7DSY="
+      "sha256": "ecf628ff7163f5abc1613602783ed8b64012844931d878546d7f38bf41face88",
+      "sig": "MEUCIQCtWbZ2KstHCQTOjFSbfgFYbAN3vqIAdX3RsXby5ITbxAIgSHvHBjcGh3kO5qmsMWXMDPGUcZIlZO2nSrxDr9ySuOE="
     }
   }
 }
