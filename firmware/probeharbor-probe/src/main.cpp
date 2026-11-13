@@ -37,6 +37,16 @@
  * a power cut. A server that answers 400 to a batch (one older than
  * 2026-11) gets plain readings, as before 1.3.0, until the next restart.
  *
+ * Over-the-air updates (1.4.0+): an hour after boot and then daily, the probe
+ * reads OTA_MANIFEST_PATH (public/firmware/ota.json, made by
+ * `pnpm firmware:sign`). It installs a newer version only if the manifest
+ * entry for its chip is signed by the key in ota_pubkey.h, the download
+ * matches the signed size and SHA-256, and its rollout bucket is in.
+ * A new image is on probation until its first 2xx post: a restart before
+ * that (crash, watchdog) makes the bootloader go back to the old one, and
+ * 30 minutes without a 2xx makes the probe go back itself. "noupdate" in
+ * the extras turns updates off for this probe.
+ *
  * Watchdog (1.3.1+): if loop() stops coming round for WATCHDOG_S seconds
  * (anything stuck: a sensor library, the network stack), the chip restarts.
  * Buffered readings survive that restart; the next boot prints
@@ -58,10 +68,17 @@
 #include <esp_attr.h>
 #include <esp_system.h>
 #include <esp_task_wdt.h>
+#include <esp_ota_ops.h>
+#include <mbedtls/base64.h>
+#include <mbedtls/pk.h>
+#include <mbedtls/sha256.h>
 #include <time.h>
+#include <Update.h>
+
+#include "ota_pubkey.h"
 
 #ifndef FIRMWARE_VERSION
-#define FIRMWARE_VERSION "1.3.1"
+#define FIRMWARE_VERSION "1.4.0"
 #endif
 /*
  * The flasher talks to whichever USB port the board is plugged into. On the
@@ -146,6 +163,18 @@ static const uint8_t BATCHES_PER_SEND = 4;
 // handshake + 15 s read, ~45 s) or a Wi-Fi join (20 s); long waits also feed
 // it as they go.
 static const uint32_t WATCHDOG_S = 60;
+
+#ifndef OTA_MANIFEST_PATH
+#define OTA_MANIFEST_PATH "/firmware/ota.json"
+#endif
+#ifndef OTA_FIRST_CHECK_MS
+#define OTA_FIRST_CHECK_MS (60UL * 60UL * 1000UL)
+#endif
+#ifndef OTA_PROBATION_MS
+#define OTA_PROBATION_MS (30UL * 60UL * 1000UL)
+#endif
+static const unsigned long OTA_CHECK_EVERY_MS = 24UL * 60UL * 60UL * 1000UL;
+static const size_t OTA_MANIFEST_MAX = 4096;
 // 2025-01-01: an earlier clock hasn't been set by NTP yet.
 static const time_t CLOCK_VALID_AFTER = 1735689600;
 
@@ -331,6 +360,7 @@ static bool readAir(float& tempC, float& humidity, float& pressureHpa) {
 bool optLeak = false;
 bool optDoor = false;
 bool optBattery = false;
+bool optNoUpdate = false;
 String extras;
 
 Preferences prefs;
@@ -392,17 +422,19 @@ void saveKey(const String &raw) {
   Console.println("TT key saved");
 }
 
-/** "leak,door,battery" (any order, any subset); anything else is ignored. */
+/** "leak,door,battery,noupdate" (any order, any subset); anything else is ignored. */
 void applyExtras(const String& raw) {
   String lower = raw;
   lower.toLowerCase();
   optLeak = lower.indexOf("leak") >= 0;
   optDoor = lower.indexOf("door") >= 0;
   optBattery = lower.indexOf("batt") >= 0;
+  optNoUpdate = lower.indexOf("noupdate") >= 0;
   extras = "";
   if (optLeak) extras += "leak,";
   if (optDoor) extras += "door,";
   if (optBattery) extras += "battery,";
+  if (optNoUpdate) extras += "noupdate,";
   if (extras.endsWith(",")) extras.remove(extras.length() - 1);
   if (optLeak) pinMode(LEAK_PIN, INPUT_PULLUP);
   if (optDoor) pinMode(DOOR_PIN, INPUT_PULLUP);
@@ -455,6 +487,9 @@ void handleConfigLine(const String &line) {
   }
 }
 
+bool otaCheckNow = false;  // set by the TTTEST ota hook
+String otaManifestPath = OTA_MANIFEST_PATH;  // test builds can change it (TTTEST ota)
+
 #ifdef PROBE_TEST_HOOKS
 /*
  * Test builds only (-DPROBE_TEST_HOOKS; never in /flash images): fake the
@@ -463,6 +498,7 @@ void handleConfigLine(const String &line) {
  *   TTTEST<TAB>drop                 next post is sent, its reply thrown away
  *   TTTEST<TAB>wifioff              drop Wi-Fi (the offline restart follows)
  *   TTTEST<TAB>hang                 stop the loop (the watchdog restarts the chip)
+ *   TTTEST<TAB>ota<TAB><path>        read the OTA manifest at <path> now
  */
 unsigned long testFailUntil = 0;
 bool testDropReply = false;
@@ -478,6 +514,10 @@ static void handleTestLine(const String& line) {
   } else if (line == "TTTEST\twifioff") {
     Console.println("TT test: Wi-Fi off");
     WiFi.disconnect();
+  } else if (line.startsWith("TTTEST\tota\t")) {
+    otaManifestPath = line.substring(11);
+    Console.println("TT test: OTA check of " + otaManifestPath);
+    otaCheckNow = true;
   } else if (line == "TTTEST\thang") {
     Console.println("TT test: hanging the loop");
     for (;;) delay(1000);  // yields, so only the loop task's watchdog can end this
@@ -579,6 +619,23 @@ static void bufferDrop(uint16_t n) {
   rb.count -= n;
 }
 
+// OTA probation: set at boot when this image was just installed over the
+// air and hasn't been confirmed by a 2xx post yet.
+bool otaPending = false;
+unsigned long lastOtaCheck = 0;
+bool otaCheckedOnce = false;
+
+/** The first 2xx after an OTA update: keep this image. */
+static void otaConfirm() {
+  if (!otaPending) return;
+  otaPending = false;
+  esp_ota_mark_app_valid_cancel_rollback();
+  Console.println("TT ota: " FIRMWARE_VERSION " confirmed");
+}
+
+/** Tell the Arduino core not to confirm a new image at boot: we do, on the first 2xx. */
+bool verifyRollbackLater() { return true; }
+
 static String deviceFields(int batteryPct) {
   // The dashboard compares fw with /flash's current version to offer updates.
   String out = "\"fw\":\"" FIRMWARE_VERSION "\",\"rssi\":" + String(WiFi.RSSI());
@@ -632,6 +689,7 @@ static void postPlain(const String& fields, int batteryPct, uint8_t sent) {
   int code = postBody("{" + fields + deviceFields(batteryPct) + "}");
   if (code == -1000) return;
   Console.printf("TT post %d probes=%u\n", code, (unsigned)sent);
+  if (code >= 200 && code < 300) otaConfirm();
   reportKeyProblem(code);
 }
 
@@ -661,6 +719,7 @@ static bool sendBuffer(int batteryPct, uint8_t sent) {
     int code = postBody(body, &response);
     if (code == -1000) return true;
     if (code >= 200 && code < 300) {
+      otaConfirm();
       bufferDrop(n);
       Console.printf("TT post %d probes=%u buffered=%u\n", code, (unsigned)sent, (unsigned)rb.count);
       continue;
@@ -689,6 +748,222 @@ static bool sendBuffer(int batteryPct, uint8_t sent) {
     return true;
   }
   return true;
+}
+
+/** A field of a flat JSON object: a string's contents or a number's text; "" if absent. */
+static String jsonField(const String& json, const char* key) {
+  String needle = String("\"") + key + "\"";
+  int at = json.indexOf(needle);
+  if (at < 0) return "";
+  at = json.indexOf(':', at + needle.length());
+  if (at < 0) return "";
+  at++;
+  while (at < (int)json.length() && isspace((unsigned char)json[at])) at++;
+  if (at < (int)json.length() && json[at] == '"') {
+    int end = json.indexOf('"', at + 1);
+    return end < 0 ? "" : json.substring(at + 1, end);
+  }
+  int end = at;
+  while (end < (int)json.length() && json[end] != ',' && json[end] != '}' && !isspace((unsigned char)json[end])) end++;
+  return json.substring(at, end);
+}
+
+/** {"esp32s3": { ... }}: the object for one key (no nested objects inside). */
+static String jsonObject(const String& json, const char* key) {
+  String needle = String("\"") + key + "\"";
+  int at = json.indexOf(needle);
+  if (at < 0) return "";
+  int open = json.indexOf('{', at + needle.length());
+  int close = open < 0 ? -1 : json.indexOf('}', open);
+  return close < 0 ? "" : json.substring(open, close + 1);
+}
+
+/** "1.4.0" vs "1.3.10": numeric per part, "-suffix" ignored (same as otaManifest.mjs). */
+static int compareVersions(const char* a, const char* b) {
+  for (int i = 0; i < 3; i++) {
+    long x = strtol(a, (char**)&a, 10), y = strtol(b, (char**)&b, 10);
+    if (x != y) return x < y ? -1 : 1;
+    if (*a == '.') a++;
+    if (*b == '.') b++;
+  }
+  return 0;
+}
+
+/** 0–99 from the device key, so a rollout takes the same probes each day. */
+static uint8_t rolloutBucket() {
+  uint32_t h = 2166136261u;  // FNV-1a
+  for (size_t i = 0; i < deviceKey.length(); i++) h = (h ^ (uint8_t)deviceKey[i]) * 16777619u;
+  return h % 100;
+}
+
+static void sha256Hex(const uint8_t digest[32], char out[65]) {
+  for (int i = 0; i < 32; i++) snprintf(out + i * 2, 3, "%02x", digest[i]);
+}
+
+/** Does OTA_PUBLIC_KEY_PEM sign this message? */
+static bool otaSignatureOk(const String& message, const String& sigB64) {
+  uint8_t sig[80];
+  size_t sigLen = 0;
+  if (mbedtls_base64_decode(sig, sizeof(sig), &sigLen, (const uint8_t*)sigB64.c_str(), sigB64.length()) != 0) return false;
+  uint8_t hash[32];
+  mbedtls_sha256_ret((const uint8_t*)message.c_str(), message.length(), hash, 0);
+  mbedtls_pk_context pk;
+  mbedtls_pk_init(&pk);
+  bool ok = mbedtls_pk_parse_public_key(&pk, (const uint8_t*)OTA_PUBLIC_KEY_PEM, sizeof(OTA_PUBLIC_KEY_PEM)) == 0 &&
+            mbedtls_pk_verify(&pk, MBEDTLS_MD_SHA256, hash, sizeof(hash), sig, sigLen) == 0;
+  mbedtls_pk_free(&pk);
+  return ok;
+}
+
+/**
+ * Download `size` bytes from `url`, skipping `offset`, into the inactive app
+ * slot; keep it only if its SHA-256 is `sha256`. Returns true when it is
+ * installed as the next boot image.
+ */
+static bool otaInstall(const String& url, size_t offset, size_t size, const String& sha256) {
+  const esp_partition_t* next = esp_ota_get_next_update_partition(nullptr);
+  if (next == nullptr || size > next->size) {
+    Console.println("TT ota: image too big for this board, ignored");
+    return false;
+  }
+  WiFiClientSecure client;
+  client.setInsecure();  // integrity comes from the signed hash, not the connection
+  client.setHandshakeTimeout(20);
+  HTTPClient http;
+  http.setConnectTimeout(10000);
+  http.setTimeout(15000);
+  if (!http.begin(client, String("https://") + INGEST_HOST + url)) return false;
+  int code = http.GET();
+  if (code != 200) {
+    Console.printf("TT ota: download failed (%d)\n", code);
+    http.end();
+    return false;
+  }
+  WiFiClient* stream = http.getStreamPtr();
+  if (!Update.begin(size)) {
+    Console.printf("TT ota: can't start (%s)\n", Update.errorString());
+    http.end();
+    return false;
+  }
+  mbedtls_sha256_context ctx;
+  mbedtls_sha256_init(&ctx);
+  mbedtls_sha256_starts_ret(&ctx, 0);
+  static uint8_t buf[1024];
+  size_t skipped = 0, written = 0;
+  unsigned long lastData = millis();
+  bool ok = true;
+  while (written < size) {
+    esp_task_wdt_reset();
+    int avail = stream->available();
+    if (avail <= 0) {
+      if (!http.connected() || millis() - lastData > 20000UL) {
+        ok = false;
+        break;
+      }
+      delay(5);
+      continue;
+    }
+    size_t want = sizeof(buf);
+    if (skipped < offset) {
+      if (want > offset - skipped) want = offset - skipped;
+    } else if (want > size - written) {
+      want = size - written;
+    }
+    int got = stream->readBytes(buf, want);
+    if (got <= 0) continue;
+    lastData = millis();
+    if (skipped < offset) {
+      skipped += got;
+      continue;
+    }
+    mbedtls_sha256_update_ret(&ctx, buf, got);
+    if (Update.write(buf, got) != (size_t)got) {
+      ok = false;
+      break;
+    }
+    written += got;
+  }
+  http.end();
+  uint8_t digest[32];
+  mbedtls_sha256_finish_ret(&ctx, digest);
+  mbedtls_sha256_free(&ctx);
+  char hex[65];
+  sha256Hex(digest, hex);
+  if (!ok || written != size || !sha256.equalsIgnoreCase(hex)) {
+    Update.abort();
+    Console.println(ok && written == size ? "TT ota: download didn't match the signed hash, ignored"
+                                          : "TT ota: download interrupted, will retry tomorrow");
+    return false;
+  }
+  if (!Update.end()) {
+    Console.printf("TT ota: image rejected (%s)\n", Update.errorString());
+    return false;
+  }
+  return true;
+}
+
+/** Fetch the manifest; install and restart if there's a signed, newer image for this probe. */
+static void otaCheck() {
+  WiFiClientSecure client;
+  client.setInsecure();  // the manifest is signed; see otaSignatureOk
+  client.setHandshakeTimeout(20);
+  HTTPClient http;
+  http.setConnectTimeout(10000);
+  http.setTimeout(15000);
+  if (!http.begin(client, String("https://") + INGEST_HOST + otaManifestPath)) return;
+  int code = http.GET();
+  int length = http.getSize();
+  String manifest = (code == 200 && length > 0 && length <= (int)OTA_MANIFEST_MAX) ? http.getString() : "";
+  http.end();
+  if (code == 404) return;  // nothing published yet
+  if (manifest.isEmpty()) {
+    Console.printf("TT ota: no manifest (%d)\n", code);
+    return;
+  }
+
+  String version = jsonField(manifest, "version");
+  if (version.isEmpty() || compareVersions(version.c_str(), FIRMWARE_VERSION) <= 0) return;  // up to date
+  long rollout = jsonField(manifest, "rollout_pct").toInt();
+  if (rolloutBucket() >= rollout) {
+    Console.printf("TT ota: %s available, not yet for this probe (rollout %ld%%)\n", version.c_str(), rollout);
+    return;
+  }
+  String build = jsonObject(manifest, CONFIG_IDF_TARGET);
+  String url = jsonField(build, "url");
+  size_t offset = jsonField(build, "offset").toInt();
+  size_t size = jsonField(build, "size").toInt();
+  String sha256 = jsonField(build, "sha256");
+  String sig = jsonField(build, "sig");
+  if (url.isEmpty() || !url.startsWith("/") || size == 0 || sha256.length() != 64) {
+    Console.printf("TT ota: %s has no build for " CONFIG_IDF_TARGET "\n", version.c_str());
+    return;
+  }
+  String message = "probeharbor-ota-v1\n" CONFIG_IDF_TARGET "\n" + version + "\n" + String((unsigned long)size) + "\n" + sha256 + "\n";
+  if (!otaSignatureOk(message, sig)) {
+    Console.printf("TT ota: %s is not signed by the ProbeHarbor key, ignored\n", version.c_str());
+    return;
+  }
+  Console.printf("TT ota: downloading %s\n", version.c_str());
+  if (!otaInstall(url, offset, size, sha256)) return;
+  Console.printf("TT ota: installed %s, restarting\n", version.c_str());
+  delay(500);
+  ESP.restart();
+}
+
+/** In loop(): run otaCheck when due, and end a failed probation. */
+static void otaTick(unsigned long now) {
+  if (otaPending && now > OTA_PROBATION_MS) {
+    Console.println("TT ota: no successful post in 30 minutes, going back to the previous version");
+    delay(200);
+    esp_ota_mark_app_invalid_rollback_and_reboot();  // restarts
+  }
+  if (optNoUpdate || otaPending || WiFi.status() != WL_CONNECTED || deviceKey.isEmpty()) return;
+  unsigned long due = otaCheckedOnce ? OTA_CHECK_EVERY_MS : OTA_FIRST_CHECK_MS;
+  if (!otaCheckNow && now - lastOtaCheck < due) return;
+  otaCheckNow = false;
+  lastOtaCheck = now;
+  otaCheckedOnce = true;
+  otaCheck();
 }
 
 /**
@@ -847,6 +1122,12 @@ void setup() {
   } else if (why == ESP_RST_PANIC) {
     Console.println("TT restarted after a crash");
   }
+  esp_ota_img_states_t otaState;
+  if (esp_ota_get_state_partition(esp_ota_get_running_partition(), &otaState) == ESP_OK &&
+      otaState == ESP_OTA_IMG_PENDING_VERIFY) {
+    otaPending = true;
+    Console.println("TT ota: running " FIRMWARE_VERSION " on probation until it posts");
+  }
 
   wifiManager.addParameter(&keyParam);
   wifiManager.addParameter(&extrasParam);
@@ -883,6 +1164,7 @@ void loop() {
     clockAnnounced = true;
     Console.println("TT clock set");
   }
+  otaTick(now);
 
   // A router that boots slower than this board (after a power cut) must not
   // leave the probe parked in the setup portal: once the portal has timed out

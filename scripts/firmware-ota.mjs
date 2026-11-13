@@ -11,10 +11,13 @@
  *     until they're reflashed over USB with a new key.
  *
  *   pnpm firmware:sign [--key <path>] [--rollout <0-100>]
- *     After `pnpm firmware:build`: signs public/firmware/ota.json for the
- *     version in public/firmware/manifest.json, checks every entry against
- *     the committed public key, then writes it. --rollout limits the share
- *     of probes that take the update (default 100; 0 stops a rollout).
+ *                      [--dir <public/...>] [--chips esp32,...] [--version x.y.z]
+ *     After `pnpm firmware:build`: signs <dir>/ota.json (default
+ *     public/firmware) for the version in <dir>/manifest.json (or --version),
+ *     checks every entry against the committed public key, then writes it.
+ *     --rollout limits the share of probes that take the update (default
+ *     100; 0 stops a rollout). --dir/--chips/--version are for test
+ *     publishes (see HARDWARE-TESTS.md test 12).
  *
  * Neither command prints or logs the private key.
  */
@@ -27,7 +30,7 @@ import { buildOtaManifest, checkOtaEntry, publicKeyFromHeader, publicKeyHeader }
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
 const headerPath = join(repoRoot, "firmware", "probeharbor-probe", "src", "ota_pubkey.h");
-const firmwareDir = join(repoRoot, "public", "firmware");
+const publicDir = join(repoRoot, "public");
 const CHIPS = ["esp32", "esp32s3", "esp32c3"];
 const defaultKey = join(homedir(), ".config", "probeharbor", "ota-signing-key.pem");
 
@@ -58,8 +61,13 @@ if (command === "keygen") {
   const publicKeyPem = publicKeyFromHeader(readFileSync(headerPath, "utf8"));
   if (!publicKeyPem) fail("Couldn't read the public key from ota_pubkey.h.");
   const rolloutPct = Number(arg("--rollout", "100"));
-  const { version } = JSON.parse(readFileSync(join(firmwareDir, "manifest.json"), "utf8"));
-  const images = CHIPS.map((chip) => ({
+  const firmwareDir = resolve(repoRoot, arg("--dir", "public/firmware"));
+  if (!firmwareDir.startsWith(`${publicDir}/`)) fail("--dir must be inside public/.");
+  const urlBase = firmwareDir.slice(publicDir.length);
+  const chips = arg("--chips", CHIPS.join(",")).split(",");
+  if (chips.some((chip) => !CHIPS.includes(chip))) fail(`--chips must be from ${CHIPS.join(", ")}.`);
+  const version = arg("--version", "") || JSON.parse(readFileSync(join(firmwareDir, "manifest.json"), "utf8")).version;
+  const images = chips.map((chip) => ({
     chip,
     merged: readFileSync(join(firmwareDir, `probeharbor-probe-${chip}.bin`)),
   }));
@@ -73,13 +81,13 @@ if (command === "keygen") {
   } catch {
     fail("Couldn't read the private key.");
   }
-  const manifest = buildOtaManifest({ version, images, privateKeyPem, rolloutPct });
+  const manifest = buildOtaManifest({ version, images, privateKeyPem, rolloutPct, urlBase });
   for (const { chip, merged } of images) {
     const problem = checkOtaEntry({ manifest, chip, publicKeyPem, app: merged.subarray(manifest.builds[chip].offset) });
     if (problem) fail(`${chip}: ${problem}; ota.json not written.`);
   }
   writeFileSync(join(firmwareDir, "ota.json"), `${JSON.stringify(manifest, null, 2)}\n`);
-  console.log(`Wrote public/firmware/ota.json: ${version}, rollout ${rolloutPct}%, ${CHIPS.join(", ")} (signatures checked).`);
+  console.log(`Wrote ${firmwareDir.slice(repoRoot.length + 1)}/ota.json: ${version}, rollout ${rolloutPct}%, ${chips.join(", ")} (signatures checked).`);
 } else {
-  fail("Usage: firmware-ota.mjs keygen [--out <path>] | sign [--key <path>] [--rollout <0-100>]");
+  fail("Usage: firmware-ota.mjs keygen [--out <path>] | sign [--key <path>] [--rollout <0-100>] [--dir <public/...>] [--chips a,b] [--version x.y.z]");
 }

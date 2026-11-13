@@ -60,10 +60,11 @@ export function compareVersions(a, b) {
 /**
  * images: [{ chip, merged: Buffer }]. Returns the manifest object.
  * rolloutPct: probes whose bucket (0–99) is below it take the update.
- * @param {{ version: string, images: { chip: string, merged: Buffer }[], privateKeyPem: string, rolloutPct?: number }} input
+ * urlBase: where the images are served (public/firmware → "/firmware").
+ * @param {{ version: string, images: { chip: string, merged: Buffer }[], privateKeyPem: string, rolloutPct?: number, urlBase?: string }} input
  * @returns {OtaManifest}
  */
-export function buildOtaManifest({ version, images, privateKeyPem, rolloutPct = 100 }) {
+export function buildOtaManifest({ version, images, privateKeyPem, rolloutPct = 100, urlBase = "/firmware" }) {
   if (!/^\d+\.\d+\.\d+$/.test(version)) throw new Error(`version must be x.y.z, got "${version}"`);
   if (!Number.isInteger(rolloutPct) || rolloutPct < 0 || rolloutPct > 100) {
     throw new Error("rollout must be an integer from 0 to 100");
@@ -76,7 +77,7 @@ export function buildOtaManifest({ version, images, privateKeyPem, rolloutPct = 
     const fields = { chip, version, size: app.length, sha256 };
     const sig = sign("sha256", Buffer.from(otaMessage(fields)), privateKeyPem).toString("base64");
     builds[chip] = {
-      url: `/firmware/probeharbor-probe-${chip}.bin?v=${version}`,
+      url: `${urlBase}/probeharbor-probe-${chip}.bin?v=${version}`,
       offset: OTA_APP_OFFSET,
       size: app.length,
       sha256,

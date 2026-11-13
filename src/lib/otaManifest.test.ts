@@ -88,6 +88,16 @@ describe("OTA manifest", () => {
     expect(checkOtaEntry({ manifest, chip: "esp32c3", publicKeyPem: keys.publicKeyPem })).toBe("no build for this chip");
   });
 
+  it("serves images from urlBase for test publishes", () => {
+    const test = buildOtaManifest({
+      version: "1.4.1",
+      images: [{ chip: "esp32s3", merged: s3.merged }],
+      privateKeyPem: keys.privateKeyPem,
+      urlBase: "/firmware/ota-test",
+    });
+    expect(test.builds.esp32s3?.url).toBe("/firmware/ota-test/probeharbor-probe-esp32s3.bin?v=1.4.1");
+  });
+
   it("signs exactly the documented message (the firmware rebuilds it byte for byte)", () => {
     expect(otaMessage({ chip: "esp32", version: "1.4.0", size: 4096, sha256: "ab" })).toBe(
       "probeharbor-ota-v1\nesp32\n1.4.0\n4096\nab\n",
