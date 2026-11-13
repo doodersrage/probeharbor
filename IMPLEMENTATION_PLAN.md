@@ -6023,8 +6023,12 @@ production.**
 - Flash use with TLS + OTA: 82–85% of the 1.25 MB app slot.
 - [x] S3 on the final build (2026-11-13): TLS test passed; production 1.5.0
       verified and posting.
-- [ ] Release 1.5.0: C3 not tested on any 1.5.0 build. Then
-      `pnpm firmware:build`, `pnpm firmware:sign --rollout 10`.
+- [x] Released 1.5.0 to `/flash` (2026-11-13, owner's call to include the
+      C3 untested): `pnpm firmware:build` (all three: 1.5.0, no test
+      strings, app part == tested build) and `ota.json` signed by the owner
+      (`--rollout 10`; every entry checked against the committed key).
+- [ ] C3 on 1.5.0 (compile-only so far). Existing probes need one USB
+      reflash to 1.5.0; later releases arrive over the air.
 - [x] F3 (TLS part, 2026-11-13): ingest stores `meta.tls = "unverified"`
       when a probe sends it and clears it (null) on its next post without
       it; written only on change, never for clients that don't send it.

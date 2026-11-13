@@ -1,0 +1,28 @@
+{
+  "format": 1,
+  "version": "1.5.0",
+  "rollout_pct": 10,
+  "builds": {
+    "esp32": {
+      "url": "/firmware/probeharbor-probe-esp32.bin?v=1.5.0",
+      "offset": 65536,
+      "size": 1116688,
+      "sha256": "27e9cb384be0b956261e71ee72042abb1a8bba0bfeb6e44da0e0f7a2d1598162",
+      "sig": "MEUCIQDGm9YrUsZQk+mmSj2X7tmHW/N7JesmpH3jEmNdGxheeQIgUB1fCeM6hJpaKp3ide/JgyLJs5BeDWPSeAEj77OGhcE="
+    },
+    "esp32s3": {
+      "url": "/firmware/probeharbor-probe-esp32s3.bin?v=1.5.0",
+      "offset": 65536,
+      "size": 1075376,
+      "sha256": "149e1b231c474cba791389747920de7ee09d3948d4380039d1c3378d4bdb1b1c",
+      "sig": "MEQCIFYPLJfM7AaC6kpyczNxhveFaS9uwYznyUOA8LYkctrCAiAGpBOZtu24ZzrHADYWdevv4jLcX08FRCitAhwDSvPhvA=="
+    },
+    "esp32c3": {
+      "url": "/firmware/probeharbor-probe-esp32c3.bin?v=1.5.0",
+      "offset": 65536,
+      "size": 1147792,
+      "sha256": "9859959627c7a1eb7f5aa8adfb3e33e01f5ccc0e7e482f7ffd65472ad0f743ea",
+      "sig": "MEQCIHnkmMV1GcA0H53IfeoD+jvu4iXYTqUo7qNyK3q4/RSmAiAWj5NAuKhAsEn00qH/K+LnnR95yyL4HzwRpJ9mr0P9FQ=="
+    }
+  }
+}

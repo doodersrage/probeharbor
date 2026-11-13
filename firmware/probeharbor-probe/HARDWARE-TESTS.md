@@ -1,4 +1,4 @@
-# Hardware tests still open (firmware 1.5.0)
+# Hardware tests still open (firmware 1.5.0, released 2026-11-13)
 
 Verified so far, on a plain ESP32: browser flash → USB settings → Wi-Fi → first
 reading, with a DS18B20 (1.0.1), a DHT22 (1.1.1), a BME280 on I2C (1.2.2:
