@@ -5978,5 +5978,28 @@ updating sketches under `sketches/`, delta updates.
   (Verified OK) and every hash, size and 0xE9 image header matched.
 - [ ] Owner: run `pnpm firmware:keygen` and commit `ota_pubkey.h` (needed
       before F1b can be tested on hardware).
-- [ ] F1b: device side (fetch, verify with mbedtls, write the inactive slot,
-      pending-verify rollback, rollout bucket, `noupdate`).
+- [x] Owner ran `pnpm firmware:keygen` (private key in Vaultwarden);
+      `ota_pubkey.h` committed (397c481), key pair checked to match.
+
+### F1b: OTA on the probe (2026-11-13)
+
+**Status: Done in source as 1.5.0 and verified on an ESP32-S3 against
+production; not released (`/flash` and `ota.json` unchanged).**
+
+- [x] `main.cpp`: manifest check an hour after boot then daily; minimal
+      field reader (everything that matters is under the signature);
+      mbedtls ECDSA P-256 + SHA-256; rollout bucket from FNV-1a of the
+      device key; download to the inactive slot via `Update`, skipping the
+      first 0x10000 bytes, hash checked before `Update.end()`; probation
+      via `extern "C" verifyRollbackLater()`, confirmed on the first 2xx,
+      self-revert after `OTA_PROBATION_MS` (30 min); `noupdate` extra.
+- [x] Hardware (HARDWARE-TESTS.md test 12): bad signature refused;
+      rollout 0 skipped; install + confirm; failed probation reverted with
+      the buffer kept; hang on probation reverted by the bootloader. A
+      linkage bug (new images trusted at boot) found and fixed on the way.
+- [x] Version policy: 1.4.x were test builds; source is 1.5.0, the first
+      OTA release. The signed test image is no longer served.
+- [ ] Before release: ESP32 and C3 on hardware; publish 1.5.0 to `/flash`
+      (USB) and `ota.json` with a small rollout.
+- [ ] F2: CA bundle + verified ingest with fallback. F3: dashboard shows
+      update state and TLS warnings.

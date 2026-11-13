@@ -1,4 +1,4 @@
-# Hardware tests still open (firmware 1.3.1)
+# Hardware tests still open (firmware 1.5.0)
 
 Verified so far, on a plain ESP32: browser flash → USB settings → Wi-Fi → first
 reading, with a DS18B20 (1.0.1), a DHT22 (1.1.1), a BME280 on I2C (1.2.2:
@@ -12,7 +12,7 @@ Everything else below has only been compiled.
 
 Keep the board on USB with the serial console open in `/flash` (or any serial
 monitor at 115200 baud). Lines starting `TT` are the ones to watch. Write the
-result and the firmware line (`TT … 1.3.1`) next to each test.
+result and the firmware line (`TT … 1.5.0`) next to each test.
 
 ## Parts to order
 
@@ -323,3 +323,43 @@ posting every minute with no watchdog restart: a 30-minute serial log
 Still to do: a long run (a day) with no `TT restarted by watchdog`, the
 plain ESP32 and the C3, and a slow or stalled server (expect `TT post -1`,
 not a watchdog restart).
+
+## 12. Over-the-air updates (1.5.0, source only)
+
+1.5.0 updates itself from `/firmware/ota.json` (signed with the owner's
+key; see `firmware/README.md`) an hour after boot and then daily, keeps a
+new image on probation until its first 2xx post, and goes back to the old
+one if it restarts first (bootloader) or posts nothing for 30 minutes.
+Versions 1.4.x were test builds only and are below every released OTA
+version, so a signed test image can't be offered to a released probe.
+
+**Verified on an ESP32-S3 + AHT20 (2026-11-13), against production.** Test
+builds (`PROBE_TEST_HOOKS`, `OTA_PROBATION_MS=300000`) of `1.4.0-test` and
+`1.4.1-test`; a signed test manifest for 1.4.1 published at
+`/firmware/ota-test/` (removed afterwards), plus copies with a corrupted
+signature and with `rollout_pct: 0`. `TTTEST<TAB>ota<TAB><path>` reads a
+manifest at once.
+
+- Corrupted signature: `TT ota: 1.4.1 is not signed by the ProbeHarbor key,
+  ignored`.
+- Rollout 0: `TT ota: 1.4.1 available, not yet for this probe (rollout 0%)`.
+- Install: `downloading 1.4.1` → `installed 1.4.1, restarting` in ~15 s →
+  `TT firmware 1.4.1-test`, `TT ota: running 1.4.1-test on probation until
+  it posts`.
+- Probation failed (posts made to fail): 5 × `TT post -1 … buffered=N`,
+  then `no successful post in … minutes, going back to the previous
+  version` → `TT firmware 1.4.0-test`, `TT buffer: 5 reading(s) kept`, and
+  the kept readings sent (`"readings":12`).
+- Probation passed: installed again → first `TT post 200` →
+  `TT ota: 1.4.1-test confirmed`; normal posts after.
+- Hang on probation (`TTTEST hang`): watchdog restart 60 s later, and the
+  bootloader went back on its own: `TT firmware 1.4.0-test`, `TT restarted
+  by watchdog…`, then 200s.
+- Found and fixed during the first run: the probation hook had C++
+  linkage, so the core trusted every new image at boot (266b406).
+- Production 1.5.0 (no test hooks) flashed afterwards: posting 200.
+
+Still to do: the plain ESP32 and the C3; an update over a slow or dropped
+connection (expect `download interrupted, will retry tomorrow`); a real
+publish (`pnpm firmware:build`, `pnpm firmware:sign --rollout 10`) once
+1.5.0 is released.

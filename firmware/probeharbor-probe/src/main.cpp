@@ -37,7 +37,7 @@
  * a power cut. A server that answers 400 to a batch (one older than
  * 2026-11) gets plain readings, as before 1.3.0, until the next restart.
  *
- * Over-the-air updates (1.4.0+): an hour after boot and then daily, the probe
+ * Over-the-air updates (1.5.0+; 1.4.x were test-only builds): an hour after boot and then daily, the probe
  * reads OTA_MANIFEST_PATH (public/firmware/ota.json, made by
  * `pnpm firmware:sign`). It installs a newer version only if the manifest
  * entry for its chip is signed by the key in ota_pubkey.h, the download
@@ -78,7 +78,7 @@
 #include "ota_pubkey.h"
 
 #ifndef FIRMWARE_VERSION
-#define FIRMWARE_VERSION "1.4.0"
+#define FIRMWARE_VERSION "1.5.0"
 #endif
 /*
  * The flasher talks to whichever USB port the board is plugged into. On the
@@ -957,7 +957,8 @@ static void otaCheck() {
 /** In loop(): run otaCheck when due, and end a failed probation. */
 static void otaTick(unsigned long now) {
   if (otaPending && now > OTA_PROBATION_MS) {
-    Console.println("TT ota: no successful post in 30 minutes, going back to the previous version");
+    Console.printf("TT ota: no successful post in %lu minutes, going back to the previous version\n",
+                   (unsigned long)(OTA_PROBATION_MS / 60000UL));
     delay(200);
     esp_ota_mark_app_invalid_rollback_and_reboot();  // restarts
   }

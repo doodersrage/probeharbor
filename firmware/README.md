@@ -37,9 +37,10 @@ deploys do not need the ESP32 toolchain. Bump `FIRMWARE_VERSION` in
 
 Test on real hardware before publishing new images: CI only proves they compile.
 
-## Over-the-air updates (in progress)
+## Over-the-air updates (from 1.5.0)
 
-Probes from the first OTA-capable release on will update themselves from
+Probes on 1.5.0 or later update themselves (an hour after boot, then
+daily; `noupdate` in the extras opts a probe out) from
 `public/firmware/ota.json`, a manifest signed with a key only the owner
 holds (design: `IMPLEMENTATION_PLAN.md`, "signed OTA updates + verified
 TLS"). The update image is the app part of the image `/flash` serves, so
