@@ -271,13 +271,32 @@ Compiled for ESP32, S3 and C3.
   checked when a reading was due); now checked every loop and printed right
   after Wi-Fi (`13:32:20 TT wifi ok`, `13:32:20 TT clock set`).
 
+- Step 2, simulated (the probe's network is shared and can't be turned
+  off). A test build (`-DPROBE_TEST_HOOKS`, version `1.3.0-test`; the
+  hooks are not in `/flash` images) adds `TTTEST<TAB>fail<TAB><s>`,
+  `TTTEST<TAB>drop` and `TTTEST<TAB>wifioff` over USB, and prints the
+  server's reply. Against production, 13:38–13:49:
+  - Posts failing for 300 s: `TT post -1 probes=1 buffered=1` … `=5`, one
+    a minute; then one `TT post 200 … buffered=0` and the server said
+    `"readings":12` (6 readings × temperature + humidity).
+  - Reply dropped: the server said `"readings":2`, the probe saw `-11` and
+    kept it (`buffered=1`); the resend with the next reading: server said
+    `"readings":2,"duplicates":2`, so nothing was stored twice.
+  - Wi-Fi off: `TT offline: reading kept (1 buffered)`, `TT wifi lost:
+    restarting to retry`, `TT buffer: 1 reading(s) kept from before the
+    restart`, `TT wifi ok`, `TT clock set`, then the server said
+    `"readings":4` (the kept reading and the new one).
+  Production 1.3.0 reflashed afterwards (`TT post 200 … buffered=0`).
+  A real router or network outage hasn't been tested; the code path for
+  Wi-Fi down is the one `wifioff` takes.
+
+To build the test image: `PLATFORMIO_BUILD_FLAGS="-DPROBE_TEST_HOOKS
+-DFIRMWARE_VERSION='\"1.3.0-test\"'" pio run -e esp32s3 -t upload`.
+
 **Still to do:**
 
-1. ~~Normal posting~~ (done above); check the dashboard shows the readings.
-2. Outage: unplug the router (or block the probe) for 5 minutes. Expect
-   `TT offline: reading kept (N buffered)` or `TT post -1 … buffered=N`.
-   Restore it: one `TT post 200 … buffered=0`, and the dashboard history
-   shows a reading for each minute of the outage, not a gap.
+1. Dashboard: history around 13:40–13:49 on 2026-11-13 should show a
+   reading each minute, no gap (owner check).
 3. ~~Power cut~~ (done above). Not yet seen: a power cut *with* readings
    buffered (expected: they are lost).
 4. The plain ESP32 and the C3.

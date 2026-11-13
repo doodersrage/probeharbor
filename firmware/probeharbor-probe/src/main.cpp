@@ -443,6 +443,32 @@ void handleConfigLine(const String &line) {
   }
 }
 
+#ifdef PROBE_TEST_HOOKS
+/*
+ * Test builds only (-DPROBE_TEST_HOOKS; never in /flash images): fake the
+ * failures HARDWARE-TESTS.md test 10 needs on a network nobody can turn off.
+ *   TTTEST<TAB>fail<TAB><seconds>  posts fail (-1) without sending
+ *   TTTEST<TAB>drop                 next post is sent, its reply thrown away
+ *   TTTEST<TAB>wifioff              drop Wi-Fi (the offline restart follows)
+ */
+unsigned long testFailUntil = 0;
+bool testDropReply = false;
+
+static void handleTestLine(const String& line) {
+  if (line.startsWith("TTTEST\tfail\t")) {
+    unsigned long secs = line.substring(12).toInt();
+    testFailUntil = millis() + secs * 1000UL;
+    Console.printf("TT test: posts fail for %lu s\n", secs);
+  } else if (line == "TTTEST\tdrop") {
+    testDropReply = true;
+    Console.println("TT test: next reply will be dropped");
+  } else if (line == "TTTEST\twifioff") {
+    Console.println("TT test: Wi-Fi off");
+    WiFi.disconnect();
+  }
+}
+#endif
+
 void readSerial() {
   while (Console.available() > 0) {
     char ch = (char)Console.read();
@@ -452,6 +478,9 @@ void readSerial() {
       if (serialLine.startsWith("TTEXTRAS\t")) saveExtras(serialLine.substring(9));
       else if (serialLine.startsWith("TTCFG\t")) handleConfigLine(serialLine);
       else if (serialLine == "TTSTATUS") postNow = true;
+#ifdef PROBE_TEST_HOOKS
+      else if (serialLine.startsWith("TTTEST\t")) handleTestLine(serialLine);
+#endif
       serialLine = "";
     } else if (serialLine.length() < 400) {
       serialLine += ch;
@@ -543,6 +572,9 @@ static String deviceFields(int batteryPct) {
 
 /** POST to ingest; returns the HTTP status, or a negative HTTPClient error. */
 static int postBody(const String& body, String* response = nullptr) {
+#ifdef PROBE_TEST_HOOKS
+  if ((long)(testFailUntil - millis()) > 0) return -1;
+#endif
   // Same trust model as the sample sketches: TLS without certificate pinning.
   WiFiClientSecure client;
   client.setInsecure();
@@ -560,6 +592,14 @@ static int postBody(const String& body, String* response = nullptr) {
   int code = http.POST(body);
   if (response != nullptr && code > 0) *response = http.getString();
   http.end();
+#ifdef PROBE_TEST_HOOKS
+  if (response != nullptr && code > 0) Console.println("TT test: server said " + *response);
+  if (testDropReply) {
+    testDropReply = false;
+    Console.printf("TT test: reply %d dropped\n", code);
+    return -11;  // HTTPC_ERROR_READ_TIMEOUT: as if the reply never came
+  }
+#endif
   return code;
 }
 

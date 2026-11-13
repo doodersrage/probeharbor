@@ -5813,5 +5813,11 @@ Batch delivery not verified: production doesn't accept batches until
       accepted by production, `buffered=0` each minute) and step 3 (power
       cut: clock re-set over NTP within 10 s of boot). Fixed: `TT clock set`
       printed a minute late.
-- [ ] Test 10 step 2 (network outage → backlog flushed), step 4 (ESP32,
-      C3), then publish images.
+- [x] Test 10 step 2, simulated with compile-gated test hooks
+      (`PROBE_TEST_HOOKS`, not in `/flash` images; checked: 0 test strings
+      in the three production builds) against production: 5 minutes of
+      failed posts → one batch of 6 stored; a dropped reply → resend
+      reported `duplicates`, nothing stored twice; Wi-Fi off → reading
+      kept across the offline restart and sent after reconnecting.
+- [ ] Owner: dashboard history for 13:40–13:49 shows no gap. Test 10 step 4
+      (plain ESP32, C3). Then `pnpm firmware:build` and publish images.
