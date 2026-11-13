@@ -31,6 +31,7 @@ const en = {
     },
     noReading: "No reading",
     firmwareUpdate: "Firmware update available",
+    tlsUnverified: "Connection not verified",
     never: "Never",
     battery: "{pct}% battery",
   },

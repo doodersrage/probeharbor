@@ -131,6 +131,7 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
     batteryPct: deviceFields.batteryPct ?? newestEntry?.interpreted.batteryPct ?? null,
     rssi: deviceFields.rssi ?? newestEntry?.interpreted.rssi ?? null,
     firmwareVersion: deviceFields.firmwareVersion ?? newestEntry?.interpreted.firmwareVersion ?? null,
+    tlsUnverified: deviceFields.tlsUnverified || (newestEntry?.interpreted.tlsUnverified ?? false),
     rejected: entries.flatMap((entry) => entry.interpreted.rejected),
   };
   const discovered = new Map<string, DiscoveredPushSensor>();
@@ -257,6 +258,11 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
   const metaPatch: Record<string, unknown> = {};
   if (interpreted.batteryPct != null) metaPatch.battery_pct = interpreted.batteryPct;
   if (interpreted.rssi != null) metaPatch.rssi = interpreted.rssi;
+  // Probe firmware 1.5.0+ flags a connection it couldn't verify; clear the
+  // flag once it posts verified again. Written only when it changes.
+  if (interpreted.tlsUnverified !== (device.meta?.tls === "unverified")) {
+    metaPatch.tls = interpreted.tlsUnverified ? "unverified" : null;
+  }
   const firmware = interpreted.firmwareVersion;
   if (firmware && firmware !== device.meta?.firmware_version) {
     metaPatch.firmware_version = firmware;

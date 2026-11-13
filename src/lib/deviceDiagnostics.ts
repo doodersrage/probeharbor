@@ -94,6 +94,8 @@ export function buildDeviceDiagnostics(input: {
       reported: firmware,
       latest_from_flasher: LATEST_FIRMWARE_VERSION,
       update_available: firmwareUpdateAvailable(firmware),
+      // Firmware 1.5.0+: "unverified" while the probe can't check the server's certificate.
+      tls: meta.tls === "unverified" ? "unverified" : null,
     },
     health: {
       label: health.label,

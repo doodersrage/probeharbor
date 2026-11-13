@@ -26,6 +26,8 @@ export type DeviceListRow = {
   headline: string | null;
   sensorCount: number;
   firmwareUpdate: boolean;
+  /** The probe reported it can't verify the server's certificate (firmware 1.5.0+). */
+  tlsUnverified: boolean;
   /** Pull feeds only: the last fetch failed. */
   feedIssue: string | null;
   /** The example feed: simulated readings, shown with a "Demo data" badge. */
@@ -102,6 +104,7 @@ export function buildDeviceListRows(input: {
       headline: headlineRow && value ? `${headlineRow.sensor.label} ${value}` : null,
       sensorCount: device.sensors.length,
       firmwareUpdate: firmwareUpdateAvailable(firmware),
+      tlsUnverified: (device.meta as Record<string, unknown> | null)?.tls === "unverified",
       feedIssue: feed && !feed.ok ? feed.message : null,
       demo: isDemoDevice(device),
       href: deviceHref(device.id),

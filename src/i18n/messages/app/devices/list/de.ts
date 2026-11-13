@@ -27,6 +27,7 @@ const de: DevicesListMessages = {
     },
     noReading: "Kein Messwert",
     firmwareUpdate: "Firmware-Update verfügbar",
+    tlsUnverified: "Verbindung nicht geprüft",
     never: "Nie",
     battery: "Akku {pct} %",
   },

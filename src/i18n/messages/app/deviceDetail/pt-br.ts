@@ -34,6 +34,7 @@ const ptBr: DeviceDetailMessages = {
     wifiSignal: "Sinal do Wi-Fi",
     firmware: "Firmware",
     updateTo: "Atualizar para {version}",
+    tlsUnverified: "Esta sonda não consegue verificar o certificado do ProbeHarbor, então a conexão dela não está protegida contra adulteração. As leituras continuam chegando. Normalmente a autoridade certificadora do site mudou; uma atualização de firmware resolve.",
     state: "Estado",
     disabled: "Desativado: as leituras são ignoradas",
     noReadingsYet:

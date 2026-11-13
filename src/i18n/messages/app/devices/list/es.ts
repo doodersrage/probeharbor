@@ -27,6 +27,7 @@ const es: DevicesListMessages = {
     },
     noReading: "Sin lectura",
     firmwareUpdate: "Actualización de firmware disponible",
+    tlsUnverified: "Conexión sin verificar",
     never: "Nunca",
     battery: "{pct} % de batería",
   },

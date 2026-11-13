@@ -96,6 +96,7 @@ const healthTone = {
             <span class="device-list-reading">
               {row.headline ?? <span class="text-[var(--color-text-muted)]">{t.noReading}</span>}
               {row.firmwareUpdate && <span class="device-list-meta">{t.firmwareUpdate}</span>}
+              {row.tlsUnverified && <span class="device-list-meta text-[var(--color-warning)]">{t.tlsUnverified}</span>}
             </span>
             <span class="device-list-seen">
               <ReadingAgeBadge iso={row.lastSeenAt} emptyLabel={t.never} reportIntervalMs={row.reportIntervalMs} />

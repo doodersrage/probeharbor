@@ -34,6 +34,7 @@ const de: DeviceDetailMessages = {
     wifiSignal: "WLAN-Signal",
     firmware: "Firmware",
     updateTo: "Auf {version} aktualisieren",
+    tlsUnverified: "Diese Sonde kann das Zertifikat von ProbeHarbor nicht prüfen, ihre Verbindung ist daher nicht vor Manipulation geschützt. Messwerte kommen weiterhin an. Meist hat die Zertifizierungsstelle der Website gewechselt; ein Firmware-Update behebt das.",
     state: "Status",
     disabled: "Deaktiviert: Messwerte werden ignoriert",
     noReadingsYet:

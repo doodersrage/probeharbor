@@ -34,6 +34,8 @@ export type InterpretedIngest = {
   rssi: number | null;
   /** Browser-flasher firmware (1.2.1+) reports its version so Devices can offer updates. */
   firmwareVersion: string | null;
+  /** Probe firmware 1.5.0+ sends "tls":"unverified" while it can't verify the server's certificate. */
+  tlsUnverified: boolean;
 };
 
 const round2 = (value: number) => Math.round(value * 100) / 100;
@@ -153,5 +155,6 @@ export function interpretIngestPayload(payload: unknown, deviceName?: string | n
     batteryPct: numericField(fields.battery ?? fields.battery_pct),
     rssi: numericField(fields.rssi),
     firmwareVersion: /^\d+\.\d+\.\d+$/.test(firmware) ? firmware : null,
+    tlsUnverified: fields.tls === "unverified",
   };
 }

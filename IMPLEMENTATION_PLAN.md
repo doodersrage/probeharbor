@@ -6023,4 +6023,14 @@ production.**
 - Flash use with TLS + OTA: 82–85% of the 1.25 MB app slot.
 - [ ] Release 1.5.0: S3 (and C3 if available) on the final build, then
       `pnpm firmware:build`, `pnpm firmware:sign --rollout 10`.
-- [ ] F3: server stores `tls` and update state; dashboard warns.
+- [x] F3 (TLS part, 2026-11-13): ingest stores `meta.tls = "unverified"`
+      when a probe sends it and clears it (null) on its next post without
+      it; written only on change, never for clients that don't send it.
+      Device page: a warning under Firmware; device list: "Connection not
+      verified"; diagnostics bundle: `firmware.tls`. Five locales.
+      Evidence: `ingestTls.test.ts` (2), `ingest.db.test.ts` +2 (set, kept
+      through a batch, cleared; untouched for other clients); `pnpm test`
+      3633, `pnpm test:db` 417, typecheck 0, lint 55. The dashboard text
+      was not checked in a browser.
+- [ ] F3 (update state): not needed yet; the firmware version already
+      shows, with "update available" against `/flash`.

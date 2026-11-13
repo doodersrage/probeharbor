@@ -34,6 +34,7 @@ const fr: DeviceDetailMessages = {
     wifiSignal: "Signal Wi-Fi",
     firmware: "Firmware",
     updateTo: "Mettre à jour vers {version}",
+    tlsUnverified: "Cette sonde ne peut pas vérifier le certificat de ProbeHarbor : sa connexion n’est donc pas protégée contre la falsification. Les relevés arrivent toujours. Le plus souvent, l’autorité de certification du site a changé ; une mise à jour du firmware règle le problème.",
     state: "État",
     disabled: "Désactivé : les mesures sont ignorées",
     noReadingsYet:

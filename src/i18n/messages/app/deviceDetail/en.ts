@@ -33,6 +33,7 @@ const en = {
     wifiSignal: "Wi-Fi signal",
     firmware: "Firmware",
     updateTo: "Update to {version}",
+    tlsUnverified: "This probe can't verify ProbeHarbor's certificate, so its connection isn't protected against tampering. Readings still arrive. Usually the site's certificate authority changed; a firmware update fixes it.",
     state: "State",
     disabled: "Disabled: readings are ignored",
     noReadingsYet:

@@ -388,3 +388,27 @@ describe("POST /api/ingest with device times (recorded_at)", () => {
     expect(await timesOf(dev.deviceId)).toHaveLength(2);
   });
 });
+
+describe("POST /api/ingest: certificate status from probe firmware 1.5.0+", () => {
+  const metaOf = async (deviceId: string) =>
+    (await sql<{ meta: Record<string, unknown> }>("select meta from public.devices where id = $1", [deviceId]))[0]!.meta;
+
+  it("records tls unverified, keeps it while it lasts, and clears it once the probe verifies again", async () => {
+    const dev = await pushDevice("a@example.com");
+    await ingest(dev.key, { temp1: 40, fw: "1.5.0", tls: "unverified" });
+    expect((await metaOf(dev.deviceId)).tls).toBe("unverified");
+
+    const now = Math.floor(Date.now() / 1000);
+    await ingest(dev.key, { fw: "1.5.0", tls: "unverified", readings: [{ temp1: 41, recorded_at: now }] });
+    expect((await metaOf(dev.deviceId)).tls).toBe("unverified");
+
+    await ingest(dev.key, { temp1: 42, fw: "1.5.0" });
+    expect((await metaOf(dev.deviceId)).tls).toBeNull();
+  });
+
+  it("never writes it for clients that don't send it", async () => {
+    const dev = await pushDevice("a@example.com");
+    await ingest(dev.key, { temp1: 40 });
+    expect("tls" in (await metaOf(dev.deviceId))).toBe(false);
+  });
+});

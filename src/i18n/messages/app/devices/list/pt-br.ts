@@ -27,6 +27,7 @@ const ptBr: DevicesListMessages = {
     },
     noReading: "Sem leitura",
     firmwareUpdate: "Atualização de firmware disponível",
+    tlsUnverified: "Conexão não verificada",
     never: "Nunca",
     battery: "{pct}% de bateria",
   },

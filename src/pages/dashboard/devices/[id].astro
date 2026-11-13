@@ -182,6 +182,9 @@ function offsetWithUnit(sensor: { offset_num?: number | null; kind?: string | nu
               {firmwareUpdateAvailable(firmware) && (
                 <a class="text-link block text-xs" href="/flash">{fmt(t.status.updateTo, { version: LATEST_FIRMWARE_VERSION })}</a>
               )}
+              {(device.meta as Record<string, unknown> | null)?.tls === "unverified" && (
+                <span class="block text-xs text-[var(--color-warning)]" role="status">{t.status.tlsUnverified}</span>
+              )}
             </dd>
           </div>
         )}
