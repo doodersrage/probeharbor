@@ -219,7 +219,7 @@ The application handles accounts, households, properties, sensor
 history, device credentials, shares, and subscription data. Protect
 ownership boundaries and user data.
 
--   Follow existing Supabase/Postgres conventions and inspect the actual
+-   Follow existing Postgres (Neon) conventions and inspect the actual
     schema before writing queries or migrations.
 -   Verify Row Level Security and server-side authorization for every
     affected data path; UI hiding is not authorization.
