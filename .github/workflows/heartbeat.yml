@@ -1,8 +1,7 @@
 name: Heartbeat
 
-# Checks https://probeharbor.dev/api/health from outside Cloudflare. The
-# uptime monitor (uptime.studiocenter.com) is itself a Cloudflare Worker, so
-# a Cloudflare-wide outage would silence both; this doesn't share that fate.
+# Checks https://probeharbor.dev/api/health from outside Cloudflare, so an
+# outage of the Worker, its cron or Cloudflare itself is noticed.
 # A failed run emails whoever last changed this schedule (GitHub's rule for
 # scheduled workflows). GitHub may start a scheduled run late, and pauses
 # schedules in a repo with no activity for 60 days.

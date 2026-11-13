@@ -308,18 +308,13 @@ load and catches nothing sooner, because the threshold is ~35 minutes. The
 endpoint needs no auth, returns no per-user or per-job detail and is not
 cached.
 
-What watches it (set up 2026-11-13):
-
-- **Uptime monitor** (uptime.studiocenter.com, monitor 166, "ProbeHarbor
-  health (cron + DB)"): every 5 minutes, needs HTTP 200 and the text
-  `"status":"ok"`. It is itself a Cloudflare Worker, separate from this one:
-  it catches a stopped cron, a bad deploy or this Worker failing, but would
-  go quiet with it in a Cloudflare-wide outage.
-- **GitHub Actions** (`.github/workflows/heartbeat.yml`): the same check
-  from outside Cloudflare at :07, :22, :37 and :52, three tries a minute
-  apart. A failed run emails whoever last changed the schedule. GitHub may
-  start scheduled runs late and pauses them after 60 days without repo
-  activity; re-enable under Actions → Heartbeat if that happens.
+What watches it: **GitHub Actions** (`.github/workflows/heartbeat.yml`),
+from outside Cloudflare at :07, :22, :37 and :52, three tries a minute
+apart. A failed run emails whoever last changed the schedule. GitHub may
+start scheduled runs late and pauses them after 60 days without repo
+activity; re-enable under Actions → Heartbeat if that happens. A second,
+independent monitor (any uptime service outside Cloudflare, every 5
+minutes, alert on non-200) would add a faster check.
 
 ## Post-deploy smoke checklist
 

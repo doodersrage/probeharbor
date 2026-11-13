@@ -5706,10 +5706,12 @@ stopped cron or a down Worker sends nothing.
   body keys only); `pnpm test` 460 files / 3592 tests; typecheck 0 errors; biome clean on
   the new files.
 - [x] Endpoint live since 2026-11-13 18:16 UTC (`200 {"status":"ok"}`).
-- [x] Watched (2026-11-13): uptime.studiocenter.com monitor 166, every
-      5 min, 200 + `"status":"ok"` (first check: 200 in 194 ms). It runs on
-      Cloudflare too, so `.github/workflows/heartbeat.yml` checks from
+- [x] Watched (2026-11-13): `.github/workflows/heartbeat.yml` checks from
       GitHub's runners every 15 min (3 tries; a failure emails the owner).
+      (A monitor briefly added on a work uptime service was removed the
+      same day: this is a personal project.)
+- [ ] Optional: a faster second monitor on a personal uptime service
+      outside Cloudflare.
       Script tested locally under `bash -eo pipefail`: healthy → exit 0;
       404 and no answer → exit 1 after 3 tries.
 - [ ] Not yet seen: either one alerting on a real 503.
