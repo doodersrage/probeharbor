@@ -259,16 +259,27 @@ Compiled for ESP32, S3 and C3.
   restart`, then `TT post 200 probes=1` each minute. No `TT post 400` is
   printed, so `/flash` doesn't report a failure.
 
-**Still to do (needs the batch-capable server deployed):**
+**After the batch-capable server deployed (2026-11-13, S3 + AHT20):**
 
-1. Normal posting: expect `TT post 200 probes=1 buffered=0` each minute and
-   the readings in the dashboard at the probe's times.
+- Step 1: after a reset, `TT clock set`, then `TT post 200 probes=1
+  buffered=0` every minute from 13:17 to 13:28 against production
+  (each reading sent as a one-item batch with its own time).
+- Step 3: unplugged from USB for about a minute (power cut). On boot, no
+  `TT buffer: … kept` line (the buffer was empty anyway), then
+  `TT post 200 probes=1 buffered=0` 10 s after boot with the clock already
+  set over NTP. Found here: `TT clock set` printed a minute late (only
+  checked when a reading was due); now checked every loop and printed right
+  after Wi-Fi (`13:32:20 TT wifi ok`, `13:32:20 TT clock set`).
+
+**Still to do:**
+
+1. ~~Normal posting~~ (done above); check the dashboard shows the readings.
 2. Outage: unplug the router (or block the probe) for 5 minutes. Expect
    `TT offline: reading kept (N buffered)` or `TT post -1 … buffered=N`.
    Restore it: one `TT post 200 … buffered=0`, and the dashboard history
    shows a reading for each minute of the outage, not a gap.
-3. Power cut: unplug the probe for a minute. The buffer is lost (expected);
-   after boot, `TT clock set` comes only after Wi-Fi and NTP.
+3. ~~Power cut~~ (done above). Not yet seen: a power cut *with* readings
+   buffered (expected: they are lost).
 4. The plain ESP32 and the C3.
 5. If 1–4 pass: `pnpm firmware:build` and commit the images (1.2.7's change
    comes along).

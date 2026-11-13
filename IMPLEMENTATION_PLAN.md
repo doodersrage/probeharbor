@@ -5809,4 +5809,9 @@ Batch delivery not verified: production doesn't accept batches until
 - Not tested: a batch accepted by a real server, the backlog flush and
   lost-reply duplicates. A local mock server couldn't be used: the owner's
   IoT devices are on a separate network.
-- [ ] After deploy: test 10 steps 1–4, then publish images.
+- [x] After deploy (CI fixed, 2026-11-13): test 10 step 1 (batches of one
+      accepted by production, `buffered=0` each minute) and step 3 (power
+      cut: clock re-set over NTP within 10 s of boot). Fixed: `TT clock set`
+      printed a minute late.
+- [ ] Test 10 step 2 (network outage → backlog flushed), step 4 (ESP32,
+      C3), then publish images.

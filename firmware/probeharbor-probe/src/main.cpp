@@ -807,6 +807,12 @@ void loop() {
 
   unsigned long now = millis();
   checkDoorChange(now);
+  // Checked every loop, not only when a reading is due, so the line comes
+  // when NTP sets the clock.
+  if (!clockAnnounced && clockValid()) {
+    clockAnnounced = true;
+    Console.println("TT clock set");
+  }
 
   // A router that boots slower than this board (after a power cut) must not
   // leave the probe parked in the setup portal: once the portal has timed out
@@ -828,10 +834,6 @@ void loop() {
   postNow = false;
   lastPost = now == 0 ? 1 : now;
 
-  if (!clockAnnounced && clockValid()) {
-    clockAnnounced = true;
-    Console.println("TT clock set");
-  }
   if (deviceKey.isEmpty()) {
     Console.println("TT waiting for device key");
     return;
