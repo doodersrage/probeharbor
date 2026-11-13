@@ -5684,3 +5684,27 @@ card; access ends when Stripe gives up.
       the other shell queries; a failed lookup means no notice. 5 locales.
       `dashboardShell.test.ts` +2. Not seen on a real past_due account.
 
+
+------------------------------------------------------------------------
+
+## External heartbeat endpoint (IMPROVEMENT_PLAN 2.2, 2026-11-13)
+
+**Status: Endpoint implemented and tested locally. External monitor not yet
+set up. No migration. Deploys on push.**
+
+The "collect-history overdue" ops email runs in the cron it checks, so a
+stopped cron or a down Worker sends nothing.
+
+- [x] `GET /api/health` (`src/pages/api/health.ts`), public: 200
+      `{"status":"ok"}` when collect-history succeeded within ~35 min;
+      503 `stale` when overdue; 503 `unknown` when the lookup fails.
+      Reuses `fetchAppStatusSummary` (same data as the homepage chip),
+      `Cache-Control: no-store`, no job or user detail.
+- [x] `docs/guide/deploy.md` → "External heartbeat": what to monitor and
+      how to read each response.
+- Evidence: `health.test.ts` 5 tests (public route, ok/stale/unknown,
+  body keys only); `pnpm test` 460 files / 3592 tests; typecheck 0 errors; biome clean on
+  the new files.
+- [ ] Owner: add a monitor outside Cloudflare on
+      `https://probeharbor.dev/api/health` (5-minute interval, alert on
+      non-200) and confirm it fires once on a real 503.

@@ -226,6 +226,28 @@ Sitemaps are SSR routes (`/sitemap-0.xml`, `/sitemap-index.xml`) so they stay av
 
 Admin channel tests (SMS/push) run from **Dashboard → Ops** after sign-in.
 
+## External heartbeat
+
+The Worker's "collect-history overdue" email runs inside the same cron it
+checks, so if the cron stops or the Worker is down, nothing gets sent. Point
+an uptime monitor that runs **outside Cloudflare** at:
+
+```
+GET https://probeharbor.dev/api/health
+```
+
+| Response | Meaning |
+| --- | --- |
+| `200 {"status":"ok"}` | collect-history succeeded within the last ~35 minutes |
+| `503 {"status":"stale"}` | no successful poll in ~35 minutes (two missed 15-minute runs plus grace) |
+| `503 {"status":"unknown"}` | the database couldn't be read |
+| no answer or a 5xx from Cloudflare | Worker or edge down |
+
+Alert on any non-200. Check every 5 minutes; a 1-minute interval adds
+load and catches nothing sooner, because the threshold is ~35 minutes. The
+endpoint needs no auth, returns no per-user or per-job detail and is not
+cached.
+
 ## Post-deploy smoke checklist
 
 - [ ] `/system-status` — healthy + recent cron runs
