@@ -5999,7 +5999,28 @@ production; not released (`/flash` and `ota.json` unchanged).**
       linkage bug (new images trusted at boot) found and fixed on the way.
 - [x] Version policy: 1.4.x were test builds; source is 1.5.0, the first
       OTA release. The signed test image is no longer served.
-- [ ] Before release: ESP32 and C3 on hardware; publish 1.5.0 to `/flash`
-      (USB) and `ota.json` with a small rollout.
-- [ ] F2: CA bundle + verified ingest with fallback. F3: dashboard shows
-      update state and TLS warnings.
+- [x] Plain ESP32 (2026-11-13): tests 10, 11 and 12 all passed (details in
+      HARDWARE-TESTS.md).
+
+### F2: verified TLS on the probe (2026-11-13)
+
+**Status: In source (1.5.0); verified on the plain ESP32 against
+production.**
+
+- [x] Not the ESP-IDF bundle format: Arduino 2.0.17's bundle check fails
+      on the site's chain, which includes GTS Root R4 cross-signed by
+      GlobalSign Root CA (dropped from Mozilla's list). Instead nine roots
+      (ISRG X1/X2, GTS R1/R3/R4, four SSL.com) as mbedtls trust anchors
+      (`setCACert`), so the chain ends at GTS Root R4. `pnpm firmware:roots`
+      regenerates `ca_roots.h` from Node's Mozilla store and fails if a
+      listed root is missing. openssl with only these roots: OK; with an
+      unrelated root: error 20.
+- [x] Fallback (owner's choice): 3 certificate failures (mbedtls
+      `-0x2700`/`-0x3000`) → unverified posting, `"tls":"unverified"`,
+      retry after 24 h. The payload checker treats `tls` as a device field.
+- [x] ESP32 hardware: verified; wrong root → 2 failures, fallback on the
+      3rd, readings kept and sent; real roots → verified again (test 13).
+- Flash use with TLS + OTA: 82–85% of the 1.25 MB app slot.
+- [ ] Release 1.5.0: S3 (and C3 if available) on the final build, then
+      `pnpm firmware:build`, `pnpm firmware:sign --rollout 10`.
+- [ ] F3: server stores `tls` and update state; dashboard warns.

@@ -363,3 +363,37 @@ Still to do: the plain ESP32 and the C3; an update over a slow or dropped
 connection (expect `download interrupted, will retry tomorrow`); a real
 publish (`pnpm firmware:build`, `pnpm firmware:sign --rollout 10`) once
 1.5.0 is released.
+
+## Plain ESP32 (DevKit, CP2102, AHT20): tests 10–12 and 13 (2026-11-13)
+
+Same procedures as on the S3, with test builds (`PROBE_TEST_HOOKS`) and an
+event-driven serial driver, against production:
+
+- **Test 10 (buffer):** 3 minutes of failed posts kept 3 readings, sent as
+  one batch (`"readings":8`); a dropped reply's resend came back
+  `"duplicates":2`; Wi-Fi off kept a reading across the offline restart
+  and sent it after reconnecting (`"readings":4`). Also seen unplanned: a
+  real `-1` right after a restart, kept and sent 40 s later.
+- **Test 11 (watchdog):** a hang with 2 readings buffered restarted 60 s
+  later (`TT restarted by watchdog`), the 2 kept and sent.
+- **Test 12 (OTA, signed test manifest for esp32):** bad signature refused;
+  rollout 0 skipped; install in ~20 s; failed probation went back after 5
+  minutes with 5 readings kept; a hang on probation was reverted by the
+  bootloader; a final install was confirmed by its first post.
+
+## 13. Verified TLS (1.5.0, source only)
+
+Posts check probeharbor.dev's certificate against the nine roots in
+`ca_roots.h`; after 3 certificate failures in a row the probe posts
+unverified (`"tls":"unverified"`) and retries verified a day later.
+
+**Verified on the plain ESP32 (2026-11-13), test build:** first post
+`TT tls: server certificate verified`. `TTTEST tlsbad` (only ISRG Root X2,
+which doesn't sign the site): two `TT tls: certificate check failed (X509 -
+Certificate verification failed…)`, then on the third `certificate not
+verified … posting without verification, retrying in a day`; the next post
+sent the 3 failed readings and the new one (`"readings":8`). `TTTEST
+tlsgood`: verified again. Production 1.5.0 afterwards: verified, posting.
+
+Still to do: the S3 and C3 on 1.5.0 with TLS; the 24-hour retry
+(not waited for).

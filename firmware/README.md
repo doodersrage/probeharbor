@@ -37,6 +37,15 @@ deploys do not need the ESP32 toolchain. Bump `FIRMWARE_VERSION` in
 
 Test on real hardware before publishing new images: CI only proves they compile.
 
+## Certificate checking (from 1.5.0)
+
+Posts verify probeharbor.dev against the roots in
+`probeharbor-probe/src/ca_roots.h` (Let's Encrypt, Google Trust Services,
+SSL.com: the CAs Cloudflare issues from). Regenerate with
+`pnpm firmware:roots` when one of those CAs adds a root; it fails if a
+listed root has left Node's Mozilla store. If verification fails 3 times in
+a row the probe keeps posting unverified and reports `"tls":"unverified"`.
+
 ## Over-the-air updates (from 1.5.0)
 
 Probes on 1.5.0 or later update themselves (an hour after boot, then
