@@ -64,7 +64,7 @@ curl -X POST https://your-domain/api/cron/collect-history \
   -H "Authorization: Bearer $CRON_SECRET"
 ```
 
-Push ingest (`POST /api/ingest/<key>`): ~64KB max payload, ~60 req/min/device (per Worker isolate).
+Push ingest (`POST /api/ingest/<key>`, or `POST /api/ingest/_` with an `X-Ingest-Key` header, which keeps the key out of URLs; the probe firmware uses the header from 1.2.7): ~64KB max payload, ~60 req/min/device (per Worker isolate).
 
 ## Conventions
 

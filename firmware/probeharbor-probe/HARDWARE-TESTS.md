@@ -1,4 +1,4 @@
-# Hardware tests still open (firmware 1.2.6)
+# Hardware tests still open (firmware 1.2.7)
 
 Verified so far, on a plain ESP32: browser flash → USB settings → Wi-Fi → first
 reading, with a DS18B20 (1.0.1), a DHT22 (1.1.1), a BME280 on I2C (1.2.2:
@@ -12,7 +12,7 @@ Everything else below has only been compiled.
 
 Keep the board on USB with the serial console open in `/flash` (or any serial
 monitor at 115200 baud). Lines starting `TT` are the ones to watch. Write the
-result and the firmware line (`TT … 1.2.6`) next to each test.
+result and the firmware line (`TT … 1.2.7`) next to each test.
 
 ## Parts to order
 
@@ -204,3 +204,22 @@ Same firmware as a plain ESP32. Feather pin labels:
    GPIO 2 LED may blink once at startup.
 5. The 5-second BOOT reset isn't expected to work on Feathers (no button on
    GPIO 0); resend settings from `/flash` instead.
+
+## 9. Device key sent as a header (1.2.7, source only)
+
+1.2.7 posts to `/api/ingest/_` with the key in an `X-Ingest-Key` header
+instead of in the URL. The server has accepted that header since 2026-09.
+Compiled for ESP32, S3 and C3; not yet run on a board, so `/flash` still
+serves 1.2.6.
+
+1. Build and upload 1.2.7 (`pio run -t upload` in this folder) to a board
+   that already has Wi-Fi and a key saved. Expect `TT firmware 1.2.7`, then
+   `TT post 200 probes=…` within a minute.
+2. Dashboard → Devices: the new reading arrives, and the device shows
+   firmware 1.2.7.
+3. Send a wrong key over USB (then put the right one back):
+   expect `TT post 401` and the "key rejected" hint, as before.
+4. Paste a full ingest URL (`https://…/api/ingest/<key>`) as the key over USB
+   or in the portal: it is still trimmed to the bare key and posts 200.
+5. If 1–4 pass: `pnpm firmware:build`, commit the images and manifest, and
+   note the date here.

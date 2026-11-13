@@ -44,7 +44,7 @@
 #include <Wire.h>
 
 #ifndef FIRMWARE_VERSION
-#define FIRMWARE_VERSION "1.2.6"
+#define FIRMWARE_VERSION "1.2.7"
 #endif
 /*
  * The flasher talks to whichever USB port the board is plugged into. On the
@@ -567,11 +567,15 @@ void postReadings() {
   client.setInsecure();
   HTTPClient http;
   http.setTimeout(15000);
-  if (!http.begin(client, String("https://") + INGEST_HOST + "/api/ingest/" + deviceKey)) {
+  // The key goes in a header, not the path, so it stays out of request URLs
+  // (proxy and server logs). `_` is the server's header-only placeholder;
+  // it has accepted X-Ingest-Key since 2026-09.
+  if (!http.begin(client, String("https://") + INGEST_HOST + "/api/ingest/_")) {
     Console.println("TT post failed: could not open connection");
     return;
   }
   http.addHeader("Content-Type", "application/json");
+  http.addHeader("X-Ingest-Key", deviceKey);
   int code = http.POST(body);
   http.end();
 

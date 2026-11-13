@@ -5708,3 +5708,23 @@ stopped cron or a down Worker sends nothing.
 - [ ] Owner: add a monitor outside Cloudflare on
       `https://probeharbor.dev/api/health` (5-minute interval, alert on
       non-200) and confirm it fires once on a real 503.
+
+------------------------------------------------------------------------
+
+## Firmware 1.2.7 (source only): device key in a header (IMPROVEMENT_PLAN 1.3a, 2026-11-13)
+
+**Status: Compiled for all three boards. Not run on hardware. `/flash` still
+serves 1.2.6.**
+
+- [x] `main.cpp`: posts to `/api/ingest/_` with `X-Ingest-Key`, so the
+      key is no longer in the request URL. The server has accepted the
+      header since 83b633c (2026-09-06); older devices on the path form
+      keep working.
+- [x] `HARDWARE-TESTS.md` test 9: what to check on a board before
+      publishing images. `architecture.md` mentions the header form.
+- Evidence: `node scripts/build-firmware.mjs --check` (PlatformIO 6.2.0):
+  esp32, esp32s3, esp32c3 SUCCESS. Compile only.
+- [ ] Owner: run test 9 on a board, then `pnpm firmware:build` and commit
+      the images.
+- Not in this step: TLS verification (`setInsecure()` is still there).
+  That is 1.3b: a root CA bundle, with a plan for when the CA changes.
