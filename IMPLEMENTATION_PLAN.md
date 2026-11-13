@@ -100,8 +100,9 @@ decision with its test and hardware evidence) is
 1. **Staging** (`IMPROVEMENT_PLAN.md` 2.3): a Neon branch and a second
    Worker, and pending migrations blocking the deploy. Needs owner-created
    resources and secrets.
-2. **Retire the legacy `garage_temps` / `user_temp_feeds` path** (3.1):
-   plan the data migration first (read-only sizing, then owner sign-off).
+2. **Retire the legacy `garage_temps` / `user_temp_feeds` path** (3.1).
+   Audit done (log: "Legacy tables: audit and retirement plan"); next is
+   the owner's read-only sizing (step R0 there), then R1–R4.
 3. **Code health** (3.4): split `dashboard.astro` and `HistoryChart.tsx`;
    turn on the formatter check; reduce the 55 lint warnings; coverage report.
 4. **Cron fan-out with Queues** (2.4) before the household count makes one

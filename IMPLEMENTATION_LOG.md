@@ -6048,3 +6048,57 @@ production.**
       was not checked in a browser.
 - [ ] F3 (update state): not needed yet; the firmware version already
       shows, with "update available" against `/flash`.
+
+------------------------------------------------------------------------
+
+## Legacy tables: audit and retirement plan (IMPROVEMENT_PLAN 3.1, 2026-11-13)
+
+**Status: Audit done (code only). Nothing changed. Waiting on the owner's
+read-only sizing (R0).**
+
+What still touches the pre-device tables (`garage_temps`,
+`user_temp_feeds`, `user_temp_probes`), outside tests:
+
+- **`user_temp_feeds` / `user_temp_probes`:** `getUserDevicesAsTempConfig`
+  (`src/lib/devices.ts`) calls `migrateLegacyTempTablesToDevices` on every
+  call: home readings API, the live stream, the devices and live pages, and
+  `collectHistory` (every user, every 15 minutes). Each call reads
+  `user_temp_feeds` even when it's empty, then copies any rows into pull
+  devices and clears them (`src/lib/userTempConfig.ts`,
+  `src/lib/db/legacyTempConfig.ts`). `migrateAllLegacyTempTablesToDevices`
+  (bulk) has no caller.
+- **`garage_temps`:** nothing writes it. Read by `userHasFirstReading`
+  (`src/lib/db/emailJobs.ts`, drip emails: "has a first reading") and
+  `scripts/ops-funnel.mjs`. Nothing displays it: any rows are history users
+  already can't see. Columns: tempc/tempf/humidity, timestamp, feed_name,
+  probe_label, probe_key, user_id. Not covered by the 90-day retention.
+- **`show_garage_temps`** (user preference key, 5 files): a name only, not
+  the table. Leave it; renaming means migrating user metadata for nothing.
+
+Plan:
+
+- **R0 (owner, read-only, Neon SQL editor on production):**
+
+  ```sql
+  select 'user_temp_feeds' t, count(*) n, count(distinct user_id) users from public.user_temp_feeds
+  union all select 'user_temp_probes', count(*), count(distinct user_id) from public.user_temp_probes
+  union all select 'garage_temps', count(*), count(distinct user_id) from public.garage_temps;
+  select min("timestamp"), max("timestamp") from public.garage_temps;
+  -- users whose only reading is legacy (the drip check's second branch)
+  select count(distinct g.user_id) from public.garage_temps g
+  where not exists (select 1 from public.devices d
+    join public.household_members m on m.household_id = d.household_id
+    where m.user_id = g.user_id and d.last_seen_at is not null);
+  ```
+
+- **R1 (code):** if `user_temp_*` has rows, move them once (call the bulk
+  function from a one-off script against production, with the owner, after
+  a fresh backup), then confirm both tables are empty.
+- **R2 (code):** remove the per-request auto-move and the legacy config
+  module; drop `garage_temps` from the drip check if R0's last query is 0;
+  drop the legacy queries from `ops-funnel.mjs`. One small PR, tests.
+- **R3 (owner decision):** `garage_temps` rows, if any: drop, export to a
+  CSV in the backup bucket, or convert into `sensor_readings` (needs a
+  device and sensor per user/probe; only worth it if the history matters).
+- **R4 (migration, owner-approved):** after R1–R3 and a fresh backup, drop
+  the three tables. Rollback: restore them from that backup.
