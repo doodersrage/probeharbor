@@ -1,0 +1,14 @@
+{
+  "format": 1,
+  "version": "1.4.1",
+  "rollout_pct": 100,
+  "builds": {
+    "esp32": {
+      "url": "/firmware/ota-test/probeharbor-probe-esp32.bin?v=1.4.1",
+      "offset": 65536,
+      "size": 1105040,
+      "sha256": "efe0571a195db6934024be2256cff9a96da7fde9a1535dc8a96df61f579db8e7",
+      "sig": "MEUCIQD9dX0IxoTpsKKtrUzZ53i/7rTiQ69ZRnsAyqv6YRsePwIgCFMShJWWGfvhKzyPBlSWcG7eIQt11bIzibjSaDkl8Vs="
+    }
+  }
+}
