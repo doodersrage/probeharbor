@@ -36,6 +36,7 @@ const fr: LayoutMessages = {
       "Alertes de gel et d’inondation avec historique, pour surveiller les conditions avant qu’une vague de froid ou une flaque ne fasse des dégâts.",
     hosting: "Fonctionne sur le réseau edge de Cloudflare.",
     systemStatus: "État du système en direct",
+    builtBy: "Créé par",
     product: "Produit",
     learn: "Apprendre",
     account: "Compte",

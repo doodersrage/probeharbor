@@ -36,6 +36,7 @@ const es: LayoutMessages = {
       "Alertas de congelación e inundación con historial, para vigilar las condiciones antes de que una ola de frío o un charco causen daños.",
     hosting: "Funciona en la red perimetral de Cloudflare.",
     systemStatus: "Estado del sistema en vivo",
+    builtBy: "Creado por",
     product: "Producto",
     learn: "Aprender",
     account: "Cuenta",

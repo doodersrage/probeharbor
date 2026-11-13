@@ -36,6 +36,7 @@ const de: LayoutMessages = {
       "Frost- und Wasseralarme mit Verlauf, damit du die Bedingungen im Blick hast, bevor Kälteeinbrüche oder nasse Böden Schaden anrichten.",
     hosting: "Läuft im Edge-Netzwerk von Cloudflare.",
     systemStatus: "Systemstatus live",
+    builtBy: "Entwickelt von",
     product: "Produkt",
     learn: "Wissen",
     account: "Konto",

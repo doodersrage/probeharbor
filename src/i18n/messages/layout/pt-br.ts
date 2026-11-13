@@ -36,6 +36,7 @@ const ptBr: LayoutMessages = {
       "Alertas de congelamento e alagamento com histórico, para acompanhar as condições antes que uma onda de frio ou um piso molhado cause estragos.",
     hosting: "Roda na rede de borda da Cloudflare.",
     systemStatus: "Status do sistema ao vivo",
+    builtBy: "Criado por",
     product: "Produto",
     learn: "Aprender",
     account: "Conta",

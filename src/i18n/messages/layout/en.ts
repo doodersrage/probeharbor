@@ -34,6 +34,7 @@ const en = {
       "Freeze and flood alerts plus history, so you can track conditions before cold snaps or wet pads do damage.",
     hosting: "Runs on Cloudflare’s edge network.",
     systemStatus: "Live system status",
+    builtBy: "Built by",
     product: "Product",
     learn: "Learn",
     account: "Account",
