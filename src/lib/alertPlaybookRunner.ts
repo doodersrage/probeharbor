@@ -1,5 +1,5 @@
 import { getUserRecord } from "./userRecords";
-import type { AlertChannelName, AlertSettings } from "./alerts";
+import type { AlertSettings } from "./alerts";
 import type { AlertPlaybookStep } from "./alertPlaybooks";
 import { listRecentAlertEvents, type AlertEventRow } from "./alertEvents";
 import { getAlertSettingsForUser, notifyUser, saveAlertSettingsForUser } from "./notify";

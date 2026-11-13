@@ -38,7 +38,7 @@ for (const line of raw.split("\n")) {
 
 function isSet(key) {
   const v = values.get(key);
-  return Boolean(v && v.trim());
+  return Boolean(v?.trim());
 }
 
 const groups = [

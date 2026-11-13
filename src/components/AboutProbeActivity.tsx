@@ -136,7 +136,7 @@ export default function AboutProbeActivity({
     let dpr = 1;
     let raf = 0;
     let lastTick = 0;
-    let start = performance.now();
+    const start = performance.now();
 
     let controls: DemoControls = {
       ...defaultDemoControls,
@@ -574,7 +574,7 @@ export default function AboutProbeActivity({
         ? 0
         : 0.5 + 0.5 * Math.sin(elapsed / 600);
 
-      PROBE_NODES.forEach((node, i) => {
+      PROBE_NODES.forEach((node) => {
         const probe = probes.find((p) => p.key === node.key);
         drawProbeNode(node, probe, pulse, garage);
       });

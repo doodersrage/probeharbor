@@ -580,7 +580,7 @@ export async function notifyUser(
 
   const entitlements = await getUserEntitlements(userId);
   const email = settings.email ?? fallbackEmail ?? null;
-  let payloadResolved = applyAlertTemplates(payload, settings.alertTemplates);
+  const payloadResolved = applyAlertTemplates(payload, settings.alertTemplates);
   const sent: string[] = [];
   const skipped: string[] = [];
 

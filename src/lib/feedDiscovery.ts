@@ -7,7 +7,6 @@ import {
   senmlNameToProbeKey,
 } from "./feedFormats";
 import { inferSensorKind, parseIngestPayload } from "./ingestPayload";
-import type { SensorKind } from "./sensorKinds";
 import type { TempProbeConfig } from "./tempFeedConfig";
 import { parseTempFeedPayload, sanitizeJsonRoot, type TempFeedConfig } from "./tempFeedConfig";
 import type { DiscoveredPushSensor } from "./pushSensorDiscovery";
@@ -194,7 +193,7 @@ export function mergeDiscoveredProbes(
   const existingByKey = new Map(existingForFeed.map((probe) => [probe.key, probe]));
   const discoveredKeys = new Set(discovered.map((probe) => probe.key));
 
-  const mergedForFeed: TempProbeConfig[] = discovered.map((probe, index) => {
+  const mergedForFeed: TempProbeConfig[] = discovered.map((probe) => {
     const prior = existingByKey.get(probe.key);
     return {
       id: prior?.id ?? `${feedId}-${probe.key}`,
@@ -271,7 +270,7 @@ export function discoverIngestPayload(payload: unknown, deviceName?: string | nu
   const seen = new Set<string>();
   const explicitlyNamed = new Set<string>();
 
-  for (const [key, reading] of Object.entries(tempProbes)) {
+  for (const [key, _reading] of Object.entries(tempProbes)) {
     if (hints.has(key)) explicitlyNamed.add(`${key}::temperature`);
     const label = hints.get(key) ?? humanizeProbeKey(key);
     discovered.push({

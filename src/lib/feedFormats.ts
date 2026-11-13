@@ -129,7 +129,6 @@ export function parseSenMLPayload(payload: unknown): StandardFeedParseResult {
       const probe = ensureProbe(tempProbes, key);
       probe.f = f;
       probe.c = round1(fahrenheitToCelsius(f));
-      continue;
     }
   }
 

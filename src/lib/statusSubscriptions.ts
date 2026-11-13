@@ -83,7 +83,7 @@ export async function subscribeToStatusUpdates(
   locale: Locale = "en",
 ): Promise<{ ok: boolean; error?: string }> {
   const email = normalizeStatusEmail(rawEmail);
-  if (!email || !email.includes("@")) {
+  if (!email?.includes("@")) {
     return { ok: false, error: "Enter a valid email address." };
   }
 

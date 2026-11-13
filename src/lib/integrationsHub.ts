@@ -1,7 +1,6 @@
 import {
   HA_DEV_DOCS_INTEGRATIONS,
   HA_INTEGRATION_PAGE,
-  HACS_REPO_URL,
 } from "./homeAssistantIntegration";
 import { MATTER_INTEGRATION_PAGE, MATTER_REPO_URL } from "./matterIntegration";
 import { NODERED_FLOW_URL, NODERED_INTEGRATION_PAGE } from "./nodeRedIntegration";

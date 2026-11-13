@@ -13,8 +13,8 @@ function constantTimeCharEqual(a: string, b: string): boolean {
   if (a.length !== b.length) {
     // Still do a dummy constant-time-ish pass so callers can't distinguish
     // "wrong length" from "right length, wrong content" by timing alone.
-    let dummy = 0;
-    for (let i = 0; i < a.length; i += 1) dummy |= a.charCodeAt(i) ^ 0;
+    let _dummy = 0;
+    for (let i = 0; i < a.length; i += 1) _dummy |= a.charCodeAt(i) ^ 0;
     return false;
   }
 

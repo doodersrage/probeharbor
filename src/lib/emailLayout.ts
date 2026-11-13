@@ -258,7 +258,7 @@ export function buildBrandedEmailText(content: BrandedEmailContent, locale: Loca
   }
   for (const bullet of content.bullets ?? []) {
     const trimmed = bullet.trimStart();
-    lines.push(/^[✓○•\-]/.test(trimmed) ? bullet : `• ${bullet}`);
+    lines.push(/^[✓○•-]/.test(trimmed) ? bullet : `• ${bullet}`);
   }
   if (content.bullets?.length) lines.push("");
   if (content.cta) {
@@ -276,7 +276,7 @@ export function buildBrandedEmailText(content: BrandedEmailContent, locale: Loca
     lines.push("");
     lines.push(fmt(t.unsubscribeText, { url: content.unsubscribeUrl }));
   }
-  return lines.join("\n").trim() + "\n";
+  return `${lines.join("\n").trim()}\n`;
 }
 
 export function buildBrandedEmailHtml(content: BrandedEmailContent, locale: Locale = "en"): string {
@@ -295,7 +295,7 @@ export function buildBrandedEmailHtml(content: BrandedEmailContent, locale: Loca
       ? `<ul style="margin:0 0 20px;padding:0;list-style:none;color:${COLORS.steel};font-size:16px;line-height:1.55">${content.bullets
           .map((item) => {
             const trimmed = item.trimStart();
-            const alreadyMarked = /^[✓○•\-]/.test(trimmed);
+            const alreadyMarked = /^[✓○•-]/.test(trimmed);
             const body = alreadyMarked ? linkifyPlainUrls(item) : `• ${linkifyPlainUrls(item)}`;
             return `<li style="margin:0 0 10px;padding:0">${body}</li>`;
           })

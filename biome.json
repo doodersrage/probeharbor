@@ -12,7 +12,7 @@
       "*.mjs",
       "*.ts",
       "!src/types/supabase.ts",
-      "!docs/**",
+      "!docs",
       "!**/*.svg",
       "!worker-configuration.d.ts"
     ]

@@ -1,10 +1,7 @@
-import type { AboutPhotoId } from "../../../lib/aboutPhotos";
-
 /**
  * /compare hub copy. Keys ending in `Html` hold trusted inline HTML (links,
  * <strong>); keep hrefs English, middleware localizes them.
  */
-type Row = { capabilityHtml: string; probeharborHtml: string; diyHtml: string; consumerHtml: string };
 import type { CompareMessages } from "./en";
 
 const es: CompareMessages = {

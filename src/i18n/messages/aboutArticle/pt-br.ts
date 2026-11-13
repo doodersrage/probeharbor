@@ -1,5 +1,3 @@
-type ProductCta = { title: string; body: string; label: string };
-
 /**
  * Shared chrome around every /about/* article: breadcrumbs, pagination,
  * topic sidebar, related guides, learning-path strip, product CTA, convert bar,

@@ -21,7 +21,7 @@ describe("browserSupportsWebAuthn", () => {
 
   it("returns false when navigator.credentials is missing create/get", () => {
     vi.stubGlobal("window", {
-      PublicKeyCredential: function () {},
+      PublicKeyCredential: () => {},
       navigator: { credentials: {} },
     });
     expect(browserSupportsWebAuthn()).toBe(false);
@@ -29,7 +29,7 @@ describe("browserSupportsWebAuthn", () => {
 
   it("returns true when everything required is present", () => {
     vi.stubGlobal("window", {
-      PublicKeyCredential: function () {},
+      PublicKeyCredential: () => {},
       navigator: { credentials: { create: () => {}, get: () => {} } },
     });
     expect(browserSupportsWebAuthn()).toBe(true);
@@ -38,7 +38,7 @@ describe("browserSupportsWebAuthn", () => {
 
 describe("performWebAuthnCreate", () => {
   it("throws when the browser can't parse creation options from JSON", async () => {
-    vi.stubGlobal("PublicKeyCredential", function () {});
+    vi.stubGlobal("PublicKeyCredential", () => {});
 
     await expect(performWebAuthnCreate({})).rejects.toThrow(
       "This browser does not support WebAuthn registration",
@@ -88,7 +88,7 @@ describe("performWebAuthnCreate", () => {
 
 describe("performWebAuthnGet", () => {
   it("throws when the browser can't parse request options from JSON", async () => {
-    vi.stubGlobal("PublicKeyCredential", function () {});
+    vi.stubGlobal("PublicKeyCredential", () => {});
 
     await expect(performWebAuthnGet({})).rejects.toThrow(
       "This browser does not support WebAuthn authentication",

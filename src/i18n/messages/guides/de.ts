@@ -1,5 +1,3 @@
-import type { AboutFaqItem } from "../../../lib/aboutFaqs";
-
 /**
  * /guides hub copy. Category/link text lives in `src/i18n/content/guideHub/`.
  * `photoLabels` are keyed by `guidesHubPhotos` id (src/lib/aboutPhotos.ts);

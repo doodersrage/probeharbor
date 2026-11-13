@@ -37,9 +37,7 @@ export const GET: APIRoute = async ({ cookies, locals }) => {
   });
 };
 
-export const POST: APIRoute = async ({ request, cookies, redirect, locals }) => {
-  const locale = apiLocale({ locals });
-  const tc = apiCommonMessages(locale);
+export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const { session, user } = await getAuthFromCookies(cookies);
   if (!session || !user) {
     return redirect("/signin");

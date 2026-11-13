@@ -131,7 +131,6 @@ import {
 } from "./batteryTrend";
 import {
   deviceHealthFromDevices,
-  readDeviceMetaNumber,
 } from "./deviceHealth";
 import {
   buildAlertReadingsFromLatestSensors,
@@ -604,7 +603,7 @@ export async function maybeSendForecastFreezeAlert(
   userId: string,
   email: string | null | undefined,
   settings: AlertSettings,
-  weatherCityId?: string | null,
+  _weatherCityId?: string | null,
   locale: Locale = "en",
   display?: AlertDisplay,
 ): Promise<void> {
@@ -720,7 +719,7 @@ export async function maybeSendNwsFreezeAlert(
   userId: string,
   email: string | null | undefined,
   settings: AlertSettings,
-  weatherCityId?: string | null,
+  _weatherCityId?: string | null,
   locale: Locale = "en",
 ): Promise<void> {
   if (!settings.enabled || !settings.nwsFreezeAlertsEnabled) return;

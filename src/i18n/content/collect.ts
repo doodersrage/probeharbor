@@ -34,7 +34,7 @@ export function fromContentModules<T>(
   const key = `${dataset}\0${part ?? ""}`;
   const sources = TRANSLATED_LOCALES.map((locale) => getCatalogEntry(`content/${dataset}`, locale));
   const hit = memo.get(key);
-  if (hit && hit.sources.every((source, i) => source === sources[i])) return hit.value as T;
+  if (hit?.sources.every((source, i) => source === sources[i])) return hit.value as T;
   const value = build(contentModules(dataset, part));
   memo.set(key, { sources, value });
   return value;

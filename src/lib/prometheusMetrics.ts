@@ -24,5 +24,5 @@ export async function buildPrometheusText(householdId: string): Promise<string> 
       `${PROMETHEUS_SENSOR_METRIC}{${labels}} ${row.value_num}${Number.isFinite(ts) ? ` ${ts}` : ""}`,
     );
   }
-  return lines.join("\n") + "\n";
+  return `${lines.join("\n")}\n`;
 }

@@ -62,7 +62,7 @@ function resolveTelegramSecret(request: Request): string {
   return request.headers.get("X-Telegram-Bot-Api-Secret-Token")?.trim() ?? "";
 }
 
-export const POST: APIRoute = async ({ request, url, clientAddress }) => {
+export const POST: APIRoute = async ({ request, clientAddress }) => {
   const rate = checkTelegramWebhookRateLimit(clientAddress ?? "unknown");
   if (!rate.ok) {
     return new Response("Rate limit exceeded", {

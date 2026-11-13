@@ -51,7 +51,7 @@ export function parsePortfolioListQuery(
     ? (statusRaw as PortfolioStatusFilter)
     : "";
   const sortRaw = searchParams.get("sort")?.trim() ?? "name_asc";
-  const sort = Object.prototype.hasOwnProperty.call(PORTFOLIO_SORTS, sortRaw)
+  const sort = Object.hasOwn(PORTFOLIO_SORTS, sortRaw)
     ? (sortRaw as PortfolioSortKey)
     : "name_asc";
   return { search, status, sort };
@@ -137,7 +137,6 @@ export function sortPortfolioProperties(
         const bTs = b.lastReadingAt ? Date.parse(b.lastReadingAt) : 0;
         return bTs - aTs || a.name.localeCompare(b.name);
       }
-      case "name_asc":
       default:
         return a.name.localeCompare(b.name, undefined, { sensitivity: "base" });
     }

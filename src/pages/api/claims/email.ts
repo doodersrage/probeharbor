@@ -67,7 +67,7 @@ export const POST: APIRoute = async (context) => {
     return redirect(withQuery(redirectTo, { claims_error: "pro_required" }));
   }
 
-  if (!adjusterEmail || !adjusterEmail.includes("@")) {
+  if (!adjusterEmail?.includes("@")) {
     if (asJson) return jsonResponse({ error: "invalid_email" }, 400);
     return redirect(withQuery(redirectTo, { claims_error: "invalid_email" }));
   }

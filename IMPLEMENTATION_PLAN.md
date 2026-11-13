@@ -104,7 +104,8 @@ decision with its test and hardware evidence) is
    Audit done (log: "Legacy tables: audit and retirement plan"); next is
    the owner's read-only sizing (step R0 there), then R1–R4.
 3. **Code health** (3.4): split `dashboard.astro` and `HistoryChart.tsx`;
-   turn on the formatter check; reduce the 55 lint warnings; coverage report.
+   turn on the formatter check; coverage report. Lint: 55 warnings → 9
+   (2026-11-13); the rest are `any` in `src/lib/FetchWeather.ts`.
 4. **Cron fan-out with Queues** (2.4) before the household count makes one
    invocation too slow.
 5. **Battery sleep mode** in the firmware (1.5).

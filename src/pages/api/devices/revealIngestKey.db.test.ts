@@ -58,7 +58,6 @@ function ctx(browser: Browser, path: string, form: Record<string, string> = {}, 
     site: undefined,
   } as unknown as APIContext;
 }
-const loc = (res: Response) => res.headers.get("Location") ?? "";
 
 async function account(email: string) {
   const { createBetterAuth } = await import("../../../lib/betterAuthConfig");
@@ -89,7 +88,7 @@ async function account(email: string) {
 
 async function deviceWithKey(userId: string, key: string) {
   const [{ household_id }] = await sql<{ household_id: string }>("select household_id from public.household_members where user_id = $1", [userId]);
-  const { device, error } = await createPushDevice(household_id!, "Garage probe", "hash-" + key, key.slice(0, 8));
+  const { device, error } = await createPushDevice(household_id!, "Garage probe", `hash-${key}`, key.slice(0, 8));
   expect(error).toBeNull();
   await persistEncryptedIngestKey(household_id!, device!.id, key);
   return device!.id;

@@ -53,7 +53,7 @@ export function parseManagedUserListQuery(
     ? (groupRaw as ManagedUserGroupFilter)
     : "";
   const sortRaw = searchParams.get("sort")?.trim() ?? "created_desc";
-  const sort = Object.prototype.hasOwnProperty.call(MANAGED_USER_SORTS, sortRaw)
+  const sort = Object.hasOwn(MANAGED_USER_SORTS, sortRaw)
     ? (sortRaw as ManagedUserSortKey)
     : "created_desc";
   return { search, group, sort };

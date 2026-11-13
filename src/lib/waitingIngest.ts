@@ -28,7 +28,6 @@ export function sampleValueForKind(kind: string): number | boolean | string {
       return 1.2;
     case "water_level":
       return 4;
-    case "temperature":
     default:
       return 42.5;
   }

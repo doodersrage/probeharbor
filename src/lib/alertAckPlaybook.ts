@@ -5,7 +5,6 @@ import { snoozeAlertsForUser } from "./alertSnooze";
 import { sendTenantFreezeRelay } from "./tenantRelay";
 import { deliverWebhookPost } from "./webhookDeliveries";
 import { getAlertSettingsForUser, saveAlertSettingsForUser } from "./notify";
-import { resolveSiteUrl } from "./schemaMarkup";
 import { suggestFalseAlarmTip } from "./falseAlarmHints";
 import type { Locale } from "../i18n/locales";
 import { ensureLocale } from "../i18n/catalog";

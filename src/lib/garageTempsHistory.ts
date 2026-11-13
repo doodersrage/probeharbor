@@ -135,7 +135,7 @@ export function pairTempHumidityRows(
   const readings: GarageTempReading[] = [];
   const seen = new Set<string>();
 
-  for (const [key, tempRow] of temps) {
+  for (const [_key, tempRow] of temps) {
     const sensor = tempRow.device_sensors!;
     const deviceName = sensor.devices?.name ?? "Device";
     const humidityKey = `${deviceName}::${probePairingKey(sensor.key)}::${tempRow.recorded_at}`;

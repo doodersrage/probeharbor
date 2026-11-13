@@ -1,7 +1,6 @@
 import * as neonJobs from "./db/jobs";
 import {
   RAW_READING_RETENTION_DAYS,
-  shouldRunDailyRetention,
 } from "./retentionSchedule";
 
 export { RAW_READING_RETENTION_DAYS, shouldRunDailyRetention } from "./retentionSchedule";

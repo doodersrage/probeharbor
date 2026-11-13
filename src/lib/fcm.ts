@@ -48,13 +48,11 @@ function parseServiceAccountJson(jsonRaw: string): Partial<ServiceAccount> | nul
     if (!text) return null;
     try {
       current = JSON.parse(text);
-      continue;
     } catch {
       // secrets:push used to strip quotes without unescaping, leaving {\"type\":...}
       if (!text.includes("\\")) return null;
       try {
         current = JSON.parse(`"${text.replace(/\r/g, "\\r").replace(/\n/g, "\\n")}"`);
-        continue;
       } catch {
         return null;
       }
