@@ -6133,7 +6133,9 @@ Plan:
 - [x] `db/migrations/0006_drop_garage_temps.sql`: plain `DROP TABLE` (no
   CASCADE; nothing depends on it). Applied cleanly by the test database's
   migration run (`pnpm test:db` 52 files / 411 passed).
-- [ ] Owner: after this commit is deployed, `pnpm db:backup`, then
-  `pnpm db:migrate` (applies 0006); `pnpm db:pending` should then show
-  nothing. `user_temp_feeds` / `user_temp_probes` (empty, unused) can be
-  dropped the same way later.
+- [x] Owner (2026-11-13, after 5cf79cf deployed): ran `pnpm db:backup`,
+  `pnpm db:migrate`, `pnpm db:pending`; reported done (output not shared,
+  so not independently checked here). `garage_temps` is gone from
+  production.
+- [ ] `user_temp_feeds` / `user_temp_probes` (empty, unused) can be dropped
+  the same way later.
