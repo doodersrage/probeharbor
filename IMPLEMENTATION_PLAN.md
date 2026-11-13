@@ -5876,3 +5876,80 @@ read-only role, secrets). Restore into Neon still not rehearsed.**
   `create role … bypassrls` (fallback documented).
 - [ ] Owner: setup steps 1–5, first run, then decrypt one backup and
       restore it into a Neon branch (closes the restore-rehearsal gap).
+
+------------------------------------------------------------------------
+
+## Design (proposed, not started): signed OTA updates + verified TLS (IMPROVEMENT_PLAN 1.2 + 1.3b, 2026-11-13)
+
+**Status: Design for owner review. No code.**
+
+**Problem.** Probes can only be updated over USB (a reflash keeps Wi-Fi and
+key, but needs someone at the probe), and they don't check the server's
+certificate (`setInsecure()`). Doing either alone is risky: verified TLS
+without OTA strands every probe if the CA changes; OTA without
+verification lets anyone on the network path install firmware.
+
+**Facts checked (2026-11-13).**
+- probeharbor.dev: leaf ← GTS WE1 ← GTS Root R4 (cross-signed by GlobalSign
+  Root CA). Cloudflare Universal SSL may use Google Trust Services or
+  Let's Encrypt, so one pinned root isn't enough.
+- Arduino core 2.0.17 (platform 7.1.3): bootloader app rollback is on in
+  the prebuilt sdkconfig on all three chips; `verifyRollbackLater()` (weak)
+  keeps a new image "pending" until the app marks it valid; a reset before
+  that reverts it. `WiFiClientSecure::setCACertBundle()` exists, but the
+  bundle data must be embedded by us.
+- Partitions (default.csv): two 1.25 MB app slots, so OTA needs no
+  repartition. Images are 1.06–1.09 MB (80–83%): ~220 KB headroom.
+- The reading buffer (`.noinit`) survives the OTA restart if its layout
+  is unchanged (magic includes the struct size; otherwise it's cleared).
+
+**Proposal.**
+1. **Signed manifest, not trusted transport.** `/firmware/ota.json` lists,
+   per chip, `version`, app-image URL, `sha256`, `size`, and a signature
+   (ECDSA P-256) over those fields. The public key is compiled into the
+   firmware; the private key stays offline with the owner and is used only
+   by a local `pnpm firmware:publish` (never in CI). The probe verifies the
+   signature and the image hash (mbedtls, already in the core), and only
+   accepts a higher version (no downgrades). Because integrity comes from
+   the signature, an update works even over an unverified connection, so a
+   CA change can't cut off the update path.
+2. **Update flow.** Check the manifest an hour after boot, then daily.
+   Download to the inactive slot, verify, switch, restart. The new image
+   stays pending until its first 2xx ingest post; if it crashes or hangs
+   (watchdog) first, the bootloader reverts it, and if it runs 30 minutes
+   with Wi-Fi up and no 2xx, it reverts itself. The flasher's "update
+   available" stays for USB.
+3. **Rollout control.** The manifest carries `rollout_pct`; a probe takes
+   the update when hash(device key prefix) % 100 < it. Pulling the
+   manifest (or setting 0) stops a rollout. Per-probe opt-out: `noupdate`
+   in extras (USB or portal).
+4. **Verified TLS for ingest.** Embed a CA bundle generated from Mozilla's
+   root list (estimate 50–70 KB, to be measured) and verify every
+   connection. If verification fails on 3 consecutive posts while the
+   network works, fall back to unverified for ingest only, print
+   `TT tls: certificate not verified`, and send `"tls":"unverified"` so
+   the dashboard can warn. OTA doesn't need the fallback (signed).
+5. **Existing probes** (1.2.6 and older) can't update themselves: one USB
+   reflash to the first OTA-capable release, then they update on their own.
+
+**Phases.** F1: signing tooling + manifest + device OTA with rollback
+(transport unchanged). F2: CA bundle + verified ingest with fallback.
+F3: dashboard shows update state and TLS warnings. Each phase hardware-tested
+on the S3 (and the ESP32/C3 before publishing).
+
+**Open questions for the owner.**
+- Automatic updates on by default (opt-out), or opt-in per probe?
+- Signing key: kept offline by the owner (recommended), and on which machine
+  do publishes happen?
+- TLS failure: fall back to unverified for ingest with a visible warning
+  (recommended), or stop posting until fixed?
+
+**Acceptance (F1).** A probe on the OTA-capable release updates itself to
+a higher signed version within a day of publish; a bad signature, wrong
+hash, lower version or wrong chip is refused with a `TT ota:` line; a
+build that never posts 2xx is reverted automatically; a build that crashes
+at boot is reverted by the bootloader; `rollout_pct: 0` stops it; the
+reading buffer survives the update.
+
+**Non-goals.** Secure boot / flash encryption (eFuses, irreversible),
+updating sketches under `sketches/`, delta updates.
