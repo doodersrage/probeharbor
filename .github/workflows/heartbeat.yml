@@ -1,0 +1,45 @@
+name: Heartbeat
+
+# Checks https://probeharbor.dev/api/health from outside Cloudflare. The
+# uptime monitor (uptime.studiocenter.com) is itself a Cloudflare Worker, so
+# a Cloudflare-wide outage would silence both; this doesn't share that fate.
+# A failed run emails whoever last changed this schedule (GitHub's rule for
+# scheduled workflows). GitHub may start a scheduled run late, and pauses
+# schedules in a repo with no activity for 60 days.
+#
+# 200 + "status":"ok": collect-history ran within ~35 minutes.
+# 503 "stale"/"unknown", any other status, or no answer: fail.
+# Retries three times, a minute apart, so one slow answer doesn't alert.
+
+on:
+  schedule:
+    - cron: "7,22,37,52 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: heartbeat
+  cancel-in-progress: false
+
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: GET /api/health
+        run: |
+          for attempt in 1 2 3; do
+            body=$(curl -sS --max-time 20 -w '\n%{http_code}' https://probeharbor.dev/api/health) || body=$'\n000'
+            code=${body##*$'\n'}
+            json=${body%$'\n'*}
+            json=${json:0:300}
+            echo "attempt $attempt: HTTP $code $json"
+            if [[ $code == 200 && $json == *'"status":"ok"'* ]]; then
+              exit 0
+            fi
+            if (( attempt < 3 )); then sleep 60; fi
+          done
+          echo "::error::probeharbor.dev/api/health is not healthy (last: HTTP $code $json). See docs/guide/deploy.md#external-heartbeat"
+          exit 1
