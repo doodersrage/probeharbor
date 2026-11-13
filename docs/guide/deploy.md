@@ -148,8 +148,8 @@ anything older, the copies are the ones you make. If the database is lost or
 corrupted beyond that window, every reading, alert, account and device key
 is gone.
 
-Make a backup regularly (at least weekly) and always before a migration
-that changes or removes data:
+Off-site copies are made daily (below, once set up). Also make a local one
+before a migration that changes or removes data:
 
 ```bash
 pnpm db:backup
@@ -193,6 +193,66 @@ select string_agg(format('select %L t, count(*) n from public.%I', table_name, t
 Run it on production inside `begin read only; … rollback;`. Not covered by
 the rehearsal: restoring into Neon itself and pointing the Worker at it
 (`DATABASE_URL`, `pnpm secrets:push`), and signing in against a restored copy.
+
+### Automatic off-site backups
+
+`.github/workflows/db-backup.yml` runs `scripts/db-backup-offsite.sh` every
+day at 08:17 UTC (and on demand: Actions → Database backup → Run workflow):
+
+1. `pg_dump` (via `scripts/db-backup.mjs`) with a read-only role;
+2. checks the dump with `pg_restore --list` and refuses one without
+   `sensor_readings` data;
+3. encrypts it with [age](https://age-encryption.org) to your public key and
+   deletes the plain copy;
+4. uploads `db/probeharbor-<UTC time>.dump.age` to a private R2 bucket;
+5. downloads it again and compares checksums.
+
+The repo is public, so the dump is never a GitHub artifact and the database
+host is masked in the log. Only the age **private** key can read a backup:
+keep it in a password manager. Lose it and the backups are useless. A failed
+run (including "not configured") emails whoever last changed the schedule.
+
+**Setup (once):**
+
+1. **Key pair.** Install age (`sudo pacman -S age`, `brew install age`),
+   then `age-keygen -o probeharbor-backup-key.txt`. Put that file in your
+   password manager and delete it from disk. Save the public key it prints:
+   `gh variable set BACKUP_AGE_RECIPIENT --body "age1…"`.
+2. **Bucket.** `pnpm wrangler r2 bucket create probeharbor-db-backups`, and
+   a lifecycle rule deleting `db/` objects after 35 days (dashboard: R2 →
+   the bucket → Settings → Object lifecycle rules). Then
+   `gh variable set R2_BACKUP_BUCKET --body probeharbor-db-backups` and
+   `gh variable set R2_ACCOUNT_ID --body <Cloudflare account id>`.
+3. **R2 token.** Dashboard: R2 → Manage API tokens → Create: *Object Read &
+   Write*, that bucket only. `gh secret set R2_BACKUP_ACCESS_KEY_ID` and
+   `gh secret set R2_BACKUP_SECRET_ACCESS_KEY` (paste when asked).
+4. **Read-only database role.** Every table has row-level security, so the
+   role needs `BYPASSRLS` to see all rows. In the Neon SQL editor, on the
+   production branch, as `neondb_owner`:
+
+   ```sql
+   create role backup_reader login bypassrls password '<long random>';
+   grant connect on database neondb to backup_reader;
+   grant usage on schema public to backup_reader;
+   grant select on all tables in schema public to backup_reader;
+   grant select on all sequences in schema public to backup_reader;
+   alter default privileges for role neondb_owner in schema public grant select on tables to backup_reader;
+   alter default privileges for role neondb_owner in schema public grant select on sequences to backup_reader;
+   ```
+
+   If Neon refuses `bypassrls`, use the owner's direct connection string
+   instead (what `pnpm db:backup` uses); it works, with more access than a
+   backup needs. Either way use the **direct** (unpooled) string:
+   `gh secret set BACKUP_DATABASE_URL`.
+5. **First run.** `gh workflow run db-backup.yml`, then check the run's
+   summary ("Backed up N tables, … verified") and that the object is in the
+   bucket.
+
+**Restore from R2:** download the object (dashboard, or
+`aws s3 cp s3://probeharbor-db-backups/db/<file> . --endpoint-url https://<account id>.r2.cloudflarestorage.com`
+with an R2 token), then
+`age -d -i probeharbor-backup-key.txt <file>.dump.age > <file>.dump` and
+`pg_restore` it as above, into a new, empty database.
 
 ### Other state
 

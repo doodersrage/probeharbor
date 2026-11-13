@@ -1,0 +1,60 @@
+name: Database backup
+
+# Daily off-site copy of the production database: pg_dump with a read-only
+# role, encrypted with age to the owner's public key, uploaded to a private
+# R2 bucket and checked after upload (scripts/db-backup-offsite.sh). The
+# repo is public: the dump is never an artifact, and the database host is
+# masked in the log. A failed run emails whoever last changed the schedule.
+# Setup and restore: docs/guide/deploy.md, "Automatic off-site backups".
+
+on:
+  schedule:
+    - cron: "17 8 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: db-backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+
+      # Neon runs Postgres 18; the image ships the 16 client. age encrypts.
+      - name: Install pg_dump 18 and age
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-common age >/dev/null
+          sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y >/dev/null
+          sudo apt-get install -y -qq postgresql-client-18 >/dev/null
+          echo "/usr/lib/postgresql/18/bin" >> "$GITHUB_PATH"
+
+      - name: Mask the database host
+        env:
+          BACKUP_DATABASE_URL: ${{ secrets.BACKUP_DATABASE_URL }}
+        run: |
+          if [ -n "$BACKUP_DATABASE_URL" ]; then
+            host=$(node -e 'try { console.log(new URL(process.env.BACKUP_DATABASE_URL).hostname) } catch {}')
+            [ -n "$host" ] && echo "::add-mask::$host"
+          fi
+          true
+
+      - name: Dump, encrypt, upload, verify
+        env:
+          BACKUP_DATABASE_URL: ${{ secrets.BACKUP_DATABASE_URL }}
+          BACKUP_AGE_RECIPIENT: ${{ vars.BACKUP_AGE_RECIPIENT }}
+          R2_ACCOUNT_ID: ${{ vars.R2_ACCOUNT_ID }}
+          R2_BACKUP_BUCKET: ${{ vars.R2_BACKUP_BUCKET }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_BACKUP_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_BACKUP_SECRET_ACCESS_KEY }}
+        run: bash scripts/db-backup-offsite.sh

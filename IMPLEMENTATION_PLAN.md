@@ -5845,3 +5845,32 @@ ESP32-S3. `/flash` still serves 1.2.6.**
       posting normally afterwards. Production images: no test strings.
 - [ ] A day's run without a spurious restart; ESP32 and C3; a stalled
       server (should give `-1`, not a watchdog restart).
+
+------------------------------------------------------------------------
+
+## Daily encrypted off-site database backups (IMPROVEMENT_PLAN 2.1, 2026-11-13)
+
+**Status: Workflow and script written and tested locally with stand-ins.
+Not run for real: needs the owner's setup (key pair, R2 bucket and token,
+read-only role, secrets). Restore into Neon still not rehearsed.**
+
+- [x] `.github/workflows/db-backup.yml` (daily 08:17 UTC + manual) runs
+      `scripts/db-backup-offsite.sh`: `pg_dump` via `db-backup.mjs` →
+      `pg_restore --list` check (refuses a dump without `sensor_readings`
+      data) → `age` encryption to `BACKUP_AGE_RECIPIENT`, plain copy
+      deleted → R2 `db/probeharbor-<time>.dump.age` → downloaded again,
+      sha256 compared. Public repo: no artifacts; DB host masked.
+- [x] Setup and restore steps: `docs/guide/deploy.md` "Automatic off-site
+      backups".
+- Evidence: script run locally against a throwaway Postgres 18.6 with
+  stand-in `age` and `aws` commands (downloading the real `age` binary was
+  blocked here): not configured → exit 1 naming every missing setting; a
+  private key as recipient → exit 1; happy path → uploaded, checksum
+  verified, the decoded dump lists both tables' data, R2 endpoint and
+  checksum setting passed; dump without `sensor_readings` → exit 1,
+  nothing uploaded; database unreachable → exit 1, no file left.
+- Not verified: real `age` encryption, the real R2 upload, the workflow on
+  GitHub's runner (Postgres 18 client install), and whether Neon accepts
+  `create role … bypassrls` (fallback documented).
+- [ ] Owner: setup steps 1–5, first run, then decrypt one backup and
+      restore it into a Neon branch (closes the restore-rehearsal gap).
