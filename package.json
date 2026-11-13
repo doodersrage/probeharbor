@@ -44,6 +44,7 @@
     "firmware:build": "node scripts/build-firmware.mjs",
     "firmware:keygen": "node scripts/firmware-ota.mjs keygen",
     "firmware:sign": "node scripts/firmware-ota.mjs sign",
+    "firmware:roots": "node scripts/firmware-ca-roots.mjs",
     "brand:icons": "bash scripts/export-brand-icons.sh",
     "astro": "astro",
     "docs:dev": "pnpm --dir docs --ignore-workspace dev",

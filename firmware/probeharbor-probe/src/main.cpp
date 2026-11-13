@@ -47,6 +47,13 @@
  * 30 minutes without a 2xx makes the probe go back itself. "noupdate" in
  * the extras turns updates off for this probe.
  *
+ * Verified TLS (1.5.0+): posts check probeharbor.dev's certificate against
+ * the roots in ca_roots.h (`pnpm firmware:roots`). After 3 certificate
+ * failures in a row (a CA change, a bad clock, an intercepting proxy) the
+ * probe keeps posting without verification, prints "TT tls: certificate
+ * not verified", sends "tls":"unverified" so the server can warn, and tries
+ * verified again a day later. OTA downloads don't need this: they're signed.
+ *
  * Watchdog (1.3.1+): if loop() stops coming round for WATCHDOG_S seconds
  * (anything stuck: a sensor library, the network stack), the chip restarts.
  * Buffered readings survive that restart; the next boot prints
@@ -72,9 +79,11 @@
 #include <mbedtls/base64.h>
 #include <mbedtls/pk.h>
 #include <mbedtls/sha256.h>
+#include <mbedtls/x509.h>
 #include <time.h>
 #include <Update.h>
 
+#include "ca_roots.h"
 #include "ota_pubkey.h"
 
 #ifndef FIRMWARE_VERSION
@@ -175,6 +184,8 @@ static const uint32_t WATCHDOG_S = 60;
 #endif
 static const unsigned long OTA_CHECK_EVERY_MS = 24UL * 60UL * 60UL * 1000UL;
 static const size_t OTA_MANIFEST_MAX = 4096;
+static const uint8_t TLS_FAILURES_BEFORE_FALLBACK = 3;
+static const unsigned long TLS_RETRY_MS = 24UL * 60UL * 60UL * 1000UL;
 // 2025-01-01: an earlier clock hasn't been set by NTP yet.
 static const time_t CLOCK_VALID_AFTER = 1735689600;
 
@@ -488,6 +499,12 @@ void handleConfigLine(const String &line) {
 }
 
 bool otaCheckNow = false;  // set by the TTTEST ota hook
+// Certificate checking (see the header comment).
+bool tlsUnverified = false;
+uint8_t tlsCertFailures = 0;
+unsigned long tlsUnverifiedSince = 0;
+bool tlsAnnounced = false;
+bool testWrongCa = false;  // TTTEST tlsbad / tlsgood
 String otaManifestPath = OTA_MANIFEST_PATH;  // test builds can change it (TTTEST ota)
 
 #ifdef PROBE_TEST_HOOKS
@@ -499,6 +516,8 @@ String otaManifestPath = OTA_MANIFEST_PATH;  // test builds can change it (TTTES
  *   TTTEST<TAB>wifioff              drop Wi-Fi (the offline restart follows)
  *   TTTEST<TAB>hang                 stop the loop (the watchdog restarts the chip)
  *   TTTEST<TAB>ota<TAB><path>        read the OTA manifest at <path> now
+ *   TTTEST<TAB>tlsbad                trust only a root that doesn't sign the site
+ *   TTTEST<TAB>tlsgood               trust the real roots and retry verification now
  */
 unsigned long testFailUntil = 0;
 bool testDropReply = false;
@@ -518,6 +537,14 @@ static void handleTestLine(const String& line) {
     otaManifestPath = line.substring(11);
     Console.println("TT test: OTA check of " + otaManifestPath);
     otaCheckNow = true;
+  } else if (line == "TTTEST\ttlsbad") {
+    testWrongCa = true;
+    Console.println("TT test: trusting the wrong root");
+  } else if (line == "TTTEST\ttlsgood") {
+    testWrongCa = false;
+    tlsUnverified = false;
+    tlsCertFailures = 0;
+    Console.println("TT test: trusting the real roots again");
   } else if (line == "TTTEST\thang") {
     Console.println("TT test: hanging the loop");
     for (;;) delay(1000);  // yields, so only the loop task's watchdog can end this
@@ -644,7 +671,31 @@ static String deviceFields(int batteryPct) {
   // The dashboard compares fw with /flash's current version to offer updates.
   String out = "\"fw\":\"" FIRMWARE_VERSION "\",\"rssi\":" + String(WiFi.RSSI());
   if (batteryPct >= 0) out += ",\"battery_pct\":" + String(batteryPct);
+  if (tlsUnverified) out += ",\"tls\":\"unverified\"";
   return out;
+}
+
+/** After a verified connection attempt: count certificate failures, fall back after 3. */
+static void noteCertificateCheck(WiFiClientSecure& client, int code) {
+  if (code > 0) {
+    tlsCertFailures = 0;
+    if (!tlsAnnounced) {
+      tlsAnnounced = true;
+      Console.println("TT tls: server certificate verified");
+    }
+    return;
+  }
+  char why[80] = "";
+  int err = client.lastError(why, sizeof(why));
+  if (err != MBEDTLS_ERR_X509_CERT_VERIFY_FAILED && err != MBEDTLS_ERR_X509_FATAL_ERROR) return;  // not a certificate problem
+  if (++tlsCertFailures < TLS_FAILURES_BEFORE_FALLBACK) {
+    Console.printf("TT tls: certificate check failed (%s)\n", why);
+    return;
+  }
+  tlsUnverified = true;
+  tlsUnverifiedSince = millis();
+  tlsAnnounced = false;
+  Console.printf("TT tls: certificate not verified (%s): posting without verification, retrying in a day\n", why);
 }
 
 /** POST to ingest; returns the HTTP status, or a negative HTTPClient error. */
@@ -652,9 +703,20 @@ static int postBody(const String& body, String* response = nullptr) {
 #ifdef PROBE_TEST_HOOKS
   if ((long)(testFailUntil - millis()) > 0) return -1;
 #endif
-  // Same trust model as the sample sketches: TLS without certificate pinning.
+  if (tlsUnverified && millis() - tlsUnverifiedSince >= TLS_RETRY_MS) {
+    tlsUnverified = false;  // a day on: try checking the certificate again
+    tlsCertFailures = 0;
+  }
   WiFiClientSecure client;
-  client.setInsecure();
+  if (tlsUnverified) {
+    client.setInsecure();
+  } else {
+#ifdef PROBE_TEST_HOOKS
+    client.setCACert(testWrongCa ? CA_UNRELATED_TEST_PEM : CA_ROOTS_PEM);
+#else
+    client.setCACert(CA_ROOTS_PEM);
+#endif
+  }
   client.setHandshakeTimeout(20);  // seconds; the default 120 outlasts the watchdog
   HTTPClient http;
   http.setConnectTimeout(10000);
@@ -671,6 +733,7 @@ static int postBody(const String& body, String* response = nullptr) {
   int code = http.POST(body);
   if (response != nullptr && code > 0) *response = http.getString();
   http.end();
+  if (!tlsUnverified) noteCertificateCheck(client, code);
 #ifdef PROBE_TEST_HOOKS
   if (response != nullptr && code > 0) Console.println("TT test: server said " + *response);
   if (testDropReply) {
