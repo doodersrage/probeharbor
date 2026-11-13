@@ -5879,9 +5879,9 @@ read-only role, secrets). Restore into Neon still not rehearsed.**
 
 ------------------------------------------------------------------------
 
-## Design (proposed, not started): signed OTA updates + verified TLS (IMPROVEMENT_PLAN 1.2 + 1.3b, 2026-11-13)
+## Design: signed OTA updates + verified TLS (IMPROVEMENT_PLAN 1.2 + 1.3b, 2026-11-13)
 
-**Status: Design for owner review. No code.**
+**Status: Design agreed (decisions below). F1 in progress.**
 
 **Problem.** Probes can only be updated over USB (a reflash keeps Wi-Fi and
 key, but needs someone at the probe), and they don't check the server's
@@ -5937,12 +5937,15 @@ verification lets anyone on the network path install firmware.
 F3: dashboard shows update state and TLS warnings. Each phase hardware-tested
 on the S3 (and the ESP32/C3 before publishing).
 
-**Open questions for the owner.**
-- Automatic updates on by default (opt-out), or opt-in per probe?
-- Signing key: kept offline by the owner (recommended), and on which machine
-  do publishes happen?
-- TLS failure: fall back to unverified for ingest with a visible warning
-  (recommended), or stop posting until fixed?
+**Owner decisions (2026-11-13).** Automatic updates on by default, opt-out
+per probe. Signing key offline on the owner's machine (password manager),
+used only by a local publish; never in GitHub or CI. TLS failure: fall back
+to unverified for ingest with a visible warning.
+
+**Refinement.** The OTA image is the app part of the image `/flash` already
+serves (`public/firmware/probeharbor-probe-<chip>.bin` from offset 0x10000),
+so no second set of binaries goes into git. The manifest signs the hash of
+exactly those bytes; the URL carries `?v=<version>` against stale caches.
 
 **Acceptance (F1).** A probe on the OTA-capable release updates itself to
 a higher signed version within a day of publish; a bad signature, wrong
@@ -5953,3 +5956,27 @@ reading buffer survives the update.
 
 **Non-goals.** Secure boot / flash encryption (eFuses, irreversible),
 updating sketches under `sketches/`, delta updates.
+
+### F1a: OTA signing tooling (2026-11-13)
+
+- [x] `scripts/otaManifest.mjs`: manifest format (`format: 1`, version,
+      `rollout_pct`, per-chip URL with `?v=`, offset 0x10000, size, sha256,
+      ECDSA P-256 DER signature over `probeharbor-ota-v1\n<chip>\n<version>\n<size>\n<sha256>\n`),
+      the check the probe will do, version compare, public-key header.
+- [x] `pnpm firmware:keygen` (private key mode 600 outside the repo, never
+      overwritten; public key → `firmware/probeharbor-probe/src/ota_pubkey.h`)
+      and `pnpm firmware:sign [--rollout N]` (refuses a key that doesn't match
+      the committed public key; checks every entry before writing).
+      Documented in `firmware/README.md`.
+- Evidence: `src/lib/otaManifest.test.ts` 11 tests (good entry; other key;
+  edited version/size/hash; chip swap; changed or truncated download; not
+  newer; missing chip; exact message; bad inputs; header round trip). CLI
+  run on a scratch copy of the repo with the real 1.2.6 images: sign
+  without key → refused; keygen → mode 600, second keygen refused; sign
+  --rollout 10 → ota.json for all three chips; another key → refused;
+  every signature checked independently with `openssl dgst -verify`
+  (Verified OK) and every hash, size and 0xE9 image header matched.
+- [ ] Owner: run `pnpm firmware:keygen` and commit `ota_pubkey.h` (needed
+      before F1b can be tested on hardware).
+- [ ] F1b: device side (fetch, verify with mbedtls, write the inactive slot,
+      pending-verify rollback, rollout bucket, `noupdate`).

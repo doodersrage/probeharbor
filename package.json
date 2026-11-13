@@ -42,6 +42,8 @@
     "smoke:portfolio-billing": "node --env-file=.env scripts/smoke-portfolio-billing.mjs",
     "generate:vapid": "node scripts/generate-vapid-keys.mjs",
     "firmware:build": "node scripts/build-firmware.mjs",
+    "firmware:keygen": "node scripts/firmware-ota.mjs keygen",
+    "firmware:sign": "node scripts/firmware-ota.mjs sign",
     "brand:icons": "bash scripts/export-brand-icons.sh",
     "astro": "astro",
     "docs:dev": "pnpm --dir docs --ignore-workspace dev",

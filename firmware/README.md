@@ -36,3 +36,34 @@ deploys do not need the ESP32 toolchain. Bump `FIRMWARE_VERSION` in
 `src/main.cpp` when behaviour changes, rebuild, and commit the new images.
 
 Test on real hardware before publishing new images: CI only proves they compile.
+
+## Over-the-air updates (in progress)
+
+Probes from the first OTA-capable release on will update themselves from
+`public/firmware/ota.json`, a manifest signed with a key only the owner
+holds (design: `IMPLEMENTATION_PLAN.md`, "signed OTA updates + verified
+TLS"). The update image is the app part of the image `/flash` serves, so
+there is nothing extra to build.
+
+Once, on the publishing machine:
+
+```bash
+pnpm firmware:keygen   # private key → ~/.config/probeharbor/ota-signing-key.pem (mode 600)
+                       # public key  → probeharbor-probe/src/ota_pubkey.h (commit it)
+```
+
+Put the private key file in a password manager. It never goes in the repo,
+GitHub or CI. Lost, it means probes can only be updated over USB again,
+with firmware carrying a new public key.
+
+Each release, after testing on hardware:
+
+```bash
+pnpm firmware:build
+pnpm firmware:sign --rollout 10   # first a tenth of probes; --rollout 100 later
+```
+
+`sign` refuses a key that doesn't match the committed public key, and checks
+every signature before writing `ota.json`. Commit the images,
+`manifest.json` and `ota.json` together. To stop a rollout, sign again with
+`--rollout 0`.
