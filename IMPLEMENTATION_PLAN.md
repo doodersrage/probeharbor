@@ -5724,8 +5724,11 @@ serves 1.2.6.**
       publishing images. `architecture.md` mentions the header form.
 - Evidence: `node scripts/build-firmware.mjs --check` (PlatformIO 6.2.0):
   esp32, esp32s3, esp32c3 SUCCESS. Compile only.
-- [ ] Owner: run test 9 on a board, then `pnpm firmware:build` and commit
-      the images.
+- [x] Test 9 step 1 on an ESP32-S3 + AHT20 (2026-11-13): `TT firmware
+      1.2.7`, then `TT post 200` ×5 against production. Details in
+      `HARDWARE-TESTS.md`.
+- [ ] Owner: test 9 steps 2–4 (dashboard shows fw 1.2.7; wrong key → 401;
+      pasted URL still works), then `pnpm firmware:build` and commit the images.
 - Not in this step: TLS verification (`setInsecure()` is still there).
   That is 1.3b: a root CA bundle, with a plan for when the CA changes.
 

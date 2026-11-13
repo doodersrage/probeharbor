@@ -209,8 +209,19 @@ Same firmware as a plain ESP32. Feather pin labels:
 
 1.2.7 posts to `/api/ingest/_` with the key in an `X-Ingest-Key` header
 instead of in the URL. The server has accepted that header since 2026-09.
-Compiled for ESP32, S3 and C3; not yet run on a board, so `/flash` still
-serves 1.2.6.
+Compiled for ESP32, S3 and C3. `/flash` still serves 1.2.6 until steps 2–4
+are done.
+
+**Step 1 verified (2026-11-13) on an ESP32-S3 with an AHT20.** Before: the
+board's earlier image posted `TT post 200 probes=1`. Flashed 1.2.7 with
+`pio run -e esp32s3 -t upload` (saved Wi-Fi and key kept); after a reset:
+`TT sensor: AHT20 on I2C (SDA 8, SCL 9)`, `TT firmware 1.2.7`, `TT wifi ok`,
+then `TT post 200 probes=1` five times over about 4 minutes. With the key no
+longer in the path, a server that ignored the header would have answered
+400, so the 200s show the header path working against production. The board
+was left on 1.2.7.
+Not done: step 2 (dashboard, needs a signed-in check), steps 3–4 (need the
+Wi-Fi name and password to send `TTCFG`), and the plain ESP32 and C3.
 
 1. Build and upload 1.2.7 (`pio run -t upload` in this folder) to a board
    that already has Wi-Fi and a key saved. Expect `TT firmware 1.2.7`, then
