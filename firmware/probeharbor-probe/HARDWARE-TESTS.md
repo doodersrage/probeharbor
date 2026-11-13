@@ -1,4 +1,4 @@
-# Hardware tests still open (firmware 1.3.0)
+# Hardware tests still open (firmware 1.3.1)
 
 Verified so far, on a plain ESP32: browser flash → USB settings → Wi-Fi → first
 reading, with a DS18B20 (1.0.1), a DHT22 (1.1.1), a BME280 on I2C (1.2.2:
@@ -12,7 +12,7 @@ Everything else below has only been compiled.
 
 Keep the board on USB with the serial console open in `/flash` (or any serial
 monitor at 115200 baud). Lines starting `TT` are the ones to watch. Write the
-result and the firmware line (`TT … 1.3.0`) next to each test.
+result and the firmware line (`TT … 1.3.1`) next to each test.
 
 ## Parts to order
 
@@ -302,3 +302,23 @@ To build the test image: `PLATFORMIO_BUILD_FLAGS="-DPROBE_TEST_HOOKS
 4. The plain ESP32 and the C3.
 5. If 1–4 pass: `pnpm firmware:build` and commit the images (1.2.7's change
    comes along).
+
+## 11. Watchdog (1.3.1, source only)
+
+1.3.1 restarts the chip if `loop()` stops coming round for 60 s, and says
+so on the next boot (`TT restarted by watchdog: something stopped
+responding`; `TT restarted after a crash` for a panic). TLS handshakes are
+capped at 20 s and connects at 10 s so one slow request (~45 s at most)
+can't trip it. Compiled for ESP32, S3 and C3.
+
+**Verified on an ESP32-S3 + AHT20 (2026-11-13), test build
+(`TTTEST<TAB>hang`, see test 10):** posts failing, 3 readings buffered;
+`TT test: hanging the loop` at 14:20:30; at 14:21:30 the chip restarted:
+`TT buffer: 3 reading(s) kept from before the restart`, `TT firmware
+1.3.1-test`, `TT restarted by watchdog…`, then the server said
+`"readings":8` (the 3 kept + the new one). Production 1.3.1 flashed after;
+posting every minute with no watchdog restart.
+
+Still to do: a long run (a day) with no `TT restarted by watchdog`, the
+plain ESP32 and the C3, and a slow or stalled server (expect `TT post -1`,
+not a watchdog restart).

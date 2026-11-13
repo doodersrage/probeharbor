@@ -36,6 +36,11 @@
  * the oldest go first). The buffer survives the probe's own restarts but not
  * a power cut. A server that answers 400 to a batch (one older than
  * 2026-11) gets plain readings, as before 1.3.0, until the next restart.
+ *
+ * Watchdog (1.3.1+): if loop() stops coming round for WATCHDOG_S seconds
+ * (anything stuck: a sensor library, the network stack), the chip restarts.
+ * Buffered readings survive that restart; the next boot prints
+ * "TT restarted by watchdog".
  */
 #include <Adafruit_AHTX0.h>
 #include <Adafruit_BME280.h>
@@ -51,10 +56,12 @@
 #include <WiFiManager.h>
 #include <Wire.h>
 #include <esp_attr.h>
+#include <esp_system.h>
+#include <esp_task_wdt.h>
 #include <time.h>
 
 #ifndef FIRMWARE_VERSION
-#define FIRMWARE_VERSION "1.3.0"
+#define FIRMWARE_VERSION "1.3.1"
 #endif
 /*
  * The flasher talks to whichever USB port the board is plugged into. On the
@@ -135,6 +142,10 @@ static const size_t SLOT_BODY = 224;
 static const uint16_t BATCH_MAX = 30;
 // Requests per send, so a long backlog can't hold up the loop for minutes.
 static const uint8_t BATCHES_PER_SEND = 4;
+// Longest legitimate stall is one HTTPS request (10 s connect + 20 s TLS
+// handshake + 15 s read, ~45 s) or a Wi-Fi join (20 s); long waits also feed
+// it as they go.
+static const uint32_t WATCHDOG_S = 60;
 // 2025-01-01: an earlier clock hasn't been set by NTP yet.
 static const time_t CLOCK_VALID_AFTER = 1735689600;
 
@@ -434,6 +445,7 @@ void handleConfigLine(const String &line) {
   unsigned long start = millis();
   while (WiFi.status() != WL_CONNECTED && millis() - start < WIFI_JOIN_TIMEOUT_MS) {
     delay(250);
+    esp_task_wdt_reset();
   }
   if (WiFi.status() == WL_CONNECTED) {
     Console.println("TT wifi ok");
@@ -450,6 +462,7 @@ void handleConfigLine(const String &line) {
  *   TTTEST<TAB>fail<TAB><seconds>  posts fail (-1) without sending
  *   TTTEST<TAB>drop                 next post is sent, its reply thrown away
  *   TTTEST<TAB>wifioff              drop Wi-Fi (the offline restart follows)
+ *   TTTEST<TAB>hang                 stop the loop (the watchdog restarts the chip)
  */
 unsigned long testFailUntil = 0;
 bool testDropReply = false;
@@ -465,6 +478,9 @@ static void handleTestLine(const String& line) {
   } else if (line == "TTTEST\twifioff") {
     Console.println("TT test: Wi-Fi off");
     WiFi.disconnect();
+  } else if (line == "TTTEST\thang") {
+    Console.println("TT test: hanging the loop");
+    for (;;) delay(1000);  // yields, so only the loop task's watchdog can end this
   }
 }
 #endif
@@ -578,7 +594,9 @@ static int postBody(const String& body, String* response = nullptr) {
   // Same trust model as the sample sketches: TLS without certificate pinning.
   WiFiClientSecure client;
   client.setInsecure();
+  client.setHandshakeTimeout(20);  // seconds; the default 120 outlasts the watchdog
   HTTPClient http;
+  http.setConnectTimeout(10000);
   http.setTimeout(15000);
   // The key goes in a header, not the path, so it stays out of request URLs
   // (proxy and server logs). `_` is the server's header-only placeholder;
@@ -626,6 +644,7 @@ static void postPlain(const String& fields, int batteryPct, uint8_t sent) {
  */
 static bool sendBuffer(int batteryPct, uint8_t sent) {
   for (uint8_t round = 0; round < BATCHES_PER_SEND && rb.count > 0; round++) {
+    esp_task_wdt_reset();  // each request may take up to ~30 s
     uint16_t n = rb.count < BATCH_MAX ? rb.count : BATCH_MAX;
     String body = "{" + deviceFields(batteryPct) + ",\"readings\":[";
     body.reserve(n * (SLOT_BODY + 32) + 96);
@@ -822,6 +841,12 @@ void setup() {
 
   Console.println();
   Console.println("TT firmware " FIRMWARE_VERSION);
+  esp_reset_reason_t why = esp_reset_reason();
+  if (why == ESP_RST_TASK_WDT || why == ESP_RST_INT_WDT || why == ESP_RST_WDT) {
+    Console.println("TT restarted by watchdog: something stopped responding");
+  } else if (why == ESP_RST_PANIC) {
+    Console.println("TT restarted after a crash");
+  }
 
   wifiManager.addParameter(&keyParam);
   wifiManager.addParameter(&extrasParam);
@@ -838,6 +863,11 @@ void setup() {
   // After autoConnect, so the network stack is up. SNTP keeps retrying and
   // re-syncs on its own; readings are only stamped once the clock is set.
   configTime(0, 0, "pool.ntp.org", "time.cloudflare.com");
+
+  // From here on, a loop() that stops coming round restarts the chip. Set up
+  // after autoConnect, which may legitimately block for its own timeout.
+  esp_task_wdt_init(WATCHDOG_S, true);
+  enableLoopWDT();
 }
 
 void loop() {

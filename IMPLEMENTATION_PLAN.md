@@ -5821,3 +5821,22 @@ Batch delivery not verified: production doesn't accept batches until
       kept across the offline restart and sent after reconnecting.
 - [ ] Owner: dashboard history for 13:40–13:49 shows no gap. Test 10 step 4
       (plain ESP32, C3). Then `pnpm firmware:build` and publish images.
+
+------------------------------------------------------------------------
+
+## Firmware 1.3.1 (source only): watchdog (IMPROVEMENT_PLAN 1.4, 2026-11-13)
+
+**Status: Compiled for all three boards; the watchdog firing verified on an
+ESP32-S3. `/flash` still serves 1.2.6.**
+
+- [x] `esp_task_wdt_init(60 s)` + `enableLoopWDT()` at the end of setup
+      (after `autoConnect`, which may block for its own timeout). Fed by
+      the Arduino loop and inside the long waits (Wi-Fi join, each batch).
+      TLS handshake capped at 20 s (default 120 s outlasted the watchdog),
+      connect at 10 s. Boot prints the reset reason for a watchdog or panic
+      restart. The reading buffer survives it.
+- [x] S3, test build (`TTTEST hang`): restart 60 s after the hang, 3
+      buffered readings kept and sent after the restart. Production 1.3.1
+      posting normally afterwards. Production images: no test strings.
+- [ ] A day's run without a spurious restart; ESP32 and C3; a stalled
+      server (should give `-1`, not a watchdog restart).
