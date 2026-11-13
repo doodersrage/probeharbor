@@ -145,7 +145,7 @@ beforeEach(() => {
     payload: { temp: { "0": { c: 5, f: 41, h: 40 } } },
   });
   mockFindDeviceByIngestKeyHash.mockReset().mockResolvedValue(device);
-  mockDiscoverIngestPayload.mockReset().mockReturnValue({});
+  mockDiscoverIngestPayload.mockReset().mockReturnValue([]);
   mockEnsureDiscoveredPushSensors.mockReset().mockResolvedValue({
     created: 0,
     error: null,
@@ -162,7 +162,9 @@ beforeEach(() => {
       error: null,
     }),
   );
-  mockInsertSensorReadings.mockReset().mockResolvedValue({ error: null });
+  mockInsertSensorReadings
+    .mockReset()
+    .mockImplementation(async (rows: unknown[]) => ({ error: null, inserted: rows.length }));
   mockTouchDeviceLastSeen.mockReset().mockResolvedValue(undefined);
   mockUpdateDeviceMeta.mockReset().mockResolvedValue(undefined);
   mockRecordIngestStat.mockReset().mockResolvedValue(undefined);
@@ -237,6 +239,8 @@ describe("POST /api/ingest/[deviceKey]", () => {
           value_num: 40,
         }),
       ]),
+      // Server-stamped readings never go through the duplicate skip.
+      { skipDuplicates: false },
     );
     expect(mockTouchDeviceLastSeen).toHaveBeenCalledWith("house-1", "device-1");
     expect(mockRecordIngestStat).toHaveBeenCalledWith("house-1", "device-1", true);
@@ -260,7 +264,9 @@ describe("POST /api/ingest/[deviceKey]", () => {
     const body = await response.json();
 
     expect(response.status).toBe(200);
-    expect(mockInsertSensorReadings).toHaveBeenCalledWith([expect.objectContaining({ value_num: 41 })]);
+    expect(mockInsertSensorReadings).toHaveBeenCalledWith([expect.objectContaining({ value_num: 41 })], {
+      skipDuplicates: false,
+    });
     expect((body as { rejected: unknown }).rejected).toEqual([
       { key: "temp1", kind: "temperature", value: -196.6, reason: "sensor_fault" },
     ]);
@@ -287,7 +293,7 @@ describe("POST /api/ingest/[deviceKey]", () => {
   });
 
   it("hides the database error from the device when storing fails", async () => {
-    mockInsertSensorReadings.mockResolvedValue({ error: 'relation "sensor_readings" violates constraint xyz' });
+    mockInsertSensorReadings.mockResolvedValue({ error: 'relation "sensor_readings" violates constraint xyz', inserted: 0 });
     vi.spyOn(console, "error").mockImplementation(() => {});
     const { POST } = await import("./[deviceKey]");
 
@@ -374,10 +380,13 @@ describe("POST /api/ingest/[deviceKey]", () => {
 
     expect(response.status).toBe(200);
     expect(mockUpsertDeviceSensor).not.toHaveBeenCalled();
-    expect(mockInsertSensorReadings).toHaveBeenCalledWith([
-      expect.objectContaining({ sensor_id: "t0", value_num: 41 }),
-      expect.objectContaining({ sensor_id: "h0", value_num: 40 }),
-    ]);
+    expect(mockInsertSensorReadings).toHaveBeenCalledWith(
+      [
+        expect.objectContaining({ sensor_id: "t0", value_num: 41 }),
+        expect.objectContaining({ sensor_id: "h0", value_num: 40 }),
+      ],
+      { skipDuplicates: false },
+    );
   });
 
   it("still upserts a known temperature sensor whose unit needs correcting to °F", async () => {

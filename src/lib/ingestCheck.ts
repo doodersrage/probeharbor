@@ -12,7 +12,7 @@ export type IngestCheckResult = {
 };
 
 /** Keys the endpoint reads that aren't sensor values. */
-const DEVICE_KEYS = new Set(["battery", "battery_pct", "rssi", "fw", "meta", "name", "device", "labels"]);
+const DEVICE_KEYS = new Set(["battery", "battery_pct", "rssi", "fw", "meta", "name", "device", "labels", "recorded_at"]);
 
 
 /**

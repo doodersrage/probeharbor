@@ -427,6 +427,21 @@ describe("isolation: ingest.ts", () => {
     await expect(sql("select 1 from public.sensor_readings")).resolves.toEqual([]);
   });
 
+  it("insertSensorReadings with skipDuplicates: a foreign sensor still fails the whole batch", async () => {
+    const a = await household("a@example.com");
+    const b = await household("b@example.com");
+    const at = ago(3);
+    const result = await ingest.insertSensorReadings(
+      [
+        { sensor_id: b.temp, household_id: b.householdId, recorded_at: at, value_num: 1 },
+        { sensor_id: a.temp, household_id: b.householdId, recorded_at: at, value_num: 2 },
+      ],
+      { skipDuplicates: true },
+    );
+    expect(result).toEqual({ error: "reading names a sensor outside its household", inserted: 0 });
+    await expect(sql("select 1 from public.sensor_readings")).resolves.toEqual([]);
+  });
+
   it("insertSensorReadings: a valid batch is stored exactly as given", async () => {
     const a = await household("a@example.com");
     const at = ago(3);
@@ -435,7 +450,7 @@ describe("isolation: ingest.ts", () => {
         { sensor_id: a.temp, household_id: a.householdId, recorded_at: at, value_num: 40.5, meta: { tempc: 4.7 } },
         { sensor_id: a.door, household_id: a.householdId, recorded_at: at, value_bool: true },
       ]),
-    ).resolves.toEqual({ error: null });
+    ).resolves.toEqual({ error: null, inserted: 2 });
     const rows = await sql<Record<string, unknown>>(
       `select sensor_id, household_id, (extract(epoch from recorded_at) * 1000)::float8 as recorded_ms,
               value_num, value_bool, value_text, meta

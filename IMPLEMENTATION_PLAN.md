@@ -5728,3 +5728,51 @@ serves 1.2.6.**
       the images.
 - Not in this step: TLS verification (`setInsecure()` is still there).
   That is 1.3b: a root CA bundle, with a plan for when the CA changes.
+
+------------------------------------------------------------------------
+
+## Ingest keeps the device's reading time; buffered batches (IMPROVEMENT_PLAN 1.1, server side, 2026-11-13)
+
+**Status: Implemented and tested locally (unit + Postgres). No migration.
+Deploys on push. Firmware doesn't use it yet.**
+
+Owner decisions: accept times up to 72 h old (5 min ahead for clock skew);
+skip duplicates in the app, no unique index.
+
+- [x] `recorded_at` on a push payload (ISO 8601 with a zone, or Unix
+      seconds): the reading keeps that time. Without it, server receive
+      time as before. Out-of-range or unzoned times are rejected, never
+      moved to "now" (`src/lib/ingestTime.ts`).
+- [x] `{"readings": [...]}` batch, at most 100 items, each with its own
+      `recorded_at`. Bad items listed in `rejected_entries`, the rest stored.
+      `fw`/`rssi`/`battery_pct` at the top level (fall back to the newest item).
+- [x] Retry-safe: with device times, `insertSensorReadings(…, { skipDuplicates })`
+      skips a reading already stored for that sensor at that time, and a
+      repeat inside the batch, in the same statement (uses
+      `sensor_readings_sensor_recorded_idx`). Response `readings` = stored,
+      `duplicates` = skipped; 200, so the device can clear its buffer. A
+      request that stores nothing new skips webhooks/alerts.
+- [x] Last seen, report-interval learning, client detection and RSSI history
+      use the receive time. Door history uses each door's newest state in the
+      request. The reading webhook's `recorded_at` is the newest reading.
+- [x] `recorded_at` and `readings` are no longer read as flat sensor keys.
+      Compatibility: a client that sent a *numeric* `recorded_at` or
+      `readings` field had it stored as a sensor before; now it's a time
+      (or a 400 if out of range). Not checked against production sensors
+      (no `device_sensors.key in ('recorded_at','readings')` query run).
+- [x] Found during review: non-object bodies (SenML arrays) must pass
+      through untouched; covered by a unit and a Postgres test.
+- [x] Docs: `docs/ingest/index.md` "Reading time and buffered batches",
+      `public/openapi.yaml` (`recorded_at`, `readings`, `duplicates`,
+      `rejected_entries`, `RejectedEntry`), contract test.
+- Evidence: `pnpm test` 461 files / 3609 tests; `pnpm test:db` 53 files /
+  415 tests (throwaway local Postgres 18.6), incl. 8 new end-to-end ingest
+  cases (device time, resend → `duplicates`, mixed batch, SenML, door
+  state in a batch, bad time → 400, no `recorded_at` → unchanged) and an
+  isolation case (foreign sensor with `skipDuplicates` still stores nothing);
+  typecheck 0/0; lint 55 warnings (baseline); build OK.
+- [ ] Payload checker doesn't understand batches yet (says 400 for a batch
+      the endpoint accepts).
+- [ ] SenML records carry their own time (`t`/`bt`); still ignored.
+- [ ] Firmware: NTP clock + ring buffer posting batches (1.1, device side;
+      needs hardware testing).

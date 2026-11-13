@@ -27,11 +27,17 @@ export type GarageTempCompat = {
   user_id?: string | null;
 };
 
+/**
+ * Store readings in one statement. `skipDuplicates` (push ingest with
+ * device-supplied times) skips a reading already stored for the same sensor
+ * at the same time; `inserted` counts what was actually stored.
+ */
 export async function insertSensorReadings(
   rows: SensorReadingInsert[],
-): Promise<{ error: string | null }> {
-  if (rows.length === 0) return { error: null };
-  return neonInsertSensorReadings(rows);
+  options: { skipDuplicates?: boolean } = {},
+): Promise<{ error: string | null; inserted: number }> {
+  if (rows.length === 0) return { error: null, inserted: 0 };
+  return neonInsertSensorReadings(rows, options);
 }
 
 export function buildReadingRowsFromTempResults(

@@ -254,3 +254,137 @@ describe("ingest helpers on Neon", () => {
     );
   });
 });
+
+describe("POST /api/ingest with device times (recorded_at)", () => {
+  const timesOf = (deviceId: string) =>
+    sql<{ key: string; value_num: number; epoch: number }>(
+      `select s.key, r.value_num, extract(epoch from r.recorded_at)::float8 as epoch
+       from public.sensor_readings r join public.device_sensors s on s.id = r.sensor_id
+       where s.device_id = $1 and s.kind = 'temperature' order by r.recorded_at`,
+      [deviceId],
+    );
+  // One base for the file, so two calls in a test never straddle a second.
+  const base = Math.floor(Date.now() / 1000);
+  const minutesAgo = (n: number) => base - n * 60;
+
+  it("stores a single reading at the device's time, not the server's", async () => {
+    const dev = await pushDevice("a@example.com");
+    const at = minutesAgo(30);
+    const response = await ingest(dev.key, { temp_c: 4.5, recorded_at: at });
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({ ok: true, readings: 1 });
+    const rows = await timesOf(dev.deviceId);
+    expect(rows.map((r) => r.epoch)).toEqual([at]);
+  });
+
+  it("a resend after a lost reply stores nothing new and still answers 200", async () => {
+    const dev = await pushDevice("a@example.com");
+    const body = { temp_c: 4.5, recorded_at: minutesAgo(2) };
+    await ingest(dev.key, body);
+    const retry = await ingest(dev.key, body);
+
+    expect(retry.status).toBe(200);
+    expect(await retry.json()).toMatchObject({ ok: true, readings: 0, duplicates: 1 });
+    expect(await timesOf(dev.deviceId)).toHaveLength(1);
+    expect(background.labels).toEqual(["Ingest webhooks/alerts"]);
+  });
+
+  it("stores a buffered batch in time order, skipping bad items and items already stored", async () => {
+    const dev = await pushDevice("a@example.com");
+    await ingest(dev.key, { temp_c: 1, recorded_at: minutesAgo(50) });
+    const response = await ingest(dev.key, {
+      fw: "1.3.0",
+      rssi: -70,
+      readings: [
+        { temp_c: 1, recorded_at: minutesAgo(50) },
+        { temp_c: 2, recorded_at: minutesAgo(40) },
+        { temp_c: 3 },
+        { temp_c: 4, recorded_at: minutesAgo(5 * 24 * 60) },
+        { temp_c: 5, recorded_at: new Date(minutesAgo(20) * 1000).toISOString() },
+        { temp_c: 5, recorded_at: minutesAgo(20) },
+      ],
+    });
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({
+      ok: true,
+      readings: 2,
+      duplicates: 2,
+      rejected_entries: [
+        { index: 2, reason: "invalid_recorded_at" },
+        { index: 3, reason: "recorded_at_too_old" },
+      ],
+    });
+    const rows = await timesOf(dev.deviceId);
+    expect(rows.map((r) => [r.epoch, r.value_num])).toEqual([
+      [minutesAgo(50), 1],
+      [minutesAgo(40), 2],
+      [minutesAgo(20), 5],
+    ]);
+    const [device] = await sql<{ meta: Record<string, unknown>; seen_ago_s: number }>(
+      "select meta, extract(epoch from now() - last_seen_at)::float8 as seen_ago_s from public.devices where id = $1",
+      [dev.deviceId],
+    );
+    expect(device?.meta.firmware_version).toBe("1.3.0");
+    expect(device?.meta.rssi).toBe(-70);
+    // Last seen is when the device got through, not its newest reading.
+    expect(device?.seen_ago_s).toBeLessThan(60);
+  });
+
+  it("does not turn recorded_at into a sensor", async () => {
+    const dev = await pushDevice("a@example.com");
+    await ingest(dev.key, { temp_c: 4.5, recorded_at: minutesAgo(1) });
+
+    const keys = await sql<{ key: string }>("select key from public.device_sensors where device_id = $1", [dev.deviceId]);
+    expect(keys.map((k) => k.key)).not.toContain("recorded_at");
+  });
+
+  it("rejects a single reading with a bad time instead of storing it at server time", async () => {
+    const dev = await pushDevice("a@example.com");
+    const response = await ingest(dev.key, { temp_c: 4.5, recorded_at: "2026-11-13T10:00:00" });
+
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({
+      error: "Invalid recorded_at",
+      rejected_entries: [{ index: 0, reason: "invalid_recorded_at" }],
+    });
+    expect(await timesOf(dev.deviceId)).toEqual([]);
+  });
+
+  it("door history follows each door's newest state in a batch", async () => {
+    const dev = await pushDevice("a@example.com");
+    await ingest(dev.key, {
+      readings: [
+        { door: false, recorded_at: minutesAgo(3) },
+        { door: true, recorded_at: minutesAgo(10) },
+      ],
+    });
+    expect(background.labels).toContain("Ingest door history");
+
+    background.labels = [];
+    await ingest(dev.key, {
+      readings: [
+        { door: false, recorded_at: minutesAgo(2) },
+        { door: true, recorded_at: minutesAgo(1) },
+      ],
+    });
+    expect(background.labels).not.toContain("Ingest door history");
+  });
+
+  it("still stores a SenML array body", async () => {
+    const dev = await pushDevice("a@example.com");
+    const response = await ingest(dev.key, [{ bn: "probe/", n: "0", u: "Cel", v: 18.5 }]);
+
+    expect(response.status).toBe(200);
+    expect(await timesOf(dev.deviceId)).toHaveLength(1);
+  });
+
+  it("without recorded_at, the same value twice is stored twice (unchanged)", async () => {
+    const dev = await pushDevice("a@example.com");
+    await ingest(dev.key, { temp_c: 4.5 });
+    await ingest(dev.key, { temp_c: 4.5 });
+
+    expect(await timesOf(dev.deviceId)).toHaveLength(2);
+  });
+});

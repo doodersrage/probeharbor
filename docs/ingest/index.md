@@ -123,6 +123,56 @@ The other values in the same request are stored as usual. The response lists wha
 
 If every value is rejected the endpoint answers `400` with `{ "error": "No valid sensor values", "rejected": [...] }`. The [payload checker](https://probeharbor.dev/payload-checker) shows the same result before you deploy a device.
 
+### Reading time and buffered batches
+
+By default a reading is stamped with the time the server receives it. A device
+with a synced clock (NTP) can send `recorded_at` instead, as ISO 8601 with a
+time zone (`2026-11-13T11:58:00Z`) or Unix seconds (`1794575880`):
+
+```json
+{ "temp_c": 4.5, "recorded_at": "2026-11-13T11:58:00Z" }
+```
+
+To send readings buffered during a Wi-Fi or server outage, put up to 100 of
+them in `readings`, each with its own `recorded_at`. Device fields stay at the
+top level:
+
+```json
+{
+  "fw": "1.3.0",
+  "rssi": -67,
+  "readings": [
+    { "temp_c": 4.5, "recorded_at": 1794575880 },
+    { "temp_c": 4.4, "recorded_at": 1794575940 }
+  ]
+}
+```
+
+Rules:
+
+- `recorded_at` must be at most **72 hours** old and at most **5 minutes**
+  ahead of the server. Anything else is rejected, never moved to "now": a
+  wrong clock must not put readings at the wrong place in history. A time
+  string without a zone is rejected too.
+- Milliseconds are not accepted; send seconds.
+- A reading already stored for the same sensor at the same `recorded_at` is
+  skipped and counted in `duplicates`. Resending after a lost reply is safe.
+  The answer is still `200`, so the device can clear its buffer.
+- In a batch, items with a bad time are listed in `rejected_entries`
+  (`{ "index": 3, "reason": "recorded_at_too_old" }`) and the others are stored.
+  For a single payload, a bad time fails the request with `400 Invalid recorded_at`.
+- Alerts are checked once, against the state after the batch is stored. Old
+  readings fill in history; a condition that was already over by the newest
+  reading does not send an alert.
+
+```json
+{ "ok": true, "readings": 2, "sensors_created": 0, "duplicates": 1,
+  "rejected_entries": [{ "index": 3, "reason": "recorded_at_too_old" }] }
+```
+
+The [payload checker](https://probeharbor.dev/payload-checker) does not
+understand batches yet.
+
 ### SenML (RFC 8428)
 
 SenML JSON arrays are auto-detected when native shapes are absent. Temperature uses unit `Cel` or `degF`; humidity uses `%RH`. Probe keys come from the SenML name (last path segment).

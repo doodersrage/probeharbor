@@ -23,6 +23,9 @@ const FLAT_INGEST_SKIP = new Set([
   "meta",
   "e",
   "records",
+  // Reading time and batch list (see ingestTime.ts), not sensors.
+  "recorded_at",
+  "readings",
 ]);
 
 function appendFlatIngestKeys(

@@ -21,7 +21,21 @@ paths:
         stays out of URLs and logs. If both are present, the header wins.
         New sensor keys are created on the first POST. Values outside physical
         ranges, or known sensor fault codes, are not stored and are listed in
-        `rejected`. Timestamps are set by the server.
+        `rejected`.
+
+        **Reading time.** Without `recorded_at`, readings are stamped with the
+        time the server received them. With `recorded_at` (ISO 8601 with a time
+        zone, or Unix seconds), they keep the device's time. It must be at most
+        72 hours old and at most 5 minutes in the future. A reading already
+        stored for the same sensor at the same `recorded_at` is skipped and
+        counted in `duplicates`, so a device can safely resend after a lost
+        reply.
+
+        **Batch.** Send buffered readings as `{"readings": [ ... ]}`, at most
+        100 items. Each item is a normal payload with its own `recorded_at`
+        (required). Items with a missing or out-of-range time are skipped and
+        listed in `rejected_entries`; the rest are stored. `fw`, `rssi` and
+        `battery_pct` go at the top level.
       parameters:
         - name: deviceKey
           in: path
@@ -43,6 +57,30 @@ paths:
             schema:
               type: object
               additionalProperties: true
+              properties:
+                recorded_at:
+                  description: When the values were measured. ISO 8601 with `Z` or an offset, or Unix seconds. Omit to use the server's receive time.
+                  oneOf:
+                    - type: string
+                      format: date-time
+                    - type: number
+                readings:
+                  type: array
+                  maxItems: 100
+                  description: Batch of payloads, each with its own `recorded_at`.
+                  items:
+                    type: object
+                    required: [recorded_at]
+                    additionalProperties: true
+            examples:
+              single:
+                value: { temp_c: 4.5, recorded_at: "2026-11-13T11:58:00Z" }
+              batch:
+                value:
+                  fw: "1.3.0"
+                  readings:
+                    - { temp_c: 4.5, recorded_at: 1794575880 }
+                    - { temp_c: 4.4, recorded_at: 1794575940 }
       responses:
         "200":
           description: Readings stored
@@ -57,19 +95,29 @@ paths:
                     const: true
                   readings:
                     type: integer
-                    description: Number of readings stored
+                    description: Number of readings stored by this request (0 when every one was already stored)
                   sensors_created:
                     type: integer
                     description: Sensors created by this request
+                  duplicates:
+                    type: integer
+                    description: Present only when readings were skipped because the same sensor already had a reading at that `recorded_at`
                   rejected:
                     type: array
                     description: Present only when some values were not stored
                     items:
                       $ref: "#/components/schemas/RejectedReading"
+                  rejected_entries:
+                    type: array
+                    description: Present only when some batch items were skipped
+                    items:
+                      $ref: "#/components/schemas/RejectedEntry"
         "400":
           description: |
             Missing device key, invalid JSON, or no usable sensor values
             (`No sensor values found`, or `No valid sensor values` with `rejected`).
+            Also `Invalid recorded_at` (single payload with a bad or out-of-range
+            time), `readings is empty`, or `Too many readings in one batch (max 100)`.
           content:
             application/json:
               schema:
@@ -82,6 +130,10 @@ paths:
                     type: array
                     items:
                       $ref: "#/components/schemas/RejectedReading"
+                  rejected_entries:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/RejectedEntry"
         "401":
           description: Invalid device key
           content:
@@ -693,6 +745,16 @@ components:
         reason:
           type: string
           enum: [sensor_fault, out_of_range]
+    RejectedEntry:
+      type: object
+      required: [index, reason]
+      properties:
+        index:
+          type: integer
+          description: Position in `readings` (0 for a single payload)
+        reason:
+          type: string
+          enum: [invalid_recorded_at, recorded_at_too_old, recorded_at_in_future, invalid_entry]
   securitySchemes:
     bearerAuth:
       type: http

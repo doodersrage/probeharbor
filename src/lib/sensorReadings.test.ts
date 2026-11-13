@@ -58,19 +58,28 @@ describe("insertSensorReadings", () => {
 
     const result = await insertSensorReadings([]);
 
-    expect(result).toEqual({ error: null });
+    expect(result).toEqual({ error: null, inserted: 0 });
     expect(mockInsert).not.toHaveBeenCalled();
   });
 
   it("stores the rows and passes the database result through", async () => {
-    mockInsert.mockResolvedValue({ error: null });
+    mockInsert.mockResolvedValue({ error: null, inserted: 1 });
     const { insertSensorReadings } = await import("./sensorReadings");
     const rows = [{ sensor_id: "s1", household_id: "h1", value_num: 40 }];
 
     const result = await insertSensorReadings(rows);
 
-    expect(result).toEqual({ error: null });
-    expect(mockInsert).toHaveBeenCalledWith(rows);
+    expect(result).toEqual({ error: null, inserted: 1 });
+    expect(mockInsert).toHaveBeenCalledWith(rows, {});
+  });
+
+  it("passes skipDuplicates through to the database", async () => {
+    mockInsert.mockResolvedValue({ error: null, inserted: 0 });
+    const { insertSensorReadings } = await import("./sensorReadings");
+    const rows = [{ sensor_id: "s1", household_id: "h1", value_num: 40, recorded_at: "2026-11-13T11:00:00.000Z" }];
+
+    expect(await insertSensorReadings(rows, { skipDuplicates: true })).toEqual({ error: null, inserted: 0 });
+    expect(mockInsert).toHaveBeenCalledWith(rows, { skipDuplicates: true });
   });
 
   it("returns the error message on failure", async () => {

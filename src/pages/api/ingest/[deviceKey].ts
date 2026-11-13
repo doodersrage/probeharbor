@@ -20,6 +20,8 @@ import { recordIngestStat } from "../../../lib/ingestStats";
 import { enrichDeviceMetaHistories } from "../../../lib/rssiHistory";
 import { runAfterResponse } from "../../../lib/backgroundWork";
 import { nextReportInterval } from "../../../lib/reportInterval";
+import { splitIngestBody } from "../../../lib/ingestTime";
+import type { DiscoveredPushSensor } from "../../../lib/pushSensorDiscovery";
 
 async function sha256Hex(value: string): Promise<string> {
   const digest = await crypto.subtle.digest(
@@ -98,11 +100,50 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
   }
 
   const payload = body.payload;
-  const interpreted = interpretIngestPayload(payload, device.name);
+  // When the server received this request: device fields (last seen, report
+  // interval, client) use it. Readings use their own time when the device
+  // sent one (`recorded_at`, see ingestTime.ts), otherwise this.
+  const receivedAt = new Date().toISOString();
+  const split = splitIngestBody(payload, Date.parse(receivedAt));
+  if (!split.ok) {
+    return finish(
+      new Response(
+        JSON.stringify({
+          error: split.error,
+          ...(split.rejectedEntries ? { rejected_entries: split.rejectedEntries } : {}),
+        }),
+        { status: 400, headers: { "Content-Type": "application/json" } },
+      ),
+      false,
+    );
+  }
+  const entries = split.entries.map((entry) => ({
+    ...entry,
+    interpreted: interpretIngestPayload(entry.payload, device.name),
+  }));
+  // Device fields: top level of the body; in a batch, else the newest item.
+  const deviceFields = split.batch ? interpretIngestPayload(payload, device.name) : entries[0]!.interpreted;
+  const newestEntry = entries.reduce<(typeof entries)[number] | null>(
+    (newest, entry) => (newest == null || entry.recordedAt > newest.recordedAt ? entry : newest),
+    null,
+  );
+  const interpreted = {
+    batteryPct: deviceFields.batteryPct ?? newestEntry?.interpreted.batteryPct ?? null,
+    rssi: deviceFields.rssi ?? newestEntry?.interpreted.rssi ?? null,
+    firmwareVersion: deviceFields.firmwareVersion ?? newestEntry?.interpreted.firmwareVersion ?? null,
+    rejected: entries.flatMap((entry) => entry.interpreted.rejected),
+  };
+  const discovered = new Map<string, DiscoveredPushSensor>();
+  for (const entry of entries) {
+    for (const sensor of entry.interpreted.discovered) {
+      const id = `${sensor.key}::${sensor.kind}`;
+      if (!discovered.has(id)) discovered.set(id, sensor);
+    }
+  }
   const sensorSync = await ensureDiscoveredPushSensors(
     device.household_id,
     device.id,
-    interpreted.discovered,
+    [...discovered.values()],
     device.sensors,
   );
   if (sensorSync.error) {
@@ -119,41 +160,62 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
       false,
     );
 
-  const recordedAt = new Date().toISOString();
   const rows = [];
   let sensorFailures = 0;
-  // Door sensors that just reported "closed": each close may finish an
-  // open/close session to save in door history.
-  const closedDoors: Array<{ id: string; label: string }> = [];
+  // Each door's newest state in this request. A door whose newest state is
+  // "closed" may finish an open/close session to save in door history.
+  const latestDoor = new Map<string, { label: string; closed: boolean; at: string }>();
   // The device's sensors came with the device lookup; only query for a
   // sensor that's new (or whose saved unit needs correcting to °F).
   const knownSensors = new Map(device.sensors.map((s) => [`${s.key}::${s.kind}`, s]));
-  for (const reading of interpreted.readings) {
-    const known = knownSensors.get(`${reading.key}::${reading.kind}`);
-    const needsUnitFix =
-      known != null && reading.kind === "temperature" && reading.unit === "F" && known.unit != null && known.unit !== "F";
-    const sensor =
-      known && !needsUnitFix
-        ? { sensor: known, error: null }
-        : await upsertDeviceSensor(device.household_id, device.id, reading.key, reading.label, reading.kind, reading.unit);
-    if (!sensor.sensor) {
-      sensorFailures += 1;
-      console.error(`Ingest for device ${device.id}: sensor ${reading.key} (${reading.kind}) not saved:`, sensor.error);
-      continue;
+  const failedSensors = new Set<string>();
+  for (const { interpreted: entryReadings, recordedAt } of entries) {
+    for (const reading of entryReadings.readings) {
+      const sensorId = `${reading.key}::${reading.kind}`;
+      if (failedSensors.has(sensorId)) {
+        sensorFailures += 1;
+        continue;
+      }
+      const known = knownSensors.get(sensorId);
+      const needsUnitFix =
+        known != null && reading.kind === "temperature" && reading.unit === "F" && known.unit != null && known.unit !== "F";
+      const sensor =
+        known && !needsUnitFix
+          ? { sensor: known, error: null }
+          : await upsertDeviceSensor(device.household_id, device.id, reading.key, reading.label, reading.kind, reading.unit);
+      if (!sensor.sensor) {
+        sensorFailures += 1;
+        failedSensors.add(sensorId);
+        console.error(`Ingest for device ${device.id}: sensor ${reading.key} (${reading.kind}) not saved:`, sensor.error);
+        continue;
+      }
+      // A batch names the same sensor many times: look it up once.
+      knownSensors.set(sensorId, sensor.sensor);
+      if (reading.kind === "door" && reading.value_bool != null) {
+        const previous = latestDoor.get(sensor.sensor.id);
+        if (!previous || recordedAt >= previous.at) {
+          latestDoor.set(sensor.sensor.id, {
+            label: sensor.sensor.label ?? reading.label,
+            closed: reading.value_bool === false,
+            at: recordedAt,
+          });
+        }
+      }
+      rows.push({
+        sensor_id: sensor.sensor.id,
+        household_id: device.household_id,
+        recorded_at: recordedAt,
+        value_num: reading.value_num,
+        value_bool: reading.value_bool,
+        value_text: reading.value_text,
+        meta: reading.meta,
+      });
     }
-    if (reading.kind === "door" && reading.value_bool === false) {
-      closedDoors.push({ id: sensor.sensor.id, label: sensor.sensor.label ?? reading.label });
-    }
-    rows.push({
-      sensor_id: sensor.sensor.id,
-      household_id: device.household_id,
-      recorded_at: recordedAt,
-      value_num: reading.value_num,
-      value_bool: reading.value_bool,
-      value_text: reading.value_text,
-      meta: reading.meta,
-    });
   }
+  const closedDoors = [...latestDoor.entries()]
+    .filter(([, door]) => door.closed)
+    .map(([id, door]) => ({ id, label: door.label, at: door.at }));
+  const rejectedEntries = split.rejectedEntries.length > 0 ? { rejected_entries: split.rejectedEntries } : {};
 
   if (interpreted.rejected.length > 0) {
     // Values that can't be real (e.g. a DS18B20 fault code) are reported, not stored.
@@ -171,8 +233,8 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
   if (rows.length === 0) {
     const body =
       interpreted.rejected.length > 0
-        ? { error: "No valid sensor values", rejected: interpreted.rejected }
-        : { error: "No sensor values found" };
+        ? { error: "No valid sensor values", rejected: interpreted.rejected, ...rejectedEntries }
+        : { error: "No sensor values found", ...rejectedEntries };
     return finish(
       new Response(JSON.stringify(body), {
         status: 400,
@@ -182,7 +244,11 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
     );
   }
 
-  const { error } = await insertSensorReadings(rows);
+  // A device that sends its own times may resend after a lost reply: skip
+  // readings already stored for that sensor at that time.
+  const deviceTimed = entries.some((entry) => entry.deviceTime);
+  const { error, inserted } = await insertSensorReadings(rows, { skipDuplicates: deviceTimed });
+  const duplicates = rows.length - inserted;
   if (error) {
     console.error(`Ingest for device ${device.id}: insert failed:`, error);
     return storageFailed();
@@ -198,34 +264,43 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
   // Remember which integration feeds this device, for Share → Integrations diagnostics.
   const client = ingestClientPatch(
     device.meta?.ingest_client,
-    detectIngestClient(request.headers.get("user-agent"), recordedAt),
+    detectIngestClient(request.headers.get("user-agent"), receivedAt),
   );
   if (client) metaPatch.ingest_client = client;
   // Learn how often this device reports, for freshness labels (writes only while learning or on change).
-  const interval = nextReportInterval(device.meta, device.last_seen_at, recordedAt);
+  const interval = nextReportInterval(device.meta, device.last_seen_at, receivedAt);
   if (interval) Object.assign(metaPatch, interval);
 
   if (Object.keys(metaPatch).length > 0) {
     await updateDeviceMeta(
       device.household_id,
       device.id,
-      enrichDeviceMetaHistories(device.meta, metaPatch, recordedAt),
+      enrichDeviceMetaHistories(device.meta, metaPatch, receivedAt),
     );
   } else {
     await touchDeviceLastSeen(device.household_id, device.id);
   }
 
   // Door history is saved for every household, not only those with alert rules.
-  if (closedDoors.length > 0) {
+  if (closedDoors.length > 0 && inserted > 0) {
+    const closedAt = closedDoors.reduce((latest, door) => (door.at > latest ? door.at : latest), closedDoors[0]!.at);
     await runAfterResponse(locals, "Ingest door history", async () => {
       const { recordDoorSessionsIfJustClosed } = await import("../../../lib/doorEvents");
-      await recordDoorSessionsIfJustClosed(device.household_id, closedDoors, recordedAt);
+      await recordDoorSessionsIfJustClosed(
+        device.household_id,
+        closedDoors.map(({ id, label }) => ({ id, label })),
+        closedAt,
+      );
     });
   }
 
+  // Newest reading time in this request (the receive time unless the device sent times).
+  const newestRecordedAt = rows.reduce((latest, row) => (row.recorded_at > latest ? row.recorded_at : latest), rows[0]!.recorded_at);
+
   // Webhooks and alerts run after the response (waitUntil), so a slow
   // provider can't hold up the device. Failures stay in the alert log.
-  await runAfterResponse(locals, "Ingest webhooks/alerts", async () => {
+  // Nothing new stored (a resend of readings already saved): nothing to send.
+  if (inserted > 0) await runAfterResponse(locals, "Ingest webhooks/alerts", async () => {
     // Each member's account and alert settings, loaded once and shared by the
     // reading webhooks and the alert pass (was loaded twice per member).
     type MemberContext = {
@@ -268,8 +343,8 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
             device_id: device.id,
             device_name: device.name,
             household_id: device.household_id,
-            recorded_at: recordedAt,
-            reading_count: rows.length,
+            recorded_at: newestRecordedAt,
+            reading_count: inserted,
             battery_pct: metaPatch.battery_pct ?? null,
             rssi: metaPatch.rssi ?? null,
           });
@@ -350,9 +425,11 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
     new Response(
       JSON.stringify({
         ok: true,
-        readings: rows.length,
+        readings: inserted,
         sensors_created: sensorSync.created,
+        ...(duplicates > 0 ? { duplicates } : {}),
         ...(interpreted.rejected.length > 0 ? { rejected: interpreted.rejected } : {}),
+        ...rejectedEntries,
       }),
       {
         status: 200,

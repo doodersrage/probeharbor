@@ -31,6 +31,19 @@ describe("OpenAPI push ingest contract", () => {
     expect(ingestSection).toContain("Retry-After");
   });
 
+  it("documents recorded_at, batches and every rejected-entry reason the code returns", async () => {
+    const { MAX_BATCH_READINGS } = await import("./ingestTime");
+    expect(ingestSection).toContain("recorded_at");
+    expect(ingestSection).toContain(`maxItems: ${MAX_BATCH_READINGS}`);
+    expect(ingestSection).toContain("duplicates:");
+    expect(ingestSection).toContain("rejected_entries:");
+    const timeSource = readFileSync("src/lib/ingestTime.ts", "utf8");
+    for (const reason of ["invalid_recorded_at", "recorded_at_too_old", "recorded_at_in_future", "invalid_entry"]) {
+      expect(timeSource).toContain(`"${reason}"`);
+      expect(spec).toContain(reason);
+    }
+  });
+
   it("documents the body limit the code enforces", () => {
     const max = /INGEST_MAX_BODY_BYTES = (\d+) \* (\d+)/.exec(limits)!;
     expect(ingestSection).toContain(String(Number(max[1]) * Number(max[2])));

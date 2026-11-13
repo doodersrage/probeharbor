@@ -143,15 +143,20 @@ export async function touchDeviceLastSeen(householdId: string, deviceId: string)
  * misattributed reading is never stored silently. The check is part of the
  * same statement (primary-key lookups per row, no extra round trip).
  */
-export async function insertSensorReadings(rows: SensorReadingInsert[]): Promise<{ error: string | null }> {
-  if (rows.length === 0) return { error: null };
+export async function insertSensorReadings(
+  rows: SensorReadingInsert[],
+  options: { skipDuplicates?: boolean } = {},
+): Promise<{ error: string | null; inserted: number }> {
+  if (rows.length === 0) return { error: null, inserted: 0 };
   try {
-    const [result] = await query<{ rejected: number; rejected_sensor_ids: string[] | null }>(
+    const [result] = await query<{ rejected: number; rejected_sensor_ids: string[] | null; inserted: number }>(
       `with input as (
          select r.sensor_id, r.household_id, coalesce(r.recorded_at, now()) as recorded_at, r.value_num,
-                r.value_bool, r.value_text, coalesce(r.meta, '{}'::jsonb) as meta
-         from jsonb_to_recordset($1::jsonb) as r(sensor_id uuid, household_id uuid, recorded_at timestamptz,
-              value_num double precision, value_bool boolean, value_text text, meta jsonb)
+                r.value_bool, r.value_text, coalesce(r.meta, '{}'::jsonb) as meta,
+                row_number() over (partition by r.sensor_id, coalesce(r.recorded_at, now()) order by r.ord) as dup_rank
+         from rows from (jsonb_to_recordset($1::jsonb) as (sensor_id uuid, household_id uuid, recorded_at timestamptz,
+              value_num double precision, value_bool boolean, value_text text, meta jsonb))
+              with ordinality as r(sensor_id, household_id, recorded_at, value_num, value_bool, value_text, meta, ord)
        ), bad as (
          select i.sensor_id from input i
          where not exists (
@@ -159,12 +164,21 @@ export async function insertSensorReadings(rows: SensorReadingInsert[]): Promise
            where s.id = i.sensor_id and d.household_id = i.household_id)
        ), ins as (
          insert into public.sensor_readings (sensor_id, household_id, recorded_at, value_num, value_bool, value_text, meta)
-         select sensor_id, household_id, recorded_at, value_num, value_bool, value_text, meta from input
+         select i.sensor_id, i.household_id, i.recorded_at, i.value_num, i.value_bool, i.value_text, i.meta from input i
          where not exists (select 1 from bad)
+           -- Opt-in: a reading already stored for this sensor at this exact time
+           -- (a device retrying a buffered reading) is skipped, as is a repeat
+           -- within the batch. Uses sensor_readings_sensor_recorded_idx.
+           and (not $2::boolean or (
+             i.dup_rank = 1
+             and not exists (
+               select 1 from public.sensor_readings sr
+               where sr.sensor_id = i.sensor_id and sr.recorded_at = i.recorded_at)))
          returning 1
        )
        select (select count(*) from bad)::int as rejected,
-              (select array_agg(distinct sensor_id) from bad) as rejected_sensor_ids`,
+              (select array_agg(distinct sensor_id) from bad) as rejected_sensor_ids,
+              (select count(*) from ins)::int as inserted`,
       [
         JSON.stringify(
           rows.map((row) => ({
@@ -177,6 +191,7 @@ export async function insertSensorReadings(rows: SensorReadingInsert[]): Promise
             meta: row.meta ?? {},
           })),
         ),
+        options.skipDuplicates === true,
       ],
     );
     if (result && result.rejected > 0) {
@@ -184,11 +199,11 @@ export async function insertSensorReadings(rows: SensorReadingInsert[]): Promise
       console.error(
         `insertSensorReadings: ${result.rejected} of ${rows.length} reading(s) name a sensor outside their household (${ids}); batch not stored`,
       );
-      return { error: "reading names a sensor outside its household" };
+      return { error: "reading names a sensor outside its household", inserted: 0 };
     }
-    return { error: null };
+    return { error: null, inserted: result?.inserted ?? 0 };
   } catch (error) {
-    return { error: message(error) };
+    return { error: message(error), inserted: 0 };
   }
 }
 

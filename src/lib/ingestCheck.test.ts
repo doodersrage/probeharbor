@@ -52,3 +52,13 @@ describe("checkIngestPayload", () => {
     expect(text).toContain('"xyz" didn\'t match a sensor type');
   });
 });
+
+describe("checkIngestPayload and recorded_at", () => {
+  it("doesn't list recorded_at as an ignored key or read it as a sensor", () => {
+    const result = checkIngestPayload({ temp1: 42.5, recorded_at: 1794575880 });
+
+    expect(result.accepted).toBe(true);
+    expect(result.ignoredKeys).not.toContain("recorded_at");
+    expect(result.readings.map((r) => r.key)).toEqual(["temp1"]);
+  });
+});
