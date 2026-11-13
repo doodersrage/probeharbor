@@ -633,8 +633,12 @@ static void otaConfirm() {
   Console.println("TT ota: " FIRMWARE_VERSION " confirmed");
 }
 
-/** Tell the Arduino core not to confirm a new image at boot: we do, on the first 2xx. */
-bool verifyRollbackLater() { return true; }
+/**
+ * Tell the Arduino core not to confirm a new image at boot: we do, on the
+ * first 2xx. The core declares this weak in a C file (esp32-hal-misc.c), so
+ * the override needs C linkage; without extern "C" it silently never runs.
+ */
+extern "C" bool verifyRollbackLater() { return true; }
 
 static String deviceFields(int batteryPct) {
   // The dashboard compares fw with /flash's current version to offer updates.
