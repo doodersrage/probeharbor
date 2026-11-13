@@ -1,0 +1,22 @@
+-- 0006: drop public.garage_temps, the pre-device readings table.
+--
+-- Nothing has written it since readings moved to sensor_readings, and from
+-- the commit that adds this file nothing reads it either (the drip email's
+-- "has a first reading" check and scripts/ops-funnel.mjs were its last
+-- readers). Production had 650 rows from 2 users (2026-11-13), which no
+-- page showed.
+--
+-- Apply only after:
+--   1. the owner has exported the rows to CSV (owner's decision, 2026-11-13;
+--      see the "Legacy tables" entry in IMPLEMENTATION_LOG.md), and
+--   2. the code commit that stops reading the table is deployed.
+--
+-- Drops the table with its own key, index, identity sequence, RLS setting
+-- and foreign key to auth_users. No CASCADE: nothing else depends on it, and
+-- if something unexpected did, the drop fails instead of taking it along.
+--
+-- Undo: recreate the table from 0001_baseline.sql (the garage_temps
+-- statements) and load the CSV with \copy, or restore it from the backup
+-- taken before applying this.
+
+DROP TABLE IF EXISTS public.garage_temps;

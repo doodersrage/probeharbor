@@ -6120,3 +6120,20 @@ Plan:
   typecheck 0; lint 9 (all FetchWeather `any`).
 - [ ] R2b (`garage_temps` in the drip check and `ops-funnel.mjs`) and R3:
   need the rest of R0 and the owner's decision on the 650 rows.
+
+### R3, R2b and the garage_temps drop (2026-11-13)
+
+- R3 (owner's decision): export the 650 `garage_temps` rows to CSV, then
+  drop the table. The owner exported them (kept outside the repo).
+- [x] R2b: the drip email's `userHasFirstReading` no longer counts legacy
+  pull readings (only devices that have reported); `ops-funnel.mjs` no
+  longer reads `user_temp_feeds` or `garage_temps`, and counts demo-feed
+  users from pull devices named like the example feed (the legacy table it
+  used was empty, so it always said 0).
+- [x] `db/migrations/0006_drop_garage_temps.sql`: plain `DROP TABLE` (no
+  CASCADE; nothing depends on it). Applied cleanly by the test database's
+  migration run (`pnpm test:db` 52 files / 411 passed).
+- [ ] Owner: after this commit is deployed, `pnpm db:backup`, then
+  `pnpm db:migrate` (applies 0006); `pnpm db:pending` should then show
+  nothing. `user_temp_feeds` / `user_temp_probes` (empty, unused) can be
+  dropped the same way later.

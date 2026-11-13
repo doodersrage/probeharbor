@@ -60,12 +60,10 @@ const since = days ? now - days * 24 * 60 * 60 * 1000 : 0;
 const users = (await allUsers()).filter(
   (u) => !excluded.has(u.email?.toLowerCase()) && Date.parse(u.created_at) >= since,
 );
-const userIds = new Set(users.map((u) => u.id));
 
-const [members, devices, feeds, alertSettings, events, subs] = await Promise.all([
+const [members, devices, alertSettings, events, subs] = await Promise.all([
   all("household_members", "user_id, household_id, role"),
   all("devices", "household_id, name, source, created_at, last_seen_at, enabled"),
-  all("user_temp_feeds", "user_id, name, enabled"),
   all("alert_settings", "*"),
   all("alert_events", "user_id, kind, title", "where cardinality(channels_sent) > 0"),
   all("stripe_subscriptions", "user_id, status, plan_tier"),
@@ -81,19 +79,6 @@ const devicesByHousehold = new Map();
 for (const d of devices) {
   devicesByHousehold.set(d.household_id, [...(devicesByHousehold.get(d.household_id) ?? []), d]);
 }
-const feedUsers = new Set(feeds.map((f) => f.user_id));
-
-// Latest pull-feed reading per user (garage_temps can be large, so ask per user).
-const pullSeen = new Map();
-await Promise.all(
-  [...feedUsers].filter((id) => userIds.has(id)).map(async (id) => {
-    const [row] = await db
-      .rows('select "timestamp" from public.garage_temps where user_id = $1 order by "timestamp" desc limit 1', [id])
-      .catch(() => []);
-    if (row) pullSeen.set(id, Date.parse(row.timestamp));
-  }),
-);
-
 // "generic" also covers freeze drills and other system sends, and alert_settings
 // rows are created automatically, so neither says the user did anything.
 const deliveredTest = new Set();
@@ -107,7 +92,7 @@ const paying = new Set(subs.filter((s) => s.status === "active" || s.status === 
 const STEPS = [
   ["signed up", () => true],
   ["confirmed email", (u) => Boolean(u.email_confirmed_at)],
-  ["added a device or feed", (u, x) => x.devices.length > 0 || feedUsers.has(u.id)],
+  ["added a device or feed", (_u, x) => x.devices.length > 0],
   ["received a reading", (_u, x) => x.lastSeen > 0],
   ["delivered a test alert", (u) => deliveredTest.has(u.id) || deliveredReal.has(u.id)],
   ["reading in the last 7 days", (_u, x) => x.lastSeen >= weekAgo],
@@ -122,7 +107,6 @@ for (const u of users) {
   const userDevices = households.flatMap((h) => devicesByHousehold.get(h) ?? []);
   const lastSeen = Math.max(
     0,
-    pullSeen.get(u.id) ?? 0,
     ...userDevices.map((d) => (d.last_seen_at ? Date.parse(d.last_seen_at) : 0)),
   );
   const ctx = { devices: userDevices, lastSeen };
@@ -167,8 +151,11 @@ const includedHouseholds = new Set(users.flatMap((u) => householdsByUser.get(u.i
 const pathDevices = devices.filter(
   (d) => d.source === "push" && includedHouseholds.has(d.household_id) && Date.parse(d.created_at) >= since,
 );
+// The demo feed is a pull device named after the example feed.
 const demoFeedUsers = users.filter((u) =>
-  feeds.some((f) => f.user_id === u.id && /example/i.test(f.name ?? "")),
+  (householdsByUser.get(u.id) ?? []).some((h) =>
+    (devicesByHousehold.get(h) ?? []).some((d) => d.source === "pull_url" && /example/i.test(d.name ?? "")),
+  ),
 ).length;
 console.log("\nSetup paths (devices named by the first-run chooser)\n");
 const pathWidth = Math.max(...SETUP_PATHS.map(([label]) => label.length));
@@ -200,7 +187,6 @@ const distinct = (rows, key) => new Set(rows.map((r) => r[key])).size;
 const usage = [
   ["Push devices", distinct(devices.filter((d) => d.source === "push"), "household_id"), "households"],
   ["Pull devices", distinct(devices.filter((d) => d.source === "pull_url"), "household_id"), "households"],
-  ["Legacy pull feeds", feedUsers.size, "users"],
   ["Shared households (2+ members)", [...membersByHousehold.values()].filter((n) => n > 1).length, "households"],
   ...[...new Set(thermostats.map((t) => t.provider))].map((p) => [
     `Thermostat: ${p}`,

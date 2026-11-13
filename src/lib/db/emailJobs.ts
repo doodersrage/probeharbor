@@ -85,14 +85,14 @@ export async function trialingSubscriptions(): Promise<
 
 // ---- drip / digest helpers ----------------------------------------------------
 
-/** A device in any of the user's households has reported, or the user has a legacy pull reading. Errors count as yes. */
+/** A device in any of the user's households has reported. Errors count as yes. */
 export async function userHasFirstReading(userId: string): Promise<boolean> {
   try {
     const [row] = await query<{ yes: boolean }>(
       `select exists (
          select 1 from public.devices d join public.household_members m on m.household_id = d.household_id
          where m.user_id = $1 and d.last_seen_at is not null
-       ) or exists (select 1 from public.garage_temps g where g.user_id = $1) as yes`,
+       ) as yes`,
       [userId],
     );
     return row?.yes ?? true;
