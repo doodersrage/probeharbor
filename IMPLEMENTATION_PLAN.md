@@ -5774,8 +5774,12 @@ skip duplicates in the app, no unique index.
   state in a batch, bad time → 400, no `recorded_at` → unchanged) and an
   isolation case (foreign sensor with `skipDuplicates` still stores nothing);
   typecheck 0/0; lint 55 warnings (baseline); build OK.
-- [ ] Payload checker doesn't understand batches yet (says 400 for a batch
-      the endpoint accepts).
+- [x] Payload checker (2026-11-13): splits the body with the endpoint's
+      `splitIngestBody`, so a batch the endpoint accepts is accepted there,
+      skipped items are named with the reason (`readings[3]: … 72 hours`),
+      and a bad single `recorded_at` is a 400 in both. Repeated per-item
+      warnings show once. Warnings are English, like the checker's others.
+      `ingestCheck.test.ts` +6.
 - [ ] SenML records carry their own time (`t`/`bt`); still ignored.
 - [ ] Firmware: NTP clock + ring buffer posting batches (1.1, device side;
       needs hardware testing).

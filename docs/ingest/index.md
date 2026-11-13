@@ -170,8 +170,8 @@ Rules:
   "rejected_entries": [{ "index": 3, "reason": "recorded_at_too_old" }] }
 ```
 
-The [payload checker](https://probeharbor.dev/payload-checker) does not
-understand batches yet.
+The [payload checker](https://probeharbor.dev/payload-checker) checks
+`recorded_at` and batches the same way, and names the items it would skip.
 
 ### SenML (RFC 8428)
 
