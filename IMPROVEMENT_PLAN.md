@@ -45,7 +45,7 @@ Status key: **Done**, **Partly done**, **Waiting on owner**, **Open**.
 3. **The plan file is a 323 KB log.** Split `IMPLEMENTATION_PLAN.md` into a short roadmap and an archive.
    **Done.** The log moved to `IMPLEMENTATION_LOG.md` (history kept); `IMPLEMENTATION_PLAN.md` is now a short plan: status, decisions in force, open work.
 4. **Oversized files and loose lint.** `dashboard.astro` is 2,078 lines and `HistoryChart.tsx` is 1,680. The formatter is off in CI, there are 55 baseline lint warnings, and there is no coverage report.
-   **Open.**
+   **Partly done:** lint warnings 55 → 0. Open: the two large files, the formatter, coverage.
 
 ## 4. Product focus
 
@@ -56,4 +56,4 @@ The feature surface is far ahead of the user base: the implementation plan notes
 - Put the effort into the signup-to-first-reading funnel.
 - Add ESP8266 and ESP32-C6 builds to the flasher to widen who can try it.
 
-**Owner's decisions; nothing done here.**
+**Owner's decisions (2026-11-13):** feature freeze, yes; the funnel next (run `pnpm ops:funnel` to find the biggest drop); no new boards until users ask (ESP8266 would be a separate firmware without the buffer, OTA rollback or TLS libraries; the C6 needs the newer Arduino core, which doesn't fit the current app slot); Discussions only if someone will check them weekly.

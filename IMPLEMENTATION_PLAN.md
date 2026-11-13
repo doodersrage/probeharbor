@@ -77,6 +77,7 @@ decision with its test and hardware evidence) is
 | `past_due` keeps paid access while Stripe retries | 2026-11-11 | "past_due keeps access" |
 | Device times up to 72 h; duplicates skipped in the app, no unique index | 2026-11-13 | "Ingest keeps the device's reading time" |
 | OTA on by default (opt-out `noupdate`); signing key offline with the owner; TLS failure falls back with a warning | 2026-11-13 | "Design: signed OTA updates" |
+| Product focus: no new features until more sign-ups reach a first reading; work goes to reliability, setup and the funnel. No new flasher boards (ESP8266, ESP32-C6) until users ask. GitHub Discussions only if the owner will check it weekly | 2026-11-13 | `IMPROVEMENT_PLAN.md` §4 |
 | Worker `garage-temp` and bucket `thermaltrace-history` keep their names until a planned migration (a rename deploys a second Worker with its own crons) | 2026-11-13 | `IMPROVEMENT_PLAN.md` 3.2 |
 
 ## Open work
@@ -92,8 +93,8 @@ decision with its test and hardware evidence) is
 3. **ESP32-C3:** run tests 10–13 on 1.5.0 (released compile-only).
 4. **Existing probes:** one USB reflash to 1.5.0 (device pages already link
    it); later releases arrive over the air.
-5. **Product focus** (`IMPROVEMENT_PLAN.md` §4): feature freeze, GitHub
-   Discussions, the signup-to-first-reading funnel, more flasher boards.
+5. **Run `pnpm ops:funnel`** against production and share the step counts
+   (no emails), to pick the first funnel fix.
 
 ### Next engineering, in order
 
@@ -105,8 +106,9 @@ decision with its test and hardware evidence) is
    any legacy table; `garage_temps` was exported to CSV and dropped
    (migration 0006, applied 2026-11-13). Log: "Legacy tables".
 3. **Code health** (3.4): split `dashboard.astro` and `HistoryChart.tsx`;
-   turn on the formatter check; coverage report. Lint: 55 warnings → 9
-   (2026-11-13); the rest are `any` in `src/lib/FetchWeather.ts`.
+   turn on the formatter check (and move `biome.json` off the deprecated
+   `recommended` field with it); coverage report. Lint: 55 warnings → 0
+   (2026-11-13).
 4. **Cron fan-out with Queues** (2.4) before the household count makes one
    invocation too slow.
 5. **Battery sleep mode** in the firmware (1.5).

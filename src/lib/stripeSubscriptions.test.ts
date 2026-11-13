@@ -97,7 +97,7 @@ describe("upsertUserSubscription", () => {
           },
         ],
       },
-      // biome-ignore lint: minimal fake matching only the fields upsertUserSubscription reads
+      // A minimal fake: only the fields upsertUserSubscription reads.
     } as unknown as import("stripe").default.Subscription;
   }
 

@@ -18,6 +18,28 @@ export type WeatherSnapshot = {
   source?: "openweather" | "ambient" | "weatherflow";
 };
 
+/**
+ * OpenWeather "current weather" response (`/data/2.5/weather`): only the
+ * fields read here. It is untrusted JSON, so every value is `unknown` and
+ * checked or coerced where it's used.
+ */
+export type OpenWeatherCurrent = {
+  name?: unknown;
+  coord?: { lat?: unknown; lon?: unknown };
+  sys?: { country?: unknown };
+  main?: { temp?: unknown; humidity?: unknown; feels_like?: unknown };
+  wind?: { speed?: unknown; gust?: unknown };
+  clouds?: { all?: unknown };
+  weather?: Array<{ description?: unknown }>;
+};
+
+/** OpenWeather 5-day / 3-hour forecast response (`/data/2.5/forecast`): fields read here. */
+export type OpenWeatherForecast = {
+  list?: Array<{ dt?: unknown; main?: { temp?: unknown } }>;
+  /** `timezone`: the city's UTC offset in seconds. */
+  city?: { name?: unknown; timezone?: unknown };
+};
+
 /** OpenStreetMap embed centered on coords with a marker. */
 export function weatherMapEmbedUrl(lat: number, lon: number, delta = 0.12): string {
   const west = lon - delta;
@@ -52,7 +74,7 @@ export function resolveWeatherCityId(cityId?: string | null): string {
   return getDefaultWeatherCityId();
 }
 
-export function normalizeWeatherPayload(raw: Record<string, any>): WeatherSnapshot | null {
+export function normalizeWeatherPayload(raw: OpenWeatherCurrent): WeatherSnapshot | null {
   const temp = Number(raw?.main?.temp);
   if (!Number.isFinite(temp)) return null;
 
@@ -80,7 +102,7 @@ export function normalizeWeatherPayload(raw: Record<string, any>): WeatherSnapsh
   };
 }
 
-export async function fetchWeather(cityId?: string | null): Promise<any | null> {
+export async function fetchWeather(cityId?: string | null): Promise<OpenWeatherCurrent | null> {
   const apiKey = getOpenWeatherApiKey();
   const city = resolveWeatherCityId(cityId);
 
@@ -123,7 +145,7 @@ export async function fetchWeatherSnapshot(
 
 export async function fetchWeatherForecastRaw(
   cityId?: string | null,
-): Promise<any | null> {
+): Promise<OpenWeatherForecast | null> {
   const apiKey = getOpenWeatherApiKey();
   const city = resolveWeatherCityId(cityId);
 
@@ -154,7 +176,7 @@ export type ForecastWindow = {
 
 /** Lowest forecast temp (°F) within the next `hoursAhead` hours (3h steps). */
 export function minForecastTempInWindow(
-  raw: Record<string, any> | null | undefined,
+  raw: OpenWeatherForecast | null | undefined,
   hoursAhead: number,
   now = Date.now(),
 ): ForecastWindow | null {
@@ -202,7 +224,7 @@ export async function fetchForecastMinTempByCoords(
 export async function fetchWeatherByCoords(
   lat: number,
   lon: number,
-): Promise<any | null> {
+): Promise<OpenWeatherCurrent | null> {
   const apiKey = getOpenWeatherApiKey();
   if (!apiKey || !Number.isFinite(lat) || !Number.isFinite(lon)) return null;
   const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=imperial`;
@@ -220,7 +242,7 @@ export async function fetchWeatherByCoords(
 export async function fetchWeatherForecastByCoords(
   lat: number,
   lon: number,
-): Promise<any | null> {
+): Promise<OpenWeatherForecast | null> {
   const apiKey = getOpenWeatherApiKey();
   if (!apiKey || !Number.isFinite(lat) || !Number.isFinite(lon)) return null;
   const url = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${apiKey}&units=imperial`;
@@ -245,7 +267,7 @@ export type NightRisk = {
 
 /** Overnight mins for the next few local nights from 3h forecast steps. */
 export function nightsAtRiskFromForecast(
-  raw: Record<string, any> | null | undefined,
+  raw: OpenWeatherForecast | null | undefined,
   freezeThresholdF: number,
   nights = 5,
   locale: Locale = "en",
@@ -306,7 +328,7 @@ export async function fetchNightsAtRisk(
   },
   locale: Locale = "en",
 ): Promise<NightRisk[]> {
-  let raw: any = null;
+  let raw: OpenWeatherForecast | null = null;
   if (options.lat != null && options.lon != null) {
     raw = await fetchWeatherForecastByCoords(options.lat, options.lon);
   } else {
