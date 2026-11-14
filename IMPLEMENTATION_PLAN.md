@@ -123,11 +123,14 @@ decision with its test and hardware evidence) is
    2026-11-14: browser script → `src/lib/overviewPageScript.ts`; query
    notices → `overviewFlash.ts`; first-run / Insights decision →
    `overviewFocus.ts`, both now tested) and `HistoryChart.tsx`
-   (1,680 → 1,342 lines on 2026-11-14: strings, pure helpers, one shared
-   dew-point formula, colours, and the legend / options / presets /
-   toolbar components; its markup is snapshot-tested in six input mixes,
-   so a split must keep it byte-identical. Left: the canvas/hover logic,
-   after a browser check of the moved controls);
+   (1,680 → 958 lines on 2026-11-14: strings, pure helpers, one shared
+   dew-point formula, colours, the legend / options / presets / toolbar
+   components, and the canvas drawing as `drawHistoryChart.ts`; its
+   markup is snapshot-tested in six input mixes. The drawing move was
+   checked in headless Chromium: 51 canvas captures over six inputs and
+   hover / zoom / humidity / legend states were pixel-identical before
+   and after; the moved controls were clicked through on the live demo.
+   Done unless a new need appears);
    turn on the formatter check (and move `biome.json` off the deprecated
    `recommended` field with it). Lint: 55 warnings → 0 (2026-11-13).
    Coverage: `pnpm test:coverage`, in CI with a job-summary table, no
