@@ -123,11 +123,11 @@ decision with its test and hardware evidence) is
    2026-11-14: browser script → `src/lib/overviewPageScript.ts`; query
    notices → `overviewFlash.ts`; first-run / Insights decision →
    `overviewFocus.ts`, both now tested) and `HistoryChart.tsx`
-   (1,680 → 1,420 lines on 2026-11-14: strings, pure helpers, one shared
-   dew-point formula, colours, and the legend / options / presets
-   components; its markup is snapshot-tested in six input mixes, so a
-   split must keep it byte-identical. Left: the zoom toolbar and the
-   canvas/hover logic);
+   (1,680 → 1,342 lines on 2026-11-14: strings, pure helpers, one shared
+   dew-point formula, colours, and the legend / options / presets /
+   toolbar components; its markup is snapshot-tested in six input mixes,
+   so a split must keep it byte-identical. Left: the canvas/hover logic,
+   after a browser check of the moved controls);
    turn on the formatter check (and move `biome.json` off the deprecated
    `recommended` field with it). Lint: 55 warnings → 0 (2026-11-13).
    Coverage: `pnpm test:coverage`, in CI with a job-summary table, no
@@ -138,8 +138,9 @@ decision with its test and hardware evidence) is
    76% → 86.7% (forecast freeze, NWS warning, battery/signal alerts).
    Totals 64.3% lines / 60.6% branches. CI now fails below floors of
    lines 64, statements 63, functions 61, branches 60 (`vitest.config.ts`);
-   raise them as coverage rises. Next gap: `fcm.ts` 33% (Android push;
-   unused so far).
+   raise them as coverage rises. `fcm.ts` (Android push) 33% → 96% lines
+   on 2026-11-14; that found and fixed a double-counted failure when a
+   stale-token delete errored.
 4. **Cron fan-out with Queues** (2.4) before the household count makes one
    invocation too slow.
 5. **Battery sleep mode** in the firmware (1.5).
