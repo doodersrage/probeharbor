@@ -6,17 +6,24 @@
  * the ESP32 toolchain.
  *
  * Needs PlatformIO (`pip install platformio`). Set PIO to a non-default binary.
- * Usage: node scripts/build-firmware.mjs [--check]   (--check compiles only)
+ * Usage: node scripts/build-firmware.mjs [--check] [--out <dir>]
+ *   --check  compile only
+ *   --out    write the images and manifest somewhere other than public/firmware/
+ *            (CI's QEMU boot check uses this, leaving the committed images alone)
  */
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
-import { dirname, join } from "node:path";
+import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
 const projectDir = join(repoRoot, "firmware", "probeharbor-probe");
-const outDir = join(repoRoot, "public", "firmware");
+const outArg = process.argv.indexOf("--out");
+const outDir =
+  outArg >= 0 && process.argv[outArg + 1]
+    ? resolve(process.argv[outArg + 1])
+    : join(repoRoot, "public", "firmware");
 const pio = process.env.PIO ?? "pio";
 const coreDir = process.env.PLATFORMIO_CORE_DIR ?? join(homedir(), ".platformio");
 const checkOnly = process.argv.includes("--check");
@@ -94,4 +101,4 @@ const manifest = {
   })),
 };
 writeFileSync(join(outDir, "manifest.json"), `${JSON.stringify(manifest, null, 2)}\n`);
-console.log(`Wrote public/firmware/ (version ${version})`);
+console.log(`Wrote ${relative(repoRoot, outDir) || "."}/ (version ${version})`);

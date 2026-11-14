@@ -1,18 +1,23 @@
 name: Firmware
 
-# Compile check only. The published images in public/firmware/ are built
-# locally with `pnpm firmware:build` and committed.
+# Compiles the probe firmware for every chip and boots each image in
+# Espressif's QEMU (scripts/firmware-boot-check.mjs): it must get through the
+# start of setup() to its version line. An emulator check, not a hardware
+# test. The published images in public/firmware/ are built locally with
+# `pnpm firmware:build` and committed; this builds its own copies.
 on:
   pull_request:
     paths:
       - "firmware/**"
       - "scripts/build-firmware.mjs"
+      - "scripts/firmware-boot-check.mjs"
       - ".github/workflows/firmware.yml"
   push:
     branches: [main]
     paths:
       - "firmware/**"
       - "scripts/build-firmware.mjs"
+      - "scripts/firmware-boot-check.mjs"
       - ".github/workflows/firmware.yml"
 
 jobs:
@@ -39,4 +44,29 @@ jobs:
           check-latest: true
 
       - name: Compile for ESP32, ESP32-S3, ESP32-C3
-        run: node scripts/build-firmware.mjs --check
+        run: node scripts/build-firmware.mjs --out .firmware-ci
+
+      # Espressif's QEMU fork (the only one with ESP32-S3 and C3 machines),
+      # pinned to a release; the same one esp32-bench uses.
+      - uses: actions/cache@v4
+        id: qemu-cache
+        with:
+          path: .qemu
+          key: espressif-qemu-esp-develop-9.2.2-20261109
+      - name: Download Espressif QEMU
+        if: steps.qemu-cache.outputs.cache-hit != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p .qemu
+          for arch in xtensa riscv32; do
+            gh release download -R espressif/qemu esp-develop-9.2.2-20261109 -D .qemu \
+              -p "qemu-$arch-softmmu-*-x86_64-linux-gnu.tar.xz"
+          done
+          for f in .qemu/*.tar.xz; do tar -xJf "$f" -C .qemu; done
+          rm .qemu/*.tar.xz
+      - name: Libraries QEMU links against
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq libslirp0 libsdl2-2.0-0 libpixman-1-0 libgcrypt20 libglib2.0-0 >/dev/null
+
+      - name: Boot each image in QEMU
+        run: QEMU_DIR=.qemu/qemu node scripts/firmware-boot-check.mjs --dir .firmware-ci

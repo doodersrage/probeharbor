@@ -48,3 +48,7 @@ backups/
 
 # pnpm test:coverage output
 coverage/
+
+# Firmware CI: images for the QEMU boot check, and QEMU itself
+.firmware-ci/
+.qemu/
