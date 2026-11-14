@@ -123,9 +123,11 @@ decision with its test and hardware evidence) is
    2026-11-14: browser script → `src/lib/overviewPageScript.ts`; query
    notices → `overviewFlash.ts`; first-run / Insights decision →
    `overviewFocus.ts`, both now tested) and `HistoryChart.tsx`
-   (HistoryChart 1,680 → 1,538 lines on 2026-11-14 by moving its strings
-   and pure helpers out, and one shared dew-point formula; what's left is
-   one ~1,360-line component, best split with a browser check);
+   (1,680 → 1,420 lines on 2026-11-14: strings, pure helpers, one shared
+   dew-point formula, colours, and the legend / options / presets
+   components; its markup is snapshot-tested in six input mixes, so a
+   split must keep it byte-identical. Left: the zoom toolbar and the
+   canvas/hover logic);
    turn on the formatter check (and move `biome.json` off the deprecated
    `recommended` field with it). Lint: 55 warnings → 0 (2026-11-13).
    Coverage: `pnpm test:coverage`, in CI with a job-summary table, no

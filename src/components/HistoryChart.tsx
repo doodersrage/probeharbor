@@ -1,7 +1,6 @@
 import { Fragment, type ComponentChildren } from "preact";
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import {
-  CHART_VIEW_PRESETS,
   collectHoverHits,
   formatAxisTime,
   formatHoverTime,
@@ -44,6 +43,10 @@ import { pickHumiditySource } from "../lib/chartHumidity";
 import { dewPoint as dewPointF } from "../lib/dewPoint";
 import { fill, fixed, readStoredNumber, writeStoredNumber } from "../lib/historyChartFormat";
 import { HISTORY_CHART_UI_EN, type HistoryChartUi } from "./historyChartUi";
+import HistoryChartLegend from "./HistoryChartLegend";
+import HistoryChartOptions from "./HistoryChartOptions";
+import HistoryChartPresets from "./HistoryChartPresets";
+import { COLOR_ABOVE, COLOR_BELOW, DEW_COLOR, DOOR_COLOR, HOUSE_COLOR, HUMIDITY_COLOR, PROBE_COLORS } from "./historyChartColors";
 
 export { HISTORY_CHART_UI_EN, type HistoryChartUi };
 
@@ -122,15 +125,6 @@ interface Props {
   useCelsius?: boolean;
 }
 
-// Series avoid blue/orange (freeze/high guides and below/above segments) and
-// amber/red (warnings), so color on the chart only ever means something.
-const PROBE_COLORS = ["#e2e8f0", "#34d399", "#f472b6", "#a3e635", "#c4b5fd", "#fda4af"];
-const HOUSE_COLOR = "#f59e0b";
-const COLOR_BELOW = "#38bdf8";
-const COLOR_ABOVE = "#fb923c";
-const HUMIDITY_COLOR = "#a78bfa";
-const DEW_COLOR = "#2dd4bf";
-const DOOR_COLOR = "#fde68a";
 /** Height of one per-door row above the plot, and the step between rows. */
 const DOOR_LANE_H = 8;
 const DOOR_LANE_STEP = 12;
@@ -1209,98 +1203,26 @@ function HistoryChartView({
           )}
         </div>
       </div>
-      {/* biome-ignore lint/a11y/useSemanticElements: button toolbar; <fieldset> would add form semantics and default borders */}
-      <div class="history-chart-presets" role="group" aria-label={t.presetsAria}>
-        {CHART_VIEW_PRESETS.map((preset) => {
-          const domainSpan = domain ? domain.maxTs - domain.minTs : 0;
-          const canNarrow = domain ? presetNarrowsDomain(domain, preset.spanMs) : false;
-          const isCurrentWindow =
-            !canNarrow &&
-            domain != null &&
-            Math.abs(domainSpan - preset.spanMs) <= 2 * 60 * 60 * 1000;
-          const presetLabel = t.presetLabels[preset.id] ?? preset.label;
-          return (
-            <button
-              key={preset.id}
-              type="button"
-              class={`history-chart-preset-btn${activePreset === preset.id ? " is-active" : ""}`}
-              aria-pressed={activePreset === preset.id}
-              disabled={!domain || (!canNarrow && !isCurrentWindow)}
-              title={
-                !domain
-                  ? undefined
-                  : canNarrow
-                    ? fill(t.presetShowLast, { label: presetLabel })
-                    : isCurrentWindow
-                      ? fill(t.presetAlreadyShowing, { label: presetLabel })
-                      : fill(t.presetOnlyLoaded, { hours: Math.max(1, Math.round(domainSpan / 36e5)) })
-              }
-              onClick={() => applyPreset(preset.spanMs)}
-            >
-              {presetLabel}
-            </button>
-          );
-        })}
-        <button
-          type="button"
-          class={`history-chart-preset-btn${activePreset === "all" ? " is-active" : ""}`}
-          aria-pressed={activePreset === "all"}
-          onClick={() => applyPreset(null)}
-        >
-          {t.presetAll}
-        </button>
-      </div>
+      <HistoryChartPresets t={t} domain={domain} activePreset={activePreset} onPreset={applyPreset} />
       {domain && !presetNarrowsDomain(domain, 7 * 24 * 60 * 60 * 1000) && (
         <p class="m-0 mb-2 text-xs text-[var(--color-text-muted)]">
           {fill(t.loadedWindow, { hours: Math.max(1, Math.round((domain.maxTs - domain.minTs) / 36e5)) })}
         </p>
       )}
       {(probeLabels.length > 0 || housePoints.length >= 2 || doorBands.length > 0) && (
-        // biome-ignore lint/a11y/useSemanticElements: button toolbar; <fieldset> would add form semantics and default borders
-        <div class="history-chart-legend" role="group" aria-label={t.seriesAria}>
-          {probeLabels.map((label, i) => {
-            const on = visibleProbes.has(label);
-            return (
-              <button
-                key={label}
-                type="button"
-                class={`history-chart-legend-btn${on ? " is-on" : ""}`}
-                style={{ "--legend-color": PROBE_COLORS[i % PROBE_COLORS.length] } as never}
-                aria-pressed={on}
-                onClick={() => toggleProbe(label)}
-              >
-                {label}
-              </button>
-            );
-          })}
-          {housePoints.length >= 2 && (
-            <button
-              type="button"
-              class={`history-chart-legend-btn${houseVisible ? " is-on" : ""}`}
-              style={{ "--legend-color": HOUSE_COLOR } as never}
-              aria-pressed={houseVisible}
-              onClick={() => setHouseVisible((v) => !v)}
-            >
-              {houseLegend ?? t.house}
-            </button>
-          )}
-          {allDoorLabels.map((label) => {
-            const on = !hiddenDoors.has(label);
-            return (
-              <button
-                key={`door:${label}`}
-                type="button"
-                class={`history-chart-legend-btn history-chart-legend-btn--door${on ? " is-on" : ""}`}
-                style={{ "--legend-color": DOOR_COLOR } as never}
-                aria-pressed={on}
-                title={fill(t.doorLegendTitle, { door: label })}
-                onClick={() => toggleDoor(label)}
-              >
-                {label}
-              </button>
-            );
-          })}
-        </div>
+        <HistoryChartLegend
+          t={t}
+          probeLabels={probeLabels}
+          visibleProbes={visibleProbes}
+          onToggleProbe={toggleProbe}
+          showHouse={housePoints.length >= 2}
+          houseVisible={houseVisible}
+          houseLabel={houseLegend ?? t.house}
+          onToggleHouse={() => setHouseVisible((v) => !v)}
+          doorLabels={allDoorLabels}
+          hiddenDoors={hiddenDoors}
+          onToggleDoor={toggleDoor}
+        />
       )}
       {doorBandsError && (
         <p class="m-0 mb-2 text-xs text-[var(--color-text-muted)]" role="status">
@@ -1453,59 +1375,18 @@ function HistoryChartView({
         {hoverLive}
       </p>
       {/* Display-only guide lines (saved in this browser), folded so the chart stays the focus. */}
-      <details class="history-chart-tips m-0 mt-2 text-xs text-[var(--color-text-muted)]">
-      <summary>{t.optionsSummary}{showHumidity && humidityCandidates.length > 0 ? t.optionsSummaryHumidity : ""}</summary>
-      <form
-        class="chart-threshold-controls"
-        onSubmit={(e) => e.preventDefault()}
-      >
-        <label class="chart-threshold-field">
-          <span>{fill(t.targetAmbient, { unit })}</span>
-          <input
-            type="number"
-            step="0.5"
-            class="form-input"
-            value={targetAmbientF ?? ""}
-            placeholder={t.optional}
-            onInput={(e) => {
-              const v = (e.target as HTMLInputElement).value;
-              setTargetAmbientF(v === "" ? null : Number(v));
-            }}
-          />
-        </label>
-        <label class="chart-threshold-field">
-          <span>{fill(t.highWarning, { unit })}</span>
-          <input
-            type="number"
-            step="0.5"
-            class="form-input"
-            value={highTempF ?? ""}
-            placeholder={t.optional}
-            onInput={(e) => {
-              const v = (e.target as HTMLInputElement).value;
-              setHighTempF(v === "" ? null : Number(v));
-            }}
-          />
-        </label>
-        {showHumidity && humidityCandidates.length > 0 && (
-          <label class="chart-threshold-field chart-threshold-check">
-            <span>{t.humidityDew}</span>
-            <input
-              type="checkbox"
-              checked={humidityOn}
-              onChange={(e) =>
-                setHumidityOn((e.target as HTMLInputElement).checked)
-              }
-            />
-          </label>
-        )}
-        {freezeThresholdF != null && (
-          <p class="chart-threshold-note mb-0">
-            {fill(t.freezeLineFromAlerts, { temp: deg(freezeThresholdF), unit })}
-          </p>
-        )}
-      </form>
-      </details>
+      <HistoryChartOptions
+        t={t}
+        unit={unit}
+        humidityOption={showHumidity && humidityCandidates.length > 0}
+        targetAmbientF={targetAmbientF}
+        onTargetAmbientF={setTargetAmbientF}
+        highTempF={highTempF}
+        onHighTempF={setHighTempF}
+        humidityOn={humidityOn}
+        onHumidityOn={setHumidityOn}
+        freezeNote={freezeThresholdF != null ? fill(t.freezeLineFromAlerts, { temp: deg(freezeThresholdF), unit }) : null}
+      />
       </div>
     </>
   );
