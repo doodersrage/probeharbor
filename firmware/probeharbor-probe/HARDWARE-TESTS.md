@@ -413,7 +413,17 @@ the summary as `crash` on each post until one gets a 2xx, prints
 "Last crash" with the function name, from this build's table in
 `public/firmware/symbols/`.
 
-Not run yet. Procedure (S3, then C3). A test build has its own ELF hash,
+**ESP32-C3 SuperMini (2026-11-14), against production: passed.** The
+first crash reported was a real one (below): 1.5.1-test, flashed over the
+1.5.0 that crashed, printed `TT crash: loopTask stopped at 0x4200aabe`, sent
+it with its first accepted post (`TT crash: report sent`), and after a
+reset printed no `TT crash:` line (erased). Then `TTTEST crash`: Store
+access fault, reboot, `TT restarted after a crash`, `TT crash: loopTask
+stopped at 0x42001ac2` (readSerial()+0x276 in that build's table: the
+hook, inlined), report sent on the next post. Still to do: the same on the
+S3; seeing it on the device page (owner).
+
+Procedure (S3, then C3). A test build has its own ELF hash,
 so deploy its function table first or the page shows bare addresses:
 `node scripts/firmware-symbols.mjs .pio/build/<env>/firmware.elf <chip>
 1.5.1-test public/firmware/symbols`, commit, let it deploy (a public JSON
@@ -428,4 +438,32 @@ file named by the hash; harmless to keep).
    and task `loopTask`; on the C3 the stack-scan note.
 5. With `TTTEST<TAB>fail 120` before step 2: the report survives failed
    posts and goes with the first accepted one.
+
+## ESP32-C3 SuperMini (Teyleten Robot, native USB only): 2026-11-14
+
+A new board, blank flash (ROM: `invalid header: 0xffffffff`, reset every
+few seconds, normal). Flashed the released 1.5.0 with esptool.
+
+- **1.5.0 boots** and opens its setup portal. Settings from /flash: `key
+  saved`, `wifi ok` once.
+- **Crash found in 1.5.0:** `TT restarted after a crash` right after.
+  The panic text goes to UART0, which this board doesn't expose, so the
+  core dump was read from flash (0x3F0000) and decoded by hand with
+  1.5.0's function table: pc and ra in
+  `WiFiManager::shutdownConfigPortal()`. The flasher resends settings until
+  it sees `TT key saved` (late over the C3's USB console while it joins),
+  and the second TTCFG stopped a portal that was no longer running; WiFiManager
+  2.0.17 then uses its freed web server. Fixed in 1.5.1 (080f731): stop it
+  only while it's active. Not yet re-tested by sending settings twice.
+- **Wi-Fi at full transmit power fails on this board** (3 times: at boot
+  with the saved network, twice from /flash; driver reasons 201 "no AP
+  found" and 39 "timeout"). At 8.5 dBm it joined every time. 1.5.1 retries
+  a failed join at 8.5 dBm and remembers it (30caa1f): seen on this board,
+  first boot `retrying at low transmit power`, `joined at low transmit
+  power`; after a reset, straight to `wifi ok`.
+- **Verified TLS** on the C3: `TT tls: server certificate verified`,
+  posts 200 (no sensor wired; the leak input was enabled so it had a value
+  to post: `leak1` dry).
+- Not run on this board yet: tests 10–12 (buffer, watchdog, OTA), the
+  setup portal from a phone, a sensor on GPIO 4.
 
