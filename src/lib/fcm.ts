@@ -308,7 +308,12 @@ export async function sendFcmToUser(
       }
 
       if (isStaleFcmError(response.status, errorCode)) {
-        await neonPush.deleteFcmToken(userId, row.token);
+        // Already counted as failed above; a failed cleanup mustn't count the device twice.
+        try {
+          await neonPush.deleteFcmToken(userId, row.token);
+        } catch (err) {
+          console.error("Failed to delete stale FCM token:", err instanceof Error ? err.message : err);
+        }
       }
     } catch (err) {
       failed += 1;
