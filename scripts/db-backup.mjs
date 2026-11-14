@@ -37,11 +37,27 @@ if (!raw) {
   process.exit(1);
 }
 
+// Neon's Connect dialog shows `psql 'postgresql://…'` by default; accept
+// that and stray quotes rather than fail on a copy-paste.
+const cleaned = raw
+  .replace(/^psql\s+/, "")
+  .trim()
+  .replace(/^(['"])(.*)\1$/s, "$2")
+  .trim();
+
 let url;
 try {
-  url = new URL(raw);
+  url = new URL(cleaned);
 } catch {
-  console.error(`${urlEnv} is not a valid postgres:// URL.`);
+  // Describe the value's shape without printing any of it (it holds a password).
+  const hints = [
+    /\s/.test(cleaned) && "contains spaces or line breaks",
+    !/^[a-z]+:\/\//i.test(cleaned) && "doesn't start with a scheme like postgresql://",
+    /['"]/.test(cleaned) && "contains quote characters",
+  ].filter(Boolean);
+  console.error(
+    `${urlEnv} is not a valid postgres:// URL${hints.length ? ` (${hints.join("; ")})` : ""}. Paste only the connection string from Neon → Connect.`,
+  );
   process.exit(1);
 }
 if (!/^postgres(ql)?:$/.test(url.protocol)) {
