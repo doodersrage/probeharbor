@@ -39,7 +39,7 @@ Status key: **Done**, **Partly done**, **Waiting on owner**, **Open**.
 ## 3. Code health
 
 1. **Two data models coexist.** The legacy `garage_temps` / `user_temp_feeds` tables are still used in 9 source files next to `sensor_readings`.
-   **Done.** Nothing reads the legacy tables; `garage_temps` (650 rows, 2 users) was exported to CSV and dropped. The two empty `user_temp_*` tables remain until a later drop. (`show_garage_temps` is only a preference name and stays.)
+   **Done.** Nothing reads the legacy tables; `garage_temps` (650 rows, 2 users) was exported to CSV and dropped. The two empty `user_temp_*` tables were dropped too (migration 0007). (`show_garage_temps` is only a preference name and stays.)
 2. **Stale names and instructions.** The Worker is still `garage-temp`, the bucket is `thermaltrace-history`, and `CLAUDE.md` and `CONTRIBUTING.md` still say to follow Supabase conventions.
    **Partly done:** the instructions now say Postgres (Neon). Renaming the Worker or the bucket is not a rename in place: a new Worker name deploys a second Worker (with its own cron triggers, so alerts could go out twice) and a bucket can't be renamed without copying its data. Leave both until there's a planned migration.
 3. **The plan file is a 323 KB log.** Split `IMPLEMENTATION_PLAN.md` into a short roadmap and an archive.

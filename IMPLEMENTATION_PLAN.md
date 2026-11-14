@@ -115,10 +115,9 @@ decision with its test and hardware evidence) is
 1. **Staging** (`IMPROVEMENT_PLAN.md` 2.3): a Neon branch and a second
    Worker, and pending migrations blocking the deploy. Needs owner-created
    resources and secrets.
-2. **Retire the legacy `garage_temps` / `user_temp_feeds` path** (3.1).
-   Done except applying migration 0007 (drops the two empty `user_temp_*`
-   tables): no code reads any legacy table; `garage_temps` was exported
-   to CSV and dropped (0006, applied 2026-11-13). Log: "Legacy tables".
+2. ~~**Retire the legacy tables**~~ (3.1): done 2026-11-14. No code reads
+   them; `garage_temps` exported to CSV and dropped (0006), the empty
+   `user_temp_*` tables dropped (0007). Log: "Legacy tables".
 3. **Code health** (3.4): split `dashboard.astro` and `HistoryChart.tsx`;
    turn on the formatter check (and move `biome.json` off the deprecated
    `recommended` field with it). Lint: 55 warnings → 0 (2026-11-13).

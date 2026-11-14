@@ -6140,7 +6140,8 @@ Plan:
 - [x] `db/migrations/0007_drop_user_temp_tables.sql` written (2026-11-14):
   drops both empty tables; applied cleanly by the test database
   (`pnpm test:db` 415 passed).
-- [ ] Owner: `pnpm db:backup`, `pnpm db:migrate`, `pnpm db:pending`.
+- [x] Owner applied 0007 (2026-11-14; reported done, output not shared).
+  All three legacy tables are gone from production.
 
 ------------------------------------------------------------------------
 
