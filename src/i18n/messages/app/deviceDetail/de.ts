@@ -38,6 +38,20 @@ const de: DeviceDetailMessages = {
     updateTo: "Auf {version} aktualisieren",
     tlsUnverified:
       "Diese Sonde kann das Zertifikat von ProbeHarbor nicht prüfen, ihre Verbindung ist daher nicht vor Manipulation geschützt. Messwerte kommen weiterhin an. Meist hat die Zertifizierungsstelle der Website gewechselt; ein Firmware-Update behebt das.",
+    lastCrash: "Letzter Absturz",
+    crashWhen: "Gemeldet {age}",
+    crashIn: "Angehalten in {fn}",
+    crashAt: "Angehalten bei {addr}",
+    crashCause: "Ursache",
+    crashTask: "Task",
+    crashHelp:
+      "Die Sonde ist danach neu gestartet und läuft weiter. Wenn es wieder passiert, melde es mit den Details unten.",
+    crashDetails: "Details für einen Fehlerbericht",
+    crashBuild: "Abgestürzter Build: {version} ({elf})",
+    crashBuildUnknown: "Abgestürzter Build {elf}: keine Funktionsnamen dafür",
+    crashStackNote:
+      "Beim ESP32-C3 sind das wahrscheinliche Aufrufer aus dem Stack, keine exakte Aufrufkette.",
+    crashReport: "Auf GitHub melden",
     state: "Status",
     disabled: "Deaktiviert: Messwerte werden ignoriert",
     noReadingsYet:

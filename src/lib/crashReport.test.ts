@@ -63,3 +63,25 @@ describe("parseCrashReport", () => {
     for (const v of [undefined, null, "crash", 3, [good]]) expect(parseCrashReport(v)).toBeNull();
   });
 });
+
+describe("parseStoredCrash", () => {
+  it("reads back what ingest stored", async () => {
+    const { parseStoredCrash } = await import("./crashReport");
+    expect(
+      parseStoredCrash({ ...good, received_at: "2026-11-14T12:00:00.000Z", reported_fw: "1.5.1" }),
+    ).toMatchObject({
+      elf: "bf1fcfaf50728988",
+      received_at: "2026-11-14T12:00:00.000Z",
+      reported_fw: "1.5.1",
+    });
+  });
+  it("refuses a value without a valid receive time, and drops a bad version", async () => {
+    const { parseStoredCrash } = await import("./crashReport");
+    expect(parseStoredCrash(good)).toBeNull();
+    expect(parseStoredCrash({ ...good, received_at: "yesterday" })).toBeNull();
+    expect(
+      parseStoredCrash({ ...good, received_at: "2026-11-14T12:00:00.000Z", reported_fw: "<b>" })
+        ?.reported_fw,
+    ).toBeNull();
+  });
+});

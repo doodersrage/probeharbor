@@ -62,6 +62,22 @@ test.describe("device ingest", () => {
       await expect(page.getByRole("heading", { name: /Sensors \(1\)/ })).toBeVisible({ timeout: 15_000 });
       await expect(page.locator(".device-sensor-reading")).toContainText("41.2");
 
+      // A probe crash report (firmware 1.5.1+) is decoded with that build's function
+      // table: 1f770d3282f88e89 is the released 1.5.0 ESP32 image, whose loop() starts
+      // at 0x400d61c8 (public/firmware/symbols/1f770d3282f88e89.json).
+      const crashRes = await page.request.post(`/api/ingest/${ingestKey}`, {
+        data: {
+          temp1: 41.3,
+          fw: "1.5.1",
+          crash: { elf: "1f770d3282f88e89", task: "loopTask", pc: "0x400d61cc", bt: ["0x400d61cc"], cause: 28, addr: "0x0", reset: "panic" },
+        },
+      });
+      expect(crashRes.ok()).toBeTruthy();
+      await page.goto(`/dashboard/devices/${encodeURIComponent(deviceId!)}`);
+      await expect(page.getByText("Stopped in loop()")).toBeVisible({ timeout: 15_000 });
+      await expect(page.getByText(/Cause: LoadProhibited/)).toBeVisible();
+      await expect(page.getByTestId("crash-frames")).toContainText("0x400d61cc +0x4");
+
       // And the Devices list links to it.
       await page.goto("/dashboard/devices?view=ops");
       await expect(page.locator(`[data-device-row="${deviceId}"]`)).toBeVisible();

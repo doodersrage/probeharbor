@@ -38,6 +38,20 @@ const ptBr: DeviceDetailMessages = {
     updateTo: "Atualizar para {version}",
     tlsUnverified:
       "Esta sonda não consegue verificar o certificado do ProbeHarbor, então a conexão dela não está protegida contra adulteração. As leituras continuam chegando. Normalmente a autoridade certificadora do site mudou; uma atualização de firmware resolve.",
+    lastCrash: "Última falha",
+    crashWhen: "Relatada {age}",
+    crashIn: "Parou em {fn}",
+    crashAt: "Parou em {addr}",
+    crashCause: "Causa",
+    crashTask: "Tarefa",
+    crashHelp:
+      "A sonda reiniciou depois disso e continuou funcionando. Se acontecer de novo, relate com os detalhes abaixo.",
+    crashDetails: "Detalhes para um relato de erro",
+    crashBuild: "Build que falhou: {version} ({elf})",
+    crashBuildUnknown: "Build que falhou {elf}: sem nomes de funções",
+    crashStackNote:
+      "No ESP32-C3 estas são prováveis funções chamadoras encontradas na pilha, não uma cadeia de chamadas exata.",
+    crashReport: "Relatar no GitHub",
     state: "Estado",
     disabled: "Desativado: as leituras são ignoradas",
     noReadingsYet:

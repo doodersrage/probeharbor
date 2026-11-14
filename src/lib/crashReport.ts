@@ -72,3 +72,20 @@ export function parseCrashReport(value: unknown): CrashReport | null {
   const reset = typeof c.reset === "string" && /^[a-z_]{1,24}$/.test(c.reset) ? c.reset : null;
   return { elf, task, pc, bt, cause, addr: hex32(c.addr), reset };
 }
+
+/** Read `meta.last_crash` back, re-checking it; null when absent or malformed. */
+export function parseStoredCrash(value: unknown): StoredCrash | null {
+  const report = parseCrashReport(value);
+  if (!report) return null;
+  const v = value as Record<string, unknown>;
+  const receivedAt =
+    typeof v.received_at === "string" && !Number.isNaN(Date.parse(v.received_at))
+      ? v.received_at
+      : null;
+  if (!receivedAt) return null;
+  const reportedFw =
+    typeof v.reported_fw === "string" && /^\d+\.\d+\.\d+$/.test(v.reported_fw)
+      ? v.reported_fw
+      : null;
+  return { ...report, received_at: receivedAt, reported_fw: reportedFw };
+}

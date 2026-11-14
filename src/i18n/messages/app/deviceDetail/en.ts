@@ -37,6 +37,20 @@ const en = {
     updateTo: "Update to {version}",
     tlsUnverified:
       "This probe can't verify ProbeHarbor's certificate, so its connection isn't protected against tampering. Readings still arrive. Usually the site's certificate authority changed; a firmware update fixes it.",
+    lastCrash: "Last crash",
+    crashWhen: "Reported {age}",
+    crashIn: "Stopped in {fn}",
+    crashAt: "Stopped at {addr}",
+    crashCause: "Cause",
+    crashTask: "Task",
+    crashHelp:
+      "The probe restarted after this and kept going. If it keeps happening, report it with the details below.",
+    crashDetails: "Details for a bug report",
+    crashBuild: "Crashed build: {version} ({elf})",
+    crashBuildUnknown: "Crashed build {elf}: no function names for it",
+    crashStackNote:
+      "On the ESP32-C3 these are likely callers found on the stack, not an exact call chain.",
+    crashReport: "Report it on GitHub",
     state: "State",
     disabled: "Disabled: readings are ignored",
     noReadingsYet:

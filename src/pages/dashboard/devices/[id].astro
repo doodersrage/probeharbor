@@ -30,6 +30,8 @@ import { shellMessages } from "../../../i18n/messages/app/shell";
 import UnsavedChangesGuard from "../../../components/UnsavedChangesGuard.astro";
 import { deviceSetupPushMessages } from "../../../i18n/messages/app/deviceSetup/push";
 import { reportIntervalMsFromMeta } from "../../../lib/reportInterval";
+import { parseStoredCrash } from "../../../lib/crashReport";
+import { decodeCrash, loadSymbolTable } from "../../../lib/crashSymbols";
 
 /**
  * One device, everything about it: what it reads, its settings, how it
@@ -72,6 +74,10 @@ const accepted = deviceStats.reduce((sum, row) => sum + row.success_count, 0);
 const rejected = deviceStats.reduce((sum, row) => sum + row.error_count, 0);
 const seenIntervalMs = reportIntervalMsFromMeta(device.meta);
 const seen = formatRelativeAge(device.last_seen_at, "never", undefined, seenIntervalMs);
+// Probe firmware 1.5.1+ reports its last crash once; decode it with that build's function table.
+const lastCrash = parseStoredCrash((device.meta as Record<string, unknown> | null)?.last_crash);
+const crash = lastCrash ? decodeCrash(lastCrash, await loadSymbolTable(lastCrash.elf)) : null;
+const crashTop = crash?.frames[0] ?? null;
 const firmware = typeof device.meta?.firmware_version === "string" ? device.meta.firmware_version : null;
 const rssi = typeof device.meta?.rssi === "number" ? device.meta.rssi : null;
 const recoverableKey = typeof device.meta?.ingest_key_enc === "string";
@@ -185,6 +191,42 @@ function offsetWithUnit(sensor: { offset_num?: number | null; kind?: string | nu
               {(device.meta as Record<string, unknown> | null)?.tls === "unverified" && (
                 <span class="block text-xs text-[var(--color-warning)]" role="status">{t.status.tlsUnverified}</span>
               )}
+            </dd>
+          </div>
+        )}
+        {lastCrash && crash && crashTop && (
+          <div>
+            <dt>{t.status.lastCrash}</dt>
+            <dd>
+              {crashTop.fn ? fmt(t.status.crashIn, { fn: crashTop.fn }) : fmt(t.status.crashAt, { addr: crashTop.addr })}
+              <span class="block text-xs text-[var(--color-text-muted)]">
+                {fmt(t.status.crashWhen, { age: formatRelativeAge(lastCrash.received_at, "", locale).label })}
+                {crash.cause && <> · {t.status.crashCause}: {crash.cause}</>}
+                {lastCrash.task && <> · {t.status.crashTask}: {lastCrash.task}</>}
+              </span>
+              <span class="block text-xs text-[var(--color-text-muted)]">{t.status.crashHelp}</span>
+              <details class="text-xs mt-1">
+                <summary class="cursor-pointer">{t.status.crashDetails}</summary>
+                <p class="m-0 mt-1">
+                  {crash.version
+                    ? fmt(t.status.crashBuild, { version: crash.version, elf: lastCrash.elf })
+                    : fmt(t.status.crashBuildUnknown, { elf: lastCrash.elf })}
+                </p>
+                <ol class="m-0 mt-1 pl-5 font-mono" data-testid="crash-frames">
+                  {crash.frames.map((f) => (
+                    <li>
+                      {f.fn ?? "?"} <span class="text-[var(--color-text-muted)]">{f.addr}{f.offset != null && ` +0x${f.offset.toString(16)}`}</span>
+                    </li>
+                  ))}
+                </ol>
+                {crash.stackScan && <p class="m-0 mt-1">{t.status.crashStackNote}</p>}
+                <a
+                  class="text-link"
+                  href="https://github.com/doodersrage/probeharbor/issues/new"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >{t.status.crashReport}</a>
+              </details>
             </dd>
           </div>
         )}

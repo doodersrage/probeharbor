@@ -38,6 +38,20 @@ const es: DeviceDetailMessages = {
     updateTo: "Actualizar a {version}",
     tlsUnverified:
       "Esta sonda no puede verificar el certificado de ProbeHarbor, así que su conexión no está protegida contra manipulaciones. Las lecturas siguen llegando. Suele deberse a un cambio de la autoridad de certificación del sitio; una actualización de firmware lo soluciona.",
+    lastCrash: "Último fallo",
+    crashWhen: "Notificado {age}",
+    crashIn: "Se detuvo en {fn}",
+    crashAt: "Se detuvo en {addr}",
+    crashCause: "Causa",
+    crashTask: "Tarea",
+    crashHelp:
+      "La sonda se reinició después y siguió funcionando. Si vuelve a pasar, notifícalo con los detalles de abajo.",
+    crashDetails: "Detalles para un informe de error",
+    crashBuild: "Compilación que falló: {version} ({elf})",
+    crashBuildUnknown: "Compilación que falló {elf}: sin nombres de funciones",
+    crashStackNote:
+      "En el ESP32-C3 son probables funciones llamantes encontradas en la pila, no una cadena de llamadas exacta.",
+    crashReport: "Notificarlo en GitHub",
     state: "Estado",
     disabled: "Desactivado: se ignoran las lecturas",
     noReadingsYet:
