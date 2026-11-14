@@ -463,6 +463,63 @@ void onPortalParamsSaved() {
   saveExtras(extrasParam.getValue());
 }
 
+/** Wait for the station to connect; false after WIFI_JOIN_TIMEOUT_MS. */
+static bool waitForWifi() {
+  unsigned long start = millis();
+  while (WiFi.status() != WL_CONNECTED && millis() - start < WIFI_JOIN_TIMEOUT_MS) {
+    delay(250);
+    esp_task_wdt_reset();
+  }
+  return WiFi.status() == WL_CONNECTED;
+}
+
+#if CONFIG_IDF_TARGET_ESP32C3
+/*
+ * ESP32-C3 SuperMini boards fail to join at the chip's full transmit power
+ * (their antenna layout; 3 failures in a row on one, 2026-11-14) and join at
+ * 8.5 dBm. Full power is tried first, so boards that can use it keep their
+ * range; when a join fails, it's retried at 8.5 dBm, and if that works the
+ * board remembers it ("lowtx" in settings, cleared by the BOOT reset).
+ */
+bool lowTxPower = false;
+
+static void applyTxPower() {
+  if (lowTxPower) WiFi.setTxPower(WIFI_POWER_8_5dBm);
+}
+
+/** Retry a failed join at 8.5 dBm; ssid null means the saved network. */
+static bool joinAtLowPower(const char* ssid, const char* pass) {
+  if (lowTxPower) return false;  // already low: nothing else to try
+  Console.println("TT wifi: retrying at low transmit power");
+  WiFi.disconnect();
+  lowTxPower = true;
+  WiFi.mode(WIFI_STA);
+  applyTxPower();
+  if (ssid == nullptr) WiFi.begin();
+  else WiFi.begin(ssid, pass);
+  if (waitForWifi()) {
+    prefs.putBool("lowtx", true);
+    Console.println("TT wifi: joined at low transmit power; this board will keep using it");
+    return true;
+  }
+  lowTxPower = false;
+  WiFi.setTxPower(WIFI_POWER_19_5dBm);
+  return false;
+}
+#else
+static void applyTxPower() {}
+static bool joinAtLowPower(const char*, const char*) { return false; }
+#endif
+
+/** Why a join failed, from the Wi-Fi driver (reason codes in esp_wifi_types.h). */
+static void logWifiDisconnects() {
+  WiFi.onEvent(
+      [](WiFiEvent_t, WiFiEventInfo_t info) {
+        Console.printf("TT wifi disconnected: reason %u\n", (unsigned)info.wifi_sta_disconnected.reason);
+      },
+      ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
+}
+
 /** TTCFG<TAB>ssid<TAB>password<TAB>key, sent by the flasher page over USB. */
 void handleConfigLine(const String &line) {
   int a = line.indexOf('\t');
@@ -489,14 +546,10 @@ void handleConfigLine(const String &line) {
   // Wi-Fi (found by 1.5.0 on the C3, 2026-11-14, from its core dump).
   if (wifiManager.getConfigPortalActive()) wifiManager.stopConfigPortal();
   WiFi.mode(WIFI_STA);
+  applyTxPower();
   WiFi.persistent(true);
   WiFi.begin(ssid.c_str(), pass.c_str());
-  unsigned long start = millis();
-  while (WiFi.status() != WL_CONNECTED && millis() - start < WIFI_JOIN_TIMEOUT_MS) {
-    delay(250);
-    esp_task_wdt_reset();
-  }
-  if (WiFi.status() == WL_CONNECTED) {
+  if (waitForWifi() || joinAtLowPower(ssid.c_str(), pass.c_str())) {
     Console.println("TT wifi ok");
     postNow = true;
   } else {
@@ -1315,8 +1368,21 @@ void setup() {
   wifiManager.setConfigPortalBlocking(false);
   wifiManager.setConfigPortalTimeout(PORTAL_TIMEOUT_S);
   wifiManager.setConnectTimeout(30);
+  logWifiDisconnects();
   wifiManager.setDebugOutput(false);
-  if (wifiManager.autoConnect("ProbeHarbor-Setup")) {
+  bool online = false;
+#if CONFIG_IDF_TARGET_ESP32C3
+  lowTxPower = prefs.getBool("lowtx", false);
+  if (wifiManager.getWiFiIsSaved()) {
+    // Join the saved network here first, so a failure can retry at low power
+    // before WiFiManager gives up and opens the setup portal.
+    WiFi.mode(WIFI_STA);
+    applyTxPower();
+    WiFi.begin();
+    online = waitForWifi() || joinAtLowPower(nullptr, nullptr);
+  }
+#endif
+  if (online || wifiManager.autoConnect("ProbeHarbor-Setup")) {
     Console.println("TT wifi ok");
   } else {
     Console.println("TT setup: send settings over USB, or join the ProbeHarbor-Setup Wi-Fi network");
