@@ -75,6 +75,7 @@
 #include <esp_attr.h>
 #include <esp_system.h>
 #include <esp_task_wdt.h>
+#include <esp_core_dump.h>
 #include <esp_ota_ops.h>
 #include <mbedtls/base64.h>
 #include <mbedtls/pk.h>
@@ -87,7 +88,7 @@
 #include "ota_pubkey.h"
 
 #ifndef FIRMWARE_VERSION
-#define FIRMWARE_VERSION "1.5.0"
+#define FIRMWARE_VERSION "1.5.1"
 #endif
 /*
  * The flasher talks to whichever USB port the board is plugged into. On the
@@ -518,6 +519,7 @@ String otaManifestPath = OTA_MANIFEST_PATH;  // test builds can change it (TTTES
  *   TTTEST<TAB>ota<TAB><path>        read the OTA manifest at <path> now
  *   TTTEST<TAB>tlsbad                trust only a root that doesn't sign the site
  *   TTTEST<TAB>tlsgood               trust the real roots and retry verification now
+ *   TTTEST<TAB>crash                 write through a null pointer (a real panic and core dump)
  */
 unsigned long testFailUntil = 0;
 bool testDropReply = false;
@@ -545,6 +547,10 @@ static void handleTestLine(const String& line) {
     tlsUnverified = false;
     tlsCertFailures = 0;
     Console.println("TT test: trusting the real roots again");
+  } else if (line == "TTTEST\tcrash") {
+    Console.println("TT test: crashing on purpose");
+    delay(100);
+    *(volatile uint32_t*)nullptr = 0xdead;
   } else if (line == "TTTEST\thang") {
     Console.println("TT test: hanging the loop");
     for (;;) delay(1000);  // yields, so only the loop task's watchdog can end this
@@ -660,6 +666,105 @@ static void otaConfirm() {
   Console.println("TT ota: " FIRMWARE_VERSION " confirmed");
 }
 
+/*
+ * Crash reports (1.5.1+). After a crash the chip writes a core dump to its
+ * coredump partition. At boot we read the dump's summary into a small JSON
+ * object, send it once as "crash" next to fw/rssi, and erase the dump after
+ * the server answers 2xx (so a failed post resends it). The server decodes
+ * the addresses with this build's function table, found by the ELF hash.
+ *   ESP32 / S3: pc plus the backtrace the summary holds.
+ *   C3: no backtrace on the chip; ra, then code addresses found on the
+ *   crashed task's stack (the server keeps those inside known functions).
+ */
+String crashJson = "";  // empty: nothing to report
+
+static const char* resetReasonName(esp_reset_reason_t why) {
+  switch (why) {
+    case ESP_RST_POWERON: return "poweron";
+    case ESP_RST_SW: return "software";
+    case ESP_RST_PANIC: return "panic";
+    case ESP_RST_INT_WDT: return "int_wdt";
+    case ESP_RST_TASK_WDT: return "task_wdt";
+    case ESP_RST_WDT: return "wdt";
+    case ESP_RST_DEEPSLEEP: return "deepsleep";
+    case ESP_RST_BROWNOUT: return "brownout";
+    default: return "other";
+  }
+}
+
+static String hex32(uint32_t v) {
+  char buf[11];
+  snprintf(buf, sizeof(buf), "0x%08lx", (unsigned long)v);
+  return String(buf);
+}
+
+#if CONFIG_IDF_TARGET_ESP32C3
+static bool isCodeAddress(uint32_t a) {
+  return (a >= 0x42000000 && a < 0x42800000) || (a >= 0x4037c000 && a < 0x403e0000);
+}
+#endif
+
+static void loadCrashReport() {
+  esp_core_dump_summary_t* sum = (esp_core_dump_summary_t*)malloc(sizeof(esp_core_dump_summary_t));
+  if (sum == nullptr) return;
+  if (esp_core_dump_get_summary(sum) != ESP_OK) {
+    free(sum);
+    return;
+  }
+  char elf[APP_ELF_SHA256_SZ];
+  memcpy(elf, sum->app_elf_sha256, sizeof(elf));
+  elf[sizeof(elf) - 1] = '\0';
+  char task[17];
+  memcpy(task, sum->exc_task, 16);
+  task[16] = '\0';
+  for (char* c = task; *c; c++) {
+    if (*c < 0x20 || *c > 0x7e || *c == '"' || *c == '\\') *c = '?';
+  }
+
+  String bt = "";
+  uint8_t frames = 0;
+#if CONFIG_IDF_TARGET_ESP32C3
+  uint32_t cause = sum->ex_info.mcause;
+  uint32_t addr = sum->ex_info.mtval;
+  if (isCodeAddress(sum->ex_info.ra)) {
+    bt += "\"" + hex32(sum->ex_info.ra) + "\"";
+    frames++;
+  }
+  const uint32_t* words = (const uint32_t*)sum->exc_bt_info.stackdump;
+  uint32_t count = sum->exc_bt_info.dump_size / 4;
+  if (count > CONFIG_ESP_COREDUMP_SUMMARY_STACKDUMP_SIZE / 4) count = CONFIG_ESP_COREDUMP_SUMMARY_STACKDUMP_SIZE / 4;
+  for (uint32_t i = 0; i < count && frames < 16; i++) {
+    if (!isCodeAddress(words[i])) continue;
+    if (frames > 0) bt += ",";
+    bt += "\"" + hex32(words[i]) + "\"";
+    frames++;
+  }
+#else
+  uint32_t cause = sum->ex_info.exc_cause;
+  uint32_t addr = sum->ex_info.exc_vaddr;
+  uint32_t depth = sum->exc_bt_info.depth < 16 ? sum->exc_bt_info.depth : 16;
+  for (uint32_t i = 0; i < depth; i++) {
+    if (frames > 0) bt += ",";
+    bt += "\"" + hex32(sum->exc_bt_info.bt[i]) + "\"";
+    frames++;
+  }
+#endif
+  crashJson = String("{\"elf\":\"") + elf + "\",\"task\":\"" + task + "\",\"pc\":\"" +
+              hex32(sum->exc_pc) + "\",\"bt\":[" + bt + "],\"cause\":" + String((unsigned long)cause) +
+              ",\"addr\":\"" + hex32(addr) + "\",\"reset\":\"" + resetReasonName(esp_reset_reason()) + "\"}";
+  Console.printf("TT crash: %s stopped at %s; reporting it with the next post\n", task, hex32(sum->exc_pc).c_str());
+  free(sum);
+}
+
+/** Any 2xx: keep an OTA image on probation, and drop a crash report the server now has. */
+static void postAccepted() {
+  otaConfirm();
+  if (crashJson.length() == 0) return;
+  crashJson = "";
+  esp_core_dump_image_erase();
+  Console.println("TT crash: report sent");
+}
+
 /**
  * Tell the Arduino core not to confirm a new image at boot: we do, on the
  * first 2xx. The core declares this weak in a C file (esp32-hal-misc.c), so
@@ -672,6 +777,7 @@ static String deviceFields(int batteryPct) {
   String out = "\"fw\":\"" FIRMWARE_VERSION "\",\"rssi\":" + String(WiFi.RSSI());
   if (batteryPct >= 0) out += ",\"battery_pct\":" + String(batteryPct);
   if (tlsUnverified) out += ",\"tls\":\"unverified\"";
+  if (crashJson.length() > 0) out += ",\"crash\":" + crashJson;
   return out;
 }
 
@@ -756,7 +862,7 @@ static void postPlain(const String& fields, int batteryPct, uint8_t sent) {
   int code = postBody("{" + fields + deviceFields(batteryPct) + "}");
   if (code == -1000) return;
   Console.printf("TT post %d probes=%u\n", code, (unsigned)sent);
-  if (code >= 200 && code < 300) otaConfirm();
+  if (code >= 200 && code < 300) postAccepted();
   reportKeyProblem(code);
 }
 
@@ -786,7 +892,7 @@ static bool sendBuffer(int batteryPct, uint8_t sent) {
     int code = postBody(body, &response);
     if (code == -1000) return true;
     if (code >= 200 && code < 300) {
-      otaConfirm();
+      postAccepted();
       bufferDrop(n);
       Console.printf("TT post %d probes=%u buffered=%u\n", code, (unsigned)sent, (unsigned)rb.count);
       continue;
@@ -1196,6 +1302,7 @@ void setup() {
     otaPending = true;
     Console.println("TT ota: running " FIRMWARE_VERSION " on probation until it posts");
   }
+  loadCrashReport();
 
   wifiManager.addParameter(&keyParam);
   wifiManager.addParameter(&extrasParam);
