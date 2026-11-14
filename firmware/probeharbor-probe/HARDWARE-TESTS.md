@@ -481,6 +481,20 @@ few seconds, normal). Flashed the released 1.5.0 with esptool.
 - **Verified TLS** on the C3: `TT tls: server certificate verified`,
   posts 200 (no sensor wired; the leak input was enabled so it had a value
   to post: `leak1` dry).
-- Not run on this board yet: tests 10–12 (buffer, watchdog, OTA), the
-  setup portal from a phone, a sensor on GPIO 4.
+- **Test 10 (buffer), 1.5.1-test, 17:06–17:14:** posts failing 200 s:
+  `post -1 … buffered=1`, `=2`, `=3`, then the server said `"readings":4`.
+  Reply dropped: server stored it, probe saw `-11` and kept it; the resend
+  came back `"duplicates":1`. Wi-Fi off: `offline: reading kept`, `wifi
+  lost: restarting to retry`, `buffer: 1 reading(s) kept from before the
+  restart`, rejoined at low power, server `"readings":2`.
+- **Test 11 (watchdog), 17:26–17:29:** 2 readings buffered, `TTTEST hang` at
+  17:27:55, restart at 17:28:55, `buffer: 2 reading(s) kept`, `restarted by
+  watchdog`, server `"readings":3`. The watchdog panic also leaves a core
+  dump, reported as a crash in task IDLE (the S3's earlier "IDLE0" report
+  was the same thing from its test 11); the device page names an idle-task
+  function, not the code that hung.
+- Back on the published 1.5.1 app afterwards (written at 0x10000 from the
+  release image so the settings stay), posting 200.
+- Not run on this board yet: test 12 (OTA), the setup portal from a phone,
+  a sensor on GPIO 4.
 
