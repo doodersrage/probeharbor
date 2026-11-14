@@ -6264,7 +6264,8 @@ Neon transfer to be measured.**
 - Found and fixed: CI's `migrations` job ran `--check`, which printed the
   production Neon hostname (no credentials) in public Actions logs on every
   push. It now runs `--gate`, masks the host, and stays warning-only.
-  Older run logs still contain the hostname.
+  Older run logs still contain the hostname; the owner chose to leave them
+  (2026-11-14): the hostname alone grants no access.
 - Evidence: `dbMigrate.test.ts` +7 (nothing pending, unmarked pending,
   marked pending, mixed, marker only as its own line, edited/missing, the
   committed migrations pass when all applied). End to end on a throwaway
