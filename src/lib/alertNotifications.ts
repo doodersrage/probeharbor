@@ -121,7 +121,7 @@ import {
   fetchLatestSensorValues as fetchAllLatestSensorValues,
   getRecentNumericReadings,
   getFreezeDwellSamples,
-  getRecentNumericReadingSamples,
+  getRecentNumericReadingBuckets,
   hasNumericReadingAboveSince,
 } from "./sensorReadings";
 import { isBoolSensorKind, isNumericSensorKind } from "./sensorKinds";
@@ -659,9 +659,12 @@ export async function maybeSendRunwayAlert(
   const currentTempF = coldest.value_num as number;
   if (currentTempF <= settings.freezeThresholdF) return;
 
+  // A week in 10-minute buckets (~1,000 rows), not every reading (~10,000 at
+  // one a minute, read on every 15-minute pass): the projection only uses the
+  // first/last points and gaps of 15+ minutes, which buckets keep.
   const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
   const indoorSamples = householdId
-    ? await getRecentNumericReadingSamples(householdId, coldest.sensor.id, since).catch(() => [])
+    ? await getRecentNumericReadingBuckets(householdId, coldest.sensor.id, since).catch(() => [])
     : [];
 
   let outdoorPast: ReturnType<typeof outdoorPointsFromHourly> = [];

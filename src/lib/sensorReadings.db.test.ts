@@ -14,6 +14,7 @@ import {
   getFreezeDwellSamples,
   getNumericReadingInWindow,
   getRecentNumericReadings,
+  getRecentNumericReadingBuckets,
   getRecentNumericReadingSamples,
   hasNumericReadingAboveSince,
 } from "./sensorReadings";
@@ -161,5 +162,53 @@ describe("reading series (Neon)", () => {
     await reading(s, a, minutesAgo(20), null);
     await reading(s, a, minutesAgo(10), false);
     expect((await fetchRecentBoolReadings(a, s, minutesAgo(60))).map((r) => r.value)).toEqual([true, false]);
+  });
+});
+
+describe("numeric readings in time buckets (Neon)", () => {
+  // Fixed, bucket-aligned times so the expected averages are exact.
+  const t0 = Date.parse("2026-11-10T12:00:00.000Z");
+  const at = (minutes: number) => new Date(t0 + minutes * 60_000).toISOString();
+
+  it("averages one-a-minute readings into 10-minute points, oldest first", async () => {
+    const a = await home("a@example.com");
+    const s = await sensor(await device(a, "Garage"), "t");
+    // 30 readings, one a minute: values 0..29.
+    for (let m = 0; m < 30; m += 1) await reading(s, a, at(m), m);
+
+    const buckets = await getRecentNumericReadingBuckets(a, s, at(-1), 600);
+
+    expect(buckets.map((b) => b.tempF)).toEqual([4.5, 14.5, 24.5]);
+    expect(buckets.map((b) => b.at)).toEqual([at(4.5), at(14.5), at(24.5)]);
+  });
+
+  it("leaves readings that are 10+ minutes apart unchanged", async () => {
+    const a = await home("a@example.com");
+    const s = await sensor(await device(a, "Pull feed"), "t");
+    await reading(s, a, at(0), 40);
+    await reading(s, a, at(15), 39.5);
+    await reading(s, a, at(30), 38.25);
+
+    expect(await getRecentNumericReadingBuckets(a, s, at(-1), 600)).toEqual([
+      { at: at(0), tempF: 40 },
+      { at: at(15), tempF: 39.5 },
+      { at: at(30), tempF: 38.25 },
+    ]);
+  });
+
+  it("skips nulls, readings before `since`, other sensors and other households", async () => {
+    const a = await home("a@example.com");
+    const b = await home("b@example.com");
+    const s = await sensor(await device(a, "Garage"), "t");
+    const other = await sensor(await device(a, "Attic"), "t");
+    const theirs = await sensor(await device(b, "Theirs"), "t");
+    await reading(s, a, at(-30), 99); // before since
+    await reading(s, a, at(1), 10);
+    await reading(s, a, at(2), null);
+    await reading(other, a, at(3), 50);
+    await reading(theirs, b, at(4), 60);
+
+    expect(await getRecentNumericReadingBuckets(a, s, at(0), 600)).toEqual([{ at: at(1), tempF: 10 }]);
+    expect(await getRecentNumericReadingBuckets(b, s, at(0), 600)).toEqual([]);
   });
 });

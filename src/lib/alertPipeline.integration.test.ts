@@ -287,6 +287,21 @@ function installFakes() {
         at: r.recorded_at,
         tempF: r.value_num,
       })),
+    // Same as the SQL: average value at the average time per bucket, oldest first.
+    getNumericReadingBuckets: async (householdId: string, sensorId: string, sinceIso: string, bucketSeconds: number) => {
+      const groups = new Map<number, { sumT: number; sumMs: number; n: number }>();
+      for (const r of readingsOf(householdId, sensorId, (row) => ms(row.recorded_at) >= ms(sinceIso) && row.value_num != null)) {
+        const key = Math.floor(ms(r.recorded_at) / 1000 / bucketSeconds);
+        const g = groups.get(key) ?? { sumT: 0, sumMs: 0, n: 0 };
+        g.sumT += Number(r.value_num);
+        g.sumMs += ms(r.recorded_at);
+        g.n += 1;
+        groups.set(key, g);
+      }
+      return [...groups.entries()]
+        .sort((a, b) => a[0] - b[0])
+        .map(([, g]) => ({ at: new Date(g.sumMs / g.n).toISOString(), tempF: g.sumT / g.n }));
+    },
     getNumericReadingInWindow: async (householdId: string, sensorId: string, notBeforeIso: string, atOrBeforeIso: string) => {
       const row = readingsOf(
         householdId,

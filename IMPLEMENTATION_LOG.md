@@ -6139,3 +6139,41 @@ Plan:
   production.
 - [ ] `user_temp_feeds` / `user_temp_probes` (empty, unused) can be dropped
   the same way later.
+
+------------------------------------------------------------------------
+
+## Neon transfer: the runway alert read a week of raw readings every pass (2026-11-14)
+
+**Status: Fixed in code, tested locally; deployed with this commit. Effect on
+Neon transfer to be measured.**
+
+- Owner report: Neon "public network transfer" at 4 GB of the free 5 GB
+  (production 3.05 GB, dev branch 0.44 GB) since the 2026-11-07 move;
+  hitting 5 GB pauses the free compute until the next billing month.
+- `pg_stat_statements` (owner, production): the app's top query by rows
+  was `numericSeries` (`src/lib/db/readings.ts`): 146 calls, 858,591 rows,
+  ~5,900 rows a call. Everything else the app runs returns a few rows;
+  the rest of the list was Neon's own monitoring and the owner's pg_dump.
+- Source: `maybeSendRunwayAlert` read 7 days of every reading for the
+  coldest sensor (up to 10,000 rows) on every 15-minute pass.
+- [x] Fix: `getNumericReadingBuckets` / `getRecentNumericReadingBuckets`:
+  average value at the average time per 10-minute bucket (~1,000 rows a
+  week). The projection only uses the first/last points (trend), the
+  median indoor−outdoor offset, and gaps of 15+ minutes (cooling fit), so
+  10-minute buckets keep its result; sensors reporting every 10+ minutes
+  get their readings unchanged. The dashboard already fed this model
+  sampled chart points, so alert and dashboard now agree more closely.
+- Evidence: `runwayBucketing.test.ts` (synthetic week, one reading a
+  minute: same source, confidence, fitted-coupling flag, coupling within
+  0.01, offset within 0.1°F, hours within 0.25 h; also across a 6-hour
+  outage); `sensorReadings.db.test.ts` +3 (exact 10-minute averages,
+  sparse readings unchanged, nulls / other sensors / other households
+  excluded); the alert-pipeline integration test got a matching fake.
+  `pnpm test` 3688, `pnpm test:db` 414, typecheck 0, lint 0.
+- [ ] Measure: after a day, rerun the pg_stat_statements query (or reset it
+  now with `select pg_stat_statements_reset();`) and check Neon's daily
+  transfer. If still high, next candidates: the per-post alert pass and
+  the 30-second live loop.
+- Not chosen: moving to Cloudflare D1 (see the reply in this session: a
+  second database migration a week after the first, SQLite instead of
+  Postgres, for a problem one query explains).

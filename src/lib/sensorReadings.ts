@@ -133,6 +133,16 @@ export async function getRecentNumericReadingSamples(
   return neonReadings.getRecentNumericReadingSamples(householdId, sensorId, sinceIso);
 }
 
+/** Readings averaged into `bucketSeconds` buckets (default 10 minutes), oldest first. */
+export async function getRecentNumericReadingBuckets(
+  householdId: string,
+  sensorId: string,
+  sinceIso: string,
+  bucketSeconds = 600,
+): Promise<Array<{ at: string; tempF: number }>> {
+  return neonReadings.getNumericReadingBuckets(householdId, sensorId, sinceIso, bucketSeconds);
+}
+
 /** Anchor lookback: how far back to look for the last reading before a dwell window. */
 const DWELL_ANCHOR_LOOKBACK_MS = 24 * 60 * 60 * 1000;
 

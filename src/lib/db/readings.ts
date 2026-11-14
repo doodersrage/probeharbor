@@ -69,6 +69,37 @@ export async function getRecentNumericReadingSamples(
   }
 }
 
+/**
+ * One point per `bucketSeconds` (average value at the average time of the
+ * readings in it), oldest first. For trend and thermal-model inputs that
+ * don't need every reading: a week at one reading a minute is ~10,000 rows
+ * raw and ~1,000 in 10-minute buckets. A bucket with one reading returns it
+ * unchanged, so slower sensors see the same data as before.
+ */
+export async function getNumericReadingBuckets(
+  householdId: string,
+  sensorId: string,
+  sinceIso: string,
+  bucketSeconds: number,
+): Promise<Array<{ at: string; tempF: number }>> {
+  try {
+    const rows = await query<NumericRow>(
+      `select avg(value_num)::float8 as value_num,
+              to_timestamp(avg(extract(epoch from recorded_at))) as recorded_at
+       from public.sensor_readings
+       where sensor_id = $1 and household_id = $3 and recorded_at >= $2 and value_num is not null
+       group by floor(extract(epoch from recorded_at) / $4)
+       order by 2
+       limit ${MAX_SERIES_ROWS}`,
+      [sensorId, sinceIso, householdId, bucketSeconds],
+    );
+    return rows.map((r) => ({ at: new Date(r.recorded_at).toISOString(), tempF: r.value_num }));
+  } catch (error) {
+    console.error("getNumericReadingBuckets failed:", message(error));
+    return [];
+  }
+}
+
 export async function getNumericReadingInWindow(
   householdId: string,
   sensorId: string,
