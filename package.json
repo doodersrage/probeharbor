@@ -28,6 +28,7 @@
     "preview": "astro preview",
     "test": "vitest run",
     "test:db": "vitest run --config vitest.db.config.ts",
+    "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
     "test:e2e:auth": "node scripts/e2e-auth.mjs",
     "e2e:reset-password": "node scripts/e2e-reset-password.mjs",
@@ -81,6 +82,7 @@
     "@axe-core/playwright": "^4.14.0",
     "@playwright/test": "^1.64.1",
     "@types/pg": "8.23.1",
+    "@vitest/coverage-v8": "5.1.0",
     "pg": "8.23.1",
     "typescript": "~6.0.3",
     "vitest": "^5.1.0"

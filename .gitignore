@@ -45,3 +45,6 @@ playwright-report/
 
 # pg_dump output from `pnpm db:backup` (user data; never commit)
 backups/
+
+# pnpm test:coverage output
+coverage/

@@ -118,8 +118,12 @@ decision with its test and hardware evidence) is
    (migration 0006, applied 2026-11-13). Log: "Legacy tables".
 3. **Code health** (3.4): split `dashboard.astro` and `HistoryChart.tsx`;
    turn on the formatter check (and move `biome.json` off the deprecated
-   `recommended` field with it); coverage report. Lint: 55 warnings → 0
-   (2026-11-13).
+   `recommended` field with it). Lint: 55 warnings → 0 (2026-11-13).
+   Coverage: `pnpm test:coverage`, in CI with a job-summary table, no
+   thresholds yet. Baseline (unit tests only, 2026-11-13): lines 63.6%,
+   branches 59.9%. Least covered where it matters: `notify.ts` (alert
+   delivery) 54%, `alertNotifications.ts` 76%, `fcm.ts` 33%. Add a
+   threshold once it has moved.
 4. **Cron fan-out with Queues** (2.4) before the household count makes one
    invocation too slow.
 5. **Battery sleep mode** in the firmware (1.5).
