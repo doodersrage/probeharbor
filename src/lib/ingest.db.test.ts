@@ -527,3 +527,72 @@ describe("POST /api/ingest: certificate status from probe firmware 1.5.0+", () =
     expect("tls" in (await metaOf(dev.deviceId))).toBe(false);
   });
 });
+
+describe("POST /api/ingest: crash reports from probe firmware 1.5.1+", () => {
+  const metaOf = async (deviceId: string) =>
+    (
+      await sql<{ meta: Record<string, unknown> }>(
+        "select meta from public.devices where id = $1",
+        [deviceId],
+      )
+    )[0]!.meta;
+  const crash = {
+    elf: "bf1fcfaf50728988",
+    task: "loopTask",
+    pc: "0x400d1234",
+    bt: ["0x400d1234", "0x400d5678"],
+    cause: 28,
+    addr: "0x0",
+    reset: "panic",
+  };
+
+  it("stores the last crash on the device, not as a sensor, and keeps it until the next one", async () => {
+    const dev = await pushDevice("a@example.com");
+    const response = await ingest(dev.key, { temp1: 40, fw: "1.5.1", crash });
+    expect(response.status).toBe(200);
+
+    expect((await metaOf(dev.deviceId)).last_crash).toMatchObject({
+      elf: "bf1fcfaf50728988",
+      task: "loopTask",
+      pc: "0x400d1234",
+      bt: ["0x400d1234", "0x400d5678"],
+      cause: 28,
+      addr: "0x00000000",
+      reset: "panic",
+      reported_fw: "1.5.1",
+      received_at: expect.any(String),
+    });
+    const keys = await sql<{ key: string }>(
+      "select key from public.device_sensors where device_id = $1",
+      [dev.deviceId],
+    );
+    expect(keys.map((k) => k.key)).toEqual(["temp1"]);
+
+    // Later posts without a report leave it in place.
+    await ingest(dev.key, { temp1: 41, fw: "1.5.1" });
+    expect((await metaOf(dev.deviceId)).last_crash).toMatchObject({ pc: "0x400d1234" });
+  });
+
+  it("drops a malformed report but still stores the readings", async () => {
+    const dev = await pushDevice("a@example.com");
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const response = await ingest(dev.key, {
+      temp1: 40,
+      fw: "1.5.1",
+      crash: { elf: "nope", pc: 5 },
+    });
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({ ok: true, readings: 1 });
+    expect("last_crash" in (await metaOf(dev.deviceId))).toBe(false);
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining("crash report didn't validate"));
+    warn.mockRestore();
+  });
+
+  it("takes the report from the top level of a buffered batch", async () => {
+    const dev = await pushDevice("a@example.com");
+    const now = Math.floor(Date.now() / 1000);
+    await ingest(dev.key, { fw: "1.5.1", crash, readings: [{ temp1: 39, recorded_at: now - 60 }] });
+    expect((await metaOf(dev.deviceId)).last_crash).toMatchObject({ elf: "bf1fcfaf50728988" });
+  });
+});

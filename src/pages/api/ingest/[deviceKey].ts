@@ -18,6 +18,7 @@ import { enrichDeviceMetaHistories } from "../../../lib/rssiHistory";
 import { runAfterResponse } from "../../../lib/backgroundWork";
 import { nextReportInterval } from "../../../lib/reportInterval";
 import { splitIngestBody } from "../../../lib/ingestTime";
+import type { StoredCrash } from "../../../lib/crashReport";
 import type { DiscoveredPushSensor } from "../../../lib/pushSensorDiscovery";
 
 async function sha256Hex(value: string): Promise<string> {
@@ -121,6 +122,8 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
     firmwareVersion:
       deviceFields.firmwareVersion ?? newestEntry?.interpreted.firmwareVersion ?? null,
     tlsUnverified: deviceFields.tlsUnverified || (newestEntry?.interpreted.tlsUnverified ?? false),
+    crash: deviceFields.crash ?? newestEntry?.interpreted.crash ?? null,
+    crashInvalid: deviceFields.crashInvalid || (newestEntry?.interpreted.crashInvalid ?? false),
     rejected: entries.flatMap((entry) => entry.interpreted.rejected),
   };
   const discovered = new Map<string, DiscoveredPushSensor>();
@@ -270,6 +273,18 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
   const firmware = interpreted.firmwareVersion;
   if (firmware && firmware !== device.meta?.firmware_version) {
     metaPatch.firmware_version = firmware;
+  }
+  // Probe firmware 1.5.1+ reports its last crash once, then erases it on our 2xx.
+  if (interpreted.crash) {
+    metaPatch.last_crash = {
+      ...interpreted.crash,
+      reported_fw:
+        firmware ??
+        (typeof device.meta?.firmware_version === "string" ? device.meta.firmware_version : null),
+      received_at: receivedAt,
+    } satisfies StoredCrash;
+  } else if (interpreted.crashInvalid) {
+    console.warn(`Ingest for device ${device.id}: crash report didn't validate; dropped.`);
   }
   // Remember which integration feeds this device, for Share → Integrations diagnostics.
   const client = ingestClientPatch(

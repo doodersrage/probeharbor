@@ -4,6 +4,7 @@ import { parseTempFeedPayload } from "./tempFeedConfig";
 import { discoverIngestPayload } from "./feedDiscovery";
 import { labelForPushSensorKey, type DiscoveredPushSensor } from "./pushSensorDiscovery";
 import { implausibleReason, type ImplausibleReason } from "./readingPlausibility";
+import { parseCrashReport, type CrashReport } from "./crashReport";
 
 /** One value the ingest endpoint would store, before it has a sensor id. */
 export type InterpretedReading = {
@@ -36,6 +37,10 @@ export type InterpretedIngest = {
   firmwareVersion: string | null;
   /** Probe firmware 1.5.0+ sends "tls":"unverified" while it can't verify the server's certificate. */
   tlsUnverified: boolean;
+  /** Probe firmware 1.5.1+ sends its last crash once (crashReport.ts); null when absent. */
+  crash: CrashReport | null;
+  /** A `crash` field was sent but didn't validate (logged, then dropped). */
+  crashInvalid: boolean;
 };
 
 const round2 = (value: number) => Math.round(value * 100) / 100;
@@ -163,5 +168,7 @@ export function interpretIngestPayload(
     rssi: numericField(fields.rssi),
     firmwareVersion: /^\d+\.\d+\.\d+$/.test(firmware) ? firmware : null,
     tlsUnverified: fields.tls === "unverified",
+    crash: parseCrashReport(fields.crash),
+    crashInvalid: fields.crash !== undefined && parseCrashReport(fields.crash) === null,
   };
 }

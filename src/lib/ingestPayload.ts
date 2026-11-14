@@ -26,6 +26,8 @@ const FLAT_INGEST_SKIP = new Set([
   // Reading time and batch list (see ingestTime.ts), not sensors.
   "recorded_at",
   "readings",
+  // Probe firmware's crash report (crashReport.ts), not a sensor.
+  "crash",
 ]);
 
 function appendFlatIngestKeys(body: Record<string, unknown>, typed: TypedSensorValue[]): void {
