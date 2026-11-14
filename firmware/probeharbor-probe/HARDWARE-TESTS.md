@@ -420,8 +420,19 @@ it with its first accepted post (`TT crash: report sent`), and after a
 reset printed no `TT crash:` line (erased). Then `TTTEST crash`: Store
 access fault, reboot, `TT restarted after a crash`, `TT crash: loopTask
 stopped at 0x42001ac2` (readSerial()+0x276 in that build's table: the
-hook, inlined), report sent on the next post. Still to do: the same on the
-S3; seeing it on the device page (owner).
+hook, inlined), report sent on the next post.
+
+**ESP32-S3 (2026-11-14): passed.** 1.5.1-test first reported an old crash
+left in flash by an earlier test build (task IDLE0, most likely the test 11
+watchdog hang; that build has no table, so the page showed bare addresses),
+then erased it. `TTTEST crash`: `Guru Meditation … (StoreProhibited)`,
+reboot, `TT crash: loopTask stopped at 0x42004da6`, sent with the next post,
+erased. The device page (owner, after the build's table deployed): "Stopped
+in readSerial()", cause StoreProhibited, task loopTask, build 1.5.1-test, and
+the backtrace `readSerial() +0x226` → `loop() +0xb` → `loopTask(void*)
++0x15`. On the C3 the page showed the report too; its names appeared once
+that build's table was deployed (CI had been blocked by the deleted e2e
+branch). The S3 joins at full power (the C3 fallback stays C3-only).
 
 Procedure (S3, then C3). A test build has its own ELF hash,
 so deploy its function table first or the page shows bare addresses:
