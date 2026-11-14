@@ -46,6 +46,7 @@ import { HISTORY_CHART_UI_EN, type HistoryChartUi } from "./historyChartUi";
 import HistoryChartLegend from "./HistoryChartLegend";
 import HistoryChartOptions from "./HistoryChartOptions";
 import HistoryChartPresets from "./HistoryChartPresets";
+import HistoryChartToolbar from "./HistoryChartToolbar";
 import { COLOR_ABOVE, COLOR_BELOW, DEW_COLOR, DOOR_COLOR, HOUSE_COLOR, HUMIDITY_COLOR, PROBE_COLORS } from "./historyChartColors";
 
 export { HISTORY_CHART_UI_EN, type HistoryChartUi };
@@ -1104,104 +1105,26 @@ function HistoryChartView({
       >
       <div class="history-chart-header">
         <p class={hideTitle ? "sr-only" : "history-chart-title"}>{title}</p>
-        {/* biome-ignore lint/a11y/useSemanticElements: button toolbar; <fieldset> would add form semantics and default borders */}
-        <div class="history-chart-zoom" role="group" aria-label={t.controlsAria}>
-          <button
-            type="button"
-            class="history-chart-zoom-btn"
-            aria-label={t.zoomInAria}
-            onClick={() => applyZoom(1 / 1.35)}
-          >
-            +
-          </button>
-          <button
-            type="button"
-            class="history-chart-zoom-btn"
-            aria-label={t.zoomOutAria}
-            onClick={() => applyZoom(1.35)}
-            disabled={!zoomed}
-          >
-            −
-          </button>
-          <button
-            type="button"
-            class="history-chart-zoom-btn"
-            aria-label={t.resetZoomAria}
-            onClick={resetZoom}
-            disabled={!zoomed}
-          >
-            {t.reset}
-          </button>
-          <button
-            type="button"
-            class="history-chart-zoom-btn history-chart-expand-btn"
-            aria-label={t.downloadPngAria}
-            onClick={exportPng}
-          >
-            {t.png}
-          </button>
-          {!guest && (
-          <button
-            type="button"
-            class="history-chart-zoom-btn history-chart-expand-btn"
-            aria-label={t.copyLinkAria}
-            onClick={() => void copyChartLink()}
-          >
-            {linkCopied ? t.copied : t.link}
-          </button>
-          )}
-          {guest ? null : canShareChart ? (
-            <button
-              type="button"
-              class="history-chart-zoom-btn history-chart-expand-btn"
-              aria-label={t.shareAria}
-              disabled={shareBusy}
-              onClick={() => void shareChartSnapshot()}
-            >
-              {shareBusy ? "…" : shareMessage ? t.shared : t.share}
-            </button>
-          ) : (
-            <a
-              class="history-chart-zoom-btn history-chart-expand-btn"
-              href="/dashboard/plans"
-              aria-label={t.upgradeShareAria}
-              title={t.upgradeShareTitle}
-            >
-              {t.share}
-            </a>
-          )}
-          {claimsPackHrefForView() && (
-            <a
-              class="history-chart-zoom-btn history-chart-expand-btn"
-              href={claimsPackHrefForView()!}
-              aria-label={t.claimsAria}
-            >
-              {t.claims}
-            </a>
-          )}
-          {expanded ? (
-            <button
-              ref={closeBtnRef}
-              type="button"
-              class="history-chart-zoom-btn history-chart-expand-btn"
-              aria-label={t.closeExpandedAria}
-              onClick={closeLightbox}
-            >
-              {t.close}
-            </button>
-          ) : (
-            <button
-              ref={expandBtnRef}
-              type="button"
-              class="history-chart-zoom-btn history-chart-expand-btn"
-              aria-label={t.expandAria}
-              aria-haspopup="dialog"
-              onClick={openLightbox}
-            >
-              {t.expand}
-            </button>
-          )}
-        </div>
+        <HistoryChartToolbar
+          t={t}
+          zoomed={zoomed}
+          guest={guest}
+          canShareChart={canShareChart}
+          shareBusy={shareBusy}
+          shared={!!shareMessage}
+          linkCopied={linkCopied}
+          claimsHref={claimsPackHrefForView()}
+          expanded={expanded}
+          expandBtnRef={expandBtnRef}
+          closeBtnRef={closeBtnRef}
+          onZoom={applyZoom}
+          onResetZoom={resetZoom}
+          onExportPng={exportPng}
+          onCopyLink={() => void copyChartLink()}
+          onShare={() => void shareChartSnapshot()}
+          onExpand={openLightbox}
+          onClose={closeLightbox}
+        />
       </div>
       <HistoryChartPresets t={t} domain={domain} activePreset={activePreset} onPreset={applyPreset} />
       {domain && !presetNarrowsDomain(domain, 7 * 24 * 60 * 60 * 1000) && (
