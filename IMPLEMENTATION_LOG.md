@@ -6274,3 +6274,23 @@ Neon transfer to be measured.**
   marked 0008 → exit 0 and listed; edited 0006 → exit 1; host absent from
   output; unreachable → exit 1 with `ECONNREFUSED`; wrong password → exit 1
   with `28P01`; the role wrote nothing.
+
+## Firmware QEMU boot check (2026-11-14)
+
+- Owner asked what esp32-bench offers ProbeHarbor. Taken: its emulator
+  check, adapted as `scripts/firmware-boot-check.mjs`. The Firmware
+  workflow builds merged images into `.firmware-ci` (`build-firmware.mjs
+  --out`) and boots each in Espressif's QEMU (esp-develop-9.2.2-20261109,
+  cached). Pass: the ROM starts the app and setup() prints `TT firmware
+  <version>` with no crash or reboot loop first; a stop after that line is
+  QEMU's missing Wi-Fi radio. Failures retried once; job summary table.
+- Not taken (for now): the bench's Pi hardware lab (its log so far has only
+  `blink` on a plain ESP32: no probe or C3 results); ELF-hash crash
+  decoding (needs probes to report crashes: new feature, after the freeze).
+  Downloading QEMU to this machine was refused by the session's permission
+  check, so the check runs only in CI.
+- Run 43620138547 on 6080d17: esp32, esp32s3, esp32c3 all ok, each printing
+  `TT firmware 1.5.0` (esp32 then stopped at Wi-Fi start). Emulator
+  evidence: the C3 boots and runs early setup; still not hardware-tested.
+  CI builds from source at the commit, not the committed images.
+- `firmwareBootCheck.test.ts`: 8 tests for the verdict.

@@ -55,7 +55,7 @@ decision with its test and hardware evidence) is
 |---|---|---|
 | Sensor data | Done for the audit gaps; device times and batches (2026-11-13); SenML record times (2026-11-14) | Pull feeds store what the URL serves at poll time, for every format; source times (SenML `t`/`bt`, HA `last_updated`) aren't read, so a source serving an old value looks fresh (stuck-sensor checks catch flatlines). Build only if a pull-feed user needs it |
 | Alerts | Done for the audit gaps | Property name in alert titles (deferred: every user has one property) |
-| Setup and hardware | Firmware 1.5.0 released; tests 9–13 passed on an ESP32-S3 and a plain ESP32 | ESP32-C3 on 1.5.0; portal, router power cut, leak/battery inputs, Feathers (`HARDWARE-TESTS.md`) |
+| Setup and hardware | Firmware 1.5.0 released; tests 9–13 passed on an ESP32-S3 and a plain ESP32; every firmware change boots in QEMU on all three chips (CI, 2026-11-14) | ESP32-C3 on 1.5.0; portal, router power cut, leak/battery inputs, Feathers (`HARDWARE-TESTS.md`) |
 | Operations | Health endpoint + GitHub Actions heartbeat; daily encrypted off-site backups, restore rehearsed locally (2026-11-14) | Neon restore window; staging; optional restore into a Neon branch |
 | Security | Done for the audit gaps; probe TLS verified with fallback | Watch the bcrypt re-hash count reach 0, then drop `bcryptjs` |
 | Dashboard | Done; certificate warning per probe | Warning text not yet seen in a browser |
@@ -93,7 +93,7 @@ decision with its test and hardware evidence) is
    daily transfer for a few days to judge whether the free plan would do.
 3. **Neon restore window and storage limit:** read them from the Neon
    console and record them in `docs/guide/deploy.md`.
-4. **ESP32-C3:** run tests 10–13 on 1.5.0 (released compile-only).
+4. **ESP32-C3:** run tests 10–13 on 1.5.0. So far compile-tested and boot-tested in QEMU (reaches its version line), not hardware-tested.
 5. **Existing probes:** one USB reflash to 1.5.0 (device pages already link
    it); later releases arrive over the air.
 6. **Funnel** (owner ran `pnpm ops:funnel`, 2026-11-13): 10 accounts →
