@@ -465,7 +465,13 @@ few seconds, normal). Flashed the released 1.5.0 with esptool.
   it sees `TT key saved` (late over the C3's USB console while it joins),
   and the second TTCFG stopped a portal that was no longer running; WiFiManager
   2.0.17 then uses its freed web server. Fixed in 1.5.1 (080f731): stop it
-  only while it's active. Not yet re-tested by sending settings twice.
+  only while it's active. Confirmed on the S3 the same day with two test
+  hooks running the exact line, no portal running: 1.5.1's guarded stop
+  (`TTTEST stopportal`) did nothing and the probe kept running; 1.5.0's
+  unguarded stop (`TTTEST stopportal-old`) crashed with LoadProhibited in
+  `WiFiManager::shutdownConfigPortal() +0x4c`, which the probe then reported
+  itself. (/flash can't easily send settings twice to a running probe:
+  opening the port reboots it and the page stops at the first `post 200`.)
 - **Wi-Fi at full transmit power fails on this board** (3 times: at boot
   with the saved network, twice from /flash; driver reasons 201 "no AP
   found" and 39 "timeout"). At 8.5 dBm it joined every time. 1.5.1 retries

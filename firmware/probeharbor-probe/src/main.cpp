@@ -578,6 +578,8 @@ String otaManifestPath = OTA_MANIFEST_PATH;  // test builds can change it (TTTES
  *   TTTEST<TAB>tlsbad                trust only a root that doesn't sign the site
  *   TTTEST<TAB>tlsgood               trust the real roots and retry verification now
  *   TTTEST<TAB>crash                 write through a null pointer (a real panic and core dump)
+ *   TTTEST<TAB>stopportal            the guarded portal stop a settings line does (1.5.1)
+ *   TTTEST<TAB>stopportal-old        the unguarded stop 1.5.0 did (crashes with no portal running)
  */
 unsigned long testFailUntil = 0;
 bool testDropReply = false;
@@ -605,6 +607,14 @@ static void handleTestLine(const String& line) {
     tlsUnverified = false;
     tlsCertFailures = 0;
     Console.println("TT test: trusting the real roots again");
+  } else if (line == "TTTEST\tstopportal") {
+    Console.printf("TT test: portal active %d; guarded stop\n", (int)wifiManager.getConfigPortalActive());
+    if (wifiManager.getConfigPortalActive()) wifiManager.stopConfigPortal();
+    Console.println("TT test: still running");
+  } else if (line == "TTTEST\tstopportal-old") {
+    Console.printf("TT test: portal active %d; unguarded stop (1.5.0)\n", (int)wifiManager.getConfigPortalActive());
+    wifiManager.stopConfigPortal();
+    Console.println("TT test: still running");
   } else if (line == "TTTEST\tcrash") {
     Console.println("TT test: crashing on purpose");
     delay(100);
