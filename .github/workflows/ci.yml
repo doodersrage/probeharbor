@@ -97,8 +97,8 @@ jobs:
           # Node 24 LTS; check-latest so a runner cache never serves an old 24.x.
           check-latest: true
           cache: pnpm
-      # Blocking: lint errors fail CI. Formatting isn't enforced (most files
-      # predate the Biome formatter); run `pnpm format` to adopt it.
+      # Blocking: lint errors and unformatted files fail CI (`pnpm format`
+      # fixes the latter; .astro files aren't formatted).
       - run: pnpm lint
 
   build:

@@ -45,7 +45,7 @@ Status key: **Done**, **Partly done**, **Waiting on owner**, **Open**.
 3. **The plan file is a 323 KB log.** Split `IMPLEMENTATION_PLAN.md` into a short roadmap and an archive.
    **Done.** The log moved to `IMPLEMENTATION_LOG.md` (history kept); `IMPLEMENTATION_PLAN.md` is now a short plan: status, decisions in force, open work.
 4. **Oversized files and loose lint.** `dashboard.astro` is 2,078 lines and `HistoryChart.tsx` is 1,680. The formatter is off in CI, there are 55 baseline lint warnings, and there is no coverage report.
-   **Partly done:** lint warnings 55 → 0; coverage report in CI (lines 63.6%, unit tests only). Open: the two large files, the formatter.
+   **Done** (2026-11-14): lint warnings 55 → 0; coverage in CI with floors (lines ~65%); `dashboard.astro` 2,078 → 1,532 lines and `HistoryChart.tsx` 1,680 → 958, both split under snapshot (and, for the canvas, pixel) checks; the formatter applied once and enforced in CI.
 
 ## 4. Product focus
 

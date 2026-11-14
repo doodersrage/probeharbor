@@ -131,8 +131,9 @@ decision with its test and hardware evidence) is
    hover / zoom / humidity / legend states were pixel-identical before
    and after; the moved controls were clicked through on the live demo.
    Done unless a new need appears);
-   turn on the formatter check (and move `biome.json` off the deprecated
-   `recommended` field with it). Lint: 55 warnings → 0 (2026-11-13).
+   formatter: applied repo-wide and enforced by `pnpm lint` in CI
+   (2026-11-14, owner's choice; formatting commit in
+   `.git-blame-ignore-revs`). Lint: 55 warnings → 0 (2026-11-13).
    Coverage: `pnpm test:coverage`, in CI with a job-summary table, no
    thresholds yet. Baseline (unit tests only, 2026-11-13): lines 63.6%,
    branches 59.9%; after the notify.ts tests: 64.1% / 60.3%. `notify.ts`
