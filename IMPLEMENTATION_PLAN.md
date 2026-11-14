@@ -60,7 +60,7 @@ decision with its test and hardware evidence) is
 | Security | Done for the audit gaps; probe TLS verified with fallback | Watch the bcrypt re-hash count reach 0, then drop `bcryptjs` |
 | Dashboard | Done; certificate warning per probe | Warning text not yet seen in a browser |
 | Integrations | Spec done; HA in the default HACS store | — |
-| Firmware updates | Signed OTA with rollback, 1.5.0 manifest at 10% | First real OTA release (1.5.1+) |
+| Firmware updates | Signed OTA with rollback, 1.5.0 manifest at 10% | First real OTA release: 1.5.1 (crash reports) after hardware test 14 |
 
 ## Decisions in force
 
@@ -93,10 +93,14 @@ decision with its test and hardware evidence) is
    daily transfer for a few days to judge whether the free plan would do.
 3. **Neon restore window and storage limit:** read them from the Neon
    console and record them in `docs/guide/deploy.md`.
-4. **ESP32-C3:** run tests 10–13 on 1.5.0. So far compile-tested and boot-tested in QEMU (reaches its version line), not hardware-tested.
-5. **Existing probes:** one USB reflash to 1.5.0 (device pages already link
+4. **Crash reports, firmware 1.5.1** (owner asked, 2026-11-14): server,
+   function tables and device page are live; the firmware source is
+   committed but unreleased. Next: hardware test 14 on the S3 (and the C3),
+   then `pnpm firmware:build`, sign and publish 1.5.1.
+5. **ESP32-C3:** run tests 10–13 on 1.5.0. So far compile-tested and boot-tested in QEMU (reaches its version line), not hardware-tested.
+6. **Existing probes:** one USB reflash to 1.5.0 (device pages already link
    it); later releases arrive over the air.
-6. **Funnel** (owner ran `pnpm ops:funnel`, 2026-11-13): 10 accounts →
+7. **Funnel** (owner ran `pnpm ops:funnel`, 2026-11-13): 10 accounts →
    confirmed 8 → added a device 2 → reading 2 → test alert 2 → reading in
    last 7 days 1 → real alert 1 → paying 0. **Correction (2026-11-14,
    owner):** the 6 confirmed accounts with no device are Android-app test

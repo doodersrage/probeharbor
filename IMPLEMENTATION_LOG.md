@@ -6294,3 +6294,37 @@ Neon transfer to be measured.**
   evidence: the C3 boots and runs early setup; still not hardware-tested.
   CI builds from source at the commit, not the committed images.
 - `firmwareBootCheck.test.ts`: 8 tests for the verdict.
+
+## Crash decoding (2026-11-14)
+
+Owner asked for it (outside the feature freeze, owner's call). Four steps:
+
+1. Ingest (cb4372a): optional `crash` next to `fw`/`rssi`, validated by
+   `crashReport.ts`, stored as `devices.meta.last_crash` with `received_at`
+   and `reported_fw`; never a sensor; a malformed report is logged and
+   dropped while readings are stored. No migration.
+2. Function tables (6e364a1): `scripts/firmware-symbols.mjs` writes each
+   build's code symbols (nm) to `public/firmware/symbols/<elf>.json`, named
+   by the first 16 hex digits of the ELF's SHA-256, which this PlatformIO
+   setup already embeds in the image (checked: the committed 1.5.0 images'
+   embedded hashes equal the local ELFs'; their tables are included).
+   `crashSymbols.ts` decodes (binary search; ESP32/S3 backtrace in order;
+   C3 stack candidates kept only inside known functions; cause names),
+   loading tables through the ASSETS binding.
+3. Firmware 1.5.1 source (092647b, unreleased): Arduino core 2.0.17 already
+   writes an ELF core dump to the `coredump` partition on all three chips
+   (sdkconfig checked; default.csv has the partition). At boot the probe
+   reads `esp_core_dump_get_summary`, sends it on each post until a 2xx,
+   then `esp_core_dump_image_erase`. Test hook `TTTEST crash`. Compiles for
+   all three chips and with test hooks; Firmware CI boot check passed on
+   all three in QEMU (run on 092647b).
+4. Device page (71f6efb): "Last crash" row, decoded chain in a details
+   box, five languages. The e2e test posts a report with the 1.5.0 ESP32
+   hash and loop()'s address and sees "Stopped in loop()" (CI e2e passed;
+   only the admin-only Ops test skipped).
+
+Evidence: unit 25 (parser, stored parser, decoder, nm parsing, each
+committed image has its table), DB 3 through the route, e2e 1. Not yet:
+a real crash on hardware (HARDWARE-TESTS.md test 14), release of 1.5.1.
+Installed PlatformIO 6.2.0 into ~/.platformio/penv (the earlier copy was in
+a session scratchpad that's gone).

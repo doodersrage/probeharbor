@@ -21,6 +21,8 @@ Optional top-level health fields (any payload style):
 |-------|---------|
 | `battery` / `battery_pct` | Battery percent (0–100) |
 | `rssi` | Wi-Fi / radio RSSI (dBm) |
+| `fw` | Firmware version (`1.5.1`); the device page offers updates for ProbeHarbor's probe firmware |
+| `crash` | ProbeHarbor probe firmware 1.5.1+: its last crash, sent once after a restart (`elf` build hash, `pc`, up to 16 `bt` addresses, `task`, `cause`, `addr`, `reset`). Shown decoded on the device page; never a sensor. A malformed one is ignored |
 
 ## Sensors auto-import on first POST
 

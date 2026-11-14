@@ -403,3 +403,29 @@ the test. Final production 1.5.0 flashed afterwards: `TT tls: server
 certificate verified`, posting 200.
 
 Still to do: the C3 on 1.5.0; the 24-hour retry (not waited for).
+
+## 14. Crash reports (1.5.1, source only)
+
+After a crash the chip saves a core dump; at the next boot 1.5.1 prints
+`TT crash: <task> stopped at 0x…; reporting it with the next post`, sends
+the summary as `crash` on each post until one gets a 2xx, prints
+`TT crash: report sent` and erases the dump. The device page then shows
+"Last crash" with the function name, from this build's table in
+`public/firmware/symbols/`.
+
+Not run yet. Procedure (S3, then C3). A test build has its own ELF hash,
+so deploy its function table first or the page shows bare addresses:
+`node scripts/firmware-symbols.mjs .pio/build/<env>/firmware.elf <chip>
+1.5.1-test public/firmware/symbols`, commit, let it deploy (a public JSON
+file named by the hash; harmless to keep).
+
+1. Flash `-DPROBE_TEST_HOOKS -DFIRMWARE_VERSION='"1.5.1-test"'`, let it post.
+2. Send `TTTEST<TAB>crash`. Expect a Guru Meditation (StoreProhibited on
+   the S3, Store access fault on the C3), a core dump write, a reboot.
+3. After the reboot: the `TT crash:` line, then on the next post
+   `TT crash: report sent`. Reboot again: no `TT crash:` line (erased).
+4. Device page: "Last crash: Stopped in handleTestLine(…)" (S3), cause
+   and task `loopTask`; on the C3 the stack-scan note.
+5. With `TTTEST<TAB>fail 120` before step 2: the report survives failed
+   posts and goes with the first accepted one.
+
