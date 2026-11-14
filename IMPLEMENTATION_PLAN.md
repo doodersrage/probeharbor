@@ -99,10 +99,13 @@ decision with its test and hardware evidence) is
    → paying 0. Demo feed: 0 accounts. The big drop is confirmed → device
    (6 of 8). Not explained by missing UI: confirmation lands on Devices,
    whose first-run card offers sensors / board / "No hardware yet → demo
-   feed", and the day-3/day-7 setup emails cover the demo too. Next, before
-   any code: `pnpm ops:funnel --days 8` (sign-ups since the 2026-11-05
-   first-run rework) and a short personal note to the 6 asking what stopped
-   them; at this size their answers beat any guess.
+   feed", and the day-3/day-7 setup emails cover the demo too.
+   `--days 8`: **0 sign-ups since the 2026-11-05 first-run rework**, so no
+   real sign-up has seen it. The constraint right now is acquisition, not
+   activation. Next (owner): post the ready outreach drafts (bb4a9f5), send
+   the 6 stuck accounts a short personal note, and re-run
+   `pnpm ops:funnel --days 30` once there are new sign-ups. No code change
+   from this data.
 
 ### Next engineering, in order
 
