@@ -6192,3 +6192,6 @@ Neon transfer to be measured.**
 - Not chosen: moving to Cloudflare D1 (see the reply in this session: a
   second database migration a week after the first, SQLite instead of
   Postgres, for a problem one query explains).
+
+- 2026-11-14: owner upgraded the Neon plan (no pause risk this month). Also
+  deployed since: latest values read once per alert evaluation (6ae6f31).

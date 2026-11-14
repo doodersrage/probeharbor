@@ -88,9 +88,10 @@ decision with its test and hardware evidence) is
    backups"), first run, then decrypt one and restore it into a Neon branch
    (also the first restore-into-Neon rehearsal). Until then the daily job
    fails and emails.
-2. **Neon plan:** upgrade (owner, 2026-11-14): production used 3.05 GB of
-   the free 5 GB transfer in a week; two fixes deployed (log: "Neon
-   transfer"); watch daily transfer before deciding to stay on paid.
+2. **Neon plan:** upgraded by the owner (2026-11-14), so production can't
+   be paused for transfer this month. Production had used 3.05 GB of the
+   free 5 GB in a week; fixes deployed since (log: "Neon transfer"). Watch
+   daily transfer for a few days to judge whether the free plan would do.
 3. **Neon restore window and storage limit:** read them from the Neon
    console and record them in `docs/guide/deploy.md`.
 4. **ESP32-C3:** run tests 10–13 on 1.5.0 (released compile-only).
