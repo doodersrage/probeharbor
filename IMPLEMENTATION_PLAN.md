@@ -96,19 +96,17 @@ decision with its test and hardware evidence) is
 4. **ESP32-C3:** run tests 10–13 on 1.5.0 (released compile-only).
 5. **Existing probes:** one USB reflash to 1.5.0 (device pages already link
    it); later releases arrive over the air.
-6. **Funnel** (owner ran `pnpm ops:funnel`, 2026-11-13; 10 accounts
-   excluding the test account): signed up 10 → confirmed 8 → added a device
-   2 → reading 2 → test alert 2 → reading in last 7 days 1 → real alert 1
-   → paying 0. Demo feed: 0 accounts. The big drop is confirmed → device
-   (6 of 8). Not explained by missing UI: confirmation lands on Devices,
-   whose first-run card offers sensors / board / "No hardware yet → demo
-   feed", and the day-3/day-7 setup emails cover the demo too.
-   `--days 8`: **0 sign-ups since the 2026-11-05 first-run rework**, so no
-   real sign-up has seen it. The constraint right now is acquisition, not
-   activation. Next (owner): post the ready outreach drafts (bb4a9f5), send
-   the 6 stuck accounts a short personal note, and re-run
-   `pnpm ops:funnel --days 30` once there are new sign-ups. No code change
-   from this data.
+6. **Funnel** (owner ran `pnpm ops:funnel`, 2026-11-13): 10 accounts →
+   confirmed 8 → added a device 2 → reading 2 → test alert 2 → reading in
+   last 7 days 1 → real alert 1 → paying 0. **Correction (2026-11-14,
+   owner):** the 6 confirmed accounts with no device are Android-app test
+   accounts, not stuck users. So there are about 4 real accounts, 2 of them
+   with a device: no activation drop is shown by this data, and no note to
+   send. `FUNNEL_EXCLUDE_EMAILS` in `.env` was empty; the owner adds the
+   test addresses there so `ops:funnel` leaves them out. `--days 8`: 0
+   sign-ups since the 2026-11-05 first-run rework. The constraint is
+   acquisition. Next (owner): post the outreach drafts (bb4a9f5) and re-run
+   `pnpm ops:funnel --days 30` once there are new sign-ups.
 
 ### Next engineering, in order
 
