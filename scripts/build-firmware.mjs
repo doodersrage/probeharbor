@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /**
  * Compile the generic probe firmware and publish one merged image per chip
- * family, plus the ESP Web Tools manifest, into public/firmware/ for the
+ * family, its function table (symbols/<elf>.json, for crash reports), plus the
+ * ESP Web Tools manifest, into public/firmware/ for the
  * browser flasher (/flash). The images are committed so deploys do not need
  * the ESP32 toolchain.
  *
@@ -16,6 +17,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { writeSymbolTable } from "./firmware-symbols.mjs";
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
 const projectDir = join(repoRoot, "firmware", "probeharbor-probe");
@@ -101,4 +103,17 @@ const manifest = {
   })),
 };
 writeFileSync(join(outDir, "manifest.json"), `${JSON.stringify(manifest, null, 2)}\n`);
+
+// Function tables for decoding crash reports, named by each build's ELF hash
+// (scripts/firmware-symbols.mjs). Commit them with the images.
+for (const target of TARGETS) {
+  const elfPath = join(projectDir, ".pio", "build", target.env, "firmware.elf");
+  const table = writeSymbolTable({
+    elfPath,
+    chip: target.chip,
+    version,
+    outDir: join(outDir, "symbols"),
+  });
+  console.log(`${target.env}: ${table.count} functions → symbols/${table.elf}.json`);
+}
 console.log(`Wrote ${relative(repoRoot, outDir) || "."}/ (version ${version})`);
