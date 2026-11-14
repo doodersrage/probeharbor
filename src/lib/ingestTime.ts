@@ -85,9 +85,14 @@ export type SplitIngestBody =
  */
 export function splitIngestBody(body: unknown, nowMs: number): SplitIngestBody {
   const serverTime = new Date(nowMs).toISOString();
+  if (Array.isArray(body)) {
+    const timed = splitSenMLByTime(body, nowMs);
+    if (timed) return timed;
+  }
   if (!body || typeof body !== "object" || Array.isArray(body)) {
-    // Passed through as is: a top-level array is SenML, which the interpreter
-    // reads; anything else finds no sensor values there.
+    // Passed through as is: a top-level array is SenML (with no record
+    // times), which the interpreter reads; anything else finds no sensor
+    // values there.
     return { ok: true, batch: false, entries: [{ payload: body, recordedAt: serverTime, deviceTime: false }], rejectedEntries: [] };
   }
   const top = body as Record<string, unknown>;
@@ -124,5 +129,80 @@ export function splitIngestBody(body: unknown, nowMs: number): SplitIngestBody {
     }
     entries.push({ payload, recordedAt: parsed.iso, deviceTime: true });
   });
+  return { ok: true, batch: true, entries, rejectedEntries };
+}
+
+/** SenML (RFC 8428 §4.5.3): resolved times below 2^28 s are relative to now. */
+const SENML_RELATIVE_LIMIT_S = 2 ** 28;
+
+const isFiniteNumber = (value: unknown): value is number => typeof value === "number" && Number.isFinite(value);
+
+/**
+ * A SenML pack whose records carry times (`t`, and the base time `bt` that
+ * applies to that record and every later one until the next `bt`): one entry
+ * per resolved time, each holding its records, so readings keep the time they
+ * were measured rather than the time the pack arrived.
+ *
+ * - Resolved time = `bt` + `t`, in seconds. Unix seconds (2^28 and up) are
+ *   the device's own clock and count as device time (resends are skipped as
+ *   duplicates). Smaller values are relative to now (`-60` = a minute ago);
+ *   0, or neither field, is now (server time, as before).
+ * - The same 72-hour / 5-minute window as `recorded_at`. A record with a bad
+ *   or out-of-range time is listed in `rejectedEntries` by its index in the
+ *   pack and skipped; the rest are stored. A non-numeric `bt` rejects the
+ *   records that depend on it.
+ * - Returns null (caller keeps the old single-entry path) when no record
+ *   resolves to anything but now, or the array isn't all objects.
+ *
+ * Records are kept as sent; the SenML reader ignores `bn`/`bu`/`bt`, so
+ * grouping them doesn't change how any record is read.
+ */
+function splitSenMLByTime(records: unknown[], nowMs: number): SplitIngestBody | null {
+  if (records.length === 0 || !records.every((r) => r != null && typeof r === "object" && !Array.isArray(r))) {
+    return null;
+  }
+  const groups = new Map<string, { ms: number; deviceTime: boolean; records: unknown[] }>();
+  const rejectedEntries: RejectedEntry[] = [];
+  let baseTime: number | null = 0;
+  let anyTimed = false;
+  records.forEach((raw, index) => {
+    const record = raw as Record<string, unknown>;
+    if ("bt" in record) baseTime = isFiniteNumber(record.bt) ? record.bt : null;
+    const t = "t" in record ? record.t : 0;
+    if (baseTime == null || !isFiniteNumber(t)) {
+      anyTimed = true;
+      rejectedEntries.push({ index, reason: "invalid_recorded_at" });
+      return;
+    }
+    const resolved = baseTime + t;
+    let ms = nowMs;
+    let deviceTime = false;
+    if (resolved !== 0) {
+      anyTimed = true;
+      if (Math.abs(resolved) < SENML_RELATIVE_LIMIT_S) {
+        ms = nowMs + resolved * 1000;
+      } else {
+        ms = resolved * 1000;
+        deviceTime = true;
+      }
+      const checked = parseRecordedAt(ms / 1000, nowMs);
+      if (!checked.ok) {
+        rejectedEntries.push({ index, reason: checked.reason });
+        return;
+      }
+      ms = Date.parse(checked.iso);
+    }
+    const key = `${ms}:${deviceTime}`;
+    const group = groups.get(key) ?? { ms, deviceTime, records: [] };
+    group.records.push(record);
+    groups.set(key, group);
+  });
+  if (!anyTimed) return null;
+  if (groups.size > MAX_BATCH_READINGS) {
+    return { ok: false, error: `Too many reading times in one SenML pack (max ${MAX_BATCH_READINGS})` };
+  }
+  const entries = [...groups.values()]
+    .sort((a, b) => a.ms - b.ms)
+    .map((g) => ({ payload: g.records, recordedAt: new Date(g.ms).toISOString(), deviceTime: g.deviceTime }));
   return { ok: true, batch: true, entries, rejectedEntries };
 }

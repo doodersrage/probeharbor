@@ -165,6 +165,21 @@ Rules:
   readings fill in history; a condition that was already over by the newest
   reading does not send an alert.
 
+**SenML packs** (a top-level RFC 8428 array) use the records' own times: each
+record's time is `bt` + `t`, where `bt` carries over to later records until
+the next `bt`. Unix seconds are the device's clock (same window and duplicate
+rule as `recorded_at`); values below 2^28 are relative to now (`"t": -60` is a
+minute ago); no time means now. A record with a bad or out-of-range time is
+listed in `rejected_entries` by its index in the pack. At most 100 distinct
+times per pack.
+
+```json
+[
+  { "bn": "garage/", "bt": 1794575880, "n": "temp", "u": "Cel", "v": 4.5 },
+  { "n": "temp", "u": "Cel", "v": 4.4, "t": 60 }
+]
+```
+
 ```json
 { "ok": true, "readings": 2, "sensors_created": 0, "duplicates": 1,
   "rejected_entries": [{ "index": 3, "reason": "recorded_at_too_old" }] }

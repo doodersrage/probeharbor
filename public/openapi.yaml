@@ -36,6 +36,12 @@ paths:
         (required). Items with a missing or out-of-range time are skipped and
         listed in `rejected_entries`; the rest are stored. `fw`, `rssi` and
         `battery_pct` go at the top level.
+
+        **SenML.** A top-level SenML array (RFC 8428) uses each record's time,
+        `bt` + `t`: Unix seconds keep the device's time (same window and
+        duplicate rule as `recorded_at`), values below 2^28 are relative to
+        now, and no time means now. Records with a bad time are listed in
+        `rejected_entries` by index; at most 100 distinct times per pack.
       parameters:
         - name: deviceKey
           in: path

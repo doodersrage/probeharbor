@@ -122,3 +122,111 @@ describe("splitIngestBody", () => {
     expect(splitIngestBody({ readings: max }, NOW)).toMatchObject({ ok: true });
   });
 });
+
+describe("splitIngestBody: SenML record times (t / bt)", () => {
+  const iso = (ms: number) => new Date(ms).toISOString();
+
+  it("keeps an untimed pack on the old path, untouched (t: 0 counts as untimed)", () => {
+    const pack = [{ n: "0", u: "Cel", v: 18.5, t: 0 }, { n: "1", u: "Cel", v: 19 }];
+    expect(splitIngestBody(pack, NOW)).toMatchObject({ batch: false, entries: [{ payload: pack, deviceTime: false }] });
+  });
+
+  it("splits absolute times into one entry each, oldest first, as device time", () => {
+    const pack = [
+      { bn: "urn:dev:mac:0024befffe804ff1/", bt: NOW_S - 120, n: "temp", u: "Cel", v: 4.6 },
+      { n: "temp", u: "Cel", v: 4.5, t: 60 },
+      { n: "rh", u: "%RH", v: 71, t: 60 },
+      { n: "temp", u: "Cel", v: 4.4, t: 120 },
+    ];
+    const out = splitIngestBody(pack, NOW);
+    expect(out).toEqual({
+      ok: true,
+      batch: true,
+      rejectedEntries: [],
+      entries: [
+        { payload: [pack[0]], recordedAt: iso(NOW - 120_000), deviceTime: true },
+        { payload: [pack[1], pack[2]], recordedAt: iso(NOW - 60_000), deviceTime: true },
+        { payload: [pack[3]], recordedAt: iso(NOW), deviceTime: true },
+      ],
+    });
+  });
+
+  it("reads small times as relative to now (server time, not device time)", () => {
+    const pack = [
+      { n: "temp", u: "Cel", v: 5, t: -600 },
+      { n: "temp", u: "Cel", v: 6 },
+    ];
+    expect(splitIngestBody(pack, NOW)).toMatchObject({
+      batch: true,
+      entries: [
+        { payload: [pack[0]], recordedAt: iso(NOW - 600_000), deviceTime: false },
+        { payload: [pack[1]], recordedAt: iso(NOW), deviceTime: false },
+      ],
+    });
+  });
+
+  it("a new bt replaces the old one for the records after it", () => {
+    const pack = [
+      { bt: NOW_S - 3600, n: "a", v: 1 },
+      { n: "a", v: 2, t: 10 },
+      { bt: NOW_S - 60, n: "a", v: 3 },
+      { n: "a", v: 4, t: 10 },
+    ];
+    const out = splitIngestBody(pack, NOW);
+    expect(out.ok && out.entries.map((e) => e.recordedAt)).toEqual([
+      iso(NOW - 3_600_000),
+      iso(NOW - 3_590_000),
+      iso(NOW - 60_000),
+      iso(NOW - 50_000),
+    ]);
+  });
+
+  it("skips records outside the 72-hour / 5-minute window by index and keeps the rest", () => {
+    const pack = [
+      { n: "a", v: 1, t: NOW_S - MAX_READING_AGE_MS / 1000 - 1 },
+      { n: "a", v: 2, t: NOW_S - 30 },
+      { n: "a", v: 3, t: NOW_S + MAX_FUTURE_SKEW_MS / 1000 + 1 },
+      { n: "a", v: 4, t: NOW * 1 }, // milliseconds where seconds belong
+    ];
+    expect(splitIngestBody(pack, NOW)).toEqual({
+      ok: true,
+      batch: true,
+      entries: [{ payload: [pack[1]], recordedAt: iso(NOW - 30_000), deviceTime: true }],
+      rejectedEntries: [
+        { index: 0, reason: "recorded_at_too_old" },
+        { index: 2, reason: "recorded_at_in_future" },
+        { index: 3, reason: "recorded_at_in_future" },
+      ],
+    });
+  });
+
+  it("rejects a non-numeric t, and every record that depends on a non-numeric bt", () => {
+    const pack = [
+      { n: "a", v: 1, t: "yesterday" },
+      { bt: "1794575880", n: "a", v: 2 },
+      { n: "a", v: 3, t: 5 },
+      { bt: NOW_S, n: "a", v: 4 },
+    ];
+    const out = splitIngestBody(pack, NOW);
+    expect(out).toMatchObject({
+      ok: true,
+      entries: [{ payload: [pack[3]], recordedAt: iso(NOW), deviceTime: true }],
+      rejectedEntries: [
+        { index: 0, reason: "invalid_recorded_at" },
+        { index: 1, reason: "invalid_recorded_at" },
+        { index: 2, reason: "invalid_recorded_at" },
+      ],
+    });
+  });
+
+  it("caps the number of distinct times like a batch", () => {
+    const pack = Array.from({ length: MAX_BATCH_READINGS + 1 }, (_, i) => ({ n: "a", v: i, t: NOW_S - i }));
+    expect(splitIngestBody(pack, NOW)).toMatchObject({ ok: false });
+    expect(splitIngestBody(pack.slice(1), NOW)).toMatchObject({ ok: true });
+  });
+
+  it("leaves arrays that aren't all objects on the old path", () => {
+    const junk = [{ n: "a", v: 1, t: NOW_S - 10 }, 5];
+    expect(splitIngestBody(junk, NOW)).toMatchObject({ batch: false, entries: [{ payload: junk }] });
+  });
+});

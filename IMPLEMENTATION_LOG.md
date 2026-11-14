@@ -5795,7 +5795,7 @@ skip duplicates in the app, no unique index.
       and a bad single `recorded_at` is a 400 in both. Repeated per-item
       warnings show once. Warnings are English, like the checker's others.
       `ingestCheck.test.ts` +6.
-- [ ] SenML records carry their own time (`t`/`bt`); still ignored.
+- [x] SenML records carry their own time (`t`/`bt`): done 2026-11-14, see "SenML record times".
 - [ ] Firmware: NTP clock + ring buffer posting batches (1.1, device side;
       needs hardware testing).
 
@@ -6195,3 +6195,32 @@ Neon transfer to be measured.**
 
 - 2026-11-14: owner upgraded the Neon plan (no pause risk this month). Also
   deployed since: latest values read once per alert evaluation (6ae6f31).
+
+## SenML record times (2026-11-14)
+
+- Before: a top-level SenML array was one entry stamped with the server's
+  receive time; each record's `t`/`bt` was ignored, and with several
+  records for one probe the last in the array won, newest or not.
+- [x] `splitIngestBody` (`src/lib/ingestTime.ts`): when any record resolves
+  to a time other than now, the pack becomes one entry per resolved time
+  (`bt` + `t`, `bt` carried forward per RFC 8428 §4.5.3). Unix seconds are
+  device time (duplicates skipped on resend); below 2^28 is relative to
+  now; no time is now. Same 72 h / 5 min window as `recorded_at`; bad or
+  out-of-range records go to `rejected_entries` by pack index; at most 100
+  distinct times. Untimed packs take exactly the old path. The route needed
+  no change: it already handles timed entries for `readings` batches
+  (doors, device fields, alerts on the state after the insert).
+- Records are grouped as sent. The SenML reader ignores `bn`/`bu`/`bt`, so
+  grouping changes no probe key. If it ever starts honouring `bn`, resolve
+  base fields before grouping.
+- Not changed: pull feeds still store a SenML pack once at poll time (a
+  feed snapshot, not a buffered upload); the `{ "e": [...] }` object form
+  is not split.
+- Evidence: `ingestTime.test.ts` +8 (untimed unchanged, absolute split
+  oldest first, relative times, `bt` replacement, window rejections incl.
+  milliseconds-as-seconds, non-numeric `t`/`bt`, the cap, mixed arrays);
+  `ingest.db.test.ts` +1 through the route on Postgres (three records at
+  `bt`, +10 min, +20 min stored at those times under one sensor, a
+  five-days-old record listed by index, resend → `duplicates: 3`).
+  `pnpm test` 3736, `pnpm test:db` 416, typecheck 0, lint 0. Not tested
+  with a real SenML device.

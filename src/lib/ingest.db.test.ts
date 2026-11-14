@@ -380,6 +380,35 @@ describe("POST /api/ingest with device times (recorded_at)", () => {
     expect(await timesOf(dev.deviceId)).toHaveLength(1);
   });
 
+  it("stores a timed SenML pack at each record's time (bt + t), once, under one sensor", async () => {
+    const dev = await pushDevice("a@example.com");
+    const pack = [
+      { bn: "probe/", bt: minutesAgo(20), n: "0", u: "Cel", v: 4.6 },
+      { n: "0", u: "Cel", v: 4.5, t: 600 },
+      { n: "0", u: "Cel", v: 4.4, t: 1200 },
+      { n: "0", u: "Cel", v: 9, t: -5 * 24 * 3600 }, // five days before bt: too old
+    ];
+    const response = await ingest(dev.key, pack);
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({
+      ok: true,
+      readings: 3,
+      rejected_entries: [{ index: 3, reason: "recorded_at_too_old" }],
+    });
+    const rows = await timesOf(dev.deviceId);
+    expect(rows.map((r) => [r.key, r.epoch])).toEqual([
+      ["0", minutesAgo(20)],
+      ["0", minutesAgo(10)],
+      ["0", minutesAgo(0)],
+    ]);
+    expect(rows.map((r) => r.value_num)).toEqual([40.3, 40.1, 39.9]);
+
+    const retry = await ingest(dev.key, pack);
+    expect(await retry.json()).toMatchObject({ ok: true, readings: 0, duplicates: 3 });
+    expect(await timesOf(dev.deviceId)).toHaveLength(3);
+  });
+
   it("without recorded_at, the same value twice is stored twice (unchanged)", async () => {
     const dev = await pushDevice("a@example.com");
     await ingest(dev.key, { temp_c: 4.5 });
